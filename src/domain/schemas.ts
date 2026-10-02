@@ -1,12 +1,8 @@
 import { z } from 'zod';
+import { EXERCISE_IDS } from '../catalog/exercise-ids';
 export const localeSchema = z.enum(['zh', 'en']);
 export const uuidSchema = z.uuid();
-export const exerciseIdSchema = z.enum([
-  'd16325d9-fc00-4c41-88a1-000000000001',
-  'd16325d9-fc00-4c41-88a1-000000000002',
-  'd16325d9-fc00-4c41-88a1-000000000003',
-  'd16325d9-fc00-4c41-88a1-000000000004',
-]);
+export const exerciseIdSchema = z.enum(EXERCISE_IDS);
 export const localDateSchema = z.iso.date();
 export const utcTimestampSchema = z.iso.datetime();
 export const timeZoneSchema = z.string().refine((value) => {
@@ -38,6 +34,17 @@ export const trainingPreferencesSchema = z.strictObject({
   goal: z.string().optional(), experience: z.string().optional(), availableEquipment: z.array(z.string()).optional(),
   daysPerWeek: positive.max(7).optional(), sessionMinutes: positive.optional(), heightCm: positive.optional(),
   weightGrams: positive.optional(), constraints: z.string().optional(), updatedAt: utcTimestampSchema,
+  exercisePreferences: z.array(categorySchema).optional(),
+  trainingLocation: z.enum(['home', 'gym', 'outdoors', 'other']).optional(),
+  trainingWeekdays: z.array(positive.max(7)).min(1).max(7).optional(),
+}).superRefine((preferences, context) => {
+  if (!preferences.trainingWeekdays) return;
+  if (new Set(preferences.trainingWeekdays).size !== preferences.trainingWeekdays.length) {
+    context.addIssue({ code: 'custom', path: ['trainingWeekdays'], message: 'Training weekdays must be distinct' });
+  }
+  if (preferences.daysPerWeek !== undefined && preferences.trainingWeekdays.length !== preferences.daysPerWeek) {
+    context.addIssue({ code: 'custom', path: ['trainingWeekdays'], message: 'Training weekday count must equal daysPerWeek' });
+  }
 });
 export const localProfileSchema = z.strictObject({
   ...entityFields, locale: localeSchema, timeZone: timeZoneSchema, units: z.literal('metric'), trainingPreferences: trainingPreferencesSchema.optional(),
@@ -46,7 +53,7 @@ export const plannedExerciseSchema = z.strictObject({
   exerciseId: exerciseIdSchema, order: nonnegative, targetSets: z.array(setMetricsSchema).min(1), notes: z.string().optional(),
 });
 export const planDaySchema = z.strictObject({
-  dayId: uuidSchema, weekIndex: nonnegative.max(11), dayOfWeek: nonnegative.max(6), exercises: z.array(plannedExerciseSchema).min(1),
+  dayId: uuidSchema, weekIndex: positive.max(12), dayOfWeek: positive.max(7), exercises: z.array(plannedExerciseSchema).min(1),
 });
 export const goalSnapshotSchema = z.strictObject({ goal: z.string(), trainingPreferences: trainingPreferencesSchema.optional() });
 export const generationMetadataSchema = z.strictObject({

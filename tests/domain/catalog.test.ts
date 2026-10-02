@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { searchExercises, getExercise } from '../../src/catalog/catalog-service';
 import { parseMetric } from '../../src/domain/units';
-import { metadataSchema, plannedExerciseSchema, setMetricsSchema, setRecordSchema } from '../../src/domain/schemas';
+import { metadataSchema, planDaySchema, plannedExerciseSchema, setMetricsSchema, setRecordSchema, trainingPreferencesSchema } from '../../src/domain/schemas';
 
 describe('exercise catalogue', () => {
   it.each(['strength', 'cardio', 'bodyweight'] as const)('offers usable %s exercises', (category) => {
@@ -16,6 +16,36 @@ describe('exercise catalogue', () => {
   });
   it('rejects unknown exercise IDs', () => {
     expect(() => getExercise('unknown')).toThrow();
+  });
+});
+
+describe('persisted training conditions and plan calendar contracts', () => {
+  const updatedAt = '2026-10-03T00:00:00Z';
+  it('retains exercise preferences, training location and selected weekdays', () => {
+    const conditions = {
+      updatedAt, exercisePreferences: ['strength', 'bodyweight'], trainingLocation: 'home',
+      daysPerWeek: 3, trainingWeekdays: [1, 3, 7],
+    };
+    expect(trainingPreferencesSchema.parse(conditions)).toEqual(conditions);
+    expect(trainingPreferencesSchema.safeParse({ updatedAt }).success).toBe(true);
+  });
+  it.each([
+    { trainingWeekdays: [0] }, { trainingWeekdays: [8] }, { trainingWeekdays: [1, 1] },
+    { trainingWeekdays: [1.5] }, { trainingWeekdays: [1, 3] },
+  ])('rejects invalid or inconsistent selected weekdays %j', ({ trainingWeekdays }) => {
+    expect(trainingPreferencesSchema.safeParse({ updatedAt, daysPerWeek: 1, trainingWeekdays }).success).toBe(false);
+  });
+  const exercise = {
+    exerciseId: 'd16325d9-fc00-4c41-88a1-000000000003', order: 0,
+    targetSets: [{ metricType: 'reps', reps: 8 }],
+  };
+  it('accepts week 12 and Sunday 7 while rejecting zero-based and out-of-range days', () => {
+    const day = { dayId: '76e6310c-9ee6-48bc-a016-100000000001', weekIndex: 12, dayOfWeek: 7, exercises: [exercise] };
+    expect(planDaySchema.safeParse(day).success).toBe(true);
+    expect(planDaySchema.safeParse({ ...day, weekIndex: 1, dayOfWeek: 1 }).success).toBe(true);
+    for (const invalid of [{ weekIndex: 0 }, { dayOfWeek: 0 }, { weekIndex: 13 }, { dayOfWeek: 8 }]) {
+      expect(planDaySchema.safeParse({ ...day, ...invalid }).success).toBe(false);
+    }
   });
 });
 

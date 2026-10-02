@@ -1,14 +1,10 @@
 import type { Exercise } from '../domain/models';
 import { exerciseSchema } from '../domain/schemas';
+import { EXERCISE_IDS } from './exercise-ids';
+
+export { EXERCISE_IDS } from './exercise-ids';
 
 export const CATALOG_VERSION = 1;
-export const EXERCISE_IDS = {
-  gobletSquat: 'd16325d9-fc00-4c41-88a1-000000000001',
-  walking: 'd16325d9-fc00-4c41-88a1-000000000002',
-  bodyweightSquat: 'd16325d9-fc00-4c41-88a1-000000000003',
-  plank: 'd16325d9-fc00-4c41-88a1-000000000004',
-} as const;
-
 export const exercises: Exercise[] = [
   {
     id: EXERCISE_IDS.gobletSquat, catalogVersion: CATALOG_VERSION,
