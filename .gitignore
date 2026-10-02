@@ -7,3 +7,9 @@ __pycache__/
 *.pyc
 .DS_Store
 Thumbs.db
+
+.worktrees/
+.superpowers/
+dist/
+playwright-report/
+test-results/
