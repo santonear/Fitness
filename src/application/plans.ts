@@ -62,6 +62,7 @@ export function createPlanService(repo: Repository) {
  async function updateSchedule(id:string,revision:number,date?:LocalDate) {
   await repo.write(async()=>{
    const row=await db.scheduledWorkouts.get(id);if(!row || row.revision!==revision)throw new DomainError('CONFLICT','Schedule changed');
+   if(row.hiddenAt)throw new DomainError('INVALID','This schedule was hidden');
    const version=await db.planVersions.get(row.planVersionId);
    if(!version || (await db.plans.get(version.planId))?.deletedAt)throw new DomainError('INVALID','This plan was deleted');
    if(row.completedSessionId)throw new DomainError('SESSION_READ_ONLY','Completed training is read only');
@@ -72,6 +73,20 @@ export function createPlanService(repo: Repository) {
  }
  async function rescheduleWorkout(id:string,date:LocalDate,revision:number):Promise<void>{return updateSchedule(id,revision,date);}
  async function skipWorkout(id:string,revision:number):Promise<void>{return updateSchedule(id,revision);}
+ async function hideScheduledWorkout(id: string, revision: number): Promise<void> {
+  await repo.write(async () => {
+   const row = await db.scheduledWorkouts.get(id);
+   if (!row || row.revision !== revision) throw new DomainError('CONFLICT', 'Schedule changed; reload before deleting');
+   if (row.hiddenAt) throw new DomainError('INVALID', 'This schedule was hidden');
+   const version = await db.planVersions.get(row.planVersionId);
+   if (!version || (await db.plans.get(version.planId))?.deletedAt) throw new DomainError('INVALID', 'This plan was deleted');
+   if (await db.sessions.where('status').equals('in_progress').filter(session => session.planVersionId === row.planVersionId && session.plannedDayId === row.plannedDayId).count()) {
+    throw new DomainError('WORKOUT_IN_PROGRESS', 'Finish or abandon this training before deleting its schedule');
+   }
+   const now = new Date().toISOString();
+   await db.scheduledWorkouts.put({ ...row, hiddenAt: now, updatedAt: now, revision: row.revision + 1 });
+  });
+ }
  async function deletePlan(id: string, revision: number): Promise<void> {
   await repo.write(async () => {
    const plan = await db.plans.get(id);
@@ -93,7 +108,7 @@ export function createPlanService(repo: Repository) {
    }
   });
  }
- return {savePlan,renamePlan,activateDraftPlan,rescheduleWorkout,skipWorkout,deletePlan};
+ return {savePlan,renamePlan,activateDraftPlan,rescheduleWorkout,skipWorkout,hideScheduledWorkout,deletePlan};
 }
 export const planService=createPlanService(repository);
 export const {savePlan,activateDraftPlan,rescheduleWorkout,skipWorkout}=planService;

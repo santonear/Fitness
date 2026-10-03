@@ -23,7 +23,7 @@ export function PlansPage() {
     setPlans(rows);
     const active = rows.find(plan => plan.status === 'active');
     setSchedule(active
-      ? await database.scheduledWorkouts.where('planVersionId').equals(active.currentVersionId).sortBy('scheduledDate')
+      ? (await database.scheduledWorkouts.where('planVersionId').equals(active.currentVersionId).sortBy('scheduledDate')).filter(row => !row.hiddenAt)
       : []);
   }
 
@@ -113,7 +113,7 @@ function ScheduleRow({ row, zh, busy, run }: {
   row: ScheduledWorkout;
   zh: boolean;
   busy: boolean;
-  run: (operation: () => Promise<unknown>) => Promise<void>;
+  run: (operation: () => Promise<unknown>, successMessage?: string) => Promise<void>;
 }) {
   const [date, setDate] = useState(row.scheduledDate);
   return (
@@ -141,6 +141,12 @@ function ScheduleRow({ row, zh, busy, run }: {
           </Link>
         </>
       )}
+      <button disabled={busy} onClick={() => {
+        if (!window.confirm(zh
+          ? '删除此日程？仅从列表隐藏，课表、原计划完成率统计及训练历史仍保留。'
+          : 'Delete this schedule? It will be hidden; plan contents, completion statistics and training history are preserved.')) return;
+        void run(() => planService.hideScheduledWorkout(row.id, row.revision), zh ? '日程已删除，统计和历史仍保留' : 'Schedule hidden. Statistics and history are preserved.').catch(() => {});
+      }}>{zh ? '删除' : 'Delete'}</button>
     </li>
   );
 }

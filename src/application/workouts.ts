@@ -23,11 +23,12 @@ export function createWorkoutService(repo:Repository) {
   const existing=await db.sessions.get(input.sessionId);if(existing)return existing;
   if(await db.sessions.where('status').equals('in_progress').count())throw new DomainError('ACTIVE_SESSION_EXISTS','Continue or abandon the current workout');
   let actual:ExerciseSnapshot[]=[];let planVersionId=input.planVersionId,plannedDayId=input.plannedDayId;
-  if(input.scheduledWorkoutId){const row=await db.scheduledWorkouts.get(input.scheduledWorkoutId);if(!row||row.completedSessionId||row.status==='skipped')invalid('Scheduled workout unavailable');
+  if(input.scheduledWorkoutId){const row=await db.scheduledWorkouts.get(input.scheduledWorkoutId);if(!row||row.hiddenAt||row.completedSessionId||row.status==='skipped')invalid('Scheduled workout unavailable');
    if((planVersionId&&planVersionId!==row.planVersionId)||(plannedDayId&&plannedDayId!==row.plannedDayId))invalid('Schedule reference mismatch');planVersionId=row.planVersionId;plannedDayId=row.plannedDayId;
   }
   if(planVersionId||plannedDayId){
    if(!planVersionId||!plannedDayId)invalid('Both plan version and day are required');
+   if(await db.scheduledWorkouts.where('planVersionId').equals(planVersionId).filter(row=>row.plannedDayId===plannedDayId&&Boolean(row.hiddenAt)).count())invalid('This schedule was hidden');
    const version=await db.planVersions.get(planVersionId);const day=version?.days.find(d=>d.dayId===plannedDayId);if(!day)invalid('Plan day not found');
    if((await db.plans.get(version!.planId))?.deletedAt)invalid('This plan was deleted');
    if(input.exerciseIds?.length)invalid('Planned training uses plan snapshots');
@@ -83,7 +84,7 @@ export function createWorkoutService(repo:Repository) {
  });}
  async function getActiveWorkout(){return db.sessions.where('status').equals('in_progress').first();}
  async function getSets(id:string){return db.sets.where('sessionId').equals(id).sortBy('order');}
- async function listAvailableSchedule(){const active=await db.plans.where('status').equals('active').first();return active?(await db.scheduledWorkouts.where('planVersionId').equals(active.currentVersionId).sortBy('scheduledDate')).filter(row=>row.status==='pending'&&!row.completedSessionId):[];}
+ async function listAvailableSchedule(){const active=await db.plans.where('status').equals('active').first();return active?(await db.scheduledWorkouts.where('planVersionId').equals(active.currentVersionId).sortBy('scheduledDate')).filter(row=>!row.hiddenAt&&row.status==='pending'&&!row.completedSessionId):[];}
  return {startWorkout,recordSet,adjustWorkout,completeWorkout:(id:string,revision:number)=>finish(id,revision,'completed'),abandonWorkout:(id:string,revision:number)=>finish(id,revision,'abandoned'),getActiveWorkout,getSets,listAvailableSchedule};
 }
 export const workoutService=createWorkoutService(repository);
