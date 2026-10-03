@@ -12,7 +12,10 @@
     "test": "vitest run",
     "build": "vite build",
     "test:e2e": "playwright test",
-    "check": "npm run typecheck && npm test && npm run build"
+    "check": "npm run typecheck && npm test && npm run build",
+    "deploy:dry-run": "wrangler deploy --dry-run",
+    "deploy:cloudflare": "wrangler deploy",
+    "preview:cloudflare": "wrangler dev --ip 127.0.0.1 --port 5176"
   },
   "dependencies": {
     "dexie": "4.4.6",
@@ -31,6 +34,7 @@
     "@vitejs/plugin-react": "6.1.1",
     "typescript": "5.9.3",
     "vite": "8.3.2",
-    "vitest": "4.1.11"
+    "vitest": "4.1.11",
+    "wrangler": "4.147.0"
   }
 }
