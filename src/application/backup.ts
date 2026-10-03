@@ -100,6 +100,7 @@ export function validateBackupEnvelope(value: unknown): BackupEnvelope {
   distinct(data.scheduledWorkouts.map(row => `${row.planVersionId}:${row.plannedDayId}`), 'scheduled plan day');
   distinct(data.scheduledWorkouts.flatMap(row => row.completedSessionId ? [row.completedSessionId] : []), 'completed schedule workout');
   for (const row of data.scheduledWorkouts) {
+    if (row.hiddenAt && data.sessions.some(session => session.status === 'in_progress' && session.planVersionId === row.planVersionId && session.plannedDayId === row.plannedDayId)) invalid('Hidden schedule has an ongoing workout');
     validDate(row.originalDate);
     validDate(row.scheduledDate);
     const version = versions.get(row.planVersionId);

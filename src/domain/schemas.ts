@@ -88,7 +88,7 @@ export const setRecordSchema = z.strictObject({
 });
 export const scheduledWorkoutSchema = z.strictObject({
   ...entityFields, planVersionId: uuidSchema, plannedDayId: uuidSchema, originalDate: localDateSchema, scheduledDate: localDateSchema,
-  status: z.enum(['pending', 'skipped']), completedSessionId: uuidSchema.optional(),
+  status: z.enum(['pending', 'skipped']), completedSessionId: uuidSchema.optional(), hiddenAt: utcTimestampSchema.optional(),
 });
 export const bodyWeightObservationSchema = z.strictObject({ ...entityFields, localDate: localDateSchema, timeZone: timeZoneSchema, weightGrams: positive });
 export const metadataSchema = z.strictObject({
