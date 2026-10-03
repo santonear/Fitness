@@ -105,6 +105,8 @@ pre { max-width: 100%; overflow-x: auto; white-space: pre-wrap; overflow-wrap: a
 .language-control select { border: 0; }
 .app-shell > main { grid-column: 2; min-width: 0; padding: 28px 38px 24px; width: 100%; max-width: 1440px; margin-inline: auto; }
 .app-shell > footer { grid-column: 2; margin: 0 38px; padding: 15px 0 20px; border-color: var(--dashboard-line); font-size: 11px; }
+/* Native file pickers have platform-dependent intrinsic widths (Linux WebKit: 347px). */
+.app-shell input[type="file"] { display: block; width: 100%; min-width: 0; max-width: 100%; font: inherit; }
 .app-shell :focus-visible { outline-color: var(--dashboard-accent); }
 .app-sidebar :focus-visible { outline-color: var(--dashboard-mint); }
 .app-shell .skip-link { z-index: 10; background: #fff; }
