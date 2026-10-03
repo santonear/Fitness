@@ -4,7 +4,7 @@
 
 ## 发布内容与路由
 
-Worker 名称为 `fitness-local`，使用账号的稳定 workers.dev 子域名；实际地址在成功部署后记录。仅上传生产构建 `dist`。`wrangler.jsonc` 配置 SPA 回退，支持 `/plans`、`/settings` 等页面直接打开和刷新。无需修改现有根路径 BrowserRouter。
+Worker 名称为 `fitness-local`，实际稳定地址为 https://fitness-local.xxgospel.workers.dev 。仅上传生产构建 `dist`。`wrangler.jsonc` 配置 SPA 回退，支持 `/plans`、`/settings` 等页面直接打开和刷新。无需修改现有根路径 BrowserRouter。
 
 ## 首次登录与本地发布
 

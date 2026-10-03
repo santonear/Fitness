@@ -2,6 +2,12 @@
 
 手机优先的本地健身 Web 应用，支持中文/英文、公制、力量/有氧/徒手训练。第一阶段无需登录：手动计划、逐组记录、计时、完成前核对、只读历史和趋势、可选训练资料、体重观察、全量训练备忘及 JSON 备份恢复已实现。
 
+## 在线使用
+
+[Fitness 在线版](https://fitness-local.xxgospel.workers.dev) 已发布至 Cloudflare Workers 静态托管。训练数据仍保存在访问者的浏览器中；本地数据迁移时，在本地“设置”导出 JSON，再在在线版导入。后续优先保持此网址稳定。
+
+发布流程与验证记录见 [Cloudflare 发布说明](docs/cloudflare-release.md) 和 [首次发布验证](docs/verification/cloudflare-release.md)。
+
 ## 本地运行
 
 需要 Node.js 24 或更新版本。依赖由 `package-lock.json` 锁定。
@@ -35,7 +41,7 @@ npm run test:e2e
 
 ## 范围与验证
 
-第一阶段不调用 AI、不安装云凭据、不部署云服务、不提供未经审核的图片或视频。AI 理解/计划/总结、邀请码、账号/云同步和媒体为后续工作；设计中的预算和延迟是待验证目标，不是本地版本保证。
+当前已部署静态前端，不调用 AI、不提供未经审核的图片或视频。AI 理解/计划/总结、邀请码、账号/云同步和媒体为后续工作；设计中的预算和延迟是待验证目标，不是本地版本保证。
 
 - [实际验收与平台限制](docs/verification/local-mvp.md)
 - [软件设计文档](docs/software-design.md)

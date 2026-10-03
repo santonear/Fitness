@@ -20,7 +20,11 @@
 
 ## 部署状态
 
-Cloudflare官方OAuth登录成功。首次部署前查询目标账号：同名fitness-local Worker不存在（API10007）。此处不记录凭据、邮箱或账号ID。部署结果、完整回归和线上验证将在实际完成后补充。
+Cloudflare官方OAuth登录成功。首次部署前查询目标账号：同名fitness-local Worker不存在（API10007）。此处不记录凭据、邮箱或账号ID。
+
+实际首次发布成功：2026-10-03约20:27北京时间，https://fitness-local.xxgospel.workers.dev 。发布源码提交`42e8475`，Worker版本`bd5dab5a-b683-459c-b792-46767be1f7ae`，上传6个静态文件。GitHub集成分支及main均已快进至发布提交，没有force push、购买资源或模型调用。
+
+线上六个路由导航请求均HTTP200且返回入口HTML。实际HTTPS网址Chromium/WebKit用户流程18/18通过（24.8秒），使用独立浏览器与合成数据，覆盖双语、320px、导航刷新、训练、打开后断网流程与JSON导出/导入。此次首次发布使用本地OAuth；GitHub发布Secrets尚未配置，手动发布工作流已提交但未运行，不将本地发布写成GitHub自动部署成功。
 
 ## 既有验证边界
 
