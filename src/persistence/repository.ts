@@ -6,16 +6,28 @@ export function storageError(error: unknown): never {
   throw error;
 }
 export function createRepository(db: FitnessDatabase) {
+  let observedGeneration: number | undefined;
   async function readMetadata(): Promise<Metadata> {
     const row = await db.metadata.toCollection().first();
     if (!row) throw new DomainError('INVALID', 'Local profile is not initialized');
+    observedGeneration ??= row.restoreGeneration ?? 0;
     return row;
+  }
+  function assertGeneration(metadata: Metadata): void {
+    observedGeneration ??= metadata.restoreGeneration ?? 0;
+    if (observedGeneration !== (metadata.restoreGeneration ?? 0)) {
+      throw new DomainError('CONFLICT', 'Local data was replaced; reload before saving');
+    }
+  }
+  function adoptGeneration(generation: number): void {
+    observedGeneration = generation;
   }
   // Whole-store scope serializes application writes with future whole-library import.
   async function write<T>(operation: () => Promise<T>, expectedDataRevision?: number): Promise<T> {
     try {
       return await db.transaction('rw', db.tables, async () => {
         const before = await readMetadata();
+        assertGeneration(before);
         if (expectedDataRevision !== undefined && before.dataRevision !== expectedDataRevision) throw new DomainError('CONFLICT', 'Data changed; reload before saving');
         const result = await operation();
         const after = await readMetadata();
@@ -24,7 +36,7 @@ export function createRepository(db: FitnessDatabase) {
       });
     } catch (error) { return storageError(error); }
   }
-  return { db, readMetadata, write };
+  return { db, readMetadata, write, assertGeneration, adoptGeneration };
 }
 export type Repository = ReturnType<typeof createRepository>;
 export const repository = createRepository(database);

@@ -8,6 +8,11 @@ import { WorkoutPage } from './pages/WorkoutPage';
 import { TodayPage } from './pages/TodayPage';
 import { ProgressPage } from './pages/ProgressPage';
 import { profileService } from '../application/profile';
+import { liveQuery } from 'dexie';
+import { database } from '../persistence/db';
+import { repository } from '../persistence/repository';
+import { restoreChannelName, restoreStorageKey } from '../application/backup';
+import { languageKey } from '../i18n';
 
 const destinations = [
   ['today', '/'],
@@ -22,6 +27,49 @@ export function App(): ReactElement {
   const location = useLocation();
   const previousPath = useRef(location.pathname);
   const main = useRef<HTMLElement>(null);
+  useEffect(() => {
+    let generation: number | undefined;
+    let reloading = false;
+    async function reloadImportedLibrary() {
+      if (reloading) return;
+      reloading = true;
+      const profile = await database.profiles.toCollection().first();
+      if (profile) {
+        try { localStorage.setItem(languageKey, profile.locale); }
+        catch { /* Reload still clears stale forms if localStorage is unavailable. */ }
+      }
+      window.location.reload();
+    }
+    const subscription = liveQuery(async () => {
+      const metadata = await database.metadata.toCollection().first();
+      if (metadata) await repository.readMetadata();
+      return metadata?.restoreGeneration ?? (metadata ? 0 : undefined);
+    }).subscribe(value => {
+      if (value === undefined) return;
+      if (generation !== undefined && generation !== value) void reloadImportedLibrary();
+      generation ??= value;
+    });
+    const channel = typeof BroadcastChannel === 'undefined' ? undefined : new BroadcastChannel(restoreChannelName);
+    if (channel) channel.onmessage = event => {
+      if (event.data?.databaseName === database.name) void reloadImportedLibrary();
+    };
+    async function checkStoredGeneration() {
+      const metadata = await repository.readMetadata();
+      const current = metadata.restoreGeneration ?? 0;
+      if (generation !== undefined && current !== generation) await reloadImportedLibrary();
+    }
+    function onStorage(event: StorageEvent) {
+      if (event.key === restoreStorageKey(database.name)) {
+        void checkStoredGeneration().catch(() => { /* Normal persistence UI reports unavailable data. */ });
+      }
+    }
+    window.addEventListener('storage', onStorage);
+    return () => {
+      subscription.unsubscribe();
+      channel?.close();
+      window.removeEventListener('storage', onStorage);
+    };
+  }, []);
   useEffect(() => {
     const synchronize = () => { void profileService.setLocale(i18n.resolvedLanguage === 'zh' ? 'zh' : 'en').catch(() => { /* Settings reports unavailable persistence; navigation remains usable. */ }); };
     synchronize();

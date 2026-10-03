@@ -3,7 +3,13 @@ import type { Locale, LocalProfile, ProfileInput } from '../domain/models';
 import { localProfileSchema } from '../domain/schemas';
 import { repository, storageError, type Repository } from '../persistence/repository';
 export function createProfileService(repo: Repository) {
-  async function getProfile(): Promise<LocalProfile | undefined> { return repo.db.profiles.toCollection().first(); }
+  async function getProfile(): Promise<LocalProfile | undefined> {
+    return repo.db.transaction('r', [repo.db.profiles, repo.db.metadata], async () => {
+      const profile = await repo.db.profiles.toCollection().first();
+      if (profile) await repo.readMetadata();
+      return profile;
+    });
+  }
   async function initialize(locale: Locale): Promise<LocalProfile> {
     return repo.db.transaction('rw', repo.db.tables, async () => {
       const existing = await getProfile();
@@ -12,6 +18,7 @@ export function createProfileService(repo: Repository) {
       const profile = localProfileSchema.parse({ id: crypto.randomUUID(), revision: 0, createdAt: timestamp, updatedAt: timestamp, locale, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, units: 'metric' });
       await repo.db.profiles.add(profile);
       await repo.db.metadata.add({ localProfileId: profile.id, schemaVersion: 2, catalogVersion: 1, revision: 1, dataRevision: 1 });
+      await repo.readMetadata();
       return profile;
     }).catch(storageError);
   }
@@ -31,9 +38,10 @@ export function createProfileService(repo: Repository) {
     await initialize(locale);
     return repo.db.transaction('rw', repo.db.tables, async () => {
       const current = (await getProfile())!;
+      const metadata = await repo.readMetadata();
+      repo.assertGeneration(metadata);
       if (current.locale === locale) return current;
       const next = localProfileSchema.parse({ ...current, locale, revision: current.revision + 1, updatedAt: new Date().toISOString() });
-      const metadata = await repo.readMetadata();
       await repo.db.profiles.put(next);
       await repo.db.metadata.put({ ...metadata, revision: metadata.revision + 1, dataRevision: metadata.dataRevision + 1 });
       return next;

@@ -93,6 +93,7 @@ export const bodyWeightObservationSchema = z.strictObject({ ...entityFields, loc
 export const metadataSchema = z.strictObject({
   schemaVersion: positive, localProfileId: uuidSchema, catalogVersion: positive, revision: nonnegative, dataRevision: nonnegative,
   importedAt: utcTimestampSchema.optional(), upgradedAt: utcTimestampSchema.optional(),
+  restoreGeneration: nonnegative.optional(),
 });
 export const memoSessionSchema = z.strictObject({ session: workoutSessionSchema, sets: z.array(setRecordSchema), planVersionSnapshot: planVersionSchema.optional() });
 export const trainingMemoSchema = z.strictObject({ schemaVersion: positive, revision: nonnegative, updatedAt: utcTimestampSchema, sourceRevision: nonnegative, sessions: z.array(memoSessionSchema) });
@@ -112,5 +113,6 @@ export const backupDataSchema = z.strictObject({
   metadata: metadataSchema, profiles: z.array(localProfileSchema), plans: z.array(planSchema), planVersions: z.array(planVersionSchema),
   sessions: z.array(workoutSessionSchema), sets: z.array(setRecordSchema), scheduledWorkouts: z.array(scheduledWorkoutSchema),
   bodyWeights: z.array(bodyWeightObservationSchema), trainingMemo: trainingMemoSchema, aiMemoryNotes: z.array(aiMemoryNoteSchema), timers: z.array(timerStateSchema),
+  mediaAssets: z.array(mediaAssetSchema).default([]),
 });
 export const backupEnvelopeSchema = z.strictObject({ format: z.literal('fitness-local'), schemaVersion: positive, exportedAt: utcTimestampSchema, catalogVersion: positive, data: backupDataSchema });
