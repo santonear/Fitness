@@ -29,3 +29,7 @@ Cloudflare官方OAuth登录成功。首次部署前查询目标账号：同名fi
 ## 既有验证边界
 
 Dashboard与大量历史同时运行的性能未专项验证；真实手机、原生Safari/Firefox及完整屏幕阅读器未验证。当前没有账号、邀请码、AI或云同步。localhost与外网数据独立，通过Settings JSON导出/导入迁移。
+
+## 当前网址更新（2026-10-03）
+
+用户选择fitness.initdevl.workers.dev，确认旧网址没有需保留数据，并在官方控制台完成账号子域名改名。API确认initdevl，Worker为fitness，发布版本ce3abcc8-01bd-4e42-9ad9-4361196ea54f。当前入口https://fitness.initdevl.workers.dev；六个页面HTTP200，新网址Chromium/WebKit用户流程18/18通过（25.1秒）。生产JS/CSS构建哈希与首次发布一致，无领域代码修改，不重复完整开发验收。wrangler name和当前文档已同步。原fitness-local Worker保留；未来部署使用fitness。

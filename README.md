@@ -4,7 +4,7 @@
 
 ## 在线使用
 
-[Fitness 在线版](https://fitness-local.xxgospel.workers.dev) 已发布至 Cloudflare Workers 静态托管。训练数据仍保存在访问者的浏览器中；本地数据迁移时，在本地“设置”导出 JSON，再在在线版导入。后续优先保持此网址稳定。
+[Fitness 在线版](https://fitness.initdevl.workers.dev) 已发布至 Cloudflare Workers 静态托管。训练数据仍保存在访问者的浏览器中；本地数据迁移时，在本地“设置”导出 JSON，再在在线版导入。后续优先保持此网址稳定。
 
 发布流程与验证记录见 [Cloudflare 发布说明](docs/cloudflare-release.md) 和 [首次发布验证](docs/verification/cloudflare-release.md)。
 

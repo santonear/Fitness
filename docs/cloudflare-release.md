@@ -4,7 +4,7 @@
 
 ## 发布内容与路由
 
-Worker 名称为 `fitness-local`，实际稳定地址为 https://fitness-local.xxgospel.workers.dev 。仅上传生产构建 `dist`。`wrangler.jsonc` 配置 SPA 回退，支持 `/plans`、`/settings` 等页面直接打开和刷新。无需修改现有根路径 BrowserRouter。
+Worker 名称为 `fitness`，实际稳定地址为 https://fitness.initdevl.workers.dev 。用户于2026-10-03确认旧网址无须保留数据，并在官方控制台将账号子域名改为initdevl；统筹已核对账号配置并部署。旧fitness-local Worker保留，不再作为正式入口。仅上传生产构建 `dist`。`wrangler.jsonc` 配置 SPA 回退，支持 `/plans`、`/settings` 等页面直接打开和刷新。无需修改现有根路径 BrowserRouter。
 
 ## 首次登录与本地发布
 
