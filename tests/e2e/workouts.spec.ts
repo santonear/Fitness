@@ -23,7 +23,7 @@ test('two connections serialize starts and revisions; facts, memo and global rev
  const result = await page.evaluate(async () => { const path='/tests/e2e/helpers/workouts-browser.ts'; return (await import(/* @vite-ignore */ path)).verifyWorkoutTransactions(`fitness-test-workouts-${crypto.randomUUID()}`); });
  expect(result).toEqual({ starts:1, conflicts:1, sets:1, memoSets:1, rolledBack:true, completed:true, readonly:true, mismatch:true, replacementConfirmed:true, originalPreserved:true, abandoned:true, rebuilt:true });
 });
-test('planned training links completion and additions preserve immutable plan targets', async ({ page }) => {
+test('planned training links confirmed completion to its schedule', async ({ page }) => {
  await page.goto('/plans'); await page.getByLabel('Plan name').fill('Train today');
  await page.getByLabel('Choose exercise').selectOption('d16325d9-fc00-4c41-88a1-000000000001');
  await page.getByLabel('Start date').fill('2026-10-03');
@@ -37,4 +37,36 @@ test('planned training links completion and additions preserve immutable plan ta
  await page.getByRole('button',{name:'Confirm completion',exact:true}).click();
  await expect(page.getByRole('status')).toHaveText('Workout completed');
  await page.goto('/plans');await expect(page.getByRole('list',{name:'Schedule'})).toContainText('completed');
+});
+test('removal cancellation preserves facts; confirmed removal persists and terminal workouts have no removal controls', async ({page}) => {
+ await page.goto('/');
+ await page.getByRole('button',{name:'Start temporary workout',exact:true}).click();
+ await page.getByLabel('Reps').fill('9');await page.getByLabel('Load (kg)').fill('1');
+ await page.getByRole('button',{name:'Record set',exact:true}).click();
+ await expect(page.getByRole('status')).toHaveText('Set saved');
+ page.once('dialog',dialog=>dialog.dismiss());
+ await page.getByRole('button',{name:'Remove saved set',exact:true}).click({timeout:5000});
+ await expect(page.getByText('9 reps · 1 kg',{exact:true})).toBeVisible();
+ await page.reload();await expect(page.getByText('9 reps · 1 kg',{exact:true})).toBeVisible();
+ page.once('dialog',dialog=>dialog.accept());
+ await page.getByRole('button',{name:'Remove saved set',exact:true}).click();
+ await expect(page.getByRole('status')).toHaveText('Saved set removed');
+ await page.reload();await expect(page.getByRole('button',{name:'Remove saved set',exact:true})).toHaveCount(0);
+ await page.getByLabel('Reps').fill('7');await page.getByLabel('Load (kg)').fill('0');
+ await page.getByRole('button',{name:'Record set',exact:true}).click();await expect(page.getByRole('status')).toHaveText('Set saved');
+ page.once('dialog',dialog=>dialog.dismiss());await page.getByRole('button',{name:'Remove exercise',exact:true}).click();
+ await expect(page.getByRole('heading',{name:'Goblet squat',exact:true})).toBeVisible();
+ page.once('dialog',dialog=>dialog.accept());await page.getByRole('button',{name:'Remove exercise',exact:true}).click();
+ await expect(page.getByRole('status')).toHaveText('Exercise removed');
+ await page.reload();await expect(page.getByRole('heading',{name:'Goblet squat',exact:true})).toHaveCount(0);
+ await page.getByRole('button',{name:'Add exercise',exact:true}).click();
+ await page.getByLabel('Reps').fill('5');await page.getByLabel('Load (kg)').fill('0');
+ await page.getByRole('button',{name:'Record set',exact:true}).click();await expect(page.getByRole('status')).toHaveText('Set saved');
+ await page.getByRole('button',{name:'Review completion',exact:true}).click();
+ await page.getByRole('button',{name:'Confirm completion',exact:true}).click();await expect(page.getByRole('status')).toHaveText('Workout completed');
+ await expect(page.getByRole('button',{name:'Remove saved set',exact:true})).toHaveCount(0);await expect(page.getByRole('button',{name:'Remove exercise',exact:true})).toHaveCount(0);
+ await page.getByRole('button',{name:'Start another workout',exact:true}).click();
+ await page.getByRole('button',{name:'Start temporary workout',exact:true}).click();
+ page.once('dialog',dialog=>dialog.accept());await page.getByRole('button',{name:'Abandon workout',exact:true}).click();await expect(page.getByRole('status')).toHaveText('Workout abandoned');
+ await expect(page.getByRole('button',{name:'Remove saved set',exact:true})).toHaveCount(0);await expect(page.getByRole('button',{name:'Remove exercise',exact:true})).toHaveCount(0);
 });
