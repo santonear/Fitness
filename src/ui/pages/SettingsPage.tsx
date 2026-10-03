@@ -44,7 +44,7 @@ export function SettingsPage() {
     void profileService.setLocale(i18n.resolvedLanguage === 'zh' ? 'zh' : 'en').then(async p => {
       const rows = await bodyWeightService.listBodyWeights();
       if (active) { applyProfile(p); setWeights(rows); }
-    }).catch(e => { if (active) setError(String(e)); });
+    }).catch(e => { if (active) setError(e instanceof DomainError ? `${e.code}: ${e.message}` : String(e)); });
     return () => { active = false; };
   }, [i18n, i18n.resolvedLanguage]);
   async function run(operation: () => Promise<void>) { setBusy(true); setError(''); setStatus(''); try { await operation(); } catch(e) { setError(e instanceof DomainError ? `${e.code}: ${e.message}` : String(e)); } finally { setBusy(false); } }

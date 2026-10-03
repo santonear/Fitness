@@ -48,7 +48,9 @@ export function createWorkoutService(repo:Repository) {
  async function adjustWorkout(id:string,command:Adjustment,revision:number){return repo.write(async()=>{
   const session=await writable(id,revision);const list=[...session.exerciseSnapshots];
   if(command.type==='add_exercise'){
-   if(list.some(e=>e.exerciseInstanceId===command.exerciseInstanceId))invalid('Exercise identity exists');list.push(snapshot(command.exerciseId,list.length,command.exerciseInstanceId));
+   if(list.some(e=>e.exerciseInstanceId===command.exerciseInstanceId))invalid('Exercise identity exists');
+   const order=list.reduce((next,exercise)=>Math.max(next,exercise.order+1),0);
+   list.push(snapshot(command.exerciseId,order,command.exerciseInstanceId));
   }else if(command.type==='remove_set'){
    const set=await db.sets.get(command.setId);if(!set||set.sessionId!==id)invalid('Set not found');if(!command.confirmDeleteRecords)invalid('Confirm deleting saved records');await db.sets.delete(set.id);
   }else{
@@ -57,7 +59,10 @@ export function createWorkoutService(repo:Repository) {
    if(command.type==='add_set'){
     if(await db.sets.get(command.setId))invalid('Set identity already exists');const now=new Date().toISOString();await db.sets.add(setRecordSchema.parse({id:command.setId,sessionId:id,exerciseInstanceId:exercise.exerciseInstanceId,order:sets.reduce((max,s)=>Math.max(max,s.order+1),0),metricType:exercise.metricType,completed:false,createdAt:now,updatedAt:now,revision:0}));
    }else if(command.type==='remove_exercise'){
-    if(sets.length&&!command.confirmDeleteRecords)invalid('Confirm deleting saved records');await db.sets.bulkDelete(sets.map(s=>s.id));list.splice(index,1);
+    if(sets.length&&!command.confirmDeleteRecords)invalid('Confirm deleting saved records');
+    await db.sets.bulkDelete(sets.map(s=>s.id));
+    await db.timers.where('sessionId').equals(id).filter(timer=>timer.exerciseInstanceId===exercise.exerciseInstanceId).delete();
+    list.splice(index,1);
    }else{
     const replacement=snapshot(command.exerciseId,exercise.order,exercise.exerciseInstanceId);
     if(replacement.metricType!==exercise.metricType){
@@ -72,7 +77,7 @@ export function createWorkoutService(repo:Repository) {
   const old=await db.sessions.get(id);if(old?.status===status)return old;const session=await writable(id,revision);
   if(status==='completed'){
    const sets=await db.sets.where('sessionId').equals(id).toArray();if(!sets.some(s=>s.completed&&setRecordSchema.safeParse(s).success))throw new DomainError('EMPTY_WORKOUT','Record at least one valid completed set');
-   if(session.planVersionId&&session.plannedDayId){const schedules=await db.scheduledWorkouts.where('planVersionId').equals(session.planVersionId).toArray();const row=schedules.find(r=>r.plannedDayId===session.plannedDayId);if(!row||row.completedSessionId)invalid('Scheduled workout is already completed or missing');await db.scheduledWorkouts.put({...row,completedSessionId:id,revision:row.revision+1,updatedAt:new Date().toISOString()});}
+   if(session.planVersionId&&session.plannedDayId){const schedules=await db.scheduledWorkouts.where('planVersionId').equals(session.planVersionId).toArray();const row=schedules.find(r=>r.plannedDayId===session.plannedDayId);if(!row||row.completedSessionId||row.status==='skipped')invalid('Scheduled workout is completed, skipped or missing');await db.scheduledWorkouts.put({...row,completedSessionId:id,revision:row.revision+1,updatedAt:new Date().toISOString()});}
   }return commit({...session,status,...(status==='completed'?{completedAt:new Date().toISOString()}:{})});
  });}
  async function getActiveWorkout(){return db.sessions.where('status').equals('in_progress').first();}

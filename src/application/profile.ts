@@ -17,7 +17,7 @@ export function createProfileService(repo: Repository) {
       const timestamp = new Date().toISOString();
       const profile = localProfileSchema.parse({ id: crypto.randomUUID(), revision: 0, createdAt: timestamp, updatedAt: timestamp, locale, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, units: 'metric' });
       await repo.db.profiles.add(profile);
-      await repo.db.metadata.add({ localProfileId: profile.id, schemaVersion: 2, catalogVersion: 1, revision: 1, dataRevision: 1 });
+      await repo.db.metadata.add({ localProfileId: profile.id, schemaVersion: 3, catalogVersion: 1, revision: 1, dataRevision: 1 });
       await repo.readMetadata();
       return profile;
     }).catch(storageError);
@@ -35,10 +35,14 @@ export function createProfileService(repo: Repository) {
     });
   }
   async function setLocale(locale: Locale): Promise<LocalProfile> {
+    const requestedGeneration = repo.getGeneration();
     await initialize(locale);
     return repo.db.transaction('rw', repo.db.tables, async () => {
       const current = (await getProfile())!;
       const metadata = await repo.readMetadata();
+      if (requestedGeneration !== undefined && requestedGeneration !== (metadata.restoreGeneration ?? 0)) {
+        throw new DomainError('CONFLICT', 'Local data was replaced; reopen before changing language');
+      }
       repo.assertGeneration(metadata);
       if (current.locale === locale) return current;
       const next = localProfileSchema.parse({ ...current, locale, revision: current.revision + 1, updatedAt: new Date().toISOString() });

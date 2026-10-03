@@ -61,6 +61,7 @@ export const generationMetadataSchema = z.strictObject({
 });
 export const planVersionSchema = z.strictObject({
   ...entityFields, planId: uuidSchema, versionNumber: positive, goalSnapshot: goalSnapshotSchema,
+  startDate: localDateSchema, scheduleTimeZone: timeZoneSchema,
   durationWeeks: positive.max(12), daysPerWeek: positive.max(7), days: z.array(planDaySchema).min(1), generationMetadata: generationMetadataSchema.optional(),
 });
 export const planSchema = z.strictObject({

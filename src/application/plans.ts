@@ -19,7 +19,7 @@ export function createPlanService(repo: Repository) {
    if(ongoing && old?.status==='active') throw new DomainError('WORKOUT_IN_PROGRESS','Finish or abandon the current training before editing the active plan');
    const now=new Date().toISOString();const id=old?.id??crypto.randomUUID();
    const previous=old?await db.planVersions.get(old.currentVersionId):undefined;
-   const parsed=planVersionSchema.safeParse({id:crypto.randomUUID(),planId:id,createdAt:now,updatedAt:now,revision:0,versionNumber:(previous?.versionNumber??0)+1,goalSnapshot:input.goalSnapshot,durationWeeks:input.durationWeeks,daysPerWeek:input.daysPerWeek,days:input.days,generationMetadata:input.generationMetadata});
+   const parsed=planVersionSchema.safeParse({id:crypto.randomUUID(),planId:id,createdAt:now,updatedAt:now,revision:0,versionNumber:(previous?.versionNumber??0)+1,goalSnapshot:input.goalSnapshot,startDate:input.startDate,scheduleTimeZone:input.scheduleTimeZone,durationWeeks:input.durationWeeks,daysPerWeek:input.daysPerWeek,days:input.days,generationMetadata:input.generationMetadata});
    if(!parsed.success) throw new DomainError('INVALID','Invalid plan exercises, targets, or cycle');
    const version=parsed.data;
    for(const day of version.days)for(const exercise of day.exercises){
@@ -48,6 +48,7 @@ export function createPlanService(repo: Repository) {
    const row=await db.scheduledWorkouts.get(id);if(!row || row.revision!==revision)throw new DomainError('CONFLICT','Schedule changed');
    if(row.completedSessionId)throw new DomainError('SESSION_READ_ONLY','Completed training is read only');
    if(date!==undefined && !localDateSchema.safeParse(date).success)throw new DomainError('INVALID','Invalid date');
+   if(date===undefined && await db.sessions.where('status').equals('in_progress').filter(session=>session.planVersionId===row.planVersionId&&session.plannedDayId===row.plannedDayId).count())throw new DomainError('WORKOUT_IN_PROGRESS','Finish or abandon this training before skipping it');
    await db.scheduledWorkouts.put({...row,scheduledDate:date??row.scheduledDate,status:date===undefined?'skipped':'pending',revision:row.revision+1,updatedAt:new Date().toISOString()});
   });
  }

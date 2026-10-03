@@ -8,6 +8,7 @@ import { synchronizeTrainingMemo } from './training-memory';
 
 export const MAX_BACKUP_BYTES = 10 * 1024 * 1024;
 export const restoreChannelName = 'fitness-library-replaced';
+export const restoreEventName = 'fitness-library-restored';
 export function restoreStorageKey(databaseName: string): string {
   return `${restoreChannelName}:${databaseName}`;
 }
@@ -29,8 +30,9 @@ function validateSnapshot(snapshot: ExerciseSnapshot): void {
       JSON.stringify(snapshot.allowedMetrics) !== JSON.stringify(catalog.allowedMetrics) ||
       snapshot.targetSets.some(target => target.metricType !== catalog.metricType)) invalid('Exercise snapshot does not match catalog metrics');
 }
-function validateVersion(version: PlanVersion, startDate: string, timeZone: string): void {
-  try { expandSchedule(version, startDate, timeZone); }
+function validateVersion(version: PlanVersion): void {
+  validDate(version.startDate);
+  try { expandSchedule(version, version.startDate, version.scheduleTimeZone); }
   catch { invalid('Invalid plan calendar'); }
   for (const day of version.days) {
     distinct(day.exercises.map(exercise => String(exercise.order)), 'planned exercise order');
@@ -68,7 +70,7 @@ export function validateBackupEnvelope(value: unknown): BackupEnvelope {
   if (!parsed.success) throw new DomainError('BACKUP_INVALID', `Invalid backup: ${parsed.error.message}`);
   const envelope = parsed.data;
   const data = envelope.data;
-  if (envelope.catalogVersion !== 1 || data.metadata.catalogVersion !== 1 || data.metadata.schemaVersion !== 2 || data.trainingMemo.schemaVersion !== 1) {
+  if (envelope.catalogVersion !== 1 || data.metadata.catalogVersion !== 1 || data.metadata.schemaVersion !== 3 || data.trainingMemo.schemaVersion !== 1) {
     throw new DomainError('BACKUP_VERSION_UNSUPPORTED', 'Unsupported catalog, metadata or memo version');
   }
   for (const [label, rows] of Object.entries(data)) {
@@ -83,12 +85,14 @@ export function validateBackupEnvelope(value: unknown): BackupEnvelope {
   for (const plan of data.plans) {
     validDate(plan.startDate);
     if (versions.get(plan.currentVersionId)?.planId !== plan.id) invalid('Current plan version not found');
+    const current = versions.get(plan.currentVersionId)!;
+    if (current.startDate !== plan.startDate || current.scheduleTimeZone !== plan.scheduleTimeZone) invalid('Current plan calendar differs from its version');
   }
   distinct(data.planVersions.map(version => `${version.planId}:${version.versionNumber}`), 'plan version number');
   for (const version of data.planVersions) {
     const plan = plans.get(version.planId);
     if (!plan) invalid('Plan version parent not found');
-    validateVersion(version, plan.startDate, plan.scheduleTimeZone);
+    validateVersion(version);
   }
   for (const set of data.sets) if (!sessions.has(set.sessionId)) invalid('Set workout not found');
   for (const session of data.sessions) validateSession(session, data.sets.filter(set => set.sessionId === session.id), versions);
@@ -102,11 +106,8 @@ export function validateBackupEnvelope(value: unknown): BackupEnvelope {
     if (!version || !day) invalid('Scheduled plan day not found');
     const weekday = new Date(`${row.originalDate}T00:00:00Z`).getUTCDay() || 7;
     if (weekday !== day.dayOfWeek) invalid('Original schedule date does not match plan weekday');
-    const plan = plans.get(version.planId)!;
-    if (plan.currentVersionId === version.id) {
-      const original = expandSchedule(version, plan.startDate, plan.scheduleTimeZone).find(entry => entry.plannedDayId === row.plannedDayId);
-      if (original?.originalDate !== row.originalDate) invalid('Original schedule date does not match plan calendar');
-    }
+    const original = expandSchedule(version, version.startDate, version.scheduleTimeZone).find(entry => entry.plannedDayId === row.plannedDayId);
+    if (original?.originalDate !== row.originalDate) invalid('Original schedule date does not match plan calendar');
     if (row.completedSessionId) {
       const session = sessions.get(row.completedSessionId);
       if (!session || session.status !== 'completed' || session.planVersionId !== row.planVersionId || session.plannedDayId !== row.plannedDayId || row.status !== 'pending') invalid('Completed schedule reference is invalid');
@@ -142,7 +143,7 @@ export function validateBackupEnvelope(value: unknown): BackupEnvelope {
       if (entry.planVersionSnapshot.id !== entry.session.planVersionId) invalid('Memo plan version mismatch');
       const plan = plans.get(entry.planVersionSnapshot.planId);
       if (!plan || !versions.has(entry.planVersionSnapshot.id)) invalid('Memo plan provenance not found');
-      validateVersion(entry.planVersionSnapshot, plan.startDate, plan.scheduleTimeZone);
+      validateVersion(entry.planVersionSnapshot);
       memoVersions.set(entry.planVersionSnapshot.id, entry.planVersionSnapshot);
     }
     validateSession(entry.session, entry.sets, memoVersions);
@@ -182,8 +183,11 @@ export function createBackupService(repo: Repository) {
 
   async function validateBackup(file: File): Promise<ValidatedBackup> {
     if (file.size > MAX_BACKUP_BYTES) throw new DomainError('BACKUP_TOO_LARGE', 'Backup exceeds the 10 MB import limit');
+    let text: string;
+    try { text = await file.text(); }
+    catch (reason) { throw new DomainError('BACKUP_INVALID', `Cannot read backup file: ${String(reason)}. Select an accessible local file and try again.`); }
     let value: unknown;
-    try { value = JSON.parse(await file.text()); }
+    try { value = JSON.parse(text); }
     catch { throw new DomainError('BACKUP_INVALID', 'Backup is not valid JSON'); }
     return { envelope: validateBackupEnvelope(value), expectedRevision: (await repo.readMetadata()).dataRevision };
   }
@@ -215,6 +219,8 @@ export function createBackupService(repo: Repository) {
       await repo.db.trainingMemo.put(data.trainingMemo);
       await synchronizeTrainingMemo(repo);
     }, input.expectedRevision);
+    // Synchronous observers remove stale forms before this repository adopts the new generation.
+    if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent(restoreEventName, { detail: { databaseName: repo.db.name } }));
     repo.adoptGeneration(committedGeneration);
     try {
       localStorage.setItem(restoreStorageKey(repo.db.name), JSON.stringify({ generation: committedGeneration, eventId: crypto.randomUUID() }));

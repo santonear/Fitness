@@ -22,11 +22,16 @@ export function createRepository(db: FitnessDatabase) {
   function adoptGeneration(generation: number): void {
     observedGeneration = generation;
   }
+  function getGeneration(): number | undefined { return observedGeneration; }
   // Whole-store scope serializes application writes with future whole-library import.
   async function write<T>(operation: () => Promise<T>, expectedDataRevision?: number): Promise<T> {
+    const requestedGeneration = observedGeneration;
     try {
       return await db.transaction('rw', db.tables, async () => {
         const before = await readMetadata();
+        if (requestedGeneration !== undefined && requestedGeneration !== (before.restoreGeneration ?? 0)) {
+          throw new DomainError('CONFLICT', 'Local data was replaced; reopen the form before saving');
+        }
         assertGeneration(before);
         if (expectedDataRevision !== undefined && before.dataRevision !== expectedDataRevision) throw new DomainError('CONFLICT', 'Data changed; reload before saving');
         const result = await operation();
@@ -36,7 +41,7 @@ export function createRepository(db: FitnessDatabase) {
       });
     } catch (error) { return storageError(error); }
   }
-  return { db, readMetadata, write, assertGeneration, adoptGeneration };
+  return { db, readMetadata, write, assertGeneration, adoptGeneration, getGeneration };
 }
 export type Repository = ReturnType<typeof createRepository>;
 export const repository = createRepository(database);

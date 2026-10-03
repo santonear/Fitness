@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "build": "vite build",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "check": "npm run typecheck && npm test && npm run build"
   },
   "dependencies": {
     "dexie": "4.4.6",

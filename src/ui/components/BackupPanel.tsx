@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { backupService } from '../../application/backup';
 import { DomainError } from '../../domain/errors';
 import type { ValidatedBackup } from '../../domain/models';
-import { languageKey } from '../../i18n';
 
 function download(blob: Blob): void {
   const url = URL.createObjectURL(blob);
@@ -70,9 +69,6 @@ export function BackupPanel() {
           <label><input type="checkbox" disabled={busy} checked={confirmed} onChange={event => setConfirmed(event.target.checked)} />{zh ? '我确认替换全部本地数据' : 'I confirm replacing all local data'}</label>
           <button disabled={busy || !exported || !kept || !confirmed} onClick={() => void run(async () => {
             await backupService.importBackup(preview, { backupExported: exported && kept, replacementConfirmed: confirmed, expectedRevision: preview.expectedRevision });
-            try { localStorage.setItem(languageKey, preview.envelope.data.profiles[0].locale); }
-            catch { /* Imported profile remains the authoritative language after restore. */ }
-            window.location.reload();
           })}>{zh ? '替换本地数据' : 'Replace local data'}</button>
         </>
       )}

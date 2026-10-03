@@ -7,7 +7,7 @@ const timestamp = '2026-10-03T00:00:00Z';
 const envelope = {
   format: 'fitness-local', schemaVersion: 2, catalogVersion: 1, exportedAt: timestamp,
   data: {
-    metadata: { schemaVersion: 2, catalogVersion: 1, localProfileId: profileId, revision: 1, dataRevision: 1 },
+    metadata: { schemaVersion: 3, catalogVersion: 1, localProfileId: profileId, revision: 1, dataRevision: 1 },
     profiles: [{ id: profileId, revision: 0, createdAt: timestamp, updatedAt: timestamp, locale: 'en', timeZone: 'UTC', units: 'metric' }],
     plans: [], planVersions: [], sessions: [], sets: [], scheduledWorkouts: [], bodyWeights: [], timers: [], aiMemoryNotes: [],
     trainingMemo: { schemaVersion: 1, revision: 0, sourceRevision: 1, updatedAt: timestamp, sessions: [] },
@@ -37,7 +37,7 @@ describe('JSON backup contract', () => {
         plannedDayId: dayId, originalExerciseSnapshots: [], exerciseSnapshots: [] },
       sets: [],
       planVersionSnapshot: { id: versionId, planId: '00000000-0000-4000-8000-000000000006', revision: 0, createdAt: timestamp,
-        updatedAt: timestamp, versionNumber: 1, goalSnapshot: { goal: 'Training' }, durationWeeks: 1, daysPerWeek: 2,
+        updatedAt: timestamp, versionNumber: 1, startDate: '2026-10-03', scheduleTimeZone: 'UTC', goalSnapshot: { goal: 'Training' }, durationWeeks: 1, daysPerWeek: 2,
         days: [{ dayId, weekIndex: 1, dayOfWeek: 6, exercises: [{ exerciseId: 'd16325d9-fc00-4c41-88a1-000000000001', order: 0,
           targetSets: [{ metricType: 'reps_load', reps: 10, loadGrams: 2000 }] }] }] },
     };
