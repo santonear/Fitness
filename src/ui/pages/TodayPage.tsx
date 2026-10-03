@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { liveQuery } from 'dexie';
 import { workoutService } from '../../application/workouts';
 import { WorkoutPage } from './WorkoutPage';
 
@@ -10,8 +11,14 @@ export function TodayPage() {
   const [ongoing, setOngoing] = useState(false);
   const [error, setError] = useState('');
   useEffect(() => {
-    void workoutService.getActiveWorkout().then(session => setOngoing(Boolean(session)))
-      .catch(reason => setError((reason as Error).message));
+    const subscription = liveQuery(() => workoutService.getActiveWorkout()).subscribe({
+      next: session => {
+        setOngoing(Boolean(session));
+        setError('');
+      },
+      error: reason => setError((reason as Error).message),
+    });
+    return () => subscription.unsubscribe();
   }, []);
   return (
     <>
