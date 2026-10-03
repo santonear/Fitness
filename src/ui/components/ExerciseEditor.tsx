@@ -9,14 +9,13 @@ interface Props {
   sessionId: string;
   exercise: ExerciseSnapshot;
   sets: SetRecord[];
-  sessionRevision: number;
   locale: Locale;
   busy: boolean;
   onSave: (input: SetInput) => Promise<void>;
   onAdjust: (command: Adjustment, message?: string) => Promise<void>;
 }
 
-export function ExerciseEditor({ sessionId, exercise, sets, sessionRevision, locale, busy, onSave, onAdjust }: Props) {
+export function ExerciseEditor({ sessionId, exercise, sets, locale, busy, onSave, onAdjust }: Props) {
   const zh = locale === 'zh';
   const nextOrder = sets.reduce((max, set) => Math.max(max, set.order + 1), 0);
 
@@ -56,7 +55,7 @@ export function ExerciseEditor({ sessionId, exercise, sets, sessionRevision, loc
           <button disabled={busy} onClick={() => removeSet(set.id)}>{zh ? '删除已保存组' : 'Remove saved set'}</button>
         </div>
       ))}
-      <SetForm key={`${exercise.exerciseInstanceId}-${sessionRevision}`} sessionId={sessionId} exercise={exercise} locale={locale} busy={busy} order={nextOrder} onSave={onSave} />
+      <SetForm key={`${sessionId}-${exercise.exerciseInstanceId}-${exercise.exerciseId}-${sets.map(set => set.id).sort().join(',')}`} sessionId={sessionId} exercise={exercise} locale={locale} busy={busy} order={nextOrder} onSave={onSave} />
       <label>
         {zh ? '替换动作' : 'Replace exercise'}
         <select value={exercise.exerciseId} disabled={busy} onChange={event => replace(event.target.value)}>

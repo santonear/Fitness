@@ -6,6 +6,20 @@ import { expandSchedule } from '../domain/calendar';
 import { exercises } from '../catalog/exercises';
 export function createPlanService(repo: Repository) {
  const db=repo.db;
+ async function renamePlan(id: string, name: string, expectedRevision: number): Promise<Plan> {
+  return repo.write(async () => {
+   const plan = await db.plans.get(id);
+   if (!plan || plan.deletedAt) throw new DomainError('INVALID', 'Plan not found or deleted');
+   if (plan.revision !== expectedRevision) throw new DomainError('CONFLICT', 'Plan changed; reload before saving');
+   if (plan.status === 'active' && await db.sessions.where('status').equals('in_progress').count()) {
+    throw new DomainError('WORKOUT_IN_PROGRESS', 'Finish or abandon the current training before editing the active plan');
+   }
+   const updated = planSchema.safeParse({ ...plan, name, revision: plan.revision + 1, updatedAt: new Date().toISOString() });
+   if (!updated.success) throw new DomainError('INVALID', 'Invalid plan name');
+   await db.plans.put(updated.data);
+   return updated.data;
+  });
+ }
  async function archiveOthers(id:string,now:string) {
   for(const plan of await db.plans.where('status').equals('active').toArray()) if(plan.id!==id) await db.plans.put({...plan,status:'archived',updatedAt:now,revision:plan.revision+1});
  }
@@ -79,7 +93,7 @@ export function createPlanService(repo: Repository) {
    }
   });
  }
- return {savePlan,activateDraftPlan,rescheduleWorkout,skipWorkout,deletePlan};
+ return {savePlan,renamePlan,activateDraftPlan,rescheduleWorkout,skipWorkout,deletePlan};
 }
 export const planService=createPlanService(repository);
 export const {savePlan,activateDraftPlan,rescheduleWorkout,skipWorkout}=planService;

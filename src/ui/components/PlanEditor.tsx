@@ -9,10 +9,11 @@ type PlanEditorProps = {
   editing?: { plan: Plan; version: PlanVersion };
   busy: boolean;
   onSave: (input: PlanInput, revision?: number) => Promise<void>;
+  onRename: (name: string, revision: number) => Promise<void>;
   onCancel: () => void;
 };
 
-export function PlanEditor({ locale, editing, busy, onSave, onCancel }: PlanEditorProps) {
+export function PlanEditor({ locale, editing, busy, onSave, onRename, onCancel }: PlanEditorProps) {
   const zh = locale === 'zh';
   const [name, setName] = useState('');
   const [start, setStart] = useState(new Date().toLocaleDateString('en-CA'));
@@ -27,6 +28,12 @@ export function PlanEditor({ locale, editing, busy, onSave, onCancel }: PlanEdit
     targetSets: [{ metricType: 'reps', reps: 10 }],
   };
   const [items, setItems] = useState<PlannedExercise[]>([defaultExercise]);
+  const originalWeekdays = editing?.version.days.filter(day => day.weekIndex === 1).map(day => day.dayOfWeek).sort() ?? [];
+  const restricted = Boolean(editing && (
+    editing.version.days.some(day => JSON.stringify(day.exercises) !== JSON.stringify(editing.version.days[0].exercises)) ||
+    Array.from({ length: editing.version.durationWeeks }, (_, index) => index + 1).some(week =>
+      JSON.stringify(editing.version.days.filter(day => day.weekIndex === week).map(day => day.dayOfWeek).sort()) !== JSON.stringify(originalWeekdays))
+  ));
 
   useEffect(() => {
     setError('');
@@ -57,6 +64,15 @@ export function PlanEditor({ locale, editing, busy, onSave, onCancel }: PlanEdit
   async function submit(event: FormEvent) {
     event.preventDefault();
     setError('');
+    if (editing && (restricted || (
+      start === editing.plan.startDate && zone === editing.plan.scheduleTimeZone && weeks === String(editing.version.durationWeeks) &&
+      JSON.stringify([...weekdays].sort()) === JSON.stringify(originalWeekdays) &&
+      JSON.stringify(items) === JSON.stringify(editing.version.days[0].exercises) &&
+      status === (editing.plan.status === 'draft' ? 'draft' : 'active')
+    ))) {
+      await onRename(name, editing.plan.revision);
+      return;
+    }
     const durationWeeks = Number(weeks);
     if (!Number.isInteger(durationWeeks) || durationWeeks < 1 || durationWeeks > 12 || !weekdays.length) {
       throw new DomainError('INVALID', 'Select 1–12 weeks and at least one weekday');
@@ -70,10 +86,11 @@ export function PlanEditor({ locale, editing, busy, onSave, onCancel }: PlanEdit
     await onSave({
       id: editing?.plan.id,
       name,
-      source: 'manual',
+      source: editing?.plan.source ?? 'manual',
       startDate: start,
       scheduleTimeZone: zone,
       goalSnapshot: editing?.version.goalSnapshot ?? { goal: '' },
+      generationMetadata: editing?.version.generationMetadata,
       durationWeeks,
       daysPerWeek: weekdays.length,
       days,
@@ -93,13 +110,17 @@ export function PlanEditor({ locale, editing, busy, onSave, onCancel }: PlanEdit
       <fieldset disabled={busy}>
         <legend>{zh ? '手动计划' : 'Manual plan'}</legend>
         <p className="muted">
-          {zh ? '无需填写目标、身高或体重。各训练日重复下面的动作和逐组目标。'
-            : 'No goal, height, or weight required. Each selected day repeats these exercises and per-set targets.'}
+          {restricted
+            ? (zh ? '此计划包含不同训练日或周的内容，当前仅支持修改名称。课表、已有日程调整和历史将保留。'
+              : 'This plan has different days or weeks. Only its name can be edited here; its contents, schedule adjustments and history are preserved.')
+            : (zh ? '无需填写目标、身高或体重。各训练日重复下面的动作和逐组目标。'
+              : 'No goal, height, or weight required. Each selected day repeats these exercises and per-set targets.')}
         </p>
         <label>
           {zh ? '计划名称' : 'Plan name'}
           <input required value={name} onChange={event => setName(event.target.value)} />
         </label>
+        <fieldset disabled={restricted}>
         <label>
           {zh ? '开始日期' : 'Start date'}
           <input required type="date" value={start} onChange={event => setStart(event.target.value)} />
@@ -189,6 +210,7 @@ export function PlanEditor({ locale, editing, busy, onSave, onCancel }: PlanEdit
         <button type="button" onClick={() => setItems([...items, structuredClone(defaultExercise)])}>
           {zh ? '添加动作' : 'Add exercise'}
         </button>
+        </fieldset>
         <button type="submit">{zh ? '保存计划' : 'Save plan'}</button>
         {editing && <button type="button" onClick={onCancel}>{zh ? '取消编辑' : 'Cancel edit'}</button>}
       </fieldset>

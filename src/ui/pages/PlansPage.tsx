@@ -51,6 +51,11 @@ export function PlansPage() {
     <>
       <h1>{zh ? '训练计划' : 'Plans'}</h1>
       <PlanEditor locale={locale} editing={editing} busy={busy}
+        onRename={async (name, revision) => {
+          if (!editing) return;
+          await run(() => planService.renamePlan(editing.plan.id, name, revision));
+          setEditing(undefined);
+        }}
         onCancel={() => setEditing(undefined)} onSave={async (input, revision) => {
           await run(() => planService.savePlan(input, revision));
           setEditing(undefined);

@@ -144,7 +144,7 @@ export function WorkoutPage({ dashboard = false }: { dashboard?: boolean }) {
         {session.exerciseSnapshots.map(exercise => (
           <ExerciseEditor key={exercise.exerciseInstanceId} sessionId={session.id} exercise={exercise}
             sets={sets.filter(set => set.exerciseInstanceId === exercise.exerciseInstanceId)}
-            sessionRevision={session.revision} locale={locale} busy={busy}
+            locale={locale} busy={busy}
             onSave={input => run(() => workoutService.recordSet(session.id, input, session.revision), zh ? '组已保存' : 'Set saved')}
             onAdjust={(command, status) => run(() => workoutService.adjustWorkout(session.id, command, session.revision), status)} />
         ))}
