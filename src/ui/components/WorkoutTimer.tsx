@@ -13,7 +13,18 @@ export function WorkoutTimer({sessionId,exerciseInstanceId,locale,busy,onCandida
  const audio=useRef<HTMLAudioElement|null>(null),announced=useRef(''),locked=useRef(false);
  useEffect(()=>{
   let live=true;
-  void timerService.listTimers(sessionId).then(rows=>{if(!live)return;const own=rows.filter(t=>t.exerciseInstanceId===exerciseInstanceId);setTimers(own);setCurrent(own.sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt))[0]);setReady(true);}).catch(e=>{if(live)setError(e.message);});
+  void timerService.listTimers(sessionId).then(rows => {
+    if (!live) return;
+    const own = rows.filter(timer => timer.exerciseInstanceId === exerciseInstanceId);
+    const activeTimer = own.find(timer => timer.status === 'running' || timer.status === 'paused');
+    // Status is authoritative when the device clock has moved backwards.
+    const latestInactive = [...own].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0];
+    setTimers(own);
+    setCurrent(activeTimer ?? latestInactive);
+    setReady(true);
+  }).catch(error => {
+    if (live) setError(error.message);
+  });
   const interval=window.setInterval(()=>setNow(Date.now()),250);
   return ()=>{live=false;window.clearInterval(interval);};
  },[sessionId,exerciseInstanceId]);
@@ -24,22 +35,50 @@ export function WorkoutTimer({sessionId,exerciseInstanceId,locale,busy,onCandida
   const key=`${current.id}-${current.revision}`;if(announced.current===key)return;announced.current=key;
   if(sound&&audio.current)void audio.current.play().catch(()=>setSoundFailed(true));
  },[current,display.finished,display.clockReversed,sound]);
- async function change(event:TimerEvent,kind=current?.kind??'exercise'){
-  if(locked.current)return;locked.current=true;setSaving(true);setError('');setMessage('');
-  try{
-   const at=Date.now();let previous=timers.find(t=>t.kind===kind);
-   if(event.type==='start'&&kind==='rest'&&(!/^\d+$/.test(rest)||!Number.isSafeInteger(Number(rest)*1000)||Number(rest)<=0))throw new Error(zh?'休息秒数需为正整数':'Rest seconds must be a positive integer');
-   const timestamp=new Date(at).toISOString();
-   const initial:TimerState={id:crypto.randomUUID(),sessionId,exerciseInstanceId,kind,status:'idle',accumulatedMs:0,createdAt:timestamp,updatedAt:timestamp,revision:0};
-   const base=previous??initial;
-   const candidate=transitionTimer({...base,...(kind==='rest'&&event.type==='start'?{targetMs:Number(rest)*1000}:{})},event,at);
-   const next={...candidate,revision:previous?candidate.revision:0};
-   await timerService.saveTimer(next);
-   setTimers(rows=>[...rows.filter(t=>t.id!==next.id),next]);setCurrent(next);setNow(at);setMessage(zh?'计时已保存':'Timer saved');
-   if(event.type==='start'){setReversed(false);setSoundFailed(false);announced.current='';}
-   if(event.type==='stop'&&kind==='exercise')onCandidate?.(String(Math.floor(next.accumulatedMs/1000)));
-  }catch(e){setError(`${(e as {code?:string}).code??'INVALID'}: ${(e as Error).message}`);}
-  finally{locked.current=false;setSaving(false);}
+ async function change(event: TimerEvent, kind = current?.kind ?? 'exercise') {
+  if (locked.current) return;
+  locked.current = true;
+  setSaving(true);
+  setError('');
+  setMessage('');
+  try {
+    const at = Date.now();
+    const previous = timers.find(timer => timer.kind === kind);
+    if (event.type === 'start' && kind === 'rest' && (
+      !/^\d+$/.test(rest) || !Number.isSafeInteger(Number(rest) * 1000) || Number(rest) <= 0
+    )) {
+      throw new Error(zh ? '休息秒数需为正整数' : 'Rest seconds must be a positive integer');
+    }
+    const timestamp = new Date(at).toISOString();
+    const initial: TimerState = {
+      id: crypto.randomUUID(), sessionId, exerciseInstanceId, kind, status: 'idle', accumulatedMs: 0,
+      createdAt: timestamp, updatedAt: timestamp, revision: 0,
+    };
+    const base = previous ?? initial;
+    const candidate = transitionTimer({
+      ...base,
+      ...(kind === 'rest' && event.type === 'start' ? { targetMs: Number(rest) * 1000 } : {}),
+    }, event, at);
+    const next = { ...candidate, revision: previous ? candidate.revision : 0 };
+    await timerService.saveTimer(next);
+    setTimers(rows => [...rows.filter(timer => timer.id !== next.id), next]);
+    setCurrent(next);
+    setNow(at);
+    setMessage(zh ? '计时已保存' : 'Timer saved');
+    if (event.type === 'start') {
+      setReversed(false);
+      setSoundFailed(false);
+      announced.current = '';
+    }
+    if (event.type === 'stop' && kind === 'exercise') {
+      onCandidate?.(String(Math.floor(next.accumulatedMs / 1000)));
+    }
+  } catch (error) {
+    setError(`${(error as { code?: string }).code ?? 'INVALID'}: ${(error as Error).message}`);
+  } finally {
+    locked.current = false;
+    setSaving(false);
+  }
  }
  const active=current?.status==='running'||current?.status==='paused';
  const disabled=busy||saving||!ready;

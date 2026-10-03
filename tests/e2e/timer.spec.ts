@@ -1,5 +1,24 @@
 import { test, expect } from '@playwright/test';
 test.use({locale:'en-US'});
+test('refresh restores the active exercise timer when the clock precedes an older stopped rest timer',async({page})=>{
+ await page.goto('/');await page.getByRole('button',{name:'Start temporary workout',exact:true}).click();
+ await page.getByRole('button',{name:'Start rest timer',exact:true}).click();
+ await expect(page.getByText('Timer saved',{exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'Stop timer',exact:true}).click();
+ await expect(page.getByText('Timer saved',{exact:true})).toBeVisible();
+ const earlier=Date.now()-3600000;
+ await page.clock.setSystemTime(earlier);
+ await page.getByRole('button',{name:'Start exercise timer',exact:true}).click();
+ await expect(page.getByText('Timer saved',{exact:true})).toBeVisible();
+ await page.reload();
+ await expect(page.getByRole('button',{name:'Pause timer',exact:true})).toBeVisible({timeout:5000});
+ await expect(page.getByRole('button',{name:'Start exercise timer',exact:true})).toBeDisabled();
+ await page.getByRole('button',{name:'Pause timer',exact:true}).click();
+ await expect(page.getByText('Timer saved',{exact:true})).toBeVisible();await page.reload();
+ await expect(page.getByRole('button',{name:'Resume timer',exact:true})).toBeVisible({timeout:5000});
+ await page.getByRole('button',{name:'Stop timer',exact:true}).click();
+ await expect(page.getByText('Timer saved',{exact:true})).toBeVisible();
+});
 test('timer writes guard revisions and association without creating training facts',async({page})=>{
  await page.goto('/');
  const result=await page.evaluate(async()=>{const path='/tests/e2e/helpers/timers-browser.ts';return (await import(/* @vite-ignore */ path)).verifyTimerWrites(`fitness-test-timer-${crypto.randomUUID()}`);});
