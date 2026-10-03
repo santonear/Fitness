@@ -105,7 +105,10 @@ export function PlanEditor({ locale, editing, busy, onSave, onRename, onCancel }
 
   return (
     <form onSubmit={event => {
-      void submit(event).catch(reason => setError(`${reason.code ?? 'INVALID'}: ${reason.message}`));
+      void submit(event).catch(reason => setError(reason.code === 'CONFLICT'
+        ? (zh ? '计划已被其他操作更改。你的输入仍保留。请先复制未保存的名称，再刷新页面、重新打开计划后保存。'
+          : 'This plan changed elsewhere. Your input is kept. Copy the unsaved name, reload the page, and reopen the plan before saving.')
+        : `${reason.code ?? 'INVALID'}: ${reason.message}`));
     }}>
       <fieldset disabled={busy}>
         <legend>{zh ? '手动计划' : 'Manual plan'}</legend>

@@ -11,11 +11,12 @@ interface Props {
   sets: SetRecord[];
   locale: Locale;
   busy: boolean;
+  onRecordAttempt: () => void;
   onSave: (input: SetInput) => Promise<void>;
   onAdjust: (command: Adjustment, message?: string) => Promise<void>;
 }
 
-export function ExerciseEditor({ sessionId, exercise, sets, locale, busy, onSave, onAdjust }: Props) {
+export function ExerciseEditor({ sessionId, exercise, sets, locale, busy, onRecordAttempt, onSave, onAdjust }: Props) {
   const zh = locale === 'zh';
   const nextOrder = sets.reduce((max, set) => Math.max(max, set.order + 1), 0);
 
@@ -51,11 +52,11 @@ export function ExerciseEditor({ sessionId, exercise, sets, locale, busy, onSave
       )}
       {sets.map(set => (
         <div key={`${set.id}-${set.revision}`}>
-          <SetForm exercise={exercise} locale={locale} busy={busy} saved={set} onSave={onSave} />
+          <SetForm exercise={exercise} locale={locale} busy={busy} saved={set} onRecordAttempt={onRecordAttempt} onSave={onSave} />
           <button disabled={busy} onClick={() => removeSet(set.id)}>{zh ? '删除已保存组' : 'Remove saved set'}</button>
         </div>
       ))}
-      <SetForm key={`${sessionId}-${exercise.exerciseInstanceId}-${exercise.exerciseId}-${sets.map(set => set.id).sort().join(',')}`} sessionId={sessionId} exercise={exercise} locale={locale} busy={busy} order={nextOrder} onSave={onSave} />
+      <SetForm key={`${sessionId}-${exercise.exerciseInstanceId}-${exercise.exerciseId}-${sets.map(set => set.id).sort().join(',')}`} sessionId={sessionId} exercise={exercise} locale={locale} busy={busy} order={nextOrder} onRecordAttempt={onRecordAttempt} onSave={onSave} />
       <label>
         {zh ? '替换动作' : 'Replace exercise'}
         <select value={exercise.exerciseId} disabled={busy} onChange={event => replace(event.target.value)}>
@@ -74,10 +75,11 @@ interface SetFormProps {
   busy: boolean;
   saved?: SetRecord;
   order?: number;
+  onRecordAttempt: () => void;
   onSave: (input: SetInput) => Promise<void>;
 }
 
-function SetForm({ sessionId, exercise, locale, busy, saved, order = 0, onSave }: SetFormProps) {
+function SetForm({ sessionId, exercise, locale, busy, saved, order = 0, onRecordAttempt, onSave }: SetFormProps) {
   const zh = locale === 'zh';
   const [reps, setReps] = useState(saved?.reps?.toString() ?? '');
   const [load, setLoad] = useState(saved?.loadGrams === undefined ? '' : String(saved.loadGrams / 1000));
@@ -89,6 +91,7 @@ function SetForm({ sessionId, exercise, locale, busy, saved, order = 0, onSave }
 
   function submit(event: FormEvent) {
     event.preventDefault();
+    onRecordAttempt();
     setError('');
     try {
       const metrics = parseActualMetrics(exercise, { reps, load, seconds, km });
@@ -99,7 +102,7 @@ function SetForm({ sessionId, exercise, locale, busy, saved, order = 0, onSave }
   }
 
   return (
-    <form onSubmit={submit}>
+    <form onSubmit={submit} onInvalid={onRecordAttempt}>
       <fieldset disabled={busy}>
         <legend>{saved ? (zh ? '已保存组' : 'Saved set') : (zh ? '下一组' : 'Next set')}</legend>
         {sessionId && !saved && <WorkoutTimer sessionId={sessionId} exerciseInstanceId={exercise.exerciseInstanceId} locale={locale} busy={busy}

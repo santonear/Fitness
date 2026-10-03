@@ -31,7 +31,7 @@ export function PlansPage() {
     void profileService.initialize(locale).then(refresh).catch(reason => setError(reason.message));
   }, []);
 
-  async function run(operation: () => Promise<unknown>, successMessage = zh ? '计划已保存' : 'Plan saved') {
+  async function run(operation: () => Promise<unknown>, successMessage = zh ? '计划已保存' : 'Plan saved', showError = true) {
     setBusy(true);
     setMessage('');
     setError('');
@@ -40,7 +40,8 @@ export function PlansPage() {
       await refresh();
       setMessage(successMessage);
     } catch (reason) {
-      setError(`${(reason as { code?: string }).code ?? 'INVALID'}: ${(reason as Error).message}`);
+      // Editor saves display their own inline error; other page actions keep this alert.
+      if (showError) setError(`${(reason as { code?: string }).code ?? 'INVALID'}: ${(reason as Error).message}`);
       throw reason;
     } finally {
       setBusy(false);
@@ -53,11 +54,11 @@ export function PlansPage() {
       <PlanEditor locale={locale} editing={editing} busy={busy}
         onRename={async (name, revision) => {
           if (!editing) return;
-          await run(() => planService.renamePlan(editing.plan.id, name, revision));
+          await run(() => planService.renamePlan(editing.plan.id, name, revision), undefined, false);
           setEditing(undefined);
         }}
         onCancel={() => setEditing(undefined)} onSave={async (input, revision) => {
-          await run(() => planService.savePlan(input, revision));
+          await run(() => planService.savePlan(input, revision), undefined, false);
           setEditing(undefined);
         }} />
       {error && <p role="alert">{error}</p>}
