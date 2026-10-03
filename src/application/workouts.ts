@@ -29,6 +29,7 @@ export function createWorkoutService(repo:Repository) {
   if(planVersionId||plannedDayId){
    if(!planVersionId||!plannedDayId)invalid('Both plan version and day are required');
    const version=await db.planVersions.get(planVersionId);const day=version?.days.find(d=>d.dayId===plannedDayId);if(!day)invalid('Plan day not found');
+   if((await db.plans.get(version!.planId))?.deletedAt)invalid('This plan was deleted');
    if(input.exerciseIds?.length)invalid('Planned training uses plan snapshots');
    actual=day.exercises.map(e=>({...snapshot(e.exerciseId,e.order),targetSets:structuredClone(e.targetSets),notes:e.notes}));
   }else actual=(input.exerciseIds??[]).map((id,index)=>snapshot(id,index));

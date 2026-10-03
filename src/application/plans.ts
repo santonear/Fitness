@@ -13,6 +13,7 @@ export function createPlanService(repo: Repository) {
   return repo.write(async()=>{
    const old=input.id ? await db.plans.get(input.id):undefined;
    if(input.id && !old) throw new DomainError('INVALID','Plan not found');
+   if(old?.deletedAt) throw new DomainError('INVALID','This plan was deleted');
    if(old && (expectedRevision===undefined || old.revision!==expectedRevision)) throw new DomainError('CONFLICT','Plan changed; reload before saving');
    if(input.status!==undefined && input.status!=='draft' && input.status!=='active') throw new DomainError('INVALID','Invalid plan status');
    const ongoing=await db.sessions.where('status').equals('in_progress').count();
@@ -38,6 +39,7 @@ export function createPlanService(repo: Repository) {
  async function activateDraftPlan(id: string, revision: number): Promise<Plan> {
   return repo.write(async()=>{
    const plan=await db.plans.get(id);if(!plan || plan.revision!==revision)throw new DomainError('CONFLICT','Plan changed');
+   if(plan.deletedAt)throw new DomainError('INVALID','This plan was deleted');
    if(plan.status!=='draft')throw new DomainError('INVALID','Only drafts can be activated');
    if(await db.sessions.where('status').equals('in_progress').count())throw new DomainError('WORKOUT_IN_PROGRESS','Finish or abandon current training first');
    const now=new Date().toISOString();await archiveOthers(id,now);const updated:Plan={...plan,status:'active',revision:plan.revision+1,updatedAt:now};await db.plans.put(updated);return updated;
@@ -46,6 +48,8 @@ export function createPlanService(repo: Repository) {
  async function updateSchedule(id:string,revision:number,date?:LocalDate) {
   await repo.write(async()=>{
    const row=await db.scheduledWorkouts.get(id);if(!row || row.revision!==revision)throw new DomainError('CONFLICT','Schedule changed');
+   const version=await db.planVersions.get(row.planVersionId);
+   if(!version || (await db.plans.get(version.planId))?.deletedAt)throw new DomainError('INVALID','This plan was deleted');
    if(row.completedSessionId)throw new DomainError('SESSION_READ_ONLY','Completed training is read only');
    if(date!==undefined && !localDateSchema.safeParse(date).success)throw new DomainError('INVALID','Invalid date');
    if(date===undefined && await db.sessions.where('status').equals('in_progress').filter(session=>session.planVersionId===row.planVersionId&&session.plannedDayId===row.plannedDayId).count())throw new DomainError('WORKOUT_IN_PROGRESS','Finish or abandon this training before skipping it');
@@ -54,7 +58,28 @@ export function createPlanService(repo: Repository) {
  }
  async function rescheduleWorkout(id:string,date:LocalDate,revision:number):Promise<void>{return updateSchedule(id,revision,date);}
  async function skipWorkout(id:string,revision:number):Promise<void>{return updateSchedule(id,revision);}
- return {savePlan,activateDraftPlan,rescheduleWorkout,skipWorkout};
+ async function deletePlan(id: string, revision: number): Promise<void> {
+  await repo.write(async () => {
+   const plan = await db.plans.get(id);
+   if (!plan || plan.revision !== revision) throw new DomainError('CONFLICT', 'Plan changed; reload before deleting');
+   if (plan.deletedAt) throw new DomainError('INVALID', 'This plan was deleted');
+   const versions = await db.planVersions.where('planId').equals(id).toArray();
+   const versionIds = versions.map(version => version.id);
+   const sessions = await db.sessions.where('planVersionId').anyOf(versionIds).toArray();
+   if (sessions.some(session => session.status === 'in_progress')) {
+    throw new DomainError('WORKOUT_IN_PROGRESS', 'Finish or abandon this training before deleting its plan');
+   }
+   if (sessions.length) {
+    const now = new Date().toISOString();
+    await db.plans.put({ ...plan, status: 'archived', deletedAt: now, updatedAt: now, revision: plan.revision + 1 });
+   } else {
+    await db.scheduledWorkouts.where('planVersionId').anyOf(versionIds).delete();
+    await db.planVersions.bulkDelete(versionIds);
+    await db.plans.delete(id);
+   }
+  });
+ }
+ return {savePlan,activateDraftPlan,rescheduleWorkout,skipWorkout,deletePlan};
 }
 export const planService=createPlanService(repository);
 export const {savePlan,activateDraftPlan,rescheduleWorkout,skipWorkout}=planService;

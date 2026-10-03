@@ -66,7 +66,7 @@ export const planVersionSchema = z.strictObject({
 });
 export const planSchema = z.strictObject({
   ...entityFields, name: z.string().min(1), source: z.enum(['ai', 'manual']), status: z.enum(['draft', 'active', 'archived']),
-  currentVersionId: uuidSchema, startDate: localDateSchema, scheduleTimeZone: timeZoneSchema,
+  currentVersionId: uuidSchema, startDate: localDateSchema, scheduleTimeZone: timeZoneSchema, deletedAt: utcTimestampSchema.optional(),
 });
 export const exerciseSnapshotSchema = exerciseSchema.omit({ steps: true, cautions: true, imageAssetId: true, videoAssetId: true }).extend({
   exerciseInstanceId: uuidSchema, exerciseId: exerciseIdSchema, order: nonnegative, targetSets: z.array(setMetricsSchema), notes: z.string().optional(), originalExerciseId: exerciseIdSchema.optional(),

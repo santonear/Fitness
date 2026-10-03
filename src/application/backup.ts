@@ -80,6 +80,7 @@ export function validateBackupEnvelope(value: unknown): BackupEnvelope {
   if (data.plans.filter(plan => plan.status === 'active').length > 1) invalid('Multiple current plans');
   if (data.sessions.filter(session => session.status === 'in_progress').length > 1) invalid('Multiple ongoing workouts');
   const plans = new Map(data.plans.map(plan => [plan.id, plan]));
+  if (data.plans.some(plan => plan.deletedAt && plan.status !== 'archived')) invalid('Deleted plans must be archived');
   const versions = new Map(data.planVersions.map(version => [version.id, version]));
   const sessions = new Map(data.sessions.map(session => [session.id, session]));
   for (const plan of data.plans) {

@@ -19,7 +19,7 @@ export function PlansPage() {
   const [message, setMessage] = useState('');
 
   async function refresh() {
-    const rows = await database.plans.toArray();
+    const rows = (await database.plans.toArray()).filter(plan => !plan.deletedAt);
     setPlans(rows);
     const active = rows.find(plan => plan.status === 'active');
     setSchedule(active
@@ -31,14 +31,14 @@ export function PlansPage() {
     void profileService.initialize(locale).then(refresh).catch(reason => setError(reason.message));
   }, []);
 
-  async function run(operation: () => Promise<unknown>) {
+  async function run(operation: () => Promise<unknown>, successMessage = zh ? '计划已保存' : 'Plan saved') {
     setBusy(true);
     setMessage('');
     setError('');
     try {
       await operation();
       await refresh();
-      setMessage(zh ? '计划已保存' : 'Plan saved');
+      setMessage(successMessage);
     } catch (reason) {
       setError(`${(reason as { code?: string }).code ?? 'INVALID'}: ${(reason as Error).message}`);
       throw reason;
@@ -76,6 +76,18 @@ export function PlansPage() {
                 {zh ? '启用草稿' : 'Activate draft'}
               </button>
             )}
+            <button disabled={busy} onClick={() => {
+              const confirmed = window.confirm(zh
+                ? `删除计划“${plan.name}”？未使用的计划会彻底删除；已有训练记录仍保留。`
+                : `Delete plan “${plan.name}”? Unused plans will be permanently removed. Existing training records will be preserved.`);
+              if (!confirmed) return;
+              void run(async () => {
+                await planService.deletePlan(plan.id, plan.revision);
+                if (editing?.plan.id === plan.id) setEditing(undefined);
+              }, zh ? '计划已删除，已有训练记录仍保留' : 'Plan deleted. Existing training records are preserved.').catch(() => {});
+            }}>
+              {zh ? '删除' : 'Delete'}
+            </button>
           </li>
         ))}
       </ul>
