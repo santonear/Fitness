@@ -4,6 +4,7 @@ import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { CatalogPage } from './pages/CatalogPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { PlansPage } from './pages/PlansPage';
+import { WorkoutPage } from './pages/WorkoutPage';
 import { profileService } from '../application/profile';
 
 const destinations = [
@@ -67,8 +68,9 @@ export function App(): ReactElement {
       <main id="content" ref={main} tabIndex={-1}>
         <Routes>
           {destinations.map(([name, path]) => (
-            <Route key={name} path={path} element={name === 'exercises' ? <CatalogPage /> : name === 'settings' ? <SettingsPage /> : name === 'plans' ? <PlansPage /> : <EmptyPage destination={name} />} />
+            <Route key={name} path={path} element={name === 'today' ? <WorkoutPage /> : name === 'exercises' ? <CatalogPage /> : name === 'settings' ? <SettingsPage /> : name === 'plans' ? <PlansPage /> : <EmptyPage destination={name} />} />
           ))}
+          <Route path="/workout" element={<WorkoutPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

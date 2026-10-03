@@ -1,0 +1,40 @@
+import { test, expect } from '@playwright/test';
+test.use({ locale: 'en-US' });
+test.setTimeout(20000);
+test('sets survive reload, review returns to editing and completed facts stay readable', async ({ page }) => {
+ await page.goto('/');
+ await page.getByRole('button', { name: 'Start temporary workout', exact: true }).click({timeout:5000});
+ await page.getByLabel('Reps').fill('12');
+ await page.getByLabel('Load (kg)').fill('2.5');
+ await page.getByLabel('Set notes').fill('Last reps felt steady');
+ await page.getByRole('button', { name: 'Record set', exact: true }).click();
+ await expect(page.getByRole('status')).toContainText('Set saved');
+ await page.reload(); await expect(page.getByText('12 reps · 2.5 kg')).toBeVisible();
+ await page.getByRole('button', { name: 'Review completion', exact: true }).click();
+ await page.getByRole('button', { name: 'Return to editing', exact: true }).click();
+ await page.getByRole('button', { name: 'Review completion', exact: true }).click();
+ await page.getByRole('button', { name: 'Confirm completion', exact: true }).click();
+ await expect(page.getByText('Workout completed', { exact: true })).toBeVisible();
+ await page.goto('/settings'); await page.getByRole('button', { name: 'Read full training memo', exact: true }).click();
+ await expect(page.getByRole('region', { name: 'Full training memo' })).toContainText('Last reps felt steady');
+});
+test('two connections serialize starts and revisions; facts, memo and global revision roll back together', async ({ page }) => {
+ await page.goto('/');
+ const result = await page.evaluate(async () => { const path='/tests/e2e/helpers/workouts-browser.ts'; return (await import(/* @vite-ignore */ path)).verifyWorkoutTransactions(`fitness-test-workouts-${crypto.randomUUID()}`); });
+ expect(result).toEqual({ starts:1, conflicts:1, sets:1, memoSets:1, rolledBack:true, completed:true, readonly:true, mismatch:true, replacementConfirmed:true, originalPreserved:true, abandoned:true, rebuilt:true });
+});
+test('planned training links completion and additions preserve immutable plan targets', async ({ page }) => {
+ await page.goto('/plans'); await page.getByLabel('Plan name').fill('Train today');
+ await page.getByLabel('Choose exercise').selectOption('d16325d9-fc00-4c41-88a1-000000000001');
+ await page.getByLabel('Start date').fill('2026-10-03');
+ await page.getByRole('button',{name:'Save plan',exact:true}).click();
+ await expect(page.getByRole('status')).toHaveText('Plan saved');
+ await page.goto('/'); await page.getByRole('button',{name:'Start planned workout',exact:true}).first().click();
+ await page.getByLabel('Reps').fill('8');await page.getByLabel('Load (kg)').fill('0');
+ await page.getByRole('button',{name:'Record set',exact:true}).click();
+ await expect(page.getByRole('status')).toHaveText('Set saved');
+ await page.getByRole('button',{name:'Review completion',exact:true}).click();
+ await page.getByRole('button',{name:'Confirm completion',exact:true}).click();
+ await expect(page.getByRole('status')).toHaveText('Workout completed');
+ await page.goto('/plans');await expect(page.getByRole('list',{name:'Schedule'})).toContainText('completed');
+});

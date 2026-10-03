@@ -4,6 +4,9 @@ import { profileService } from '../../application/profile';
 import { bodyWeightService } from '../../application/body-weight';
 import type { BodyWeightObservation, LocalProfile, TrainingPreferences } from '../../domain/models';
 import { DomainError } from '../../domain/errors';
+import { trainingMemoryService } from '../../application/training-memory';
+import type { TrainingMemo } from '../../domain/models';
+import { TrainingMemoView } from '../components/CompletionReview';
 
 const labels = {
   en: { goal: 'Goal', experience: 'Experience', equipment: 'Available equipment (comma separated)', days: 'Days per week', minutes: 'Session minutes', height: 'Height (cm)', weight: 'Profile weight (kg)', constraints: 'Constraints', weekdays: 'Training weekdays (1–7, comma separated)', location: 'Training location', categories: 'Exercise preferences', zone: 'Time zone', save: 'Save profile', clear: 'Clear preferences', date: 'Observation date', observed: 'Observed weight (kg)', saveWeight: 'Save weight', history: 'Weight history', edit: 'Edit', delete: 'Delete', cancel: 'Cancel edit', saved: 'Profile saved', weightSaved: 'Weight saved', deleted: 'Weight deleted', optional: 'All training preferences are optional. You can use manual training without completing them.', local: 'Data stays in this browser. Browser cleanup can remove it; keep manual backups.' },
@@ -19,6 +22,7 @@ function kgGrams(value: string): number {
   return Math.round(Number(value) * 1000);
 }
 export function SettingsPage() {
+  const [memo, setMemo] = useState<TrainingMemo>();
   const { t, i18n } = useTranslation();
   const l = labels[i18n.resolvedLanguage === 'zh' ? 'zh' : 'en'];
   const [profile, setProfile] = useState<LocalProfile>();
@@ -55,6 +59,8 @@ export function SettingsPage() {
   }
   function submit(e: FormEvent) { e.preventDefault(); void save(); }
   return <><h1>{t('settings')}</h1><p>{l.local}</p><p>{l.optional}</p>
+    <button disabled={!profile || busy} onClick={() => void run(async () => { setMemo(await trainingMemoryService.readTrainingMemo()); })}>{i18n.resolvedLanguage === 'zh' ? '读取全量训练备忘' : 'Read full training memo'}</button>
+    {memo && <TrainingMemoView memo={memo} locale={i18n.resolvedLanguage === 'zh' ? 'zh' : 'en'} />}
     {error && <p role="alert">{error}</p>}<p role="status">{status}</p>
     <form onSubmit={submit}><fieldset disabled={!profile || busy}>
       {Object.keys(blank).map(key => { const k = key as keyof Fields; return <label key={k}>{l[k]}<input value={fields[k]} onChange={e => setFields({ ...fields, [k]: e.target.value })} inputMode={['days','minutes','height','weight'].includes(k) ? 'decimal' : 'text'} /></label>; })}
