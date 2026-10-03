@@ -2,6 +2,8 @@ import { useEffect, useRef, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { CatalogPage } from './pages/CatalogPage';
+import { SettingsPage } from './pages/SettingsPage';
+import { profileService } from '../application/profile';
 
 const destinations = [
   ['today', '/'],
@@ -31,6 +33,12 @@ export function App(): ReactElement {
   const previousPath = useRef(location.pathname);
   const main = useRef<HTMLElement>(null);
   useEffect(() => {
+    const synchronize = () => { void profileService.setLocale(i18n.resolvedLanguage === 'zh' ? 'zh' : 'en').catch(() => { /* Settings reports unavailable persistence; navigation remains usable. */ }); };
+    synchronize();
+    i18n.on('languageChanged', synchronize);
+    return () => { i18n.off('languageChanged', synchronize); };
+  }, [i18n]);
+  useEffect(() => {
     if (previousPath.current !== location.pathname) {
       main.current?.focus();
       previousPath.current = location.pathname;
@@ -58,7 +66,7 @@ export function App(): ReactElement {
       <main id="content" ref={main} tabIndex={-1}>
         <Routes>
           {destinations.map(([name, path]) => (
-            <Route key={name} path={path} element={name === 'exercises' ? <CatalogPage /> : <EmptyPage destination={name} />} />
+            <Route key={name} path={path} element={name === 'exercises' ? <CatalogPage /> : name === 'settings' ? <SettingsPage /> : <EmptyPage destination={name} />} />
           ))}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
