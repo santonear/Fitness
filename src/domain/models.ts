@@ -34,6 +34,7 @@ export type MetricInput =
 export type ProfileInput = Pick<LocalProfile, 'locale' | 'timeZone' | 'units' | 'trainingPreferences'>;
 export type BodyWeightInput = Pick<BodyWeightObservation, 'localDate' | 'timeZone' | 'weightGrams'> & { id?: string };
 export interface PlanInput {
+  status?: 'draft' | 'active';
   id?: string; name: string; source: Plan['source']; startDate: LocalDate; scheduleTimeZone: string;
   goalSnapshot: PlanVersion['goalSnapshot']; durationWeeks: number; daysPerWeek: number;
   days: PlanDay[]; generationMetadata?: PlanVersion['generationMetadata'];
