@@ -109,21 +109,32 @@ export function App(): ReactElement {
   return (
     <div className="app-shell">
       <a className="skip-link" href="#content">{t('skip')}</a>
+      <aside className="app-sidebar">
+        <div className="app-brand"><span className="app-brand-mark" aria-hidden="true">f·</span><span className="brand">{t('brand')}<span aria-hidden="true">.</span></span></div>
+        <p className="app-sidebar-label">{i18n.resolvedLanguage === 'zh' ? '个人训练空间' : 'YOUR WORKSPACE'}</p>
+        <nav aria-label={t('navigation')}>
+          {destinations.map(([name, path], index) => (
+            <NavLink key={name} to={path} end tabIndex={0}>
+              <span className="app-nav-icon" aria-hidden="true" data-icon={['◫', '▤', '◇', '↗', '⚙'][index]} />
+              <span>{t(name)}</span>
+            </NavLink>
+          ))}
+        </nav>
+        <div className="app-sidebar-note">
+          <p>{i18n.resolvedLanguage === 'zh' ? '你的训练，你的空间。' : 'Your training. Your space.'}</p>
+          <p>{i18n.resolvedLanguage === 'zh' ? '无需账号。记录保存在此浏览器，请定期备份。' : 'No account needed. Records stay in this browser. Keep regular backups.'}</p>
+        </div>
+      </aside>
       <header className="app-header">
-        <span className="brand">{t('brand')}</span>
+        <p className="app-breadcrumb"><span>{i18n.resolvedLanguage === 'zh' ? '训练空间' : 'Workspace'}</span><span aria-hidden="true">/</span>{location.pathname === '/workout' ? (i18n.resolvedLanguage === 'zh' ? '今日训练' : 'Today') : t(destinations.find(([, path]) => path === location.pathname)?.[0] ?? 'today')}</p>
         <label className="language-control">
-          {t('language')}
-          <select disabled={restoring} value={i18n.resolvedLanguage ?? 'en'} onChange={(event) => void i18n.changeLanguage(event.target.value)}>
+          <span>{t('language')}</span>
+          <select aria-label={t('language')} disabled={restoring} value={i18n.resolvedLanguage ?? 'en'} onChange={(event) => void i18n.changeLanguage(event.target.value)}>
             <option value="en" lang="en">English</option>
             <option value="zh" lang="zh">中文</option>
           </select>
         </label>
       </header>
-      <nav aria-label={t('navigation')}>
-        {destinations.map(([name, path]) => (
-          <NavLink key={name} to={path} end tabIndex={0}>{t(name)}</NavLink>
-        ))}
-      </nav>
       <main id="content" ref={main} tabIndex={-1}>
         {restoreError && <p role="alert">{restoreError}</p>}
         {restoring ? <p role="status">{i18n.resolvedLanguage === 'zh' ? '正在读取恢复后的本地数据…' : 'Reading restored local data…'}</p> : <Routes key={libraryGeneration}>

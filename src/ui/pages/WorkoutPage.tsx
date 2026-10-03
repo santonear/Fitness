@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { workoutService } from '../../application/workouts';
 import { profileService } from '../../application/profile';
 import { exercises } from '../../catalog/exercises';
@@ -8,7 +8,7 @@ import type { WorkoutSession, SetRecord, Locale, ScheduledWorkout } from '../../
 import { CompletionReview, WorkoutFacts } from '../components/CompletionReview';
 import { ExerciseEditor } from '../components/ExerciseEditor';
 
-export function WorkoutPage() {
+export function WorkoutPage({ dashboard = false }: { dashboard?: boolean }) {
   const { i18n } = useTranslation();
   const locale: Locale = i18n.resolvedLanguage === 'zh' ? 'zh' : 'en';
   const zh = locale === 'zh';
@@ -80,19 +80,53 @@ export function WorkoutPage() {
   );
 
   function workspace() {
-    if (!session) return (
-      <>
-        {exerciseChoice}
-        <button disabled={busy} onClick={() => start()}>{zh ? '开始临时训练' : 'Start temporary workout'}</button>
-        <h2>{zh ? '计划日程' : 'Planned schedule'}</h2>
-        {schedule.filter(row => !requested || row.id === requested).map(row => (
-          <div key={row.id}>
-            {row.originalDate} → {row.scheduledDate}
-            <button disabled={busy} onClick={() => start(row.id)}>{zh ? '开始计划训练' : 'Start planned workout'}</button>
-          </div>
-        ))}
-      </>
-    );
+    if (!session) {
+      const available = schedule.filter(row => !requested || row.id === requested);
+      const selected = exercises.find(exercise => exercise.id === choose)!;
+      const date = new Date();
+      const weekdays = zh ? ['一', '二', '三', '四', '五', '六', '日'] : ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+      const scheduleContent = <>
+        <div className="dashboard-section-heading">
+          <h2>{zh ? '计划日程' : 'Planned schedule'}</h2>
+          {dashboard && <Link className="dashboard-link" to="/plans">{zh ? '查看计划' : 'View plans'} ↗</Link>}
+        </div>
+        {dashboard && <div className="dashboard-week" aria-label={zh ? '本周日历' : 'This week'}>
+          {weekdays.map((day, index) => {
+            const value = new Date(date);
+            value.setDate(date.getDate() - (date.getDay() + 6) % 7 + index);
+            const localDate = `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`;
+            return <div key={index} className={index === (date.getDay() + 6) % 7 ? 'is-today' : ''}>
+              <span>{day}</span><b>{value.getDate()}</b><i className={available.some(row => row.scheduledDate === localDate) ? 'has-session' : ''} />
+            </div>;
+          })}
+        </div>}
+        {available.map(row => <div className="dashboard-schedule-row" key={row.id}>
+          <p>{row.originalDate === row.scheduledDate ? row.scheduledDate : `${row.originalDate} → ${row.scheduledDate}`}</p>
+          <button disabled={busy} onClick={() => start(row.id)}>{zh ? '开始计划训练' : 'Start planned workout'}</button>
+        </div>)}
+        {dashboard && available.length === 0 && <div className="dashboard-schedule-empty">
+          <h3>{zh ? '安排你的训练周' : 'Build your training week'}</h3>
+          <p className="muted">{zh ? '暂无可开始的计划训练。查看计划，安排接下来的练习。' : 'No planned sessions available. View your plans to organize what comes next.'}</p>
+          <Link className="dashboard-secondary-link" to="/plans">{zh ? '查看训练计划' : 'Explore plans'} →</Link>
+        </div>}
+        {dashboard && <p className="dashboard-schedule-note">{zh ? '漏练不会自动改期，可手动安排补练。' : 'Missed sessions are rescheduled manually.'}</p>}
+      </>;
+      return dashboard ? <div className="dashboard-workspace">
+        <section className="dashboard-workout" aria-label={zh ? '今日训练入口' : 'Today’s workout'}>
+          <div className="dashboard-section-heading"><p className="dashboard-eyebrow">{zh ? '今日训练' : 'TODAY’S WORKOUT'}</p><span className="dashboard-badge">{zh ? '临时训练' : 'Temporary workout'}</span></div>
+          <h2>{selected.name[locale]}</h2>
+          <p className="dashboard-workout-meta">{zh ? { strength: '力量', cardio: '有氧', bodyweight: '徒手' }[selected.category] : { strength: 'Strength', cardio: 'Cardio', bodyweight: 'Bodyweight' }[selected.category]}</p>
+          <p className="dashboard-workout-copy">{zh ? '选择一个动作开始训练，逐组记录实际完成值。' : 'Choose an exercise and start a session. Record actual values as you go.'}</p>
+          {exerciseChoice}
+          <button className="dashboard-start" disabled={busy} onClick={() => start()}>{zh ? '开始临时训练' : 'Start temporary workout'} <span aria-hidden="true">→</span></button>
+          <ol className="dashboard-workout-steps">
+            {[zh ? '选择动作' : 'Choose exercise', zh ? '记录组' : 'Record sets', zh ? '核对完成' : 'Review & finish'].map((step, index) => <li key={step}><span aria-hidden="true">{index + 1}</span>{step}</li>)}
+          </ol>
+          <p className="dashboard-workout-note">{zh ? '点击“记录组”后才保存实际值。' : 'Actual values save only when you record a set.'}</p>
+        </section>
+        <section className="dashboard-schedule" aria-label={zh ? '计划日程' : 'Planned schedule'}>{scheduleContent}</section>
+      </div> : <>{exerciseChoice}<button disabled={busy} onClick={() => start()}>{zh ? '开始临时训练' : 'Start temporary workout'}</button>{scheduleContent}</>;
+    }
     if (session.status !== 'in_progress') return (
       <>
         <WorkoutFacts session={session} sets={sets} locale={locale} />
@@ -130,11 +164,11 @@ export function WorkoutPage() {
 
   return (
     <>
-      <h1>{zh ? '今日训练' : 'Today'}</h1>
-      <p className="muted">{zh ? '只有点击记录后，实际值才会保存。' : 'Actual values save when you select Record set.'}</p>
+      {!dashboard && <h1>{zh ? '今日训练' : 'Today'}</h1>}
+      {(!dashboard || session) && <p className="muted">{zh ? '只有点击记录后，实际值才会保存。' : 'Actual values save when you select Record set.'}</p>}
       {error && <p role="alert">{error}</p>}
       <p role="status">{message}</p>
-      {workspace()}
+      <div className={dashboard && session ? 'dashboard-session' : undefined}>{workspace()}</div>
     </>
   );
 }
