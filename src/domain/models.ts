@@ -53,10 +53,29 @@ export type Adjustment =
 export type TimerEvent = { type: 'start' | 'pause' | 'resume' | 'stop' | 'reset' };
 export interface TimerDisplay { elapsedMs: number; remainingMs?: number; finished: boolean; clockReversed: boolean }
 export interface ProgressQuery { from: LocalDate; to: LocalDate; planVersionId?: string; timeZone: string }
-export interface ProgressFacts extends ProgressQuery { sessions: WorkoutSession[]; sets: SetRecord[]; scheduledWorkouts: ScheduledWorkout[]; bodyWeights: BodyWeightObservation[] }
+export interface ProgressFacts extends ProgressQuery {
+  nowMs: number;
+  planTimeZones: Record<string, string>;
+  sessions: WorkoutSession[];
+  sets: SetRecord[];
+  scheduledWorkouts: ScheduledWorkout[];
+  bodyWeights: BodyWeightObservation[];
+}
+export interface ProgressMetrics {
+  reps: number;
+  loadGrams: number;
+  volumeGrams: number;
+  durationSeconds: number;
+  distanceMeters: number | null;
+  missingDistanceSets: number;
+}
 export interface ProgressReport {
   dueCount: number; completedCount: number; completionRate: number | null; history: WorkoutSession[];
-  totals: { reps: number; loadGrams: number; volumeGrams: number; durationSeconds: number; distanceMeters: number };
+  totals: ProgressMetrics;
+  categoryTrends: (ProgressMetrics & { category: Exercise['category']; localDate: LocalDate })[];
+  exerciseTrends: (ProgressMetrics & { exerciseId: string; name: Exercise['name']; metricType: MetricType; localDate: LocalDate })[];
+  historySets: SetRecord[];
+  historySchedules: ScheduledWorkout[];
   bodyWeights: BodyWeightObservation[];
 }
 export interface ValidatedBackup { envelope: BackupEnvelope; expectedRevision: number }

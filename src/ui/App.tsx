@@ -5,6 +5,8 @@ import { CatalogPage } from './pages/CatalogPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { PlansPage } from './pages/PlansPage';
 import { WorkoutPage } from './pages/WorkoutPage';
+import { TodayPage } from './pages/TodayPage';
+import { ProgressPage } from './pages/ProgressPage';
 import { profileService } from '../application/profile';
 
 const destinations = [
@@ -14,20 +16,6 @@ const destinations = [
   ['progress', '/progress'],
   ['settings', '/settings'],
 ] as const;
-type Destination = typeof destinations[number][0];
-
-function EmptyPage({ destination }: { destination: Destination }): ReactElement {
-  const { t } = useTranslation();
-  return (
-    <>
-      <h1>{t(destination)}</h1>
-      <section className="empty-state" aria-label={t(destination)}>
-        <p className="empty-title">{t(`${destination}Empty`)}</p>
-        <p className="muted">{t('pending')}</p>
-      </section>
-    </>
-  );
-}
 
 export function App(): ReactElement {
   const { t, i18n } = useTranslation();
@@ -68,7 +56,7 @@ export function App(): ReactElement {
       <main id="content" ref={main} tabIndex={-1}>
         <Routes>
           {destinations.map(([name, path]) => (
-            <Route key={name} path={path} element={name === 'today' ? <WorkoutPage /> : name === 'exercises' ? <CatalogPage /> : name === 'settings' ? <SettingsPage /> : name === 'plans' ? <PlansPage /> : <EmptyPage destination={name} />} />
+            <Route key={name} path={path} element={name === 'today' ? <TodayPage /> : name === 'exercises' ? <CatalogPage /> : name === 'settings' ? <SettingsPage /> : name === 'plans' ? <PlansPage /> : <ProgressPage />} />
           ))}
           <Route path="/workout" element={<WorkoutPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -83,7 +83,7 @@ export function WorkoutTimer({sessionId,exerciseInstanceId,locale,busy,onCandida
  const active=current?.status==='running'||current?.status==='paused';
  const disabled=busy||saving||!ready;
  return <div className="workout-timer" aria-label={zh?'计时器':'Workout timer'}>
-  <p><strong>{current?.kind==='rest'?(zh?'休息':'Rest'):(zh?'动作计时':'Exercise timer')}</strong> · <output aria-label={zh?'计时秒数':'Timer seconds'}>{Math.floor((display.remainingMs??display.elapsedMs)/1000)}</output> {zh?'秒':'seconds'}</p>
+  <p><strong>{current?.kind==='rest'?(zh?'休息':'Rest'):(zh?'动作计时':'Exercise timer')}</strong> · <output role="timer" aria-live="off" aria-label={zh?'计时秒数':'Timer seconds'}>{Math.floor((display.remainingMs??display.elapsedMs)/1000)}</output> {zh?'秒':'seconds'}</p>
   <button type="button" disabled={disabled||active} onClick={()=>void change({type:'start'},'exercise')}>{zh?'开始动作计时':'Start exercise timer'}</button>
   <label>{zh?'休息秒数':'Rest seconds'}<input inputMode="numeric" value={rest} disabled={disabled||active} onChange={e=>setRest(e.target.value)}/></label>
   <button type="button" disabled={disabled||active} onClick={()=>void change({type:'start'},'rest')}>{zh?'开始休息计时':'Start rest timer'}</button>

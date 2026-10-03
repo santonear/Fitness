@@ -35,3 +35,14 @@ li { overflow-wrap: anywhere; }
 .workout-exercise, .workout-facts { padding-block: 1rem; border-bottom: 1px solid #d9cfc5; }
 .workout-actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-block: 1.5rem; }
 pre { max-width: 100%; overflow-x: auto; white-space: pre-wrap; overflow-wrap: anywhere; font-size: .85rem; }
+.progress-filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); gap: 8px 20px; }
+.progress-section { border-top: 1px solid var(--line); padding-block: 24px; }
+.completion-number { color: var(--accent); font-size: clamp(28px, 6vw, 48px); margin-block: 16px; }
+.history-row { border-bottom: 1px solid var(--line); padding-block: 16px; }
+.history-detail { margin-block: 16px; padding-left: 16px; border-left: 2px solid var(--accent); }
+.progress-table-scroll { overflow-x: auto; max-width: 100%; margin-block: 16px; }
+.progress-table { border-collapse: collapse; width: 100%; min-width: 620px; text-align: left; font-size: 14px; }
+.progress-table th, .progress-table td { border-bottom: 1px solid var(--line); padding: 12px 10px; vertical-align: top; }
+.progress-table small { display: block; color: var(--muted); }
+.progress-exercise-choice { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.progress-exercise-choice select { max-width: 100%; }
