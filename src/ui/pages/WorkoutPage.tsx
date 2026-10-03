@@ -145,6 +145,7 @@ export function WorkoutPage({ dashboard = false }: { dashboard?: boolean }) {
           <ExerciseEditor key={exercise.exerciseInstanceId} sessionId={session.id} exercise={exercise}
             sets={sets.filter(set => set.exerciseInstanceId === exercise.exerciseInstanceId)}
             locale={locale} busy={busy}
+            onRecordAttempt={() => { setMessage(''); setError(''); }}
             onSave={input => run(() => workoutService.recordSet(session.id, input, session.revision), zh ? '组已保存' : 'Set saved')}
             onAdjust={(command, status) => run(() => workoutService.adjustWorkout(session.id, command, session.revision), status)} />
         ))}
