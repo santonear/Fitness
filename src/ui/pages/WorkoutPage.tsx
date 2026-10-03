@@ -108,7 +108,7 @@ export function WorkoutPage() {
       <>
         <p>{session.localDate} · {session.timeZone} · {session.planVersionId ? (zh ? '计划训练' : 'Planned workout') : (zh ? '临时训练' : 'Temporary workout')}</p>
         {session.exerciseSnapshots.map(exercise => (
-          <ExerciseEditor key={exercise.exerciseInstanceId} exercise={exercise}
+          <ExerciseEditor key={exercise.exerciseInstanceId} sessionId={session.id} exercise={exercise}
             sets={sets.filter(set => set.exerciseInstanceId === exercise.exerciseInstanceId)}
             sessionRevision={session.revision} locale={locale} busy={busy}
             onSave={input => run(() => workoutService.recordSet(session.id, input, session.revision), zh ? '组已保存' : 'Set saved')}
