@@ -7,7 +7,20 @@ test('five destinations stay usable without overflow at 320px', async ({ page })
   for (const name of ['Today', 'Plans', 'Exercises', 'Progress', 'Settings']) {
     await navigation.getByRole('link', { name, exact: true }).click();
     await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    const layout = await page.evaluate(() => ({
+      path: location.pathname,
+      viewport: window.innerWidth,
+      width: document.documentElement.scrollWidth,
+      overflowing: Array.from(document.querySelectorAll('body *')).flatMap(element => {
+        const rect = element.getBoundingClientRect();
+        if (rect.right <= window.innerWidth || !rect.width) return [];
+        const style = getComputedStyle(element);
+        return [{ tag: element.tagName, className: element.className, type: element.getAttribute('type'),
+          text: element.textContent?.trim().slice(0, 80), left: rect.left, right: rect.right,
+          width: rect.width, minWidth: style.minWidth, maxWidth: style.maxWidth, font: style.font }];
+      }),
+    }));
+    expect(layout.width <= layout.viewport, JSON.stringify(layout)).toBe(true);
     await page.reload();
     await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
   }
