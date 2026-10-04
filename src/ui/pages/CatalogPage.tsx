@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ExerciseMedia } from '../components/ExerciseMedia';
 import { useTranslation } from 'react-i18next';
 import { searchExercises } from '../../catalog/catalog-service';
 import type { CatalogFilters, Locale } from '../../domain/models';
@@ -34,6 +35,7 @@ export function CatalogPage() {
         <article key={exercise.id} className="catalog-exercise">
           <h2>{exercise.name[locale]}</h2>
           <p className="muted">{t(exercise.category)} · {t(`equipment_${exercise.equipment}`)} · {t(`metric_${exercise.metricType}`)}</p>
+          <ExerciseMedia exerciseId={exercise.id} exerciseName={exercise.name[locale]} locale={locale} />
           <ol>{exercise.steps[locale].map((step) => <li key={step}>{step}</li>)}</ol>
           {exercise.cautions[locale].map((caution) => <p key={caution}>{caution}</p>)}
         </article>

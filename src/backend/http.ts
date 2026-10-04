@@ -30,16 +30,17 @@ function cookie(token: string, expiresAt: number) {
   return `${cookieName}=${token}; Path=/; Secure; HttpOnly; SameSite=Strict; Expires=${new Date(expiresAt).toUTCString()}`;
 }
 /** Fetch adapter only. No static assets, network calls, telemetry, or browser training writes. */
-export function createHandler(service: ControlService, options: { origins: string[]; maxBodyBytes: number }) {
+export function createHandler(service: ControlService, options: { origins: string[]; maxBodyBytes: number; supplierMode?: 'external-transport' }) {
   if (!options.origins.length || !Number.isSafeInteger(options.maxBodyBytes) || options.maxBodyBytes < 1 || options.origins.some(origin => {
     try { const url = new URL(origin); return url.protocol !== 'https:' || url.origin !== origin; } catch { return true; }
   })) throw new ControlError('INVALID_HTTP_CONFIG', 500);
   return async (request: Request): Promise<Response> => {
     try {
       const url = new URL(request.url), path = url.pathname;
-      if (path === '/api/v1/health' && request.method === 'GET') return json({ status: 'local-mock', productionModelEnabled: false });
+      if (path === '/api/v1/health' && request.method === 'GET') return json({ status: options.supplierMode ?? 'local-mock', productionModelEnabled: false });
       const known = ['/api/v1/trial/redeem', '/api/v1/trial/status', '/api/v1/goals/interpret', '/api/v1/plans/generate', '/api/v1/requests/cancel',
-        '/api/v1/admin/invites', '/api/v1/admin/invites/revoke', '/api/v1/admin/revoke', '/api/v1/admin/reissue', '/api/v1/admin/mock', '/api/v1/admin/recovery', '/api/v1/admin/reconciled', '/api/v1/admin/settle'];
+        '/api/v1/admin/invites', '/api/v1/admin/invites/revoke', '/api/v1/admin/revoke', '/api/v1/admin/reissue', '/api/v1/admin/mock', '/api/v1/admin/recovery', '/api/v1/admin/reconciled', '/api/v1/admin/settle', '/api/v1/admin/retention',
+        ...(options.supplierMode ? ['/api/v1/admin/supplier'] : [])];
       if (!known.includes(path)) return json({ error: 'NOT_FOUND' }, 404);
       const origin = request.headers.get('origin');
       if (url.protocol !== 'https:' || !options.origins.includes(url.origin) || (origin !== null && !options.origins.includes(origin)) ||
@@ -60,6 +61,8 @@ export function createHandler(service: ControlService, options: { origins: strin
         const admin = authorization.slice(7);
         if (path.endsWith('/invites')) { parse(z.strictObject({}), data); return json(await service.issue(admin)); }
         if (path.endsWith('/mock')) { const { enabled } = parse(z.strictObject({ enabled: z.boolean() }), data); await service.enableMock(admin, enabled); }
+        else if (path.endsWith('/supplier')) { const { enabled } = parse(z.strictObject({ enabled: z.boolean() }), data); await service.enableSupplier(admin, enabled); }
+        else if (path.endsWith('/retention')) { parse(z.strictObject({}), data); await service.retainLedger(admin); }
         else if (path.endsWith('/recovery')) { parse(z.strictObject({}), data); await service.markLedgerRecovered(admin); }
         else if (path.endsWith('/reconciled')) {
           const evidence = parse(z.strictObject({ budgets: z.record(z.string(), z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER)),

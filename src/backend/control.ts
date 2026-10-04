@@ -3,8 +3,8 @@ import { ControlError, type ControlState, type ControlStore, type Operation } fr
 export { ControlError } from './store';
 
 export interface ControlConfig {
-  /** Test parameters only. Production selection remains unset. Costs are integer RMB fen. */
-  mode: 'local-test'; timeZone: string; k: number; budgetLimit: number; maximumRequestCost: number;
+  /** Costs are integer RMB fen; external operation requires separately validated operator configuration. */
+  mode: 'local-test' | 'external'; timeZone: string; k: number; budgetLimit: number; maximumRequestCost: number;
   requestBounds: Record<Operation, number>; quotas: Record<Operation, number>; maxInputBytes: number;
   maxConcurrent: number; adminSecret: string; digestSecret: string;
 }
@@ -12,6 +12,7 @@ export const testConfig: ControlConfig = { mode: 'local-test', timeZone: 'UTC', 
   maximumRequestCost: 1000, requestBounds: { understand: 100, generate: 300 }, quotas: { understand: 8, generate: 4 },
   maxInputBytes: 65536, maxConcurrent: 4, adminSecret: 'local-test-admin-only', digestSecret: 'local-test-digest-key-only' };
 export interface MockSupplier { kind: 'local-mock'; call(request: AiRequest): Promise<{ result: unknown; actualCost?: number }> }
+export interface ExternalSupplier { kind: 'external-transport'; call(request: AiRequest): Promise<{ result: unknown; actualCost?: number }> }
 function token() { return Array.from(crypto.getRandomValues(new Uint8Array(32)), byte => byte.toString(16).padStart(2, '0')).join(''); }
 function integer(value: number) { return Number.isSafeInteger(value) && value >= 0; }
 const DAY = 86400000;
@@ -20,11 +21,13 @@ const usageKey = (subjectId: string, period: string) => `${subjectId}:${period}`
 
 export class ControlService {
   constructor(private readonly store: ControlStore, private readonly config: ControlConfig,
-    private readonly supplier: MockSupplier, private readonly now = Date.now) {
+    private readonly supplier: MockSupplier | ExternalSupplier, private readonly now = Date.now) {
     new Intl.DateTimeFormat('en', { timeZone: config.timeZone });
-    if (config.mode !== 'local-test' || supplier.kind !== 'local-mock' || !config.adminSecret || !config.digestSecret ||
+    if (!((config.mode === 'local-test' && supplier.kind === 'local-mock') || (config.mode === 'external' && supplier.kind === 'external-transport')) || !config.adminSecret || !config.digestSecret ||
       ![config.k, config.budgetLimit, config.maximumRequestCost, config.maxConcurrent, config.maxInputBytes,
-        ...Object.values(config.quotas), ...Object.values(config.requestBounds)].every(integer) || config.k < 1 || config.maxConcurrent < 1) throw new ControlError('INVALID_TEST_CONFIG', 500);
+        ...Object.values(config.quotas), ...Object.values(config.requestBounds)].every(integer) || config.k < 1 || config.maxConcurrent < 1 ||
+      (config.mode === 'external' && [config.adminSecret, config.digestSecret].some(secret => secret.length < 32 || /local-test|placeholder|example/i.test(secret))) ||
+      (config.mode === 'external' && config.adminSecret === config.digestSecret)) throw new ControlError(config.mode === 'external' ? 'INVALID_CONTROL_CONFIG' : 'INVALID_TEST_CONFIG', 500);
   }
   private async admin(secret: string) {
     // HMAC fixed-length digests avoid comparing credential content or storing its plaintext.
@@ -41,7 +44,21 @@ export class ControlService {
     if (!session || session.revoked || !subject || subject.revoked || subject.expiresAt <= this.now()) throw new ControlError('QUALIFICATION_REQUIRED', 401);
     return session.subjectId;
   }
-  private audit(state: ControlState, event: string, subjectId?: string) { state.audit.push({ at: this.now(), event, ...(subjectId ? { subjectId } : {}) }); }
+  private audit(state: ControlState, event: string, subjectId?: string) {
+    state.audit.push({ at: this.now(), event, ...(subjectId ? { subjectId } : {}) });
+    if (state.audit.length > 1000) state.audit.splice(0, state.audit.length - 1000);
+  }
+  async retainLedger(admin: string) {
+    await this.admin(admin); await this.store.transact(state => {
+      for (const [key, invite] of Object.entries(state.invites)) if (invite.expiresAt <= this.now()) delete state.invites[key];
+      for (const [key, session] of Object.entries(state.sessions)) {
+        const subject = state.subjects[session.subjectId]; if (!subject || subject.expiresAt <= this.now()) delete state.sessions[key];
+      }
+      // Quota, cost and request tombstones have no TTL: pruning them could revive spent
+      // allowance or erase unresolved charges. Subject tombstones preserve reissue expiry.
+      this.audit(state, 'credential-retention');
+    });
+  }
   private needsReconciliation(state: ControlState, period: string) {
     return state.recoveryRequired || Object.values(state.requests).some(entry => entry.status === 'pending' ||
       (entry.period !== period && ['submitted', 'reserved'].includes(entry.status)));
@@ -99,9 +116,13 @@ export class ControlService {
       aiEnabled: state.aiEnabled && !state.recoveryRequired, summaryAvailable: false };
   }
   async enableMock(admin: string, enabled: boolean) {
+    if (this.config.mode !== 'local-test') throw new ControlError('MOCK_ONLY', 400);
+    return this.enableSupplier(admin, enabled);
+  }
+  async enableSupplier(admin: string, enabled: boolean) {
     await this.admin(admin); await this.store.transact(state => {
       if (enabled && state.recoveryRequired) throw new ControlError('RECONCILIATION_REQUIRED', 503);
-      state.aiEnabled = enabled; this.audit(state, enabled ? 'mock-enabled' : 'mock-disabled');
+      state.aiEnabled = enabled; this.audit(state, enabled ? 'supplier-enabled' : 'supplier-disabled');
     });
   }
   async submit(value: string, payload: unknown) {
@@ -137,10 +158,18 @@ export class ControlService {
       reservation.status = 'submitted'; return true;
     });
     if (!submitted) throw new ControlError('NOT_SUBMITTED');
-    let response: { result: unknown; actualCost?: number };
-    try { response = await this.supplier.call(request); }
+    let response: { result: unknown; actualCost: number };
+    try {
+      const supplied: unknown = await this.supplier.call(request);
+      if (!supplied || typeof supplied !== 'object' || Array.isArray(supplied) || !Object.hasOwn(supplied, 'result')) throw new Error('invalid envelope');
+      const envelope = supplied as { result: unknown; actualCost?: unknown };
+      const actualCost = envelope.actualCost;
+      if (typeof actualCost !== 'number' || !integer(actualCost)) throw new Error('uncertain accounting');
+      // Copy all supplier-controlled fields while still inside the uncertainty boundary;
+      // malformed envelopes/accessors must never strand a submitted reservation.
+      response = { result: envelope.result, actualCost };
+    }
     catch { await this.pending(key); throw new ControlError('ACCOUNTING_PENDING', 503); }
-    if (response.actualCost === undefined || !integer(response.actualCost)) { await this.pending(key); throw new ControlError('ACCOUNTING_PENDING', 503); }
     await this.store.transact(state => this.settleState(state, key, response.actualCost!));
     const reservation = (await this.store.read()).requests[key];
     if (reservation.cancelled) throw new ControlError('CANCELLED');

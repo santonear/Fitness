@@ -8,6 +8,7 @@ import { PlansPage } from './pages/PlansPage';
 import { WorkoutPage } from './pages/WorkoutPage';
 import { TodayPage } from './pages/TodayPage';
 import { ProgressPage } from './pages/ProgressPage';
+import { AiPage } from './pages/AiPage';
 import { profileService } from '../application/profile';
 import { liveQuery } from 'dexie';
 import { database } from '../persistence/db';
@@ -146,6 +147,7 @@ export function App(): ReactElement {
             <Route key={name} path={path} element={name === 'today' ? <TodayPage /> : name === 'exercises' ? <CatalogPage /> : name === 'settings' ? <SettingsPage /> : name === 'plans' ? <PlansPage /> : <ProgressPage />} />
           ))}
           <Route path="/workout" element={<WorkoutPage />} />
+          <Route path="/ai" element={<AiPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>}
       </main>
