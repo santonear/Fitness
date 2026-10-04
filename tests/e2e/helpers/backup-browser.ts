@@ -3,7 +3,7 @@ import { createDatabase } from '../../../src/persistence/db';
 import { createRepository } from '../../../src/persistence/repository';
 import { createProfileService } from '../../../src/application/profile';
 import { createWorkoutService } from '../../../src/application/workouts';
-import { createBackupService } from '../../../src/application/backup';
+import { createBackupService, MAX_BACKUP_BYTES } from '../../../src/application/backup';
 import { exercises } from '../../../src/catalog/exercises';
 import { createPlanService } from '../../../src/application/plans';
 
@@ -55,7 +55,7 @@ export async function verifyBackup(name: string) {
       checks.push(await service.validateBackup(new File([content], 'invalid.json')).then(() => false, e => e.code === code));
     };
     await reject('{broken', 'BACKUP_INVALID');
-    await reject(new Blob([' '.repeat(10 * 1024 * 1024 + 1)]), 'BACKUP_TOO_LARGE');
+    await reject(new Blob([' '.repeat(MAX_BACKUP_BYTES + 1)]), 'BACKUP_TOO_LARGE');
     await reject(JSON.stringify({ ...envelope, schemaVersion: 999 }), 'BACKUP_VERSION_UNSUPPORTED');
     await reject(JSON.stringify({ ...envelope, schemaVersion: 1 }), 'BACKUP_VERSION_UNSUPPORTED');
     const mutate = async (change: (copy: typeof envelope) => void) => {

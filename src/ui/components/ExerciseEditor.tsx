@@ -4,10 +4,12 @@ import { parseMetric } from '../../domain/units';
 import type { Adjustment, ExerciseSnapshot, Locale, SetInput, SetRecord } from '../../domain/models';
 import { metricText } from './CompletionReview';
 import { WorkoutTimer } from './WorkoutTimer';
+import { ExerciseTargets } from './ExerciseTargets';
 
 interface Props {
   sessionId: string;
   exercise: ExerciseSnapshot;
+  original?: ExerciseSnapshot;
   sets: SetRecord[];
   locale: Locale;
   busy: boolean;
@@ -16,7 +18,7 @@ interface Props {
   onAdjust: (command: Adjustment, message?: string) => Promise<void>;
 }
 
-export function ExerciseEditor({ sessionId, exercise, sets, locale, busy, onRecordAttempt, onSave, onAdjust }: Props) {
+export function ExerciseEditor({ sessionId, exercise, original, sets, locale, busy, onRecordAttempt, onSave, onAdjust }: Props) {
   const zh = locale === 'zh';
   const nextOrder = sets.reduce((max, set) => Math.max(max, set.order + 1), 0);
 
@@ -44,12 +46,7 @@ export function ExerciseEditor({ sessionId, exercise, sets, locale, busy, onReco
   return (
     <section className="workout-exercise">
       <h2>{exercise.name[locale]}</h2>
-      {exercise.targetSets.length > 0 && (
-        <details>
-          <summary>{zh ? '计划目标（非实际值）' : 'Planned targets (not actual values)'}</summary>
-          <pre>{JSON.stringify(exercise.targetSets, null, 2)}</pre>
-        </details>
-      )}
+      <ExerciseTargets exercise={exercise} original={original} locale={locale} />
       {sets.map(set => (
         <div key={`${set.id}-${set.revision}`}>
           <SetForm exercise={exercise} locale={locale} busy={busy} saved={set} onRecordAttempt={onRecordAttempt} onSave={onSave} />
@@ -88,6 +85,10 @@ function SetForm({ sessionId, exercise, locale, busy, saved, order = 0, onRecord
   const [notes, setNotes] = useState(saved?.notes ?? '');
   const [error, setError] = useState('');
   const id = useRef(saved?.id ?? crypto.randomUUID());
+  const unsaved = !saved || reps !== (saved.reps?.toString() ?? '') ||
+    load !== (saved.loadGrams === undefined ? '' : String(saved.loadGrams / 1000)) ||
+    seconds !== (saved.durationSeconds?.toString() ?? '') ||
+    km !== (saved.distanceMeters === undefined ? '' : String(saved.distanceMeters / 1000)) || notes !== (saved.notes ?? '');
 
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -107,7 +108,7 @@ function SetForm({ sessionId, exercise, locale, busy, saved, order = 0, onRecord
         <legend>{saved ? (zh ? '已保存组' : 'Saved set') : (zh ? '下一组' : 'Next set')}</legend>
         {sessionId && !saved && <WorkoutTimer sessionId={sessionId} exerciseInstanceId={exercise.exerciseInstanceId} locale={locale} busy={busy}
           onCandidate={['duration', 'duration_distance'].includes(exercise.metricType) ? setSeconds : undefined} />}
-        {saved && <p>{metricText(saved, locale)} {saved.notes}</p>}
+        {saved && <><p>{metricText(saved, locale)}</p>{saved.notes !== undefined && <p style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{zh ? '已保存组备注' : 'Saved set notes'}: {saved.notes}</p>}</>}
         {['reps', 'reps_load'].includes(exercise.metricType) && (
           <label>{zh ? '次数' : 'Reps'}<input inputMode="numeric" value={reps} onChange={event => setReps(event.target.value)} required /></label>
         )}
@@ -121,6 +122,7 @@ function SetForm({ sessionId, exercise, locale, busy, saved, order = 0, onRecord
           <label>{zh ? '距离（公里，可选）' : 'Distance (km, optional)'}<input inputMode="decimal" value={km} onChange={event => setKm(event.target.value)} /></label>
         )}
         <label>{zh ? '组备注' : 'Set notes'}<input value={notes} onChange={event => setNotes(event.target.value)} /></label>
+        {unsaved && <p>{zh ? '本组输入尚未保存' : 'Current set inputs are not saved'}</p>}
         <button type="submit">{saved ? (zh ? '更新组' : 'Update set') : (zh ? '记录组' : 'Record set')}</button>
         {error && <p role="alert">{error}</p>}
       </fieldset>

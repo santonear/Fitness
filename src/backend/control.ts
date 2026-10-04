@@ -1,0 +1,207 @@
+import { canonical, digest, validateCandidate, validateRequest, type AiRequest } from './contracts';
+import { ControlError, type ControlState, type ControlStore, type Operation } from './store';
+export { ControlError } from './store';
+
+export interface ControlConfig {
+  /** Test parameters only. Production selection remains unset. Costs are integer RMB fen. */
+  mode: 'local-test'; timeZone: string; k: number; budgetLimit: number; maximumRequestCost: number;
+  requestBounds: Record<Operation, number>; quotas: Record<Operation, number>; maxInputBytes: number;
+  maxConcurrent: number; adminSecret: string; digestSecret: string;
+}
+export const testConfig: ControlConfig = { mode: 'local-test', timeZone: 'UTC', k: 1, budgetLimit: 3500,
+  maximumRequestCost: 1000, requestBounds: { understand: 100, generate: 300 }, quotas: { understand: 8, generate: 4 },
+  maxInputBytes: 65536, maxConcurrent: 4, adminSecret: 'local-test-admin-only', digestSecret: 'local-test-digest-key-only' };
+export interface MockSupplier { kind: 'local-mock'; call(request: AiRequest): Promise<{ result: unknown; actualCost?: number }> }
+function token() { return Array.from(crypto.getRandomValues(new Uint8Array(32)), byte => byte.toString(16).padStart(2, '0')).join(''); }
+function integer(value: number) { return Number.isSafeInteger(value) && value >= 0; }
+const DAY = 86400000;
+const requestKey = (subjectId: string, requestId: string) => `${subjectId}:${requestId}`;
+const usageKey = (subjectId: string, period: string) => `${subjectId}:${period}`;
+
+export class ControlService {
+  constructor(private readonly store: ControlStore, private readonly config: ControlConfig,
+    private readonly supplier: MockSupplier, private readonly now = Date.now) {
+    new Intl.DateTimeFormat('en', { timeZone: config.timeZone });
+    if (config.mode !== 'local-test' || supplier.kind !== 'local-mock' || !config.adminSecret || !config.digestSecret ||
+      ![config.k, config.budgetLimit, config.maximumRequestCost, config.maxConcurrent, config.maxInputBytes,
+        ...Object.values(config.quotas), ...Object.values(config.requestBounds)].every(integer) || config.k < 1 || config.maxConcurrent < 1) throw new ControlError('INVALID_TEST_CONFIG', 500);
+  }
+  private async admin(secret: string) {
+    // HMAC fixed-length digests avoid comparing credential content or storing its plaintext.
+    const a = await digest(secret, this.config.digestSecret), b = await digest(this.config.adminSecret, this.config.digestSecret);
+    let delta = 0; for (let i = 0; i < a.length; i++) delta |= a.charCodeAt(i) ^ b.charCodeAt(i);
+    if (delta) throw new ControlError('ADMIN_REQUIRED', 401);
+  }
+  private period() {
+    const parts = new Intl.DateTimeFormat('en', { timeZone: this.config.timeZone, year: 'numeric', month: '2-digit' }).formatToParts(this.now());
+    return `${parts.find(p => p.type === 'year')!.value}-${parts.find(p => p.type === 'month')!.value}`;
+  }
+  private qualification(state: ControlState, tokenDigest: string) {
+    const session = state.sessions[tokenDigest]; const subject = session && state.subjects[session.subjectId];
+    if (!session || session.revoked || !subject || subject.revoked || subject.expiresAt <= this.now()) throw new ControlError('QUALIFICATION_REQUIRED', 401);
+    return session.subjectId;
+  }
+  private audit(state: ControlState, event: string, subjectId?: string) { state.audit.push({ at: this.now(), event, ...(subjectId ? { subjectId } : {}) }); }
+  private needsReconciliation(state: ControlState, period: string) {
+    return state.recoveryRequired || Object.values(state.requests).some(entry => entry.status === 'pending' ||
+      (entry.period !== period && ['submitted', 'reserved'].includes(entry.status)));
+  }
+  async issue(admin: string) {
+    await this.admin(admin); const code = token(), codeDigest = await digest(code, this.config.digestSecret);
+    await this.store.transact(state => { state.invites[codeDigest] = { expiresAt: this.now() + 7 * DAY, redeemed: false }; this.audit(state, 'invite-issued'); });
+    return { code, inviteId: codeDigest };
+  }
+  async revokeInvite(admin: string, inviteId: string) {
+    await this.admin(admin); await this.store.transact(state => {
+      const invite = state.invites[inviteId]; if (!invite) throw new ControlError('INVITE_NOT_FOUND', 404);
+      invite.redeemed = true; this.audit(state, 'invite-revoked');
+    });
+  }
+  async redeem(code: string) {
+    if (!/^[a-f0-9]{64}$/.test(code)) throw new ControlError('INVITE_INVALID', 401);
+    const codeDigest = await digest(code, this.config.digestSecret), value = token(), sessionDigest = await digest(value, this.config.digestSecret), subjectId = crypto.randomUUID();
+    const qualification = await this.store.transact(state => {
+      const invite = state.invites[codeDigest];
+      if (!invite || invite.redeemed || invite.expiresAt <= this.now()) throw new ControlError('INVITE_INVALID', 401);
+      const id = invite.subjectId ?? subjectId;
+      const existing = invite.subjectId && state.subjects[invite.subjectId];
+      if (invite.subjectId && (!existing || existing.expiresAt <= this.now())) throw new ControlError('SUBJECT_EXPIRED', 401);
+      invite.redeemed = true; const expiry = existing ? existing.expiresAt : this.now() + 30 * DAY;
+      state.subjects[id] = { expiresAt: expiry, revoked: false };
+      state.sessions[sessionDigest] = { subjectId: id, revoked: false }; this.audit(state, 'invite-redeemed', id); return { subjectId: id, expiresAt: expiry };
+    });
+    return { token: value, ...qualification };
+  }
+  async revoke(admin: string, subjectId: string) {
+    await this.admin(admin); await this.store.transact(state => {
+      const subject = state.subjects[subjectId]; if (!subject) throw new ControlError('SUBJECT_NOT_FOUND', 404);
+      subject.revoked = true; for (const session of Object.values(state.sessions)) if (session.subjectId === subjectId) session.revoked = true;
+      for (const invite of Object.values(state.invites)) if (invite.subjectId === subjectId) invite.redeemed = true;
+      this.audit(state, 'subject-revoked', subjectId);
+    });
+  }
+  async reissue(admin: string, subjectId: string) {
+    await this.admin(admin); const code = token(), codeDigest = await digest(code, this.config.digestSecret);
+    const expiresAt = await this.store.transact(state => {
+      const subject = state.subjects[subjectId]; if (!subject || subject.expiresAt <= this.now()) throw new ControlError('SUBJECT_EXPIRED', 401);
+      for (const session of Object.values(state.sessions)) if (session.subjectId === subjectId) session.revoked = true;
+      for (const invite of Object.values(state.invites)) if (invite.subjectId === subjectId) invite.redeemed = true;
+      subject.revoked = true;
+      state.invites[codeDigest] = { subjectId, redeemed: false, expiresAt: Math.min(subject.expiresAt, this.now() + 7 * DAY) };
+      this.audit(state, 'replacement-invite-issued', subjectId); return subject.expiresAt;
+    }); return { code, inviteId: codeDigest, subjectId, expiresAt };
+  }
+  async status(value: string) {
+    const sessionDigest = await digest(value, this.config.digestSecret); const state = await this.store.read(); const subjectId = this.qualification(state, sessionDigest);
+    const period = this.period(); const used = state.usages[usageKey(subjectId, period)] ?? { understand: 0, generate: 0 };
+    return { subjectId, expiresAt: state.subjects[subjectId].expiresAt, period, used, limits: this.config.quotas,
+      pending: Object.values(state.requests).filter(r => r.subjectId === subjectId && ['reserved', 'submitted', 'pending'].includes(r.status)).length,
+      aiEnabled: state.aiEnabled && !state.recoveryRequired, summaryAvailable: false };
+  }
+  async enableMock(admin: string, enabled: boolean) {
+    await this.admin(admin); await this.store.transact(state => {
+      if (enabled && state.recoveryRequired) throw new ControlError('RECONCILIATION_REQUIRED', 503);
+      state.aiEnabled = enabled; this.audit(state, enabled ? 'mock-enabled' : 'mock-disabled');
+    });
+  }
+  async submit(value: string, payload: unknown) {
+    const sessionDigest = await digest(value, this.config.digestSecret);
+    this.qualification(await this.store.read(), sessionDigest);
+    const request = await validateRequest(payload, this.config.k, this.config.maxInputBytes);
+    const inputDigest = await digest(canonical(request), this.config.digestSecret), period = this.period();
+    const key = await this.store.transact(state => {
+      const subjectId = this.qualification(state, sessionDigest), key = requestKey(subjectId, request.requestId), previous = state.requests[key];
+      if (previous) {
+        if (previous.inputDigest !== inputDigest) throw new ControlError('REQUEST_CONFLICT');
+        throw new ControlError(['reserved', 'submitted', 'pending'].includes(previous.status) ? 'REQUEST_IN_PROGRESS' : 'RESULT_UNAVAILABLE');
+      }
+      if (this.needsReconciliation(state, period)) throw new ControlError('RECONCILIATION_REQUIRED', 503);
+      if (!state.aiEnabled) throw new ControlError('AI_DISABLED', 503);
+      const bound = this.config.requestBounds[request.operation]; if (bound > this.config.maximumRequestCost) throw new ControlError('REQUEST_COST_BOUND', 400);
+      const used = state.usages[usageKey(subjectId, period)] ?? { understand: 0, generate: 0 };
+      if (used[request.operation] >= this.config.quotas[request.operation]) throw new ControlError('INDIVIDUAL_QUOTA_EXHAUSTED', 429);
+      const budget = state.budgets[period] ?? { spent: 0, reserved: 0 };
+      if (budget.spent + budget.reserved + bound > this.config.budgetLimit) throw new ControlError('GLOBAL_BUDGET_EXHAUSTED', 429);
+      if (Object.values(state.requests).filter(r => ['reserved', 'submitted'].includes(r.status)).length >= this.config.maxConcurrent) throw new ControlError('CONCURRENCY_LIMIT', 429);
+      used[request.operation]++; budget.reserved += bound; state.usages[usageKey(subjectId, period)] = used; state.budgets[period] = budget;
+      state.requests[key] = { subjectId, requestId: request.requestId, inputDigest, operation: request.operation, period, bound, status: 'reserved', cancelled: false };
+      return key;
+    });
+    // Recheck authoritative accounting at the same boundary which grants submission.
+    // Admission can have completed before another call became pending or the month changed.
+    const submitted = await this.store.transact(state => {
+      const reservation = state.requests[key];
+      if (reservation.status !== 'reserved') return false;
+      try { this.qualification(state, sessionDigest); } catch { this.releaseUnsubmitted(state, key); return false; }
+      if (reservation.cancelled || !state.aiEnabled || this.needsReconciliation(state, this.period())) { this.releaseUnsubmitted(state, key); return false; }
+      reservation.status = 'submitted'; return true;
+    });
+    if (!submitted) throw new ControlError('NOT_SUBMITTED');
+    let response: { result: unknown; actualCost?: number };
+    try { response = await this.supplier.call(request); }
+    catch { await this.pending(key); throw new ControlError('ACCOUNTING_PENDING', 503); }
+    if (response.actualCost === undefined || !integer(response.actualCost)) { await this.pending(key); throw new ControlError('ACCOUNTING_PENDING', 503); }
+    await this.store.transact(state => this.settleState(state, key, response.actualCost!));
+    const reservation = (await this.store.read()).requests[key];
+    if (reservation.cancelled) throw new ControlError('CANCELLED');
+    const result = validateCandidate(request, response.result);
+    return { requestId: request.requestId, result, context: { restoreGeneration: request.restoreGeneration, inputDigest: request.sendConfirmation }, accounting: 'settled' as const };
+  }
+  private async pending(key: string) { await this.store.transact(state => { if (state.requests[key].status !== 'settled') state.requests[key].status = 'pending'; }); }
+  private releaseUnsubmitted(state: ControlState, key: string) {
+    const entry = state.requests[key]; if (entry.status !== 'reserved') throw new ControlError('ALREADY_SUBMITTED');
+    state.budgets[entry.period].reserved -= entry.bound; state.usages[usageKey(entry.subjectId, entry.period)][entry.operation]--; entry.status = 'released';
+  }
+  async cancel(value: string, requestId: string) {
+    const sessionDigest = await digest(value, this.config.digestSecret);
+    await this.store.transact(state => {
+      const subjectId = this.qualification(state, sessionDigest), key = requestKey(subjectId, requestId), entry = state.requests[key];
+      if (!entry) throw new ControlError('REQUEST_NOT_FOUND', 404); entry.cancelled = true;
+      if (entry.status === 'reserved') this.releaseUnsubmitted(state, key);
+      // Submitted calls retain their full reservation until evidence-based settlement.
+    });
+  }
+  private settleState(state: ControlState, key: string, actualCost: number) {
+    const entry = state.requests[key]; if (!entry) throw new ControlError('REQUEST_NOT_FOUND', 404);
+    if (entry.status === 'settled') { if (entry.actualCost !== actualCost) throw new ControlError('SETTLEMENT_CONFLICT'); return; }
+    if (!['submitted', 'pending'].includes(entry.status)) throw new ControlError('NOT_SUBMITTED');
+    const budget = state.budgets[entry.period]; budget.reserved -= entry.bound; budget.spent += actualCost;
+    entry.actualCost = actualCost; entry.status = 'settled';
+    if (actualCost > entry.bound || budget.spent + budget.reserved > this.config.budgetLimit) { state.recoveryRequired = true; state.aiEnabled = false; this.audit(state, 'cost-bound-breached'); }
+  }
+  async settle(admin: string, subjectId: string, requestId: string, actualCost: number) {
+    await this.admin(admin); if (!integer(actualCost)) throw new ControlError('INVALID_COST', 400);
+    await this.store.transact(state => { this.settleState(state, requestKey(subjectId, requestId), actualCost); this.audit(state, 'request-reconciled', subjectId); });
+  }
+  async markLedgerRecovered(admin: string) {
+    await this.admin(admin); await this.store.transact(state => {
+      state.aiEnabled = false; state.recoveryRequired = true;
+      for (const request of Object.values(state.requests)) if (['reserved', 'submitted'].includes(request.status)) request.status = 'pending';
+      this.audit(state, 'ledger-recovery');
+    });
+  }
+  async confirmReconciled(admin: string, evidence: { budgets: Record<string, number>; usages: Record<string, Record<Operation, number>> }) {
+    await this.admin(admin); await this.store.transact(state => {
+      if (Object.values(state.requests).some(r => ['pending', 'submitted', 'reserved'].includes(r.status))) throw new ControlError('RECONCILIATION_REQUIRED', 503);
+      if (!evidence || !evidence.budgets || !evidence.usages || !Object.hasOwn(evidence.budgets, this.period()) ||
+        Object.keys(state.budgets).some(period => !Object.hasOwn(evidence.budgets, period)) ||
+        Object.keys(state.subjects).some(subjectId => !Object.hasOwn(evidence.usages, usageKey(subjectId, this.period()))) ||
+        Object.entries(evidence.budgets).some(([period, spent]) => !/^\d{4}-\d{2}$/.test(period) || !integer(spent)) ||
+        Object.entries(evidence.usages).some(([key, usage]) => !/^[a-f0-9-]{36}:\d{4}-\d{2}$/.test(key) || !integer(usage.understand) || !integer(usage.generate))) throw new ControlError('RECONCILIATION_EVIDENCE_REQUIRED', 400);
+      // Owner supplies independent billing/count evidence, including records missing from a restored snapshot.
+      // Reconciliation never decreases known charges or usage. Empty current month must be explicit.
+      for (const [period, spent] of Object.entries(evidence.budgets)) {
+        const budget = state.budgets[period] ?? { spent: 0, reserved: 0 }; budget.spent = Math.max(budget.spent, spent); state.budgets[period] = budget;
+      }
+      for (const [key, observed] of Object.entries(evidence.usages)) {
+        const known = state.usages[key] ?? { understand: 0, generate: 0 };
+        state.usages[key] = { understand: Math.max(known.understand, observed.understand), generate: Math.max(known.generate, observed.generate) };
+      }
+      state.recoveryRequired = false; state.aiEnabled = false; this.audit(state, 'ledger-reconciled');
+    });
+  }
+  assertApplicable(context: { restoreGeneration: number; inputDigest: string }, currentGeneration: number, currentInputDigest = context.inputDigest) {
+    if (context.restoreGeneration !== currentGeneration) throw new ControlError('STALE_RESTORE_GENERATION');
+    if (context.inputDigest !== currentInputDigest) throw new ControlError('STALE_INPUT');
+  }
+}
