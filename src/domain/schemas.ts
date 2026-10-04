@@ -59,14 +59,21 @@ export const goalSnapshotSchema = z.strictObject({ goal: z.string(), trainingPre
 export const generationMetadataSchema = z.strictObject({
   requestId: uuidSchema.optional(), model: z.string().optional(), promptVersion: z.string().optional(), generatedAt: utcTimestampSchema.optional(), memoRevision: nonnegative.optional(),
 });
-export const planVersionSchema = z.strictObject({
+export const legacyPlanVersionSchema = z.strictObject({
   ...entityFields, planId: uuidSchema, versionNumber: positive, goalSnapshot: goalSnapshotSchema,
   startDate: localDateSchema, scheduleTimeZone: timeZoneSchema,
   durationWeeks: positive.max(12), daysPerWeek: positive.max(7), days: z.array(planDaySchema).min(1), generationMetadata: generationMetadataSchema.optional(),
 });
+export const datePlanDaySchema = z.strictObject({ dayId: uuidSchema, date: localDateSchema, exercises: z.array(plannedExerciseSchema).min(1) });
+export const datePlanVersionSchema = z.strictObject({
+  ...entityFields, model: z.literal('date-day'), planId: uuidSchema, versionNumber: positive, goalSnapshot: goalSnapshotSchema,
+  startDate: localDateSchema, scheduleTimeZone: timeZoneSchema, days: z.tuple([datePlanDaySchema]), generationMetadata: generationMetadataSchema.optional(),
+}).refine(version => version.days[0].date === version.startDate, 'Day date must match its original date');
+export const planVersionSchema = z.union([datePlanVersionSchema, legacyPlanVersionSchema]);
 export const planSchema = z.strictObject({
   ...entityFields, name: z.string().min(1), source: z.enum(['ai', 'manual']), status: z.enum(['draft', 'active', 'archived']),
   currentVersionId: uuidSchema, startDate: localDateSchema, scheduleTimeZone: timeZoneSchema, deletedAt: utcTimestampSchema.optional(),
+  model: z.literal('date-day').optional(),
 });
 export const exerciseSnapshotSchema = exerciseSchema.omit({ steps: true, cautions: true, imageAssetId: true, videoAssetId: true }).extend({
   exerciseInstanceId: uuidSchema, exerciseId: exerciseIdSchema, order: nonnegative, targetSets: z.array(setMetricsSchema), notes: z.string().optional(), originalExerciseId: exerciseIdSchema.optional(),

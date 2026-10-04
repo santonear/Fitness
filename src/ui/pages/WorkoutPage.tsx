@@ -1,3 +1,6 @@
+import { withLegacyConfirmation } from '../legacy-confirmation';
+import { database } from '../../persistence/db';
+import { dateInZone } from '../../application/progress';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -22,9 +25,11 @@ export function WorkoutPage({ dashboard = false }: { dashboard?: boolean }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [calendarZone, setCalendarZone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone);
   const locked = useRef(false);
 
   async function refresh() {
+    const profile = await profileService.getProfile(); if (profile) setCalendarZone(profile.timeZone);
     const active = await workoutService.getActiveWorkout();
     setSession(active);
     setSets(active ? await workoutService.getSets(active.id) : []);
@@ -56,13 +61,14 @@ export function WorkoutPage({ dashboard = false }: { dashboard?: boolean }) {
   }
 
   function start(scheduledWorkoutId?: string) {
-    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const now = new Date();
-    const localDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-    void run(() => workoutService.startWorkout({ sessionId: crypto.randomUUID(), localDate, timeZone,
-      ...(scheduledWorkoutId ? { scheduledWorkoutId } : { exerciseIds: [choose] }) }));
+    void run(async () => {
+      const profile=await profileService.getProfile();const timeZone=profile!.timeZone;const localDate=dateInZone(Date.now(),timeZone);
+      const input={sessionId:crypto.randomUUID(),localDate,timeZone,...(scheduledWorkoutId?{scheduledWorkoutId}:{exerciseIds:[choose]})};
+      if(scheduledWorkoutId){const row=await database.scheduledWorkouts.get(scheduledWorkoutId);const version=row&&await database.planVersions.get(row.planVersionId);
+        if(version&&'durationWeeks' in version)return withLegacyConfirmation({type:'start',versionId:version.id,dayId:row!.plannedDayId},zh,confirmation=>workoutService.startWorkout({...input,legacyConfirmation:confirmation}));}
+      return workoutService.startWorkout(input);
+    });
   }
-
   function abandon() {
     if (!session || !window.confirm(zh
       ? '放弃本次训练？已保存内容将保留并标为已放弃。'
@@ -83,7 +89,7 @@ export function WorkoutPage({ dashboard = false }: { dashboard?: boolean }) {
     if (!session) {
       const available = schedule.filter(row => !requested || row.id === requested);
       const selected = exercises.find(exercise => exercise.id === choose)!;
-      const date = new Date();
+      const date = new Date(`${dateInZone(Date.now(),calendarZone)}T12:00:00Z`);
       const weekdays = zh ? ['一', '二', '三', '四', '五', '六', '日'] : ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
       const scheduleContent = <>
         <div className="dashboard-section-heading">
@@ -93,10 +99,10 @@ export function WorkoutPage({ dashboard = false }: { dashboard?: boolean }) {
         {dashboard && <div className="dashboard-week" aria-label={zh ? '本周日历' : 'This week'}>
           {weekdays.map((day, index) => {
             const value = new Date(date);
-            value.setDate(date.getDate() - (date.getDay() + 6) % 7 + index);
-            const localDate = `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`;
-            return <div key={index} className={index === (date.getDay() + 6) % 7 ? 'is-today' : ''}>
-              <span>{day}</span><b>{value.getDate()}</b><i className={available.some(row => row.scheduledDate === localDate) ? 'has-session' : ''} />
+            value.setUTCDate(date.getUTCDate() - (date.getUTCDay() + 6) % 7 + index);
+            const localDate = value.toISOString().slice(0,10);
+            return <div key={index} className={index === (date.getUTCDay() + 6) % 7 ? 'is-today' : ''}>
+              <span>{day}</span><b>{value.getUTCDate()}</b><i className={available.some(row => row.scheduledDate === localDate) ? 'has-session' : ''} />
             </div>;
           })}
         </div>}

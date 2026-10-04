@@ -17,7 +17,7 @@ export function createProfileService(repo: Repository) {
       const timestamp = new Date().toISOString();
       const profile = localProfileSchema.parse({ id: crypto.randomUUID(), revision: 0, createdAt: timestamp, updatedAt: timestamp, locale, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, units: 'metric' });
       await repo.db.profiles.add(profile);
-      await repo.db.metadata.add({ localProfileId: profile.id, schemaVersion: 3, catalogVersion: 1, revision: 1, dataRevision: 1 });
+      await repo.db.metadata.add({ localProfileId: profile.id, schemaVersion: 4, catalogVersion: 1, revision: 1, dataRevision: 1 });
       await repo.readMetadata();
       return profile;
     }).catch(storageError);
@@ -28,6 +28,7 @@ export function createProfileService(repo: Repository) {
     return repo.write(async () => {
       const current = await getProfile();
       if (!current || current.revision !== expectedRevision) throw new DomainError('CONFLICT', 'Profile changed; reload before saving');
+      if (input.timeZone !== current.timeZone && await repo.db.plans.filter(plan => plan.model === 'date-day').count()) throw new DomainError('CONFLICT', 'Calendar time zone is fixed while day plans exist; existing dates have not moved');
       const parsed = localProfileSchema.safeParse({ ...current, ...validated.data, trainingPreferences: validated.data.trainingPreferences, revision: current.revision + 1, updatedAt: new Date().toISOString() });
       if (!parsed.success) throw new DomainError('INVALID', parsed.error.message);
       await repo.db.profiles.put(parsed.data);

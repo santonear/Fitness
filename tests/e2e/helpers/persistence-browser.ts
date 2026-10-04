@@ -57,7 +57,7 @@ export async function exerciseUpgrade(name: string) {
     }));
     upgraded.close();
     const failed = tracked(createDatabase(name));
-    failed.version(4).stores({ bodyWeights: 'id,localDate' }).upgrade(async tx => {
+    failed.version(upgraded.verno + 1).stores({ bodyWeights: 'id,localDate' }).upgrade(async tx => {
       await tx.table('bodyWeights').clear(); throw new Error('migration failed');
     });
     const rejected = await failed.open().then(() => false, () => true);

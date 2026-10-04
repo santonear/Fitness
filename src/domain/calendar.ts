@@ -1,7 +1,7 @@
-import type { LocalDate, PlanVersion, ScheduledWorkout } from './models';
+import type { LocalDate, LegacyPlanVersion, ScheduledWorkout } from './models';
 import { DomainError } from './errors';
 import { localDateSchema, timeZoneSchema } from './schemas';
-export function expandSchedule(version: PlanVersion, startDate: LocalDate, timeZone: string): ScheduledWorkout[] {
+export function expandSchedule(version: LegacyPlanVersion, startDate: LocalDate, timeZone: string): ScheduledWorkout[] {
   if (!localDateSchema.safeParse(startDate).success || !timeZoneSchema.safeParse(timeZone).success) throw new DomainError('INVALID', 'Invalid calendar date or time zone');
   if (!Number.isInteger(version.durationWeeks) || version.durationWeeks < 1 || version.durationWeeks > 12 || !Number.isInteger(version.daysPerWeek) || version.daysPerWeek < 1 || version.daysPerWeek > 7) throw new DomainError('INVALID', 'Invalid cycle length or weekday count');
   const start = new Date(`${startDate}T00:00:00Z`);

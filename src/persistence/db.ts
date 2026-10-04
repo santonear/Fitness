@@ -42,6 +42,9 @@ export class FitnessDatabase extends Dexie {
         row.upgradedAt = new Date().toISOString();
       });
     });
+    this.version(4).stores({}).upgrade(async transaction => {
+      await transaction.table('metadata').toCollection().modify((row: Metadata) => { row.schemaVersion = 4; });
+    });
   }
 }
 export function createDatabase(name: string): FitnessDatabase { return new FitnessDatabase(name); }

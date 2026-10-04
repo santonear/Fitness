@@ -4,6 +4,7 @@ import { workoutSessionSchema, exerciseSnapshotSchema, setRecordSchema } from '.
 import { DomainError } from '../domain/errors';
 import { exercises } from '../catalog/exercises';
 import { synchronizeTrainingMemo } from './training-memory';
+import { authorizeLegacyOperation } from './legacy-collisions';
 
 function invalid(message:string):never{throw new DomainError('INVALID',message);}
 function snapshot(id:string,order:number,instance:string=crypto.randomUUID()):ExerciseSnapshot{
@@ -30,6 +31,12 @@ export function createWorkoutService(repo:Repository) {
    if(!planVersionId||!plannedDayId)invalid('Both plan version and day are required');
    if(await db.scheduledWorkouts.where('planVersionId').equals(planVersionId).filter(row=>row.plannedDayId===plannedDayId&&Boolean(row.hiddenAt)).count())invalid('This schedule was hidden');
    const version=await db.planVersions.get(planVersionId);const day=version?.days.find(d=>d.dayId===plannedDayId);if(!day)invalid('Plan day not found');
+   if ('durationWeeks' in version!) await authorizeLegacyOperation({type:'start',versionId:planVersionId,dayId:plannedDayId},input.legacyConfirmation,repo);
+   else {
+    const task=await db.scheduledWorkouts.where('planVersionId').equals(planVersionId).filter(row=>row.plannedDayId===plannedDayId).first();
+    const plan=await db.plans.get(version!.planId);
+    if(!task||task.hiddenAt||task.status==='skipped'||task.completedSessionId||plan?.currentVersionId!==version!.id||plan.status!=='active')invalid('Day schedule unavailable');
+   }
    if((await db.plans.get(version!.planId))?.deletedAt)invalid('This plan was deleted');
    if(input.exerciseIds?.length)invalid('Planned training uses plan snapshots');
    actual=day.exercises.map(e=>({...snapshot(e.exerciseId,e.order),targetSets:structuredClone(e.targetSets),notes:e.notes}));
@@ -84,7 +91,7 @@ export function createWorkoutService(repo:Repository) {
  });}
  async function getActiveWorkout(){return db.sessions.where('status').equals('in_progress').first();}
  async function getSets(id:string){return db.sets.where('sessionId').equals(id).sortBy('order');}
- async function listAvailableSchedule(){const active=await db.plans.where('status').equals('active').first();return active?(await db.scheduledWorkouts.where('planVersionId').equals(active.currentVersionId).sortBy('scheduledDate')).filter(row=>!row.hiddenAt&&row.status==='pending'&&!row.completedSessionId):[];}
+ async function listAvailableSchedule(){const active=await db.plans.where('status').equals('active').toArray();const ids=active.filter(plan=>!plan.deletedAt).map(plan=>plan.currentVersionId);return ids.length?(await db.scheduledWorkouts.where('planVersionId').anyOf(ids).sortBy('scheduledDate')).filter(row=>!row.hiddenAt&&row.status==='pending'&&!row.completedSessionId):[];}
  return {startWorkout,recordSet,adjustWorkout,completeWorkout:(id:string,revision:number)=>finish(id,revision,'completed'),abandonWorkout:(id:string,revision:number)=>finish(id,revision,'abandoned'),getActiveWorkout,getSets,listAvailableSchedule};
 }
 export const workoutService=createWorkoutService(repository);

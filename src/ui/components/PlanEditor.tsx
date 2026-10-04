@@ -1,12 +1,12 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { exercises } from '../../catalog/exercises';
-import type { Plan, PlanInput, PlanVersion, PlannedExercise, SetMetrics, MetricInput } from '../../domain/models';
+import type { Plan, PlanInput, LegacyPlanVersion, PlannedExercise, SetMetrics, MetricInput } from '../../domain/models';
 import { DomainError } from '../../domain/errors';
 import { parseMetric } from '../../domain/units';
 
 type PlanEditorProps = {
   locale: 'zh' | 'en';
-  editing?: { plan: Plan; version: PlanVersion };
+  editing?: { plan: Plan; version: LegacyPlanVersion };
   busy: boolean;
   onSave: (input: PlanInput, revision?: number) => Promise<void>;
   onRename: (name: string, revision: number) => Promise<void>;
@@ -234,7 +234,7 @@ function displayInput(target: SetMetrics): Record<string, string> {
   }
 }
 
-function TargetFields({ target, zh, onChange }: {
+export function TargetFields({ target, zh, onChange }: {
   target: SetMetrics;
   zh: boolean;
   onChange: (target: SetMetrics) => void;
