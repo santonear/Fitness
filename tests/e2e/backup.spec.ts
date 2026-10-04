@@ -24,11 +24,11 @@ test('manual JSON download and File restore work across distinct origins', async
   const filePath = await download.path();
   if (!filePath) throw new Error('Downloaded backup is missing');
   const other = await context.newPage();
-  await other.goto('http://localhost:5173/settings');
+  await other.goto(new URL('/settings',page.url().replace('127.0.0.1','localhost')).href);
   await expect(other.getByLabel('Goal', { exact: true })).toHaveValue('');
   const sibling = await context.newPage();
   await sibling.addInitScript(() => { Object.defineProperty(window, 'BroadcastChannel', { value: undefined }); });
-  await sibling.goto('http://localhost:5173/settings');
+  await sibling.goto(new URL('/settings',page.url().replace('127.0.0.1','localhost')).href);
   await sibling.getByLabel('Goal', { exact: true }).fill('Unsaved stale form');
   await other.getByLabel('Restore JSON file', { exact: true }).setInputFiles(filePath);
   await expect(other.getByText('Backup validated', { exact: true })).toBeVisible();

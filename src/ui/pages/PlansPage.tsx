@@ -1,10 +1,12 @@
+import { withLegacyConfirmation } from '../legacy-confirmation';
+import { DayPlansPanel } from '../components/DayPlansPanel';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { planService } from '../../application/plans';
 import { profileService } from '../../application/profile';
 import { database } from '../../persistence/db';
-import type { Plan, PlanVersion, ScheduledWorkout } from '../../domain/models';
+import type { Plan, LegacyPlanVersion, ScheduledWorkout } from '../../domain/models';
 import { PlanEditor } from '../components/PlanEditor';
 
 export function PlansPage() {
@@ -13,13 +15,13 @@ export function PlansPage() {
   const zh = locale === 'zh';
   const [plans, setPlans] = useState<Plan[]>([]);
   const [schedule, setSchedule] = useState<ScheduledWorkout[]>([]);
-  const [editing, setEditing] = useState<{ plan: Plan; version: PlanVersion }>();
+  const [editing, setEditing] = useState<{ plan: Plan; version: LegacyPlanVersion }>();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
   async function refresh() {
-    const rows = (await database.plans.toArray()).filter(plan => !plan.deletedAt);
+    const rows = (await database.plans.toArray()).filter(plan => !plan.deletedAt && !plan.model);
     setPlans(rows);
     const active = rows.find(plan => plan.status === 'active');
     setSchedule(active
@@ -51,6 +53,8 @@ export function PlansPage() {
   return (
     <>
       <h1>{zh ? '训练计划' : 'Plans'}</h1>
+      <DayPlansPanel locale={locale} />
+      <h2>{zh ? '旧周计划' : 'Legacy weekly plans'}</h2>
       <PlanEditor locale={locale} editing={editing} busy={busy}
         onRename={async (name, revision) => {
           if (!editing) return;
@@ -58,7 +62,7 @@ export function PlansPage() {
           setEditing(undefined);
         }}
         onCancel={() => setEditing(undefined)} onSave={async (input, revision) => {
-          await run(() => planService.savePlan(input, revision), undefined, false);
+          await run(() => withLegacyConfirmation({type:'save',input},zh,confirmation=>planService.savePlan(input, revision,confirmation)), undefined, false);
           setEditing(undefined);
         }} />
       {error && <p role="alert">{error}</p>}
@@ -70,14 +74,14 @@ export function PlansPage() {
             {plan.name} · {zh ? ({ active: '当前', draft: '草稿', archived: '已归档' }[plan.status]) : plan.status}
             <button disabled={busy} onClick={() => {
               void database.planVersions.get(plan.currentVersionId).then(version => {
-                if (version) setEditing({ plan, version });
+                if (version && 'durationWeeks' in version) setEditing({ plan, version });
               });
             }}>
               {zh ? '编辑' : 'Edit'}
             </button>
             {plan.status === 'draft' && (
               <button disabled={busy} onClick={() => {
-                void run(() => planService.activateDraftPlan(plan.id, plan.revision)).catch(() => {});
+                void run(() => withLegacyConfirmation({type:'activate',id:plan.id},zh,confirmation=>planService.activateDraftPlan(plan.id, plan.revision,confirmation))).catch(() => {});
               }}>
                 {zh ? '启用草稿' : 'Activate draft'}
               </button>
@@ -127,7 +131,7 @@ function ScheduleRow({ row, zh, busy, run }: {
             <input type="date" value={date} onChange={event => setDate(event.target.value)} disabled={busy} />
           </label>
           <button disabled={busy} onClick={() => {
-            void run(() => planService.rescheduleWorkout(row.id, date, row.revision)).catch(() => {});
+            void run(() => withLegacyConfirmation({type:'reschedule',id:row.id,date},zh,confirmation=>planService.rescheduleWorkout(row.id, date, row.revision,confirmation))).catch(() => {});
           }}>
             {zh ? '改期' : 'Reschedule'}
           </button>

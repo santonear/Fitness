@@ -5,6 +5,7 @@ import { exercises } from '../catalog/exercises';
 import { expandSchedule } from '../domain/calendar';
 import { repository, type Repository } from '../persistence/repository';
 import { synchronizeTrainingMemo } from './training-memory';
+import { projectDay } from '../domain/day-date-projection';
 
 export const MAX_BACKUP_BYTES = 10 * 1024 * 1024;
 export const restoreChannelName = 'fitness-library-replaced';
@@ -32,7 +33,7 @@ function validateSnapshot(snapshot: ExerciseSnapshot): void {
 }
 function validateVersion(version: PlanVersion): void {
   validDate(version.startDate);
-  try { expandSchedule(version, version.startDate, version.scheduleTimeZone); }
+  try { if ('durationWeeks' in version) expandSchedule(version, version.startDate, version.scheduleTimeZone); }
   catch { invalid('Invalid plan calendar'); }
   for (const day of version.days) {
     distinct(day.exercises.map(exercise => String(exercise.order)), 'planned exercise order');
@@ -48,6 +49,14 @@ function validateSession(session: WorkoutSession, sets: SetRecord[], versions: M
   if (session.completedAt && Date.parse(session.completedAt) < Date.parse(session.startedAt)) invalid('Workout completes before it starts');
   if ((session.planVersionId === undefined) !== (session.plannedDayId === undefined)) invalid('Workout plan references must appear together');
   if (session.planVersionId && !versions.get(session.planVersionId)?.days.some(day => day.dayId === session.plannedDayId)) invalid('Workout plan day not found');
+  const version = session.planVersionId ? versions.get(session.planVersionId) : undefined;
+  if (version && !('durationWeeks' in version)) {
+    const day = version.days[0];
+    if (session.originalExerciseSnapshots.length !== day.exercises.length || day.exercises.some(item => {
+      const original = session.originalExerciseSnapshots.find(snapshot => snapshot.order === item.order);
+      return !original || original.exerciseId !== item.exerciseId || JSON.stringify(original.targetSets) !== JSON.stringify(item.targetSets) || original.notes !== item.notes;
+    })) invalid('Day training original snapshot differs from its fixed version');
+  }
   for (const snapshots of [session.originalExerciseSnapshots, session.exerciseSnapshots]) {
     distinct(snapshots.map(exercise => exercise.exerciseInstanceId), 'exercise instance');
     distinct(snapshots.map(exercise => String(exercise.order)), 'exercise order');
@@ -63,21 +72,22 @@ function validateSession(session: WorkoutSession, sets: SetRecord[], versions: M
 }
 
 export function validateBackupEnvelope(value: unknown): BackupEnvelope {
-  if (typeof value === 'object' && value !== null && 'schemaVersion' in value && value.schemaVersion !== 2) {
-    throw new DomainError('BACKUP_VERSION_UNSUPPORTED', 'Unsupported JSON backup version; only schema version 2 is supported');
+  if (typeof value === 'object' && value !== null && 'schemaVersion' in value && value.schemaVersion !== 2 && value.schemaVersion !== 3) {
+    throw new DomainError('BACKUP_VERSION_UNSUPPORTED', 'Unsupported JSON backup version; versions 2 and 3 are supported');
   }
   const parsed = backupEnvelopeSchema.safeParse(value);
   if (!parsed.success) throw new DomainError('BACKUP_INVALID', `Invalid backup: ${parsed.error.message}`);
   const envelope = parsed.data;
   const data = envelope.data;
-  if (envelope.catalogVersion !== 1 || data.metadata.catalogVersion !== 1 || data.metadata.schemaVersion !== 3 || data.trainingMemo.schemaVersion !== 1) {
+  if (envelope.catalogVersion !== 1 || data.metadata.catalogVersion !== 1 || (envelope.schemaVersion === 2 ? data.metadata.schemaVersion !== 3 : data.metadata.schemaVersion !== 4) || data.trainingMemo.schemaVersion !== 1) {
     throw new DomainError('BACKUP_VERSION_UNSUPPORTED', 'Unsupported catalog, metadata or memo version');
   }
   for (const [label, rows] of Object.entries(data)) {
     if (Array.isArray(rows)) distinct(rows.map(row => row.id), `${label} ID`);
   }
   if (data.profiles.length !== 1 || data.profiles[0].id !== data.metadata.localProfileId) invalid('Exactly one matching local profile is required');
-  if (data.plans.filter(plan => plan.status === 'active').length > 1) invalid('Multiple current plans');
+  if (data.plans.filter(plan => !plan.model && plan.status === 'active').length > 1) invalid('Multiple current legacy plans');
+  if (envelope.schemaVersion === 2 && (data.plans.some(plan => plan.model) || data.planVersions.some(version => !('durationWeeks' in version)))) invalid('Day plans require backup version 3');
   if (data.sessions.filter(session => session.status === 'in_progress').length > 1) invalid('Multiple ongoing workouts');
   const plans = new Map(data.plans.map(plan => [plan.id, plan]));
   if (data.plans.some(plan => plan.deletedAt && plan.status !== 'archived')) invalid('Deleted plans must be archived');
@@ -93,6 +103,7 @@ export function validateBackupEnvelope(value: unknown): BackupEnvelope {
   for (const version of data.planVersions) {
     const plan = plans.get(version.planId);
     if (!plan) invalid('Plan version parent not found');
+    if (Boolean(plan.model) !== !('durationWeeks' in version)) invalid('Plan model differs from version');
     validateVersion(version);
   }
   for (const set of data.sets) if (!sessions.has(set.sessionId)) invalid('Set workout not found');
@@ -107,9 +118,12 @@ export function validateBackupEnvelope(value: unknown): BackupEnvelope {
     const day = version?.days.find(entry => entry.dayId === row.plannedDayId);
     if (!version || !day) invalid('Scheduled plan day not found');
     const weekday = new Date(`${row.originalDate}T00:00:00Z`).getUTCDay() || 7;
-    if (weekday !== day.dayOfWeek) invalid('Original schedule date does not match plan weekday');
-    const original = expandSchedule(version, version.startDate, version.scheduleTimeZone).find(entry => entry.plannedDayId === row.plannedDayId);
-    if (original?.originalDate !== row.originalDate) invalid('Original schedule date does not match plan calendar');
+    if ('durationWeeks' in version) {
+      const legacyDay = version.days.find(entry => entry.dayId === row.plannedDayId)!;
+      if (weekday !== legacyDay.dayOfWeek) invalid('Original schedule date does not match plan weekday');
+      const original = expandSchedule(version, version.startDate, version.scheduleTimeZone).find(entry => entry.plannedDayId === row.plannedDayId);
+      if (original?.originalDate !== row.originalDate) invalid('Original schedule date does not match plan calendar');
+    } else if (row.originalDate !== version.startDate) invalid('Day plan original date differs from snapshot');
     if (row.completedSessionId) {
       const session = sessions.get(row.completedSessionId);
       if (!session || session.status !== 'completed' || session.planVersionId !== row.planVersionId || session.plannedDayId !== row.plannedDayId || row.status !== 'pending') invalid('Completed schedule reference is invalid');
@@ -117,6 +131,10 @@ export function validateBackupEnvelope(value: unknown): BackupEnvelope {
   }
   for (const version of data.planVersions) {
     const rows = data.scheduledWorkouts.filter(row => row.planVersionId === version.id);
+    if (!('durationWeeks' in version)) {
+      if (rows.length !== (plans.get(version.planId)?.currentVersionId === version.id ? 1 : 0)) invalid('Day task association is incomplete');
+      continue;
+    }
     if (rows.length !== version.days.length) invalid('Plan schedule is incomplete');
     // Historical versions keep their calendar when the plan's current start date changes.
     const dates = rows.map(row => {
@@ -128,6 +146,16 @@ export function validateBackupEnvelope(value: unknown): BackupEnvelope {
   for (const session of data.sessions) {
     if (session.status === 'completed' && session.planVersionId && !data.scheduledWorkouts.some(row => row.completedSessionId === session.id)) invalid('Completed planned workout has no schedule link');
   }
+  const daySlots: string[] = [];
+  for (const row of data.scheduledWorkouts) {
+    const version = versions.get(row.planVersionId)!; const plan = plans.get(version.planId)!;
+    if (!plan.model) continue;
+    const ongoing = data.sessions.some(session => session.status === 'in_progress' && session.planVersionId === row.planVersionId && session.plannedDayId === row.plannedDayId);
+    if (!row.completedSessionId && !ongoing && (row.hiddenAt || row.status === 'skipped' || plan.deletedAt || plan.status !== 'active')) continue;
+    const projected = projectDay(row.scheduledDate, version.scheduleTimeZone, data.profiles[0].timeZone);
+    if (projected) daySlots.push(projected);
+  }
+  distinct(daySlots, 'occupying day plan date');
   distinct(data.bodyWeights.map(row => row.localDate), 'weight observation date');
   data.bodyWeights.forEach(row => validDate(row.localDate));
   distinct(data.timers.map(timer => `${timer.sessionId}:${timer.exerciseInstanceId}:${timer.kind}`), 'timer association');
@@ -165,7 +193,7 @@ export function createBackupService(repo: Repository) {
       const versions = await repo.db.planVersions.toArray();
       const previousMemo = await repo.db.trainingMemo.get(1);
       return validateBackupEnvelope({
-        format: 'fitness-local', schemaVersion: 2, catalogVersion: 1, exportedAt: new Date().toISOString(),
+        format: 'fitness-local', schemaVersion: 3, catalogVersion: 1, exportedAt: new Date().toISOString(),
         data: {
           metadata, profiles: await repo.db.profiles.toArray(), plans: await repo.db.plans.toArray(), planVersions: versions,
           sessions, sets, scheduledWorkouts: await repo.db.scheduledWorkouts.toArray(), bodyWeights: await repo.db.bodyWeights.toArray(),
@@ -207,7 +235,7 @@ export function createBackupService(repo: Repository) {
       if (!Number.isSafeInteger(committedGeneration) || !Number.isSafeInteger(before.dataRevision + 1)) invalid('Local revision counter exhausted');
       for (const table of repo.db.tables) await table.clear();
       const data = envelope.data;
-      await repo.db.metadata.put({ ...data.metadata, revision: before.revision, dataRevision: before.dataRevision, restoreGeneration: committedGeneration, importedAt: new Date().toISOString() });
+      await repo.db.metadata.put({ ...data.metadata, schemaVersion: 4, revision: before.revision, dataRevision: before.dataRevision, restoreGeneration: committedGeneration, importedAt: new Date().toISOString() });
       await repo.db.profiles.bulkAdd(data.profiles);
       await repo.db.plans.bulkAdd(data.plans);
       await repo.db.planVersions.bulkAdd(data.planVersions);

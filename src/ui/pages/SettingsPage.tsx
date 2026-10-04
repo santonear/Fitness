@@ -60,7 +60,7 @@ export function SettingsPage() {
   }
   function submit(e: FormEvent) { e.preventDefault(); void save(); }
   return <><h1>{t('settings')}</h1><p>{l.local}</p><p>{l.optional}</p>
-    <BackupPanel />
+    {profile && <BackupPanel />}
     <button disabled={!profile || busy} onClick={() => void run(async () => { setMemo(await trainingMemoryService.readTrainingMemo()); })}>{i18n.resolvedLanguage === 'zh' ? '读取全量训练备忘' : 'Read full training memo'}</button>
     {memo && <TrainingMemoView memo={memo} locale={i18n.resolvedLanguage === 'zh' ? 'zh' : 'en'} />}
     {error && <p role="alert">{error}</p>}<p role="status">{status}</p>

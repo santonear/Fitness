@@ -39,6 +39,7 @@ export function BackupPanel() {
   return (
     <section aria-label={zh ? 'JSON 备份与恢复' : 'JSON backup and restore'}>
       <h2>{zh ? '备份与恢复' : 'Backup and restore'}</h2>
+      <p>{zh ? '可以恢复旧版备份；含日期计划的新备份需要此版或兼容的新版本。旧版不支持升级后的日期计划和新备份，请勿直接回退操作同一本地库；回退前保管升级前备份，并使用隔离环境。' : 'Older backups can be restored here. Date plans and new backups require this or a compatible newer app. Older apps do not support the new data: do not roll back against the same library. Keep a pre-upgrade backup and use an isolated environment.'}</p>
       <p>{zh ? '手动下载 JSON，保管到浏览器以外。恢复将替换全部本地数据，建议文件不超过 10 MB。' : 'Download JSON and keep it outside this browser. Restore replaces all local data; files must be no larger than 10 MB.'}</p>
       <button disabled={busy} onClick={() => void run(async () => {
         download(await backupService.exportBackup());

@@ -235,3 +235,6 @@ pre { max-width: 100%; overflow-x: auto; white-space: pre-wrap; overflow-wrap: a
   .dashboard-history-row { flex-wrap: wrap; gap: 12px; } .dashboard-history-row > div { flex-basis: 160px; }
   .dashboard-history-row .dashboard-badge { margin-left: 54px; }
 }
+
+/* CAL exact-date editor */
+.date-calendar {max-width:42rem;} .date-calendar-header {display:flex;align-items:center;gap:.5rem;} .date-calendar-header label{min-width:0;flex:1;} .date-calendar-header input{max-width:100%;box-sizing:border-box;} .date-calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;user-select:none;} .date-calendar-grid button{min-width:0;padding:8px 0;margin:0;font-size:14px;} .date-calendar-weekday{text-align:center;font-size:12px;} .date-calendar-grid button[aria-pressed=true]{background:#184c3b;color:white;} .date-calendar-grid .outside-month{opacity:.5;} .date-calendar-grid .today{border-width:2px;} .date-calendar-grid .occupied{text-decoration:underline;} .day-plans-panel input,.day-plans-panel textarea,.day-plans-panel select{max-width:100%;box-sizing:border-box;} .day-plans-panel fieldset{min-width:0;} .day-selection-tabs{display:flex;flex-wrap:wrap;gap:.25rem;} .day-plans-panel li{overflow-wrap:anywhere;} .day-plans-panel [hidden]{display:none;}

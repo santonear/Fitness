@@ -10,6 +10,8 @@ export type LocalProfile = z.infer<typeof schemas.localProfileSchema>;
 export type TrainingPreferences = z.infer<typeof schemas.trainingPreferencesSchema>;
 export type Plan = z.infer<typeof schemas.planSchema>;
 export type PlanVersion = z.infer<typeof schemas.planVersionSchema>;
+export type LegacyPlanVersion = z.infer<typeof schemas.legacyPlanVersionSchema>;
+export type DatePlanVersion = z.infer<typeof schemas.datePlanVersionSchema>;
 export type PlanDay = z.infer<typeof schemas.planDaySchema>;
 export type PlannedExercise = z.infer<typeof schemas.plannedExerciseSchema>;
 export type ExerciseSnapshot = z.infer<typeof schemas.exerciseSnapshotSchema>;
@@ -42,6 +44,7 @@ export interface PlanInput {
 export interface StartWorkoutInput {
   sessionId: string; localDate: LocalDate; timeZone: string;
   planVersionId?: string; plannedDayId?: string; scheduledWorkoutId?: string; exerciseIds?: string[];
+  legacyConfirmation?: import('./day-plan-contracts').LegacyConfirmation;
 }
 export type SetInput = Pick<SetRecord, 'id' | 'exerciseInstanceId' | 'order' | 'metricType' | 'completed' | 'reps' | 'loadGrams' | 'durationSeconds' | 'distanceMeters' | 'notes'>;
 export type Adjustment =

@@ -6,6 +6,7 @@ import { workoutService } from '../../application/workouts';
 import { dateInZone, progressService } from '../../application/progress';
 import type { ProgressReport } from '../../domain/models';
 import { WorkoutPage } from './WorkoutPage';
+import { profileService } from '../../application/profile';
 
 export function TodayPage() {
   const { i18n } = useTranslation();
@@ -16,7 +17,8 @@ export function TodayPage() {
   const [error, setError] = useState('');
   // Refresh the date boundary while an open dashboard crosses midnight.
   const [now, setNow] = useState(() => Date.now());
-  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const [timeZone, setTimeZone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone);
+  useEffect(() => { const subscription = liveQuery(async () => (await profileService.getProfile())?.timeZone).subscribe(zone => { if (zone) setTimeZone(zone); }); return () => subscription.unsubscribe(); }, []);
   const today = dateInZone(now, timeZone);
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 60_000);
@@ -38,14 +40,14 @@ export function TodayPage() {
   }, [today, timeZone, now]);
 
   const week = Array.from({ length: 7 }, (_, index) => {
-    const date = new Date(now);
-    date.setDate(date.getDate() - (date.getDay() + 6) % 7 + index);
-    return dateInZone(date.getTime(), timeZone);
+    const date = new Date(`${today}T12:00:00Z`);
+    date.setUTCDate(date.getUTCDate() - (date.getUTCDay() + 6) % 7 + index);
+    return date.toISOString().slice(0, 10);
   });
   const weight = report?.bodyWeights.at(-1);
   const rate = report?.completionRate;
   const dateLabel = new Intl.DateTimeFormat(zh ? 'zh-CN' : 'en-US', {
-    month: 'long', day: 'numeric', weekday: 'long',
+    month: 'long', day: 'numeric', weekday: 'long', timeZone,
   }).format(now);
 
   return (
