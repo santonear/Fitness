@@ -149,6 +149,7 @@ export function WorkoutPage({ dashboard = false }: { dashboard?: boolean }) {
         <p>{session.localDate} · {session.timeZone} · {session.planVersionId ? (zh ? '计划训练' : 'Planned workout') : (zh ? '临时训练' : 'Temporary workout')}</p>
         {session.exerciseSnapshots.map(exercise => (
           <ExerciseEditor key={exercise.exerciseInstanceId} sessionId={session.id} exercise={exercise}
+            original={session.originalExerciseSnapshots.find(entry => entry.exerciseInstanceId === exercise.exerciseInstanceId)}
             sets={sets.filter(set => set.exerciseInstanceId === exercise.exerciseInstanceId)}
             locale={locale} busy={busy}
             onRecordAttempt={() => { setMessage(''); setError(''); }}

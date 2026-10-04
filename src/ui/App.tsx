@@ -31,13 +31,14 @@ export function App(): ReactElement {
   const [libraryGeneration, setLibraryGeneration] = useState(0);
   const [restoring, setRestoring] = useState(false);
   const [restoreError, setRestoreError] = useState('');
+  const [restoreSucceeded, setRestoreSucceeded] = useState(false);
   const restoringRef = useRef(false);
   useEffect(() => {
     let generation: number | undefined;
     async function reloadImportedLibrary() {
       if (restoringRef.current) return;
       restoringRef.current = true;
-      flushSync(() => { setRestoring(true); setRestoreError(''); });
+      flushSync(() => { setRestoring(true); setRestoreError(''); setRestoreSucceeded(false); });
       try {
         const metadata = await repository.readMetadata();
         const profile = await database.profiles.toCollection().first();
@@ -49,6 +50,7 @@ export function App(): ReactElement {
           await i18n.changeLanguage(profile.locale);
         }
         setLibraryGeneration(value => value + 1);
+        setRestoreSucceeded(true);
         setRestoring(false);
       } catch (reason) {
         setRestoreError(String(reason));
@@ -102,6 +104,7 @@ export function App(): ReactElement {
   useEffect(() => {
     if (previousPath.current !== location.pathname) {
       main.current?.focus();
+      setRestoreSucceeded(false);
       previousPath.current = location.pathname;
     }
   }, [location.pathname]);
@@ -137,6 +140,7 @@ export function App(): ReactElement {
       </header>
       <main id="content" ref={main} tabIndex={-1}>
         {restoreError && <p role="alert">{restoreError}</p>}
+        {restoreSucceeded && <p data-testid="restore-result" aria-live="polite">{i18n.resolvedLanguage === 'zh' ? '恢复成功。' : 'Restore succeeded.'}</p>}
         {restoring ? <p role="status">{i18n.resolvedLanguage === 'zh' ? '正在读取恢复后的本地数据…' : 'Reading restored local data…'}</p> : <Routes key={libraryGeneration}>
           {destinations.map(([name, path]) => (
             <Route key={name} path={path} element={name === 'today' ? <TodayPage /> : name === 'exercises' ? <CatalogPage /> : name === 'settings' ? <SettingsPage /> : name === 'plans' ? <PlansPage /> : <ProgressPage />} />

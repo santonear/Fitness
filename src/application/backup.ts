@@ -7,7 +7,12 @@ import { repository, type Repository } from '../persistence/repository';
 import { synchronizeTrainingMemo } from './training-memory';
 import { projectDay } from '../domain/day-date-projection';
 
-export const MAX_BACKUP_BYTES = 10 * 1024 * 1024;
+// UTF-8 file bytes, not characters. Candidate verified on synthetic desktop data;
+// physical-phone capacity support remains unverified.
+export const MAX_BACKUP_BYTES = 16 * 1024 * 1024;
+function checkBackupBytes(bytes: number): void {
+  if (bytes > MAX_BACKUP_BYTES) throw new DomainError('BACKUP_TOO_LARGE', `Backup exceeds ${MAX_BACKUP_BYTES} UTF-8 bytes (16 MiB). Existing data has not been replaced.`);
+}
 export const restoreChannelName = 'fitness-library-replaced';
 export const restoreEventName = 'fitness-library-restored';
 export function restoreStorageKey(databaseName: string): string {
@@ -185,7 +190,7 @@ export function validateBackupEnvelope(value: unknown): BackupEnvelope {
 }
 
 export function createBackupService(repo: Repository) {
-  async function exportBackup(): Promise<Blob> {
+  async function exportBackupWithReceipt(): Promise<{ blob: Blob; dataRevision: number; restoreGeneration: number }> {
     const envelope = await repo.db.transaction('r', repo.db.tables, async () => {
       const metadata = await repo.readMetadata();
       const sessions = await repo.db.sessions.toArray();
@@ -207,12 +212,16 @@ export function createBackupService(repo: Repository) {
       });
     });
     const blob = new Blob([JSON.stringify(envelope, null, 2)], { type: 'application/json' });
-    if (blob.size > MAX_BACKUP_BYTES) throw new DomainError('BACKUP_TOO_LARGE', 'Export exceeds 10 MB. The configured import limit must be increased before creating a recoverable backup.');
-    return blob;
+    checkBackupBytes(blob.size);
+    return { blob, dataRevision: envelope.data.metadata.dataRevision, restoreGeneration: envelope.data.metadata.restoreGeneration ?? 0 };
+  }
+
+  async function exportBackup(): Promise<Blob> {
+    return (await exportBackupWithReceipt()).blob;
   }
 
   async function validateBackup(file: File): Promise<ValidatedBackup> {
-    if (file.size > MAX_BACKUP_BYTES) throw new DomainError('BACKUP_TOO_LARGE', 'Backup exceeds the 10 MB import limit');
+    checkBackupBytes(file.size);
     let text: string;
     try { text = await file.text(); }
     catch (reason) { throw new DomainError('BACKUP_INVALID', `Cannot read backup file: ${String(reason)}. Select an accessible local file and try again.`); }
@@ -227,7 +236,7 @@ export function createBackupService(repo: Repository) {
       throw new DomainError('BACKUP_CONFIRMATION_REQUIRED', 'Download and keep the current backup, then confirm complete replacement');
     }
     const envelope = validateBackupEnvelope(input.envelope);
-    if (new Blob([JSON.stringify(envelope)]).size > MAX_BACKUP_BYTES) throw new DomainError('BACKUP_TOO_LARGE', 'Backup exceeds the 10 MB import limit');
+    checkBackupBytes(new Blob([JSON.stringify(envelope)]).size);
     let committedGeneration = 0;
     await repo.write(async () => {
       const before = await repo.readMetadata();
@@ -262,7 +271,7 @@ export function createBackupService(repo: Repository) {
     }
     return { importedPlans: envelope.data.plans.length, importedSessions: envelope.data.sessions.length, rebuiltMemo: true };
   }
-  return { exportBackup, validateBackup, importBackup };
+  return { exportBackup, exportBackupWithReceipt, validateBackup, importBackup };
 }
 
 export const backupService = createBackupService(repository);
