@@ -1,0 +1,3 @@
+import {defineConfig} from '@playwright/test';
+delete process.env.NO_COLOR;
+export default defineConfig({testDir:'./tests/e2e',workers:2,timeout:90000,outputDir:'test-results/next-integration',reporter:[['list'],['json',{outputFile:'test-results/next-integration.json'}]],use:{baseURL:'http://127.0.0.1:5205',viewport:{width:320,height:800},actionTimeout:10000,trace:'retain-on-failure'},projects:[{name:'chromium',use:{browserName:'chromium'}},{name:'webkit',use:{browserName:'webkit'}}],webServer:{command:'node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 5205 --strictPort',url:'http://127.0.0.1:5205',reuseExistingServer:false}});

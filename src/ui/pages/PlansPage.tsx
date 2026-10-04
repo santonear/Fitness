@@ -53,6 +53,7 @@ export function PlansPage() {
   return (
     <>
       <h1>{zh ? '训练计划' : 'Plans'}</h1>
+      <p><Link to="/ai">{zh ? 'AI 计划助手' : 'AI plan assistant'}</Link></p>
       <DayPlansPanel locale={locale} />
       <h2>{zh ? '旧周计划' : 'Legacy weekly plans'}</h2>
       <PlanEditor locale={locale} editing={editing} busy={busy}

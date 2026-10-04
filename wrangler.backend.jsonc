@@ -1,0 +1,12 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "fitness-control-source",
+  "main": "src/backend/worker.ts",
+  "compatibility_date": "2026-10-05",
+  "workers_dev": false,
+  "preview_urls": false,
+  "observability": { "enabled": false },
+  "vars": { "CONTROL_MODE": "disabled", "SUPPLIER_PROVIDER": "unselected" }
+  // No route, D1 resource or secret is provisioned. Add CONTROL_DB only after separate
+  // infrastructure approval. Original static wrangler.jsonc remains independent.
+}
