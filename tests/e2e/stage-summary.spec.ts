@@ -86,5 +86,5 @@ test('empty and invalid selections remain visible and never imply AI generation'
   await expect(section.getByLabel('Week start date')).toBeVisible();
   await section.getByRole('button', { name: 'Prepare local preview' }).click();
   await expect(section.getByRole('alert')).toContainText('INVALID_RANGE');
-  await expect(section).toContainText('no AI summary is generated and no data is sent');
+  await expect(section).toContainText('Preparing a local facts preview does not call a model or send data.');
 });

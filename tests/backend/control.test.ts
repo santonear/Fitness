@@ -124,7 +124,7 @@ describe('BE local control', () => {
     await f.service.markLedgerRecovered(f.admin);
     await expect(f.service.submit(f.session.token, await f.request())).rejects.toMatchObject({ code: 'RECONCILIATION_REQUIRED' });
     await expect(f.service.enableMock(f.admin, true)).rejects.toMatchObject({ code: 'RECONCILIATION_REQUIRED' });
-    await f.service.confirmReconciled(f.admin, { budgets: { '2026-01': 0 }, usages: { [`${f.session.subjectId}:2026-01`]: { understand: 0, generate: 0 } } }); await f.service.enableMock(f.admin, true);
+    await f.service.confirmReconciled(f.admin, { budgets: { '2026-01': 0 }, usages: { [`${f.session.subjectId}:2026-01`]: { understand: 0, generate: 0, summary: 0 } } }); await f.service.enableMock(f.admin, true);
     await f.service.submit(f.session.token, await f.request()); expect(f.calls()).toBe(1);
   });
   it('BE-T06 accepts sparse exact date sets beyond 12 weeks and rejects independent metric mismatch', async () => {
@@ -145,17 +145,17 @@ describe('BE local control', () => {
     await expect(f.service.submit(f.session.token, await generate(dates))).rejects.toMatchObject({ code: 'INVALID_CANDIDATE' });
     expect(f.calls()).toBe(2);
   });
-  it('BE-T05 invalid/missing cost remains reserved indefinitely until reconciled, no auto retry', async () => {
+  it('BE-T05 missing cost delivers candidate but remains reserved indefinitely until reconciled, no auto retry', async () => {
     const f = await setup({}, async () => ({ result: { interpretedGoal: 'private' } })); await f.service.enableMock(f.admin, true);
     const req = await f.request();
-    await expect(f.service.submit(f.session.token, req)).rejects.toMatchObject({ code: 'ACCOUNTING_PENDING' });
+    await expect(f.service.submit(f.session.token, req)).resolves.toMatchObject({ accounting: 'pending', result: { interpretedGoal: 'private' } });
     const before = await f.store.read(); f.time('2026-02-10T00:00:00Z');
     expect((await f.store.read()).budgets).toEqual(before.budgets);
     await expect(f.service.submit(f.session.token, req)).rejects.toMatchObject({ code: 'REQUEST_IN_PROGRESS' });
     expect(f.calls()).toBe(1);
     await f.service.markLedgerRecovered(f.admin);
     await expect(f.service.confirmReconciled(f.admin, { budgets: { '2026-02': 0 }, usages: {} })).rejects.toMatchObject({ code: 'RECONCILIATION_REQUIRED' });
-    await f.service.settle(f.admin, f.session.subjectId, req.requestId, 80); await f.service.confirmReconciled(f.admin, { budgets: { '2026-01': 80, '2026-02': 0 }, usages: { [`${f.session.subjectId}:2026-02`]: { understand: 0, generate: 0 } } });
+    await f.service.settle(f.admin, f.session.subjectId, req.requestId, 80); await f.service.confirmReconciled(f.admin, { budgets: { '2026-01': 80, '2026-02': 0 }, usages: { [`${f.session.subjectId}:2026-01`]: { understand: 1, generate: 0, summary: 0 }, [`${f.session.subjectId}:2026-02`]: { understand: 0, generate: 0, summary: 0 } } });
     expect((await f.store.read()).aiEnabled).toBe(false);
   });
   it('BE-T05 declared cost beyond bound records actual charge and halts new calls', async () => {
@@ -196,7 +196,7 @@ describe('BE local control', () => {
   it('BE-T14 reconciliation restores independently observed spent amounts and counts before reopening', async () => {
     const f = await setup(); await f.service.markLedgerRecovered(f.admin);
     await expect(f.service.confirmReconciled(f.admin, { budgets: {}, usages: {} })).rejects.toMatchObject({ code: 'RECONCILIATION_EVIDENCE_REQUIRED' });
-    await f.service.confirmReconciled(f.admin, { budgets: { '2026-01': 3500 }, usages: { [`${f.session.subjectId}:2026-01`]: { understand: 2, generate: 1 } } });
+    await f.service.confirmReconciled(f.admin, { budgets: { '2026-01': 3500 }, usages: { [`${f.session.subjectId}:2026-01`]: { understand: 2, generate: 1, summary: 0 } } });
     await f.service.enableMock(f.admin, true);
     await expect(f.service.submit(f.session.token, await f.request())).rejects.toMatchObject({ code: 'GLOBAL_BUDGET_EXHAUSTED' });
     expect((await f.service.status(f.session.token)).used.understand).toBe(2); expect(f.calls()).toBe(0);

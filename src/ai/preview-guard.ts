@@ -5,6 +5,7 @@ function conditions(capture:AiContextCapture){const {updatedAt:_updatedAt,daysPe
 export function assertPreviewCurrent(request:AiRequest,original:AiContextCapture,current:AiContextCapture):void{
  if(current.restoreGeneration!==request.restoreGeneration)throw new Error('STALE_RESTORE_GENERATION');
  if(request.operation==='understand')return;
+ if(request.operation==='summary')throw new Error('INVALID_INPUT');
  if(current.profile.timeZone!==request.timeZone||conditions(original)!==conditions(current))throw new Error('STALE_SENDING_SCOPE');
  if(request.history){if(!current.history)throw new Error('STALE_SENDING_SCOPE');
   const previous=JSON.parse(request.history.text),next=JSON.parse(current.history.text);next.capturedAt=previous.capturedAt;next.dataRevision=previous.dataRevision;

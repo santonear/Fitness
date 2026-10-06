@@ -6,7 +6,7 @@ import { createWorker, readWorkerConfig } from '../../src/backend/worker';
 import { createSupplierTransport, type ProviderCodec } from '../../src/backend/supplier-transport';
 import { D1ControlStore, type D1Binding, type D1Statement } from '../../src/backend/d1-store';
 
-const codec: ProviderCodec = { providerId: 'fixture-only', encode: request => ({ fixture: request.goalText }),
+const codec: ProviderCodec = { providerId: 'fixture-only', encode: request => ({ fixture: request.operation === 'summary' ? 'synthetic summary' : request.goalText }),
   decode: body => body as { result: unknown; actualCost?: number } };
 const transportConfig = { endpoint: 'https://supplier.test/v1/model', allowedOrigin: 'https://supplier.test', apiKey: 'c'.repeat(40),
   timeoutMs: 100, maxResponseBytes: 256 };
