@@ -6,11 +6,13 @@ import { ControlError } from './store';
  * No provider codec is shipped: selection/review is required before external activation. */
 export interface ProviderCodec {
   providerId: string;
-  encode(request: AiRequest): unknown;
+  credentialHeader?: 'x-goog-api-key';
+  encode(request: AiRequest): unknown | Promise<unknown>;
   decode(body: unknown): { result: unknown; actualCost?: number };
 }
 export interface TransportConfig {
   endpoint: string; allowedOrigin: string; apiKey: string; timeoutMs: number; maxResponseBytes: number;
+  onFailure?: (event: { stage: 'encode' | 'network' | 'http' | 'decode' | 'timeout'; httpStatus?: number }) => void;
 }
 export function assertOperatorSecret(secret: unknown): asserts secret is string {
   if (typeof secret !== 'string' || secret.length < 32 || secret.length > 4096 || /\s|local-test|placeholder|example|changeme/i.test(secret))
@@ -29,10 +31,16 @@ export function createSupplierTransport(config: TransportConfig, codec: Provider
   return { kind: 'external-transport', call: async request => {
     const abort = new AbortController(); const timer = setTimeout(() => abort.abort(), config.timeoutMs);
     let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
+    let stage: 'encode' | 'network' | 'http' | 'decode' = 'encode'; let httpStatus: number | undefined;
     try {
-      const response = await transport(config.endpoint, { method: 'POST', redirect: 'error', signal: abort.signal,
-        headers: { Authorization: `Bearer ${config.apiKey}`, 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify(codec.encode(request)) });
+      const encoded = JSON.stringify(await codec.encode(request));
+      stage = 'network';
+      const response = await transport(config.endpoint, { method: 'POST', redirect: 'manual', signal: abort.signal,
+        headers: { ...(codec.credentialHeader === 'x-goog-api-key'
+          ? { 'x-goog-api-key': config.apiKey } : { Authorization: `Bearer ${config.apiKey}` }),
+          'Content-Type': 'application/json', Accept: 'application/json' },
+        body: encoded });
+      stage = 'http'; httpStatus = response.status;
       if (!response.ok || !response.body) {
         await response.body?.cancel();
         throw new Error('uncertain');
@@ -46,8 +54,13 @@ export function createSupplierTransport(config: TransportConfig, codec: Provider
       }
       const bytes = new Uint8Array(size); let offset = 0;
       for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
+      stage = 'decode';
       return codec.decode(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)) as unknown);
-    } catch { throw new ControlError('SUPPLIER_UNCERTAIN', 503); }
+    } catch {
+      // Optional operator diagnostics contain bounded stages/status only, never URLs, keys or bodies.
+      try { config.onFailure?.({ stage: abort.signal.aborted ? 'timeout' : stage, ...(httpStatus === undefined ? {} : { httpStatus }) }); } catch { /* Diagnostics cannot change accounting semantics. */ }
+      throw new ControlError('SUPPLIER_UNCERTAIN', 503);
+    }
     finally { clearTimeout(timer); reader?.releaseLock(); }
   } };
 }

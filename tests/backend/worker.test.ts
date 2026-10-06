@@ -45,7 +45,7 @@ it('transport sends one bounded HTTPS request without redirects and returns deco
   });
   const request = { goalText: 'synthetic fixture' } as never;
   expect(await supplier.call(request)).toEqual({ result: { interpretedGoal: 'fixture' }, actualCost: 20 });
-  expect(captured?.url).toBe('https://supplier.test/v1/model'); expect(captured?.redirect).toBe('error');
+  expect(captured?.url).toBe('https://supplier.test/v1/model'); expect(captured?.redirect).toBe('manual');
   expect(captured?.headers.get('authorization')).toBe(`Bearer ${'c'.repeat(40)}`);
   expect(await captured?.json()).toEqual({ fixture: 'synthetic fixture' });
 });
@@ -170,4 +170,14 @@ it('malformed supplier envelopes always become pending and block new same-period
       expect(calls).toBe(1);
     } finally { store.close(); }
   }
+});
+
+it('transport rejects redirects without following or forwarding credentials', async () => {
+  let calls = 0; let redirect: RequestRedirect | undefined;
+  const supplier = createSupplierTransport(transportConfig, codec, async (_input, init) => {
+    calls++; redirect = init?.redirect;
+    return new Response('redirect detail', { status: 302, headers: { Location: 'https://other.test/capture' } });
+  });
+  await expect(supplier.call({ goalText: 'synthetic' } as never)).rejects.toThrow('SUPPLIER_UNCERTAIN');
+  expect(calls).toBe(1); expect(redirect).toBe('manual');
 });

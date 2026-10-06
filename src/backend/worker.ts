@@ -15,24 +15,29 @@ const count = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 const policy = z.strictObject({ timeZone: z.string().min(1), k: z.literal(1), budgetLimit: count,
   maximumRequestCost: count, requestBounds: z.strictObject({ understand: count, generate: count }),
   quotas: z.strictObject({ understand: count, generate: count }), maxInputBytes: count.min(1).max(65536), maxConcurrent: count.min(1).max(100) });
-export function readWorkerConfig(env: WorkerEnv): { control: ControlConfig; origins: string[]; transport: TransportConfig; providerId: string } | null {
+type WorkerConfig = { control: ControlConfig; origins: string[] } &
+  ({ mode: 'control-only' } | { mode: 'external'; transport: TransportConfig; providerId: string });
+export function readWorkerConfig(env: WorkerEnv): WorkerConfig | null {
   if (env.CONTROL_MODE === undefined || env.CONTROL_MODE === 'disabled') return null;
-  if (env.CONTROL_MODE !== 'external') throw new ControlError('INVALID_CONTROL_CONFIG', 500);
+  if (env.CONTROL_MODE !== 'external' && env.CONTROL_MODE !== 'control-only') throw new ControlError('INVALID_CONTROL_CONFIG', 500);
   try {
-    assertOperatorSecret(env.CONTROL_ADMIN_SECRET); assertOperatorSecret(env.CONTROL_DIGEST_SECRET); assertOperatorSecret(env.SUPPLIER_API_KEY);
-    if (new Set([env.CONTROL_ADMIN_SECRET, env.CONTROL_DIGEST_SECRET, env.SUPPLIER_API_KEY]).size !== 3) throw new Error('distinct secrets required');
+    assertOperatorSecret(env.CONTROL_ADMIN_SECRET); assertOperatorSecret(env.CONTROL_DIGEST_SECRET);
+    if (env.CONTROL_ADMIN_SECRET === env.CONTROL_DIGEST_SECRET) throw new Error('distinct secrets required');
     const values = policy.parse(JSON.parse(env.CONTROL_POLICY ?? ''));
     new Intl.DateTimeFormat('en', { timeZone: values.timeZone });
     if (Object.values(values.requestBounds).some(cost => cost > values.maximumRequestCost || cost > values.budgetLimit)) throw new Error('invalid bounds');
     const origins = z.array(z.string().url()).min(1).max(8).parse(JSON.parse(env.CONTROL_ORIGINS ?? ''));
     if (origins.some(value => { const url = new URL(value); return url.protocol !== 'https:' || url.origin !== value; })) throw new Error('invalid origin');
+    const control: ControlConfig = { ...values, mode: 'external', adminSecret: env.CONTROL_ADMIN_SECRET, digestSecret: env.CONTROL_DIGEST_SECRET };
+    if (env.CONTROL_MODE === 'control-only') return { mode: 'control-only', control, origins };
+    assertOperatorSecret(env.SUPPLIER_API_KEY);
+    if ([env.CONTROL_ADMIN_SECRET, env.CONTROL_DIGEST_SECRET].includes(env.SUPPLIER_API_KEY)) throw new Error('distinct secrets required');
     if (!env.SUPPLIER_PROVIDER || env.SUPPLIER_PROVIDER === 'unselected') throw new ControlError('PROVIDER_SELECTION_REQUIRED', 503);
     const transport = { endpoint: env.SUPPLIER_ENDPOINT ?? '', allowedOrigin: env.SUPPLIER_ORIGIN ?? '', apiKey: env.SUPPLIER_API_KEY,
       timeoutMs: 30_000, maxResponseBytes: 262_144 };
     // Validate destination before constructing a store or granting supplier access.
     createSupplierTransport(transport, { providerId: env.SUPPLIER_PROVIDER, encode: () => null, decode: () => ({ result: null }) }, fetch);
-    return { control: { ...values, mode: 'external', adminSecret: env.CONTROL_ADMIN_SECRET, digestSecret: env.CONTROL_DIGEST_SECRET },
-      origins, transport, providerId: env.SUPPLIER_PROVIDER };
+    return { mode: 'external', control, origins, transport, providerId: env.SUPPLIER_PROVIDER };
   } catch (error) { if (error instanceof ControlError && error.code === 'PROVIDER_SELECTION_REQUIRED') throw error; throw new ControlError('INVALID_CONTROL_CONFIG', 500); }
 }
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status,
@@ -44,10 +49,17 @@ export function createWorker(dependencies: { store?: (env: WorkerEnv) => Control
       const config = readWorkerConfig(env);
       if (!config) return new URL(request.url).pathname === '/api/v1/health' && request.method === 'GET'
         ? json({ status: 'disabled', productionModelEnabled: false }) : json({ error: 'AI_DISABLED' }, 503);
-      if (!dependencies.codec || dependencies.codec.providerId !== config.providerId) throw new ControlError('PROVIDER_SELECTION_REQUIRED', 503);
-      const supplier = createSupplierTransport(config.transport, dependencies.codec, dependencies.transport ?? fetch);
+      const path = new URL(request.url).pathname;
+      if (config.mode === 'control-only' && ['/api/v1/goals/interpret', '/api/v1/plans/generate', '/api/v1/admin/supplier', '/api/v1/admin/mock'].includes(path))
+        return json({ error: 'AI_DISABLED' }, 503);
+      if (config.mode === 'external' && (!dependencies.codec || dependencies.codec.providerId !== config.providerId)) throw new ControlError('PROVIDER_SELECTION_REQUIRED', 503);
+      const supplier = config.mode === 'external'
+        ? createSupplierTransport(config.transport, dependencies.codec!, dependencies.transport ?? fetch)
+        : { kind: 'external-transport' as const, call: async () => { throw new ControlError('AI_DISABLED', 503); } };
       const store = dependencies.store ? dependencies.store(env) : env.CONTROL_DB ? new D1ControlStore(env.CONTROL_DB) : null;
       if (!store) throw new ControlError('CONTROL_UNAVAILABLE', 503);
+      if (config.mode === 'control-only' && path === '/api/v1/health' && request.method === 'GET')
+        return json({ status: 'control-only', productionModelEnabled: false });
       const service = new ControlService(store, config.control, supplier);
       return createHandler(service, { origins: config.origins, maxBodyBytes: config.control.maxInputBytes,
         supplierMode: 'external-transport' })(request);
