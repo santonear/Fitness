@@ -34,4 +34,3 @@ it('makes targetSets array shape explicit instead of relying on JSON mode to enf
   expect(body.messages[0].content).toContain('targetSets must always be an array');
   expect(body.messages[0].content).toContain('"targetSets":[{"metricType":"reps","reps":8}]');
 });
-
