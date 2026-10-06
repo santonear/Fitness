@@ -5,7 +5,7 @@ import {exercises} from '../catalog/exercises';
 import {z} from 'zod';
 const count=z.number().int().nonnegative();
 const publicErrors=new Set(['QUALIFICATION_REQUIRED','INVITE_NOT_FOUND','INVITE_INVALID','SUBJECT_EXPIRED','SUBJECT_NOT_FOUND','RECONCILIATION_REQUIRED','REQUEST_CONFLICT','REQUEST_IN_PROGRESS','RESULT_UNAVAILABLE','AI_DISABLED','REQUEST_COST_BOUND','INDIVIDUAL_QUOTA_EXHAUSTED','GLOBAL_BUDGET_EXHAUSTED','CONCURRENCY_LIMIT','NOT_SUBMITTED','ACCOUNTING_PENDING','CANCELLED','ALREADY_SUBMITTED','REQUEST_NOT_FOUND','STALE_RESTORE_GENERATION','STALE_INPUT','INVALID_INPUT','RANGE_TOO_LARGE','ORIGIN_DENIED','CONTROL_UNAVAILABLE','DATE_BOUND_EXCEEDED','INVALID_REQUEST','CONFIRMATION_REQUIRED']);
-const statusSchema=z.object({expiresAt:count,period:z.string().regex(/^\d{4}-\d{2}$/),used:z.object({understand:count,generate:count}),limits:z.object({understand:count,generate:count}),aiEnabled:z.boolean()});
+const statusSchema=z.object({expiresAt:count.max(8_640_000_000_000_000),period:z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/),used:z.object({understand:count,generate:count}),limits:z.object({understand:count,generate:count}),pending:count.optional(),aiEnabled:z.boolean()});
 
 export const disabledAiClient:AiClient={status:async()=>{throw new Error('AI_DISABLED');},redeem:async()=>{throw new Error('AI_DISABLED');},submit:async()=>{throw new Error('AI_DISABLED');},cancel:async()=>{}};
 /** Explicit page-only demo. Reuses admission policy; no cookies/storage/network or real credentials. */

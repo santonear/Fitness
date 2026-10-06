@@ -28,6 +28,8 @@ test('five destinations stay usable without overflow at 320px', async ({ page })
 
 test('all navigation destinations can be reached with the keyboard', async ({ page }) => {
   await page.goto('/');
+  await expect(page.getByRole('navigation').getByRole('link')).toHaveCount(5);
+  await expect(page.getByRole('navigation').getByRole('link', {name:'Settings',exact:true})).toBeVisible();
   const reached = new Set<string>();
   for (let i = 0; i < 12; i++) {
     await page.keyboard.press('Tab');

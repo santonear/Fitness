@@ -1,7 +1,7 @@
 import type { AiRequest } from '../backend/contracts';
 import { confirmationFor, goalConfirmationFor, validateRequest, validateCandidate } from '../backend/contracts';
 export interface AiClient {
- status():Promise<{expiresAt:number;period:string;used:{understand:number;generate:number};limits:{understand:number;generate:number};aiEnabled:boolean}>;
+ status():Promise<{expiresAt:number;period:string;used:{understand:number;generate:number};limits:{understand:number;generate:number};pending?:number;aiEnabled:boolean}>;
  redeem(code:string):Promise<void>;
  submit(request:AiRequest,signal?:AbortSignal):Promise<{requestId:string;result:unknown}>;
  cancel(requestId:string):Promise<void>;
