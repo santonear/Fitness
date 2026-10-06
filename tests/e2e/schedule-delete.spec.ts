@@ -72,6 +72,7 @@ test('schedule hide preserves completion statistics, guards concurrent and ongoi
     forged.data.scheduledWorkouts[0].hiddenAt = new Date().toISOString();
     const forgedRejected = await backupService.validateBackup(new File([JSON.stringify(forged)], 'forged.json')).then(() => false, (e: { code: string }) => e.code === 'BACKUP_REFERENCE_INVALID');
     await workoutService.abandonWorkout(session.id, session.revision);
+    row.revision = (await database.scheduledWorkouts.get(row.id)).revision;
     const snapshot = async () => JSON.stringify(await Promise.all(database.tables.map((table: { toArray: () => Promise<unknown[]> }) => table.toArray())));
     const beforeFailure = await snapshot();
     const originalPut = database.scheduledWorkouts.put;

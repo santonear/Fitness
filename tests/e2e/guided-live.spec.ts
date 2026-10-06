@@ -31,10 +31,15 @@ test(`real transport UI: verified-bound=${bounded}; pending candidate can be sav
   await expect(page.getByText(/submitted request is awaiting accounting/)).toBeVisible();
   await page.getByText('review the goal and exact dates', { exact: true }).click();
   await expect(page.getByRole('textbox', { name: 'goal interpretation', exact: true })).toHaveValue('Build a regular fitness routine');
+  // The response is shown before its local archive completes. Finish that step
+  // before manipulating the next confirmation, as a user sees the busy state.
+  await expect(page.getByRole('button', { name: 'confirm interpretation', exact: true })).toBeEnabled();
   const today = await page.evaluate(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; });
   await page.getByLabel('start date', { exact: true }).fill(today); await page.getByLabel('end date', { exact: true }).fill(today);
   await page.getByRole('button', { name: today, exact: true }).click();
+  await expect(page.getByRole('button', { name: today, exact: true })).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: 'confirm interpretation', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'preview sending scope', exact: true })).toBeEnabled();
   await page.getByRole('button', { name: 'preview sending scope', exact: true }).click();
   if (bounded) await expect(page.getByRole('button', { name: 'confirm sending', exact: true })).toBeEnabled();
   else await expect(page.getByRole('button', { name: 'confirm sending', exact: true })).toBeDisabled();

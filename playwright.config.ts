@@ -3,6 +3,8 @@ import { defineConfig } from '@playwright/test';
 delete process.env.NO_COLOR;
 export default defineConfig({
   testDir: './tests/e2e',
+  // HTTP qualification tests require the production transport, not the local demo.
+  testIgnore: ['guided-live.spec.ts', 'ai-control-status.spec.ts', 'ai-pending.spec.ts'],
   use: {
     baseURL: 'http://127.0.0.1:5173',
     viewport: { width: 320, height: 700 },
@@ -13,7 +15,8 @@ export default defineConfig({
     { name: 'webkit', use: { browserName: 'webkit' } },
   ],
   webServer: {
-    command: 'npm run dev -- --host 127.0.0.1 --port 5173 --strictPort',
+    command: 'node node_modules/vite/bin/vite.js --configLoader runner --host 127.0.0.1 --port 5173 --strictPort',
+    env: { VITE_GUIDED_DEMO: '1' },
     url: 'http://127.0.0.1:5173',
     reuseExistingServer: false,
   },

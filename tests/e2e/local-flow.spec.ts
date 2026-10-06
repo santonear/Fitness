@@ -1,3 +1,4 @@
+import { seedLegacyPlan } from './helpers/legacy-plan';
 import { expect, test } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 
@@ -35,12 +36,14 @@ test('legacy calendar upgrade fails visibly without deleting existing facts', as
 });
 
 for (const locale of ['en', 'zh'] as const) {
-  test(`${locale}: opened app offline manual plan, sets, review, history, memo and JSON restore`, async ({ page, context }, testInfo) => {
+  test(`${locale}: opened app offline retained plan, sets, review, history, memo and JSON restore`, async ({ page, context }, testInfo) => {
     const zh = locale === 'zh';
     const text = (en: string, cn: string) => zh ? cn : en;
     await page.goto('/plans');
     if (zh) await page.getByLabel('Language').selectOption('zh');
-    await page.getByLabel(text('Plan name', '计划名称')).fill('Acceptance plan');
+    await seedLegacyPlan(page, 'Acceptance plan');
+    await page.reload();
+    await page.getByRole('link', { name: text('Start / make-up', '开始／补练'), exact: true }).first().click();
     if (testInfo.project.name === 'webkit') {
       // Windows WebKit's emulated offline flag also prevents native File reads.
       // Block every HTTP(S) request while leaving local File APIs operational.
@@ -52,9 +55,6 @@ for (const locale of ['en', 'zh'] as const) {
     } else {
       await context.setOffline(true);
     }
-    await page.getByRole('button', { name: text('Save plan', '保存计划'), exact: true }).click();
-    await expect(page.getByRole('status')).toHaveText(text('Plan saved', '计划已保存'));
-    await page.getByRole('link', { name: text('Today', '今日'), exact: true }).click();
     await page.getByRole('button', { name: text('Start planned workout', '开始计划训练'), exact: true }).first().click();
     await page.getByLabel(text('Reps', '次数'), { exact: true }).fill('12');
     await page.getByLabel(text('Set notes', '组备注'), { exact: true }).fill('Offline acceptance evidence');
@@ -64,10 +64,12 @@ for (const locale of ['en', 'zh'] as const) {
     await expect(page.getByRole('region', { name: text('Completion review', '完成前核对') })).toContainText('Offline acceptance evidence');
     await page.getByRole('button', { name: text('Confirm completion', '确认完成'), exact: true }).click();
     await expect(page.getByRole('status')).toHaveText(text('Workout completed', '训练已完成'));
+    await page.getByRole('button', { name: text('menu', '导航'), exact: true }).click();
     await page.getByRole('link', { name: text('Progress', '进度'), exact: true }).click();
     await page.getByRole('button', { name: text('View history details', '查看历史详情'), exact: true }).click();
     await expect(page.getByRole('region', { name: text('History details', '历史详情') })).toContainText('Offline acceptance evidence');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    await page.getByRole('button', { name: text('menu', '导航'), exact: true }).click();
     await page.getByRole('link', { name: text('Settings', '设置'), exact: true }).click();
     await page.getByRole('button', { name: text('Read full training memo', '读取全量训练备忘'), exact: true }).click();
     await expect(page.getByRole('region', { name: text('Full training memo', '全量训练备忘'), exact: true })).toContainText('Offline acceptance evidence');

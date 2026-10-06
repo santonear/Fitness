@@ -19,7 +19,7 @@ async function facts(page: Page) {
 
 for (const locale of ['en', 'zh'] as const) {
   const text = (en: string, zh: string) => locale === 'zh' ? zh : en;
-  test(locale + ': editor owns one localized conflict alert and parent operation errors remain visible', async ({ page }) => {
+  test(locale + ': retained legacy plan is read-only and blocked deletion reports one error', async ({ page }) => {
     if (locale === 'zh') await page.getByLabel('Language', { exact: true }).selectOption('zh');
     await page.goto('/plans');
     await page.evaluate(async () => {
@@ -32,34 +32,10 @@ for (const locale of ['en', 'zh'] as const) {
         }] }],
       });
     });
-    // Reopen with an empty editor: the original name then proves editing initialization completed.
     await page.reload();
     const list = page.getByRole('list', { name: text('Saved plans', '已保存计划'), exact: true });
-    await list.getByRole('button', { name: text('Edit', '编辑'), exact: true }).click();
-    await expect(page.getByRole('button', { name: text('Cancel edit', '取消编辑'), exact: true })).toBeVisible();
-    await expect(page.getByLabel(text('Plan name', '计划名称'), { exact: true })).toHaveValue('Original plan');
-    await page.getByLabel(text('Plan name', '计划名称'), { exact: true }).fill('Unsaved name');
-    await page.evaluate(async () => {
-      const { database } = await import(String('/src/persistence/db.ts'));
-      const { planService } = await import(String('/src/application/plans.ts'));
-      const plan = (await database.plans.toArray())[0];
-      await planService.renamePlan(plan.id, 'Changed elsewhere', plan.revision);
-    });
-    const before = await facts(page);
-    await page.getByRole('button', { name: text('Save plan', '保存计划'), exact: true }).click();
-    await expect(page.getByRole('alert')).toHaveCount(1);
-    await expect(page.getByRole('alert')).toContainText(text('This plan changed elsewhere.', '计划已被其他操作更改。'));
-    await expect(page.getByRole('alert')).toContainText(text('Copy the unsaved name, reload the page', '请先复制未保存的名称，再刷新页面'));
-    await expect(page.getByLabel(text('Plan name', '计划名称'), { exact: true })).toHaveValue('Unsaved name');
-    await expect(page.getByRole('status')).toHaveCount(0);
-    expect(await facts(page)).toBe(before);
-    await expect.poll(() => page.evaluate(async () => {
-      const { database } = await import(String('/src/persistence/db.ts'));
-      return (await database.plans.toArray())[0].name;
-    })).toBe('Changed elsewhere');
-    await page.getByRole('button', { name: text('Cancel edit', '取消编辑'), exact: true }).click();
-    await page.reload();
-    await expect(list).toContainText('Changed elsewhere');
+    await expect(list).toContainText('Original plan');
+    await expect(list.getByRole('button', { name: text('Edit', '编辑'), exact: true })).toHaveCount(0);
     await page.evaluate(async () => {
       const { database } = await import(String('/src/persistence/db.ts'));
       const { workoutService } = await import(String('/src/application/workouts.ts'));
@@ -71,7 +47,7 @@ for (const locale of ['en', 'zh'] as const) {
     await list.getByRole('button', { name: text('Delete', '删除'), exact: true }).click();
     await expect(page.getByRole('alert')).toHaveCount(1);
     await expect(page.getByRole('alert')).toContainText('WORKOUT_IN_PROGRESS');
-    await expect(list).toContainText('Changed elsewhere');
+    await expect(list).toContainText('Original plan');
   });
 
   test(locale + ': new and saved-set validation clears old success while drafts and facts survive', async ({ page }) => {

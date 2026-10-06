@@ -86,7 +86,7 @@ it('DeepSeek requests require origin, qualification and explicit ledger activati
     expect(captured!.url).toBe('https://api.deepseek.com/chat/completions');
     expect(captured!.redirect).toBe('manual'); expect(captured!.headers.get('authorization')).toBe(`Bearer ${config.DEEPSEEK_API_KEY}`);
     expect(captured!.headers.get('x-goog-api-key')).toBeNull();
-    const payload = await captured!.json() as { model: string; max_tokens: number }; expect(payload.model).toBe('deepseek-flash'); expect(payload.max_tokens).toBe(2048);
+    const payload = await captured!.json() as { model: string; max_tokens: number }; expect(payload.model).toBe('deepseek-flash'); expect(payload.max_tokens).toBe(8192);
     expect(await (await worker.fetch(post('goals/interpret', data, cookie), config)).json()).toEqual({ error: 'REQUEST_IN_PROGRESS' });
     expect(transport).toHaveBeenCalledTimes(1);
     const state = await store.read(); expect(Object.values(state.budgets)[0]).toEqual({ spent: 0, reserved: 100 });

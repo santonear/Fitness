@@ -1,8 +1,9 @@
+import { seedLegacyPlan } from './helpers/legacy-plan';
 import { expect, test } from '@playwright/test';
 test.use({ locale: 'en-US' });
 
 test('manual local preparation shows completed facts without network or database mutation', async ({ page, baseURL }) => {
-  await page.goto('/');
+  await page.goto('/workout');
   await page.getByRole('button', { name: 'Start temporary workout', exact: true }).click();
   await page.getByLabel('Reps').fill('12');
   await page.getByLabel('Load (kg)').fill('0');
@@ -40,10 +41,8 @@ test('manual local preparation shows completed facts without network or database
 test('saved legacy plan supports actual week and whole-plan fact previews', async ({ page }) => {
   await page.clock.setFixedTime(new Date('2026-10-06T12:00:00Z'));
   await page.goto('/plans');
-  await page.getByLabel('Plan name', { exact: true }).fill('Summary plan');
-  await page.getByLabel('Start date', { exact: true }).fill('2026-10-01');
-  await page.getByRole('button', { name: 'Save plan', exact: true }).click();
-  await expect(page.getByRole('status')).toHaveText('Plan saved');
+  await seedLegacyPlan(page, 'Summary plan');
+  await page.reload();
   await page.getByRole('link', { name: 'Start / make-up', exact: true }).first().click();
   await page.getByRole('button', { name: 'Start planned workout', exact: true }).click();
   await page.getByLabel('Reps', { exact: true }).first().fill('10');
@@ -58,28 +57,27 @@ test('saved legacy plan supports actual week and whole-plan fact previews', asyn
   const section = page.getByRole('region', { name: 'Local stage summary preparation' });
   await section.getByLabel('Summary scope').selectOption('planWeek');
   await section.getByLabel('Summary plan').selectOption({ label: 'Summary plan' });
-  await section.getByLabel('Week start date').fill('2026-10-01');
+  await section.getByLabel('Week start date').fill('2026-10-05');
   await section.getByRole('button', { name: 'Prepare local preview' }).click();
   const preview = section.getByRole('region', { name: 'Stage facts preview' });
-  await expect(preview).toContainText('2026-10-01 → 2026-10-07');
+  await expect(preview).toContainText('2026-10-05 → 2026-10-11');
   await expect(preview).toContainText('1 completed sessions');
   await expect(preview).toContainText('Task attribution:');
   await section.getByLabel('Summary scope').selectOption('wholePlan');
   await section.getByRole('button', { name: 'Prepare local preview' }).click();
-  await expect(preview).toContainText('2026-10-01 → 2026-10-07');
+  await expect(preview).toContainText('2026-10-05 → 2026-10-11');
   await expect(preview).toContainText('1 completed sessions');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
 
 test('empty and invalid selections remain visible and never imply AI generation', async ({ page }) => {
   await page.goto('/plans');
-  await expect(page.getByLabel('Plan name', { exact: true })).toBeVisible();
   await page.goto('/progress');
   const section = page.getByRole('region', { name: 'Local stage summary preparation' });
   await section.getByRole('button', { name: 'Prepare local preview' }).click();
   await expect(section.getByRole('alert')).toContainText('EMPTY_STAGE');
   await section.getByLabel('Summary from date').fill('2026-10-08');
-  await section.getByLabel('Summary to date').fill('2026-10-01');
+  await section.getByLabel('Summary to date').fill('2026-10-05');
   await section.getByRole('button', { name: 'Prepare local preview' }).click();
   await expect(section.getByRole('alert')).toContainText('INVALID_RANGE');
   await section.getByLabel('Summary scope').selectOption('planWeek');

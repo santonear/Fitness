@@ -1,22 +1,25 @@
 import {test,expect} from '@playwright/test';
-for(const locale of ['en','zh'])test(`${locale} explicit local demo understand, preview, edit and local save`,async({page,baseURL})=>{
- let outbound=0;page.on('request',r=>{if(!r.url().startsWith(baseURL!))outbound++;});await page.goto('/plans');await page.getByRole('combobox').first().selectOption(locale);const t=(en:string,zh:string)=>locale==='zh'?zh:en;
- await page.getByRole('link',{name:t('AI plan assistant','AI 计划助手'),exact:true}).click();await expect(page.getByText(t('AI is disabled. Local training remains available.','AI 尚未启用，本地训练仍可使用。'),{exact:true})).toBeVisible();
- await page.getByRole('button',{name:t('Enter local demo','进入本地演示'),exact:true}).click();await page.getByLabel(t('Invitation code','邀请码'),{exact:true}).fill('FITNESS-DEMO');await page.getByRole('button',{name:t('Redeem code','兑换邀请码'),exact:true}).click();
- await page.getByLabel(t('Goal text','目标文本'),{exact:true}).fill('Build a steady general fitness habit');await page.getByRole('button',{name:t('Preview goal sending','预览目标发送'),exact:true}).click();await page.getByLabel(t('I confirm this sending scope','我确认本次发送范围'),{exact:true}).check();await page.getByRole('button',{name:t('Send confirmed request','发送已确认请求'),exact:true}).click();await expect(page.getByLabel(t('Goal interpretation','目标理解'),{exact:true})).toHaveValue('Build a steady general fitness habit');await page.getByRole('button',{name:t('Confirm goal interpretation','确认目标理解'),exact:true}).click();
- await page.getByLabel(t('Specific date','具体日期'),{exact:true}).fill('2027-02-11');await page.getByLabel(t('Experience','训练经验'),{exact:true}).selectOption('beginner');await page.getByLabel(t('Available equipment','可用器械'),{exact:true}).fill('none');await page.getByLabel(t('Session minutes','每次分钟数'),{exact:true}).fill('30');await page.getByLabel(t('Height (cm)','身高（厘米）'),{exact:true}).fill('175');await page.getByLabel(t('Weight (kg)','体重（千克）'),{exact:true}).fill('70');await page.getByLabel(t('Location','场地'),{exact:true}).selectOption('home');await page.getByLabel(t('Preference','运动偏好'),{exact:true}).selectOption('none');
- await page.getByRole('button',{name:t('Preview plan sending','预览计划发送'),exact:true}).click();await expect(page.getByText(t('This request does not use training history.','本次请求未参考训练历史。'),{exact:true})).toBeVisible();await page.getByLabel(t('I confirm this sending scope','我确认本次发送范围'),{exact:true}).check();await page.getByRole('button',{name:t('Send confirmed request','发送已确认请求'),exact:true}).click();
- await page.getByLabel(t('Candidate name','候选名称'),{exact:true}).fill('Edited AI date');await page.getByLabel(t('Candidate notes','候选备注'),{exact:true}).fill('Edited 原文');
- await expect(page.getByLabel(t('Candidate source','候选来源'),{exact:true})).toContainText(t('Source: local demo fixture.','来源：本地演示样例。'));
- await page.route('**/api/v1/trial/status',route=>route.fulfill({status:401,contentType:'application/json',body:JSON.stringify({error:'SUBJECT_EXPIRED'})}));
- await page.getByRole('button',{name:t('Connect to backend','连接后端'),exact:true}).click();
- await expect(page.getByRole('alert')).toContainText(t('trial has expired','试用已到期'));
- await expect(page.getByLabel(t('Candidate name','候选名称'),{exact:true})).toHaveValue('Edited AI date');
- await expect(page.getByLabel(t('Candidate notes','候选备注'),{exact:true})).toHaveValue('Edited 原文');
- await expect(page.getByLabel(t('Candidate source','候选来源'),{exact:true})).toContainText(t('Source: local demo fixture.','来源：本地演示样例。'));
- await page.getByRole('button',{name:t('Confirm and save this candidate','确认并保存此候选'),exact:true}).click();await expect(page.getByRole('status')).toHaveText(t('Candidate saved locally. No training was completed.','候选已保存到本地，未完成任何训练。'));
- await page.goto('/plans');await expect(page.getByRole('list',{name:t('Date plans','日期计划'),exact:true})).toContainText('Edited AI date');expect(outbound).toBe(0);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+for(const locale of ['en','zh'] as const)test(`${locale} explicit guided demo understanding and candidate save create no training facts`,async({page,baseURL})=>{
+ const t=(en:string,zh:string)=>locale==='zh'?zh:en;let outbound=0;page.on('request',r=>{if(!r.url().startsWith(baseURL!))outbound++;});
+ await page.addInitScript(locale=>localStorage.setItem('fitness.language',locale),locale);await page.goto('/ai');
+ await page.getByRole('textbox',{name:t('goal, clarification or changes','目标、补充或调整想法'),exact:true}).fill('Regular walking');
+ await page.getByRole('button',{name:t('preview scope for understanding','预览理解目标的发送范围'),exact:true}).click();
+ await page.getByRole('button',{name:t('confirm sending','确认发送'),exact:true}).click();
+ await page.getByText(t('review the goal and exact dates','核对目标和具体日期'),{exact:true}).click();
+ await expect(page.getByRole('textbox',{name:t('goal interpretation','目标理解'),exact:true})).not.toHaveValue('');
+ await page.getByLabel(t('start date','开始日期'),{exact:true}).fill('2027-02-11');await page.getByLabel(t('end date','结束日期'),{exact:true}).fill('2027-02-11');
+ await page.getByLabel(t('Calendar month','日历月份'),{exact:true}).fill('2027-02');
+ await page.getByRole('button',{name:'2027-02-11',exact:true}).click();
+ await page.getByRole('button',{name:t('confirm interpretation','确认理解'),exact:true}).click();
+ await page.getByRole('button',{name:t('preview sending scope','预览本次发送范围'),exact:true}).click();
+ await page.getByRole('button',{name:t('confirm sending','确认发送'),exact:true}).click();
+ await expect(page.getByRole('heading',{name:t('complete candidate, not active yet','完整候选，尚未生效')})).toBeVisible();
+ await page.getByRole('button',{name:t('confirm complete plan','确认完整计划'),exact:true}).click();
+ await expect.poll(()=>page.evaluate(async()=>{const {database}=await import(String('/src/persistence/db.ts'));return [(await database.guidedStates.get('guided')).programs.length,await database.sessions.count(),await database.sets.count()];})).toEqual([1,0,0]);
+ expect(outbound).toBe(0);
 });
-test('changing goal clears sending and understanding confirmation',async({page,baseURL})=>{
- await page.goto('/ai');await page.getByRole('button',{name:'Enter local demo',exact:true}).click();await page.getByLabel('Invitation code',{exact:true}).fill('FITNESS-DEMO');await page.getByRole('button',{name:'Redeem code',exact:true}).click();await page.getByLabel('Goal text',{exact:true}).fill('First goal');await page.getByRole('button',{name:'Preview goal sending',exact:true}).click();await page.getByLabel('I confirm this sending scope',{exact:true}).check();await page.getByLabel('Goal text',{exact:true}).fill('Changed goal');await expect(page.getByRole('button',{name:'Send confirmed request',exact:true})).toHaveCount(0);await expect(page.getByText('Goal interpretation is confirmed.',{exact:true})).toHaveCount(0);
+test('changing goal removes the old sending confirmation',async({page})=>{
+ await page.goto('/ai');const goal=page.getByRole('textbox',{name:'goal, clarification or changes',exact:true});await goal.fill('First goal');
+ await page.getByRole('button',{name:'preview scope for understanding',exact:true}).click();await expect(page.getByRole('button',{name:'confirm sending',exact:true})).toBeVisible();
+ await goal.fill('Changed goal');await expect(page.getByRole('button',{name:'confirm sending',exact:true})).toHaveCount(0);
 });

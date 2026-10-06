@@ -28,6 +28,7 @@ test('failed videos can retry and close with written steps preserved in both lan
  }
  await page.getByRole('combobox', { name: '语言' }).selectOption('en');
  await expect(page.getByText('Stand steadily and extend your arms for balance.', { exact: true })).toBeVisible();
+ await page.getByRole('button', { name: 'menu', exact: true }).click();
  await page.getByRole('navigation').getByRole('link', { name: 'Today', exact: true }).click();
- await expect(page.getByRole('heading', { name: 'Today', exact: true })).toBeVisible();
+ await expect(page.getByRole('heading', { name: 'let’s start with you.', exact: true })).toBeVisible();
 });

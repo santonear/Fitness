@@ -6,7 +6,7 @@ export interface DeepSeekWorkerEnv extends WorkerEnv { DEEPSEEK_API_KEY?: string
 /** Separate opt-in entrypoint. Configuration and the control ledger both gate model access. */
 export function createDeepSeekWorker(dependencies: Pick<NonNullable<Parameters<typeof createWorker>[0]>, 'store' | 'transport'> = {}) {
   return { async fetch(request: Request, env: DeepSeekWorkerEnv): Promise<Response> {
-    const worker = createWorker({ ...dependencies, codec: createDeepSeekCodec({ maxOutputTokens: 2048,
+    const worker = createWorker({ ...dependencies, codec: createDeepSeekCodec({ maxOutputTokens: 8192,
       ...(env.DEEPSEEK_PRICING_VERIFIED_UNTIL ? { pricingVerifiedUntil: env.DEEPSEEK_PRICING_VERIFIED_UNTIL } : {}) }) });
     if (env.CONTROL_MODE !== 'external') return worker.fetch(request, env);
     const invalidDestination = (env.SUPPLIER_ENDPOINT !== undefined && env.SUPPLIER_ENDPOINT !== DEEPSEEK_ENDPOINT) ||

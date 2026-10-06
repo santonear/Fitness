@@ -1,6 +1,6 @@
 import { defineConfig } from '@playwright/test';
 delete process.env.NO_COLOR;
-export default defineConfig({ testDir: './tests/e2e', testMatch: 'guided-live.spec.ts',
+export default defineConfig({ testDir: './tests/e2e', testMatch: ['guided-live.spec.ts', 'ai-control-status.spec.ts', 'ai-pending.spec.ts'],
   outputDir: './test-results-guided-live', workers: 2,
   use: { baseURL: 'http://127.0.0.1:5231', viewport: { width: 390, height: 844 }, trace: 'retain-on-failure' },
   projects: [{ name: 'chromium', use: { browserName: 'chromium' } }, { name: 'webkit', use: { browserName: 'webkit' } }],
