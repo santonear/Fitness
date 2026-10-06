@@ -81,7 +81,8 @@ it('DeepSeek requests require origin, qualification and explicit ledger activati
     const wrongOrigin = post('goals/interpret', data, cookie); wrongOrigin.headers.set('Origin', 'https://other.test');
     expect((await worker.fetch(wrongOrigin, config)).status).toBe(403);
     expect(transport).not.toHaveBeenCalled();
-    expect(await (await worker.fetch(post('goals/interpret', data, cookie), config)).json()).toEqual({ error: 'ACCOUNTING_PENDING' });
+    expect(await (await worker.fetch(post('goals/interpret', data, cookie), config)).json()).toEqual({ requestId: data.requestId,
+      result: { interpretedGoal: 'synthetic interpretation' }, context: { restoreGeneration: 0, inputDigest: data.sendConfirmation }, accounting: 'pending' });
     expect(captured!.url).toBe('https://api.deepseek.com/chat/completions');
     expect(captured!.redirect).toBe('manual'); expect(captured!.headers.get('authorization')).toBe(`Bearer ${config.DEEPSEEK_API_KEY}`);
     expect(captured!.headers.get('x-goog-api-key')).toBeNull();

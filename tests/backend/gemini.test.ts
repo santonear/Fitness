@@ -83,7 +83,7 @@ it('token-only Gemini response preserves budget reservation and deduplication un
     const request = await promptRequest('en', 'understand');
     await expect(service.submit(session.token, request)).rejects.toMatchObject({ code: 'AI_DISABLED' }); expect(calls).toBe(0);
     await service.enableSupplier(config.adminSecret, true);
-    await expect(service.submit(session.token, request)).rejects.toMatchObject({ code: 'ACCOUNTING_PENDING' });
+    await expect(service.submit(session.token, request)).resolves.toMatchObject({ accounting: 'pending', result: { interpretedGoal: 'General fitness' } });
     await expect(service.submit(session.token, request)).rejects.toMatchObject({ code: 'REQUEST_IN_PROGRESS' }); expect(calls).toBe(1);
     const state = await store.read(); expect(Object.values(state.requests)[0].status).toBe('pending');
     expect(Object.values(state.budgets)[0].reserved).toBe(config.requestBounds.understand);

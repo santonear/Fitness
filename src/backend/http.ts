@@ -39,7 +39,7 @@ export function createHandler(service: ControlService, options: { origins: strin
       const url = new URL(request.url), path = url.pathname;
       if (path === '/api/v1/health' && request.method === 'GET') return json({ status: options.supplierMode ?? 'local-mock', productionModelEnabled: false });
       const known = ['/api/v1/trial/redeem', '/api/v1/trial/status', '/api/v1/goals/interpret', '/api/v1/plans/generate', '/api/v1/requests/cancel',
-        '/api/v1/admin/invites', '/api/v1/admin/invites/revoke', '/api/v1/admin/revoke', '/api/v1/admin/reissue', '/api/v1/admin/mock', '/api/v1/admin/recovery', '/api/v1/admin/reconciled', '/api/v1/admin/settle', '/api/v1/admin/retention',
+        '/api/v1/admin/invites', '/api/v1/admin/invites/revoke', '/api/v1/admin/revoke', '/api/v1/admin/reissue', '/api/v1/admin/mock', '/api/v1/admin/recovery', '/api/v1/admin/reconciled', '/api/v1/admin/settle', '/api/v1/admin/retention', '/api/v1/admin/report',
         ...(options.supplierMode ? ['/api/v1/admin/supplier'] : [])];
       if (!known.includes(path)) return json({ error: 'NOT_FOUND' }, 404);
       const origin = request.headers.get('origin');
@@ -59,6 +59,7 @@ export function createHandler(service: ControlService, options: { origins: strin
         const authorization = request.headers.get('authorization') ?? '';
         if (!authorization.startsWith('Bearer ')) throw new ControlError('ADMIN_REQUIRED', 401);
         const admin = authorization.slice(7);
+        if (path.endsWith('/report')) { parse(z.strictObject({}), data); return json(await service.adminReport(admin)); }
         if (path.endsWith('/invites')) { parse(z.strictObject({}), data); return json(await service.issue(admin)); }
         if (path.endsWith('/mock')) { const { enabled } = parse(z.strictObject({ enabled: z.boolean() }), data); await service.enableMock(admin, enabled); }
         else if (path.endsWith('/supplier')) { const { enabled } = parse(z.strictObject({ enabled: z.boolean() }), data); await service.enableSupplier(admin, enabled); }

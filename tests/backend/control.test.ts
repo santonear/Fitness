@@ -145,10 +145,10 @@ describe('BE local control', () => {
     await expect(f.service.submit(f.session.token, await generate(dates))).rejects.toMatchObject({ code: 'INVALID_CANDIDATE' });
     expect(f.calls()).toBe(2);
   });
-  it('BE-T05 invalid/missing cost remains reserved indefinitely until reconciled, no auto retry', async () => {
+  it('BE-T05 missing cost delivers candidate but remains reserved indefinitely until reconciled, no auto retry', async () => {
     const f = await setup({}, async () => ({ result: { interpretedGoal: 'private' } })); await f.service.enableMock(f.admin, true);
     const req = await f.request();
-    await expect(f.service.submit(f.session.token, req)).rejects.toMatchObject({ code: 'ACCOUNTING_PENDING' });
+    await expect(f.service.submit(f.session.token, req)).resolves.toMatchObject({ accounting: 'pending', result: { interpretedGoal: 'private' } });
     const before = await f.store.read(); f.time('2026-02-10T00:00:00Z');
     expect((await f.store.read()).budgets).toEqual(before.budgets);
     await expect(f.service.submit(f.session.token, req)).rejects.toMatchObject({ code: 'REQUEST_IN_PROGRESS' });

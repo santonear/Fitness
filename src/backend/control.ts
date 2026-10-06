@@ -1,5 +1,6 @@
 import { canonical, digest, validateCandidate, validateRequest, type AiRequest } from './contracts';
 import { ControlError, type ControlState, type ControlStore, type Operation } from './store';
+import { buildAdminReport } from './admin-report';
 export { ControlError } from './store';
 
 export interface ControlConfig {
@@ -113,7 +114,11 @@ export class ControlService {
     const period = this.period(); const used = state.usages[usageKey(subjectId, period)] ?? { understand: 0, generate: 0 };
     return { subjectId, expiresAt: state.subjects[subjectId].expiresAt, period, used, limits: this.config.quotas,
       pending: Object.values(state.requests).filter(r => r.subjectId === subjectId && ['reserved', 'submitted', 'pending'].includes(r.status)).length,
-      aiEnabled: state.aiEnabled && !state.recoveryRequired, summaryAvailable: false };
+      aiEnabled: state.aiEnabled && !state.recoveryRequired, reconciliationRequired: this.needsReconciliation(state, period), summaryAvailable: false };
+  }
+  async adminReport(admin: string) {
+    await this.admin(admin);
+    return buildAdminReport(await this.store.read(), this.now());
   }
   async enableMock(admin: string, enabled: boolean) {
     if (this.config.mode !== 'local-test') throw new ControlError('MOCK_ONLY', 400);
@@ -158,18 +163,32 @@ export class ControlService {
       reservation.status = 'submitted'; return true;
     });
     if (!submitted) throw new ControlError('NOT_SUBMITTED');
-    let response: { result: unknown; actualCost: number };
+    let response: { result: unknown; actualCost?: number };
     try {
       const supplied: unknown = await this.supplier.call(request);
       if (!supplied || typeof supplied !== 'object' || Array.isArray(supplied) || !Object.hasOwn(supplied, 'result')) throw new Error('invalid envelope');
       const envelope = supplied as { result: unknown; actualCost?: unknown };
-      const actualCost = envelope.actualCost;
-      if (typeof actualCost !== 'number' || !integer(actualCost)) throw new Error('uncertain accounting');
+      const hasCost = Object.hasOwn(envelope, 'actualCost');
+      const actualCost = hasCost ? envelope.actualCost : undefined;
+      if (hasCost && (typeof actualCost !== 'number' || !integer(actualCost))) throw new Error('uncertain accounting');
       // Copy all supplier-controlled fields while still inside the uncertainty boundary;
       // malformed envelopes/accessors must never strand a submitted reservation.
-      response = { result: envelope.result, actualCost };
+      response = { result: hasCost ? envelope.result : validateCandidate(request, envelope.result),
+        ...(hasCost ? { actualCost: actualCost as number } : {}) };
     }
     catch { await this.pending(key); throw new ControlError('ACCOUNTING_PENDING', 503); }
+    if (response.actualCost === undefined) {
+      // Candidate delivery does not prove a bill or refund the submitted reservation.
+      // Observe cancellation and independent settlement in the same transaction.
+      const delivery = await this.store.transact(state => {
+        const entry = state.requests[key];
+        if (entry.status !== 'settled') entry.status = 'pending';
+        return { cancelled: entry.cancelled, accounting: entry.status === 'settled' ? 'settled' as const : 'pending' as const };
+      });
+      if (delivery.cancelled) throw new ControlError('CANCELLED');
+      return { requestId: request.requestId, result: response.result,
+        context: { restoreGeneration: request.restoreGeneration, inputDigest: request.sendConfirmation }, accounting: delivery.accounting };
+    }
     await this.store.transact(state => this.settleState(state, key, response.actualCost!));
     const reservation = (await this.store.read()).requests[key];
     if (reservation.cancelled) throw new ControlError('CANCELLED');

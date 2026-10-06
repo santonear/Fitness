@@ -7,11 +7,13 @@ for(const locale of ['en','zh'])test(`${locale} explicit local demo understand, 
  await page.getByLabel(t('Specific date','具体日期'),{exact:true}).fill('2027-02-11');await page.getByLabel(t('Experience','训练经验'),{exact:true}).selectOption('beginner');await page.getByLabel(t('Available equipment','可用器械'),{exact:true}).fill('none');await page.getByLabel(t('Session minutes','每次分钟数'),{exact:true}).fill('30');await page.getByLabel(t('Height (cm)','身高（厘米）'),{exact:true}).fill('175');await page.getByLabel(t('Weight (kg)','体重（千克）'),{exact:true}).fill('70');await page.getByLabel(t('Location','场地'),{exact:true}).selectOption('home');await page.getByLabel(t('Preference','运动偏好'),{exact:true}).selectOption('none');
  await page.getByRole('button',{name:t('Preview plan sending','预览计划发送'),exact:true}).click();await expect(page.getByText(t('This request does not use training history.','本次请求未参考训练历史。'),{exact:true})).toBeVisible();await page.getByLabel(t('I confirm this sending scope','我确认本次发送范围'),{exact:true}).check();await page.getByRole('button',{name:t('Send confirmed request','发送已确认请求'),exact:true}).click();
  await page.getByLabel(t('Candidate name','候选名称'),{exact:true}).fill('Edited AI date');await page.getByLabel(t('Candidate notes','候选备注'),{exact:true}).fill('Edited 原文');
+ await expect(page.getByLabel(t('Candidate source','候选来源'),{exact:true})).toContainText(t('Source: local demo fixture.','来源：本地演示样例。'));
  await page.route('**/api/v1/trial/status',route=>route.fulfill({status:401,contentType:'application/json',body:JSON.stringify({error:'SUBJECT_EXPIRED'})}));
  await page.getByRole('button',{name:t('Connect to backend','连接后端'),exact:true}).click();
  await expect(page.getByRole('alert')).toContainText(t('trial has expired','试用已到期'));
  await expect(page.getByLabel(t('Candidate name','候选名称'),{exact:true})).toHaveValue('Edited AI date');
  await expect(page.getByLabel(t('Candidate notes','候选备注'),{exact:true})).toHaveValue('Edited 原文');
+ await expect(page.getByLabel(t('Candidate source','候选来源'),{exact:true})).toContainText(t('Source: local demo fixture.','来源：本地演示样例。'));
  await page.getByRole('button',{name:t('Confirm and save this candidate','确认并保存此候选'),exact:true}).click();await expect(page.getByRole('status')).toHaveText(t('Candidate saved locally. No training was completed.','候选已保存到本地，未完成任何训练。'));
  await page.goto('/plans');await expect(page.getByRole('list',{name:t('Date plans','日期计划'),exact:true})).toContainText('Edited AI date');expect(outbound).toBe(0);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });

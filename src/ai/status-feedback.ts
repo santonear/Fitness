@@ -12,6 +12,7 @@ export function statusFeedback(code: string, locale: 'en' | 'zh'): string {
   RECONCILIATION_REQUIRED: ['Requests are paused while project usage is reconciled.', '项目用量正在对账，请求已暂停。'],
   RESULT_UNAVAILABLE: ['The server does not retain this candidate. A new confirmed request may use another allowance and incur additional cost.', '服务端不保留该候选。重新确认的新请求可能再次占用次数并产生费用。'],
   ACCOUNTING_PENDING: ['The submitted request is awaiting accounting. Its reserved budget has not been released.', '已提交请求待核算，预留预算尚未释放。'],
+  CANDIDATE_ACCOUNTING_PENDING: ['Candidate received; its fee is awaiting accounting. The full budget reservation remains occupied. You may review, edit and explicitly save this candidate locally. New requests are blocked until accounting completes.', '候选已收到，费用待核算，完整预留预算仍被占用。可查看、编辑并明确保存到本地；核算完成前不能发起新请求。'],
   REQUEST_IN_PROGRESS: ['This request is already processing. Do not submit another request to replace it.', '本请求正在处理，请勿以新请求重复提交。'],
   REQUEST_CONFLICT: ['This request ID already refers to different input.', '该请求标识已对应另一份输入。'],
   CONCURRENCY_LIMIT: ['The service is busy. No automatic retry is performed.', '服务正忙，不会自动重试。'],
