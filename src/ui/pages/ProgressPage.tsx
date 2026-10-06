@@ -4,6 +4,7 @@ import { database } from '../../persistence/db';
 import { dateInZone, progressService } from '../../application/progress';
 import type { Exercise, Locale, ProgressMetrics, ProgressReport } from '../../domain/models';
 import { HistoryDetail } from '../components/HistoryDetail';
+import { StageSummaryPreview } from '../components/StageSummaryPreview';
 
 type Stage = { id: string; name: string };
 
@@ -41,6 +42,7 @@ export function ProgressPage() {
   const [to, setTo] = useState(() => dateInZone(Date.now(), timeZone));
   const [stage, setStage] = useState('');
   const [stages, setStages] = useState<Stage[]>([]);
+  const [summaryPlans, setSummaryPlans] = useState<Stage[]>([]);
   const [category, setCategory] = useState('');
   const [exerciseId, setExerciseId] = useState('');
   const [report, setReport] = useState<ProgressReport>();
@@ -62,11 +64,12 @@ export function ProgressPage() {
     let current = true;
     void database.transaction('r', database.plans, database.planVersions, async () => {
       const plans = await database.plans.toArray();
-      return (await database.planVersions.toArray()).map(version => ({
+      const versions = await database.planVersions.toArray();
+      return { plans: plans.map(plan => ({ id: plan.id, name: plan.name })), stages: versions.map(version => ({
         id: version.id,
         name: `${plans.find(plan => plan.id === version.planId)?.name ?? version.planId} · v${version.versionNumber}`,
-      }));
-    }).then(next => { if (current) setStages(next); }).catch(reason => { if (current) setError((reason as Error).message); });
+      })) };
+    }).then(next => { if (current) { setStages(next.stages); setSummaryPlans(next.plans); } }).catch(reason => { if (current) setError((reason as Error).message); });
     return () => { current = false; };
   }, []);
 
@@ -80,6 +83,7 @@ export function ProgressPage() {
   return (
     <>
       <h1>{zh ? '训练进度' : 'Progress'}</h1>
+      <StageSummaryPreview locale={locale} plans={summaryPlans} />
       <form className="progress-filters" onSubmit={event => event.preventDefault()}>
         <label>{zh ? '起始日期' : 'From date'}<input type="date" value={from} onChange={event => setFrom(event.target.value)} /></label>
         <label>{zh ? '结束日期' : 'To date'}<input type="date" value={to} onChange={event => setTo(event.target.value)} /></label>
