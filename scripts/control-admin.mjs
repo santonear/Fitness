@@ -36,9 +36,9 @@ export function safeAdminReport(value) {
   return { format: value.format, version: 1, capturedAt: value.capturedAt, aiEnabled: value.aiEnabled, recoveryRequired: value.recoveryRequired,
     budgets: rows(value.budgets, row => { check(record(row) && period(row.period) && integer(row.spentFen) && integer(row.reservedFen)); return { period: row.period, spentFen: row.spentFen, reservedFen: row.reservedFen }; }),
     subjects: rows(value.subjects, row => { check(record(row) && id(row.subjectId) && integer(row.expiresAt) && bool(row.revoked) && bool(row.expired)); return { subjectId: row.subjectId, expiresAt: row.expiresAt, revoked: row.revoked, expired: row.expired }; }),
-    usages: rows(value.usages, row => { check(record(row) && id(row.subjectId) && period(row.period) && integer(row.understand) && integer(row.generate)); return { subjectId: row.subjectId, period: row.period, understand: row.understand, generate: row.generate }; }),
+    usages: rows(value.usages, row => { check(record(row) && id(row.subjectId) && period(row.period) && integer(row.understand) && integer(row.generate) && (row.summary === undefined || integer(row.summary))); return { subjectId: row.subjectId, period: row.period, understand: row.understand, generate: row.generate, ...(row.summary === undefined ? {} : {summary: row.summary}) }; }),
     requests: rows(value.requests, row => {
-      check(record(row) && id(row.subjectId) && id(row.requestId) && ['understand', 'generate'].includes(row.operation) && period(row.period) && integer(row.boundFen) &&
+      check(record(row) && id(row.subjectId) && id(row.requestId) && ['understand', 'generate', 'summary'].includes(row.operation) && period(row.period) && integer(row.boundFen) &&
         ['reserved', 'submitted', 'pending', 'settled', 'released'].includes(row.status) && bool(row.cancelled) && (row.actualCostFen === undefined || integer(row.actualCostFen)));
       return { subjectId: row.subjectId, requestId: row.requestId, operation: row.operation, period: row.period, boundFen: row.boundFen, status: row.status, cancelled: row.cancelled,
         ...(row.actualCostFen === undefined ? {} : { actualCostFen: row.actualCostFen }) };
@@ -96,7 +96,7 @@ async function commandRequest(command, options, interactive, readEvidenceFile) {
     for (const [key, value] of Object.entries(body.budgets)) check(period(key) && integer(value), 'INVALID_RECONCILIATION_EVIDENCE');
     for (const [key, value] of Object.entries(body.usages)) {
       const separator = key.lastIndexOf(':');
-      check(id(key.slice(0, separator)) && period(key.slice(separator + 1)) && record(value) && Object.keys(value).length === 2 && integer(value.understand) && integer(value.generate), 'INVALID_RECONCILIATION_EVIDENCE');
+      check(id(key.slice(0, separator)) && period(key.slice(separator + 1)) && record(value) && [2,3].includes(Object.keys(value).length) && Object.keys(value).every(key => ['understand','generate','summary'].includes(key)) && integer(value.understand) && integer(value.generate) && (value.summary === undefined || integer(value.summary)), 'INVALID_RECONCILIATION_EVIDENCE');
     }
     path = 'reconciled'; allowed = ['evidence-ref', 'evidence-file', 'confirm-provider-bill'];
   } else fail('UNKNOWN_COMMAND');

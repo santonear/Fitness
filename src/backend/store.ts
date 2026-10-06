@@ -1,4 +1,5 @@
-export type Operation = 'understand' | 'generate';
+export type Operation = 'understand' | 'generate' | 'summary';
+export type OperationCounts = { understand: number; generate: number; summary?: number };
 export type RequestStatus = 'reserved' | 'submitted' | 'pending' | 'settled' | 'released';
 export interface ControlState {
   version: 1;
@@ -7,7 +8,7 @@ export interface ControlState {
   invites: Record<string, { expiresAt: number; redeemed: boolean; subjectId?: string }>;
   subjects: Record<string, { expiresAt: number; revoked: boolean }>;
   sessions: Record<string, { subjectId: string; revoked: boolean }>;
-  usages: Record<string, Record<Operation, number>>;
+  usages: Record<string, OperationCounts>;
   budgets: Record<string, { spent: number; reserved: number }>;
   requests: Record<string, { subjectId: string; requestId: string; inputDigest: string; operation: Operation;
     period: string; bound: number; status: RequestStatus; cancelled: boolean; actualCost?: number; error?: string }>;

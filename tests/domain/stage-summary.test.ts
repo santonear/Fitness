@@ -60,6 +60,8 @@ describe('stage summary local selection', () => {
     expect(result.payload.sessions).toEqual([]);
     // A real profile weight makes this an eligible stage even without in-range training.
     expect(result.report.completedCount).toBe(1);
+    expect(result.completionLinks).toEqual([{taskId:'new',sessionId:'new-session',planVersionId:'new',plannedDayId:'new'}]);
+    expect(result.payload.sets).toEqual([]);
   });
   it('preserves four metric types, missing distance and recorded zero; excludes unfinished sets', () => {
     const input = fixture();

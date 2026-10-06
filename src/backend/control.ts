@@ -1,16 +1,16 @@
 import { canonical, digest, validateCandidate, validateRequest, type AiRequest } from './contracts';
-import { ControlError, type ControlState, type ControlStore, type Operation } from './store';
+import { ControlError, type ControlState, type ControlStore, type OperationCounts } from './store';
 import { buildAdminReport } from './admin-report';
 export { ControlError } from './store';
 
 export interface ControlConfig {
   /** Costs are integer RMB fen; external operation requires separately validated operator configuration. */
   mode: 'local-test' | 'external'; timeZone: string; k: number; budgetLimit: number; maximumRequestCost: number;
-  requestBounds: Record<Operation, number>; quotas: Record<Operation, number>; maxInputBytes: number;
+  requestBounds: OperationCounts; quotas: OperationCounts; maxInputBytes: number;
   maxConcurrent: number; adminSecret: string; digestSecret: string;
 }
 export const testConfig: ControlConfig = { mode: 'local-test', timeZone: 'UTC', k: 1, budgetLimit: 3500,
-  maximumRequestCost: 1000, requestBounds: { understand: 100, generate: 300 }, quotas: { understand: 8, generate: 4 },
+  maximumRequestCost: 1000, requestBounds: { understand: 100, generate: 300, summary: 300 }, quotas: { understand: 8, generate: 4, summary: 4 },
   maxInputBytes: 65536, maxConcurrent: 4, adminSecret: 'local-test-admin-only', digestSecret: 'local-test-digest-key-only' };
 export interface MockSupplier { kind: 'local-mock'; call(request: AiRequest): Promise<{ result: unknown; actualCost?: number }> }
 export interface ExternalSupplier { kind: 'external-transport'; call(request: AiRequest): Promise<{ result: unknown; actualCost?: number }> }
@@ -111,10 +111,13 @@ export class ControlService {
   }
   async status(value: string) {
     const sessionDigest = await digest(value, this.config.digestSecret); const state = await this.store.read(); const subjectId = this.qualification(state, sessionDigest);
-    const period = this.period(); const used = state.usages[usageKey(subjectId, period)] ?? { understand: 0, generate: 0 };
+    const period = this.period(); const recorded = state.usages[usageKey(subjectId, period)] ?? { understand: 0, generate: 0 };
+    const summaryConfigured = (this.config.quotas.summary ?? 0) > 0 && this.config.requestBounds.summary !== undefined;
+    const used = { ...recorded, ...(summaryConfigured ? { summary: recorded.summary ?? 0 } : {}) };
     return { subjectId, expiresAt: state.subjects[subjectId].expiresAt, period, used, limits: this.config.quotas,
       pending: Object.values(state.requests).filter(r => r.subjectId === subjectId && ['reserved', 'submitted', 'pending'].includes(r.status)).length,
-      aiEnabled: state.aiEnabled && !state.recoveryRequired, reconciliationRequired: this.needsReconciliation(state, period), summaryAvailable: false };
+      aiEnabled: state.aiEnabled && !state.recoveryRequired, reconciliationRequired: this.needsReconciliation(state, period),
+      summaryAvailable: summaryConfigured && state.aiEnabled && !this.needsReconciliation(state, period) };
   }
   async adminReport(admin: string) {
     await this.admin(admin);
@@ -143,13 +146,14 @@ export class ControlService {
       }
       if (this.needsReconciliation(state, period)) throw new ControlError('RECONCILIATION_REQUIRED', 503);
       if (!state.aiEnabled) throw new ControlError('AI_DISABLED', 503);
-      const bound = this.config.requestBounds[request.operation]; if (bound > this.config.maximumRequestCost) throw new ControlError('REQUEST_COST_BOUND', 400);
+      if (request.operation === 'summary' && (!(this.config.quotas.summary ?? 0) || this.config.requestBounds.summary === undefined)) throw new ControlError('SUMMARY_DISABLED', 503);
+      const bound = this.config.requestBounds[request.operation]!; if (bound > this.config.maximumRequestCost) throw new ControlError('REQUEST_COST_BOUND', 400);
       const used = state.usages[usageKey(subjectId, period)] ?? { understand: 0, generate: 0 };
-      if (used[request.operation] >= this.config.quotas[request.operation]) throw new ControlError('INDIVIDUAL_QUOTA_EXHAUSTED', 429);
+      if ((used[request.operation] ?? 0) >= (this.config.quotas[request.operation] ?? 0)) throw new ControlError('INDIVIDUAL_QUOTA_EXHAUSTED', 429);
       const budget = state.budgets[period] ?? { spent: 0, reserved: 0 };
       if (budget.spent + budget.reserved + bound > this.config.budgetLimit) throw new ControlError('GLOBAL_BUDGET_EXHAUSTED', 429);
       if (Object.values(state.requests).filter(r => ['reserved', 'submitted'].includes(r.status)).length >= this.config.maxConcurrent) throw new ControlError('CONCURRENCY_LIMIT', 429);
-      used[request.operation]++; budget.reserved += bound; state.usages[usageKey(subjectId, period)] = used; state.budgets[period] = budget;
+      used[request.operation] = (used[request.operation] ?? 0) + 1; budget.reserved += bound; state.usages[usageKey(subjectId, period)] = used; state.budgets[period] = budget;
       state.requests[key] = { subjectId, requestId: request.requestId, inputDigest, operation: request.operation, period, bound, status: 'reserved', cancelled: false };
       return key;
     });
@@ -198,7 +202,8 @@ export class ControlService {
   private async pending(key: string) { await this.store.transact(state => { if (state.requests[key].status !== 'settled') state.requests[key].status = 'pending'; }); }
   private releaseUnsubmitted(state: ControlState, key: string) {
     const entry = state.requests[key]; if (entry.status !== 'reserved') throw new ControlError('ALREADY_SUBMITTED');
-    state.budgets[entry.period].reserved -= entry.bound; state.usages[usageKey(entry.subjectId, entry.period)][entry.operation]--; entry.status = 'released';
+    state.budgets[entry.period].reserved -= entry.bound; const usage = state.usages[usageKey(entry.subjectId, entry.period)];
+    usage[entry.operation] = (usage[entry.operation] ?? 0) - 1; entry.status = 'released';
   }
   async cancel(value: string, requestId: string) {
     const sessionDigest = await digest(value, this.config.digestSecret);
@@ -228,14 +233,23 @@ export class ControlService {
       this.audit(state, 'ledger-recovery');
     });
   }
-  async confirmReconciled(admin: string, evidence: { budgets: Record<string, number>; usages: Record<string, Record<Operation, number>> }) {
+  async confirmReconciled(admin: string, evidence: { budgets: Record<string, number>; usages: Record<string, OperationCounts> }) {
     await this.admin(admin); await this.store.transact(state => {
       if (Object.values(state.requests).some(r => ['pending', 'submitted', 'reserved'].includes(r.status))) throw new ControlError('RECONCILIATION_REQUIRED', 503);
+      const summaryEvidenceKeys = new Set<string>();
+      if ((this.config.quotas.summary ?? 0) > 0 && this.config.requestBounds.summary !== undefined) {
+        for (const subjectId of Object.keys(state.subjects)) summaryEvidenceKeys.add(usageKey(subjectId, this.period()));
+        for (const key of Object.keys(state.usages)) summaryEvidenceKeys.add(key);
+        for (const key of Object.keys(evidence?.usages ?? {})) summaryEvidenceKeys.add(key);
+      }
+      for (const [key, usage] of Object.entries(state.usages)) if (usage.summary !== undefined) summaryEvidenceKeys.add(key);
+      for (const request of Object.values(state.requests)) if (request.operation === 'summary') summaryEvidenceKeys.add(usageKey(request.subjectId, request.period));
       if (!evidence || !evidence.budgets || !evidence.usages || !Object.hasOwn(evidence.budgets, this.period()) ||
         Object.keys(state.budgets).some(period => !Object.hasOwn(evidence.budgets, period)) ||
         Object.keys(state.subjects).some(subjectId => !Object.hasOwn(evidence.usages, usageKey(subjectId, this.period()))) ||
         Object.entries(evidence.budgets).some(([period, spent]) => !/^\d{4}-\d{2}$/.test(period) || !integer(spent)) ||
-        Object.entries(evidence.usages).some(([key, usage]) => !/^[a-f0-9-]{36}:\d{4}-\d{2}$/.test(key) || !integer(usage.understand) || !integer(usage.generate))) throw new ControlError('RECONCILIATION_EVIDENCE_REQUIRED', 400);
+        Object.entries(evidence.usages).some(([key, usage]) => !/^[a-f0-9-]{36}:\d{4}-\d{2}$/.test(key) || !integer(usage.understand) || !integer(usage.generate) || (usage.summary !== undefined && !integer(usage.summary))) ||
+        [...summaryEvidenceKeys].some(key => !evidence.usages[key] || !integer(evidence.usages[key].summary!))) throw new ControlError('RECONCILIATION_EVIDENCE_REQUIRED', 400);
       // Owner supplies independent billing/count evidence, including records missing from a restored snapshot.
       // Reconciliation never decreases known charges or usage. Empty current month must be explicit.
       for (const [period, spent] of Object.entries(evidence.budgets)) {
@@ -243,7 +257,8 @@ export class ControlService {
       }
       for (const [key, observed] of Object.entries(evidence.usages)) {
         const known = state.usages[key] ?? { understand: 0, generate: 0 };
-        state.usages[key] = { understand: Math.max(known.understand, observed.understand), generate: Math.max(known.generate, observed.generate) };
+        state.usages[key] = { understand: Math.max(known.understand, observed.understand), generate: Math.max(known.generate, observed.generate),
+          ...(known.summary !== undefined || observed.summary !== undefined ? { summary: Math.max(known.summary ?? 0, observed.summary ?? 0) } : {}) };
       }
       state.recoveryRequired = false; state.aiEnabled = false; this.audit(state, 'ledger-reconciled');
     });

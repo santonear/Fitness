@@ -124,7 +124,7 @@ describe('BE local control', () => {
     await f.service.markLedgerRecovered(f.admin);
     await expect(f.service.submit(f.session.token, await f.request())).rejects.toMatchObject({ code: 'RECONCILIATION_REQUIRED' });
     await expect(f.service.enableMock(f.admin, true)).rejects.toMatchObject({ code: 'RECONCILIATION_REQUIRED' });
-    await f.service.confirmReconciled(f.admin, { budgets: { '2026-01': 0 }, usages: { [`${f.session.subjectId}:2026-01`]: { understand: 0, generate: 0 } } }); await f.service.enableMock(f.admin, true);
+    await f.service.confirmReconciled(f.admin, { budgets: { '2026-01': 0 }, usages: { [`${f.session.subjectId}:2026-01`]: { understand: 0, generate: 0, summary: 0 } } }); await f.service.enableMock(f.admin, true);
     await f.service.submit(f.session.token, await f.request()); expect(f.calls()).toBe(1);
   });
   it('BE-T06 accepts sparse exact date sets beyond 12 weeks and rejects independent metric mismatch', async () => {
@@ -155,7 +155,7 @@ describe('BE local control', () => {
     expect(f.calls()).toBe(1);
     await f.service.markLedgerRecovered(f.admin);
     await expect(f.service.confirmReconciled(f.admin, { budgets: { '2026-02': 0 }, usages: {} })).rejects.toMatchObject({ code: 'RECONCILIATION_REQUIRED' });
-    await f.service.settle(f.admin, f.session.subjectId, req.requestId, 80); await f.service.confirmReconciled(f.admin, { budgets: { '2026-01': 80, '2026-02': 0 }, usages: { [`${f.session.subjectId}:2026-02`]: { understand: 0, generate: 0 } } });
+    await f.service.settle(f.admin, f.session.subjectId, req.requestId, 80); await f.service.confirmReconciled(f.admin, { budgets: { '2026-01': 80, '2026-02': 0 }, usages: { [`${f.session.subjectId}:2026-01`]: { understand: 1, generate: 0, summary: 0 }, [`${f.session.subjectId}:2026-02`]: { understand: 0, generate: 0, summary: 0 } } });
     expect((await f.store.read()).aiEnabled).toBe(false);
   });
   it('BE-T05 declared cost beyond bound records actual charge and halts new calls', async () => {
@@ -196,7 +196,7 @@ describe('BE local control', () => {
   it('BE-T14 reconciliation restores independently observed spent amounts and counts before reopening', async () => {
     const f = await setup(); await f.service.markLedgerRecovered(f.admin);
     await expect(f.service.confirmReconciled(f.admin, { budgets: {}, usages: {} })).rejects.toMatchObject({ code: 'RECONCILIATION_EVIDENCE_REQUIRED' });
-    await f.service.confirmReconciled(f.admin, { budgets: { '2026-01': 3500 }, usages: { [`${f.session.subjectId}:2026-01`]: { understand: 2, generate: 1 } } });
+    await f.service.confirmReconciled(f.admin, { budgets: { '2026-01': 3500 }, usages: { [`${f.session.subjectId}:2026-01`]: { understand: 2, generate: 1, summary: 0 } } });
     await f.service.enableMock(f.admin, true);
     await expect(f.service.submit(f.session.token, await f.request())).rejects.toMatchObject({ code: 'GLOBAL_BUDGET_EXHAUSTED' });
     expect((await f.service.status(f.session.token)).used.understand).toBe(2); expect(f.calls()).toBe(0);

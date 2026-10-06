@@ -13,8 +13,8 @@ export interface WorkerEnv {
 }
 const count = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 const policy = z.strictObject({ timeZone: z.string().min(1), k: z.literal(1), budgetLimit: count,
-  maximumRequestCost: count, requestBounds: z.strictObject({ understand: count, generate: count }),
-  quotas: z.strictObject({ understand: count, generate: count }), maxInputBytes: count.min(1).max(65536), maxConcurrent: count.min(1).max(100) });
+  maximumRequestCost: count, requestBounds: z.strictObject({ understand: count, generate: count, summary: count.optional() }),
+  quotas: z.strictObject({ understand: count, generate: count, summary: count.optional() }), maxInputBytes: count.min(1).max(65536), maxConcurrent: count.min(1).max(100) });
 type WorkerConfig = { control: ControlConfig; origins: string[] } &
   ({ mode: 'control-only' } | { mode: 'external'; transport: TransportConfig; providerId: string });
 export function readWorkerConfig(env: WorkerEnv): WorkerConfig | null {
@@ -50,7 +50,7 @@ export function createWorker(dependencies: { store?: (env: WorkerEnv) => Control
       if (!config) return new URL(request.url).pathname === '/api/v1/health' && request.method === 'GET'
         ? json({ status: 'disabled', productionModelEnabled: false }) : json({ error: 'AI_DISABLED' }, 503);
       const path = new URL(request.url).pathname;
-      if (config.mode === 'control-only' && ['/api/v1/goals/interpret', '/api/v1/plans/generate', '/api/v1/admin/supplier', '/api/v1/admin/mock'].includes(path))
+      if (config.mode === 'control-only' && ['/api/v1/goals/interpret', '/api/v1/plans/generate', '/api/v1/stages/summarize', '/api/v1/admin/supplier', '/api/v1/admin/mock'].includes(path))
         return json({ error: 'AI_DISABLED' }, 503);
       if (config.mode === 'external' && (!dependencies.codec || dependencies.codec.providerId !== config.providerId)) throw new ControlError('PROVIDER_SELECTION_REQUIRED', 503);
       const supplier = config.mode === 'external'

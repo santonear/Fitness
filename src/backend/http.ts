@@ -38,7 +38,7 @@ export function createHandler(service: ControlService, options: { origins: strin
     try {
       const url = new URL(request.url), path = url.pathname;
       if (path === '/api/v1/health' && request.method === 'GET') return json({ status: options.supplierMode ?? 'local-mock', productionModelEnabled: false });
-      const known = ['/api/v1/trial/redeem', '/api/v1/trial/status', '/api/v1/goals/interpret', '/api/v1/plans/generate', '/api/v1/requests/cancel',
+      const known = ['/api/v1/trial/redeem', '/api/v1/trial/status', '/api/v1/goals/interpret', '/api/v1/plans/generate', '/api/v1/stages/summarize', '/api/v1/requests/cancel',
         '/api/v1/admin/invites', '/api/v1/admin/invites/revoke', '/api/v1/admin/revoke', '/api/v1/admin/reissue', '/api/v1/admin/mock', '/api/v1/admin/recovery', '/api/v1/admin/reconciled', '/api/v1/admin/settle', '/api/v1/admin/retention', '/api/v1/admin/report',
         ...(options.supplierMode ? ['/api/v1/admin/supplier'] : [])];
       if (!known.includes(path)) return json({ error: 'NOT_FOUND' }, 404);
@@ -67,7 +67,7 @@ export function createHandler(service: ControlService, options: { origins: strin
         else if (path.endsWith('/recovery')) { parse(z.strictObject({}), data); await service.markLedgerRecovered(admin); }
         else if (path.endsWith('/reconciled')) {
           const evidence = parse(z.strictObject({ budgets: z.record(z.string(), z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER)),
-            usages: z.record(z.string(), z.strictObject({ understand: z.number().int().nonnegative(), generate: z.number().int().nonnegative() })) }), data);
+            usages: z.record(z.string(), z.strictObject({ understand: z.number().int().nonnegative(), generate: z.number().int().nonnegative(), summary: z.number().int().nonnegative().optional() })) }), data);
           await service.confirmReconciled(admin, evidence);
         }
         else if (path === '/api/v1/admin/invites/revoke') { const { inviteId } = parse(z.strictObject({ inviteId: z.string().length(64) }), data); await service.revokeInvite(admin, inviteId); }
@@ -84,7 +84,7 @@ export function createHandler(service: ControlService, options: { origins: strin
       const token = sessionToken(request);
       if (path.endsWith('/cancel')) { const { requestId } = parse(z.strictObject({ requestId: z.uuid() }), data); await service.cancel(token, requestId); return json({ status: 'cancelled', accounting: 'may-be-charged' }); }
       const operation = (data as { operation?: string } | null)?.operation;
-      if (operation !== (path.endsWith('/interpret') ? 'understand' : 'generate')) throw new ControlError('INVALID_INPUT', 400);
+      if (operation !== (path.endsWith('/interpret') ? 'understand' : path.endsWith('/summarize') ? 'summary' : 'generate')) throw new ControlError('INVALID_INPUT', 400);
       return json(await service.submit(token, data));
     } catch (error) {
       return error instanceof ControlError ? json({ error: error.code }, error.status) : json({ error: 'CONTROL_UNAVAILABLE' }, 503);

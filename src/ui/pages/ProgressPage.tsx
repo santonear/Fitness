@@ -130,7 +130,7 @@ export function ProgressPage() {
           {report.bodyWeights.length ? <ul>{report.bodyWeights.map(value => <li key={value.id}>{value.localDate} · {value.weightGrams / 1000} kg · {value.timeZone}</li>)}</ul> : <p>{zh ? '此日期范围没有体重观测。' : 'No weight observations in this date range.'}</p>}
           <p className="muted">{zh ? '只展示真实观测，缺测日期保持空缺。' : 'Only real observations are shown; missing dates remain gaps.'}</p>
         </section>
-        <p className="muted">{zh ? '阶段 AI 总结尚未启用。当前进度由本地事实计算，不调用 AI。' : 'Stage AI summaries are not enabled yet. Current progress is calculated from local facts without AI calls.'}</p>
+        <p className="muted">{zh ? '当前进度由本地事实计算。可选 AI 总结仅在核对发送范围并确认后调用。' : 'Progress is calculated from local facts. Optional AI summaries require a reviewed sending scope and explicit confirmation.'}</p>
       </>}
     </>
   );

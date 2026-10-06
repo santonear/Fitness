@@ -20,13 +20,13 @@ describe('media provenance and safe identity lookup', () => {
    expect(Object.isFrozen(entry.source)).toBe(true);
    expect(Object.isFrozen(entry)).toBe(true);
    expect(Object.isFrozen(entry.videoReview)).toBe(true);
-   expect(entry.checkedOn).toBe('2026-10-05');
+   expect(entry.checkedOn).toBe('2026-10-06');
   }
  });
  it('shows source association separately from the pending review and rights', () => {
   const html = Object.keys(exerciseMedia).map(exerciseId => renderToStaticMarkup(createElement(ExerciseMedia, { exerciseId, exerciseName: 'Exercise', locale: 'en' }))).join('');
   expect(html).toContain('confirms source association only');
-  expect(html).toContain('publisher identity has not been independently verified');
+  expect(html).toContain('YouTube metadata confirms the video title and channel name');
   expect(html).toContain('embedding and actual playback are unverified');
   expect(html).toContain('redistribution rights are unverified');
  });

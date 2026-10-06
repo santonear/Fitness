@@ -7,13 +7,14 @@ test('failed videos can retry and close with written steps preserved in both lan
  await page.goto('/exercises');
  await expect(page.getByRole('heading', { name: 'Bodyweight squat', exact: true })).toBeVisible();
  expect(remote).toEqual([]);
- await expect(page.getByText('The publisher page links this video; this confirms source association only.', { exact: true })).toBeVisible();
- await expect(page.getByText('Only the search title matches this exercise; publisher identity has not been independently verified.', { exact: true })).toBeVisible();
+ await expect(page.getByText('The publisher page or document links this video; this confirms source association only.', { exact: true })).toHaveCount(3);
+ await expect(page.getByText('YouTube metadata confirms the video title and channel name; this confirms source information only.', { exact: true })).toBeVisible();
  for (const locale of ['en', 'zh']) {
   await page.getByRole('combobox', { name: 'Language' }).selectOption(locale);
   const zh = locale === 'zh';
   await page.getByRole('button', { name: zh ? '加载 YouTube 视频（连接第三方）' : 'Load YouTube video (connects to a third party)', exact: true }).last().click();
   await expect(page.locator('iframe')).toHaveCount(1);
+  await expect(page.locator('iframe')).toHaveAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
   await page.getByRole('button', { name: zh ? '视频无法播放' : 'Video not working', exact: true }).click();
   await expect(page.locator('iframe')).toHaveCount(0);
   const retry = page.getByRole('button', { name: zh ? '重试视频（连接第三方）' : 'Retry video (connects to a third party)', exact: true });
@@ -22,7 +23,7 @@ test('failed videos can retry and close with written steps preserved in both lan
   await expect(page.locator('iframe')).toHaveCount(1);
   await page.getByRole('button', { name: zh ? '关闭视频' : 'Close video', exact: true }).click();
   await expect(page.locator('iframe')).toHaveCount(0);
-  await expect(page.getByRole('button', { name: zh ? '加载 YouTube 视频（连接第三方）' : 'Load YouTube video (connects to a third party)', exact: true })).toHaveCount(2);
+  await expect(page.getByRole('button', { name: zh ? '加载 YouTube 视频（连接第三方）' : 'Load YouTube video (connects to a third party)', exact: true })).toHaveCount(4);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
  }
  await page.getByRole('combobox', { name: '语言' }).selectOption('en');

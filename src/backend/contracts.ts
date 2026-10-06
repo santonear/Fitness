@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { exercises, CATALOG_VERSION } from '../catalog/exercises';
 import { localeSchema, uuidSchema, localDateSchema, timeZoneSchema, plannedExerciseSchema, trainingPreferencesSchema } from '../domain/schemas';
 import { ControlError } from './store';
+import { summaryStageSchema, summaryResultSchema, validateSummaryStage } from './summary-contract';
 
 export function canonical(value: unknown): string {
   if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
@@ -35,8 +36,11 @@ const { updatedAt: _updatedAt, daysPerWeek: _daysPerWeek, trainingWeekdays: _tra
 const generate = z.strictObject({ ...base, operation: z.literal('generate'), confirmedGoal: text, goalConfirmation: z.string().length(64),
   dates: z.array(localDateSchema).min(1), timeZone: timeZoneSchema, catalogVersion: z.literal(CATALOG_VERSION),
   conditions: z.strictObject(conditionFields), history: history.optional() });
-export const requestSchema = z.discriminatedUnion('operation', [understand, generate]);
+const { goalText: _summaryGoal, ...summaryBase } = base;
+const summary = z.strictObject({ ...summaryBase, operation: z.literal('summary'), stage: summaryStageSchema });
+export const requestSchema = z.discriminatedUnion('operation', [understand, generate, summary]);
 export type AiRequest = z.infer<typeof requestSchema>;
+export type StageSummaryRequest = Extract<AiRequest, { operation: 'summary' }>;
 export async function validateRequest(value: unknown, k: number, maxBytes: number): Promise<AiRequest> {
   const parsed = requestSchema.safeParse(value);
   if (!parsed.success) throw new ControlError('INVALID_INPUT', 400);
@@ -50,17 +54,18 @@ export async function validateRequest(value: unknown, k: number, maxBytes: numbe
     if (request.history && request.history.restoreGeneration !== request.restoreGeneration) throw new ControlError('STALE_RESTORE_GENERATION', 400);
     if (request.history && request.history.range.from > request.history.range.to) throw new ControlError('INVALID_INPUT', 400);
   }
+  if (request.operation === 'summary') validateSummaryStage(request.stage, request.restoreGeneration);
   return request;
 }
 const understandResult = z.strictObject({ interpretedGoal: text });
 const dayResult = z.strictObject({ days: z.array(z.strictObject({ date: localDateSchema, exercises: z.array(plannedExerciseSchema).min(1).max(32) })).min(1) });
 /** Supplier schema is a hint; validateCandidate remains the authoritative business check. */
 export function candidateJsonSchema(operation: AiRequest['operation']) {
-  const { $schema: _schema, ...schema } = z.toJSONSchema(operation === 'understand' ? understandResult : dayResult);
+  const { $schema: _schema, ...schema } = z.toJSONSchema(operation === 'understand' ? understandResult : operation === 'summary' ? summaryResultSchema : dayResult);
   return schema;
 }
 export function validateCandidate(request: AiRequest, result: unknown) {
-  const parsed = (request.operation === 'understand' ? understandResult : dayResult).safeParse(result);
+  const parsed = (request.operation === 'understand' ? understandResult : request.operation === 'summary' ? summaryResultSchema : dayResult).safeParse(result);
   if (!parsed.success) throw new ControlError('INVALID_CANDIDATE', 502);
   if (request.operation === 'generate') {
     const candidate = dayResult.parse(result);

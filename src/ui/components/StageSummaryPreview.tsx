@@ -5,6 +5,7 @@ import { dateInZone } from '../../application/progress';
 import { HistoryDetail } from './HistoryDetail';
 import { database } from '../../persistence/db';
 import { liveQuery } from 'dexie';
+import { StageSummaryAi } from './StageSummaryAi';
 
 export function StageSummaryPreview({ locale, plans }: { locale: Locale; plans: { id: string; name: string }[] }) {
   const zh = locale === 'zh';
@@ -39,7 +40,7 @@ export function StageSummaryPreview({ locale, plans }: { locale: Locale; plans: 
   };
   return <section className="progress-section" style={{ overflowWrap: 'anywhere', minWidth: 0 }} aria-label={zh ? '阶段总结本地准备' : 'Local stage summary preparation'}>
     <h2>{zh ? '阶段总结本地准备' : 'Local stage summary preparation'}</h2>
-    <p>{zh ? '仅在本机准备事实预览。模型尚未启用，不生成 AI 总结，不发送数据。' : 'Prepare a local facts preview. The model is not enabled; no AI summary is generated and no data is sent.'}</p>
+    <p>{zh ? '仅在本机准备事实预览，不调用模型或发送数据；可选 AI 总结需要另行核对并确认发送。' : 'Preparing a local facts preview does not call a model or send data. Optional AI summaries require a separate reviewed and confirmed sending scope.'}</p>
     <p className="muted">{hasSavedZone ? (zh ? '资料日历时区' : 'Saved profile calendar time zone') : (zh ? '浏览器显示时区（尚未读取保存的资料）' : 'Browser display time zone (saved profile not yet available)')}: {timeZone}. {zh ? '保留记录的原始本地日期，不转换旧记录日期。' : 'Original local dates are retained; existing record dates are not converted.'}</p>
     <form className="progress-filters" onSubmit={event => { event.preventDefault(); void prepare(); }}>
       <label>{zh ? '总结范围' : 'Summary scope'}<select disabled={busy} value={kind} onChange={event => { setKind(event.target.value as StageSelection['kind']); reset(); }}>
@@ -82,5 +83,6 @@ export function StageSummaryPreview({ locale, plans }: { locale: Locale; plans: 
       {result.payload.bodyWeights.map(row => <p key={row.id}>{row.localDate} · {row.weightGrams / 1000} kg · {row.timeZone} · {row.id}</p>)}
       <p className="muted">{zh ? '四种记录类型分别保留；未记录指标显示空缺，记录的 0 保留为 0。此预览不会写入备忘、计划或训练记录；后续发送须另行确认。' : 'All four metric types remain separate. Missing metrics remain absent; recorded zero stays zero. This preview does not save memos, plans or training records. Sending would require a separate confirmation.'}</p>
     </div>}
+    <StageSummaryAi prepared={result?.ok?result:undefined} locale={locale}/>
   </section>;
 }

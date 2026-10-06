@@ -102,3 +102,10 @@ it('rejects malformed reported fields instead of printing attacker-controlled st
   expect(() => safeAdminReport({ ...fixtureReport(), capturedAt: secret })).toThrow('INVALID_RESPONSE');
   expect(() => safeAdminReport({ ...fixtureReport(), requests: [{ ...fixtureReport().requests[0], requestId: secret }] })).toThrow('INVALID_RESPONSE');
 });
+it('supports summary metadata and evidence without printing result bodies',async()=>{
+ const report=fixtureReport();const extended={...report,usages:[{...report.usages[0],summary:2}],requests:[{...report.requests[0],operation:'summary',result:secret}]};
+ const safe=safeAdminReport(extended);expect(safe.usages[0].summary).toBe(2);expect(safe.requests[0].operation).toBe('summary');expect(JSON.stringify(safe)).not.toContain(secret);
+ const deps=dependencies();const evidence={budgets:{'2026-10':5},usages:{[`${subjectId}:2026-10`]:{understand:1,generate:2,summary:2}}};
+ await runControlAdmin(['reconciled','--origin',origin,'--evidence-file','fixture.json','--evidence-ref','bill','--confirm-provider-bill'],{...deps,readEvidenceFile:async()=>JSON.stringify(evidence)});
+ expect(JSON.parse(deps.fetcher.mock.calls[0][1]!.body as string)).toEqual(evidence);
+});
