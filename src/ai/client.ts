@@ -3,6 +3,8 @@ import {ControlService,type ControlConfig} from '../backend/control';
 import type {ControlState,ControlStore} from '../backend/store';
 import {exercises} from '../catalog/exercises';
 import {z} from 'zod';
+import {validateCandidate} from '../backend/contracts';
+import {uuidSchema} from '../domain/schemas';
 const count=z.number().int().nonnegative();
 const publicErrors=new Set(['QUALIFICATION_REQUIRED','INVITE_NOT_FOUND','INVITE_INVALID','SUBJECT_EXPIRED','SUBJECT_NOT_FOUND','RECONCILIATION_REQUIRED','REQUEST_CONFLICT','REQUEST_IN_PROGRESS','RESULT_UNAVAILABLE','AI_DISABLED','REQUEST_COST_BOUND','INDIVIDUAL_QUOTA_EXHAUSTED','GLOBAL_BUDGET_EXHAUSTED','CONCURRENCY_LIMIT','NOT_SUBMITTED','ACCOUNTING_PENDING','CANCELLED','ALREADY_SUBMITTED','REQUEST_NOT_FOUND','STALE_RESTORE_GENERATION','STALE_INPUT','INVALID_INPUT','RANGE_TOO_LARGE','ORIGIN_DENIED','CONTROL_UNAVAILABLE','DATE_BOUND_EXCEEDED','INVALID_REQUEST','CONFIRMATION_REQUIRED']);
 const statusSchema=z.object({expiresAt:count.max(8_640_000_000_000_000),period:z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/),used:z.object({understand:count,generate:count}),limits:z.object({understand:count,generate:count}),pending:count.optional(),aiEnabled:z.boolean()});
@@ -18,8 +20,13 @@ export async function createDemoAiClient():Promise<AiClient>{
  return {status:()=>service.status(session),redeem:async code=>{if(code!=='FITNESS-DEMO')throw new Error('INVITE_INVALID');session=(await service.redeem(issued.code)).token;},submit:request=>service.submit(session,request),cancel:requestId=>service.cancel(session,requestId).then(()=>{})};
 }
 export function createFetchAiClient(fetcher:typeof fetch=fetch):AiClient{
- async function request(path:string,data?:unknown,signal?:AbortSignal){let response:Response;try{response=await fetcher(`/api/v1/${path}`,{method:data===undefined?'GET':'POST',credentials:'same-origin',cache:'no-store',headers:data===undefined?undefined:{'Content-Type':'application/json'},body:data===undefined?undefined:JSON.stringify(data),signal});}catch{throw new Error('CONTROL_UNAVAILABLE');}
+ async function request(path:string,data?:unknown,signal?:AbortSignal){let response:Response;try{response=await fetcher(`/api/v1/${path}`,{method:data===undefined?'GET':'POST',credentials:'same-origin',cache:'no-store',redirect:'manual',headers:data===undefined?undefined:{'Content-Type':'application/json'},body:data===undefined?undefined:JSON.stringify(data),signal});}catch{throw new Error('CONTROL_UNAVAILABLE');}
+  if(response.redirected||response.status>=300&&response.status<400||response.type==='opaqueredirect')throw new Error('CONTROL_UNAVAILABLE');
   let body:unknown;try{body=await response.json();}catch{throw new Error('CONTROL_UNAVAILABLE');}if(!response.ok){const code=typeof body==='object'&&body&&'error' in body?body.error:undefined;throw new Error(typeof code==='string'&&publicErrors.has(code)?code:'CONTROL_UNAVAILABLE');}return body;
  }
- return {status:async()=>{const result=statusSchema.safeParse(await request('trial/status'));if(!result.success)throw new Error('CONTROL_UNAVAILABLE');return result.data;},redeem:async code=>{await request('trial/redeem',{code});},submit:async(payload,signal)=>await request(payload.operation==='understand'?'goals/interpret':'plans/generate',payload,signal) as Awaited<ReturnType<AiClient['submit']>>,cancel:async requestId=>{await request('requests/cancel',{requestId});}};
+ return {status:async()=>{const result=statusSchema.safeParse(await request('trial/status'));if(!result.success)throw new Error('CONTROL_UNAVAILABLE');return result.data;},redeem:async code=>{await request('trial/redeem',{code});},submit:async(payload,signal)=>{
+  const response=z.object({requestId:uuidSchema,result:z.unknown()}).safeParse(await request(payload.operation==='understand'?'goals/interpret':'plans/generate',payload,signal));
+  if(!response.success||response.data.requestId!==payload.requestId)throw new Error('CONTROL_UNAVAILABLE');
+  try{return {requestId:response.data.requestId,result:validateCandidate(payload,response.data.result)};}catch{throw new Error('CONTROL_UNAVAILABLE');}
+ },cancel:async requestId=>{await request('requests/cancel',{requestId});}};
 }

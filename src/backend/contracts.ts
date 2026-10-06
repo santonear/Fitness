@@ -54,6 +54,11 @@ export async function validateRequest(value: unknown, k: number, maxBytes: numbe
 }
 const understandResult = z.strictObject({ interpretedGoal: text });
 const dayResult = z.strictObject({ days: z.array(z.strictObject({ date: localDateSchema, exercises: z.array(plannedExerciseSchema).min(1).max(32) })).min(1) });
+/** Supplier schema is a hint; validateCandidate remains the authoritative business check. */
+export function candidateJsonSchema(operation: AiRequest['operation']) {
+  const { $schema: _schema, ...schema } = z.toJSONSchema(operation === 'understand' ? understandResult : dayResult);
+  return schema;
+}
 export function validateCandidate(request: AiRequest, result: unknown) {
   const parsed = (request.operation === 'understand' ? understandResult : dayResult).safeParse(result);
   if (!parsed.success) throw new ControlError('INVALID_CANDIDATE', 502);
