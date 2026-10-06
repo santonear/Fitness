@@ -59,7 +59,7 @@ export function SettingsPage() {
     });
   }
   function submit(e: FormEvent) { e.preventDefault(); void save(); }
-  return <><h1>{t('settings')}</h1><p>{l.local}</p><p>{l.optional}</p>
+  return <div className="settings-page"><h1>{t('settings')}</h1><p>{l.local}</p><p>{l.optional}</p>
     {profile && <BackupPanel />}
     <button disabled={!profile || busy} onClick={() => void run(async () => { setMemo(await trainingMemoryService.readTrainingMemo()); })}>{i18n.resolvedLanguage === 'zh' ? '读取全量训练备忘' : 'Read full training memo'}</button>
     {memo && <TrainingMemoView memo={memo} locale={i18n.resolvedLanguage === 'zh' ? 'zh' : 'en'} />}
@@ -77,6 +77,6 @@ export function SettingsPage() {
       <button type="submit">{l.saveWeight}</button>{editing && <button type="button" onClick={() => { setEditing(undefined); setWeight(''); }}>{l.cancel}</button>}
     </fieldset></form>
     <ul aria-label={l.history}>{weights.map(row => <li key={row.id}>{row.localDate} · {row.weightGrams / 1000} kg · {row.timeZone} <button disabled={busy} onClick={() => { setEditing(row); setDate(row.localDate); setWeight(String(row.weightGrams / 1000)); }}>{l.edit}</button> <button disabled={busy} onClick={() => void run(async () => { await bodyWeightService.deleteBodyWeight(row.id, row.revision); setWeights(await bodyWeightService.listBodyWeights()); if (editing?.id === row.id) setEditing(undefined); setStatus(l.deleted); })}>{l.delete}</button></li>)}</ul>
-  </>;
+  </div>;
 }
 

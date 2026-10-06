@@ -6,8 +6,18 @@
   "workers_dev": true,
   "preview_urls": false,
   "vars": {
-    "CONTROL_MODE": "disabled"
+    "CONTROL_MODE": "disabled",
+    "SUPPLIER_PROVIDER": "deepseek",
+    "CONTROL_ORIGINS": "[\"https://fitness.initdevl.workers.dev\"]",
+    "CONTROL_POLICY": "{\"timeZone\":\"Asia/Shanghai\",\"k\":1,\"budgetLimit\":3000,\"maximumRequestCost\":300,\"allowBoundedPending\":true,\"requestBounds\":{\"understand\":300,\"generate\":300},\"quotas\":{\"understand\":8,\"generate\":4},\"maxInputBytes\":65536,\"maxConcurrent\":2}"
   },
+  "d1_databases": [
+    {
+      "binding": "CONTROL_DB",
+      "database_name": "fitness-control-production",
+      "database_id": "01214290-e46e-4e5b-a6fc-b007a1ecb08f"
+    }
+  ],
   "observability": {
     "enabled": false
   },

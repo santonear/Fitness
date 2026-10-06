@@ -1,9 +1,11 @@
 import Dexie, { type Table } from 'dexie';
+import type { GuidedState } from '../domain/guided-contracts';
 import { DomainError } from '../domain/errors';
 import { localDateSchema, timeZoneSchema } from '../domain/schemas';
 import type { LocalProfile, Metadata, BodyWeightObservation, Plan, PlanVersion, WorkoutSession, SetRecord, ScheduledWorkout, TrainingMemo, AiMemoryNote, TimerState, MediaAsset } from '../domain/models';
 
 export class FitnessDatabase extends Dexie {
+  guidedStates!: Table<GuidedState, string>;
   profiles!: Table<LocalProfile, string>;
   metadata!: Table<Metadata, string>;
   bodyWeights!: Table<BodyWeightObservation, string>;
@@ -44,6 +46,9 @@ export class FitnessDatabase extends Dexie {
     });
     this.version(4).stores({}).upgrade(async transaction => {
       await transaction.table('metadata').toCollection().modify((row: Metadata) => { row.schemaVersion = 4; });
+    });
+    this.version(5).stores({ guidedStates: 'id' }).upgrade(async transaction => {
+      await transaction.table('metadata').toCollection().modify((row: Metadata) => { row.schemaVersion = 5; });
     });
   }
 }

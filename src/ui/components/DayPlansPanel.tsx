@@ -11,17 +11,19 @@ import type { LocalProfile, Plan, ScheduledWorkout } from '../../domain/models';
 import { DateCalendar } from './DateCalendar';
 import { DayPlanEditor } from './DayPlanEditor';
 import { dayPlanFeedback } from '../day-plan-feedback';
-export function DayPlansPanel({locale}:{locale:'zh'|'en'}){
+export function DayPlansPanel({locale,readOnly=false}:{locale:'zh'|'en';readOnly?:boolean}){
   const zh=locale==='zh';const [profile,setProfile]=useState<LocalProfile>();const [selected,setSelected]=useState<string[]>([]);const [visited,setVisited]=useState<string[]>([]);const [active,setActive]=useState('');
   const [occupied,setOccupied]=useState<string[]>([]);const [entries,setEntries]=useState<{plan:Plan;row:ScheduledWorkout;generation:number}[]>([]);const [error,setError]=useState('');
   async function refresh(){await database.transaction('r',database.tables,async()=>{const p=await profileService.getProfile();setProfile(p);if(!p)return;const plans=await database.plans.filter(plan=>plan.model==='date-day'&&!plan.deletedAt).toArray();const rows=await database.scheduledWorkouts.toArray();const generation=(await repository.readMetadata()).restoreGeneration??0;
-    setEntries(rows.filter(row=>!row.hiddenAt&&plans.some(plan=>plan.currentVersionId===row.planVersionId)).map(row=>({row,generation,plan:plans.find(plan=>plan.currentVersionId===row.planVersionId)!})));
+    const guided=await database.guidedStates.get('guided');
+    const legacyPlans=readOnly?plans.filter(plan=>!guided?.programs.some(program=>program.planIds.includes(plan.id))):plans;
+    setEntries(rows.filter(row=>!row.hiddenAt&&legacyPlans.some(plan=>plan.currentVersionId===row.planVersionId)).map(row=>({row,generation,plan:legacyPlans.find(plan=>plan.currentVersionId===row.planVersionId)!})));
     try{const tasks=await slotTasks(repository,p.timeZone);setOccupied([...new Set(tasks.filter(task=>evaluateSlot([task],task.projectedDate).occupants.length).map(task=>task.projectedDate))]);setError('');}catch(reason){setError(dayPlanFeedback(reason,zh));}});}
   useEffect(()=>{let live=true;let subscription:ReturnType<ReturnType<typeof liveQuery>['subscribe']>|undefined;void profileService.initialize(locale).then(()=>{if(!live)return;subscription=liveQuery(()=>Promise.all([database.plans.toArray(),database.planVersions.toArray(),database.scheduledWorkouts.toArray(),database.sessions.toArray(),database.profiles.toArray()])).subscribe({next:()=>{if(live)void refresh().catch(reason=>setError(String(reason)));},error:reason=>{if(live)setError(String(reason));}});}).catch(reason=>{if(live)setError(String(reason));});return()=>{live=false;subscription?.unsubscribe();};},[]);
   function activate(date:string){setActive(date);setVisited(values=>values.includes(date)?values:[...values,date]);}
   return <section aria-label={zh?'日期训练计划':'Date training plans'} className="day-plans-panel"><h2>{zh?'日期训练计划':'Date training plans'}</h2>
-    <p>{zh?'按具体日期独立安排。首期每次保存一天；多选后逐日编辑和保存，不会自动套用相同内容。':'Plan exact dates independently. Save one date at a time; multi-selection does not copy content or save other dates.'}</p>
-    {profile&&<><DateCalendar locale={locale} today={dateInZone(Date.now(),profile.timeZone)} selected={selected} onChange={setSelected} onActive={activate} occupied={occupied} />
+    <p>{readOnly?(zh?'旧日期计划和历史保留。新计划通过对话制定。':'Existing date plans and history are retained. Create new plans through dialogue.'):(zh?'按具体日期独立安排。首期每次保存一天；多选后逐日编辑和保存，不会自动套用相同内容。':'Plan exact dates independently. Save one date at a time; multi-selection does not copy content or save other dates.')}</p>
+    {profile&&!readOnly&&<><DateCalendar locale={locale} today={dateInZone(Date.now(),profile.timeZone)} selected={selected} onChange={setSelected} onActive={activate} occupied={occupied} />
       <div className="day-selection-tabs">{selected.map(date=><button type="button" key={date} onClick={()=>activate(date)} aria-pressed={active===date}>{date}</button>)}</div>
       {visited.map(date=><div key={date} hidden={active!==date||!selected.includes(date)}><DayPlanEditor date={date} locale={locale} zone={profile.timeZone} onSaved={refresh} /></div>)}</>}
     {error&&<p role="alert">{error}</p>}

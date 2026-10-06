@@ -1,0 +1,90 @@
+/* Shared presentation contract: ui-ux-max-design.md. No data-state rules. */
+:root {
+  --fitness-bg:#f5f0e7; --fitness-paper:#ece5d9; --fitness-ink:#292623;
+  --fitness-outline:#38332f; --fitness-muted:#696158; --fitness-line:rgba(56,51,47,.22);
+  --fitness-glass:rgba(255,255,255,.68); --fitness-solid:#fcfaf5;
+  --surface-paper-muted:#f7f2e9; --surface-glass-strong:rgba(255,255,255,.80); --outline-medium:rgba(56,51,47,.55); --text-muted:#9a9289; --accent-yellow-strong:#e9d95f; --danger-text:#943e33; --danger-bg:#fae9e3;
+  --fitness-orange:#f48543; --fitness-orange-bg:#ffe0c8; --fitness-yellow:#f5ed8a;
+  --accent:#9b4925; --muted:var(--fitness-muted); --line:var(--fitness-line);
+  --dashboard-ink:var(--fitness-ink); --dashboard-muted:var(--fitness-muted);
+  --dashboard-accent:#9b4925; --dashboard-paper:var(--fitness-bg);
+  --dashboard-white:var(--fitness-solid); --dashboard-radius:18px;
+}
+body { background:radial-gradient(ellipse at 85% 0%,#f8dfce80,transparent 48%),radial-gradient(ellipse at 5% 70%,#f5e9a960,transparent 45%),var(--fitness-bg); color:var(--fitness-ink); font-weight:400; }
+.app-shell { font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; }
+.app-shell * { font-weight:inherit; }
+.app-shell :is(h1,h2,h3,h4,strong,b,th) { font-weight:600; color:var(--fitness-ink); }
+.app-shell h1 { letter-spacing:-.035em; line-height:1.2; }
+.app-shell h2 { letter-spacing:-.02em; line-height:1.35; }
+.app-shell :is(p,label,li) { line-height:1.65; }
+.app-shell :is(input,select,textarea) { border:1px solid transparent; border-radius:10px; background:#ebe5db; color:var(--fitness-ink); padding:10px 12px; font-weight:400; max-width:100%; }
+.app-shell input[type=checkbox] { accent-color:#9b4925; }
+.app-shell :is(button,summary) { cursor:pointer; }
+.app-shell button { border:1px solid var(--fitness-line); border-radius:10px; background:var(--fitness-solid); color:var(--fitness-ink); font-weight:500; transition:background-color 160ms,box-shadow 160ms,transform 160ms; }
+.app-shell button:disabled { opacity:.6; cursor:not-allowed; border-style:dashed; }
+.app-shell :focus-visible { outline:3px solid #9b4925; outline-offset:3px; }
+.app-shell button[type=submit],.app-shell .guided-primary { background:var(--fitness-orange-bg); color:var(--fitness-ink); border:1px solid var(--fitness-outline); box-shadow:2px 3px 0 #38332f24; }
+.app-shell [role=alert] { color:#943e33; background:#fae9e3; padding:12px 16px; border-radius:10px; border-left:3px solid #943e33; overflow-wrap:anywhere; }
+.app-shell [role=status] { overflow-wrap:anywhere; }
+.fitness-workspace .app-sidebar { background:rgba(236,229,217,.82); backdrop-filter:blur(12px); }
+.fitness-workspace .app-header { background:rgba(252,250,245,.82); backdrop-filter:blur(12px); border-bottom:1px solid var(--fitness-line); }
+.fitness-workspace .app-brand-mark { border:1px solid var(--fitness-outline); box-shadow:2px 2px 0 #38332f24; background:var(--fitness-yellow); }
+.fitness-workspace .app-sidebar nav a[aria-current=page] { border-color:var(--fitness-outline); box-shadow:2px 2px 0 #38332f20; }
+.fitness-workspace .app-sidebar nav a[aria-current=page]::after { display:none; }
+.fitness-workspace .app-sidebar-label { color:var(--fitness-muted); letter-spacing:.08em; font-size:11px; font-weight:600; }
+.fitness-workspace .app-sidebar-note { border-top:1px solid var(--fitness-line); padding-top:16px; }
+.fitness-workspace .app-nav-icon { width:20px; height:20px; display:inline-flex; flex-shrink:0; }
+.fitness-workspace .app-nav-icon::before { content:none; }
+.app-nav-icon svg { width:20px; height:20px; }
+.fitness-workspace > main { width:100%; min-width:0; }
+.fitness-workspace > footer { color:var(--fitness-muted); }
+.app-shell .guided-records .guided-panel:where(:not(.calendar-journal)),
+.app-shell .progress-section,
+.app-shell .workout-exercise,
+.app-shell .workout-facts,
+.app-shell .catalog-exercise { border:1px solid var(--fitness-line); border-radius:18px; padding:24px; background:var(--fitness-solid); box-shadow:0 12px 32px #38332f0d; margin-block:20px; }
+.app-shell .catalog-filters,.app-shell .progress-filters { padding:20px; border-radius:18px; background:var(--fitness-paper); gap:16px; }
+.app-shell .progress-filters label { min-width:0; }
+.app-shell .progress-filters :is(input,select) { width:100%; min-width:0; box-sizing:border-box; }
+.app-shell .progress-filters select { appearance:none; padding-right:30px; background-image:linear-gradient(45deg,transparent 50%,#38332f 50%),linear-gradient(135deg,#38332f 50%,transparent 50%); background-position:calc(100% - 17px) center,calc(100% - 12px) center; background-size:5px 5px; background-repeat:no-repeat; }
+.app-shell .catalog-exercise h2 { font-size:22px; }
+.app-shell .history-row { padding:18px 0; }
+.app-shell .progress-table th { background:var(--fitness-paper); }
+.app-shell .progress-table td { background:var(--fitness-solid); }
+.app-shell .guided-page:not(.guided-welcome) > .guided-panel:where(:not(.calendar-journal)) { border:1px solid var(--fitness-line); border-radius:18px; padding:24px; background:var(--fitness-solid); }
+.app-shell .onboarding-card { border-color:var(--fitness-line); }
+.app-shell .onboarding-flow { border-radius:26px; box-shadow:5px 6px 0 #38332f12,0 18px 48px #e47d4312; }
+.app-shell .onboarding-flow h2 { font-weight:650; letter-spacing:-.03em; }
+.app-shell .onboarding-flow .guided-primary { background:var(--fitness-orange); color:var(--fitness-ink); border-color:var(--fitness-outline); box-shadow:3px 3px 0 #38332f30; font-weight:600; }
+.app-shell .fitness-sticker { transform:rotate(-1deg); font-weight:600; }
+.app-shell .training-analytics strong { font-weight:700; letter-spacing:-.04em; }
+.app-shell .guided-completion-ring span { font-weight:700; letter-spacing:-.04em; }
+.app-shell button:not(:disabled):active { transform:translate(1px,2px); box-shadow:none; }
+@keyframes fitness-arrive { from { opacity:.4; translate:0 6px; } to { opacity:1; translate:0 0; } }
+.app-shell .onboarding-flow,.app-shell .training-analytics { animation:fitness-arrive 220ms ease-out both; }
+.app-shell .guided-welcome { font-family:inherit; }
+.app-shell form fieldset { border:1px solid var(--fitness-line); border-radius:14px; padding:20px; }
+.settings-page { max-width:1080px; margin-inline:auto; }
+.settings-page > form,.settings-page > section { padding:24px; background:var(--fitness-solid); border:1px solid var(--fitness-line); border-radius:18px; margin-block:24px; }
+.settings-page > h2 { margin-top:36px; }
+.settings-page input[type=file] { display:block; width:100%; min-width:0; }
+@supports (backdrop-filter:blur(12px)) {
+ .app-shell .guided-records .guided-panel:where(:not(.calendar-journal)),.settings-page > section { background:var(--fitness-glass); backdrop-filter:blur(12px); }
+}
+@media(hover:hover) {
+ .app-shell button:not(:disabled):hover { background:var(--fitness-orange-bg); box-shadow:0 3px 8px #38332f14; transform:translateY(-1px); }
+}
+@media(min-width:900px) {
+ .settings-page > form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px 24px; }
+ .settings-page > form > :is(fieldset,p,button) { grid-column:1/-1; }
+}
+@media(max-width:600px) {
+ .fitness-workspace .app-header { flex-wrap:wrap; gap:8px 12px; }
+ .fitness-workspace .app-breadcrumb { min-width:0; flex:1; flex-wrap:wrap; gap:4px; }
+ .fitness-workspace .language-control { flex-shrink:0; }
+ .fitness-workspace .language-control select { padding:8px; }
+ .app-shell .guided-records .guided-panel:not(.calendar-journal),.app-shell .progress-section,.app-shell .workout-exercise,.app-shell .workout-facts,.app-shell .catalog-exercise,.settings-page > form,.settings-page > section { padding:16px; }
+ .app-shell .catalog-filters,.app-shell .progress-filters { padding:16px; }
+}
+@media(prefers-reduced-motion:reduce) { .app-shell *, .app-shell *::before,.app-shell *::after { animation:none!important; transition:none!important; transform:none!important; } }
+@media(forced-colors:active) { .app-shell button,.app-shell :is(input,select,textarea) { border:1px solid ButtonText; } .app-shell :focus-visible { outline:3px solid Highlight; } }

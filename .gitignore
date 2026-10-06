@@ -13,5 +13,8 @@ Thumbs.db
 dist/
 playwright-report/
 test-results/
+test-results-guided*/
+test-results-*/
+.guided-vite-cache/
 .npm-cache/
 .wrangler/

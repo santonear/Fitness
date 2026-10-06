@@ -11,7 +11,8 @@ export interface ControlState {
   usages: Record<string, OperationCounts>;
   budgets: Record<string, { spent: number; reserved: number }>;
   requests: Record<string, { subjectId: string; requestId: string; inputDigest: string; operation: Operation;
-    period: string; bound: number; status: RequestStatus; cancelled: boolean; actualCost?: number; error?: string }>;
+    period: string; bound: number; status: RequestStatus; cancelled: boolean; actualCost?: number; error?: string;
+    verifiedBoundFen?: number }>;
   audit: Array<{ at: number; event: string; subjectId?: string }>;
 }
 export const initialState = (): ControlState => ({ version: 1, aiEnabled: false, recoveryRequired: false,

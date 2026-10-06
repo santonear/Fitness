@@ -6,8 +6,9 @@ import { Link } from 'react-router-dom';
 import { planService } from '../../application/plans';
 import { profileService } from '../../application/profile';
 import { database } from '../../persistence/db';
-import type { Plan, LegacyPlanVersion, ScheduledWorkout } from '../../domain/models';
-import { PlanEditor } from '../components/PlanEditor';
+import type { Plan, PlanVersion, ScheduledWorkout } from '../../domain/models';
+import { exercises } from '../../catalog/exercises';
+import { targetText } from '../components/ExerciseTargets';
 
 export function PlansPage() {
   const { i18n } = useTranslation();
@@ -15,7 +16,8 @@ export function PlansPage() {
   const zh = locale === 'zh';
   const [plans, setPlans] = useState<Plan[]>([]);
   const [schedule, setSchedule] = useState<ScheduledWorkout[]>([]);
-  const [editing, setEditing] = useState<{ plan: Plan; version: LegacyPlanVersion }>();
+  const [retainedPlans, setRetainedPlans] = useState<string[]>([]);
+  const [viewing, setViewing] = useState<{ plan: Plan; version: PlanVersion }>();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -23,6 +25,8 @@ export function PlansPage() {
   async function refresh() {
     const rows = (await database.plans.toArray()).filter(plan => !plan.deletedAt && !plan.model);
     setPlans(rows);
+    const guided = await database.guidedStates.get('guided');
+    setRetainedPlans(guided?.programs.flatMap(program => program.planIds) ?? []);
     const active = rows.find(plan => plan.status === 'active');
     setSchedule(active
       ? (await database.scheduledWorkouts.where('planVersionId').equals(active.currentVersionId).sortBy('scheduledDate')).filter(row => !row.hiddenAt)
@@ -54,18 +58,9 @@ export function PlansPage() {
     <>
       <h1>{zh ? '训练计划' : 'Plans'}</h1>
       <p><Link to="/ai">{zh ? 'AI 计划助手' : 'AI plan assistant'}</Link></p>
-      <DayPlansPanel locale={locale} />
+      <DayPlansPanel locale={locale} readOnly />
       <h2>{zh ? '旧周计划' : 'Legacy weekly plans'}</h2>
-      <PlanEditor locale={locale} editing={editing} busy={busy}
-        onRename={async (name, revision) => {
-          if (!editing) return;
-          await run(() => planService.renamePlan(editing.plan.id, name, revision), undefined, false);
-          setEditing(undefined);
-        }}
-        onCancel={() => setEditing(undefined)} onSave={async (input, revision) => {
-          await run(() => withLegacyConfirmation({type:'save',input},zh,confirmation=>planService.savePlan(input, revision,confirmation)), undefined, false);
-          setEditing(undefined);
-        }} />
+      <p>{zh ? '计划创建和内容修改已改为对话；旧数据不会自动转换。' : 'Create and revise plans through dialogue; old data is not converted automatically.'}</p>
       {error && <p role="alert">{error}</p>}
       {message && <p role="status">{message}</p>}
       <h2>{zh ? '已保存计划' : 'Saved plans'}</h2>
@@ -75,10 +70,10 @@ export function PlansPage() {
             {plan.name} · {zh ? ({ active: '当前', draft: '草稿', archived: '已归档' }[plan.status]) : plan.status}
             <button disabled={busy} onClick={() => {
               void database.planVersions.get(plan.currentVersionId).then(version => {
-                if (version && 'durationWeeks' in version) setEditing({ plan, version });
+                if (version) setViewing({ plan, version });
               });
             }}>
-              {zh ? '编辑' : 'Edit'}
+              {zh ? '查看课表' : 'view schedule'}
             </button>
             {plan.status === 'draft' && (
               <button disabled={busy} onClick={() => {
@@ -87,21 +82,33 @@ export function PlansPage() {
                 {zh ? '启用草稿' : 'Activate draft'}
               </button>
             )}
-            <button disabled={busy} onClick={() => {
+            {!retainedPlans.includes(plan.id) && <button disabled={busy} onClick={() => {
               const confirmed = window.confirm(zh
                 ? `删除计划“${plan.name}”？未使用的计划会彻底删除；已有训练记录仍保留。`
                 : `Delete plan “${plan.name}”? Unused plans will be permanently removed. Existing training records will be preserved.`);
               if (!confirmed) return;
               void run(async () => {
                 await planService.deletePlan(plan.id, plan.revision);
-                if (editing?.plan.id === plan.id) setEditing(undefined);
+                if (viewing?.plan.id === plan.id) setViewing(undefined);
               }, zh ? '计划已删除，已有训练记录仍保留' : 'Plan deleted. Existing training records are preserved.').catch(() => {});
             }}>
               {zh ? '删除' : 'Delete'}
-            </button>
+            </button>}
           </li>
         ))}
       </ul>
+      {viewing && <section aria-label={zh ? '只读课表' : 'read-only schedule'}>
+        <h2>{viewing.plan.name}</h2>
+        <p>{zh ? '保留原课表，只读查看。内容调整通过对话提出。' : 'original schedule retained; read only. Discuss changes through dialogue.'}</p>
+        {viewing.version.days.map((day, index) => <section key={day.dayId}>
+          <h3>{zh ? `第 ${index + 1} 日` : `day ${index + 1}`}</h3>
+          <ul>{day.exercises.map(item => <li key={item.exerciseId + item.order}>
+            {exercises.find(entry => entry.id === item.exerciseId)?.name[locale] ?? item.exerciseId}
+            <ol>{item.targetSets.map((target, position) => <li key={position}>{targetText(target, locale)}</li>)}</ol>{item.notes && <p>{item.notes}</p>}
+          </li>)}</ul>
+        </section>)}
+        <button onClick={() => setViewing(undefined)}>{zh ? '关闭课表' : 'close schedule'}</button>
+      </section>}
       <h2>{zh ? '当前计划日程' : 'Current plan schedule'}</h2>
       <p className="muted">
         {zh ? '遗漏的训练不会自动重排。补练或改期请手动操作。'

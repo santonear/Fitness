@@ -3,6 +3,8 @@ import { exercises, CATALOG_VERSION } from '../catalog/exercises';
 import { localeSchema, uuidSchema, localDateSchema, timeZoneSchema, plannedExerciseSchema, trainingPreferencesSchema } from '../domain/schemas';
 import { ControlError } from './store';
 import { summaryStageSchema, summaryResultSchema, validateSummaryStage } from './summary-contract';
+import { guidedDialogueRequestSchema } from '../domain/guided-ai-contracts';
+import { validateGuidedProviderInput, validateGuidedProviderOutput } from './guided-provider';
 
 export function canonical(value: unknown): string {
   if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
@@ -28,14 +30,14 @@ export async function goalConfirmationFor(value: { goalText: string; confirmedGo
 const text = z.string().min(1).max(8000);
 const base = { contractVersion: z.literal(1), requestId: uuidSchema, goalText: text, locale: localeSchema,
   restoreGeneration: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER), sendConfirmation: z.string().length(64) };
-const understand = z.strictObject({ ...base, operation: z.literal('understand') });
+const understand = z.strictObject({ ...base, operation: z.literal('understand'), dialogue: guidedDialogueRequestSchema.optional() });
 // Self-contained mock HCTX envelope; no DB read or full backup accepted. B integration remains separate.
 const history = z.strictObject({ text: z.string().max(32000), range: z.strictObject({ from: localDateSchema, to: localDateSchema }),
   sourceRevision: z.number().int().nonnegative(), restoreGeneration: z.number().int().nonnegative() });
 const { updatedAt: _updatedAt, daysPerWeek: _daysPerWeek, trainingWeekdays: _trainingWeekdays, ...conditionFields } = trainingPreferencesSchema.shape;
 const generate = z.strictObject({ ...base, operation: z.literal('generate'), confirmedGoal: text, goalConfirmation: z.string().length(64),
   dates: z.array(localDateSchema).min(1), timeZone: timeZoneSchema, catalogVersion: z.literal(CATALOG_VERSION),
-  conditions: z.strictObject(conditionFields), history: history.optional() });
+  conditions: z.strictObject(conditionFields), history: history.optional(), dialogue: guidedDialogueRequestSchema.optional() });
 const { goalText: _summaryGoal, ...summaryBase } = base;
 const summary = z.strictObject({ ...summaryBase, operation: z.literal('summary'), stage: summaryStageSchema });
 export const requestSchema = z.discriminatedUnion('operation', [understand, generate, summary]);
@@ -47,6 +49,15 @@ export async function validateRequest(value: unknown, k: number, maxBytes: numbe
   const request = parsed.data;
   if (new TextEncoder().encode(canonical(request)).byteLength > maxBytes) throw new ControlError('RANGE_TOO_LARGE', 413);
   if (request.sendConfirmation !== await confirmationFor(request)) throw new ControlError('CONFIRMATION_REQUIRED', 400);
+  if ('dialogue' in request && request.dialogue) {
+    const dialogue = request.dialogue;
+    validateGuidedProviderInput(dialogue, k);
+    const planning = dialogue.purpose === 'program' || dialogue.purpose === 'refine';
+    if (request.requestId !== dialogue.requestId || request.restoreGeneration !== dialogue.restoreGeneration || request.locale !== dialogue.locale || request.goalText !== dialogue.scope.goal ||
+      (request.operation === 'generate') !== planning) throw new ControlError('INVALID_INPUT', 400);
+    if (request.operation === 'generate' && (canonical(request.dates) !== canonical(dialogue.dates) || request.timeZone !== dialogue.timeZone || request.confirmedGoal !== dialogue.confirmedSummary || Object.keys(request.conditions).length || request.history))
+      throw new ControlError('INVALID_INPUT', 400);
+  }
   if (request.operation === 'generate') {
     if (request.dates.length > k) throw new ControlError('DATE_BOUND_EXCEEDED', 400);
     if (new Set(request.dates).size !== request.dates.length) throw new ControlError('DUPLICATE_DATE', 400);
@@ -65,6 +76,7 @@ export function candidateJsonSchema(operation: AiRequest['operation']) {
   return schema;
 }
 export function validateCandidate(request: AiRequest, result: unknown) {
+  if ('dialogue' in request && request.dialogue) return validateGuidedProviderOutput(request.dialogue, result);
   const parsed = (request.operation === 'understand' ? understandResult : request.operation === 'summary' ? summaryResultSchema : dayResult).safeParse(result);
   if (!parsed.success) throw new ControlError('INVALID_CANDIDATE', 502);
   if (request.operation === 'generate') {

@@ -66,5 +66,5 @@ test('another date uses its own snapshot; added and temporary exercises have no 
  const before=await facts(page); await first.locator('summary').first().click(); expect(await facts(page)).toBe(before);
  await page.evaluate(async()=>{const {workoutService}=await import(String('/src/application/workouts.ts')); const active=await workoutService.getActiveWorkout(); await workoutService.abandonWorkout(active.id,active.revision); await workoutService.startWorkout({sessionId:crypto.randomUUID(),localDate:'2026-10-13',timeZone:'UTC',exerciseIds:['d16325d9-fc00-4c41-88a1-000000000003']});});
  await page.reload(); await expect(page.locator('.workout-exercise')).toContainText('No targets set for this exercise');
- await expect(page.locator('.exercise-targets ol')).toHaveCount(0);
+ await expect(page.locator('.exercise-targets .planned-targets')).toHaveCount(0);
 });

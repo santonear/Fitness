@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 test.use({ locale: 'en-US' });
 test.setTimeout(20000);
 test('sets survive reload, review returns to editing and completed facts stay readable', async ({ page }) => {
- await page.goto('/');
+ await page.goto('/workout');
  await page.getByRole('button', { name: 'Start temporary workout', exact: true }).click({timeout:5000});
  await page.getByLabel('Reps').fill('12');
  await page.getByLabel('Load (kg)').fill('2.5');
@@ -19,17 +19,22 @@ test('sets survive reload, review returns to editing and completed facts stay re
  await expect(page.getByRole('region', { name: 'Full training memo' })).toContainText('Last reps felt steady');
 });
 test('two connections serialize starts and revisions; facts, memo and global revision roll back together', async ({ page }) => {
- await page.goto('/');
+ await page.goto('/workout');
  const result = await page.evaluate(async () => { const path='/tests/e2e/helpers/workouts-browser.ts'; return (await import(/* @vite-ignore */ path)).verifyWorkoutTransactions(`fitness-test-workouts-${crypto.randomUUID()}`); });
  expect(result).toEqual({ starts:1, conflicts:1, sets:1, memoSets:1, rolledBack:true, completed:true, readonly:true, mismatch:true, replacementConfirmed:true, originalPreserved:true, abandoned:true, rebuilt:true });
 });
 test('planned training links confirmed completion to its schedule', async ({ page }) => {
- await page.goto('/plans'); await page.getByLabel('Plan name').fill('Train today');
- await page.getByLabel('Choose exercise').selectOption('d16325d9-fc00-4c41-88a1-000000000001');
- await page.getByLabel('Start date').fill('2026-10-03');
- await page.getByRole('button',{name:'Save plan',exact:true}).click();
- await expect(page.getByRole('status')).toHaveText('Plan saved');
- await page.goto('/'); await page.getByRole('button',{name:'Start planned workout',exact:true}).first().click();
+ await page.goto('/workout');
+ await expect(page.getByRole('button',{name:'Start temporary workout',exact:true})).toBeVisible();
+ // Retained legacy fixture: creation through a removed UI is not this regression's purpose.
+ await page.evaluate(async () => {
+  const { planService } = await import(String('/src/application/plans.ts'));
+  const { profileService } = await import(String('/src/application/profile.ts'));
+  const profile = await profileService.getProfile();
+  await planService.savePlan({name:'Train today',source:'manual',startDate:'2026-10-03',scheduleTimeZone:profile.timeZone,goalSnapshot:{goal:''},durationWeeks:1,daysPerWeek:1,
+   days:[{dayId:crypto.randomUUID(),weekIndex:1,dayOfWeek:6,exercises:[{exerciseId:'d16325d9-fc00-4c41-88a1-000000000001',order:0,targetSets:[{metricType:'reps_load',reps:8,loadGrams:0}]}]}]});
+ });
+ await page.goto('/workout'); await page.getByRole('button',{name:'Start planned workout',exact:true}).first().click();
  await page.getByLabel('Reps').fill('8');await page.getByLabel('Load (kg)').fill('0');
  await page.getByRole('button',{name:'Record set',exact:true}).click();
  await expect(page.getByRole('status')).toHaveText('Set saved');
@@ -39,7 +44,7 @@ test('planned training links confirmed completion to its schedule', async ({ pag
  await page.goto('/plans');await expect(page.getByRole('list',{name:'Schedule'})).toContainText('completed');
 });
 test('removal cancellation preserves facts; confirmed removal persists and terminal workouts have no removal controls', async ({page}) => {
- await page.goto('/');
+ await page.goto('/workout');
  await page.getByRole('button',{name:'Start temporary workout',exact:true}).click();
  await page.getByLabel('Reps').fill('9');await page.getByLabel('Load (kg)').fill('1');
  await page.getByRole('button',{name:'Record set',exact:true}).click();

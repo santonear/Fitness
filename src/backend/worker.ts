@@ -12,8 +12,8 @@ export interface WorkerEnv {
   CONTROL_DB?: D1Binding;
 }
 const count = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
-const policy = z.strictObject({ timeZone: z.string().min(1), k: z.literal(1), budgetLimit: count,
-  maximumRequestCost: count, requestBounds: z.strictObject({ understand: count, generate: count, summary: count.optional() }),
+const policy = z.strictObject({ timeZone: z.string().min(1), k: count.min(1).max(7), budgetLimit: count,
+  allowBoundedPending: z.boolean().optional(), maximumRequestCost: count, requestBounds: z.strictObject({ understand: count, generate: count, summary: count.optional() }),
   quotas: z.strictObject({ understand: count, generate: count, summary: count.optional() }), maxInputBytes: count.min(1).max(65536), maxConcurrent: count.min(1).max(100) });
 type WorkerConfig = { control: ControlConfig; origins: string[] } &
   ({ mode: 'control-only' } | { mode: 'external'; transport: TransportConfig; providerId: string });
@@ -24,6 +24,7 @@ export function readWorkerConfig(env: WorkerEnv): WorkerConfig | null {
     assertOperatorSecret(env.CONTROL_ADMIN_SECRET); assertOperatorSecret(env.CONTROL_DIGEST_SECRET);
     if (env.CONTROL_ADMIN_SECRET === env.CONTROL_DIGEST_SECRET) throw new Error('distinct secrets required');
     const values = policy.parse(JSON.parse(env.CONTROL_POLICY ?? ''));
+    if (values.allowBoundedPending && (values.budgetLimit !== 3000 || values.maximumRequestCost !== 300 || Object.values(values.requestBounds).some(value => value !== 300))) throw new Error('invalid bounded-pending policy');
     new Intl.DateTimeFormat('en', { timeZone: values.timeZone });
     if (Object.values(values.requestBounds).some(cost => cost > values.maximumRequestCost || cost > values.budgetLimit)) throw new Error('invalid bounds');
     const origins = z.array(z.string().url()).min(1).max(8).parse(JSON.parse(env.CONTROL_ORIGINS ?? ''));

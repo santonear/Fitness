@@ -1,0 +1,132 @@
+/* Shared Fitness surfaces and accents, with a focused journal layout. */
+.app-shell:has(.onboarding-flow) { background:var(--fitness-bg, #f5f0e7); }
+.app-shell:has(.onboarding-flow) > main { padding-top:8px; }
+.app-shell .guided-welcome { max-width:580px; margin-inline:auto; }
+.app-shell .guided-welcome > h1 { font-size:22px; font-weight:500; text-align:center; letter-spacing:-.5px; margin:0 0 6px; }
+.app-shell .guided-welcome-intro { text-align:center; font-size:14px; color:#696158; margin:8px 0 22px; }
+.app-shell .onboarding-flow { padding:18px 30px 14px; background:var(--fitness-glass); border:1px solid var(--fitness-line); border-radius:22px; box-shadow:4px 6px 0 rgba(56,51,47,.055), 0 14px 42px rgba(56,51,47,.045); backdrop-filter:blur(12px); color:var(--fitness-ink); }
+.app-shell .onboarding-flow * { font-weight:400; }
+.app-shell .onboarding-flow button { min-height:44px; color:var(--fitness-ink); border-radius:12px; text-transform:none; cursor:pointer; }
+.app-shell .onboarding-flow button:focus-visible, .app-shell .onboarding-flow input:focus-visible, .app-shell .onboarding-flow textarea:focus-visible { outline:2px solid var(--fitness-outline); outline-offset:4px; }
+.app-shell .onboarding-top { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.app-shell .onboarding-top button { padding:8px 4px; min-width:44px; border:0; background:transparent; font-size:13px; }
+.app-shell .onboarding-top span { font-size:10px; letter-spacing:1.5px; color:#71685f; }
+.app-shell .onboarding-flow progress { display:block; width:100%; height:4px; margin:12px 0 20px; border:0; border-radius:4px; accent-color:var(--fitness-orange); background:#e9e1d5; overflow:hidden; }
+.onboarding-flow progress::-webkit-progress-bar { background:#e9e1d5; }
+.onboarding-flow progress::-webkit-progress-value { background:var(--fitness-orange); }
+.onboarding-flow progress::-moz-progress-bar { background:var(--fitness-orange); }
+.app-shell .onboarding-category { display:flex; justify-content:space-between; align-items:center; }
+.app-shell .onboarding-category > span { background:var(--fitness-yellow); border:1px solid var(--fitness-outline); border-radius:3px; padding:5px 9px; font-size:10px; letter-spacing:1.2px; font-weight:600; transform:rotate(-1deg); box-shadow:2px 2px 0 rgba(56,51,47,.10); }
+.app-shell .onboarding-category small { color:#71685f; font-size:12px; }
+.app-shell .onboarding-question { animation:onboarding-enter 220ms ease both; }
+.app-shell .guided-question-art { height:clamp(132px,23dvh,190px); max-width:260px; margin:6px auto 0; color:var(--fitness-outline); }
+.app-shell .guided-question-art svg { width:100%; height:100%; }
+.app-shell .onboarding-flow.is-numeric .guided-question-art { height:clamp(80px,14dvh,112px); }
+.app-shell .onboarding-flow.is-safety .guided-question-art { height:85px; }
+.app-shell .guided-welcome .onboarding-flow h2 { font-size:28px; font-weight:500; letter-spacing:-.7px; line-height:1.25; margin:10px 0; text-align:center; outline:0; }
+.app-shell .onboarding-support { font-size:14px; line-height:1.65; color:#696158; text-align:center; margin:0 auto 20px; max-width:390px; }
+.app-shell .onboarding-interaction { animation:onboarding-enter 220ms 70ms ease both; }
+.app-shell .onboarding-options { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+.app-shell .onboarding-options:not(.is-multiple) { grid-template-columns:1fr; }
+.app-shell .onboarding-options button { display:flex; text-align:left; align-items:center; gap:10px; padding:12px; min-height:54px; border:1px solid var(--fitness-line); background:var(--fitness-glass); font-size:15px; line-height:1.35; transition:background 140ms, transform 140ms, box-shadow 140ms; }
+.app-shell .onboarding-option-mark { display:grid; place-items:center; font-size:10px; flex:0 0 25px; height:25px; border-radius:50%; background:#ede7da; color:#62584d; }
+.app-shell .onboarding-options button[aria-pressed=true] { background:var(--fitness-orange-bg); border-color:var(--fitness-outline); box-shadow:2px 3px 0 rgba(56,51,47,.10); transform:scale(1.015); }
+.app-shell .onboarding-options button[aria-pressed=true] .onboarding-option-mark { background:var(--fitness-orange); color:var(--fitness-ink); }
+.app-shell .onboarding-numeric-choice { width:100%; display:flex; align-items:center; flex-direction:column; padding:18px 24px; background:rgba(255,255,255,.5); border:1px solid var(--fitness-line); }
+.app-shell .onboarding-numeric-choice strong { font-size:52px; font-weight:500; line-height:1.1; font-variant-numeric:tabular-nums; }
+.app-shell .onboarding-numeric-choice > span { font-size:14px; color:#696158; }
+.app-shell .onboarding-numeric-choice > span:last-child { margin-top:18px; color:var(--fitness-ink); }
+.app-shell .onboarding-custom { width:100%; display:flex; justify-content:space-between; align-items:center; padding:10px 3px; margin-top:8px; border:0; background:transparent; font-size:14px; }
+.app-shell .onboarding-custom-answer { width:100%; overflow-wrap:anywhere; margin-top:8px; padding:12px; border:1px solid var(--fitness-outline); background:var(--fitness-orange-bg); text-align:left; }
+.app-shell .onboarding-custom-answer small { display:block; color:#696158; margin-top:6px; }
+.app-shell .onboarding-custom-row { display:flex; gap:8px; align-items:center; }
+.app-shell .onboarding-custom-row > button:first-child { flex:1; min-width:0; }
+.app-shell .onboarding-custom-row > button:last-child { flex:0 0 44px; padding:0; border:0; background:transparent; font-size:23px; }
+.app-shell .onboarding-bottom { position:sticky; bottom:0; z-index:2; margin-top:18px; padding:12px 0 max(10px,env(safe-area-inset-bottom)); background:rgba(249,246,239,.94); border-top:1px solid var(--fitness-line); backdrop-filter:blur(8px); }
+.app-shell .onboarding-flow .guided-primary { min-height:50px; padding:12px 18px; border:1px solid var(--fitness-outline); border-radius:12px; background:var(--fitness-orange); color:var(--fitness-ink); font-weight:500; box-shadow:2px 3px 0 rgba(56,51,47,.16); }
+.app-shell .onboarding-bottom .guided-primary { width:100%; }
+.app-shell .onboarding-flow .guided-primary:hover:not(:disabled), .app-shell .onboarding-flow .guided-primary:active:not(:disabled) { background:var(--fitness-orange); }
+.app-shell .onboarding-flow .onboarding-options button[aria-pressed=true]:hover { background:var(--fitness-orange-bg); }
+.app-shell .onboarding-flow button:disabled { cursor:default; opacity:1; color:#797168; background:#e8e3da; border-color:transparent; box-shadow:none; transform:none; }
+.app-shell .onboarding-top button:disabled { visibility:hidden; }
+.app-shell .onboarding-flow .guided-text-action { color:#696158; margin:0 auto; font-size:12px; border:0; background:transparent; }
+.app-shell .guided-welcome .guided-dashboard-link { margin:16px auto; color:#696158; min-height:44px; }
+.app-shell .onboarding-input-dialog { color:var(--fitness-ink); box-sizing:border-box; width:min(460px,calc(100vw - 24px)); max-height:90dvh; overflow:auto; padding:22px; background:#f8f4ec; border:1px solid var(--fitness-line); border-radius:20px; box-shadow:0 18px 65px rgba(56,51,47,.18); }
+.onboarding-input-dialog::backdrop { background:rgba(41,38,35,.26); backdrop-filter:blur(5px); }
+.app-shell .onboarding-input-dialog header { display:flex; align-items:flex-start; gap:12px; justify-content:space-between; }
+.app-shell .onboarding-input-dialog h2 { font-size:22px; text-align:left; margin:6px 0 18px; }
+.app-shell .onboarding-input-dialog header button { border:0; background:transparent; min-width:44px; padding:0; font-size:25px; }
+.app-shell .onboarding-input-dialog label { display:block; font-size:14px; }
+.app-shell .onboarding-input-dialog input, .app-shell .onboarding-input-dialog textarea { box-sizing:border-box; width:100%; display:block; margin-top:8px; padding:14px; border:0; border-radius:12px; background:#ede7dc; color:var(--fitness-ink); font:inherit; font-size:16px; }
+.app-shell .onboarding-input-dialog .guided-number-alternative { display:none; }
+.app-shell .onboarding-input-dialog .guided-wheel { max-height:180px; border:0; margin:0 0 14px; }
+.app-shell .onboarding-input-dialog .guided-wheel-track { grid-template-rows:repeat(5,36px); }
+.app-shell .onboarding-input-dialog .guided-wheel-controls { top:46px; }
+.app-shell .onboarding-input-dialog footer { display:flex; gap:10px; position:sticky; bottom:-22px; padding:14px 0 max(12px,env(safe-area-inset-bottom)); background:#f8f4ec; margin-top:10px; }
+.app-shell .onboarding-input-dialog footer button { flex:1; padding:10px; min-height:48px; }
+.app-shell .onboarding-hint, .app-shell .onboarding-voice p { color:#696158; font-size:13px; line-height:1.6; }
+.app-shell .onboarding-voice { margin-top:12px; }
+.app-shell .onboarding-voice [role=status] { display:block; margin-top:8px; }
+.app-shell .onboarding-summary { margin:0; }
+.app-shell .onboarding-summary > div { padding:10px 0; border-bottom:1px solid var(--fitness-line); }
+.app-shell .onboarding-summary dt { display:flex; align-items:center; justify-content:space-between; gap:12px; color:#696158; font-size:13px; }
+.app-shell .onboarding-summary dt button { border:0; background:transparent; padding:4px; font-size:12px; min-width:44px; }
+.app-shell .onboarding-summary dd { margin:0; line-height:1.6; overflow-wrap:anywhere; }
+@keyframes onboarding-enter { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+@media (hover:hover) { .app-shell .onboarding-options button:not(:disabled):hover { border-color:var(--fitness-outline); } }
+@media(max-width:600px) {
+  .app-shell:has(.onboarding-flow) > main { padding:8px 12px 20px; }
+  .app-shell .onboarding-flow { padding:12px 16px 6px; border-radius:18px; }
+  .app-shell .guided-welcome > h1 { font-size:20px; }
+  .app-shell .guided-welcome-intro { margin-bottom:16px; }
+  .app-shell .guided-welcome .onboarding-flow h2 { font-size:26px; }
+  .app-shell .onboarding-options button { font-size:14px; gap:7px; padding:11px 8px; }
+  .app-shell .onboarding-option-mark { flex-basis:22px; height:22px; }
+  .app-shell .onboarding-input-dialog { padding:18px; }
+  .app-shell .onboarding-input-dialog footer { bottom:-18px; }
+  .app-shell .onboarding-flow.is-numeric .guided-question-art { height:80px; }
+  .app-shell .onboarding-flow.is-numeric .onboarding-support { margin-bottom:14px; }
+  .app-shell .onboarding-numeric-choice { padding:12px 20px; }
+  .app-shell .onboarding-numeric-choice > span:last-child { margin-top:8px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .app-shell .onboarding-flow *, .app-shell .onboarding-flow *::before, .app-shell .onboarding-flow *::after { animation:none!important; transition:none!important; }
+  .app-shell .onboarding-category > span, .app-shell .onboarding-options button[aria-pressed=true] { transform:none; }
+}
+
+/* Reference-led onboarding: illustrated hero above a curved paper sheet. */
+.app-shell .guided-welcome { max-width:500px; }
+.app-shell .onboarding-flow { padding:0; overflow:clip; background:var(--fitness-solid); border:1px solid var(--fitness-line); border-radius:26px; }
+.app-shell .onboarding-top { padding:10px 20px 0; background:var(--fitness-orange); }
+.app-shell .onboarding-top :is(span,button) { color:var(--fitness-ink); }
+.app-shell .onboarding-flow progress { margin:0; height:3px; border-radius:0; background:var(--fitness-orange-bg); }
+.app-shell .onboarding-category { padding:12px 20px; background:var(--fitness-orange); }
+.app-shell .onboarding-category small { color:var(--fitness-ink); }
+.app-shell .onboarding-hero { position:relative; display:grid; place-items:center; min-height:190px; background:var(--fitness-orange); overflow:hidden; }
+.app-shell .onboarding-hero::before,.app-shell .onboarding-hero::after { content:""; position:absolute; width:240px; height:240px; border:24px solid var(--fitness-yellow); border-radius:50%; opacity:.32; pointer-events:none; }
+.app-shell .onboarding-hero::before { left:-140px; top:-80px; }
+.app-shell .onboarding-hero::after { right:-170px; top:-150px; width:360px; height:360px; }
+.app-shell .onboarding-hero .guided-question-art { position:relative; z-index:1; width:240px; max-width:75%; height:180px; margin:0 0 16px; }
+.app-shell .onboarding-flow.is-numeric .onboarding-hero { min-height:140px; }
+.app-shell .onboarding-flow.is-numeric .guided-question-art { height:125px; }
+.app-shell .onboarding-flow.is-safety .onboarding-hero { min-height:120px; }
+.app-shell .onboarding-flow.is-safety .guided-question-art { height:100px; }
+.app-shell .onboarding-paper { position:relative; padding:26px 22px 10px; margin-top:-25px; border-radius:50% 50% 0 0 / 25px 25px 0 0; background:var(--fitness-solid); z-index:1; }
+.app-shell .guided-welcome .onboarding-flow h2 { font-size:26px; font-weight:700; letter-spacing:-.025em; margin:8px 0 12px; }
+.app-shell .onboarding-options,.app-shell .onboarding-options.is-multiple { grid-template-columns:1fr; gap:10px; }
+.app-shell .onboarding-options button { justify-content:center; position:relative; text-align:center; min-height:48px; padding:12px 36px; border:1.5px solid var(--fitness-line); border-radius:24px; background:var(--fitness-solid); font-weight:600; }
+.app-shell .onboarding-options .onboarding-option-mark { position:absolute; left:10px; width:22px; height:22px; flex-basis:22px; background:transparent; font-size:11px; }
+.app-shell .onboarding-options button[aria-pressed=true] { color:var(--fitness-ink); background:var(--fitness-orange-bg); border:2px solid var(--fitness-outline); box-shadow:2px 3px 0 #38332f24; transform:none; }
+.app-shell .onboarding-bottom { position:static; margin:0; padding:14px 22px max(14px,env(safe-area-inset-bottom)); border:0; background:var(--fitness-solid); }
+.app-shell .onboarding-flow .onboarding-bottom .guided-primary { border-radius:24px; min-height:50px; background:var(--fitness-orange); box-shadow:2px 3px 0 #38332f25; }
+.app-shell .onboarding-flow .onboarding-bottom .guided-primary:disabled { background:var(--fitness-paper); box-shadow:none; }
+.app-shell .onboarding-flow > .guided-text-action { margin:0 auto 12px; }
+.app-shell .onboarding-flow > [role=alert] { margin:12px 22px; }
+.app-shell .onboarding-support { margin-bottom:22px; }
+@media(max-width:600px) {
+ .app-shell .onboarding-flow { padding:0; border-radius:24px; }
+ .app-shell .onboarding-paper { padding-inline:16px; }
+ .app-shell .onboarding-top,.app-shell .onboarding-category { padding-inline:16px; }
+ .app-shell .onboarding-bottom { padding-inline:16px; }
+ .app-shell .guided-welcome .onboarding-flow h2 { font-size:24px; }
+}

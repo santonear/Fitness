@@ -1,0 +1,97 @@
+meta:
+  name: fitness
+  version: "2026-10-07 Visual System Revision"
+  style: warm-nordic-editorial-ui
+  status: rules-updated-implementation-not-revalidated
+  specification: ui-ux-max-design.md
+  canonical: D:/Project/xxgospel/Fitness/ui-ux-max-design.md
+  source: D:/Project/xxgospel/Fitness/docs/design/warm-nordic-editorial-source-2026-10-07.txt
+  summary_only: true
+  full_specification_wins: true
+principles:
+  fixed_style_ratios: false
+  glass: shell
+  paper: content
+  outline: structure
+  orange: function
+  yellow: personality
+  reference: page-visual-skeleton
+  existing_css_has_permanent_priority: false
+color:
+  bg_primary: "#F5F0E7"
+  bg_secondary: "#ECE5D9"
+  surface_paper: "#FCFAF5"
+  surface_paper_muted: "#F7F2E9"
+  surface_glass: "rgba(255,255,255,.68)"
+  surface_glass_strong: "rgba(255,255,255,.80)"
+  text_primary: "#292623"
+  text_secondary: "#696158"
+  text_muted: "#9A9289"
+  outline: "#38332F"
+  outline_medium: "rgba(56,51,47,.55)"
+  outline_soft: "rgba(56,51,47,.22)"
+  accent_orange: "#F48543"
+  accent_orange_soft: "#FFE0C8"
+  accent_yellow: "#F5ED8A"
+  accent_yellow_strong: "#E9D95F"
+  danger_text: "#943E33"
+  danger_bg: "#FAE9E3"
+typography:
+  family: system-sans-serif
+  external_fonts: false
+  allowed_weights: [400, 500, 600, 700]
+  global_uppercase_required: false
+  hierarchy: [page-title, section-label, card-title, primary-metric, metadata, caption, sticker]
+surface:
+  border_as_layout_system: true
+  uniform_border_weight: false
+  nested_backdrop_filters: false
+  radius_recommended_px:
+    sticker: [3, 6]
+    calendar_cell: [4, 8]
+    small_control: [8, 10]
+    event_selection_card: [8, 14]
+    standard_card: [12, 18]
+    glass_shell: [16, 24]
+    onboarding_hero: [24, 26]
+  shadows: [soft-environmental, offset-editorial]
+motion:
+  feedback_recommended_ms: [120, 180]
+  entry_recommended_ms: [180, 240]
+  slide_recommended_px: [6, 12]
+  large_motion: false
+  bounce: false
+  continuous_animation: false
+  reduced_motion_required: true
+calendar:
+  grid: compact-boxed-density-preserving
+  desktop_cell_recommended_width_px: [48, 62]
+  desktop_cell_recommended_height_px: [44, 56]
+  mobile_columns: 7
+  strong_editorial_label_required: true
+  desktop_main_recommended_percent: [60, 65]
+  desktop_detail_recommended_percent: [35, 40]
+accessibility:
+  minimum_viewport_px: 320
+  touch_target_baseline_px: 44
+  text_contrast_target: 4.5
+  meaningful_nontext_contrast_target: 3
+  keyboard: true
+  focus_visible: true
+  semantic_controls: true
+  color_only_states: false
+validation:
+  viewport_widths_px: [320, 375, 390, 430, 768, 1024, 1280, 1440]
+  reference_comparison_required: true
+  screenshot_verification_required: true
+  refinement_required_at_obvious_deviations: 3
+  build_pass_is_visual_completion: false
+preserve:
+  - business-rules
+  - training-facts
+  - ai-user-confirmation
+  - historical-records
+  - backup-safety
+  - local-functionality
+  - permissions
+  - domain-contracts

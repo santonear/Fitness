@@ -8,12 +8,13 @@ export interface ControlConfig {
   mode: 'local-test' | 'external'; timeZone: string; k: number; budgetLimit: number; maximumRequestCost: number;
   requestBounds: OperationCounts; quotas: OperationCounts; maxInputBytes: number;
   maxConcurrent: number; adminSecret: string; digestSecret: string;
+  allowBoundedPending?: boolean;
 }
 export const testConfig: ControlConfig = { mode: 'local-test', timeZone: 'UTC', k: 1, budgetLimit: 3500,
   maximumRequestCost: 1000, requestBounds: { understand: 100, generate: 300, summary: 300 }, quotas: { understand: 8, generate: 4, summary: 4 },
   maxInputBytes: 65536, maxConcurrent: 4, adminSecret: 'local-test-admin-only', digestSecret: 'local-test-digest-key-only' };
-export interface MockSupplier { kind: 'local-mock'; call(request: AiRequest): Promise<{ result: unknown; actualCost?: number }> }
-export interface ExternalSupplier { kind: 'external-transport'; call(request: AiRequest): Promise<{ result: unknown; actualCost?: number }> }
+export interface MockSupplier { kind: 'local-mock'; costUpperBoundFen?(request: AiRequest): number | undefined; call(request: AiRequest): Promise<{ result: unknown; actualCost?: number }> }
+export interface ExternalSupplier { kind: 'external-transport'; costUpperBoundFen?(request: AiRequest): number | undefined; call(request: AiRequest): Promise<{ result: unknown; actualCost?: number }> }
 function token() { return Array.from(crypto.getRandomValues(new Uint8Array(32)), byte => byte.toString(16).padStart(2, '0')).join(''); }
 function integer(value: number) { return Number.isSafeInteger(value) && value >= 0; }
 const DAY = 86400000;
@@ -61,8 +62,25 @@ export class ControlService {
     });
   }
   private needsReconciliation(state: ControlState, period: string) {
-    return state.recoveryRequired || Object.values(state.requests).some(entry => entry.status === 'pending' ||
+    return state.recoveryRequired || this.hasAccountingAnomaly(state) || Object.values(state.requests).some(entry => (entry.status === 'pending' &&
+      !(this.config.allowBoundedPending && entry.verifiedBoundFen !== undefined && integer(entry.verifiedBoundFen) && entry.verifiedBoundFen <= entry.bound && !entry.error)) ||
       (entry.period !== period && ['submitted', 'reserved'].includes(entry.status)));
+  }
+  private hasAccountingAnomaly(state: ControlState) {
+    if (!this.config.allowBoundedPending) return false;
+    const expected: Record<string, number> = {}, settled: Record<string, number> = {};
+    for (const entry of Object.values(state.requests)) {
+      if (!integer(entry.bound) || entry.actualCost !== undefined && !integer(entry.actualCost)) return true;
+      if (!['reserved', 'submitted', 'pending', 'settled', 'released'].includes(entry.status) || !/^\d{4}-(0[1-9]|1[0-2])$/.test(entry.period)) return true;
+      if (entry.status === 'settled') {
+        if (entry.actualCost === undefined) return true;
+        settled[entry.period] = (settled[entry.period] ?? 0) + entry.actualCost;
+      } else if (entry.actualCost !== undefined) return true;
+      if (['reserved', 'submitted', 'pending'].includes(entry.status)) expected[entry.period] = (expected[entry.period] ?? 0) + entry.bound;
+    }
+    return Object.entries(expected).some(([period, value]) => !state.budgets[period] || state.budgets[period].reserved !== value) ||
+      Object.entries(settled).some(([period, value]) => !integer(value) || !state.budgets[period] || state.budgets[period].spent < value) ||
+      Object.entries(state.budgets).some(([period, budget]) => !integer(budget.spent) || !integer(budget.reserved) || budget.reserved !== (expected[period] ?? 0));
   }
   async issue(admin: string) {
     await this.admin(admin); const code = token(), codeDigest = await digest(code, this.config.digestSecret);
@@ -137,6 +155,9 @@ export class ControlService {
     const sessionDigest = await digest(value, this.config.digestSecret);
     this.qualification(await this.store.read(), sessionDigest);
     const request = await validateRequest(payload, this.config.k, this.config.maxInputBytes);
+    const verifiedBoundFen = this.config.allowBoundedPending ? this.supplier.costUpperBoundFen?.(request) : undefined;
+    if (this.config.allowBoundedPending && (verifiedBoundFen === undefined || !integer(verifiedBoundFen) || verifiedBoundFen > this.config.requestBounds[request.operation]!))
+      throw new ControlError('COST_BOUND_UNVERIFIED', 503);
     const inputDigest = await digest(canonical(request), this.config.digestSecret), period = this.period();
     const key = await this.store.transact(state => {
       const subjectId = this.qualification(state, sessionDigest), key = requestKey(subjectId, request.requestId), previous = state.requests[key];
@@ -151,10 +172,12 @@ export class ControlService {
       const used = state.usages[usageKey(subjectId, period)] ?? { understand: 0, generate: 0 };
       if ((used[request.operation] ?? 0) >= (this.config.quotas[request.operation] ?? 0)) throw new ControlError('INDIVIDUAL_QUOTA_EXHAUSTED', 429);
       const budget = state.budgets[period] ?? { spent: 0, reserved: 0 };
-      if (budget.spent + budget.reserved + bound > this.config.budgetLimit) throw new ControlError('GLOBAL_BUDGET_EXHAUSTED', 429);
+      const carriedReservations = this.config.allowBoundedPending ? Object.entries(state.budgets).reduce((sum, [key, value]) => sum + (key !== period ? value.reserved : 0), 0) : 0;
+      if (budget.spent + budget.reserved + carriedReservations + bound > this.config.budgetLimit) throw new ControlError('GLOBAL_BUDGET_EXHAUSTED', 429);
       if (Object.values(state.requests).filter(r => ['reserved', 'submitted'].includes(r.status)).length >= this.config.maxConcurrent) throw new ControlError('CONCURRENCY_LIMIT', 429);
       used[request.operation] = (used[request.operation] ?? 0) + 1; budget.reserved += bound; state.usages[usageKey(subjectId, period)] = used; state.budgets[period] = budget;
-      state.requests[key] = { subjectId, requestId: request.requestId, inputDigest, operation: request.operation, period, bound, status: 'reserved', cancelled: false };
+      state.requests[key] = { subjectId, requestId: request.requestId, inputDigest, operation: request.operation, period, bound, status: 'reserved', cancelled: false,
+        ...(verifiedBoundFen === undefined ? {} : { verifiedBoundFen }) };
       return key;
     });
     // Recheck authoritative accounting at the same boundary which grants submission.
@@ -163,7 +186,9 @@ export class ControlService {
       const reservation = state.requests[key];
       if (reservation.status !== 'reserved') return false;
       try { this.qualification(state, sessionDigest); } catch { this.releaseUnsubmitted(state, key); return false; }
-      if (reservation.cancelled || !state.aiEnabled || this.needsReconciliation(state, this.period())) { this.releaseUnsubmitted(state, key); return false; }
+      const currentBound = this.config.allowBoundedPending ? this.supplier.costUpperBoundFen?.(request) : undefined;
+      if (reservation.cancelled || !state.aiEnabled || this.needsReconciliation(state, this.period()) ||
+          this.config.allowBoundedPending && (currentBound === undefined || !integer(currentBound) || currentBound > reservation.bound)) { this.releaseUnsubmitted(state, key); return false; }
       reservation.status = 'submitted'; return true;
     });
     if (!submitted) throw new ControlError('NOT_SUBMITTED');
@@ -199,7 +224,9 @@ export class ControlService {
     const result = validateCandidate(request, response.result);
     return { requestId: request.requestId, result, context: { restoreGeneration: request.restoreGeneration, inputDigest: request.sendConfirmation }, accounting: 'settled' as const };
   }
-  private async pending(key: string) { await this.store.transact(state => { if (state.requests[key].status !== 'settled') state.requests[key].status = 'pending'; }); }
+  private async pending(key: string) { await this.store.transact(state => { if (state.requests[key].status !== 'settled') {
+    state.requests[key].status = 'pending'; state.requests[key].error = 'SUPPLIER_UNCERTAIN';
+  } }); }
   private releaseUnsubmitted(state: ControlState, key: string) {
     const entry = state.requests[key]; if (entry.status !== 'reserved') throw new ControlError('ALREADY_SUBMITTED');
     state.budgets[entry.period].reserved -= entry.bound; const usage = state.usages[usageKey(entry.subjectId, entry.period)];
