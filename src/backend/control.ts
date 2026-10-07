@@ -86,8 +86,9 @@ export class ControlService {
   }
   async issue(admin: string) {
     await this.admin(admin); const code = token(), codeDigest = await digest(code, this.config.digestSecret);
-    await this.store.transact(state => { state.invites[codeDigest] = { expiresAt: this.now() + 7 * DAY, redeemed: false }; this.audit(state, 'invite-issued'); });
-    return { code, inviteId: codeDigest };
+    const expiresAt = this.now() + 7 * DAY;
+    await this.store.transact(state => { state.invites[codeDigest] = { expiresAt, redeemed: false }; this.audit(state, 'invite-issued'); });
+    return { code, inviteId: codeDigest, expiresAt };
   }
   async revokeInvite(admin: string, inviteId: string) {
     await this.admin(admin); await this.store.transact(state => {
@@ -146,6 +147,7 @@ export class ControlService {
   async managementReport(admin: string) {
     await this.admin(admin); const state = await this.store.read();
     return { report: buildAdminReport(state, this.now()), applications: Object.values(state.applications ?? {}).map(applicationAdminView),
+      invites: Object.entries(state.invites).filter(([, invite]) => !invite.redeemed && invite.expiresAt > this.now()).map(([inviteId, invite]) => ({ inviteId, expiresAt: invite.expiresAt })),
       quotas: Object.keys(state.subjects).map(subjectId => {
         const period = this.period(), used = state.usages[usageKey(subjectId, period)] ?? { understand: 0, generate: 0 };
         return { subjectId, period, used, limits: this.quotaLimits(state, subjectId, period), defaults: this.config.quotas };
