@@ -10,6 +10,7 @@ import { exercises } from '../../catalog/exercises';
 import type { WorkoutSession, SetRecord, Locale, ScheduledWorkout } from '../../domain/models';
 import { CompletionReview, WorkoutFacts } from '../components/CompletionReview';
 import { ExerciseEditor } from '../components/ExerciseEditor';
+import { WorkoutLifecycleControls } from '../components/WorkoutLifecycleControls';
 
 export function WorkoutPage({ dashboard = false }: { dashboard?: boolean }) {
   const { i18n } = useTranslation();
@@ -23,6 +24,7 @@ export function WorkoutPage({ dashboard = false }: { dashboard?: boolean }) {
   const [choose, setChoose] = useState<string>(exercises[0].id);
   const [review, setReview] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [paused, setPaused] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [calendarZone, setCalendarZone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone);
@@ -151,7 +153,7 @@ export function WorkoutPage({ dashboard = false }: { dashboard?: boolean }) {
           <ExerciseEditor key={exercise.exerciseInstanceId} sessionId={session.id} exercise={exercise}
             original={session.originalExerciseSnapshots.find(entry => entry.exerciseInstanceId === exercise.exerciseInstanceId)}
             sets={sets.filter(set => set.exerciseInstanceId === exercise.exerciseInstanceId)}
-            locale={locale} busy={busy}
+            locale={locale} busy={busy || paused}
             onRecordAttempt={() => { setMessage(''); setError(''); }}
             onSave={input => run(() => workoutService.recordSet(session.id, input, session.revision), zh ? '组已保存' : 'Set saved')}
             onAdjust={(command, status) => run(() => workoutService.adjustWorkout(session.id, command, session.revision), status)} />
@@ -176,6 +178,7 @@ export function WorkoutPage({ dashboard = false }: { dashboard?: boolean }) {
       {(!dashboard || session) && <p className="muted">{zh ? '只有点击记录后，实际值才会保存。' : 'Actual values save when you select Record set.'}</p>}
       {error && <p role="alert">{error}</p>}
       <p role="status">{message}</p>
+      {session?.status === 'in_progress' && <WorkoutLifecycleControls sessionId={session.id} locale={locale} onPaused={setPaused} />}
       <div className={dashboard && session ? 'dashboard-session' : undefined}>{workspace()}</div>
     </>
   );

@@ -7,6 +7,10 @@ import { expandSchedule } from '../domain/calendar';
 import { exercises } from '../catalog/exercises';
 export function createPlanService(repo: Repository) {
  const db=repo.db;
+ async function requireUnmanaged(id:string) {
+  const guided=await db.guidedStates.get('guided');
+  if(guided?.programs.some(program=>program.planIds.includes(id))) throw new DomainError('CONFLICT','This plan belongs to a retained phase; use phase controls instead');
+ }
  async function renamePlan(id: string, name: string, expectedRevision: number): Promise<Plan> {
   return repo.write(async () => {
    const plan = await db.plans.get(id);
@@ -22,11 +26,12 @@ export function createPlanService(repo: Repository) {
   });
  }
  async function archiveOthers(id:string,now:string) {
-  for(const plan of await db.plans.where('status').equals('active').toArray()) if(plan.id!==id&&!plan.model) await db.plans.put({...plan,status:'archived',updatedAt:now,revision:plan.revision+1});
+  for(const plan of await db.plans.where('status').equals('active').toArray()) if(plan.id!==id&&!plan.model) { await requireUnmanaged(plan.id); await db.plans.put({...plan,status:'archived',updatedAt:now,revision:plan.revision+1}); }
  }
  async function savePlan(input: PlanInput, expectedRevision?: number, confirmation?: LegacyConfirmation): Promise<Plan> {
   return repo.write(async()=>{
    const old=input.id ? await db.plans.get(input.id):undefined;
+   if(input.id)await requireUnmanaged(input.id);
    if(input.id && !old) throw new DomainError('INVALID','Plan not found');
    if(old?.model)throw new DomainError('INVALID','Use the day plan editor');
    if(old?.deletedAt) throw new DomainError('INVALID','This plan was deleted');
@@ -94,6 +99,7 @@ export function createPlanService(repo: Repository) {
  }
  async function deletePlan(id: string, revision: number): Promise<void> {
   await repo.write(async () => {
+   await requireUnmanaged(id);
    const plan = await db.plans.get(id);
    if (!plan || plan.revision !== revision) throw new DomainError('CONFLICT', 'Plan changed; reload before deleting');
    if (plan.deletedAt) throw new DomainError('INVALID', 'This plan was deleted');

@@ -15,6 +15,7 @@ export function canonicalFacts(value: unknown): string {
     if(value&&typeof value==='object')return Object.fromEntries(Object.entries(value).sort(([a],[b])=>a.localeCompare(b)).map(([key,value])=>[key,stable(value)]));return value;
   }
   const data=structuredClone(value) as Record<string,unknown>;
+  data.guidedStates ??= [];
   const metadata=data.metadata as Record<string,unknown>;for(const key of ['revision','dataRevision','restoreGeneration','importedAt','upgradedAt','schemaVersion'])delete metadata[key];
   const memo=data.trainingMemo as Record<string,unknown>;for(const key of ['revision','sourceRevision','updatedAt'])delete memo[key];
   return JSON.stringify(stable(data));
@@ -31,7 +32,7 @@ export async function seedCalLibrary(repo:Repository=repository){
   oldSession=await workouts.recordSet(oldSession.id,{id:crypto.randomUUID(),exerciseInstanceId:oldSession.exerciseSnapshots[0].exerciseInstanceId,order:0,metricType:'reps',reps:9,completed:true,notes:'旧实际备注'},oldSession.revision);
   await workouts.completeWorkout(oldSession.id,oldSession.revision);const oldTask=(await repo.db.scheduledWorkouts.get(legacyTask.id))!;await plans.hideScheduledWorkout(oldTask.id,oldTask.revision);
   // Explicit legacy v2 fixture: fields follow the previous contract; header/runtime metadata are historical.
-  const old=JSON.parse(await (await backup.exportBackup()).text());old.schemaVersion=2;old.data.metadata.schemaVersion=3;const oldJson=JSON.stringify(old);
+  const old=JSON.parse(await (await backup.exportBackup()).text());old.schemaVersion=2;old.data.metadata.schemaVersion=3;delete old.data.guidedStates;const oldJson=JSON.stringify(old);
   let day=await days.saveDayPlan({name:'Day',date:'2027-01-07',timeZone:'UTC',exercises:items});const taskId=day.task.id;const oldVersion=day.version.id;
   const edited=structuredClone(items);edited[0].notes='新版本备注';day=await days.saveDayPlan({id:day.plan.id,expectedRevision:day.plan.revision,name:'Day revised',date:'2027-01-07',timeZone:'UTC',exercises:edited});
   if(day.task.id!==taskId||day.version.id===oldVersion)throw new Error('Version/task fidelity failed');

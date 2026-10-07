@@ -4,7 +4,7 @@ test.use({ locale: 'en-US' });
 test.setTimeout(20000);
 
 test('completed history has read-only details and survives reload', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/workout');
   await page.getByRole('button', { name: 'Start temporary workout', exact: true }).click();
   await page.getByLabel('Reps').fill('12');
   await page.getByLabel('Load (kg)').fill('2.5');
@@ -31,12 +31,12 @@ test('completed history has read-only details and survives reload', async ({ pag
 });
 
 test('Today exposes a continue link for the persisted ongoing session', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/workout');
   await page.getByRole('button', { name: 'Start temporary workout', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Review completion', exact: true })).toBeVisible();
   await page.goto('/progress');
   await expect(page.getByText('No completed training in this selection.', { exact: true })).toBeVisible();
   await page.goto('/');
-  await page.getByRole('link', { name: 'Continue workout', exact: true }).click();
+  await page.getByRole('button', { name: 'continue workout', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Review completion', exact: true })).toBeVisible();
 });

@@ -50,6 +50,7 @@ export function createDayPlanService(repo: Repository) {
       await guardGeneration(input.expectedGeneration); const profile = await db.profiles.toCollection().first();
       if (profile?.timeZone !== input.timeZone) throw new DomainError('INVALID', 'Use the saved profile calendar time zone');
       const old = input.id ? await db.plans.get(input.id) : undefined;
+      if (input.id && (await db.guidedStates.get('guided'))?.programs.some(program => program.planIds.includes(input.id!))) throw new DomainError('CONFLICT', 'Retained phase content cannot be changed through a day plan editor');
       if (input.id && (!old || old.model !== 'date-day' || old.deletedAt)) throw new DomainError('INVALID', 'Day plan not found');
       if (old && old.revision !== input.expectedRevision) throw new DomainError('CONFLICT', 'Day plan changed; reopen it');
       const previous = old ? await db.planVersions.get(old.currentVersionId) : undefined;

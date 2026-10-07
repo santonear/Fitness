@@ -1,31 +1,27 @@
-import {test,expect} from '@playwright/test';
-import {exercises} from '../../src/catalog/exercises';
-for(const locale of ['en','zh'])test(`${locale} pending candidate remains editable and locally savable when status becomes unknown`,async({page})=>{
- const t=(en:string,zh:string)=>locale==='zh'?zh:en;let submitted=0,reconciled=false;
- await page.route('**/api/v1/**',async route=>{
-  if(route.request().method()==='GET'){
-   await route.fulfill({status:submitted&&!reconciled?503:200,contentType:'application/json',body:JSON.stringify(submitted&&!reconciled?{error:'CONTROL_UNAVAILABLE'}:{expiresAt:Date.UTC(2027,0,1),period:'2026-10',used:{understand:0,generate:0},limits:{understand:8,generate:4},pending:0,reconciliationRequired:false,aiEnabled:true})});return;
-  }
-  submitted++;const input=route.request().postDataJSON();expect(input.operation).toBe('generate');
-  await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({requestId:input.requestId,context:{restoreGeneration:input.restoreGeneration,inputDigest:input.sendConfirmation},accounting:'pending',result:{days:[{date:input.dates[0],exercises:[{exerciseId:exercises[0].id,order:0,targetSets:[{metricType:'reps_load',reps:8,loadGrams:0}],notes:'Synthetic'}]}]}})});
- });
- await page.goto('/ai');await page.getByRole('combobox').first().selectOption(locale);await page.getByRole('button',{name:t('Connect to backend','连接后端'),exact:true}).click();
- await page.getByLabel(t('Goal text','目标文本'),{exact:true}).fill('Synthetic goal');await page.getByLabel(t('Goal interpretation','目标理解'),{exact:true}).fill('Synthetic interpretation');await page.getByRole('button',{name:t('Confirm goal interpretation','确认目标理解'),exact:true}).click();
- await page.getByLabel(t('Specific date','具体日期'),{exact:true}).fill('2026-10-06');await page.getByLabel(t('Experience','训练经验'),{exact:true}).selectOption('beginner');await page.getByLabel(t('Available equipment','可用器械'),{exact:true}).fill('none');await page.getByLabel(t('Session minutes','每次分钟数'),{exact:true}).fill('20');await page.getByLabel(t('Height (cm)','身高（厘米）'),{exact:true}).fill('170');await page.getByLabel(t('Weight (kg)','体重（千克）'),{exact:true}).fill('70');await page.getByLabel(t('Location','场地'),{exact:true}).selectOption('home');await page.getByLabel(t('Preference','运动偏好'),{exact:true}).selectOption('none');
- await page.getByRole('button',{name:t('Preview plan sending','预览计划发送'),exact:true}).click();await page.getByLabel(t('I confirm this sending scope','我确认本次发送范围'),{exact:true}).check();await page.getByRole('button',{name:t('Send confirmed request','发送已确认请求'),exact:true}).click();
- await expect(page.getByText(t('Qualification and remaining quota: unknown.','资格和剩余额度：未知。'),{exact:true})).toBeVisible();await expect(page.getByRole('status')).toContainText(t('full budget reservation','完整预留预算'));await expect(page.getByRole('button',{name:t('Send confirmed request','发送已确认请求'),exact:true})).toBeDisabled();
- await expect(page.getByLabel(t('Goal text','目标文本'),{exact:true})).toBeDisabled();await page.getByRole('button',{name:t('Enter local demo','进入本地演示'),exact:true}).click();await expect(page.getByLabel(t('Candidate source','候选来源'),{exact:true})).toContainText(t('Source: backend candidate.','来源：后端候选。'));await expect(page.getByLabel(t('Candidate source','候选来源'),{exact:true})).toContainText(t('Accounting at receipt: pending','收到时核算状态：待核算'));
- reconciled=true;await page.getByRole('button',{name:t('Connect to backend','连接后端'),exact:true}).click();await expect(page.getByRole('button',{name:t('Preview goal sending','预览目标发送'),exact:true})).toBeEnabled();await expect(page.getByLabel(t('Candidate source','候选来源'),{exact:true})).toContainText(t('Accounting at receipt: pending','收到时核算状态：待核算'));
- await page.getByLabel(t('Candidate name','候选名称'),{exact:true}).fill('Pending candidate');await page.getByLabel(t('Candidate notes','候选备注'),{exact:true}).fill('Edited pending');await page.getByRole('button',{name:t('Confirm and save this candidate','确认并保存此候选'),exact:true}).click();await expect(page.getByText(t('Candidate saved locally. No training was completed.','候选已保存到本地，未完成任何训练。'),{exact:false})).toBeVisible();
- await page.goto('/plans');await expect(page.getByRole('list',{name:t('Date plans','日期计划'),exact:true})).toContainText('Pending candidate');expect(submitted).toBe(1);
-});
-for(const locale of ['en','zh'])test(`${locale} pending understanding can be edited while new requests wait for authoritative reconciliation`,async({page})=>{
- const t=(en:string,zh:string)=>locale==='zh'?zh:en;let submitted=0,reconciled=false;
- await page.route('**/api/v1/**',async route=>{
-  if(route.request().method()==='GET'){await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({expiresAt:Date.UTC(2027,0,1),period:'2026-10',used:{understand:submitted,generate:0},limits:{understand:8,generate:4},pending:submitted&&!reconciled?1:0,reconciliationRequired:submitted>0&&!reconciled,aiEnabled:true})});return;}
-  submitted++;const input=route.request().postDataJSON();expect(input.operation).toBe('understand');await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({requestId:input.requestId,context:{restoreGeneration:input.restoreGeneration,inputDigest:input.sendConfirmation},accounting:'pending',result:{interpretedGoal:'Returned synthetic understanding'}})});
- });
- await page.goto('/ai');await page.getByRole('combobox').first().selectOption(locale);await page.getByRole('button',{name:t('Connect to backend','连接后端'),exact:true}).click();await page.getByLabel(t('Goal text','目标文本'),{exact:true}).fill('Synthetic goal');await page.getByRole('button',{name:t('Preview goal sending','预览目标发送'),exact:true}).click();await page.getByLabel(t('I confirm this sending scope','我确认本次发送范围'),{exact:true}).check();await page.getByRole('button',{name:t('Send confirmed request','发送已确认请求'),exact:true}).click();
- await expect(page.getByLabel(t('Goal interpretation','目标理解'),{exact:true})).toHaveValue('Returned synthetic understanding');await page.getByLabel(t('Goal interpretation','目标理解'),{exact:true}).fill('Edited interpretation');await page.getByRole('button',{name:t('Confirm goal interpretation','确认目标理解'),exact:true}).click();await expect(page.getByRole('button',{name:t('Preview goal sending','预览目标发送'),exact:true})).toBeDisabled();await expect(page.getByLabel(t('Interpretation source','理解来源'),{exact:true})).toContainText(t('Source: backend candidate.','来源：后端候选。'));
- reconciled=true;await page.getByRole('button',{name:t('Refresh qualification','刷新资格'),exact:true}).click();await expect(page.getByRole('button',{name:t('Preview goal sending','预览目标发送'),exact:true})).toBeEnabled();await expect(page.getByLabel(t('Goal interpretation','目标理解'),{exact:true})).toHaveValue('Edited interpretation');await expect(page.getByLabel(t('Interpretation source','理解来源'),{exact:true})).toContainText(t('Accounting at receipt: pending','收到时核算状态：待核算'));expect(submitted).toBe(1);
+import { test, expect } from '@playwright/test';
+import { validateGuidedProviderOutput } from '../../src/backend/guided-provider';
+for (const locale of ['en', 'zh'] as const) test(`${locale} pending understanding survives unknown status without releasing accounting or resending`, async ({page}) => {
+  const t=(en:string,zh:string)=>locale==='zh'?zh:en;
+  let calls=0, unknown=false;
+  await page.route('**/api/v1/**',async route=>{
+    if(route.request().method()==='GET')return route.fulfill(unknown ? {status:503,json:{error:'CONTROL_UNAVAILABLE'}} : {json:{expiresAt:Date.now()+86400000,period:'2026-10',used:{understand:1,generate:0},limits:{understand:8,generate:4},pending:calls,reconciliationRequired:calls>0,aiEnabled:true}});
+    calls++; const body=route.request().postDataJSON();
+    return route.fulfill({json:{requestId:body.requestId,accounting:'pending',result:validateGuidedProviderOutput(body.dialogue,{kind:'understand',summary:'Retained understanding',uncertainties:[]}),context:{restoreGeneration:body.restoreGeneration,inputDigest:body.sendConfirmation}}});
+  });
+  await page.addInitScript(locale=>localStorage.setItem('fitness.language',locale),locale);
+  await page.goto('/ai');
+  await page.getByRole('button',{name:t('Check access and allowance','查询资格与额度')}).click();
+  await page.getByRole('textbox',{name:t('goal, clarification or changes','目标、补充或调整想法'),exact:true}).fill('Regular walking');
+  await page.getByRole('button',{name:t('preview scope for understanding','预览理解目标的发送范围')}).click();
+  await page.getByRole('button',{name:t('confirm sending','确认发送'),exact:true}).click();
+  await page.getByText(t('review the goal and exact dates','核对目标和具体日期'),{exact:true}).click();
+  const summary=page.getByRole('textbox',{name:t('goal interpretation','目标理解'),exact:true});
+  await expect(summary).toHaveValue('Retained understanding');
+  await summary.fill('Edited retained understanding');
+  unknown=true;
+  await page.getByRole('button',{name:t('Check access and allowance','查询资格与额度')}).click();
+  await expect(page.getByText(t('Access and allowance are unknown','资格及额度尚未确认'))).toBeVisible();
+  await expect(summary).toHaveValue('Edited retained understanding');
+  expect(calls).toBe(1);
+  await expect(page.getByRole('status').filter({hasText:/awaiting accounting|待核算/})).toBeVisible();
 });

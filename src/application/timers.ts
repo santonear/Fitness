@@ -11,6 +11,7 @@ export function createTimerService(repo: Repository) {
    const session=await repo.db.sessions.get(state.sessionId);
    if(!session)throw new DomainError('INVALID','Timer workout not found');
    if(session.status!=='in_progress')throw new DomainError('SESSION_READ_ONLY','Timer requires an active workout');
+   if(state.status==='running'&&(await repo.db.guidedStates.get('guided'))?.events.filter(item=>item.sessionId===state.sessionId&&['workout_paused','workout_resumed'].includes(item.action)).at(-1)?.action==='workout_paused')throw new DomainError('CONFLICT','Resume the workout before running its timer');
    if(!state.exerciseInstanceId||!session.exerciseSnapshots.some(e=>e.exerciseInstanceId===state.exerciseInstanceId))throw new DomainError('INVALID','Timer exercise not found');
    if((state.status==='running')!==(state.startedAtMs!==undefined))throw new DomainError('INVALID','Timer timestamp does not match status');
    if(state.kind==='rest'&&!state.targetMs)throw new DomainError('INVALID','Rest requires a duration');

@@ -5,6 +5,7 @@ import { DomainError } from '../domain/errors';
 import { exercises } from '../catalog/exercises';
 import { synchronizeTrainingMemo } from './training-memory';
 import { authorizeLegacyOperation } from './legacy-collisions';
+import { emptyGuidedState, guidedStateSchema } from '../domain/guided-contracts';
 
 function invalid(message:string):never{throw new DomainError('INVALID',message);}
 function snapshot(id:string,order:number,instance:string=crypto.randomUUID()):ExerciseSnapshot{
@@ -14,6 +15,7 @@ function snapshot(id:string,order:number,instance:string=crypto.randomUUID()):Ex
 }
 export function createWorkoutService(repo:Repository) {
  const db=repo.db;
+ async function requireRunning(id:string){const state=await db.guidedStates.get('guided');if(state?.events.filter(item=>item.sessionId===id&&['workout_paused','workout_resumed'].includes(item.action)).at(-1)?.action==='workout_paused')throw new DomainError('CONFLICT','Resume this workout before recording');}
  async function writable(id:string,revision:number){
   const session=await db.sessions.get(id);if(!session)invalid('Workout not found');
   if(session.status!=='in_progress')throw new DomainError('SESSION_READ_ONLY','Completed or abandoned training is read only');
@@ -23,6 +25,13 @@ export function createWorkoutService(repo:Repository) {
  async function startWorkout(input:StartWorkoutInput):Promise<WorkoutSession>{return repo.write(async()=>{
   const existing=await db.sessions.get(input.sessionId);if(existing)return existing;
   if(await db.sessions.where('status').equals('in_progress').count())throw new DomainError('ACTIVE_SESSION_EXISTS','Continue or abandon the current workout');
+  if(input.scheduledWorkoutId || input.planVersionId){
+    const row=input.scheduledWorkoutId?await db.scheduledWorkouts.get(input.scheduledWorkoutId):undefined;
+    const version=await db.planVersions.get(row?.planVersionId??input.planVersionId!);
+    const state=await db.guidedStates.get('guided');
+    const program=state?.programs.find(item=>version&&item.planIds.includes(version.planId));
+    if(program&&program.status!=='active')throw new DomainError('CONFLICT','Plan is stopped; resume or start a new plan');
+  }
   let actual:ExerciseSnapshot[]=[];let planVersionId=input.planVersionId,plannedDayId=input.plannedDayId;
   if(input.scheduledWorkoutId){const row=await db.scheduledWorkouts.get(input.scheduledWorkoutId);if(!row||row.hiddenAt||row.completedSessionId||row.status==='skipped')invalid('Scheduled workout unavailable');
    if((planVersionId&&planVersionId!==row.planVersionId)||(plannedDayId&&plannedDayId!==row.plannedDayId))invalid('Schedule reference mismatch');planVersionId=row.planVersionId;plannedDayId=row.plannedDayId;
@@ -45,6 +54,7 @@ export function createWorkoutService(repo:Repository) {
   if(!parsed.success)invalid('Invalid workout date, zone or identity');await db.sessions.add(parsed.data);await synchronizeTrainingMemo(repo,parsed.data);return parsed.data;
  });}
  async function recordSet(id:string,input:SetInput,revision:number){return repo.write(async()=>{
+  await requireRunning(id);
   const session=await db.sessions.get(id);if(!session)invalid('Workout not found');if(session.status!=='in_progress')throw new DomainError('SESSION_READ_ONLY','Completed training is read only');
   const exercise=session.exerciseSnapshots.find(e=>e.exerciseInstanceId===input.exerciseInstanceId);if(!exercise||exercise.metricType!==input.metricType)invalid('Set metrics must match the exercise');
   const previous=await db.sets.get(input.id);if(previous&&(previous.sessionId!==id||previous.exerciseInstanceId!==input.exerciseInstanceId))invalid('Set identity belongs to another exercise');
@@ -55,6 +65,7 @@ export function createWorkoutService(repo:Repository) {
   const now=new Date().toISOString();const parsed=setRecordSchema.safeParse({...input,sessionId:id,createdAt:previous?.createdAt??now,updatedAt:now,revision:(previous?.revision??-1)+1});if(!parsed.success)invalid('Enter valid actual set values');await db.sets.put(parsed.data);return commit(session);
  });}
  async function adjustWorkout(id:string,command:Adjustment,revision:number){return repo.write(async()=>{
+  await requireRunning(id);
   const session=await writable(id,revision);const list=[...session.exerciseSnapshots];
   if(command.type==='add_exercise'){
    if(list.some(e=>e.exerciseInstanceId===command.exerciseInstanceId))invalid('Exercise identity exists');
@@ -87,11 +98,16 @@ export function createWorkoutService(repo:Repository) {
   if(status==='completed'){
    const sets=await db.sets.where('sessionId').equals(id).toArray();if(!sets.some(s=>s.completed&&setRecordSchema.safeParse(s).success))throw new DomainError('EMPTY_WORKOUT','Record at least one valid completed set');
    if(session.planVersionId&&session.plannedDayId){const schedules=await db.scheduledWorkouts.where('planVersionId').equals(session.planVersionId).toArray();const row=schedules.find(r=>r.plannedDayId===session.plannedDayId);if(!row||row.completedSessionId||row.status==='skipped')invalid('Scheduled workout is completed, skipped or missing');await db.scheduledWorkouts.put({...row,completedSessionId:id,revision:row.revision+1,updatedAt:new Date().toISOString()});}
-  }return commit({...session,status,...(status==='completed'?{completedAt:new Date().toISOString()}:{})});
+  }
+  const guided=await db.guidedStates.get('guided')??emptyGuidedState();
+  const endEvent={id:crypto.randomUUID(),createdAt:new Date().toISOString(),sessionId:id,action:'workout_ended' as const,before:'in_progress',after:status};
+  guided.events.push(endEvent);guided.invitations.push({id:crypto.randomUUID(),eventId:endEvent.id,decision:'pending'});guided.revision++;
+  await db.guidedStates.put(guidedStateSchema.parse(guided));
+  return commit({...session,status,...(status==='completed'?{completedAt:new Date().toISOString()}:{})});
  });}
  async function getActiveWorkout(){return db.sessions.where('status').equals('in_progress').first();}
  async function getSets(id:string){return db.sets.where('sessionId').equals(id).sortBy('order');}
- async function listAvailableSchedule(){const active=await db.plans.where('status').equals('active').toArray();const ids=active.filter(plan=>!plan.deletedAt).map(plan=>plan.currentVersionId);return ids.length?(await db.scheduledWorkouts.where('planVersionId').anyOf(ids).sortBy('scheduledDate')).filter(row=>!row.hiddenAt&&row.status==='pending'&&!row.completedSessionId):[];}
+ async function listAvailableSchedule(){const active=await db.plans.where('status').equals('active').toArray();const state=await db.guidedStates.get('guided');const ids=active.filter(plan=>!plan.deletedAt&&!state?.programs.some(program=>program.planIds.includes(plan.id)&&program.status!=='active')).map(plan=>plan.currentVersionId);return ids.length?(await db.scheduledWorkouts.where('planVersionId').anyOf(ids).sortBy('scheduledDate')).filter(row=>!row.hiddenAt&&row.status==='pending'&&!row.completedSessionId):[];}
  return {startWorkout,recordSet,adjustWorkout,completeWorkout:(id:string,revision:number)=>finish(id,revision,'completed'),abandonWorkout:(id:string,revision:number)=>finish(id,revision,'abandoned'),getActiveWorkout,getSets,listAvailableSchedule};
 }
 export const workoutService=createWorkoutService(repository);

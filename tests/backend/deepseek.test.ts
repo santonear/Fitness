@@ -34,3 +34,16 @@ it('makes targetSets array shape explicit instead of relying on JSON mode to enf
   expect(body.messages[0].content).toContain('targetSets must always be an array');
   expect(body.messages[0].content).toContain('"targetSets":[{"metricType":"reps","reps":8}]');
 });
+
+it('requires matching model and complete bounded usage before allowing later pending calls', () => {
+  const verified = createDeepSeekCodec({ maxOutputTokens: 2048, pricingVerifiedUntil: '2099-01-01T00:00:00Z' });
+  const valid = { ...response('{"interpretedGoal":"Fitness"}'), model: 'deepseek-flash',
+    usage: { prompt_tokens: 100, completion_tokens: 20, total_tokens: 120 } };
+  expect(verified.decode(valid)).toEqual({ result: { interpretedGoal: 'Fitness' } });
+  for (const invalid of [
+    { ...valid, model: 'deepseek-v4-pro' }, { ...valid, usage: undefined },
+    { ...valid, usage: { ...valid.usage, total_tokens: 121 } },
+    { ...valid, usage: { prompt_tokens: 1_048_577, completion_tokens: 20, total_tokens: 1_048_597 } },
+    { ...valid, usage: { prompt_tokens: 100, completion_tokens: 2049, total_tokens: 2149 } },
+  ]) expect(() => verified.decode(invalid)).toThrow('COST_BOUND_UNVERIFIED');
+});

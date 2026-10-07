@@ -6,15 +6,16 @@ import { CatalogPage } from './pages/CatalogPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { PlansPage } from './pages/PlansPage';
 import { WorkoutPage } from './pages/WorkoutPage';
-import { TodayPage } from './pages/TodayPage';
+import { GuidedHome } from './pages/GuidedHome';
 import { ProgressPage } from './pages/ProgressPage';
-import { AiPage } from './pages/AiPage';
+import { GuidedDialoguePage } from './pages/GuidedDialoguePage';
 import { profileService } from '../application/profile';
 import { liveQuery } from 'dexie';
 import { database } from '../persistence/db';
 import { repository } from '../persistence/repository';
 import { restoreChannelName, restoreStorageKey, restoreEventName } from '../application/backup';
 import { languageKey } from '../i18n';
+import { NavigationIcon } from './components/NavigationIcon';
 
 const destinations = [
   ['today', '/'],
@@ -30,6 +31,7 @@ export function App(): ReactElement {
   const previousPath = useRef(location.pathname);
   const main = useRef<HTMLElement>(null);
   const [libraryGeneration, setLibraryGeneration] = useState(0);
+  const [navigationOpen, setNavigationOpen] = useState(false);
   const [restoring, setRestoring] = useState(false);
   const [restoreError, setRestoreError] = useState('');
   const [restoreSucceeded, setRestoreSucceeded] = useState(false);
@@ -104,6 +106,7 @@ export function App(): ReactElement {
   }, [i18n]);
   useEffect(() => {
     if (previousPath.current !== location.pathname) {
+      setNavigationOpen(false);
       main.current?.focus();
       setRestoreSucceeded(false);
       previousPath.current = location.pathname;
@@ -111,18 +114,25 @@ export function App(): ReactElement {
   }, [location.pathname]);
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell fitness-workspace${navigationOpen ? ' navigation-open' : ''}`}>
       <a className="skip-link" href="#content">{t('skip')}</a>
-      <aside className="app-sidebar">
+      <aside className="app-sidebar" id="workspace-navigation">
         <div className="app-brand"><span className="app-brand-mark" aria-hidden="true">f·</span><span className="brand">{t('brand')}<span aria-hidden="true">.</span></span></div>
         <p className="app-sidebar-label">{i18n.resolvedLanguage === 'zh' ? '个人训练空间' : 'YOUR WORKSPACE'}</p>
         <nav aria-label={t('navigation')}>
-          {destinations.map(([name, path], index) => (
+          {destinations.map(([name, path]) => (
             <NavLink key={name} to={path} end tabIndex={0}>
-              <span className="app-nav-icon" aria-hidden="true" data-icon={['◫', '▤', '◇', '↗', '⚙'][index]} />
+              <NavigationIcon name={name} />
               <span>{t(name)}</span>
             </NavLink>
           ))}
+        </nav>
+        <p className="app-sidebar-label analytics-nav-label">{i18n.resolvedLanguage === 'zh' ? '数据分析' : 'analytics'}</p>
+        <nav className="analytics-navigation" aria-label={i18n.resolvedLanguage === 'zh' ? '数据分析导航' : 'analytics navigation'}>
+          <a href="/#analytics-trends"><span className="app-nav-icon" aria-hidden="true">↗</span><span>{i18n.resolvedLanguage === 'zh' ? '训练趋势' : 'training trends'}</span></a>
+          <a href="/#analytics-load"><span className="app-nav-icon" aria-hidden="true">▥</span><span>{i18n.resolvedLanguage === 'zh' ? '训练负荷' : 'training load'}</span></a>
+          <button disabled><span aria-hidden="true">◉</span><span>{i18n.resolvedLanguage === 'zh' ? '肌群分布' : 'muscle groups'}</span><small>{i18n.resolvedLanguage === 'zh' ? '待开放' : 'planned'}</small></button>
+          <button disabled><span aria-hidden="true">◇</span><span>{i18n.resolvedLanguage === 'zh' ? '个人纪录' : 'personal records'}</span><small>{i18n.resolvedLanguage === 'zh' ? '待开放' : 'planned'}</small></button>
         </nav>
         <div className="app-sidebar-note">
           <p>{i18n.resolvedLanguage === 'zh' ? '你的训练，你的空间。' : 'Your training. Your space.'}</p>
@@ -130,6 +140,7 @@ export function App(): ReactElement {
         </div>
       </aside>
       <header className="app-header">
+        <button className="workspace-menu" aria-controls="workspace-navigation" aria-expanded={navigationOpen} onClick={() => setNavigationOpen(value => !value)}>{i18n.resolvedLanguage === 'zh' ? '导航' : 'menu'}</button>
         <p className="app-breadcrumb"><span>{i18n.resolvedLanguage === 'zh' ? '训练空间' : 'Workspace'}</span><span aria-hidden="true">/</span>{location.pathname === '/workout' ? (i18n.resolvedLanguage === 'zh' ? '今日训练' : 'Today') : t(destinations.find(([, path]) => path === location.pathname)?.[0] ?? 'today')}</p>
         <label className="language-control">
           <span>{t('language')}</span>
@@ -144,10 +155,10 @@ export function App(): ReactElement {
         {restoreSucceeded && <p data-testid="restore-result" aria-live="polite">{i18n.resolvedLanguage === 'zh' ? '恢复成功。' : 'Restore succeeded.'}</p>}
         {restoring ? <p role="status">{i18n.resolvedLanguage === 'zh' ? '正在读取恢复后的本地数据…' : 'Reading restored local data…'}</p> : <Routes key={libraryGeneration}>
           {destinations.map(([name, path]) => (
-            <Route key={name} path={path} element={name === 'today' ? <TodayPage /> : name === 'exercises' ? <CatalogPage /> : name === 'settings' ? <SettingsPage /> : name === 'plans' ? <PlansPage /> : <ProgressPage />} />
+            <Route key={name} path={path} element={name === 'today' ? <GuidedHome /> : name === 'exercises' ? <CatalogPage /> : name === 'settings' ? <SettingsPage /> : name === 'plans' ? <><GuidedHome panelOnly /><PlansPage /></> : <ProgressPage />} />
           ))}
           <Route path="/workout" element={<WorkoutPage />} />
-          <Route path="/ai" element={<AiPage />} />
+          <Route path="/ai" element={<GuidedDialoguePage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>}
       </main>

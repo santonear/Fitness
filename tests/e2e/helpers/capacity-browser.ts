@@ -49,12 +49,12 @@ export async function prepareCapacity(kind: 'small' | '5MiB' | '6MiB' | '8MiB' |
   await repo.write(async () => { await db.sessions.bulkAdd(sessions); await db.sets.bulkAdd(sets); await synchronizeTrainingMemo(repo); });
   const start = performance.now();
   const envelope = await db.transaction('r', db.tables, async () => ({
-    format: 'fitness-local', schemaVersion: 3, catalogVersion: 1, exportedAt: stamp,
+    format: 'fitness-local', schemaVersion: 4, catalogVersion: 1, exportedAt: stamp,
     data: { metadata: await repo.readMetadata(), profiles: await db.profiles.toArray(), plans: await db.plans.toArray(),
       planVersions: await db.planVersions.toArray(), sessions: await db.sessions.toArray(), sets: await db.sets.toArray(),
       scheduledWorkouts: await db.scheduledWorkouts.toArray(), bodyWeights: await db.bodyWeights.toArray(),
       trainingMemo: (await db.trainingMemo.get(1))!, aiMemoryNotes: await db.aiMemoryNotes.toArray(),
-      timers: await db.timers.toArray(), mediaAssets: await db.mediaAssets.toArray() },
+      guidedStates: await db.guidedStates.toArray(), timers: await db.timers.toArray(), mediaAssets: await db.mediaAssets.toArray() },
   }));
   const checked = validateBackupEnvelope(envelope);
   const formatted = JSON.stringify(checked, null, 2); const compact = JSON.stringify(checked);

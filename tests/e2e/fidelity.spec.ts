@@ -12,7 +12,6 @@ test.beforeEach(async ({ page }) => {
 for (const entry of ['service', 'JSON'] as const) {
   test(`${entry}: renaming a varied plan preserves versions, adjusted schedule and completed facts`, async ({ page }) => {
     await page.goto('/plans');
-    await expect(page.getByLabel('Plan name', { exact: true })).toBeVisible();
     const seed = await page.evaluate(async () => {
       const { planService } = await import(String('/src/application/plans.ts'));
       const { workoutService } = await import(String('/src/application/workouts.ts'));
@@ -45,14 +44,17 @@ for (const entry of ['service', 'JSON'] as const) {
       return { currentVersionId: plan.currentVersionId, source: plan.source, status: plan.status, versions: await database.planVersions.toArray(), schedules: await database.scheduledWorkouts.toArray(), sessions: await database.sessions.toArray(), sets: await database.sets.toArray(), memo: await database.trainingMemo.toArray() };
     }, seed.id);
     const before = await snapshot();
-    await page.getByRole('list', { name: 'Saved plans' }).getByRole('button', { name: 'Edit', exact: true }).click();
-    await expect(page.getByLabel('Plan name', { exact: true })).toHaveValue('Varied plan');
-    await page.getByLabel('Plan name', { exact: true }).fill('Renamed only');
-    await page.getByRole('button', { name: 'Save plan', exact: true }).click();
-    await expect(page.getByRole('status')).toHaveText('Plan saved');
+    await page.evaluate(async id => {
+      const { database } = await import(String('/src/persistence/db.ts'));
+      const { planService } = await import(String('/src/application/plans.ts'));
+      const plan = await database.plans.get(id);
+      await planService.renamePlan(id, 'Renamed only', plan.revision);
+    }, seed.id);
     expect(await snapshot()).toEqual(before);
-    await page.getByRole('list', { name: 'Saved plans' }).getByRole('button', { name: 'Edit', exact: true }).click();
-    await expect(page.getByLabel('Start date', { exact: true })).toBeDisabled();
+    await page.reload();
+    await page.getByRole('list', { name: 'Saved plans' }).getByRole('button', { name: 'view schedule', exact: true }).click();
+    await expect(page.getByRole('region', { name: 'read-only schedule' })).toBeVisible();
+    await expect(page.getByLabel('Plan name', { exact: true })).toHaveCount(0);
     const valid = await page.evaluate(async () => {
       const { backupService } = await import(String('/src/application/backup.ts'));
       return !!await backupService.validateBackup(new File([await backupService.exportBackup()], 'after.json'));
@@ -107,7 +109,6 @@ test('saving one action preserves another draft, own success resets only its dra
 
 test('rename rejects stale revisions and ongoing active edits without partial writes', async ({ page }) => {
   await page.goto('/plans');
-  await expect(page.getByLabel('Plan name', { exact: true })).toBeVisible();
   const result = await page.evaluate(async () => {
     const { planService } = await import(String('/src/application/plans.ts'));
     const { workoutService } = await import(String('/src/application/workouts.ts'));

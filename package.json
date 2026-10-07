@@ -14,7 +14,7 @@
     "test:e2e": "playwright test",
     "check": "npm run typecheck && npm test && npm run build",
     "deploy:dry-run": "wrangler deploy --dry-run",
-    "deploy:cloudflare": "wrangler deploy",
+    "deploy:cloudflare": "wrangler deploy --config wrangler.production.jsonc",
     "preview:cloudflare": "wrangler dev --ip 127.0.0.1 --port 5176"
   },
   "dependencies": {

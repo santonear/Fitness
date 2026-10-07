@@ -1,0 +1,77 @@
+:root {
+ --fitness-glass:rgba(255,255,255,.58); --fitness-ink:#292623; --fitness-outline:#38332f;
+ --fitness-line:rgba(56,51,47,.18); --fitness-orange:#e47d43; --fitness-orange-bg:#f8dfce; --fitness-yellow:#f5e9a9;
+ --chart-primary:#b75524; --chart-grid:rgba(56,51,47,.08);
+}
+.fitness-workspace { grid-template-columns:232px minmax(0,1fr); }
+.fitness-workspace .app-sidebar { background:rgba(239,233,223,.9); border-right:1px solid var(--fitness-line); padding:28px 18px; font-family:Arial,"Microsoft YaHei",sans-serif; }
+.fitness-workspace .app-sidebar * { font-weight:400; }
+.fitness-workspace .app-brand .brand { font-family:Arial,"Microsoft YaHei",sans-serif; font-size:25px; font-weight:500; }
+.fitness-workspace .app-brand-mark { border-radius:10px; background:var(--fitness-orange-bg); }
+.fitness-workspace .app-sidebar nav { display:grid; gap:5px; margin-top:12px; }
+.fitness-workspace .app-sidebar nav a { border:1px solid transparent; border-radius:10px; padding:12px; min-height:44px; font-size:14px; justify-content:flex-start; }
+.fitness-workspace .app-sidebar nav a[aria-current="page"] { background:var(--fitness-orange-bg); border-color:var(--fitness-line); }
+.fitness-workspace .app-sidebar nav a[aria-current="page"]::after { background:var(--fitness-orange); }
+.fitness-workspace .app-sidebar-label { font-size:12px; letter-spacing:0; margin-top:32px; }
+.fitness-workspace .analytics-navigation button { display:flex; align-items:center; gap:10px; text-align:left; padding:12px; border:0; background:transparent; font-size:13px; min-height:44px; }
+.fitness-workspace .analytics-navigation small { font-size:10px; margin-left:auto; }
+.fitness-workspace .app-sidebar-note { font-size:12px; }
+.fitness-workspace .workspace-menu { display:none; }
+.fitness-workspace .guided-records { max-width:1440px; }
+.training-analytics { margin-bottom:32px; color:var(--fitness-ink); }
+.training-analytics * { font-weight:400; }
+.training-analytics .analytics-heading { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; }
+.training-analytics :is(h1,h2) { font-size:30px; font-weight:600; margin:0 0 8px; }
+.training-analytics h3 { font-size:16px; font-weight:500; margin:0 0 12px; }
+.training-analytics p { font-size:13px; line-height:1.6; }
+.fitness-sticker { background:var(--fitness-yellow); border:1px solid var(--fitness-outline); border-radius:6px; padding:5px 8px; font-size:11px; white-space:nowrap; }
+.analytics-filters { display:flex; align-items:center; flex-wrap:wrap; justify-content:space-between; gap:12px; margin:20px 0 8px; }
+.analytics-filters > div { display:flex; flex-wrap:wrap; gap:4px; }
+.training-analytics .analytics-filters button { min-height:44px; min-width:44px; margin:0; padding:8px 12px; border:1px solid var(--fitness-line); border-radius:10px; }
+.training-analytics .analytics-filters button[aria-pressed="true"] { background:var(--fitness-orange-bg); border-color:var(--fitness-outline); }
+.analytics-kpis { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; margin:24px 0; }
+.training-analytics .analytics-card { min-width:0; padding:22px; border:1px solid var(--fitness-line); border-radius:20px; background:#faf7f3; box-shadow:0 12px 30px rgba(56,51,47,.05); }
+@supports(backdrop-filter:blur(16px)) { .training-analytics .analytics-card { background:var(--fitness-glass); backdrop-filter:blur(16px); } }
+.analytics-kpis .analytics-card h3 { font-size:13px; }
+.analytics-kpis strong { display:block; font-size:26px; font-weight:600; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+.analytics-kpis .analytics-card:first-child strong { color:var(--chart-primary); }
+.analytics-kpis p { font-size:12px; margin-bottom:0; }
+.analytics-charts { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; scroll-margin-top:24px; }
+.analytics-wide { grid-column:1/-1; min-width:0; scroll-margin-top:24px; }
+.analytics-card header { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+.analytics-card header > span { font-size:12px; }
+.analytics-chart { width:100%; height:240px; display:block; }
+.analytics-chart text { font-size:12px; fill:var(--fitness-outline); }
+.analytics-grid-line { stroke:var(--chart-grid); }
+.analytics-line { stroke:var(--chart-primary); stroke-width:2; }
+.analytics-point { fill:var(--fitness-orange); stroke:var(--fitness-outline); stroke-width:1; }
+.analytics-bar { fill:var(--fitness-orange); }
+.analytics-empty { min-height:220px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+.analytics-empty svg { width:80px; height:60px; color:#a89279; }
+.analytics-point-picker { display:flex; flex-wrap:wrap; align-items:center; gap:12px; font-size:13px; }
+.analytics-point-picker select { min-height:44px; padding:8px; max-width:100%; }
+.training-analytics :is(a,summary) { display:inline-flex; align-items:center; min-height:44px; font-size:13px; }
+.training-analytics table { width:100%; font-size:13px; }
+.analytics-exercises { list-style:none; padding:0; }
+.analytics-exercises li { display:flex; justify-content:space-between; gap:16px; padding:14px 0; border-bottom:1px solid var(--fitness-line); font-size:14px; }
+.analytics-skeleton { min-height:160px; padding:24px; background:rgba(212,205,197,.25); border-radius:20px; }
+.analytics-reserved { border-style:dashed!important; }
+@media(min-width:1440px) { .analytics-kpis { grid-template-columns:repeat(6,minmax(0,1fr)); }.analytics-kpis .analytics-card { padding:16px; } }
+@media(min-width:801px) { .fitness-workspace .app-sidebar { position:sticky; top:0; height:100dvh; overflow-y:auto; }.fitness-workspace .app-sidebar-note { margin-top:auto; padding-top:40px; } }
+@media(max-width:1024px) { .analytics-charts { grid-template-columns:1fr; } }
+@media(max-width:800px) {
+ .fitness-workspace { display:flex; flex-direction:column; }
+ .fitness-workspace .workspace-menu { display:block; min-height:44px; padding:8px 12px; }
+ .fitness-workspace .app-sidebar { display:none; width:100%; border-bottom:1px solid var(--fitness-line); }
+ .fitness-workspace.navigation-open .app-sidebar { display:block; }
+ .fitness-workspace .app-sidebar nav a > span:last-child { position:static; width:auto; height:auto; clip-path:none; overflow:visible; }
+ .fitness-workspace .app-sidebar-label,.fitness-workspace .app-brand,.fitness-workspace .app-brand .brand { display:block; }
+ .fitness-workspace .app-sidebar nav { grid-template-columns:repeat(2,minmax(0,1fr)); }
+ .fitness-workspace .app-header { min-height:64px; padding:8px 16px; order:-1; }
+ .fitness-workspace .app-breadcrumb { font-size:12px; }
+ .analytics-kpis { grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+ .training-analytics .analytics-card { padding:16px; }
+ .training-analytics .analytics-heading { flex-wrap:wrap; }.training-analytics h2 { font-size:28px; }
+ .fitness-workspace:has(.guided-onboarding) .workspace-menu { display:none; }
+}
+@media(prefers-reduced-motion:reduce) { .training-analytics * { transition:none; animation:none; } }

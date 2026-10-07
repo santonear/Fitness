@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { EXERCISE_IDS } from '../catalog/exercise-ids';
+import { guidedStateSchema } from './guided-contracts';
 export const localeSchema = z.enum(['zh', 'en']);
 export const uuidSchema = z.uuid();
 export const exerciseIdSchema = z.enum(EXERCISE_IDS);
@@ -122,5 +123,6 @@ export const backupDataSchema = z.strictObject({
   sessions: z.array(workoutSessionSchema), sets: z.array(setRecordSchema), scheduledWorkouts: z.array(scheduledWorkoutSchema),
   bodyWeights: z.array(bodyWeightObservationSchema), trainingMemo: trainingMemoSchema, aiMemoryNotes: z.array(aiMemoryNoteSchema), timers: z.array(timerStateSchema),
   mediaAssets: z.array(mediaAssetSchema).default([]),
+  guidedStates: z.array(guidedStateSchema).optional(),
 });
 export const backupEnvelopeSchema = z.strictObject({ format: z.literal('fitness-local'), schemaVersion: positive, exportedAt: utcTimestampSchema, catalogVersion: positive, data: backupDataSchema });

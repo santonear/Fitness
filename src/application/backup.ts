@@ -77,14 +77,16 @@ function validateSession(session: WorkoutSession, sets: SetRecord[], versions: M
 }
 
 export function validateBackupEnvelope(value: unknown): BackupEnvelope {
-  if (typeof value === 'object' && value !== null && 'schemaVersion' in value && value.schemaVersion !== 2 && value.schemaVersion !== 3) {
-    throw new DomainError('BACKUP_VERSION_UNSUPPORTED', 'Unsupported JSON backup version; versions 2 and 3 are supported');
+  if (typeof value === 'object' && value !== null && 'schemaVersion' in value && value.schemaVersion !== 2 && value.schemaVersion !== 3 && value.schemaVersion !== 4) {
+    throw new DomainError('BACKUP_VERSION_UNSUPPORTED', 'Unsupported JSON backup version; versions 2, 3 and 4 are supported');
   }
   const parsed = backupEnvelopeSchema.safeParse(value);
   if (!parsed.success) throw new DomainError('BACKUP_INVALID', `Invalid backup: ${parsed.error.message}`);
   const envelope = parsed.data;
   const data = envelope.data;
-  if (envelope.catalogVersion !== 1 || data.metadata.catalogVersion !== 1 || (envelope.schemaVersion === 2 ? data.metadata.schemaVersion !== 3 : data.metadata.schemaVersion !== 4) || data.trainingMemo.schemaVersion !== 1) {
+  if (envelope.schemaVersion === 4 && !data.guidedStates) invalid('Guided state collection is required in backup version 4');
+  if (envelope.schemaVersion < 4 && data.guidedStates?.length) invalid('Guided state requires backup version 4');
+  if (envelope.catalogVersion !== 1 || data.metadata.catalogVersion !== 1 || data.metadata.schemaVersion !== envelope.schemaVersion + 1 || data.trainingMemo.schemaVersion !== 1) {
     throw new DomainError('BACKUP_VERSION_UNSUPPORTED', 'Unsupported catalog, metadata or memo version');
   }
   for (const [label, rows] of Object.entries(data)) {
@@ -186,6 +188,70 @@ export function validateBackupEnvelope(value: unknown): BackupEnvelope {
   for (const asset of data.mediaAssets) {
     if (asset.url && !['http:', 'https:'].includes(new URL(asset.url).protocol)) invalid('Media binary or local URL cannot be backed up');
   }
+  for (const state of data.guidedStates ?? []) {
+    for (const [label, rows] of Object.entries(state)) {
+      if (Array.isArray(rows)) distinct(rows.map(row => row.id), `guided ${label} ID`);
+    }
+    if (state.programs.filter(program => program.status !== 'terminated').length > 1) invalid('Multiple current guided programs');
+    const programs = new Map(state.programs.map(program => [program.id, program]));
+    const candidates = new Map(state.candidates.map(candidate => [candidate.id, candidate]));
+    const tasks = new Map(data.scheduledWorkouts.map(task => [task.id, task]));
+    const events = new Map(state.events.map(event => [event.id, event]));
+    distinct(state.programs.flatMap(program => program.planIds), 'guided plan ownership');
+    distinct(state.programs.flatMap(program => program.taskIds), 'guided task ownership');
+    for (const program of state.programs) {
+      validDate(program.startDate); validDate(program.endDate);
+      if (program.endDate < program.startDate) invalid('Guided program ends before it starts');
+      if (!program.planIds.length || !program.taskIds.length) invalid('Guided program membership is empty');
+      if (program.candidateId && !candidates.has(program.candidateId)) invalid('Guided program candidate not found');
+      if (program.planIds.some(planId => !plans.has(planId))) invalid('Guided program plan not found');
+      const memberPlans = program.planIds.map(planId => plans.get(planId)!);
+      if (memberPlans.some(plan => plan.status !== (program.status === 'terminated' ? 'archived' : 'active'))) invalid('Guided program child plan status differs');
+      if (memberPlans.some(plan => plan.scheduleTimeZone !== program.timeZone)) invalid('Guided program child timezone differs');
+      const currentTasks = data.scheduledWorkouts.filter(task => memberPlans.some(plan => plan.currentVersionId === task.planVersionId));
+      if (currentTasks.length !== program.taskIds.length || currentTasks.some(task => !program.taskIds.includes(task.id))) invalid('Guided program task membership is incomplete');
+      for (const taskId of program.taskIds) {
+        const task = tasks.get(taskId);
+        if (!task || !program.planIds.includes(versions.get(task.planVersionId)!.planId)) invalid('Guided program task does not belong to its plans');
+        const version = versions.get(task.planVersionId)!;
+        if (task.originalDate < program.startDate || task.originalDate > program.endDate || version.scheduleTimeZone !== program.timeZone) invalid('Guided program task calendar differs');
+      }
+      if (program.candidateId) {
+        const candidate = candidates.get(program.candidateId)!;
+        if (program.startDate !== candidate.startDate || program.endDate !== candidate.endDate || program.timeZone !== candidate.timeZone || program.goal !== candidate.goal) invalid('Guided program differs from adopted candidate');
+        if (currentTasks.length !== candidate.days.length) invalid('Guided program candidate membership is incomplete');
+        distinct(currentTasks.map(task => task.originalDate), 'guided candidate task date');
+        for (const task of currentTasks) {
+          const version = versions.get(task.planVersionId)!;
+          const candidateDay = candidate.days.find(day => day.date === task.originalDate);
+          const versionDay = version.days.find(day => day.dayId === task.plannedDayId)!;
+          if (!candidateDay || version.goalSnapshot.goal !== candidate.goal || JSON.stringify(versionDay.exercises) !== JSON.stringify(candidateDay.exercises)) invalid('Guided program task differs from adopted candidate');
+        }
+      }
+    }
+    for (const candidate of state.candidates) {
+      validDate(candidate.startDate); validDate(candidate.endDate);
+      for (const day of candidate.days) {
+        validDate(day.date);
+        distinct(day.exercises.map(exercise => String(exercise.order)), 'candidate exercise order');
+        for (const exercise of day.exercises) {
+          const catalog = exercises.find(entry => entry.id === exercise.exerciseId);
+          if (!catalog || exercise.targetSets.some(target => target.metricType !== catalog.metricType)) invalid('Candidate target metrics do not match catalog');
+        }
+      }
+    }
+    for (const message of state.messages) {
+      if (message.programId && !programs.has(message.programId)) invalid('Guided message program not found');
+      if (message.candidateId && !candidates.has(message.candidateId)) invalid('Guided message candidate not found');
+    }
+    for (const event of state.events) {
+      if (event.programId && !programs.has(event.programId)) invalid('Guided event program not found');
+      if (event.sessionId && !sessions.has(event.sessionId)) invalid('Guided event workout not found');
+    }
+    state.observations.forEach(observation => validDate(observation.localDate));
+    distinct(state.invitations.map(invitation => invitation.eventId), 'guided invitation event');
+    for (const invitation of state.invitations) if (!events.has(invitation.eventId)) invalid('Guided invitation event not found');
+  }
   return envelope;
 }
 
@@ -198,11 +264,12 @@ export function createBackupService(repo: Repository) {
       const versions = await repo.db.planVersions.toArray();
       const previousMemo = await repo.db.trainingMemo.get(1);
       return validateBackupEnvelope({
-        format: 'fitness-local', schemaVersion: 3, catalogVersion: 1, exportedAt: new Date().toISOString(),
+        format: 'fitness-local', schemaVersion: 4, catalogVersion: 1, exportedAt: new Date().toISOString(),
         data: {
           metadata, profiles: await repo.db.profiles.toArray(), plans: await repo.db.plans.toArray(), planVersions: versions,
           sessions, sets, scheduledWorkouts: await repo.db.scheduledWorkouts.toArray(), bodyWeights: await repo.db.bodyWeights.toArray(),
           aiMemoryNotes: await repo.db.aiMemoryNotes.toArray(), timers: await repo.db.timers.toArray(), mediaAssets: await repo.db.mediaAssets.toArray(),
+          guidedStates: await repo.db.guidedStates.toArray(),
           trainingMemo: {
             schemaVersion: 1, revision: previousMemo?.revision ?? 0, sourceRevision: metadata.dataRevision, updatedAt: new Date().toISOString(),
             sessions: sessions.map(session => ({ session, sets: sets.filter(set => set.sessionId === session.id).sort((a, b) => a.order - b.order),
@@ -244,7 +311,7 @@ export function createBackupService(repo: Repository) {
       if (!Number.isSafeInteger(committedGeneration) || !Number.isSafeInteger(before.dataRevision + 1)) invalid('Local revision counter exhausted');
       for (const table of repo.db.tables) await table.clear();
       const data = envelope.data;
-      await repo.db.metadata.put({ ...data.metadata, schemaVersion: 4, revision: before.revision, dataRevision: before.dataRevision, restoreGeneration: committedGeneration, importedAt: new Date().toISOString() });
+      await repo.db.metadata.put({ ...data.metadata, schemaVersion: 5, revision: before.revision, dataRevision: before.dataRevision, restoreGeneration: committedGeneration, importedAt: new Date().toISOString() });
       await repo.db.profiles.bulkAdd(data.profiles);
       await repo.db.plans.bulkAdd(data.plans);
       await repo.db.planVersions.bulkAdd(data.planVersions);
@@ -255,6 +322,7 @@ export function createBackupService(repo: Repository) {
       await repo.db.aiMemoryNotes.bulkAdd(data.aiMemoryNotes);
       await repo.db.timers.bulkAdd(data.timers);
       await repo.db.mediaAssets.bulkAdd(data.mediaAssets);
+      if (data.guidedStates) await repo.db.guidedStates.bulkAdd(data.guidedStates);
       await repo.db.trainingMemo.put(data.trainingMemo);
       await synchronizeTrainingMemo(repo);
     }, input.expectedRevision);

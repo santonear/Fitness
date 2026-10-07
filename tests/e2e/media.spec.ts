@@ -20,8 +20,9 @@ test('media is local until keyboard consent and blocked media preserves catalogu
  await page.getByRole('combobox', { name: 'Language' }).selectOption('zh');
  await expect(page.getByText('原创示意图；动作姿势尚未经专业审核。', { exact: true })).toHaveCount(4);
  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+ await page.getByRole('button', { name: '导航', exact: true }).click();
  await page.getByRole('navigation').getByRole('link', { name: '今日', exact: true }).click();
- await expect(page.getByRole('heading', { name: '今日训练', exact: true })).toBeVisible();
+ await expect(page.getByRole('heading', { name: '从了解你开始。', exact: true })).toBeVisible();
 });
 
 

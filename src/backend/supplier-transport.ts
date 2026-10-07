@@ -9,6 +9,7 @@ export interface ProviderCodec {
   credentialHeader?: 'x-goog-api-key';
   encode(request: AiRequest): unknown | Promise<unknown>;
   decode(body: unknown): { result: unknown; actualCost?: number };
+  costUpperBoundFen?(request: AiRequest): number | undefined;
 }
 export interface TransportConfig {
   endpoint: string; allowedOrigin: string; apiKey: string; timeoutMs: number; maxResponseBytes: number;
@@ -28,7 +29,7 @@ export function createSupplierTransport(config: TransportConfig, codec: Provider
       !Number.isSafeInteger(config.maxResponseBytes) || config.maxResponseBytes < 1 || config.maxResponseBytes > 1_048_576)
       throw new Error('invalid');
   } catch { throw new ControlError('INVALID_SUPPLIER_CONFIG', 500); }
-  return { kind: 'external-transport', call: async request => {
+  return { kind: 'external-transport', costUpperBoundFen: request => codec.costUpperBoundFen?.(request), call: async request => {
     const abort = new AbortController(); const timer = setTimeout(() => abort.abort(), config.timeoutMs);
     let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
     let stage: 'encode' | 'network' | 'http' | 'decode' = 'encode'; let httpStatus: number | undefined;
