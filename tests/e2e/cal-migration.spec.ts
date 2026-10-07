@@ -11,5 +11,5 @@ test('version 3 local library upgrades without rewriting old facts; old Dexie ca
     const snapshot=(db:any)=>db.transaction('r',db.tables,async()=>JSON.stringify(await Promise.all(db.tables.filter((table:any)=>table.name!=='metadata'&&table.name!=='guidedStates').sort((a:any,b:any)=>a.name.localeCompare(b.name)).map((table:any)=>table.toArray()))));
     const before=await snapshot(old);old.close();const upgraded=createDatabase(name);await upgraded.open();const unchanged=before===await snapshot(upgraded);const version=(await upgraded.metadata.toCollection().first()).schemaVersion;upgraded.close();
     const rollback=new Dexie(name);rollback.version(3).stores(stores);const reopened=await rollback.open().then(()=>true,()=>false);const runtimeVersion=reopened?(await rollback.table('metadata').toCollection().first()).schemaVersion:null;rollback.close();await upgraded.delete();return {unchanged,version,reopened,runtimeVersion};
-  });expect(result).toEqual({unchanged:true,version:5,reopened:true,runtimeVersion:5});
+  });expect(result).toEqual({unchanged:true,version:6,reopened:true,runtimeVersion:6});
 });

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { schedulingFields, validateScheduling, setTimingSchema } from './training-time';
 import { EXERCISE_IDS } from '../catalog/exercise-ids';
 import { guidedStateSchema } from './guided-contracts';
 export const localeSchema = z.enum(['zh', 'en']);
@@ -51,7 +52,9 @@ export const localProfileSchema = z.strictObject({
   ...entityFields, locale: localeSchema, timeZone: timeZoneSchema, units: z.literal('metric'), trainingPreferences: trainingPreferencesSchema.optional(),
 });
 export const plannedExerciseSchema = z.strictObject({
-  exerciseId: exerciseIdSchema, order: nonnegative, targetSets: z.array(setMetricsSchema).min(1), notes: z.string().optional(),
+  exerciseId: exerciseIdSchema, order: nonnegative, targetSets: z.array(setMetricsSchema).min(1), setTimings: z.array(setTimingSchema).min(1).optional(), notes: z.string().optional(),
+}).superRefine((exercise, context) => {
+  if (exercise.setTimings && (exercise.setTimings.length !== exercise.targetSets.length || exercise.targetSets.some((set, index) => 'durationSeconds' in set && set.durationSeconds !== exercise.setTimings![index]?.durationSeconds))) context.addIssue({ code: 'custom', message: 'Set timing must match each target set' });
 });
 export const planDaySchema = z.strictObject({
   dayId: uuidSchema, weekIndex: positive.max(12), dayOfWeek: positive.max(7), exercises: z.array(plannedExerciseSchema).min(1),
@@ -77,7 +80,7 @@ export const planSchema = z.strictObject({
   model: z.literal('date-day').optional(),
 });
 export const exerciseSnapshotSchema = exerciseSchema.omit({ steps: true, cautions: true, imageAssetId: true, videoAssetId: true }).extend({
-  exerciseInstanceId: uuidSchema, exerciseId: exerciseIdSchema, order: nonnegative, targetSets: z.array(setMetricsSchema), notes: z.string().optional(), originalExerciseId: exerciseIdSchema.optional(),
+  exerciseInstanceId: uuidSchema, exerciseId: exerciseIdSchema, order: nonnegative, targetSets: z.array(setMetricsSchema), setTimings: z.array(setTimingSchema).optional(), notes: z.string().optional(), originalExerciseId: exerciseIdSchema.optional(),
 });
 export const workoutSessionSchema = z.strictObject({
   ...entityFields, planVersionId: uuidSchema.optional(), plannedDayId: uuidSchema.optional(), status: z.enum(['in_progress', 'completed', 'abandoned']),
@@ -96,8 +99,8 @@ export const setRecordSchema = z.strictObject({
 });
 export const scheduledWorkoutSchema = z.strictObject({
   ...entityFields, planVersionId: uuidSchema, plannedDayId: uuidSchema, originalDate: localDateSchema, scheduledDate: localDateSchema,
-  status: z.enum(['pending', 'skipped']), completedSessionId: uuidSchema.optional(), hiddenAt: utcTimestampSchema.optional(),
-});
+  ...schedulingFields, status: z.enum(['pending', 'skipped']), completedSessionId: uuidSchema.optional(), hiddenAt: utcTimestampSchema.optional(),
+}).superRefine(validateScheduling);
 export const bodyWeightObservationSchema = z.strictObject({ ...entityFields, localDate: localDateSchema, timeZone: timeZoneSchema, weightGrams: positive });
 export const metadataSchema = z.strictObject({
   schemaVersion: positive, localProfileId: uuidSchema, catalogVersion: positive, revision: nonnegative, dataRevision: nonnegative,

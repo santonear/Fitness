@@ -77,14 +77,14 @@ function validateSession(session: WorkoutSession, sets: SetRecord[], versions: M
 }
 
 export function validateBackupEnvelope(value: unknown): BackupEnvelope {
-  if (typeof value === 'object' && value !== null && 'schemaVersion' in value && value.schemaVersion !== 2 && value.schemaVersion !== 3 && value.schemaVersion !== 4) {
-    throw new DomainError('BACKUP_VERSION_UNSUPPORTED', 'Unsupported JSON backup version; versions 2, 3 and 4 are supported');
+  if (typeof value === 'object' && value !== null && 'schemaVersion' in value && value.schemaVersion !== 2 && value.schemaVersion !== 3 && value.schemaVersion !== 4 && value.schemaVersion !== 5) {
+    throw new DomainError('BACKUP_VERSION_UNSUPPORTED', 'Unsupported JSON backup version; versions 2, 3, 4 and 5 are supported');
   }
   const parsed = backupEnvelopeSchema.safeParse(value);
   if (!parsed.success) throw new DomainError('BACKUP_INVALID', `Invalid backup: ${parsed.error.message}`);
   const envelope = parsed.data;
   const data = envelope.data;
-  if (envelope.schemaVersion === 4 && !data.guidedStates) invalid('Guided state collection is required in backup version 4');
+  if (envelope.schemaVersion >= 4 && !data.guidedStates) invalid('Guided state collection is required in backup versions 4 and 5');
   if (envelope.schemaVersion < 4 && data.guidedStates?.length) invalid('Guided state requires backup version 4');
   if (envelope.catalogVersion !== 1 || data.metadata.catalogVersion !== 1 || data.metadata.schemaVersion !== envelope.schemaVersion + 1 || data.trainingMemo.schemaVersion !== 1) {
     throw new DomainError('BACKUP_VERSION_UNSUPPORTED', 'Unsupported catalog, metadata or memo version');
@@ -264,7 +264,7 @@ export function createBackupService(repo: Repository) {
       const versions = await repo.db.planVersions.toArray();
       const previousMemo = await repo.db.trainingMemo.get(1);
       return validateBackupEnvelope({
-        format: 'fitness-local', schemaVersion: 4, catalogVersion: 1, exportedAt: new Date().toISOString(),
+        format: 'fitness-local', schemaVersion: 5, catalogVersion: 1, exportedAt: new Date().toISOString(),
         data: {
           metadata, profiles: await repo.db.profiles.toArray(), plans: await repo.db.plans.toArray(), planVersions: versions,
           sessions, sets, scheduledWorkouts: await repo.db.scheduledWorkouts.toArray(), bodyWeights: await repo.db.bodyWeights.toArray(),
@@ -311,7 +311,7 @@ export function createBackupService(repo: Repository) {
       if (!Number.isSafeInteger(committedGeneration) || !Number.isSafeInteger(before.dataRevision + 1)) invalid('Local revision counter exhausted');
       for (const table of repo.db.tables) await table.clear();
       const data = envelope.data;
-      await repo.db.metadata.put({ ...data.metadata, schemaVersion: 5, revision: before.revision, dataRevision: before.dataRevision, restoreGeneration: committedGeneration, importedAt: new Date().toISOString() });
+      await repo.db.metadata.put({ ...data.metadata, schemaVersion: 6, revision: before.revision, dataRevision: before.dataRevision, restoreGeneration: committedGeneration, importedAt: new Date().toISOString() });
       await repo.db.profiles.bulkAdd(data.profiles);
       await repo.db.plans.bulkAdd(data.plans);
       await repo.db.planVersions.bulkAdd(data.planVersions);

@@ -17,7 +17,7 @@ export function createProfileService(repo: Repository) {
       const timestamp = new Date().toISOString();
       const profile = localProfileSchema.parse({ id: crypto.randomUUID(), revision: 0, createdAt: timestamp, updatedAt: timestamp, locale, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, units: 'metric' });
       await repo.db.profiles.add(profile);
-      await repo.db.metadata.add({ localProfileId: profile.id, schemaVersion: 5, catalogVersion: 1, revision: 1, dataRevision: 1 });
+      await repo.db.metadata.add({ localProfileId: profile.id, schemaVersion: 6, catalogVersion: 1, revision: 1, dataRevision: 1 });
       await repo.readMetadata();
       return profile;
     }).catch(storageError);

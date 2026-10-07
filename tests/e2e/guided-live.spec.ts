@@ -12,47 +12,53 @@ async function open(page: Page) {
 async function scope(page: Page) {
   await page.getByRole('textbox', { name: 'goal, clarification or changes', exact: true }).fill('Build a regular fitness routine');
 }
-for (const bounded of [false, true]) {
-test(`real transport UI: verified-bound=${bounded}; pending candidate can be saved without another request`, async ({ page }) => {
-  let pending = false; let requests = 0;
-  await page.route('**/api/v1/**', async route => {
-    const url = route.request().url();
-    if (url.endsWith('trial/status')) return route.fulfill({ json: { expiresAt: Date.now() + 86400000, period: '2026-10', used: { understand: 1, generate: 0 },
-      limits: { understand: 8, generate: 4 }, pending: pending ? 1 : 0, reconciliationRequired: pending && !bounded, aiEnabled: true } });
-    const body = route.request().postDataJSON(); requests++; pending = true;
-    const raw = body.operation === 'understand' ? { kind: 'understand', summary: 'Build a regular fitness routine', uncertainties: [] }
-      : { kind: 'program', name: 'A steady start', explanation: 'Confirmed conditions', days: [body.dialogue.dates[1], body.dialogue.dates[4]].map((date: string) => ({ ...fourMetricCandidate().days[0], date, exercises: fourMetricCandidate().days[0].exercises.map(exercise => ({ ...exercise, notes: 'Rest 60 seconds; use a controlled tempo.' })) })) };
-    return route.fulfill({ json: { requestId: body.requestId, result: validateGuidedProviderOutput(body.dialogue, raw), accounting: 'pending',
-      context: { restoreGeneration: body.restoreGeneration, inputDigest: body.sendConfirmation } } });
-  });
-  await open(page); await scope(page);
-  await expect(page.locator('#chat-quota-notice')).toContainText('uses 1 AI understanding allowance');
-  await expect(page.getByRole('button', { name: 'preview scope for understanding', exact: true })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Send', exact: true })).toBeEnabled();
-  await page.getByRole('button', { name: 'Send', exact: true }).click();
-  await expect(page.getByText(/submitted request is awaiting accounting/)).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Check access and allowance', exact: true })).toBeEnabled();
-  if (!bounded) {
-    await expect(page.getByRole('alert')).toContainText('Your goal is ready');
-    expect(requests).toBe(1);
-    await expect(page.getByRole('button', { name: 'Resume plan generation', exact: true })).toBeDisabled();
-    pending = false; // Independent operator reconciliation, never a UI settlement.
-    await page.getByRole('button', { name: 'Check access and allowance' }).click();
-    await page.getByRole('button', { name: 'Resume plan generation', exact: true }).click();
-  }
-  await expect(page.getByRole('heading', { name: 'Your training plan' })).toBeVisible();
-  expect(requests).toBe(2);
-  await expect(page.locator('.candidate-day')).toHaveCount(2);
-  await expect(page.locator('.candidate-day .candidate-notes').first()).toContainText('Rest 60 seconds');
-  await expect(page.getByRole('button', { name: 'Confirm goal and generate plan' })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Adopt plan', exact: true })).toBeEnabled();
-  await page.reload(); // Retained plan can be adopted without another model request.
-  await expect(page.getByRole('heading', { name: 'Your training plan' })).toBeVisible();
-  await page.getByRole('button', { name: 'Adopt plan', exact: true }).click();
-  await expect.poll(() => page.evaluate(async () => { const path = '/src/persistence/db.ts'; const { database } = await import(/* @vite-ignore */ path); return (await database.guidedStates.get('guided')).programs.length; })).toBe(1);
-  expect(requests).toBe(2);
-});
+function timedExercises() { return fourMetricCandidate().days[0].exercises.map(exercise => ({ ...exercise, setTimings: exercise.targetSets.map(target => ({ durationSeconds: 'durationSeconds' in target ? target.durationSeconds : 40, restSeconds: 30 })), notes: 'Rest 30 seconds; controlled tempo.' })); }
+async function selectDates(page: Page, count = 1) {
+  const section = page.getByRole('region', { name: /Confirm daily training times|确认逐日训练时间/ });
+  await expect(section).toBeVisible();
+  for(let i=0;i<count;i++) await section.getByRole('checkbox').nth(i).check();
+  return section;
 }
+for (const bounded of [false,true]) test(`confirmed schedule waits for approval and saves once; bounded=${bounded}`,async({page},info)=>{
+  let pending=false; const sent:any[]=[];
+  await page.route('**/api/v1/**',async route=>{
+    if(route.request().method()==='GET') return route.fulfill({json:{expiresAt:Date.now()+86400000,period:'2026-10',used:{understand:1,generate:0},limits:{understand:8,generate:4},pending:pending?1:0,reconciliationRequired:pending&&!bounded,aiEnabled:true}});
+    const body=route.request().postDataJSON();sent.push(body);pending=true;
+    const raw=body.operation==='understand'?{kind:'understand',summary:'Four training days, 30 minutes each',uncertainties:[]}:{kind:'program',name:'Confirmed four days',explanation:'Synthetic schedule',days:body.dialogue.dates.map((date:string)=>({date,exercises:timedExercises()}))};
+    await route.fulfill({json:{requestId:body.requestId,result:validateGuidedProviderOutput(body.dialogue,raw),accounting:'pending',context:{restoreGeneration:body.restoreGeneration,inputDigest:body.sendConfirmation}}});
+  });
+  await open(page);await scope(page);
+  await page.getByRole('combobox',{name:'Planning range (1–14 days)'}).selectOption('4');
+  await page.getByRole('button',{name:'Send',exact:true}).click();
+  await expect(page.getByRole('region',{name:'Confirm daily training times'})).toBeVisible(); expect(sent).toHaveLength(1);
+  if(!bounded){await expect(page.getByRole('button',{name:'Confirm times, generate and save plan'})).toBeDisabled();pending=false;await page.getByRole('button',{name:'Check access and allowance'}).click();}
+  const section=await selectDates(page,4);const times=['12:00','14:00','09:00','20:00'];
+  for(let i=0;i<4;i++)await section.locator('input[type=time]').nth(i).fill(times[i]);
+  expect(sent).toHaveLength(1);
+  if(!bounded && info.project.name==='chromium') await section.screenshot({path:'outputs/training-schedule-confirmation.png'});
+  await section.getByRole('button',{name:'Confirm times, generate and save plan'}).click();
+  await expect(page.getByRole('button',{name:'Plan saved',exact:true})).toBeDisabled();
+  expect(sent).toHaveLength(2);expect(sent[1].dialogue.schedule.map((slot:any)=>slot.startTime)).toEqual(times);
+  await expect(page.locator('.candidate-day')).toHaveCount(4);
+  await expect(page.locator('.candidate-day').first()).toContainText('estimated work');
+  await page.goto('/');
+  const dates=sent[1].dialogue.dates;
+  const dayButton=page.locator('[data-calendar-date="'+dates[0]+'"]');await dayButton.click();
+  await expect(dayButton).toContainText('12:00');
+  await page.getByRole('button',{name:'day',exact:true}).click();
+  const block=page.locator('.calendar-training-block');await expect(block).toContainText('12:00–12:30');
+  await expect(block).toHaveCSS('top','576px');await expect(block).toHaveCSS('height','24px');
+  const handle=page.getByRole('button',{name:'Drag to change training time'});await handle.scrollIntoViewIfNeeded();
+  const box=(await handle.boundingBox())!;await page.mouse.move(box.x+box.width/2,box.y+box.height/2);await page.mouse.down();await page.mouse.move(box.x+box.width/2,box.y+box.height/2+96,{steps:8});await page.mouse.up();
+  await expect(page.getByRole('dialog')).toContainText('12:00 → 14:00');
+  if(!bounded && info.project.name==='chromium') await page.screenshot({path:'outputs/training-time-change.png'});
+  await page.getByRole('button',{name:'Cancel',exact:true}).click();await expect(block).toContainText('12:00–12:30');
+  await handle.focus();await page.keyboard.press('Enter');await page.getByLabel('New start time').fill('14:00');await page.getByRole('button',{name:'Confirm change',exact:true}).click();
+  await expect(block).toContainText('14:00–14:30');expect(sent).toHaveLength(2);
+  await page.reload();await page.locator('[data-calendar-date="'+dates[0]+'"]').click();await expect(page.locator('[data-calendar-date="'+dates[0]+'"]')).toContainText('14:00');
+  const persisted=await page.evaluate(async()=>{const path='/src/persistence/db.ts';const {database}=await import(/* @vite-ignore */ path);return {tasks:(await database.scheduledWorkouts.toArray()).sort((a:any,b:any)=>a.scheduledDate.localeCompare(b.scheduledDate)),state:await database.guidedStates.get('guided')};});
+  expect(persisted.tasks.map((task:any)=>task.startTime)).toEqual(['14:00','14:00','09:00','20:00']);expect(persisted.state.events.at(-1).action).toBe('rescheduled');expect(persisted.state.programs[0].revision).toBe(1);
+});
 
 test('failed status stays unknown and no request is sent without qualification', async ({ page }) => {
   let requests = 0;
@@ -80,7 +86,7 @@ test('uncertain one-click send preserves the request identity on explicit retry'
   await expect(page.getByRole('textbox', { name: 'goal, clarification or changes', exact: true })).toHaveValue('Build a regular fitness routine');
 });
 
-for (const locale of ['en', 'zh'] as const) test(`${locale} clarification stays in chat, then automatically generates a detailed plan`, async ({ page }) => {
+for (const locale of ['en', 'zh'] as const) test(`${locale} clarification stays in chat, then confirms timing and saves a detailed plan`, async ({ page }) => {
   const t = (en: string, zh: string) => locale === 'zh' ? zh : en;
   const sent: any[] = [];
   await page.route('**/api/v1/**', async route => {
@@ -89,7 +95,7 @@ for (const locale of ['en', 'zh'] as const) test(`${locale} clarification stays 
     expect(body.dialogue.scope).not.toHaveProperty('body'); expect(body.dialogue.scope).not.toHaveProperty('history');
     const raw = body.operation === 'understand'
       ? { kind: 'understand', summary: sent.length === 1 ? 'Build strength' : 'Build strength once weekly, 30 minutes, at home without equipment; beginner, no stated restrictions.', uncertainties: sent.length === 1 ? ['How often and where can you train?'] : [] }
-      : { kind: 'program', name: t('A manageable start', '循序开始'), explanation: t('One training day, with recovery on the other days.', '安排一天训练，其余日期休息恢复。'), days: [{ ...fourMetricCandidate().days[0], date: body.dialogue.dates[1], exercises: fourMetricCandidate().days[0].exercises.map(exercise => ({ ...exercise, notes: t('Rest 60 seconds. Keep a controlled tempo.', '组间休息60秒，保持稳定节奏。') })) }] };
+      : { kind: 'program', name: t('A manageable start', '循序开始'), explanation: t('One training day, with recovery on the other days.', '安排一天训练，其余日期休息恢复。'), days: [{ ...fourMetricCandidate().days[0], date: body.dialogue.dates[0], exercises: timedExercises().map(exercise => ({ ...exercise, notes: t('Rest 60 seconds. Keep a controlled tempo.', '组间休息60秒，保持稳定节奏。') })) }] };
     await route.fulfill({ json: { requestId: body.requestId, accounting: 'settled', result: validateGuidedProviderOutput(body.dialogue, raw), context: { restoreGeneration: body.restoreGeneration, inputDigest: body.sendConfirmation } } });
   });
   await page.addInitScript(locale => localStorage.setItem('fitness.language', locale), locale);
@@ -106,22 +112,23 @@ for (const locale of ['en', 'zh'] as const) test(`${locale} clarification stays 
   await expect(page.getByRole('log')).toContainText('How often and where');
   await input.fill('Once weekly, 30 minutes, home, no equipment. Beginner, no restrictions.');
   await page.getByRole('button', { name: t('Send', '发送'), exact: true }).click();
-  await expect(page.getByRole('button', { name: t('Adopt plan', '采用计划'), exact: true })).toBeEnabled();
+  const section = await selectDates(page); expect(sent).toHaveLength(2);
+  await section.getByRole('button').click();
+  await expect(page.getByRole('button', { name: t('Plan saved', '计划已保存'), exact: true })).toBeDisabled();
   expect(sent.map(value => value.operation)).toEqual(['understand', 'understand', 'generate']);
   expect(JSON.stringify(sent[1].dialogue.scope.conditions.priorDialogue)).toContain('I want to build strength');
-  expect(sent[2].dialogue).toMatchObject({ dateSelection: 'ai', scope: { goal: 'Build strength once weekly, 30 minutes, at home without equipment; beginner, no stated restrictions.' } });
-  expect(sent[2].dialogue.dates).toHaveLength(7);
+  expect(sent[2].dialogue).toMatchObject({ scope: { goal: 'Build strength once weekly, 30 minutes, at home without equipment; beginner, no stated restrictions.' } });
+  expect(sent[2].dialogue.dates).toHaveLength(1);
   await expect(page.locator('.candidate-day')).toHaveCount(1);
   await expect(page.locator('.candidate-day .candidate-notes').first()).toContainText(t('Rest 60 seconds', '组间休息60秒'));
   await expect(page.locator('[id$="quota-notice"]')).toHaveCount(1);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: `outputs/automatic-planning-${locale}.png`, fullPage: true });
-  await page.getByRole('button', { name: t('Adopt plan', '采用计划'), exact: true }).click();
   await expect(page.getByRole('status').filter({ hasText: t('Plan adopted', '计划已采用') })).toBeVisible();
   expect(sent).toHaveLength(3);
 });
 
-test('failed automatic generation retries only generation with the same identity', async ({ page }) => {
+test('failed confirmed generation retries only generation with the same identity', async ({ page }) => {
   const sent: any[] = [];
   await page.route('**/api/v1/**', async route => {
     if (route.request().method() === 'GET') return route.fulfill({ json: { expiresAt: Date.now() + 86400000, period: '2026-10', used: { understand: 1, generate: 0 }, limits: { understand: 8, generate: 4 }, pending: 0, aiEnabled: true } });
@@ -131,10 +138,11 @@ test('failed automatic generation retries only generation with the same identity
   });
   await open(page); await scope(page);
   await page.getByRole('button', { name: 'Send', exact: true }).click();
+  const section=await selectDates(page);await section.getByRole('button').click();
   await expect(page.getByRole('alert')).toBeVisible();
   expect(sent.map(value => value.operation)).toEqual(['understand', 'generate']);
   await page.getByRole('button', { name: 'Check access and allowance', exact: true }).click();
-  await page.getByRole('button', { name: 'Resume plan generation', exact: true }).click();
+  await page.getByRole('button', { name: 'Confirm times, generate and save plan', exact: true }).click();
   await expect(page.getByRole('alert')).toBeVisible();
   expect(sent.map(value => value.operation)).toEqual(['understand', 'generate', 'generate']);
   expect(sent[2]).toEqual(sent[1]);

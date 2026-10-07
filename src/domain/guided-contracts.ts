@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { schedulingFields, validateScheduling } from './training-time';
 import { plannedExerciseSchema } from './schemas';
 
 const id = z.uuid();
@@ -17,7 +18,7 @@ export const onboardingSchema = z.strictObject({ id, step: revision, answers: z.
 });
 export const programCandidateSchema = z.strictObject({
   id, name: z.string().trim().min(1), goal: z.string().trim().min(1), startDate: date, endDate: date, timeZone: zone,
-  days: z.array(z.strictObject({ date, exercises: z.array(z.lazy(() => plannedExerciseSchema)).min(1) })).min(1),
+  days: z.array(z.strictObject({ date, ...schedulingFields, exercises: z.array(z.lazy(() => plannedExerciseSchema)).min(1) }).superRefine(validateScheduling)).min(1),
   explanation: z.string(), createdAt: timestamp, restoreGeneration: revision, inputSnapshot: z.string().optional(),
   onboardingSnapshot: z.string().optional(), profileSnapshot: z.string().optional(),
 }).superRefine((value, context) => {
@@ -36,7 +37,7 @@ export const guidedMessageSchema = z.strictObject({
 });
 export const guidedEventSchema = z.strictObject({
   id, createdAt: timestamp, programId: id.optional(), sessionId: id.optional(),
-  action: z.enum(['created', 'paused', 'resumed', 'terminated', 'replaced', 'workout_paused', 'workout_resumed', 'workout_ended']),
+  action: z.enum(['created', 'paused', 'resumed', 'terminated', 'replaced', 'workout_paused', 'workout_resumed', 'workout_ended', 'rescheduled']),
   before: z.string().optional(), after: z.string(), reason: z.string().optional(),
   timerIds: z.array(id).optional(),
 });

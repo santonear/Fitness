@@ -81,6 +81,10 @@ export function validateGuidedResponse(raw: unknown, request: GuidedDialogueRequ
   if ((response.purpose === 'refused' ? response.requestedPurpose : response.purpose) !== parsedRequest.purpose) throw new Error('GUIDED_RESPONSE_IDENTITY_MISMATCH');
   if ('candidate' in response) {
     const candidate = validateGuidedCandidate(response.candidate, { ...context, expectedDates: parsedRequest.dates ?? [], allowDateSubset: parsedRequest.dateSelection === 'ai' });
+    if (parsedRequest.schedule && candidate.days.some(day => {
+      const slot = parsedRequest.schedule!.find(item => item.date === day.date);
+      return !slot || day.startTime !== slot.startTime || day.durationMinutes !== slot.durationMinutes || day.exercises.some(item => !item.setTimings) || day.exercises.reduce((sum, item) => sum + (item.setTimings ?? []).reduce((total, timing) => total + timing.durationSeconds + timing.restSeconds, 0), 0) > slot.durationMinutes * 60;
+    })) throw new Error('GUIDED_CANDIDATE_SCHEDULE_MISMATCH');
     if (candidate.startDate !== parsedRequest.startDate || candidate.endDate !== parsedRequest.endDate
         || candidate.timeZone !== parsedRequest.timeZone || candidate.goal !== parsedRequest.scope.goal
         || (candidate.inputSnapshot !== undefined && candidate.inputSnapshot !== parsedRequest.inputSnapshot)) throw new Error('GUIDED_CANDIDATE_SCOPE_MISMATCH');
