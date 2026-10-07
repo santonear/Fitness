@@ -29,6 +29,9 @@ test(`real transport UI: verified-bound=${bounded}; pending candidate can be sav
   await page.getByRole('button', { name: 'Check access and allowance' }).click();
   await page.getByRole('button', { name: 'confirm sending', exact: true }).click();
   await expect(page.getByText(/submitted request is awaiting accounting/)).toBeVisible();
+  // Accounting appears before qualification refresh and local archiving finish.
+  // Wait for the request's busy state to end before clicking a moving disclosure.
+  await expect(page.getByRole('button', { name: 'preview scope for understanding', exact: true })).toBeEnabled();
   await page.getByText('review the goal and exact dates', { exact: true }).click();
   await expect(page.getByRole('textbox', { name: 'goal interpretation', exact: true })).toHaveValue('Build a regular fitness routine');
   // The response is shown before its local archive completes. Finish that step
