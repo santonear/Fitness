@@ -2,7 +2,8 @@ export async function verifyApplicationProof(proof: string, secret: string, host
   if (!proof || !secret) return false;
   try {
     const response = await transport('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-      method: 'POST', redirect: 'error', signal: AbortSignal.timeout(5000),
+      // Workers rejects redirect: 'error'. Inspect the response without following redirects.
+      method: 'POST', redirect: 'manual', signal: AbortSignal.timeout(5000),
       body: new URLSearchParams({ secret, response: proof }),
     });
     if (!response.ok) return false;

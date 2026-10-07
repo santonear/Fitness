@@ -23,7 +23,7 @@ const messages: Record<string, [string, string]> = {
   APPLICATION_BUSY: ['当前申请较多，请稍后再试。', 'Applications are busy right now. Please try again later.'],
   APPLICATIONS_UNAVAILABLE: ['申请服务暂未开放，已有邀请码仍可兑换。', 'Applications are not available yet. Existing invitation codes can still be redeemed.'],
   APPLICATION_CAPACITY: ['申请队列暂满，请稍后再试。', 'The application queue is full. Please try later.'],
-  VERIFICATION_REQUIRED: ['请重新完成安全验证。', 'Please complete the security check again.'],
+  VERIFICATION_REQUIRED: ['申请未提交：安全验证未通过。请在验证成功后再次点击“提交申请”；若仍失败，请联系管理员。', 'Application not submitted: security verification failed. Complete the check and submit again; contact the administrator if it still fails.'],
   QUALIFICATION_REQUIRED: ['资格已到期或不可用，请查看申请或联系管理员。', 'Your trial has expired or is unavailable. Check your application or contact the administrator.'],
   INVITE_INVALID: ['邀请码或领取资格已失效，请申请补发。', 'The invitation has expired or is no longer valid. Request a replacement.'],
   USE_EXTENSION: ['已有资格，请申请延期或补发。', 'You already have a trial. Request an extension or replacement.'],

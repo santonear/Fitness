@@ -20,7 +20,7 @@ it('validates signature, issuer, audience, expiry and one allowed administrator'
 it('protects both management UI and APIs without touching local training routes', async () => {
   const assets = vi.fn(async () => new Response('public app'));
   const worker = createFitnessWorker();
-  for (const path of ['/admin', '/admin/applications', '/api/v1/management/applications', '/api/v1/management/quota-restore']) {
+  for (const path of ['/admin', '/admin/applications', '/api/v1/management/applications', '/api/v1/management/quota-restore', '/api/v1/management/invites', '/api/v1/management/invites/revoke']) {
     expect((await worker.fetch(new Request(`https://fitness.test${path}`), { ASSETS: { fetch: assets } })).status).toBe(403);
   }
   expect(assets).not.toHaveBeenCalled();
@@ -33,7 +33,17 @@ it('server validates Turnstile hostname and action; outage does not bypass verif
   expect(await verifyApplicationProof('proof', 'secret', 'fitness.test', result({ success: true, hostname: 'fitness.test', action: 'other' }))).toBe(false);
   expect(await verifyApplicationProof('proof', 'secret', 'fitness.test', vi.fn(async () => { throw new Error('offline'); }))).toBe(false);
 });
-it.each(['application-review', 'quota-restore'])('management gateway enforces same-origin and server credentials for %s', async operation => {
+it('uses Workers-compatible manual redirects and rejects redirects without retrying', async () => {
+  const transport = vi.fn(async (_url: unknown, init?: RequestInit) => {
+    if (init?.redirect !== 'manual') throw new Error('Unsupported redirect mode');
+    return Response.json({ success: true, hostname: 'fitness.test', action: 'trial_application' });
+  }) as unknown as typeof fetch;
+  expect(await verifyApplicationProof('proof', 'secret', 'fitness.test', transport)).toBe(true);
+  const redirected = vi.fn(async () => new Response(null, { status: 302, headers: { location: 'https://attacker.test' } }));
+  expect(await verifyApplicationProof('proof', 'secret', 'fitness.test', redirected)).toBe(false);
+  expect(redirected).toHaveBeenCalledTimes(1);
+});
+it.each(['application-review', 'quota-restore', 'invites', 'invites/revoke'])('management gateway enforces same-origin and server credentials for %s', async operation => {
   const handler = vi.fn(async (request: Request) => {
     expect(new URL(request.url).pathname).toBe(`/api/v1/admin/${operation}`);
     expect(request.headers.get('authorization')).toBe('Bearer server-only-secret');

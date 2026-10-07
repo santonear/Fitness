@@ -1,5 +1,39 @@
 import { expect, test } from '@playwright/test';
 
+for (const zh of [false, true]) test(`manual invitation generation and revocation (${zh ? 'zh' : 'en'})`, async ({ page }) => {
+  await page.addInitScript(zh => localStorage.setItem('fitness.language', zh ? 'zh' : 'en'), zh);
+  const code = 'a'.repeat(64), inviteId = 'b'.repeat(64), expiresAt = Date.now() + 604800000;
+  let issued = false, generations = 0;
+  await page.route('**/api/v1/management/**', async route => {
+    if (route.request().url().endsWith('/invites/revoke')) {
+      expect(route.request().postDataJSON()).toEqual({ inviteId }); issued = false;
+      return route.fulfill({ json: { ok: true } });
+    }
+    if (route.request().url().endsWith('/invites')) { issued = true; generations++; return route.fulfill({ json: { code, inviteId, expiresAt } }); }
+    return route.fulfill({ json: { report: { capturedAt: Date.now(), aiEnabled: true, budgets: [], requests: [], subjects: [] },
+      applications: [], audit: [], invites: issued ? [{ inviteId, expiresAt }] : [],
+      policy: { budgetLimit: 3000, reservation: 300, timeZone: 'Asia/Shanghai' }, service: { reconciliationRequired: false } } });
+  });
+  await page.goto('/admin'); await page.getByRole('button', { name: zh ? '试用资格' : 'Trials', exact: true }).click();
+  const generate = page.getByRole('button', { name: zh ? '生成邀请码' : 'Generate invitation', exact: true });
+  page.once('dialog', d => d.dismiss()); await generate.click(); expect(generations).toBe(0);
+  page.once('dialog', d => d.accept()); await generate.click();
+  const field = page.getByLabel(zh ? '新邀请码' : 'New invitation code', { exact: true });
+  await expect(field).toHaveValue(code); expect(generations).toBe(1);
+  await page.evaluate(() => Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async () => { throw new Error('denied'); } } }));
+  await page.getByRole('button', { name: zh ? '复制邀请码' : 'Copy invitation', exact: true }).click();
+  await expect(page.getByText(zh ? '复制失败，请选中邀请码手动复制。' : 'Copy failed. Select the code and copy it manually.', { exact: true })).toBeVisible();
+  await expect(field).toHaveValue(code);
+  for (const width of [320, 1280]) {
+    await page.setViewportSize({ width, height: 900 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  }
+  await page.screenshot({ path: test.info().outputPath(`manual-invite-${zh ? 'zh' : 'en'}.png`), fullPage: true });
+  page.once('dialog', d => d.accept()); await page.getByRole('button', { name: new RegExp(zh ? '^撤销邀请码' : '^Revoke invitation') }).click();
+  await expect(field).toHaveCount(0);
+  await expect(page.getByText(zh ? '暂无有效邀请码' : 'No active invitations', { exact: true })).toBeVisible();
+});
+
 test('quota restoration confirms defaults and retries the same operation after an uncertain response', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('fitness.language', 'en'));
   const subjectId = '982ab731-a782-49de-aec0-8c4f5b5bd406';

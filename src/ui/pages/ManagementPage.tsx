@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { trialApi } from '../components/TrialAccess';
+import { ManualInvites } from '../components/ManualInvites';
 import type { ControlService } from '../../backend/control';
 type Data = Awaited<ReturnType<ControlService['managementReport']>>;
 export function ManagementPage() {
@@ -53,7 +54,7 @@ export function ManagementPage() {
             <button disabled={busy} onClick={() => void run(() => trialApi('management/application-review', { id: a.id, decision: 'approve', reason: reasons[a.id] ?? '' }))}>{zh ? '批准' : 'Approve'}</button>
             <button disabled={busy || !reasons[a.id]?.trim()} onClick={() => void run(() => trialApi('management/application-review', { id: a.id, decision: 'reject', reason: reasons[a.id] }))}>{zh ? '拒绝' : 'Reject'}</button></>}
         </article>)}<button disabled={busy || !data} onClick={() => void run(() => trialApi('management/application-retention', {}))}>{zh ? '清理已超过保留期的申请资料' : 'Clear application details past retention'}</button></section>}
-      {tab === 'trials' && <section><h2>{zh ? '试用资格' : 'Trial qualifications'}</h2>{data?.report.subjects.map(s => <article className="management-item" key={s.subjectId}><strong>{s.subjectId}</strong><p>{new Date(s.expiresAt).toLocaleString()} · {s.revoked ? (zh ? '已撤销' : 'Revoked') : s.expired ? (zh ? '已到期' : 'Expired') : (zh ? '有效' : 'Active')}</p><button disabled={busy || s.revoked} onClick={() => { if (confirm(zh ? '撤销此资格？已保存训练不受影响。' : 'Revoke this trial? Saved training is unaffected.')) void run(() => trialApi('management/revoke', { subjectId: s.subjectId })); }}>{zh ? '撤销资格' : 'Revoke trial'}</button>
+      {tab === 'trials' && <section><h2>{zh ? '试用资格' : 'Trial qualifications'}</h2>{data && <ManualInvites zh={zh} invites={data.invites ?? []} busy={busy} run={run} />}{data?.report.subjects.map(s => <article className="management-item" key={s.subjectId}><strong>{s.subjectId}</strong><p>{new Date(s.expiresAt).toLocaleString()} · {s.revoked ? (zh ? '已撤销' : 'Revoked') : s.expired ? (zh ? '已到期' : 'Expired') : (zh ? '有效' : 'Active')}</p><button disabled={busy || s.revoked} onClick={() => { if (confirm(zh ? '撤销此资格？已保存训练不受影响。' : 'Revoke this trial? Saved training is unaffected.')) void run(() => trialApi('management/revoke', { subjectId: s.subjectId })); }}>{zh ? '撤销资格' : 'Revoke trial'}</button>
         {data.quotas?.filter(q => q.subjectId === s.subjectId).map(q => <div key={q.period}>
           <p>{q.period} · {zh ? '剩余目标理解 / 计划生成：' : 'Remaining understandings / plans: '}{Math.max(0, q.limits.understand - q.used.understand)} / {Math.max(0, q.limits.generate - q.used.generate)}</p>
           <p>{zh ? '本月累计使用：' : 'Recorded monthly usage: '}{q.used.understand} / {q.used.generate}</p>
