@@ -111,7 +111,7 @@ for (const locale of ['zh', 'en'] as const) {
     await expect(page.getByRole('button', { name: text('确认完整计划', 'confirm complete plan'), exact: true })).toBeDisabled();
     await page.getByRole('button', { name: text('预览理解目标的发送范围', 'preview scope for understanding'), exact: true }).click();
     await scope.getByRole('button', { name: text('确认发送', 'confirm sending'), exact: true }).click();
-    await expect(page.getByRole('region', { name: text('对话记录', 'conversation') })).toContainText(text('不能处理无关娱乐', 'cannot handle unrelated entertainment'));
+    await expect(page.getByRole('log', { name: text('对话记录', 'conversation') })).toContainText(text('不能处理无关娱乐', 'cannot handle unrelated entertainment'));
     expect((await readLocal(page)).guided.candidates).toEqual(retainedCandidate);
     expect((await readLocal(page)).guided.programs).toHaveLength(0);
     await expect(page.getByRole('textbox', { name: text('目标、补充或调整想法', 'goal, clarification or changes'), exact: true })).toHaveValue('write a programming tutorial');
