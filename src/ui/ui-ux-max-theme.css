@@ -47,6 +47,8 @@ body { background:radial-gradient(ellipse at 85% 0%,#f8dfce80,transparent 48%),r
 .app-shell .progress-filters label { min-width:0; }
 .app-shell .progress-filters :is(input,select) { width:100%; min-width:0; box-sizing:border-box; }
 .app-shell .progress-filters select { appearance:none; padding-right:30px; background-image:linear-gradient(45deg,transparent 50%,#38332f 50%),linear-gradient(135deg,#38332f 50%,transparent 50%); background-position:calc(100% - 17px) center,calc(100% - 12px) center; background-size:5px 5px; background-repeat:no-repeat; }
+/* Linux WebKit can paint long selected text outside an appearance:none select. */
+.app-shell .progress-filters select { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .app-shell .catalog-exercise h2 { font-size:22px; }
 .app-shell .history-row { padding:18px 0; }
 .app-shell .progress-table th { background:var(--fitness-paper); }
