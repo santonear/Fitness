@@ -179,3 +179,64 @@ test('management shows real report values, review actions and responsive layout'
   }
   await page.screenshot({ path: test.info().outputPath('management-desktop.png'), fullPage: true });
 });
+
+for (const zh of [false, true]) test(`visible invitation entry starts onboarding without an application (${zh ? 'zh' : 'en'})`, async ({ page }) => {
+  await page.addInitScript(zh => localStorage.setItem('fitness.language', zh ? 'zh' : 'en'), zh);
+  let active = false; const writes: string[] = [];
+  await page.route('**/api/v1/**', route => {
+    const path = new URL(route.request().url()).pathname;
+    if (route.request().method() !== 'GET') writes.push(path);
+    if (path.endsWith('/application-config')) return route.fulfill({ json: { available: true, siteKey: null } });
+    if (path.endsWith('/status')) return active ? route.fulfill({ json: { expiresAt: Date.now() + 86400000, used: { understand: 0, generate: 0 }, limits: { understand: 8, generate: 4 } } }) : route.fulfill({ status: 401, json: { error: 'QUALIFICATION_REQUIRED' } });
+    if (path.endsWith('/redeem')) { expect(route.request().postDataJSON()).toEqual({ code: 'a'.repeat(64) }); active = true; return route.fulfill({ json: { expiresAt: Date.now() + 86400000 } }); }
+    return route.fulfill({ status: 503, json: { error: 'UNEXPECTED' } });
+  });
+  await page.goto('/trial');
+  const name = page.getByLabel(zh ? '用户名（称呼）' : 'Your name', { exact: true });
+  const code = page.getByLabel(zh ? '邀请码' : 'Invitation code', { exact: true });
+  await expect(name).toBeInViewport(); await expect(code).toBeInViewport();
+  await page.getByRole('button', { name: zh ? '申请 AI 试用' : 'Apply for AI trial', exact: true }).click();
+  await expect(page.getByLabel(zh ? '称呼' : 'Name', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: zh ? '已有邀请码，开始使用' : 'Use an invitation', exact: true }).click();
+  await expect(name).toBeVisible(); await expect(page.getByRole('button', { name: zh ? '提交申请' : 'Submit application', exact: true })).toHaveCount(0);
+  const activate = page.getByRole('button', { name: zh ? '启用并开始制定计划' : 'Activate and start planning', exact: true });
+  await expect(activate).toBeDisabled();
+  await name.fill('Synthetic member'); await code.fill('  ' + 'a'.repeat(64) + '  ');
+  for (const width of [320, 390, 1280]) {
+    await page.setViewportSize({ width, height: 844 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({ path: test.info().outputPath(`invitation-entry-${zh ? 'zh' : 'en'}.png`), fullPage: true });
+  await activate.click();
+  await expect(page).toHaveURL(/\/ai$/); await expect(page.locator('.onboarding-flow')).toBeVisible();
+  expect(writes).toEqual(['/api/v1/trial/redeem']);
+  expect(await page.evaluate(() => localStorage.getItem('fitness-trial-display-name-v1'))).toBe('Synthetic member');
+  expect(await page.evaluate(() => Object.values(localStorage).some(v => v.includes('a'.repeat(64))))).toBe(false);
+  await page.reload(); await expect(page.locator('.onboarding-flow')).toBeVisible(); expect(writes).toHaveLength(1);
+});
+
+for (const zh of [false, true]) test(`pending applicants can enter a code and invalid codes do not activate (${zh ? 'zh' : 'en'})`, async ({ page }) => {
+  await page.addInitScript(zh => {
+    localStorage.setItem('fitness.language', zh ? 'zh' : 'en');
+    localStorage.setItem('fitness-trial-application-receipt-v1', 'b'.repeat(64));
+  }, zh);
+  let redemptions = 0;
+  await page.route('**/api/v1/**', route => {
+    const path = new URL(route.request().url()).pathname;
+    if (path.endsWith('/application-config')) return route.fulfill({ json: { available: false, siteKey: null } });
+    if (path.endsWith('/applications')) return route.fulfill({ json: [{ id: '7df87763-d1b4-40bd-a8dd-9a995793da13', kind: 'new', state: 'pending', createdAt: Date.now() }] });
+    if (path.endsWith('/status')) return route.fulfill({ status: 401, json: { error: 'QUALIFICATION_REQUIRED' } });
+    if (path.endsWith('/redeem')) { redemptions++; return route.fulfill({ status: 400, json: { error: 'INVITE_INVALID' } }); }
+    return route.fulfill({ status: 503, json: { error: 'UNEXPECTED' } });
+  });
+  await page.goto('/trial');
+  await expect(page.getByText(zh ? '等待审核' : 'Awaiting review', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: zh ? '申请 AI 试用' : 'Apply for AI trial', exact: true })).toBeDisabled();
+  await page.getByLabel(zh ? '用户名（称呼）' : 'Your name', { exact: true }).fill('Synthetic member');
+  const code = page.getByLabel(zh ? '邀请码' : 'Invitation code', { exact: true }); await code.fill('invalid-code');
+  await page.getByRole('button', { name: zh ? '启用并开始制定计划' : 'Activate and start planning', exact: true }).click();
+  await expect(page.getByRole('alert')).toContainText(zh ? '邀请码或领取资格已失效' : 'The invitation has expired');
+  await expect(code).toHaveValue('invalid-code'); await expect(page).toHaveURL(/\/trial$/);
+  await expect(page.locator('.onboarding-flow')).toHaveCount(0); expect(redemptions).toBe(1);
+});
