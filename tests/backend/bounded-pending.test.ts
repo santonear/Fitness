@@ -6,12 +6,13 @@ import { createDeepSeekCodec } from '../../src/backend/deepseek';
 
 const stores: SqliteControlStore[] = [];
 afterEach(() => stores.splice(0).forEach(store => store.close()));
-async function fixture() {
+async function fixture(submissionProof?: number) {
+  let proofChecks = 0;
   const store = new SqliteControlStore(':memory:'); stores.push(store);
   let now = Date.parse('2026-10-07T00:00:00Z'), calls = 0, proof: number | undefined = 212, fail = false;
   const config = { ...testConfig, budgetLimit: 3000, maximumRequestCost: 300, allowBoundedPending: true,
     requestBounds: { understand: 300, generate: 300 }, quotas: { understand: 100, generate: 100 } };
-  const service = new ControlService(store, config, { kind: 'local-mock', costUpperBoundFen: () => proof,
+  const service = new ControlService(store, config, { kind: 'local-mock', costUpperBoundFen: () => submissionProof === undefined || proofChecks++ === 0 ? proof : submissionProof,
     call: async () => { calls++; if (fail) throw Error('uncertain'); return { result: { interpretedGoal: 'General fitness' } }; } }, () => now);
   await service.enableMock(config.adminSecret, true);
   const session = await service.redeem((await service.issue(config.adminSecret)).code);
@@ -24,26 +25,26 @@ async function fixture() {
   return { store, service, session, config, send, calls: () => calls, proof: (value?: number) => { proof = value; }, fail: () => { fail = true; }, time: (value: string) => { now = Date.parse(value); } };
 }
 
-it('ten unaccounted calls retain RMB 30; eleventh is rejected without a supplier call', async () => {
+it('successful calls retain proven ceilings; admission still requires the full request reservation', async () => {
   const f = await fixture();
-  for (let i = 0; i < 10; i++) expect((await f.send()).result.accounting).toBe('pending');
-  expect((await f.store.read()).budgets['2026-10']).toEqual({ spent: 0, reserved: 3000 });
+  for (let i = 0; i < 13; i++) expect((await f.send()).result.accounting).toBe('pending');
+  expect((await f.store.read()).budgets['2026-10']).toEqual({ spent: 0, reserved: 2756 });
   expect((await f.service.status(f.session.token)).reconciliationRequired).toBe(false);
-  await expect(f.send()).rejects.toMatchObject({ code: 'GLOBAL_BUDGET_EXHAUSTED' }); expect(f.calls()).toBe(10);
+  await expect(f.send()).rejects.toMatchObject({ code: 'GLOBAL_BUDGET_EXHAUSTED' }); expect(f.calls()).toBe(13);
 });
 it('operator settlement replaces only its reservation, never refunds request quota', async () => {
   const f = await fixture(); const first = await f.send(); await f.send();
   await f.service.settle(f.config.adminSecret, f.session.subjectId, first.request.requestId, 7);
-  expect((await f.store.read()).budgets['2026-10']).toEqual({ spent: 7, reserved: 300 });
+  expect((await f.store.read()).budgets['2026-10']).toEqual({ spent: 7, reserved: 212 });
   expect((await f.service.status(f.session.token)).used.understand).toBe(2);
   await f.service.settle(f.config.adminSecret, f.session.subjectId, first.request.requestId, 7);
-  expect((await f.store.read()).budgets['2026-10']).toEqual({ spent: 7, reserved: 300 });
+  expect((await f.store.read()).budgets['2026-10']).toEqual({ spent: 7, reserved: 212 });
 });
 it('old-month reservations carry forward and are not reset into new allowance', async () => {
-  const f = await fixture(); for (let i = 0; i < 10; i++) await f.send();
+  const f = await fixture(); for (let i = 0; i < 13; i++) await f.send();
   f.time('2026-11-01T00:00:00Z');
   await expect(f.send()).rejects.toMatchObject({ code: 'GLOBAL_BUDGET_EXHAUSTED' });
-  expect((await f.store.read()).budgets['2026-10'].reserved).toBe(3000);
+  expect((await f.store.read()).budgets['2026-10'].reserved).toBe(2756);
 });
 it('missing proof and proof exceeding reservation prevent calls', async () => {
   const f = await fixture();
@@ -72,10 +73,10 @@ it('a reduced settled balance is a ledger anomaly, not new allowance', async () 
   await expect(f.send()).rejects.toMatchObject({ code: 'RECONCILIATION_REQUIRED' });
   expect(f.calls()).toBe(1);
 });
-it('concurrent reservations cannot exceed the final RMB 3 of available budget', async () => {
-  const f = await fixture(); for (let i = 0; i < 9; i++) await f.send();
+it('concurrent reservations cannot spend the same released headroom', async () => {
+  const f = await fixture(); for (let i = 0; i < 12; i++) await f.send();
   const results = await Promise.allSettled([f.send(), f.send()]);
-  expect(results.filter(r => r.status === 'fulfilled')).toHaveLength(1); expect(f.calls()).toBe(10);
+  expect(results.filter(r => r.status === 'fulfilled')).toHaveLength(1); expect(f.calls()).toBe(13);
 });
 it('expired pricing evidence fails closed; full-context cost bound is below RMB 3', () => {
   const codec = createDeepSeekCodec({ maxOutputTokens: 2048, pricingVerifiedUntil: '2099-01-01T00:00:00Z' });
@@ -83,4 +84,32 @@ it('expired pricing evidence fails closed; full-context cost bound is below RMB 
   expect(createDeepSeekCodec({ maxOutputTokens: 8192, pricingVerifiedUntil: '2099-01-01T00:00:00Z' }).costUpperBoundFen!({} as never)).toBe(217);
   expect(createDeepSeekCodec({ maxOutputTokens: 2048, pricingVerifiedUntil: '2000-01-01T00:00:00Z' }).costUpperBoundFen!({} as never)).toBeUndefined();
   expect(createDeepSeekCodec({ maxOutputTokens: 2048 }).costUpperBoundFen!({} as never)).toBeUndefined();
+});
+
+it('successful pending delivery releases excess once without inventing fees or refunding quota', async () => {
+  const f = await fixture(); const first = await f.send();
+  const state = await f.store.read(), entry = state.requests[`${f.session.subjectId}:${first.request.requestId}`];
+  expect(entry).toMatchObject({ status: 'pending', bound: 212, verifiedBoundFen: 212 });
+  expect(entry.actualCost).toBeUndefined();
+  expect(state.budgets['2026-10']).toEqual({ spent: 0, reserved: 212 });
+  expect((await f.service.status(f.session.token)).used.understand).toBe(1);
+  expect(state.audit.some(a => a.event.startsWith('reservation-excess-released:'))).toBe(true);
+  await expect(f.service.submit(f.session.token, first.request)).rejects.toMatchObject({ code: 'REQUEST_IN_PROGRESS' });
+  expect((await f.store.read()).budgets['2026-10'].reserved).toBe(212); expect(f.calls()).toBe(1);
+});
+
+it('retains the larger proof when the ceiling changes between admission and submission', async () => {
+  const f = await fixture(217); await f.send();
+  expect((await f.store.read()).budgets['2026-10'].reserved).toBe(217);
+  expect(Object.values((await f.store.read()).requests)[0].verifiedBoundFen).toBe(217);
+});
+it('a lower submission proof does not erase the previously verified ceiling', async () => {
+  const f = await fixture(200); await f.send();
+  expect((await f.store.read()).budgets['2026-10'].reserved).toBe(212);
+});
+it('settlement exceeding the retained ceiling stops AI even below the initial reservation', async () => {
+  const f = await fixture(); const { request } = await f.send();
+  await f.service.settle(f.config.adminSecret, f.session.subjectId, request.requestId, 213);
+  expect(await f.store.read()).toMatchObject({ aiEnabled: false, recoveryRequired: true,
+    budgets: { '2026-10': { spent: 213, reserved: 0 } } });
 });
