@@ -240,6 +240,8 @@ export class ControlService {
       const currentBound = this.config.allowBoundedPending ? this.supplier.costUpperBoundFen?.(request) : undefined;
       if (reservation.cancelled || !state.aiEnabled || this.needsReconciliation(state, this.period()) ||
           this.config.allowBoundedPending && (currentBound === undefined || !integer(currentBound) || currentBound > reservation.bound)) { this.releaseUnsubmitted(state, key); return false; }
+      // Keep the larger verified ceiling if provider configuration changed after admission.
+      if (currentBound !== undefined) reservation.verifiedBoundFen = Math.max(reservation.verifiedBoundFen ?? currentBound, currentBound);
       reservation.status = 'submitted'; return true;
     });
     if (!submitted) throw new ControlError('NOT_SUBMITTED');
@@ -258,11 +260,21 @@ export class ControlService {
     }
     catch { await this.pending(key); throw new ControlError('ACCOUNTING_PENDING', 503); }
     if (response.actualCost === undefined) {
-      // Candidate delivery does not prove a bill or refund the submitted reservation.
+      // Candidate delivery does not prove a bill. Only excess above a verified ceiling can be released.
       // Observe cancellation and independent settlement in the same transaction.
       const delivery = await this.store.transact(state => {
         const entry = state.requests[key];
-        if (entry.status !== 'settled') entry.status = 'pending';
+        if (entry.status !== 'settled') {
+          entry.status = 'pending';
+          const ceiling = entry.verifiedBoundFen;
+          if (this.config.allowBoundedPending && !entry.error && !this.hasAccountingAnomaly(state) &&
+              ceiling !== undefined && integer(ceiling) && ceiling < entry.bound) {
+            const previous = entry.bound;
+            state.budgets[entry.period].reserved -= previous - ceiling;
+            entry.bound = ceiling;
+            this.audit(state, `reservation-excess-released:${entry.requestId}:${previous}:${ceiling}`, entry.subjectId);
+          }
+        }
         return { cancelled: entry.cancelled, accounting: entry.status === 'settled' ? 'settled' as const : 'pending' as const };
       });
       if (delivery.cancelled) throw new ControlError('CANCELLED');
