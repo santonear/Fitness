@@ -3,9 +3,11 @@ import { ControlService, type ControlConfig } from './control';
 import { D1ControlStore, type D1Binding } from './d1-store';
 import { createHandler } from './http';
 import { ControlError, type ControlStore } from './store';
+import { verifyApplicationProof } from './application-verification';
 import { assertOperatorSecret, createSupplierTransport, type ProviderCodec, type TransportConfig } from './supplier-transport';
 
 export interface WorkerEnv {
+  TURNSTILE_SECRET_KEY?: string; TURNSTILE_SITE_KEY?: string;
   CONTROL_MODE?: string; CONTROL_ORIGINS?: string; CONTROL_POLICY?: string;
   CONTROL_ADMIN_SECRET?: string; CONTROL_DIGEST_SECRET?: string;
   SUPPLIER_API_KEY?: string; SUPPLIER_ENDPOINT?: string; SUPPLIER_ORIGIN?: string; SUPPLIER_PROVIDER?: string;
@@ -63,6 +65,8 @@ export function createWorker(dependencies: { store?: (env: WorkerEnv) => Control
         return json({ status: 'control-only', productionModelEnabled: false });
       const service = new ControlService(store, config.control, supplier);
       return createHandler(service, { origins: config.origins, maxBodyBytes: config.control.maxInputBytes,
+        ...(env.TURNSTILE_SECRET_KEY && env.TURNSTILE_SITE_KEY ? { turnstileSiteKey: env.TURNSTILE_SITE_KEY,
+          verifyApplication: (proof: string) => verifyApplicationProof(proof, env.TURNSTILE_SECRET_KEY!, new URL(request.url).hostname) } : {}),
         supplierMode: 'external-transport' })(request);
     } catch (error) { return error instanceof ControlError ? json({ error: error.code }, error.status) : json({ error: 'CONTROL_UNAVAILABLE' }, 503); }
   } };

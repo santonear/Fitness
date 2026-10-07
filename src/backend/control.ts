@@ -1,6 +1,7 @@
 import { canonical, digest, validateCandidate, validateRequest, type AiRequest } from './contracts';
 import { ControlError, type ControlState, type ControlStore, type OperationCounts } from './store';
 import { buildAdminReport } from './admin-report';
+import { TrialApplications, applicationAdminView } from './trial-applications';
 export { ControlError } from './store';
 
 export interface ControlConfig {
@@ -22,6 +23,7 @@ const requestKey = (subjectId: string, requestId: string) => `${subjectId}:${req
 const usageKey = (subjectId: string, period: string) => `${subjectId}:${period}`;
 
 export class ControlService {
+  get applications() { return new TrialApplications(this.store, this.config.digestSecret, this.now); }
   constructor(private readonly store: ControlStore, private readonly config: ControlConfig,
     private readonly supplier: MockSupplier | ExternalSupplier, private readonly now = Date.now) {
     new Intl.DateTimeFormat('en', { timeZone: config.timeZone });
@@ -132,7 +134,7 @@ export class ControlService {
     const period = this.period(); const recorded = state.usages[usageKey(subjectId, period)] ?? { understand: 0, generate: 0 };
     const summaryConfigured = (this.config.quotas.summary ?? 0) > 0 && this.config.requestBounds.summary !== undefined;
     const used = { ...recorded, ...(summaryConfigured ? { summary: recorded.summary ?? 0 } : {}) };
-    return { subjectId, expiresAt: state.subjects[subjectId].expiresAt, period, used, limits: this.config.quotas,
+    return { subjectId, expiresAt: state.subjects[subjectId].expiresAt, period, used, limits: this.quotaLimits(state, subjectId, period),
       pending: Object.values(state.requests).filter(r => r.subjectId === subjectId && ['reserved', 'submitted', 'pending'].includes(r.status)).length,
       aiEnabled: state.aiEnabled && !state.recoveryRequired, reconciliationRequired: this.needsReconciliation(state, period),
       summaryAvailable: summaryConfigured && state.aiEnabled && !this.needsReconciliation(state, period) };
@@ -141,9 +143,56 @@ export class ControlService {
     await this.admin(admin);
     return buildAdminReport(await this.store.read(), this.now());
   }
+  async managementReport(admin: string) {
+    await this.admin(admin); const state = await this.store.read();
+    return { report: buildAdminReport(state, this.now()), applications: Object.values(state.applications ?? {}).map(applicationAdminView),
+      quotas: Object.keys(state.subjects).map(subjectId => {
+        const period = this.period(), used = state.usages[usageKey(subjectId, period)] ?? { understand: 0, generate: 0 };
+        return { subjectId, period, used, limits: this.quotaLimits(state, subjectId, period), defaults: this.config.quotas };
+      }), quotaRestorations: Object.entries(state.quotaRestorations ?? {}).map(([id, entry]) => ({ id, ...entry })),
+      audit: state.audit.slice(-100), policy: { budgetLimit: this.config.budgetLimit, reservation: this.config.maximumRequestCost, timeZone: this.config.timeZone },
+      service: { mode: this.config.mode, provider: this.supplier.kind, reconciliationRequired: this.needsReconciliation(state, this.period()) } };
+  }
   async enableMock(admin: string, enabled: boolean) {
     if (this.config.mode !== 'local-test') throw new ControlError('MOCK_ONLY', 400);
     return this.enableSupplier(admin, enabled);
+  }
+  private quotaLimits(state: ControlState, subjectId: string, period: string): OperationCounts {
+    const limits = { ...this.config.quotas }, used = state.usages[usageKey(subjectId, period)] ?? { understand: 0, generate: 0 };
+    for (const operation of ['understand', 'generate'] as const) {
+      let credit = 0;
+      for (const entry of Object.values(state.quotaRestorations ?? {})) if (entry.subjectId === subjectId && entry.period === period) {
+        if (!integer(entry.credits[operation])) throw new ControlError('RECONCILIATION_REQUIRED', 503);
+        credit = Math.max(credit, entry.credits[operation]);
+      }
+      limits[operation] += Math.min(used[operation], credit);
+      if (!integer(used[operation]) || !integer(limits[operation])) throw new ControlError('RECONCILIATION_REQUIRED', 503);
+    }
+    return limits;
+  }
+  async restoreQuota(admin: string, input: { id: string; subjectId: string; period: string; reason: string }) {
+    await this.admin(admin);
+    const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
+    if (!uuid.test(input.id) || !uuid.test(input.subjectId) || !/^\d{4}-(0[1-9]|1[0-2])$/.test(input.period) ||
+        typeof input.reason !== 'string' || !input.reason.trim() || input.reason.length > 200) throw new ControlError('INVALID_INPUT', 400);
+    return this.store.transact(state => {
+      const previous = state.quotaRestorations?.[input.id];
+      if (previous) {
+        if (previous.subjectId !== input.subjectId || previous.period !== input.period || previous.reason !== input.reason) throw new ControlError('REQUEST_CONFLICT');
+        return previous;
+      }
+      if (input.period !== this.period()) throw new ControlError('QUOTA_PERIOD_CHANGED');
+      const subject = state.subjects[input.subjectId];
+      if (!subject || subject.revoked || subject.expiresAt <= this.now()) throw new ControlError('QUALIFICATION_REQUIRED', 401);
+      if (state.recoveryRequired || this.hasAccountingAnomaly(state)) throw new ControlError('RECONCILIATION_REQUIRED', 503);
+      const used = state.usages[usageKey(input.subjectId, input.period)] ?? { understand: 0, generate: 0 };
+      if (!integer(used.understand) || !integer(used.generate)) throw new ControlError('RECONCILIATION_REQUIRED', 503);
+      const entry = { subjectId: input.subjectId, period: input.period, reason: input.reason, at: this.now(), credits: { understand: used.understand, generate: used.generate } };
+      (state.quotaRestorations ??= {})[input.id] = entry;
+      this.quotaLimits(state, input.subjectId, input.period);
+      this.audit(state, `quota-restored:${input.id}`, input.subjectId);
+      return entry;
+    });
   }
   async enableSupplier(admin: string, enabled: boolean) {
     await this.admin(admin); await this.store.transact(state => {
@@ -170,7 +219,7 @@ export class ControlService {
       if (request.operation === 'summary' && (!(this.config.quotas.summary ?? 0) || this.config.requestBounds.summary === undefined)) throw new ControlError('SUMMARY_DISABLED', 503);
       const bound = this.config.requestBounds[request.operation]!; if (bound > this.config.maximumRequestCost) throw new ControlError('REQUEST_COST_BOUND', 400);
       const used = state.usages[usageKey(subjectId, period)] ?? { understand: 0, generate: 0 };
-      if ((used[request.operation] ?? 0) >= (this.config.quotas[request.operation] ?? 0)) throw new ControlError('INDIVIDUAL_QUOTA_EXHAUSTED', 429);
+      if ((used[request.operation] ?? 0) >= (this.quotaLimits(state, subjectId, period)[request.operation] ?? 0)) throw new ControlError('INDIVIDUAL_QUOTA_EXHAUSTED', 429);
       const budget = state.budgets[period] ?? { spent: 0, reserved: 0 };
       const carriedReservations = this.config.allowBoundedPending ? Object.entries(state.budgets).reduce((sum, [key, value]) => sum + (key !== period ? value.reserved : 0), 0) : 0;
       if (budget.spent + budget.reserved + carriedReservations + bound > this.config.budgetLimit) throw new ControlError('GLOBAL_BUDGET_EXHAUSTED', 429);
@@ -251,7 +300,12 @@ export class ControlService {
   }
   async settle(admin: string, subjectId: string, requestId: string, actualCost: number) {
     await this.admin(admin); if (!integer(actualCost)) throw new ControlError('INVALID_COST', 400);
-    await this.store.transact(state => { this.settleState(state, requestKey(subjectId, requestId), actualCost); this.audit(state, 'request-reconciled', subjectId); });
+    await this.store.transact(state => {
+      const wasSettled = state.requests[requestKey(subjectId, requestId)]?.status === 'settled';
+      this.settleState(state, requestKey(subjectId, requestId), actualCost);
+      if (!wasSettled) for (const application of Object.values(state.applications ?? {})) if (application.subjectId === subjectId) application.accountingClosedAt = this.now();
+      this.audit(state, 'request-reconciled', subjectId);
+    });
   }
   async markLedgerRecovered(admin: string) {
     await this.admin(admin); await this.store.transact(state => {

@@ -9,6 +9,7 @@ import { WorkoutPage } from './pages/WorkoutPage';
 import { GuidedHome } from './pages/GuidedHome';
 import { ProgressPage } from './pages/ProgressPage';
 import { GuidedDialoguePage } from './pages/GuidedDialoguePage';
+import { TrialAccess } from './components/TrialAccess';
 import { profileService } from '../application/profile';
 import { liveQuery } from 'dexie';
 import { database } from '../persistence/db';
@@ -159,6 +160,7 @@ export function App(): ReactElement {
           ))}
           <Route path="/workout" element={<WorkoutPage />} />
           <Route path="/ai" element={<GuidedDialoguePage />} />
+          <Route path="/trial" element={<TrialAccess />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>}
       </main>

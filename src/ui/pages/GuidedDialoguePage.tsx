@@ -215,6 +215,7 @@ export function GuidedDialoguePage() {
   return <div className="guided-page"><h1>{zh ? '一起制定计划' : 'plan together'}</h1>
     <p role="status">{demo ? (zh ? '本地合成演示，无网络或模型调用；示例限制为7个日期、31天范围，不代表生产支持。' : 'local synthetic demo; no network or model call. fixture limits are not production promises.') : (zh ? 'AI 由 Fitness 后台提供。发送前请核对本次范围；资料与训练仍保存在本机。' : 'AI is provided by the Fitness backend. Review each sending scope; profile and training stay on this device.')}</p>
     {!demo && <section className="guided-section"><h2>{zh ? 'AI 试用资格' : 'AI trial access'}</h2>
+      <Link to="/trial">{zh ? '申请邀请码 / 延长试用资格' : 'Apply for an invitation / extend your trial'}</Link>
       <label>{zh ? '邀请码' : 'Invitation code'}<input value={invite} onChange={event => setInvite(event.target.value)} autoComplete="off" /></label>
       <button disabled={busy || !invite.trim()} onClick={() => void run(async () => { await control.current.redeem(invite.trim()); setInvite(''); await refreshQualification(); })}>{zh ? '兑换并查询' : 'Redeem and check'}</button>
       <button disabled={busy} onClick={() => void run(refreshQualification)}>{zh ? '查询资格与额度' : 'Check access and allowance'}</button>

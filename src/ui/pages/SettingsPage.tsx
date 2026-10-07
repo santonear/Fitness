@@ -8,6 +8,7 @@ import { trainingMemoryService } from '../../application/training-memory';
 import type { TrainingMemo } from '../../domain/models';
 import { TrainingMemoView } from '../components/CompletionReview';
 import { BackupPanel } from '../components/BackupPanel';
+import { Link } from 'react-router-dom';
 
 const labels = {
   en: { goal: 'Goal', experience: 'Experience', equipment: 'Available equipment (comma separated)', days: 'Days per week', minutes: 'Session minutes', height: 'Height (cm)', weight: 'Profile weight (kg)', constraints: 'Constraints', weekdays: 'Training weekdays (1–7, comma separated)', location: 'Training location', categories: 'Exercise preferences', zone: 'Time zone', save: 'Save profile', clear: 'Clear preferences', date: 'Observation date', observed: 'Observed weight (kg)', saveWeight: 'Save weight', history: 'Weight history', edit: 'Edit', delete: 'Delete', cancel: 'Cancel edit', saved: 'Profile saved', weightSaved: 'Weight saved', deleted: 'Weight deleted', optional: 'All training preferences are optional. You can use manual training without completing them.', local: 'Data stays in this browser. Browser cleanup can remove it; keep manual backups.' },
@@ -60,6 +61,7 @@ export function SettingsPage() {
   }
   function submit(e: FormEvent) { e.preventDefault(); void save(); }
   return <div className="settings-page"><h1>{t('settings')}</h1><p>{l.local}</p><p>{l.optional}</p>
+    <Link to="/trial">{i18n.resolvedLanguage === 'zh' ? 'AI 试用资格 · 申请 / 延期 / 补发' : 'AI trial · apply / extend / replace'}</Link>
     {profile && <BackupPanel />}
     <button disabled={!profile || busy} onClick={() => void run(async () => { setMemo(await trainingMemoryService.readTrainingMemo()); })}>{i18n.resolvedLanguage === 'zh' ? '读取全量训练备忘' : 'Read full training memo'}</button>
     {memo && <TrainingMemoView memo={memo} locale={i18n.resolvedLanguage === 'zh' ? 'zh' : 'en'} />}
