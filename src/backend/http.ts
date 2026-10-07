@@ -30,7 +30,7 @@ function cookie(token: string, expiresAt: number) {
   return `${cookieName}=${token}; Path=/; Secure; HttpOnly; SameSite=Strict; Expires=${new Date(expiresAt).toUTCString()}`;
 }
 /** Fetch adapter only. No static assets, network calls, telemetry, or browser training writes. */
-export function createHandler(service: ControlService, options: { origins: string[]; maxBodyBytes: number; supplierMode?: 'external-transport' }) {
+export function createHandler(service: ControlService, options: { origins: string[]; maxBodyBytes: number; supplierMode?: 'external-transport'; verifyApplication?: (proof: string) => Promise<boolean>; turnstileSiteKey?: string }) {
   if (!options.origins.length || !Number.isSafeInteger(options.maxBodyBytes) || options.maxBodyBytes < 1 || options.origins.some(origin => {
     try { const url = new URL(origin); return url.protocol !== 'https:' || url.origin !== origin; } catch { return true; }
   })) throw new ControlError('INVALID_HTTP_CONFIG', 500);
@@ -38,7 +38,9 @@ export function createHandler(service: ControlService, options: { origins: strin
     try {
       const url = new URL(request.url), path = url.pathname;
       if (path === '/api/v1/health' && request.method === 'GET') return json({ status: options.supplierMode ?? 'local-mock', productionModelEnabled: false });
+      if (path === '/api/v1/trial/application-config' && request.method === 'GET') return json({ siteKey: options.turnstileSiteKey ?? null, available: Boolean(options.verifyApplication) });
       const known = ['/api/v1/trial/redeem', '/api/v1/trial/status', '/api/v1/goals/interpret', '/api/v1/plans/generate', '/api/v1/stages/summarize', '/api/v1/requests/cancel',
+        '/api/v1/trial/apply', '/api/v1/trial/applications', '/api/v1/trial/claim', '/api/v1/admin/applications', '/api/v1/admin/application-review', '/api/v1/admin/application-retention', '/api/v1/admin/quota-restore',
         '/api/v1/admin/invites', '/api/v1/admin/invites/revoke', '/api/v1/admin/revoke', '/api/v1/admin/reissue', '/api/v1/admin/mock', '/api/v1/admin/recovery', '/api/v1/admin/reconciled', '/api/v1/admin/settle', '/api/v1/admin/retention', '/api/v1/admin/report',
         ...(options.supplierMode ? ['/api/v1/admin/supplier'] : [])];
       if (!known.includes(path)) return json({ error: 'NOT_FOUND' }, 404);
@@ -51,6 +53,20 @@ export function createHandler(service: ControlService, options: { origins: strin
       }
       if (request.method !== 'POST') throw new ControlError('METHOD_NOT_ALLOWED', 405);
       const data = await body(request, options.maxBodyBytes);
+      if (path === '/api/v1/trial/applications' || path === '/api/v1/trial/claim') {
+        const value = parse(z.strictObject({ receipt: z.string().regex(/^[a-f0-9]{64}$/), ...(path.endsWith('/claim') ? { id: z.uuid() } : {}) }), data);
+        if (path.endsWith('/applications')) return json(await service.applications.list(value.receipt));
+        const result = await service.applications.claim(value.receipt, (value as { id: string }).id);
+        return json({ subjectId: result.subjectId, expiresAt: result.expiresAt }, 200, { 'Set-Cookie': cookie(result.token, result.expiresAt) });
+      }
+      if (path === '/api/v1/trial/apply') {
+        const value = parse(z.strictObject({ receipt: z.string().regex(/^[a-f0-9]{64}$/), id: z.uuid(), kind: z.enum(['new','extend','replace']),
+          name: z.string().trim().min(1).max(60), note: z.string().trim().max(300), proof: z.string().max(2048) }), data);
+        if (!options.verifyApplication) throw new ControlError('APPLICATIONS_UNAVAILABLE', 503);
+        if (!await options.verifyApplication(value.proof)) throw new ControlError('VERIFICATION_REQUIRED', 403);
+        let session: string | undefined; try { session = sessionToken(request); } catch { /* Receipt can identify an expired trial for extension. */ }
+        return json(await service.applications.apply(value, session));
+      }
       if (path === '/api/v1/trial/redeem') {
         const { code } = parse(z.strictObject({ code: z.string().length(64) }), data); const session = await service.redeem(code);
         return json({ subjectId: session.subjectId, expiresAt: session.expiresAt }, 200, { 'Set-Cookie': cookie(session.token, session.expiresAt) });
@@ -59,6 +75,16 @@ export function createHandler(service: ControlService, options: { origins: strin
         const authorization = request.headers.get('authorization') ?? '';
         if (!authorization.startsWith('Bearer ')) throw new ControlError('ADMIN_REQUIRED', 401);
         const admin = authorization.slice(7);
+        if (path === '/api/v1/admin/quota-restore') {
+          const value = parse(z.strictObject({ id: z.uuid(), subjectId: z.uuid(), period: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/), reason: z.string().trim().min(1).max(200) }), data);
+          return json(await service.restoreQuota(admin, value));
+        }
+        if (path === '/api/v1/admin/applications') { parse(z.strictObject({}), data); return json(await service.managementReport(admin)); }
+        if (path === '/api/v1/admin/application-retention') { parse(z.strictObject({}), data); await service.adminReport(admin); return json(await service.applications.retain()); }
+        if (path === '/api/v1/admin/application-review') {
+          const value = parse(z.strictObject({ id: z.uuid(), decision: z.enum(['approve','reject']), reason: z.string().trim().max(200) }), data);
+          await service.adminReport(admin); return json(await service.applications.review(value.id, value.decision, value.reason, 'owner'));
+        }
         if (path.endsWith('/report')) { parse(z.strictObject({}), data); return json(await service.adminReport(admin)); }
         if (path.endsWith('/invites')) { parse(z.strictObject({}), data); return json(await service.issue(admin)); }
         if (path.endsWith('/mock')) { const { enabled } = parse(z.strictObject({ enabled: z.boolean() }), data); await service.enableMock(admin, enabled); }

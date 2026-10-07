@@ -11,6 +11,7 @@ import { emptyGuidedState, type GuidedState } from '../../domain/guided-contract
 import { GuidedOnboarding, ProgramDashboard, LifecycleDialog, GuidedTimeline, GuidedMeasurements, formatGuidedTargets, type GuidedExerciseView } from '../components/guided';
 import { exercises as exerciseCatalog } from '../../catalog/exercises';
 import { WorkoutPage } from './WorkoutPage';
+import { TrialAccess } from '../components/TrialAccess';
 import { TrainingCalendar } from '../components/guided/TrainingCalendar';
 import { TrainingAnalytics } from '../components/guided/TrainingAnalytics';
 import type { Plan, PlanVersion, WorkoutSession, ScheduledWorkout, BodyWeightObservation } from '../../domain/models';
@@ -24,6 +25,7 @@ export function GuidedHome({ panelOnly = false }: { panelOnly?: boolean }) {
   const [versions, setVersions] = useState<PlanVersion[]>([]);
   const [activeSession, setActiveSession] = useState<WorkoutSession>();
   const [loaded, setLoaded] = useState(false);
+  const [trialReady, setTrialReady] = useState(import.meta.env.DEV && import.meta.env.VITE_GUIDED_DEMO === '1');
   const [ongoing, setOngoing] = useState(false); const [busy, setBusy] = useState(false); const [error, setError] = useState('');
   const [panel, setPanel] = useState(panelOnly); const [revisit, setRevisit] = useState(false); const [online, setOnline] = useState(navigator.onLine);
   const [dialog, setDialog] = useState<{ action: 'pause' | 'cancel' | 'resume'; id: string; revision: number; legacy: boolean }>();
@@ -79,6 +81,7 @@ export function GuidedHome({ panelOnly = false }: { panelOnly?: boolean }) {
     }).catch(() => {});
   }
   if (!loaded) return <div className="guided-page"><p role={error ? 'alert' : 'status'}>{error || (zh ? '正在读取本地计划与训练…' : 'loading local plans and workouts…')}</p></div>;
+  if (showOnboarding && !trialReady) return <TrialAccess onContinue={() => setTrialReady(true)} onSkip={() => setPanel(true)} />;
   return <div className={`guided-page${showOnboarding ? ' guided-welcome' : ' guided-records'}`}>
     {(showOnboarding || panelOnly) && <h1>{showOnboarding ? (zh ? '从了解你开始。' : 'let’s start with you.') : (zh ? '训练计划' : 'training plans')}</h1>}
     {showOnboarding && <p className="guided-welcome-intro">{zh ? '一步一步，找到适合你生活的训练。' : 'one step at a time. training that fits your life.'}</p>}

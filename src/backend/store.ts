@@ -2,6 +2,8 @@ export type Operation = 'understand' | 'generate' | 'summary';
 export type OperationCounts = { understand: number; generate: number; summary?: number };
 export type RequestStatus = 'reserved' | 'submitted' | 'pending' | 'settled' | 'released';
 export interface ControlState {
+  quotaRestorations?: Record<string, { subjectId: string; period: string; reason: string; at: number; credits: { understand: number; generate: number } }>;
+  applications?: Record<string, import('./trial-applications').TrialApplication>;
   version: 1;
   aiEnabled: boolean;
   recoveryRequired: boolean;

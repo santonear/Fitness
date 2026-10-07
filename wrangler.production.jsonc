@@ -6,6 +6,10 @@
   "workers_dev": true,
   "preview_urls": false,
   "vars": {
+    "ADMIN_EMAIL": "xxgospel@hotmail.com",
+    "ADMIN_ACCESS_ISSUER": "https://tiny-firefly-ed38.cloudflareaccess.com",
+    "ADMIN_ACCESS_AUD": "062e97295d5c53acf80cde71b38ddcfe9c76eb522489c4d3c4ebaaaed8196fd6",
+    "TURNSTILE_SITE_KEY": "0x4AAAAAAFQG0Iz8JvDHA3mo",
     "CONTROL_MODE": "disabled",
     "SUPPLIER_PROVIDER": "deepseek",
     "CONTROL_ORIGINS": "[\"https://fitness.initdevl.workers.dev\"]",
@@ -27,7 +31,9 @@
     "not_found_handling": "single-page-application",
     "run_worker_first": [
       "/api/*",
-      "/api"
+      "/api",
+      "/admin",
+      "/admin/*"
     ]
   }
 }
