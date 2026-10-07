@@ -11,6 +11,7 @@ const statusSchema = z.object({ expiresAt: z.number().finite(), used: counts, li
 const applicationSchema = z.object({ id: z.uuid(), kind: z.enum(['new','extend','replace']), state: z.enum(['pending','approved','rejected','claimed']), createdAt: z.number().finite(), decidedAt: z.number().optional(), reason: z.string().optional(), claimUntil: z.number().optional(), expiresAt: z.number().optional() });
 const configSchema = z.object({ available: z.boolean(), siteKey: z.string().nullable() });
 const receiptKey = 'fitness-trial-application-receipt-v1';
+const displayNameKey = 'fitness-trial-display-name-v1';
 export async function trialApi<T>(path: string, body?: unknown): Promise<T> {
   const response = await fetch(`/api/v1/${path}`, { method: body === undefined ? 'GET' : 'POST', credentials: 'same-origin', redirect: 'error', cache: 'no-store',
     signal: AbortSignal.timeout(10000), headers: body === undefined ? {} : { 'Content-Type': 'application/json' }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
@@ -61,7 +62,7 @@ export function TrialAccess({ onContinue, onSkip }: { onContinue?: () => void; o
   const [kind, setKind] = useState<ApplicationKind>('new'); const [form, setForm] = useState(false);
   const [busy, setBusy] = useState(false); const [loaded, setLoaded] = useState(false); const [error, setError] = useState(''); const [notice, setNotice] = useState('');
   const [link, setLink] = useState(''); const requestId = useRef(crypto.randomUUID());
-  async function refresh(owner = receipt) {
+  async function refresh(owner = receipt, start = false) {
     const [qualification, applications, availability] = await Promise.allSettled([
       trialApi<Status>('trial/status'), owner ? trialApi<Application[]>('trial/applications', { receipt: owner }) : Promise.resolve([]),
       trialApi<{ available: boolean; siteKey: string | null }>('trial/application-config'),
@@ -71,6 +72,7 @@ export function TrialAccess({ onContinue, onSkip }: { onContinue?: () => void; o
     else { setStatus(undefined); if (!(qualification.reason instanceof Error) || qualification.reason.message !== 'QUALIFICATION_REQUIRED') throw qualification.reason; }
     if (applications.status === 'fulfilled') setApps(z.array(applicationSchema).parse(applications.value)); else throw applications.reason;
     if (availability.status === 'rejected') throw availability.reason;
+    if (start && qualification.status === 'fulfilled' && !onContinue) navigate('/ai');
   }
   useEffect(() => {
     let value = '';
@@ -78,6 +80,7 @@ export function TrialAccess({ onContinue, onSkip }: { onContinue?: () => void; o
       const incoming = new URLSearchParams(location.hash.slice(1)).get('trial');
       if (incoming && /^[a-f0-9]{64}$/.test(incoming)) { localStorage.setItem(receiptKey, incoming); history.replaceState(null, '', location.pathname + location.search); }
       value = localStorage.getItem(receiptKey) ?? ''; setReceipt(value);
+      setName((localStorage.getItem(displayNameKey) ?? '').slice(0, 60));
     } catch { setError(zh ? '无法保存申请凭证，请允许本地存储。' : 'Allow browser storage to keep your application receipt.'); }
     void refresh(value).catch(e => setError(accessError(e, zh))).finally(() => setLoaded(true));
   }, []);
@@ -95,22 +98,43 @@ export function TrialAccess({ onContinue, onSkip }: { onContinue?: () => void; o
       } finally { setProof(''); setChallenge(value => value + 1); }
     });
   }
+  async function redeem() {
+    if (!name.trim() || !code.trim()) return;
+    await run(async () => {
+      // The name is a local greeting, not a second authentication credential.
+      localStorage.setItem(displayNameKey, name.trim());
+      await trialApi('trial/redeem', { code: code.trim() });
+      setCode(''); await refresh(receipt, true);
+    });
+  }
   const pending = apps.some(a => a.state === 'pending' || a.state === 'approved' && (a.claimUntil ?? 0) > Date.now());
   const hasTrial = Boolean(status || apps.some(a => a.state === 'claimed'));
   const words = { pending: zh ? '等待审核' : 'Awaiting review', approved: zh ? '已批准，待领取' : 'Approved · ready to claim', rejected: zh ? '未获批准' : 'Not approved', claimed: zh ? '已领取' : 'Claimed' };
   return <section className="trial-access" aria-labelledby="trial-title">
     <span className="trial-kicker">FITNESS · AI ACCESS</span><h1 id="trial-title">{zh ? '一起开始，开启 AI 试用' : 'Start together. Unlock your AI trial.'}</h1>
-    <p>{zh ? '申请经管理员批准后即可领取。训练记录始终保存在你的设备。' : 'Apply, wait for approval, then claim your invitation. Training records stay on your device.'}</p>
+    <p>{zh ? '已有邀请码？填写用户名和邀请码，即可开始。还没有邀请码可以申请试用。' : 'Have an invitation? Enter your name and code to get started, or apply for a trial.'}</p>
     {!loaded && <p role="status">{zh ? '正在查询资格…' : 'Checking your trial…'}</p>}
     {error && <p role="alert">{error}</p>}{notice && <p role="status">{notice}</p>}
     {status && <div className="trial-summary"><strong>{zh ? 'AI 试用有效' : 'Your AI trial is active'}</strong><p>{zh ? '有效期至：' : 'Valid until: '}{new Date(status.expiresAt).toLocaleString(zh ? 'zh-CN' : 'en')}</p>
       <p>{zh ? '本月剩余：理解 ' : 'Remaining this month: understanding '}{Math.max(0, status.limits.understand - status.used.understand)} · {zh ? '生成 ' : 'generation '}{Math.max(0, status.limits.generate - status.used.generate)}</p>
       <button className="trial-primary" disabled={busy} onClick={() => navigate('/ai')}>{zh ? '开始制定训练计划' : 'Start planning your training'}</button>
       <p>{zh ? '先完成个人资料引导，再与 AI 沟通目标并确认计划。' : 'Complete your profile, then discuss your goals with AI and confirm your plan.'}</p></div>}
-    <div className="trial-actions"><button disabled={busy} onClick={() => void run(() => refresh())}>{zh ? '刷新状态' : 'Refresh status'}</button>
+    <ul className="trial-applications">{apps.map(a => <li key={a.id}><strong>{words[a.state]}</strong><small>{a.id}</small>{a.reason && <p>{a.reason}</p>}
+      {a.state === 'approved' && <button disabled={busy || (a.claimUntil ?? 0) <= Date.now()} onClick={() => void run(async () => { await trialApi('trial/claim', { receipt, id: a.id }); await refresh(); })}>{(a.claimUntil ?? 0) <= Date.now() ? (zh ? '领取已过期' : 'Claim expired') : (zh ? '领取并启用' : 'Claim and activate')}</button>}
+      {a.state === 'claimed' && !status && <button disabled={busy} onClick={() => void run(async () => { await trialApi('trial/claim', { receipt, id: a.id }); await refresh(); })}>{zh ? '恢复领取结果' : 'Recover claim result'}</button>}</li>)}</ul>
+    <div className="trial-actions">
+      {!status && <button aria-pressed={!form} disabled={busy} onClick={() => setForm(false)}>{zh ? '已有邀请码，开始使用' : 'Use an invitation'}</button>}
       <button className="trial-primary" disabled={busy || pending || !config?.available} onClick={() => { setKind(hasTrial ? 'extend' : 'new'); setForm(true); }}>{hasTrial ? (zh ? '申请延期 30 天' : 'Request 30-day extension') : (zh ? '申请 AI 试用' : 'Apply for AI trial')}</button>
-      {hasTrial && <button disabled={busy || pending || !config?.available} onClick={() => { setKind('replace'); setForm(true); }}>{zh ? '申请补发／更换设备' : 'Request replacement / change device'}</button>}</div>
-    {loaded && config && !config.available && <p>{zh ? '申请服务暂未开放；已有邀请码可以在下方兑换。' : 'Applications are not available yet; redeem an existing code below.'}</p>}
+      {hasTrial && <button disabled={busy || pending || !config?.available} onClick={() => { setKind('replace'); setForm(true); }}>{zh ? '申请补发／更换设备' : 'Request replacement / change device'}</button>}
+    </div>
+    {!status && !form && <form className="trial-redeem" onSubmit={e => { e.preventDefault(); void redeem(); }}><fieldset disabled={busy}>
+      <legend>{zh ? '使用邀请码启动' : 'Start with your invitation'}</legend>
+      <label>{zh ? '用户名（称呼）' : 'Your name'}<input required maxLength={60} autoComplete="nickname" value={name} onChange={e => setName(e.target.value)} /></label>
+      <label>{zh ? '邀请码' : 'Invitation code'}<input required autoComplete="off" autoCapitalize="none" spellCheck={false} value={code} onChange={e => setCode(e.target.value)} /></label>
+      <button type="submit" className="trial-primary" disabled={!loaded || !name.trim() || !code.trim()}>{busy ? (zh ? '正在启用…' : 'Activating…') : (zh ? '启用并开始制定计划' : 'Activate and start planning')}</button>
+      <p className="trial-entry-note">{zh ? '称呼仅保存在此设备。邀请码用于启用试用，训练记录也保存在本机。' : 'Your name and training records stay on this device. The code activates your trial.'}</p>
+    </fieldset></form>}
+    {loaded && config && !config.available && <p>{zh ? '申请服务暂未开放；仍可使用已有邀请码启动。' : 'Applications are not available yet; you can still use an invitation.'}</p>}
     {form && <form onSubmit={e => { e.preventDefault(); void submit(); }}><fieldset disabled={busy}>
       <legend>{kind === 'extend' ? (zh ? '申请延期' : 'Extension request') : kind === 'replace' ? (zh ? '申请补发' : 'Replacement request') : (zh ? '申请试用' : 'Trial application')}</legend>
       <label>{zh ? '称呼' : 'Name'}<input required maxLength={60} value={name} onChange={e => { setName(e.target.value); requestId.current = crypto.randomUUID(); }} /></label>
@@ -121,11 +145,9 @@ export function TrialAccess({ onContinue, onSkip }: { onContinue?: () => void; o
       {config?.siteKey && <SecurityCheck key={challenge} siteKey={config.siteKey} onProof={setProof} />}
       <button type="submit" disabled={!proof}>{zh ? '提交申请' : 'Submit application'}</button><button type="button" onClick={() => setForm(false)}>{zh ? '返回' : 'Back'}</button>
     </fieldset></form>}
-    <ul className="trial-applications">{apps.map(a => <li key={a.id}><strong>{words[a.state]}</strong><small>{a.id}</small>{a.reason && <p>{a.reason}</p>}
-      {a.state === 'approved' && <button disabled={busy || (a.claimUntil ?? 0) <= Date.now()} onClick={() => void run(async () => { await trialApi('trial/claim', { receipt, id: a.id }); await refresh(); })}>{(a.claimUntil ?? 0) <= Date.now() ? (zh ? '领取已过期' : 'Claim expired') : (zh ? '领取并启用' : 'Claim and activate')}</button>}
-      {a.state === 'claimed' && !status && <button disabled={busy} onClick={() => void run(async () => { await trialApi('trial/claim', { receipt, id: a.id }); await refresh(); })}>{zh ? '恢复领取结果' : 'Recover claim result'}</button>}</li>)}</ul>
+
+    <button disabled={busy} onClick={() => void run(() => refresh())}>{zh ? '刷新状态' : 'Refresh status'}</button>
     {receipt && <><button disabled={busy} onClick={() => setLink(`${location.origin}/trial#trial=${receipt}`)}>{zh ? '查看私密领取链接' : 'Show private claim link'}</button>{link && <label>{zh ? '请自行保管，不要公开分享' : 'Keep this private; do not share publicly'}<input readOnly value={link} onFocus={e => e.target.select()} /></label>}</>}
-    {!status && <details><summary>{zh ? '已有邀请码' : 'Already have an invitation?'}</summary><form onSubmit={e => { e.preventDefault(); void run(async () => { await trialApi('trial/redeem', { code: code.trim() }); setCode(''); await refresh(); }); }}><label>{zh ? '邀请码' : 'Invitation code'}<input required autoComplete="off" value={code} onChange={e => setCode(e.target.value)} /></label><button disabled={busy}>{zh ? '兑换邀请码' : 'Redeem invitation'}</button></form></details>}
     {onSkip && <button className="trial-skip" onClick={onSkip}>{zh ? '先看看应用' : 'Explore the app first'}</button>}
   </section>;
 }

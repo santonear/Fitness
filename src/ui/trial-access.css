@@ -29,3 +29,9 @@
 
 .candidate-day { margin-block: 1.25rem; border-top: 1px solid var(--line, #d8ccbb); padding-top: 1rem; }
 .candidate-notes { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.trial-redeem legend { margin-bottom:12px; font-weight:650; }
+.trial-redeem button[type=submit] { width:100%; margin:0; }
+.trial-entry-note { font-size:.875rem; color:#665c50; }
+.trial-actions button { flex:1 1 140px; margin:0; }
+.trial-actions button[aria-pressed=true] { background:var(--fitness-yellow,#ffe783); }
