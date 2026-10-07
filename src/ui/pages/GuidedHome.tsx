@@ -16,7 +16,7 @@ import { TrainingCalendar } from '../components/guided/TrainingCalendar';
 import { TrainingAnalytics } from '../components/guided/TrainingAnalytics';
 import type { Plan, PlanVersion, WorkoutSession, ScheduledWorkout, BodyWeightObservation } from '../../domain/models';
 
-export function GuidedHome({ panelOnly = false }: { panelOnly?: boolean }) {
+export function GuidedHome({ panelOnly = false, onboardingOnly = false }: { panelOnly?: boolean; onboardingOnly?: boolean }) {
   const { i18n } = useTranslation(); const locale = i18n.resolvedLanguage === 'zh' ? 'zh' : 'en'; const zh = locale === 'zh'; const navigate = useNavigate();
   const [state, setState] = useState<GuidedState>(emptyGuidedState); const reference = useRef(state); const queue = useRef(Promise.resolve());
   const [rows, setRows] = useState<ScheduledWorkout[]>([]);
@@ -58,7 +58,7 @@ export function GuidedHome({ panelOnly = false }: { panelOnly?: boolean }) {
   const tasks = rows.filter(item => current?.taskIds.includes(item.id));
   const stateLabel = (value?: string) => !value ? '—' : zh ? (({ active: '执行中', paused: '暂停', terminated: '终止', running: '进行中', in_progress: '进行中', completed: '已完成', abandoned: '已放弃' } as Record<string,string>)[value] ?? value) : value.replaceAll('_', ' ');
   const dayNumber = (value: string) => Date.parse(`${value}T00:00:00Z`) / 86_400_000;
-  const showOnboarding = !panel && !current && !ongoing && (!state.onboarding?.completed || revisit);
+  const showOnboarding = onboardingOnly || !panel && !current && !ongoing && (!state.onboarding?.completed || revisit);
   const open = (action: 'pause' | 'cancel' | 'resume') => { if (current) setDialog({ action, id: current.id, revision: state.revision, legacy: !program }); };
   const invitation = online ? state.invitations.find(item => item.decision === 'pending') : undefined;
   const plannedToday = current?.status === 'active' ? tasks.filter(item => item.scheduledDate === today && !item.completedSessionId && !item.hiddenAt && item.status === 'pending').flatMap(task => {
@@ -81,7 +81,7 @@ export function GuidedHome({ panelOnly = false }: { panelOnly?: boolean }) {
     }).catch(() => {});
   }
   if (!loaded) return <div className="guided-page"><p role={error ? 'alert' : 'status'}>{error || (zh ? '正在读取本地计划与训练…' : 'loading local plans and workouts…')}</p></div>;
-  if (showOnboarding && !trialReady) return <TrialAccess onContinue={() => setTrialReady(true)} onSkip={() => setPanel(true)} />;
+  if (showOnboarding && !trialReady) return <TrialAccess onContinue={() => setTrialReady(true)} onSkip={() => onboardingOnly ? navigate('/plans') : setPanel(true)} />;
   return <div className={`guided-page${showOnboarding ? ' guided-welcome' : ' guided-records'}`}>
     {(showOnboarding || panelOnly) && <h1>{showOnboarding ? (zh ? '从了解你开始。' : 'let’s start with you.') : (zh ? '训练计划' : 'training plans')}</h1>}
     {showOnboarding && <p className="guided-welcome-intro">{zh ? '一步一步，找到适合你生活的训练。' : 'one step at a time. training that fits your life.'}</p>}
@@ -92,7 +92,7 @@ export function GuidedHome({ panelOnly = false }: { panelOnly?: boolean }) {
         onStepChange={step => { void run(revision => guidedService.setStep(step, revision)).catch(() => {}); }}
         onReset={() => { void run(revision => guidedService.resetOnboarding(revision)).catch(() => {}); }}
         onComplete={() => { void run(async revision => { await guidedService.completeOnboarding(revision); navigate('/ai'); }).catch(() => {}); }} />
-      <button className="guided-dashboard-link" onClick={() => setPanel(true)}>{zh ? '先查看记录面板' : 'view your dashboard first'}</button>
+      <button className="guided-dashboard-link" onClick={() => onboardingOnly ? navigate('/plans') : setPanel(true)}>{zh ? '先查看记录面板' : 'view your dashboard first'}</button>
     </> : <>
       {!panelOnly && <TrainingAnalytics locale={locale} today={today} timeZone={current?.timeZone ?? Intl.DateTimeFormat().resolvedOptions().timeZone} />}
       <ProgramDashboard locale={locale} title={current?.name ?? (zh ? '开始制定适合你的计划' : 'start a plan that fits you')} status={current?.status === 'terminated' ? 'cancelled' : current?.status ?? 'none'}

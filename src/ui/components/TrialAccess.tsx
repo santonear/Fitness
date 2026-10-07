@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import type { ApplicationKind } from '../../backend/trial-applications';
 
@@ -51,6 +52,7 @@ function SecurityCheck({ siteKey, onProof }: { siteKey: string; onProof: (proof:
 }
 
 export function TrialAccess({ onContinue, onSkip }: { onContinue?: () => void; onSkip?: () => void }) {
+  const navigate = useNavigate();
   const { i18n } = useTranslation(); const zh = i18n.resolvedLanguage === 'zh';
   const [status, setStatus] = useState<Status>(); const [apps, setApps] = useState<Application[]>([]);
   const [config, setConfig] = useState<{ available: boolean; siteKey: string | null }>();
@@ -102,7 +104,9 @@ export function TrialAccess({ onContinue, onSkip }: { onContinue?: () => void; o
     {!loaded && <p role="status">{zh ? '正在查询资格…' : 'Checking your trial…'}</p>}
     {error && <p role="alert">{error}</p>}{notice && <p role="status">{notice}</p>}
     {status && <div className="trial-summary"><strong>{zh ? 'AI 试用有效' : 'Your AI trial is active'}</strong><p>{zh ? '有效期至：' : 'Valid until: '}{new Date(status.expiresAt).toLocaleString(zh ? 'zh-CN' : 'en')}</p>
-      <p>{zh ? '本月剩余：理解 ' : 'Remaining this month: understanding '}{Math.max(0, status.limits.understand - status.used.understand)} · {zh ? '生成 ' : 'generation '}{Math.max(0, status.limits.generate - status.used.generate)}</p></div>}
+      <p>{zh ? '本月剩余：理解 ' : 'Remaining this month: understanding '}{Math.max(0, status.limits.understand - status.used.understand)} · {zh ? '生成 ' : 'generation '}{Math.max(0, status.limits.generate - status.used.generate)}</p>
+      <button className="trial-primary" disabled={busy} onClick={() => navigate('/ai')}>{zh ? '开始制定训练计划' : 'Start planning your training'}</button>
+      <p>{zh ? '先完成个人资料引导，再与 AI 沟通目标并确认计划。' : 'Complete your profile, then discuss your goals with AI and confirm your plan.'}</p></div>}
     <div className="trial-actions"><button disabled={busy} onClick={() => void run(() => refresh())}>{zh ? '刷新状态' : 'Refresh status'}</button>
       <button className="trial-primary" disabled={busy || pending || !config?.available} onClick={() => { setKind(hasTrial ? 'extend' : 'new'); setForm(true); }}>{hasTrial ? (zh ? '申请延期 30 天' : 'Request 30-day extension') : (zh ? '申请 AI 试用' : 'Apply for AI trial')}</button>
       {hasTrial && <button disabled={busy || pending || !config?.available} onClick={() => { setKind('replace'); setForm(true); }}>{zh ? '申请补发／更换设备' : 'Request replacement / change device'}</button>}</div>

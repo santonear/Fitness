@@ -18,3 +18,14 @@
 .management-item { margin:16px 0; padding:22px; background:#fffcf6; border:1px solid #cbbfad; border-radius:14px; overflow-wrap:anywhere; }.management-item h3 { margin-top:0; }
 .management-shell [role=alert],.trial-access [role=alert] { padding:12px; background:#fff0e7; border-left:3px solid #9f4328; }
 @media(max-width:700px) { .management-shell { grid-template-columns:1fr; }.management-shell aside { border-right:0; border-bottom:1px solid #d5cbbc; padding:18px; }.management-shell aside>p { display:none; }.management-shell nav { display:flex; flex-wrap:wrap; margin:10px 0 0; }.management-summary { grid-template-columns:1fr; }.trial-access { margin:12px 0; } }
+
+.dialogue-thread { max-height:52vh; overflow-y:auto; overscroll-behavior:contain; }
+.dialogue-thread:empty { display:none; }
+.dialogue-thread article { padding:12px 16px; margin:12px 0; border-radius:12px; background:var(--fitness-paper,#fffdf7); overflow-wrap:anywhere; }
+.dialogue-thread article[data-role=user] { margin-left:8%; background:#faf0dd; }
+.dialogue-thread p { white-space:pre-wrap; }
+.dialogue-thread span { font-size:.85em; }
+.dialogue-send { min-width:100px; min-height:44px; }
+
+.candidate-day { margin-block: 1.25rem; border-top: 1px solid var(--line, #d8ccbb); padding-top: 1rem; }
+.candidate-notes { white-space: pre-wrap; overflow-wrap: anywhere; }
