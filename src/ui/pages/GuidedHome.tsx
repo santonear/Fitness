@@ -6,6 +6,7 @@ import { database } from '../../persistence/db';
 import { profileService } from '../../application/profile';
 import { guidedService } from '../../application/guided';
 import { bodyWeightService } from '../../application/body-weight';
+import { repository } from '../../persistence/repository';
 import { dateInZone } from '../../application/progress';
 import { emptyGuidedState, type GuidedState } from '../../domain/guided-contracts';
 import { GuidedOnboarding, ProgramDashboard, LifecycleDialog, GuidedTimeline, GuidedMeasurements, formatGuidedTargets, type GuidedExerciseView } from '../components/guided';
@@ -33,14 +34,15 @@ export function GuidedHome({ panelOnly = false, onboardingOnly = false }: { pane
     let alive = true; let unsubscribe = () => {};
     void profileService.initialize(locale).then(() => {
       if (!alive) return;
-      const subscription = liveQuery(async () => ({ state: await guidedService.read(), rows: await database.scheduledWorkouts.toArray(), legacy: await database.plans.toArray(), weights: await database.bodyWeights.toArray(), versions: await database.planVersions.toArray(), session: await database.sessions.where('status').equals('in_progress').first() })).subscribe({
-        next: result => { setState(result.state); reference.current = result.state; setRows(result.rows); setLegacy(result.legacy); setWeights(result.weights); setVersions(result.versions); setActiveSession(result.session); setOngoing(Boolean(result.session)); setLoaded(true); },
+      const subscription = liveQuery(async () => ({ generation: (await repository.readMetadata()).restoreGeneration ?? 0, state: await guidedService.read(), rows: await database.scheduledWorkouts.toArray(), legacy: await database.plans.toArray(), weights: await database.bodyWeights.toArray(), versions: await database.planVersions.toArray(), session: await database.sessions.where('status').equals('in_progress').first() })).subscribe({
+        next: result => { setRestoreGeneration(result.generation); setState(result.state); reference.current = result.state; setRows(result.rows); setLegacy(result.legacy); setWeights(result.weights); setVersions(result.versions); setActiveSession(result.session); setOngoing(Boolean(result.session)); setLoaded(true); },
         error: reason => setError(String(reason)),
       }); unsubscribe = () => subscription.unsubscribe();
     }).catch(reason => setError(String(reason)));
     const connected = () => setOnline(navigator.onLine); window.addEventListener('online', connected); window.addEventListener('offline', connected);
     return () => { alive = false; unsubscribe(); window.removeEventListener('online', connected); window.removeEventListener('offline', connected); };
   }, [locale]);
+  const [restoreGeneration, setRestoreGeneration] = useState(0);
   function run(operation: (revision: number) => Promise<unknown>) {
     const completion = queue.current.then(async () => {
       setBusy(true); setError('');
@@ -56,7 +58,10 @@ export function GuidedHome({ panelOnly = false, onboardingOnly = false }: { pane
   const current = program ?? (old ? { id: old.id, name: old.name, status: 'active' as const, startDate: old.startDate, endDate: rows.filter(item => legacy.find(plan => plan.id === old.id)?.currentVersionId === item.planVersionId).map(item => item.originalDate).sort().at(-1) ?? old.startDate, timeZone: old.scheduleTimeZone, explanation: '', taskIds: rows.filter(item => item.planVersionId === old.currentVersionId).map(item => item.id) } : undefined);
   const today = dateInZone(Date.now(), current?.timeZone ?? Intl.DateTimeFormat().resolvedOptions().timeZone);
   const tasks = rows.filter(item => current?.taskIds.includes(item.id));
-  const stateLabel = (value?: string) => !value ? '—' : zh ? (({ active: '执行中', paused: '暂停', terminated: '终止', running: '进行中', in_progress: '进行中', completed: '已完成', abandoned: '已放弃' } as Record<string,string>)[value] ?? value) : value.replaceAll('_', ' ');
+  const stateLabel = (value?: string): string => {
+    if (value?.startsWith('{')) { try { const slot = JSON.parse(value); if (typeof slot.date === 'string') return `${slot.date} · ${slot.startTime ?? (zh ? '时间未设置' : 'time not set')}`; } catch { /* Legacy state labels remain readable. */ } }
+    return !value ? '—' : zh ? (({ active: '执行中', paused: '暂停', terminated: '终止', running: '进行中', in_progress: '进行中', completed: '已完成', abandoned: '已放弃' } as Record<string,string>)[value] ?? value) : value.replaceAll('_', ' ');
+  };
   const dayNumber = (value: string) => Date.parse(`${value}T00:00:00Z`) / 86_400_000;
   const showOnboarding = onboardingOnly || !panel && !current && !ongoing && (!state.onboarding?.completed || revisit);
   const open = (action: 'pause' | 'cancel' | 'resume') => { if (current) setDialog({ action, id: current.id, revision: state.revision, legacy: !program }); };
@@ -68,7 +73,7 @@ export function GuidedHome({ panelOnly = false, onboardingOnly = false }: { pane
   const todayExercises: GuidedExerciseView[] = (activeSession ? activeSession.exerciseSnapshots.map(exercise => ({ ...exercise, displayId: exercise.exerciseInstanceId })) : plannedToday).map(exercise => {
     const catalog = exerciseCatalog.find(item => item.id === exercise.exerciseId);
     const snapshot = activeSession?.exerciseSnapshots.find(item => item.exerciseInstanceId === exercise.displayId);
-    const targets = formatGuidedTargets(exercise.targetSets, locale);
+    const targets = formatGuidedTargets(exercise.targetSets, locale, exercise.setTimings);
     if (snapshot?.originalExerciseId) targets.unshift(zh ? '替换动作沿用原动作目标，仅作参考。' : 'replacement targets refer to the original exercise and are for reference only.');
     return { id: exercise.displayId, name: snapshot?.name[locale] ?? catalog?.name[locale] ?? exercise.exerciseId, targets, safety: catalog?.cautions[locale].join(' ') || (zh ? '该动作暂无已核对的安全提醒。' : 'no reviewed safety guidance is available for this exercise.'), steps: catalog?.steps[locale], reason: exercise.notes };
   });
@@ -115,13 +120,13 @@ export function GuidedHome({ panelOnly = false, onboardingOnly = false }: { pane
       setDialog(undefined); if (action !== 'active') navigate('/ai');
     }).catch(() => {}); }} />}
     {!showOnboarding && <>
-      <TrainingCalendar locale={locale} today={today} tasks={tasks} versions={versions} timeZone={current?.timeZone ?? Intl.DateTimeFormat().resolvedOptions().timeZone} />
+      <TrainingCalendar revision={state.revision} generation={restoreGeneration} lockedTaskIds={activeSession ? tasks.filter(task => task.planVersionId === activeSession.planVersionId && task.plannedDayId === activeSession.plannedDayId).map(task => task.id) : []} onReschedule={async (task, time, revision, generation, durationMinutes) => { await guidedService.rescheduleTime(task.id, time, task.revision, revision, generation, durationMinutes); }} locale={locale} today={today} tasks={tasks} versions={versions} timeZone={current?.timeZone ?? Intl.DateTimeFormat().resolvedOptions().timeZone} />
       <GuidedMeasurements locale={locale} busy={busy} observations={[...weights.map(item => ({ id: item.id, kind: 'weight' as const, value: item.weightGrams / 1000, date: item.localDate, method: zh ? '用户记录' : 'user recorded' })), ...state.observations.map(item => ({ id: item.id, kind: item.kind, value: item.value, date: item.localDate, method: item.method }))]}
         onSave={async input => { setError(''); try { const profile = (await profileService.getProfile())!;
           if (input.kind === 'weight') await bodyWeightService.saveBodyWeight({ weightGrams: Math.round(input.value * 1000), localDate: input.date, timeZone: profile.timeZone });
           else await guidedService.saveObservation({ id: crypto.randomUUID(), kind: input.kind, value: input.value, unit: input.kind === 'waist' ? 'cm' : '%', localDate: input.date, timeZone: profile.timeZone, method: input.method, createdAt: new Date().toISOString() }, state.revision);
         } catch (reason) { setError(String(reason)); throw reason; } }} />
-      <GuidedTimeline locale={locale} entries={state.events.map(item => ({ id: item.id, date: item.createdAt, title: ({ created: zh ? '新计划已生效' : 'new plan active', paused: zh ? '计划暂停' : 'plan paused', resumed: zh ? '计划恢复' : 'plan resumed', terminated: zh ? '计划终止' : 'plan stopped', replaced: zh ? '旧计划存档' : 'old plan archived', workout_paused: zh ? '训练暂停' : 'workout paused', workout_resumed: zh ? '训练恢复' : 'workout resumed', workout_ended: zh ? '训练结束' : 'workout ended' })[item.action], detail: item.reason, result: `${stateLabel(item.before)} → ${stateLabel(item.after)}` }))} />
+      <GuidedTimeline locale={locale} entries={state.events.map(item => ({ id: item.id, date: item.createdAt, title: ({ rescheduled: zh ? '训练时间已调整' : 'Training time changed', created: zh ? '新计划已生效' : 'new plan active', paused: zh ? '计划暂停' : 'plan paused', resumed: zh ? '计划恢复' : 'plan resumed', terminated: zh ? '计划终止' : 'plan stopped', replaced: zh ? '旧计划存档' : 'old plan archived', workout_paused: zh ? '训练暂停' : 'workout paused', workout_resumed: zh ? '训练恢复' : 'workout resumed', workout_ended: zh ? '训练结束' : 'workout ended' })[item.action], detail: item.reason, result: `${stateLabel(item.before)} → ${stateLabel(item.after)}` }))} />
       <Link to="/progress">{zh ? '查看完整训练历史' : 'view training history'}</Link>
     </>}
   </div>;

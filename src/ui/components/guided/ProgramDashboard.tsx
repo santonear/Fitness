@@ -11,7 +11,7 @@ export interface GuidedExerciseView {
   commonMistakes?: string[];
   reason?: string;
 }
-export function formatGuidedTargets(targets: SetMetrics[], locale: GuidedLocale): string[] {
+export function formatGuidedTargets(targets: SetMetrics[], locale: GuidedLocale, timings?: { durationSeconds: number; restSeconds: number }[]): string[] {
   return targets.map((target, index) => {
     const set = locale === 'zh' ? `第${index + 1}组` : `set ${index + 1}`;
     switch (target.metricType) {
@@ -20,7 +20,7 @@ export function formatGuidedTargets(targets: SetMetrics[], locale: GuidedLocale)
       case 'duration': return `${set} · ${target.durationSeconds} s`;
       case 'duration_distance': return `${set} · ${target.durationSeconds} s · ${target.distanceMeters === undefined ? locale === 'zh' ? '距离未设置' : 'distance not specified' : `${target.distanceMeters / 1000} km`}`;
     }
-  });
+  }).map((text, index) => text + (timings?.[index] ? (locale === 'zh' ? ` · 预计动作 ${timings[index].durationSeconds} 秒 · 组后休息 ${timings[index].restSeconds} 秒` : ` · estimated work ${timings[index].durationSeconds}s · rest after set ${timings[index].restSeconds}s`) : !('durationSeconds' in targets[index]) ? (locale === 'zh' ? ' · 用时未提供' : ' · duration not supplied') : ''));
 }
 export interface ProgramDashboardProps {
   locale: GuidedLocale;

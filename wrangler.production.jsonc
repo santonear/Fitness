@@ -13,7 +13,7 @@
     "CONTROL_MODE": "disabled",
     "SUPPLIER_PROVIDER": "deepseek",
     "CONTROL_ORIGINS": "[\"https://fitness.initdevl.workers.dev\"]",
-    "CONTROL_POLICY": "{\"timeZone\":\"Asia/Shanghai\",\"k\":7,\"budgetLimit\":3000,\"maximumRequestCost\":300,\"allowBoundedPending\":true,\"requestBounds\":{\"understand\":300,\"generate\":300},\"quotas\":{\"understand\":8,\"generate\":4},\"maxInputBytes\":65536,\"maxConcurrent\":2}"
+    "CONTROL_POLICY": "{\"timeZone\":\"Asia/Shanghai\",\"k\":14,\"budgetLimit\":3000,\"maximumRequestCost\":300,\"allowBoundedPending\":true,\"requestBounds\":{\"understand\":300,\"generate\":300},\"quotas\":{\"understand\":8,\"generate\":4},\"maxInputBytes\":65536,\"maxConcurrent\":2}"
   },
   "d1_databases": [
     {

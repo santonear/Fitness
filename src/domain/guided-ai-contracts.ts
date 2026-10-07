@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { trainingSlotSchema } from './training-time';
 import { localeSchema, localDateSchema, timeZoneSchema, uuidSchema } from './schemas';
 import { programCandidateSchema } from './guided-contracts';
 
@@ -20,8 +21,10 @@ export const guidedDialogueRequestSchema = z.strictObject({
   startDate: localDateSchema.optional(), endDate: localDateSchema.optional(), timeZone: timeZoneSchema,
   dates: z.array(localDateSchema).min(1).optional(), confirmedSummary: z.string().min(1),
   dateSelection: z.literal('ai').optional(),
+  schedule: z.array(trainingSlotSchema).min(1).max(14).optional(),
   refinement: z.string().min(1).optional(), candidateId: uuidSchema.optional(),
 }).superRefine((request, context) => {
+  if (request.schedule && (!['program', 'refine'].includes(request.purpose) || request.dateSelection || !request.dates || new Set(request.schedule.map(slot => slot.date)).size !== request.schedule.length || request.schedule.length !== request.dates.length || request.schedule.some(slot => !request.dates!.includes(slot.date)) || !request.startDate || !request.endDate || (Date.parse(request.endDate) - Date.parse(request.startDate)) / 86400000 + 1 > 14)) context.addIssue({ code: 'custom', message: 'INVALID_CONFIRMED_SCHEDULE' });
   if (request.dateSelection && request.purpose !== 'program') {
     context.addIssue({ code: 'custom', message: 'AI_DATE_SELECTION_REQUIRES_PROGRAM' });
   }

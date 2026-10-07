@@ -5,6 +5,7 @@ import { createDayPlanService, slotTasks } from './day-plans';
 import { evaluateSlot } from '../domain/day-slot-policy';
 import { createBackupService } from './backup';
 import { dateInZone } from './progress';
+import { scheduledWorkoutSchema } from '../domain/schemas';
 
 export function createGuidedService(repo: Repository) {
   async function read(): Promise<GuidedState> {
@@ -29,6 +30,9 @@ export function createGuidedService(repo: Repository) {
   async function dependencies(state: GuidedState) {
     const profile = await repo.db.profiles.toCollection().first();
     return { onboardingSnapshot: JSON.stringify(state.onboarding?.answers ?? {}), profileSnapshot: JSON.stringify({ timeZone: profile?.timeZone, conditions: profile?.trainingPreferences }) };
+  }
+  async function capturePlanContext() {
+    return repo.db.transaction('r', repo.db.tables, async () => JSON.stringify({ programs: (await read()).programs, plans: await repo.db.plans.toArray(), tasks: await repo.db.scheduledWorkouts.toArray() }));
   }
   async function captureDependencies() { return repo.db.transaction('r', repo.db.tables, async () => dependencies(await read())); }
   async function requireCurrentCandidate(state: GuidedState, candidate: ProgramCandidate) {
@@ -57,9 +61,10 @@ export function createGuidedService(repo: Repository) {
       if (!existing) state.candidates.push(candidate);
     });
   }
-  async function applyCandidate(id: string, revision: number, maximumDays: number) {
+  async function applyCandidate(id: string, revision: number, maximumDays: number, expectedPlanContext?: string) {
     if (!Number.isSafeInteger(maximumDays) || maximumDays < 1) throw new DomainError('INVALID', 'Explicit batch support required');
     return change(revision, async state => {
+      if (expectedPlanContext !== undefined && expectedPlanContext !== await capturePlanContext()) throw new DomainError('CONFLICT', 'Training plan changed during generation; review the returned plan before saving');
       const candidate = state.candidates.find(item => item.id === id);
       if (!candidate || candidate.days.length > maximumDays) throw new DomainError('INVALID', 'Candidate exceeds configured support');
       if (state.programs.some(item => item.candidateId === id)) throw new DomainError('CONFLICT', 'Candidate already confirmed');
@@ -86,11 +91,34 @@ export function createGuidedService(repo: Repository) {
         const saved = await createDayPlanService(repo).saveDayPlan({ name: candidate.name, date: day.date, timeZone: candidate.timeZone, exercises: day.exercises });
         await repo.db.plans.put({ ...saved.plan, source: 'ai' });
         await repo.db.planVersions.put({ ...saved.version, goalSnapshot: { goal: candidate.goal }, generationMetadata: { generatedAt: candidate.createdAt } });
+        if (day.startTime !== undefined) await repo.db.scheduledWorkouts.put(scheduledWorkoutSchema.parse({ ...saved.task, startTime: day.startTime, durationMinutes: day.durationMinutes }));
         planIds.push(saved.plan.id); taskIds.push(saved.task.id);
       }
       state.programs.push({ id: programId, name: candidate.name, goal: candidate.goal, startDate: candidate.startDate, endDate: candidate.endDate, timeZone: candidate.timeZone,
         status: 'active', revision: 0, planIds, taskIds, candidateId: id, explanation: candidate.explanation, createdAt: now, updatedAt: now });
       event(state, { programId, action: 'created', after: 'active' }); return programId;
+    });
+  }
+  async function rescheduleTime(taskId: string, startTime: string, taskRevision: number, revision: number, expectedGeneration: number, durationMinutes?: number) {
+    return change(revision, async state => {
+      if (((await repo.readMetadata()).restoreGeneration ?? 0) !== expectedGeneration) throw new DomainError('CONFLICT', 'Data was replaced');
+      const task = await repo.db.scheduledWorkouts.get(taskId);
+      const program = state.programs.find(item => item.taskIds.includes(taskId) && item.status !== 'terminated');
+      if (!task || task.revision !== taskRevision || task.status !== 'pending' || task.hiddenAt || task.completedSessionId) throw new DomainError('CONFLICT', 'Training changed; reopen the schedule');
+      const version = await repo.db.planVersions.get(task.planVersionId);
+      const plan = version && await repo.db.plans.get(version.planId);
+      if (!plan || plan.status !== 'active' || plan.deletedAt || plan.currentVersionId !== task.planVersionId) throw new DomainError('CONFLICT', 'Training plan is no longer current');
+      const profile = await repo.db.profiles.toCollection().first();
+      if (profile?.timeZone !== plan.scheduleTimeZone) throw new DomainError('CONFLICT', 'Time zone changed');
+      const started = await repo.db.sessions.filter(session => session.planVersionId === task.planVersionId && session.plannedDayId === task.plannedDayId && session.status !== 'abandoned').first();
+      if (started) throw new DomainError('SESSION_READ_ONLY', 'Training has already started');
+      const now = new Date().toISOString();
+      const changed = scheduledWorkoutSchema.parse({ ...task, startTime, durationMinutes: task.durationMinutes ?? durationMinutes, revision: task.revision + 1, updatedAt: now });
+      if (changed.startTime === task.startTime) return;
+      await repo.db.scheduledWorkouts.put(changed);
+      await repo.db.plans.put({ ...plan, revision: plan.revision + 1, updatedAt: now });
+      if (program) { program.revision++; program.updatedAt = now; }
+      event(state, { ...(program ? { programId: program.id } : {}), action: 'rescheduled', before: JSON.stringify({ date: task.scheduledDate, startTime: task.startTime }), after: JSON.stringify({ date: task.scheduledDate, startTime }) });
     });
   }
   async function transition(id: string, action: 'paused' | 'active' | 'terminated', revision: number, reason?: string) {
@@ -157,6 +185,6 @@ export function createGuidedService(repo: Repository) {
   }
   async function appendMessage(input: GuidedState['messages'][number], revision: number) { return change(revision, async state => { state.messages.push(input); }); }
   async function saveObservation(input: GuidedState['observations'][number], revision: number) { return change(revision, async state => { state.observations.push(input); }); }
-  return { read, captureDependencies, saveAnswer, setStep, resetOnboarding, completeOnboarding, retainCandidate, applyCandidate, transition, transitionLegacy, workoutTransition, decideInvitation, appendMessage, saveObservation };
+  return { read, captureDependencies, capturePlanContext, saveAnswer, setStep, resetOnboarding, completeOnboarding, retainCandidate, applyCandidate, rescheduleTime, transition, transitionLegacy, workoutTransition, decideInvitation, appendMessage, saveObservation };
 }
 export const guidedService = createGuidedService(repository);

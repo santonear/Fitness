@@ -50,6 +50,9 @@ export class FitnessDatabase extends Dexie {
     this.version(5).stores({ guidedStates: 'id' }).upgrade(async transaction => {
       await transaction.table('metadata').toCollection().modify((row: Metadata) => { row.schemaVersion = 5; });
     });
+    this.version(6).stores({}).upgrade(async transaction => {
+      await transaction.table('metadata').toCollection().modify((row: Metadata) => { row.schemaVersion = 6; });
+    });
   }
 }
 export function createDatabase(name: string): FitnessDatabase { return new FitnessDatabase(name); }

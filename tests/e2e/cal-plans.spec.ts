@@ -18,7 +18,7 @@ test('day plans preserve distinct content, slot identities and backups', async (
     return { conflict, separate: first.task.id !== replacement.task.id, plans: await repository.db.plans.count(), rows: await repository.db.scheduledWorkouts.count(),
       notes: (await repository.db.planVersions.get(second.plan.currentVersionId)).days[0].exercises[0].notes, version: JSON.parse(await saved.text()).schemaVersion };
   });
-  expect(result).toEqual({ conflict: 'CONFLICT', separate: true, plans: 3, rows: 3, notes: '独立备注', version: 4 });
+  expect(result).toEqual({ conflict: 'CONFLICT', separate: true, plans: 3, rows: 3, notes: '独立备注', version: 5 });
 });
 test('legacy collision requires a current explicit confirmation and preserves both tasks', async ({ page }) => {
   await page.goto('/');

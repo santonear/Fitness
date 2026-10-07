@@ -4,8 +4,8 @@ test('real downloaded day/legacy JSON and pre-restore file independently restore
   await page.goto('/settings');
   await page.evaluate(async()=>{const p='/tests/e2e/helpers/cal-browser.ts';await(await import(/* @vite-ignore */ p)).seedCalLibrary();});
   const downloading=page.waitForEvent('download');await page.getByRole('button',{name:'Export JSON backup',exact:true}).click();const download=await downloading;const path=info.outputPath('complete-cal.json');await download.saveAs(path);const text=await readFile(path,'utf8');
-  const source=JSON.parse(text);expect(source.schemaVersion).toBe(4);expect(source.data.planVersions).toHaveLength(3);expect(source.data.sessions).toHaveLength(3);expect(source.data.bodyWeights).toHaveLength(1);expect(source.data.timers).toHaveLength(1);expect(source.data.aiMemoryNotes).toHaveLength(1);
-  const independent=await page.evaluate(async text=>{const p='/tests/e2e/helpers/cal-browser.ts';return(await import(/* @vite-ignore */ p)).verifyIsolatedRestore(text);},text);expect(independent).toEqual({same:true,version:4,metadata:5});
+  const source=JSON.parse(text);expect(source.schemaVersion).toBe(5);expect(source.data.planVersions).toHaveLength(3);expect(source.data.sessions).toHaveLength(3);expect(source.data.bodyWeights).toHaveLength(1);expect(source.data.timers).toHaveLength(1);expect(source.data.aiMemoryNotes).toHaveLength(1);
+  const independent=await page.evaluate(async text=>{const p='/tests/e2e/helpers/cal-browser.ts';return(await import(/* @vite-ignore */ p)).verifyIsolatedRestore(text);},text);expect(independent).toEqual({same:true,version:5,metadata:6});
   const destination=await context.newPage();await destination.goto(new URL('/settings',page.url().replace('127.0.0.1','localhost')).href);
   await destination.getByLabel('Restore JSON file',{exact:true}).setInputFiles(path);await expect(destination.getByText('Backup validated',{exact:true})).toBeVisible();
   const before=destination.waitForEvent('download');await destination.getByRole('button',{name:'Download current data before replacement',exact:true}).click();const current=await before;const currentPath=info.outputPath('pre-restore.json');await current.saveAs(currentPath);const currentText=await readFile(currentPath,'utf8');
@@ -26,5 +26,5 @@ test('rejects two occupying new day plans without changing the source library',a
 });
 test('legacy v2 JSON converts only runtime metadata and remains independently recoverable',async({page})=>{
   await page.goto('/');const result=await page.evaluate(async()=>{const p='/tests/e2e/helpers/cal-browser.ts';const h=await import(/* @vite-ignore */ p);const {oldJson}=await h.seedCalLibrary();return h.verifyIsolatedRestore(oldJson);});
-  expect(result).toEqual({same:true,version:4,metadata:5});
+  expect(result).toEqual({same:true,version:5,metadata:6});
 });

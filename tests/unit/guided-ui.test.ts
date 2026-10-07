@@ -46,7 +46,7 @@ describe('measurement display', () => {
 
 describe('plan display', () => {
   it('keeps per-set units and unspecified distance explicit', () => {
-    expect(formatGuidedTargets([{ metricType: 'reps_load', reps: 8, loadGrams: 5000 }, { metricType: 'duration_distance', durationSeconds: 600 }], 'zh')).toEqual(['第1组 · 8 次 · 5 kg', '第2组 · 600 s · 距离未设置']);
+    expect(formatGuidedTargets([{ metricType: 'reps_load', reps: 8, loadGrams: 5000 }, { metricType: 'duration_distance', durationSeconds: 600 }], 'zh')).toEqual(['第1组 · 8 次 · 5 kg · 用时未提供', '第2组 · 600 s · 距离未设置']);
   });
   it('labels a candidate without claiming there is no current plan', () => {
     const html = renderToStaticMarkup(createElement(ProgramDashboard, { locale: 'zh', title: '候选计划', status: 'candidate', elapsedDays: 0, totalDays: 7, completedWorkouts: 0, plannedWorkouts: 3, todayLabel: '尚未生效' }));

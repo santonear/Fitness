@@ -181,3 +181,9 @@ it('transport rejects redirects without following or forwarding credentials', as
   await expect(supplier.call({ goalText: 'synthetic' } as never)).rejects.toThrow('SUPPLIER_UNCERTAIN');
   expect(calls).toBe(1); expect(redirect).toBe('manual');
 });
+
+it('Worker admits the supported 14-day policy and rejects 15 without widening budgets',()=>{
+ const base=env(), values=JSON.parse(base.CONTROL_POLICY);
+ expect(readWorkerConfig({...base,CONTROL_POLICY:JSON.stringify({...values,k:14})})?.control.k).toBe(14);
+ expect(()=>readWorkerConfig({...base,CONTROL_POLICY:JSON.stringify({...values,k:15})})).toThrow('INVALID_CONTROL_CONFIG');
+});

@@ -48,7 +48,7 @@ export function createWorkoutService(repo:Repository) {
    }
    if((await db.plans.get(version!.planId))?.deletedAt)invalid('This plan was deleted');
    if(input.exerciseIds?.length)invalid('Planned training uses plan snapshots');
-   actual=day.exercises.map(e=>({...snapshot(e.exerciseId,e.order),targetSets:structuredClone(e.targetSets),notes:e.notes}));
+   actual=day.exercises.map(e=>({...snapshot(e.exerciseId,e.order),targetSets:structuredClone(e.targetSets),setTimings:e.setTimings ? structuredClone(e.setTimings) : undefined,notes:e.notes}));
   }else actual=(input.exerciseIds??[]).map((id,index)=>snapshot(id,index));
   const now=new Date().toISOString();const parsed=workoutSessionSchema.safeParse({id:input.sessionId,createdAt:now,updatedAt:now,revision:0,startedAt:now,status:'in_progress',localDate:input.localDate,timeZone:input.timeZone,planVersionId,plannedDayId,originalExerciseSnapshots:structuredClone(actual),exerciseSnapshots:actual});
   if(!parsed.success)invalid('Invalid workout date, zone or identity');await db.sessions.add(parsed.data);await synchronizeTrainingMemo(repo,parsed.data);return parsed.data;
