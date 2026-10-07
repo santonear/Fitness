@@ -36,6 +36,7 @@ export interface GuidedCandidateContext {
   expectedDates: readonly string[]; exerciseCatalog: readonly Exercise[];
   limits: GuidedDialogueLimits; restoreGeneration: number;
   occupiedDates?: readonly string[];
+  allowDateSubset?: boolean;
 }
 export function guidedCandidateMatchesReview(candidate: ProgramCandidate, review: {
   goal: string; startDate: string; endDate: string; timeZone: string; dates: readonly string[];
@@ -52,7 +53,7 @@ export function validateGuidedCandidate(raw: unknown, context: GuidedCandidateCo
   if (candidate.restoreGeneration !== context.restoreGeneration) throw new Error('STALE_RESTORE_GENERATION');
   const dates = candidate.days.map(day => day.date);
   if (new Set(context.expectedDates).size !== context.expectedDates.length || new Set(dates).size !== dates.length
-      || dates.length !== context.expectedDates.length || dates.some(date => !context.expectedDates.includes(date))) throw new Error('INVALID_DATE_SET');
+      || (!context.allowDateSubset && dates.length !== context.expectedDates.length) || dates.some(date => !context.expectedDates.includes(date))) throw new Error('INVALID_DATE_SET');
   if (candidate.startDate > candidate.endDate || dates.some(date => date < candidate.startDate || date > candidate.endDate)) throw new Error('INVALID_DATE_RANGE');
   const range = (Date.parse(candidate.endDate) - Date.parse(candidate.startDate)) / 86400000 + 1;
   if (dates.length > context.limits.maxDays || range > context.limits.maxRangeDays) throw new Error('GUIDED_CAPACITY_EXCEEDED');
@@ -79,7 +80,7 @@ export function validateGuidedResponse(raw: unknown, request: GuidedDialogueRequ
   }
   if ((response.purpose === 'refused' ? response.requestedPurpose : response.purpose) !== parsedRequest.purpose) throw new Error('GUIDED_RESPONSE_IDENTITY_MISMATCH');
   if ('candidate' in response) {
-    const candidate = validateGuidedCandidate(response.candidate, { ...context, expectedDates: parsedRequest.dates ?? [] });
+    const candidate = validateGuidedCandidate(response.candidate, { ...context, expectedDates: parsedRequest.dates ?? [], allowDateSubset: parsedRequest.dateSelection === 'ai' });
     if (candidate.startDate !== parsedRequest.startDate || candidate.endDate !== parsedRequest.endDate
         || candidate.timeZone !== parsedRequest.timeZone || candidate.goal !== parsedRequest.scope.goal
         || (candidate.inputSnapshot !== undefined && candidate.inputSnapshot !== parsedRequest.inputSnapshot)) throw new Error('GUIDED_CANDIDATE_SCOPE_MISMATCH');

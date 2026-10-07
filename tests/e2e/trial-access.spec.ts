@@ -1,5 +1,38 @@
 import { expect, test } from '@playwright/test';
 
+for (const zh of [false, true]) test(`active trial starts and resumes onboarding before dialogue (${zh ? 'zh' : 'en'})`, async ({ page }) => {
+  await page.addInitScript(zh => localStorage.setItem('fitness.language', zh ? 'zh' : 'en'), zh);
+  let writes = 0;
+  await page.route('**/api/v1/**', route => {
+    const path = new URL(route.request().url()).pathname;
+    if (route.request().method() !== 'GET') writes++;
+    if (path.endsWith('/application-config')) return route.fulfill({ json: { available: true, siteKey: 'fixture' } });
+    if (path.endsWith('/status')) return route.fulfill({ json: { expiresAt: Date.now() + 86400000, period: '2026-10', used: { understand: 0, generate: 0 }, limits: { understand: 8, generate: 4 }, aiEnabled: true, pending: 0 } });
+    return route.fulfill({ status: 503, json: { error: 'UNEXPECTED' } });
+  });
+  await page.goto('/trial');
+  await page.getByRole('button', { name: zh ? '开始制定训练计划' : 'Start planning your training', exact: true }).click();
+  await expect(page.locator('.onboarding-flow')).toBeVisible();
+  await page.getByRole('button', { name: zh ? '跳过' : 'skip', exact: true }).click();
+  await page.getByRole('button', { name: /不愿透露|Prefer not to say/ }).click();
+  await page.getByRole('button', { name: /确认并继续|confirm and continue/ }).click();
+  await expect(page.getByRole('heading', { name: zh ? '你的身高是多少？' : 'what is your height?', exact: true })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('heading', { name: zh ? '你的身高是多少？' : 'what is your height?', exact: true })).toBeVisible();
+  const complete = page.getByRole('button', { name: /与 AI 一起制定计划|Plan together with AI/ });
+  for (let step = 0; step < 16 && !await complete.isVisible(); step++) {
+    const heading = page.locator('.onboarding-flow h2').first(), before = await heading.textContent();
+    await page.getByRole('button', { name: zh ? '跳过' : 'skip', exact: true }).click();
+    await expect(heading).not.toHaveText(before!);
+  }
+  await complete.click();
+  await expect(page.getByRole('heading', { name: zh ? '一起制定计划' : 'plan together', exact: true })).toBeVisible();
+  await expect(page.getByText(/0\/8.*0\/4/)).toBeVisible();
+  await page.reload(); await expect(page.getByText(/0\/8.*0\/4/)).toBeVisible();
+  await expect(page.locator('.onboarding-flow')).toHaveCount(0);
+  expect(writes).toBe(0);
+});
+
 for (const zh of [false, true]) test(`manual invitation generation and revocation (${zh ? 'zh' : 'en'})`, async ({ page }) => {
   await page.addInitScript(zh => localStorage.setItem('fitness.language', zh ? 'zh' : 'en'), zh);
   const code = 'a'.repeat(64), inviteId = 'b'.repeat(64), expiresAt = Date.now() + 604800000;

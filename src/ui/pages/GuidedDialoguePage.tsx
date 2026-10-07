@@ -20,6 +20,8 @@ import { sendGuidedDialogue } from '../../ai/guided-transport';
 import { createFetchAiClient } from '../../ai/client';
 import { statusFeedback as aiStatusMessage } from '../../ai/status-feedback';
 import { guidedServiceLimits } from '../../backend/guided-provider';
+import { GuidedHome } from './GuidedHome';
+import { nextPlanningWindow } from '../../ai/guided-planning';
 
 // This switch is a local integration fixture, never a production model implementation.
 const demo = import.meta.env.DEV && import.meta.env.VITE_GUIDED_DEMO === '1';
@@ -30,13 +32,18 @@ export function GuidedDialoguePage() {
   const control = useRef(createFetchAiClient());
   const [invite, setInvite] = useState('');
   const [qualification, setQualification] = useState<Awaited<ReturnType<typeof control.current.status>>>();
+  const [checkingQualification, setCheckingQualification] = useState(!demo);
   const [accountingPending, setAccountingPending] = useState(false);
   const [sending, setSending] = useState(false);
   const [localReady, setLocalReady] = useState(false);
   const inFlight = useRef<{ requestId: string; abort: AbortController; cancelled: boolean } | undefined>(undefined);
   const actionLock = useRef(false);
   const inputEpoch = useRef(0);
+  const directAttempt = useRef<{ request: GuidedDialogueRequest; dependencies: string; epoch: number } | undefined>(undefined);
   const currentGeneration = useRef(0);
+  const thread = useRef<HTMLElement>(null);
+  const [planning, setPlanning] = useState(false);
+  const [adopted, setAdopted] = useState(false);
   const [dates, setDates] = useState<string[]>([]); const [summary, setSummary] = useState(''); const [understandingConfirmed, setUnderstandingConfirmed] = useState(false);
   const [sendScope, setSendScope] = useState<GuidedDialogueRequest>(); const [includeBody, setIncludeBody] = useState(false);
   const [includeHistory, setIncludeHistory] = useState(false); const [localCandidate, setLocalCandidate] = useState<ProgramCandidate>();
@@ -49,7 +56,8 @@ export function GuidedDialoguePage() {
   const [mockTopicKind, setMockTopicKind] = useState<GuidedTopicDecision['kind']>('related');
   const [zone, setZone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone); const [generation, setGeneration] = useState(0);
   const [conversationId] = useState(() => crypto.randomUUID()); const [startDate, setStartDate] = useState(''); const [endDate, setEndDate] = useState('');
-  const candidate = localCandidate ?? [...state.candidates].reverse().find(item => !state.programs.some(program => program.candidateId === item.id));
+  const latestCandidate = state.candidates.at(-1);
+  const candidate = localCandidate ?? (latestCandidate && !state.programs.some(program => program.candidateId === latestCandidate.id) ? latestCandidate : undefined);
   const candidateMatchesReview = Boolean(candidate && guidedCandidateMatchesReview(candidate, { goal: summary, startDate, endDate, timeZone: zone, dates }));
   useEffect(() => {
     setLocalReady(false);
@@ -58,10 +66,21 @@ export function GuidedDialoguePage() {
     return () => { live = false; stop(); };
   }, [locale]);
   currentGeneration.current = generation;
-  useEffect(() => () => { if (inFlight.current) { inFlight.current.cancelled = true; inFlight.current.abort.abort(); } }, []);
-  async function refreshQualification() { setQualification(undefined); const status = await control.current.status(); setQualification(status); setAccountingPending(Boolean(status.pending)); }
+  useEffect(() => { if (thread.current) thread.current.scrollTop = thread.current.scrollHeight; }, [state.messages.length]);
+  useEffect(() => () => { inputEpoch.current++; directAttempt.current = undefined; if (inFlight.current) { inFlight.current.cancelled = true; inFlight.current.abort.abort(); } }, []);
+  async function refreshQualification() {
+    setCheckingQualification(true); setQualification(undefined);
+    try { const status = await control.current.status(); setQualification(status); setAccountingPending(Boolean(status.pending)); return status; }
+    finally { setCheckingQualification(false); }
+  }
   async function run(operation: () => Promise<unknown>) { if (actionLock.current) return; actionLock.current = true; setBusy(true); setError(''); try { await operation(); } catch (reason) { const code = reason instanceof Error ? reason.message : String(reason); setError(!demo && /^[A-Z_]+$/.test(code) ? aiStatusMessage(code, locale) : code); } finally { actionLock.current = false; setBusy(false); } }
-  function invalidate() { inputEpoch.current++; setUnderstandingConfirmed(false); setSendScope(undefined); }
+  useEffect(() => {
+    if (demo || !localReady || !state.onboarding?.completed) return;
+    const refresh = () => { if (document.visibilityState === 'visible') void run(refreshQualification); };
+    refresh(); window.addEventListener('focus', refresh); window.addEventListener('online', refresh); document.addEventListener('visibilitychange', refresh);
+    return () => { window.removeEventListener('focus', refresh); window.removeEventListener('online', refresh); document.removeEventListener('visibilitychange', refresh); };
+  }, [localReady, state.onboarding?.completed]);
+  function invalidate() { inputEpoch.current++; directAttempt.current = undefined; setUnderstandingConfirmed(false); setSendScope(undefined); }
   useEffect(() => { invalidate(); }, [locale]);
   async function saveMockArchive(result: NonNullable<typeof pendingArchive>) {
     let current = await guidedService.read();
@@ -83,7 +102,7 @@ export function GuidedDialoguePage() {
   }
   function mockUserMessage(request: GuidedDialogueRequest): GuidedState['messages'][number] {
     const content = [request.scope.goal,
-      request.confirmedSummary !== request.scope.goal ? request.confirmedSummary : '',
+      request.purpose !== 'understand' && request.confirmedSummary !== request.scope.goal ? request.confirmedSummary : '',
       typeof request.scope.conditions.dialogueAnswer === 'string' ? request.scope.conditions.dialogueAnswer : '',
       request.refinement ?? '',
     ].filter(Boolean).join('\n');
@@ -109,37 +128,75 @@ export function GuidedDialoguePage() {
   async function historySnapshot() {
     return captureGuidedHistory(repository, historyFrom, historyTo, fixtureLimits.maxInputBytes);
   }
-  async function prepareSending(purpose: GuidedDialogueRequest['purpose'] = 'program') {
+  async function prepareSending(purpose: GuidedDialogueRequest['purpose'] = 'program', direct = false, automaticSummary?: string) {
+    const epoch = inputEpoch.current;
     if (!localReady) throw new Error(zh ? '本地资料尚未读取完成，请稍后再试。' : 'Local information is still loading. Please wait.');
     if (pendingArchive) throw new Error(zh ? '请先重试存档已有响应，再继续对话。' : 'archive the retained response before continuing.');
-    const goalAnswer = state.onboarding?.answers.goal; const goal = purpose === 'refine' ? candidate?.goal : (purpose === 'understand' || purpose === 'clarify' ? draft.trim() || summary.trim() : summary.trim() || draft.trim()) || (goalAnswer?.status === 'answered' ? String(goalAnswer.value) : '');
+    const automatic = automaticSummary !== undefined;
+    const schedule = automatic ? nextPlanningWindow(Date.now(), zone) : purpose === 'refine' && candidate ? { startDate: candidate.startDate, endDate: candidate.endDate, dates: candidate.days.map(day => day.date) } : { startDate, endDate, dates };
+    const goalAnswer = state.onboarding?.answers.goal; const goal = automaticSummary || (purpose === 'refine' ? candidate?.goal : (purpose === 'understand' || purpose === 'clarify' ? draft.trim() || summary.trim() : summary.trim() || draft.trim()) || (goalAnswer?.status === 'answered' ? String(goalAnswer.value) : ''));
     if (!goal) throw new Error(zh ? '先填写目标或想法。' : 'enter a goal or thought first.');
-    if ((purpose === 'program' || purpose === 'refine') && (!dates.length || !startDate || !endDate || !understandingConfirmed)) throw new Error(zh ? '先确认理解、起止日期和具体训练日期。' : 'confirm interpretation, phase range and exact training dates first.');
+    if ((purpose === 'program' || purpose === 'refine') && (!schedule.dates.length || !schedule.startDate || !schedule.endDate || !direct && !understandingConfirmed)) throw new Error(zh ? '请填写起止日期，并在日历中至少选择一个具体训练日期。' : 'Enter the phase range and select at least one training date in the calendar.');
     if (purpose === 'refine' && (!candidate || !draft.trim())) throw new Error(zh ? '填写候选调整想法。' : 'enter your requested revision.');
     const bodyKeys = ['age', 'biologicalSex', 'heightCm', 'weightKg', 'waistCm', 'bodyFatPercent'];
     const planning = purpose === 'program' || purpose === 'refine';
     const answers = state.onboarding?.answers ?? {};
     const conditions: GuidedSendingScope['conditions'] = {}; const body: NonNullable<GuidedSendingScope['body']> = {};
     for (const [key, answer] of Object.entries(answers)) {
-      if (!planning) continue;
       if (key === 'goal') continue;
-      if (bodyKeys.includes(key)) { if (includeBody) body[key] = answer; } else conditions[key] = answer;
+      if (bodyKeys.includes(key)) { if (planning && includeBody) body[key] = answer; } else conditions[key] = answer;
+    }
+    if (!demo && (purpose === 'understand' || purpose === 'clarify')) {
+      const current = await guidedService.read();
+      const planRequests = new Set(current.messages.filter(message => message.candidateId).map(message => message.requestId));
+      conditions.priorDialogue = current.messages.filter(message => message.requestId && !planRequests.has(message.requestId)).slice(-8).map(({ role, content }) => ({ role, content }));
+      conditions.planningWindow = { ...nextPlanningWindow(Date.now(), zone), timeZone: zone };
     }
     if (clarificationAnswer.trim()) conditions.dialogueAnswer = clarificationAnswer.trim();
     if (purpose === 'refine' && candidate) conditions.candidateReference = { name: candidate.name, days: candidate.days, explanation: candidate.explanation };
     const dependencies = await guidedService.captureDependencies();
     if (dependencies.onboardingSnapshot !== JSON.stringify(answers)) throw new Error(zh ? '引导条件已更新，请重新打开预览。' : 'onboarding changed; reopen the preview.');
     const input = { version: 'guided-dialogue-v1' as const, conversationId, restoreGeneration: generation, purpose, locale, scope: { goal, conditions, ...(planning && includeBody ? { body } : {}), ...(planning && includeHistory ? { history: await historySnapshot() } : {}) },
-      ...((purpose === 'program' || purpose === 'refine') ? { startDate, endDate, dates: [...dates].sort() } : {}), timeZone: zone, confirmedSummary: summary || goal,
+      ...((purpose === 'program' || purpose === 'refine') ? { ...schedule, dates: [...schedule.dates].sort(), ...(automatic ? { dateSelection: 'ai' as const } : {}) } : {}), timeZone: zone, confirmedSummary: automaticSummary || (purpose === 'refine' ? candidate?.goal : summary) || goal,
       ...(purpose === 'refine' && candidate ? { refinement: draft.trim(), candidateId: candidate.id } : {}) };
     const request = { ...input, requestId: crypto.randomUUID(), inputSnapshot: guidedInputSnapshot(input) };
-    confirmGuidedSending(request); setPreviewDependencies(JSON.stringify(dependencies)); setSendScope(request);
+    confirmGuidedSending(request);
+    if (epoch !== inputEpoch.current) throw new Error('STALE_INPUT');
+    const prepared = { request, dependencies: JSON.stringify(dependencies), epoch };
+    if (!direct) { setPreviewDependencies(prepared.dependencies); setSendScope(request); }
+    return prepared;
   }
-  async function sendReal() {
-    if (!sendScope || pendingArchive) return;
-    const request = sendScope;
+  async function sendDirect(purpose: GuidedDialogueRequest['purpose']) {
+    if (pendingArchive) throw new Error(zh ? '请先重试存档已有响应。' : 'Archive the retained response first.');
+    if (!qualification?.aiEnabled || qualification.reconciliationRequired || checkingQualification) throw new Error('QUALIFICATION_REQUIRED');
+    const retained = directAttempt.current;
+    let attempt = retained && (retained.request.purpose === purpose || purpose === 'understand' && retained.request.purpose === 'program') ? retained : await prepareSending(purpose, true);
+    if (attempt.epoch !== inputEpoch.current) throw new Error('STALE_INPUT');
+    directAttempt.current = attempt; setAdopted(false);
+    try {
+      setPlanning(attempt.request.purpose === 'program' || attempt.request.purpose === 'refine');
+      const result = await sendReal(attempt.request, attempt.dependencies);
+      if (result?.response.purpose === 'understand' && result.response.uncertainties.length === 0) {
+        if (attempt.epoch !== inputEpoch.current) throw new Error('STALE_INPUT');
+        const next = await prepareSending('program', true, result.response.summary);
+        if (next.epoch !== attempt.epoch || next.dependencies !== attempt.dependencies) throw new Error('STALE_INPUT');
+        attempt = next; directAttempt.current = next;
+        // A valid understanding is retained even if admission for generation is unavailable.
+        if (!result.status?.aiEnabled || result.status.reconciliationRequired || result.status.used.generate >= result.status.limits.generate) {
+          throw new Error(zh ? '目标已整理好，当前资格、额度或费用核算尚不允许生成。恢复后点击“继续生成计划”，不会重复理解。' : 'Your goal is ready, but access, allowance or accounting currently prevents generation. Once restored, select Resume plan generation; understanding will not be repeated.');
+        }
+        setPlanning(true);
+        await sendReal(next.request, next.dependencies);
+      }
+      directAttempt.current = undefined;
+      if (attempt.epoch === inputEpoch.current) { setDraft(''); setClarificationAnswer(''); }
+    } finally { setPlanning(false); }
+  }
+  async function sendReal(preparedRequest = sendScope, preparedDependencies = previewDependencies) {
+    if (!preparedRequest || pendingArchive) return;
+    const request = preparedRequest;
     const dependencies = await guidedService.captureDependencies();
-    if (JSON.stringify(dependencies) !== previewDependencies || request.restoreGeneration !== currentGeneration.current ||
+    if (JSON.stringify(dependencies) !== preparedDependencies || request.restoreGeneration !== currentGeneration.current ||
         (request.scope.history !== undefined && request.scope.history !== await historySnapshot())) throw new Error('STALE_INPUT');
     const active = { requestId: request.requestId, abort: new AbortController(), cancelled: false };
     inFlight.current = active; setSending(true);
@@ -148,21 +205,26 @@ export function GuidedDialoguePage() {
       const result = await sendGuidedDialogue(request, confirmGuidedSending(request), active.abort.signal);
       setAccountingPending(result.accounting === 'pending');
       // Obtain current admission state. A successful response is not a fee settlement.
-      try { await refreshQualification(); } catch { setQualification(undefined); }
+      let status: Awaited<ReturnType<typeof refreshQualification>> | undefined;
+      try { status = await refreshQualification(); } catch { setQualification(undefined); }
       const metadata = await repository.readMetadata();
       if (active.cancelled || epoch !== inputEpoch.current || request.restoreGeneration !== (metadata.restoreGeneration ?? 0) ||
-          JSON.stringify(await guidedService.captureDependencies()) !== previewDependencies) throw new Error('STALE_INPUT');
+          JSON.stringify(await guidedService.captureDependencies()) !== preparedDependencies) throw new Error('STALE_INPUT');
       const response = result.response;
       setSendScope(undefined);
-      if (response.purpose === 'refused') { await archiveRefusal(request, response.message); return; }
+      if (response.purpose === 'refused') { directAttempt.current = undefined; await archiveRefusal(request, response.message); return { response, status }; }
       if (response.purpose === 'understand') { setSummary(response.summary); setResponseText(response.uncertainties.join('\n')); setUnderstandingConfirmed(false); }
       if (response.purpose === 'clarify') setQuestion(response.question);
       const nextCandidate = 'candidate' in response ? { ...response.candidate, ...dependencies } : undefined;
-      if (nextCandidate) setLocalCandidate(nextCandidate);
+      if (nextCandidate) {
+        setLocalCandidate(nextCandidate); setSummary(nextCandidate.goal); setStartDate(nextCandidate.startDate); setEndDate(nextCandidate.endDate);
+        setDates(nextCandidate.days.map(day => day.date)); setUnderstandingConfirmed(true); directAttempt.current = undefined; setDraft('');
+      }
       const content = response.purpose === 'understand' ? [response.summary, ...response.uncertainties].join('\n')
         : response.purpose === 'clarify' ? response.question : nextCandidate ? `${nextCandidate.name}\n${nextCandidate.explanation}` : '';
       const archive = { userMessage: mockUserMessage(request), message: mockMessage(request, content, nextCandidate?.id), ...(nextCandidate ? { candidate: nextCandidate } : {}) };
       setPendingArchive(archive); await saveMockArchive(archive);
+      return { response, status };
     } catch (reason) {
       // Keep the attempted request identity; never silently invent a new paid request.
       if (reason instanceof Error && ['ACCOUNTING_PENDING', 'CONTROL_UNAVAILABLE', 'COST_BOUND_UNVERIFIED', 'RECONCILIATION_REQUIRED'].includes(reason.message)) {
@@ -212,6 +274,8 @@ export function GuidedDialoguePage() {
     const result = { userMessage: mockUserMessage(request), candidate: response.candidate, message: mockMessage(request, `${request.purpose}\n${response.candidate.name}\n${response.candidate.explanation}`, response.candidate.id) };
     setPendingArchive(result); await saveMockArchive(result);
   }
+  if (!demo && !localReady) return <p role={error ? 'alert' : 'status'}>{error || (zh ? '正在读取本地资料…' : 'Loading local information…')}</p>;
+  if (!demo && !state.onboarding?.completed) return <GuidedHome onboardingOnly />;
   return <div className="guided-page"><h1>{zh ? '一起制定计划' : 'plan together'}</h1>
     <p role="status">{demo ? (zh ? '本地合成演示，无网络或模型调用；示例限制为7个日期、31天范围，不代表生产支持。' : 'local synthetic demo; no network or model call. fixture limits are not production promises.') : (zh ? 'AI 由 Fitness 后台提供。发送前请核对本次范围；资料与训练仍保存在本机。' : 'AI is provided by the Fitness backend. Review each sending scope; profile and training stay on this device.')}</p>
     {!demo && <section className="guided-section"><h2>{zh ? 'AI 试用资格' : 'AI trial access'}</h2>
@@ -219,7 +283,7 @@ export function GuidedDialoguePage() {
       <label>{zh ? '邀请码' : 'Invitation code'}<input value={invite} onChange={event => setInvite(event.target.value)} autoComplete="off" /></label>
       <button disabled={busy || !invite.trim()} onClick={() => void run(async () => { await control.current.redeem(invite.trim()); setInvite(''); await refreshQualification(); })}>{zh ? '兑换并查询' : 'Redeem and check'}</button>
       <button disabled={busy} onClick={() => void run(refreshQualification)}>{zh ? '查询资格与额度' : 'Check access and allowance'}</button>
-      <p>{qualification ? `${zh ? '本周期已用：理解 / 计划' : 'Used this period: understanding / plans'} ${qualification.used.understand}/${qualification.limits.understand} · ${qualification.used.generate}/${qualification.limits.generate}` : (zh ? '资格及额度尚未确认' : 'Access and allowance are unknown')}</p>
+      <p>{checkingQualification ? (zh ? '正在更新资格与额度…' : 'Updating access and allowance…') : qualification ? `${zh ? '本周期已用：理解 / 计划' : 'Used this period: understanding / plans'} ${qualification.used.understand}/${qualification.limits.understand} · ${qualification.used.generate}/${qualification.limits.generate}` : (zh ? '资格及额度查询失败，请重试' : 'Access and allowance are unknown')}</p>
       {qualification && !qualification.aiEnabled && <p>{aiStatusMessage('AI_DISABLED', locale)}</p>}
       {accountingPending && <p role="status">{aiStatusMessage('ACCOUNTING_PENDING', locale)}</p>}
       {sending && <button onClick={() => void cancelReal()}>{zh ? '停止等待' : 'Stop waiting'}</button>}
@@ -227,36 +291,42 @@ export function GuidedDialoguePage() {
     {error && <p role="alert">{error}</p>}
     {demo && <label>{zh ? '合成主题判定注入（仅演示，不检测文本语义）' : 'synthetic topic decision injection (demo only; no semantic detection)'}<select value={mockTopicKind} onChange={event => { setMockTopicKind(event.target.value as GuidedTopicDecision['kind']); setSendScope(undefined); }}><option value="related">{zh ? '相关健身' : 'related fitness'}</option><option value="unrelated">{zh ? '无关请求' : 'unrelated request'}</option><option value="clarification_needed">{zh ? '需要澄清' : 'clarification needed'}</option><option value="safety_limit">{zh ? '诊断或治疗限制' : 'safety limit'}</option></select></label>}
     {pendingArchive && <section className="guided-section"><p>{zh ? '已返回的响应保留在当前页，尚未完整存档；刷新可能丢失。重试仅保存，不重新调用。' : 'The returned response is retained on this page but not fully archived; refresh may lose it. Retrying saves only.'}</p><pre>{pendingArchive.message.content}</pre><button disabled={busy} onClick={() => void run(() => saveMockArchive(pendingArchive))}>{zh ? '重试存档已有响应' : 'retry archiving existing response'}</button></section>}
-    <section className="guided-section" aria-label={zh ? '对话记录' : 'conversation'}>{state.messages.map(message => <article key={message.id}><span>{message.role === 'user' ? (zh ? '你' : 'you') : 'ai'} · <time>{message.createdAt}</time></span><p>{message.content}</p></article>)}</section>
+    <section ref={thread} className="guided-section dialogue-thread" role="log" aria-label={zh ? '对话记录' : 'conversation'}>{state.messages.map(message => <article key={message.id} data-role={message.role}><span>{message.role === 'user' ? (zh ? '你' : 'you') : 'AI'} · <time dateTime={message.createdAt}>{new Date(message.createdAt).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}</time></span><p>{message.content}</p></article>)}</section>
     {!localReady && <p role="status">{zh ? '正在读取本地资料…' : 'Loading local information…'}</p>}
     <label>{zh ? '目标、补充或调整想法' : 'goal, clarification or changes'}<textarea disabled={!localReady} value={draft} onChange={event => { setDraft(event.target.value); invalidate(); }} /></label>
     {question && <><p>{demo ? (zh ? '合成追问：' : 'Synthetic question: ') : (zh ? '还想确认：' : 'One more question: ')}{question}</p><label>{zh ? '补充回答（可留空）' : 'optional clarification answer'}<textarea value={clarificationAnswer} onChange={event => { setClarificationAnswer(event.target.value); invalidate(); }} /></label></>}{responseText && <p>{responseText}</p>}
-    <button disabled={busy || !localReady} onClick={() => void run(() => prepareSending('understand'))}>{zh ? '预览理解目标的发送范围' : 'preview scope for understanding'}</button>
-    <button disabled={busy || !localReady} onClick={() => void run(() => prepareSending('clarify'))}>{zh ? '预览必要追问的发送范围' : 'preview scope for clarification'}</button>
-    <button disabled={busy || !draft.trim()} onClick={() => void run(async () => { await guidedService.appendMessage({ id: crypto.randomUUID(), conversationId, role: 'user', content: draft.trim(), createdAt: new Date().toISOString() }, state.revision); setSummary(draft.trim()); setDraft(''); invalidate(); })}>{zh ? '保存想法（不外发）' : 'save your thoughts locally'}</button>
-    <details className="guided-section"><summary>{zh ? '核对目标和具体日期' : 'review the goal and exact dates'}</summary>
+    {!demo && <><p>{zh ? '发送当前消息、最近的目标对话和训练条件。信息齐全后自动生成计划；身体数据和训练历史仅在下方勾选后用于生成。' : 'Send shares your message, recent goal conversation and training conditions. A plan is generated automatically when ready. Body data and training history are included for generation only if selected below.'}</p>
+      <p id="chat-quota-notice"><strong>{zh ? '发送后使用 1 次理解额度；信息齐全时自动生成计划，再使用 1 次生成额度。修改计划使用 1 次生成额度。请求受理后计次，采用已有计划不扣次数。' : 'Sending uses 1 AI understanding allowance; when ready, automatic planning uses 1 generation allowance. Revising a plan uses 1 generation allowance. Accepted requests count; adopting a returned plan uses no allowance.'}</strong>{qualification && ` ${zh ? '本月剩余：' : 'Remaining this month: '}${Math.max(0, qualification.limits.understand - qualification.used.understand)} / ${Math.max(0, qualification.limits.generate - qualification.used.generate)} (${zh ? '理解 / 生成' : 'understanding / generation'})` }</p>
+      <button className="dialogue-send" aria-describedby="chat-quota-notice" disabled={busy || !localReady || (!draft.trim() && directAttempt.current?.request.purpose !== 'program') || !qualification?.aiEnabled || qualification.reconciliationRequired || checkingQualification} onClick={() => void run(() => sendDirect('understand'))}>{planning ? (zh ? '正在生成计划…' : 'Generating plan…') : sending ? (zh ? '正在整理目标…' : 'Understanding…') : directAttempt.current?.request.purpose === 'program' ? (zh ? '继续生成计划' : 'Resume plan generation') : (zh ? '发送' : 'Send')}</button></>}
+    {demo && <><button disabled={busy || !localReady} onClick={() => void run(() => prepareSending('understand'))}>{zh ? '预览理解目标的发送范围' : 'preview scope for understanding'}</button>
+    <button disabled={busy || !localReady} onClick={() => void run(() => prepareSending('clarify'))}>{zh ? '预览必要追问的发送范围' : 'preview scope for clarification'}</button></>}
+    <button disabled={busy || !draft.trim()} onClick={() => void run(async () => { await guidedService.appendMessage({ id: crypto.randomUUID(), conversationId, role: 'user', content: draft.trim(), createdAt: new Date().toISOString() }, state.revision); if (demo) setSummary(draft.trim()); setDraft(''); invalidate(); })}>{zh ? '保存想法（不外发）' : 'save your thoughts locally'}</button>
+    <details className="guided-section"><summary>{demo ? (zh ? '核对目标和具体日期' : 'review the goal and exact dates') : (zh ? '目标与可选资料' : 'Goal and optional information')}</summary>
       <label>{zh ? '目标理解' : 'goal interpretation'}<textarea value={summary} onChange={event => { setSummary(event.target.value); invalidate(); }} /></label>
-      <button disabled={!summary.trim() || busy} onClick={() => setUnderstandingConfirmed(true)}>{zh ? '确认理解' : 'confirm interpretation'}</button>
+      {demo && <><button disabled={!summary.trim() || busy} onClick={() => setUnderstandingConfirmed(true)}>{zh ? '确认理解' : 'confirm interpretation'}</button>
       <label>{zh ? '开始日期' : 'start date'}<input type="date" value={startDate} onChange={event => { setStartDate(event.target.value); invalidate(); }} /></label>
       <label>{zh ? '结束日期' : 'end date'}<input type="date" value={endDate} onChange={event => { setEndDate(event.target.value); invalidate(); }} /></label>
       <p>{zone}</p><DateCalendar locale={locale} today={dateInZone(Date.now(), zone)} selected={dates} onChange={value => { setDates(value); invalidate(); }} onActive={() => {}} occupied={[]} />
-      <p>{dates.join(', ')}</p><label><input type="checkbox" checked={includeBody} onChange={event => { setIncludeBody(event.target.checked); invalidate(); }} />{zh ? '本次包含已提供的身体信息' : 'include supplied body information this time'}</label>
-      <p>{zh ? '包括已提供的年龄、生理性别回答及身体数值。默认不包含；请核对下方发送预览。' : 'Includes supplied age, biological sex response and body measurements. Excluded by default; check the sending preview below.'}</p>
-      <label><input type="checkbox" checked={includeHistory} onChange={event => { setIncludeHistory(event.target.checked); invalidate(); }} />{zh ? '本次包含所选范围的训练、组记录和体重（含未完成状态；预览后确认，可拒绝）' : 'include training, sets and weights in the selected range (including unfinished states; optional, review before confirming)'}</label>
+      <p>{dates.join(', ')}</p></>}<label><input type="checkbox" checked={includeBody} onChange={event => { setIncludeBody(event.target.checked); invalidate(); }} />{zh ? '本次包含已提供的身体信息' : 'include supplied body information this time'}</label>
+      <p>{zh ? '包括已提供的年龄、生理性别回答及身体数值。默认不包含；仅勾选后在生成或调整计划时发送。' : 'Includes supplied age, biological sex response and body measurements. Excluded by default; sent only when selected for plan generation or revision.'}</p>
+      <label><input type="checkbox" checked={includeHistory} onChange={event => { setIncludeHistory(event.target.checked); invalidate(); }} />{zh ? '生成时包含所选范围的训练、组记录和体重（含未完成状态，可选）' : 'include training, sets and weights in the selected range for generation (including unfinished states; optional)'}</label>
       {includeHistory && <fieldset><legend>{zh ? '本次历史范围，默认最近28天' : 'history scope, last 28 days by default'}</legend>
         <label>{zh ? '历史开始日期' : 'history from'}<input type="date" value={historyFrom} onChange={event => { setHistoryFrom(event.target.value); invalidate(); }} /></label>
         <label>{zh ? '历史结束日期' : 'history to'}<input type="date" value={historyTo} onChange={event => { setHistoryTo(event.target.value); invalidate(); }} /></label>
       </fieldset>}
-      <button disabled={busy || !understandingConfirmed} onClick={() => void run(() => prepareSending())}>{zh ? '预览本次发送范围' : 'preview sending scope'}</button>
+      {demo && <button disabled={busy || !understandingConfirmed} onClick={() => void run(() => prepareSending())}>{zh ? '预览本次发送范围' : 'preview sending scope'}</button>}
+
     </details>
+    {!demo && <p>{zh ? '默认计划范围：' : 'Default planning window: '}{nextPlanningWindow(Date.now(), zone).startDate} → {nextPlanningWindow(Date.now(), zone).endDate} · {zone}。{zh ? 'AI 根据目标、频次和约束安排训练与休息日。' : 'AI schedules training and recovery days around your goal, frequency and constraints.'}</p>}
+    {adopted && <p role="status">{zh ? '计划已采用，可返回记录面板开始训练。' : 'Plan adopted. Return to the dashboard to start training.'}</p>}
     {sendScope && <section className="guided-section"><h2>{zh ? '本次发送范围' : 'sending scope'}</h2><p>{sendScope.purpose}</p><pre>{JSON.stringify(sendScope.scope, null, 2)}</pre>{sendScope.refinement && <p>{sendScope.refinement}</p>}<p>{sendScope.startDate} → {sendScope.endDate} · {sendScope.timeZone}</p><p>{sendScope.dates?.join(', ')}</p>
       <button disabled={busy || !demo && (!qualification?.aiEnabled || qualification.reconciliationRequired)} onClick={() => void run(sendFixture)}>{zh ? '确认发送' : 'confirm sending'}</button><button onClick={invalidate}>{zh ? '返回' : 'back'}</button></section>}
-    {candidate && <section className="guided-section"><h2>{zh ? '完整候选，尚未生效' : 'complete candidate, not active yet'}</h2>
-      <ProgramDashboard locale={locale} title={candidate.name} status="candidate" startDate={candidate.startDate} endDate={candidate.endDate} elapsedDays={0} totalDays={(Date.parse(candidate.endDate) - Date.parse(candidate.startDate)) / 86400000 + 1} completedWorkouts={0} plannedWorkouts={candidate.days.length} todayLabel={zh ? '确认前不会更改当前计划' : 'the current plan is unchanged until confirmation'} rationale={candidate.explanation} />
-      {candidate.days.map(day => <article key={day.date}><h3>{day.date}</h3>{day.exercises.map(item => <div key={item.order}><p>{exercises.find(exercise => exercise.id === item.exerciseId)?.name[locale]}</p><ol>{item.targetSets.map((target, index) => <li key={index}>{targetText(target, locale)}</li>)}</ol></div>)}</article>)}
-      <button disabled={busy} onClick={() => { setSummary(candidate.goal); setStartDate(candidate.startDate); setEndDate(candidate.endDate); setDates(candidate.days.map(day => day.date)); setUnderstandingConfirmed(false); setSendScope(undefined); }}>{zh ? '按此候选重新核对' : 'review this candidate again'}</button>
-      <button disabled={busy || !understandingConfirmed || !candidateMatchesReview} onClick={() => void run(async () => { if (!understandingConfirmed || !candidateMatchesReview) throw new Error(zh ? '目标或日期已变化，请重新核对候选。' : 'goal or dates changed; review the candidate again.'); const before = await guidedService.read(); if (!before.candidates.some(item => item.id === candidate.id)) await guidedService.retainCandidate(candidate, before.revision); const current = await guidedService.read(); await guidedService.applyCandidate(candidate.id, current.revision, demo ? fixtureLimits.maxDays : guidedServiceLimits.maxDays); setLocalCandidate(undefined); })}>{zh ? '确认完整计划' : 'confirm complete plan'}</button>
-      <button disabled={busy || !draft.trim() || !understandingConfirmed} onClick={() => void run(() => prepareSending('refine'))}>{zh ? '预览候选调整的发送范围' : 'preview scope for candidate revision'}</button>
+    {candidate && <section className="guided-section"><h2>{demo ? (zh ? '完整候选，尚未生效' : 'complete candidate, not active yet') : (zh ? '你的训练计划' : 'Your training plan')}</h2>
+      {demo ? <ProgramDashboard locale={locale} title={candidate.name} status="candidate" startDate={candidate.startDate} endDate={candidate.endDate} elapsedDays={0} totalDays={(Date.parse(candidate.endDate) - Date.parse(candidate.startDate)) / 86400000 + 1} completedWorkouts={0} plannedWorkouts={candidate.days.length} todayLabel={zh ? '确认前不会更改当前计划' : 'the current plan is unchanged until confirmation'} rationale={candidate.explanation} /> : <><h3>{candidate.name}</h3><p>{candidate.goal}</p><p>{candidate.startDate} → {candidate.endDate} · {candidate.timeZone} · {candidate.days.length} {zh ? '个训练日' : 'training days'}</p><p className="candidate-notes">{candidate.explanation}</p><p>{zh ? '确认采用后加入训练日历。' : 'Adopt this plan to add it to your training calendar.'}</p></>}
+      {[...candidate.days].sort((a, b) => a.date.localeCompare(b.date)).map(day => <article className="candidate-day" key={day.date}><h3>{day.date}</h3>{[...day.exercises].sort((a, b) => a.order - b.order).map(item => { const exercise = exercises.find(exercise => exercise.id === item.exerciseId); return <div key={item.order}><h4>{item.order + 1}. {exercise?.name[locale]}</h4><p>{item.targetSets.length} {zh ? '组' : 'sets'}</p><ol>{item.targetSets.map((target, index) => <li key={index}>{targetText(target, locale)}</li>)}</ol>{item.notes && <p className="candidate-notes">{item.notes}</p>}{exercise && <details><summary>{zh ? '动作步骤与注意事项（动作目录）' : 'Movement guidance (exercise catalog)'}</summary><ol>{exercise.steps[locale].map((step, index) => <li key={index}>{step}</li>)}</ol><p>{exercise.cautions[locale].join(' ')}</p></details>}</div>; })}</article>)}
+      {demo && <button disabled={busy} onClick={() => { setSummary(candidate.goal); setStartDate(candidate.startDate); setEndDate(candidate.endDate); setDates(candidate.days.map(day => day.date)); setUnderstandingConfirmed(false); setSendScope(undefined); }}>{zh ? '按此候选重新核对' : 'review this candidate again'}</button>}
+      <button disabled={busy || demo && (!understandingConfirmed || !candidateMatchesReview)} onClick={() => void run(async () => { if (demo && (!understandingConfirmed || !candidateMatchesReview)) throw new Error(zh ? '目标或日期已变化，请重新核对候选。' : 'goal or dates changed; review the candidate again.'); const before = await guidedService.read(); if (!before.candidates.some(item => item.id === candidate.id)) await guidedService.retainCandidate(candidate, before.revision); const current = await guidedService.read(); await guidedService.applyCandidate(candidate.id, current.revision, demo ? fixtureLimits.maxDays : guidedServiceLimits.maxDays); setLocalCandidate(undefined); setAdopted(true); })}>{demo ? (zh ? '确认完整计划' : 'confirm complete plan') : (zh ? '采用计划' : 'Adopt plan')}</button>
+      {demo ? <button disabled={busy || !draft.trim() || !understandingConfirmed} onClick={() => void run(() => prepareSending('refine'))}>{zh ? '预览候选调整的发送范围' : 'preview scope for candidate revision'}</button> : <button aria-describedby="chat-quota-notice" disabled={busy || !draft.trim() || !qualification?.aiEnabled || qualification.reconciliationRequired || checkingQualification} onClick={() => void run(() => sendDirect('refine'))}>{zh ? '按当前要求调整计划' : 'Revise plan with these changes'}</button>}
       {localCandidate && !state.candidates.some(item => item.id === localCandidate.id) && <><p>{zh ? '候选保留在当前页，尚未保存成功；重试只保存已有内容。' : 'candidate retained on this page; saving has not succeeded. retry saves the existing content only.'}</p><button disabled={busy} onClick={() => void run(() => guidedService.retainCandidate(localCandidate, state.revision))}>{zh ? '重试保存候选' : 'retry saving candidate'}</button></>}
       <p>{zh ? '候选修改通过对话继续提出；不会恢复手动自定义课表。' : 'request revisions through dialogue; there is no manual custom-plan editor.'}</p>
     </section>}

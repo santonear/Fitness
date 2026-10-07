@@ -19,8 +19,12 @@ export const guidedDialogueRequestSchema = z.strictObject({
   locale: localeSchema, scope: guidedSendingScopeSchema,
   startDate: localDateSchema.optional(), endDate: localDateSchema.optional(), timeZone: timeZoneSchema,
   dates: z.array(localDateSchema).min(1).optional(), confirmedSummary: z.string().min(1),
+  dateSelection: z.literal('ai').optional(),
   refinement: z.string().min(1).optional(), candidateId: uuidSchema.optional(),
 }).superRefine((request, context) => {
+  if (request.dateSelection && request.purpose !== 'program') {
+    context.addIssue({ code: 'custom', message: 'AI_DATE_SELECTION_REQUIRES_PROGRAM' });
+  }
   if ((request.purpose === 'understand' || request.purpose === 'clarify') && (request.scope.body !== undefined || request.scope.history !== undefined)) {
     context.addIssue({ code: 'custom', message: 'GOAL_DIALOGUE_EXCLUDES_BODY_AND_HISTORY' });
   }
