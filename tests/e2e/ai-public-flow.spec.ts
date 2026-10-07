@@ -5,6 +5,8 @@ for(const locale of ['en','zh'] as const)test(`${locale} explicit guided demo un
  await page.getByRole('textbox',{name:t('goal, clarification or changes','目标、补充或调整想法'),exact:true}).fill('Regular walking');
  await page.getByRole('button',{name:t('preview scope for understanding','预览理解目标的发送范围'),exact:true}).click();
  await page.getByRole('button',{name:t('confirm sending','确认发送'),exact:true}).click();
+ await expect(page.getByRole('region',{name:t('conversation','对话记录'),exact:true})).toContainText('Regular walking');
+ await expect(page.getByRole('button',{name:t('preview scope for understanding','预览理解目标的发送范围'),exact:true})).toBeEnabled();
  await page.getByText(t('review the goal and exact dates','核对目标和具体日期'),{exact:true}).click();
  await expect(page.getByRole('textbox',{name:t('goal interpretation','目标理解'),exact:true})).not.toHaveValue('');
  await page.getByLabel(t('start date','开始日期'),{exact:true}).fill('2027-02-11');await page.getByLabel(t('end date','结束日期'),{exact:true}).fill('2027-02-11');

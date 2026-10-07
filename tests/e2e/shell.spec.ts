@@ -30,6 +30,17 @@ test('five destinations stay usable without overflow at 320px', async ({ page })
           width: rect.width, minWidth: style.minWidth, maxWidth: style.maxWidth, font: style.font }];
       }),
     }));
+    if (layout.width > layout.viewport) {
+      const causes = await page.evaluate(() => Array.from(document.querySelectorAll<HTMLElement>('input,select,button,summary,table')).flatMap(element => {
+        const before = document.documentElement.scrollWidth;
+        const old = element.style.display;
+        element.style.display = 'none';
+        const after = document.documentElement.scrollWidth;
+        element.style.display = old;
+        return after < before ? [{ tag: element.tagName, type: element.getAttribute('type'), text: element.textContent?.slice(0, 100), before, after }] : [];
+      }));
+      console.log('Overflow causes', JSON.stringify(causes));
+    }
     expect(layout.width <= layout.viewport, JSON.stringify(layout)).toBe(true);
     await page.reload();
     await expect(page.getByRole('main')).toBeVisible();
