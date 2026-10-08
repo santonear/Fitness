@@ -50,6 +50,9 @@
 .v31-measurement-form { display:grid; gap:12px; border-top:1px solid var(--line); padding-top:18px; margin-top:18px; }
 .v31-progress label,.v31-catalog-filters label { display:grid; gap:7px; font-size:.85rem; font-weight:650; min-width:0; }
 .v31-progress input,.v31-progress select,.v31-catalog-filters input,.v31-catalog-filters select { display:block; width:100%; min-width:0; max-width:100%; min-height:44px; padding:10px 12px; border:1px solid var(--line); background:var(--surface); color:var(--text); border-radius:10px; font:inherit; }
+/* Retain the native-select overflow guard from the previous theme: Linux WebKit
+   can paint a long selected option beyond its constrained control width. */
+.v31-progress select { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .v31-measurement-history { margin-top:18px; }
 .v31-measurement-history ol { list-style:none; padding:0; max-height:420px; overflow:auto; }
 .v31-measurement-history li { display:flex; flex-direction:column; gap:6px; padding:12px 0; border-bottom:1px solid var(--line); }

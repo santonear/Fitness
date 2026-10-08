@@ -1,6 +1,6 @@
 import { seedLegacyPlan } from './helpers/legacy-plan';
 import { expect, test } from '@playwright/test';
-test.use({ locale: 'en-US' });
+test.use({ locale: 'en-US', viewport: {width:320,height:700} });
 
 test('manual local preparation shows completed facts without network or database mutation', async ({ page, baseURL }) => {
   await page.goto('/workout');
@@ -33,7 +33,8 @@ test('manual local preparation shows completed facts without network or database
   await expect(preview).toContainText('Restore generation 0');
   expect(await read()).toEqual(before);
   expect(apiRequests).toEqual([]);
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  const overflow = await page.evaluate(() => ({width:document.documentElement.scrollWidth,viewport:innerWidth,elements:[...document.querySelectorAll('main *')].filter(el=>el.getBoundingClientRect().right>innerWidth+1).map(el=>({tag:el.tagName,cls:el.className,width:el.getBoundingClientRect().width,text:el.textContent?.slice(0,80)})).slice(0,20)}));
+  expect(overflow.width,JSON.stringify(overflow)).toBeLessThanOrEqual(overflow.viewport);
   await page.getByLabel('Language').selectOption('zh');
   await expect(page.getByRole('heading', { name: '阶段总结本地准备', exact: true })).toBeVisible();
   await expect(page.getByRole('region', { name: '阶段事实预览' })).toContainText('1 次已完成训练');
@@ -69,7 +70,8 @@ test('saved legacy plan supports actual week and whole-plan fact previews', asyn
   await section.getByRole('button', { name: 'Prepare local preview' }).click();
   await expect(preview).toContainText('2026-10-05 → 2026-10-11');
   await expect(preview).toContainText('1 completed sessions');
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  const overflow = await page.evaluate(() => ({width:document.documentElement.scrollWidth,viewport:innerWidth,elements:[...document.querySelectorAll('main *')].filter(el=>el.getBoundingClientRect().right>innerWidth+1).map(el=>({tag:el.tagName,cls:el.className,width:el.getBoundingClientRect().width,text:el.textContent?.slice(0,80)})).slice(0,20)}));
+  expect(overflow.width,JSON.stringify(overflow)).toBeLessThanOrEqual(overflow.viewport);
 });
 
 test('empty and invalid selections remain visible and never imply AI generation', async ({ page }) => {
