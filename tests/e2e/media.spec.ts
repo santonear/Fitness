@@ -23,7 +23,7 @@ test('media is local until keyboard consent and blocked media preserves catalogu
  await expect(page.getByText('原创示意图；动作姿势尚未经专业审核。', { exact: true })).toHaveCount(4);
  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
  await page.getByRole('navigation',{name:/Bottom navigation|底部导航/,exact:true}).getByRole('link', { name: '今日', exact: true }).click();
- await expect(page.getByRole('heading', { name: '按自己的节奏，开始今天。', exact: true })).toBeVisible();
+ await expect(page.getByRole('heading', { name: '你的性别是？', exact: true })).toBeVisible();
 });
 
 

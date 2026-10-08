@@ -1,3 +1,4 @@
+import { AppIcon } from '../AppIcon';
 import { useEffect, useRef, useState } from 'react';
 import type { GuidedLocale } from './GuidedOnboarding';
 import { NumericWheel } from './NumericWheel';
@@ -65,7 +66,7 @@ export function OnboardingInputDialog({ locale, title, initial, config, returnFo
       <p className="onboarding-hint">{t('检查文字后确认，下一步再保存回答。', 'Review the text before confirming. Continue to save your answer.')}</p>
       {!voiceNotice ? <button type="button" onClick={() => setVoiceNotice(true)}>{t('语音转写', 'Voice input')}</button> : <div className="onboarding-voice">
         <p>{t('浏览器可能将语音发送给其识别服务。Fitness 不保存录音，只保留你确认的文字。', 'Your browser may send audio to its recognition service. Fitness keeps no recordings, only text you confirm.')}</p>
-        {!Speech || !online ? <p role="status">{t('此浏览器或离线状态不支持语音，请输入文字。', 'Voice is unavailable in this browser or offline. Please type instead.')}</p> : <button type="button" onClick={listening ? () => recognition.current?.stop() : startVoice}>{listening ? t('停止转写', 'Stop listening') : t('同意并开始语音', 'Agree and start voice')}</button>}
+        {!Speech || !online ? <p role="status"><AppIcon name="info"/>{t('此浏览器或离线状态不支持语音，请输入文字。', 'Voice is unavailable in this browser or offline. Please type instead.')}</p> : <button type="button" onClick={listening ? () => recognition.current?.stop() : startVoice}>{listening ? t('停止转写', 'Stop listening') : t('同意并开始语音', 'Agree and start voice')}</button>}
         <span role="status">{listening ? t('正在聆听…', 'Listening…') : voiceError}</span>
       </div>}
     </>}

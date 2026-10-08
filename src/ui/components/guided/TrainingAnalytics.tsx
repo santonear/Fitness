@@ -1,3 +1,4 @@
+import { AppIcon, StatusIcon } from '../AppIcon';
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { liveQuery } from 'dexie';
@@ -20,7 +21,7 @@ function AnalyticsChart({ title, unit, values, empty, locale, bars=false }: { ti
   const max=Math.max(1,...values.map(point=>point.value));
   const x=(i:number)=>values.length===1?300:32+i*536/(values.length-1); const y=(value:number)=>168-value/max*132;
   return <article className="analytics-card"><header><h3>{title}</h3><span>{unit}</span></header>
-    {empty || !values.length ? <div className="analytics-empty"><svg viewBox="0 0 100 60" aria-hidden="true"><path d="M12 47h76M22 39V29m19 10V18m19 21V25m19 14V9" stroke="currentColor" strokeWidth="2" fill="none" /></svg><p>{locale==='zh'?'尚无可分析的已完成记录。':'no completed records to analyse yet.'}</p><Link to="/workout">{locale==='zh'?'查看训练入口':'open workouts'}</Link></div> : <>
+    {empty || !values.length ? <div className="analytics-empty"><AppIcon name="progress"/><p>{locale==='zh'?'尚无可分析的已完成记录。':'no completed records to analyse yet.'}</p><Link to="/workout">{locale==='zh'?'查看训练入口':'open workouts'}</Link></div> : <>
       <svg className="analytics-chart" viewBox="0 0 600 210" role="img" aria-label={`${title} · ${unit}`}>
         {[0,.5,1].map(ratio=><g key={ratio}><path d={`M32 ${y(max*ratio)}H568`} className="analytics-grid-line"/><text x="30" y={y(max*ratio)-7}>{Math.round(max*ratio*10)/10}</text></g>)}
         {bars ? values.map((point,i)=><rect key={point.label} x={x(i)-Math.min(20,180/values.length)} y={y(point.value)} width={Math.min(40,360/values.length)} height={168-y(point.value)} className="analytics-bar"/>) : <polyline points={values.map((point,i)=>`${x(i)},${y(point.value)}`).join(' ')} fill="none" className="analytics-line"/>}
@@ -56,7 +57,7 @@ export function TrainingAnalytics({locale,today,timeZone}:{locale:'zh'|'en';toda
     <header className="analytics-heading"><div><h1>{t('训练总览','training overview')}</h1><p>{t('了解你的节奏，看见每一次积累。','your training rhythm, over time.')}</p></div><span className="fitness-sticker">{t('本地记录','LOCAL DATA')}</span></header>
     <div className="analytics-filters"><div role="group" aria-label={t('分析时间范围','analysis period')}>{[['30','30D'],['90','90D'],['180','180D'],['365','1Y'],['all',t('全部','all')]].map(([value,label])=><button key={value} aria-pressed={range===value} onClick={()=>setRange(value)}>{label}</button>)}</div><p>{range==='all'&&!report?.history.length?t('全部记录','all records'):`${effectiveFrom} — ${today}`}</p></div>
     <p className="analytics-caption">{t('按训练记录中的实际日期统计，包含计划与临时训练。图表展示有完成训练的月份。','by recorded actual training date, including planned and temporary workouts. charts show months with completed sessions.')}</p>
-    {error?<p role="alert">{t('无法读取分析数据：','unable to load analytics: ')}{error}</p>:!report?<div className="analytics-skeleton" role="status">{t('正在读取训练记录…','loading training records…')}</div>:<>
+    {error?<p role="alert"><StatusIcon status="warning"/>{t('无法读取分析数据：','unable to load analytics: ')}{error}</p>:!report?<div className="analytics-skeleton" role="status">{t('正在读取训练记录…','loading training records…')}</div>:<>
       <div className="analytics-kpis">{metrics.map(([label,value,note])=><article key={label} className="analytics-card"><h3>{label}</h3><strong>{value}</strong><p>{note}</p></article>)}</div>
       <div className="analytics-charts" id="analytics-trends">
         <AnalyticsChart title={t('训练频率','training frequency')} unit={t('完成次数／月','completed workouts / month')} locale={locale} values={summary!.months.map(row=>({label:row.month,value:row.workouts}))} empty={!report.history.length}/>

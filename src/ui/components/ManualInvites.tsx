@@ -1,3 +1,4 @@
+import { AppIcon } from './AppIcon';
 import { useState } from 'react';
 import { trialApi } from './TrialAccess';
 
@@ -24,7 +25,7 @@ export function ManualInvites({ zh, invites, busy, run }: {
         () => setCopyStatus(zh ? '已复制' : 'Copied'),
         () => setCopyStatus(zh ? '复制失败，请选中邀请码手动复制。' : 'Copy failed. Select the code and copy it manually.'),
       ); }}>{zh ? '复制邀请码' : 'Copy invitation'}</button>
-      {copyStatus && <p role="status">{copyStatus}</p>}
+      {copyStatus && <p role="status"><AppIcon name="info"/>{copyStatus}</p>}
       <small>{zh ? '离开此页面后不再显示完整邀请码，请及时保存。' : 'The full code will no longer be shown after leaving this page. Save it now.'}</small>
     </div>}
     <h4>{zh ? '尚未兑换的邀请码' : 'Unredeemed invitations'}</h4>

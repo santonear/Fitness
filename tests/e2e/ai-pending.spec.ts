@@ -1,3 +1,4 @@
+import { completedPlanningProfile } from './planning-profile-fixture';
 import { test, expect } from '@playwright/test';
 import { validateGuidedProviderOutput } from '../../src/backend/guided-provider';
 for (const locale of ['en', 'zh'] as const) test(`${locale} pending understanding survives unknown status without releasing accounting or resending`, async ({page}) => {
@@ -5,7 +6,7 @@ for (const locale of ['en', 'zh'] as const) test(`${locale} pending understandin
  await page.route('**/api/v1/**',async route=>{
  if(route.request().method()==='GET')return route.fulfill(unknown?{status:503,json:{error:'CONTROL_UNAVAILABLE'}}:{json:{expiresAt:Date.now()+86400000,period:'2026-10',used:{understand:1,generate:0},limits:{understand:8,generate:4},pending:calls,reconciliationRequired:calls>0,aiEnabled:true}});
  calls++;const body=route.request().postDataJSON();return route.fulfill({json:{requestId:body.requestId,accounting:'pending',result:validateGuidedProviderOutput(body.dialogue,{kind:'understand',summary:'Retained understanding',uncertainties:[]}),context:{restoreGeneration:body.restoreGeneration,inputDigest:body.sendConfirmation}}});});
- await page.addInitScript(locale=>localStorage.setItem('fitness.language',locale),locale);await page.goto('/ai');
+ await page.addInitScript(locale=>localStorage.setItem('fitness.language',locale),locale);await completedPlanningProfile(page);await page.goto('/ai');
  await page.getByRole('textbox',{name:t('Training goal and constraints','训练目标与约束'),exact:true}).fill('Regular walking');
  await page.getByRole('checkbox',{name:/I reviewed this information|我已核对上述内容/}).check();
  await page.getByRole('button',{name:t('Understand goal','理解目标'),exact:true}).click();

@@ -1,3 +1,4 @@
+import { AppIcon, StatusIcon } from '../components/AppIcon';
 import { withLegacyConfirmation } from '../legacy-confirmation';
 import { database } from '../../persistence/db';
 import { dateInZone } from '../../application/progress';
@@ -126,7 +127,7 @@ export function WorkoutPage({ dashboard = false }: { dashboard?: boolean }) {
           <p className="dashboard-workout-meta">{zh ? { strength: '力量', cardio: '有氧', bodyweight: '徒手' }[selected.category] : { strength: 'Strength', cardio: 'Cardio', bodyweight: 'Bodyweight' }[selected.category]}</p>
           <p className="dashboard-workout-copy">{zh ? '选择一个动作开始训练，逐组记录实际完成值。' : 'Choose an exercise and start a session. Record actual values as you go.'}</p>
           {exerciseChoice}
-          <button className="dashboard-start" disabled={busy} onClick={() => start()}>{zh ? '开始临时训练' : 'Start temporary workout'} <span aria-hidden="true">→</span></button>
+          <button className="dashboard-start" disabled={busy} onClick={() => start()}>{zh ? '开始临时训练' : 'Start temporary workout'} <AppIcon name="next"/></button>
           <ol className="dashboard-workout-steps">
             {[zh ? '选择动作' : 'Choose exercise', zh ? '记录组' : 'Record sets', zh ? '核对完成' : 'Review & finish'].map((step, index) => <li key={step}><span aria-hidden="true">{index + 1}</span>{step}</li>)}
           </ol>
@@ -176,8 +177,8 @@ export function WorkoutPage({ dashboard = false }: { dashboard?: boolean }) {
     <>
       {!dashboard && <h1>{zh ? '今日训练' : 'Today'}</h1>}
       {(!dashboard || session) && <p className="muted">{zh ? '只有点击记录后，实际值才会保存。' : 'Actual values save when you select Record set.'}</p>}
-      {error && <p role="alert">{error}</p>}
-      <p role="status">{message}</p>
+      {error && <p role="alert"><StatusIcon status="error"/>{error}</p>}
+      <p role="status"><AppIcon name="info"/>{message}</p>
       {session?.status === 'in_progress' && <WorkoutLifecycleControls sessionId={session.id} locale={locale} onPaused={setPaused} />}
       <div className={dashboard && session ? 'dashboard-session' : undefined}>{workspace()}</div>
     </>

@@ -1,3 +1,4 @@
+import { AppIcon, StatusIcon } from '../components/AppIcon';
 import { useEffect, useRef, useState } from 'react';
 import { liveQuery } from 'dexie';
 import { useTranslation } from 'react-i18next';
@@ -90,7 +91,7 @@ export function GuidedHome({ panelOnly = false, onboardingOnly = false }: { pane
   return <div className={`guided-page${showOnboarding ? ' guided-welcome' : ' guided-records'}`}>
     {(showOnboarding || panelOnly) && <h1>{showOnboarding ? (zh ? '从了解你开始。' : 'let’s start with you.') : (zh ? '训练计划' : 'training plans')}</h1>}
     {showOnboarding && <p className="guided-welcome-intro">{zh ? '一步一步，找到适合你生活的训练。' : 'one step at a time. training that fits your life.'}</p>}
-    {error && !showOnboarding && <p role="alert">{error}</p>}
+    {error && !showOnboarding && <p role="alert"><StatusIcon status="error"/>{error}</p>}
     {showOnboarding ? <>
       <GuidedOnboarding locale={locale} step={state.onboarding?.step ?? 0} answers={state.onboarding?.answers ?? {}} busy={busy} error={error}
         onAnswer={(key, answer) => run(revision => guidedService.saveAnswer(key, answer, reference.current.onboarding?.step ?? 0, revision))}

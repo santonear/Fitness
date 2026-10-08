@@ -23,6 +23,7 @@ export const guidedDialogueRequestSchema = z.strictObject({
   dateSelection: z.literal('ai').optional(),
   schedule: z.array(trainingSlotSchema).min(1).max(14).optional(),
   refinement: z.string().min(1).optional(), candidateId: uuidSchema.optional(),
+  onboardingVersion: z.literal(4).optional(), adultConfirmed: z.boolean().optional(),
 }).superRefine((request, context) => {
   if (request.schedule && (!['program', 'refine'].includes(request.purpose) || request.dateSelection || !request.dates || new Set(request.schedule.map(slot => slot.date)).size !== request.schedule.length || request.schedule.length !== request.dates.length || request.schedule.some(slot => !request.dates!.includes(slot.date)) || !request.startDate || !request.endDate || (Date.parse(request.endDate) - Date.parse(request.startDate)) / 86400000 + 1 > 31)) context.addIssue({ code: 'custom', message: 'INVALID_CONFIRMED_SCHEDULE' });
   if (request.dateSelection && request.purpose !== 'program') {

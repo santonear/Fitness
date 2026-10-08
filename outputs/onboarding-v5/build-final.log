@@ -1,0 +1,17 @@
+
+> fitness-local@0.1.0 build
+> vite build
+
+vite v8.3.2 building client environment for production...
+transforming...
+✓ 247 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                               0.60 kB │ gzip:   0.33 kB
+dist/assets/index-VMGGfpwj.css               81.12 kB │ gzip:  15.63 kB
+dist/assets/rolldown-runtime-CbXtAM7H.js      0.58 kB │ gzip:   0.36 kB
+dist/assets/storage-validation-CVYhDa3g.js  191.47 kB │ gzip:  57.96 kB
+dist/assets/react-DjX0U0Iu.js               218.84 kB │ gzip:  68.25 kB
+dist/assets/index-DqckvT0x.js               464.93 kB │ gzip: 147.64 kB
+
+✓ built in 248ms

@@ -1,3 +1,4 @@
+import { AppIcon, StatusIcon } from './AppIcon';
 import { useRef, useState, type FormEvent } from 'react';
 import { exercises } from '../../catalog/exercises';
 import { parseMetric } from '../../domain/units';
@@ -124,7 +125,7 @@ function SetForm({ sessionId, exercise, locale, busy, saved, order = 0, onRecord
         <label>{zh ? '组备注' : 'Set notes'}<input value={notes} onChange={event => setNotes(event.target.value)} /></label>
         {unsaved && <p>{zh ? '本组输入尚未保存' : 'Current set inputs are not saved'}</p>}
         <button type="submit">{saved ? (zh ? '更新组' : 'Update set') : (zh ? '记录组' : 'Record set')}</button>
-        {error && <p role="alert">{error}</p>}
+        {error && <p role="alert"><StatusIcon status="error"/>{error}</p>}
       </fieldset>
     </form>
   );

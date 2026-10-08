@@ -1,3 +1,4 @@
+import { AppIcon, StatusIcon } from '../components/AppIcon';
 import { useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { profileService } from '../../application/profile';
@@ -8,7 +9,7 @@ import { trainingMemoryService } from '../../application/training-memory';
 import type { TrainingMemo } from '../../domain/models';
 import { TrainingMemoView } from '../components/CompletionReview';
 import { BackupPanel } from '../components/BackupPanel';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { AppearanceCards } from '../components/Appearance';
 import { TrialAccess } from '../components/TrialAccess';
 
@@ -66,15 +67,15 @@ export function SettingsPage({ restored = false }: { restored?: boolean }) {
   }
   function submit(e: FormEvent) { e.preventDefault(); void save(); }
   return <div className="settings-page v31-settings"><h1>{t('settings')}</h1><p>{l.local}</p>
-    {error && <p role="alert">{error}</p>}
+    {error && <p role="alert"><StatusIcon status="error"/>{error}</p>}
     <div className="v31-tabs" role="tablist" aria-label={i18n.resolvedLanguage === 'zh'?'设置分类':'Settings sections'}>{tabs.map((name,index)=><button key={name} role="tab" aria-selected={name===tab} aria-controls={`settings-${name}`} id={`tab-${name}`} onClick={()=>setParams({tab:name})}>{(i18n.resolvedLanguage==='zh'?['AI 资格与额度','备份恢复','偏好与资料','外观与版式']:['AI access & quota','Backup & restore','Profile & preferences','Appearance & layout'])[index]}</button>)}</div>
     <section role="tabpanel" id="settings-trial" aria-labelledby="tab-trial" hidden={tab!=='trial'}>{tab==='trial'&&<TrialAccess />}</section>
     <section role="tabpanel" id="settings-backup" aria-labelledby="tab-backup" hidden={tab!=='backup'}>{profile && <BackupPanel restored={restored} />}</section>
     <section role="tabpanel" id="settings-appearance" aria-labelledby="tab-appearance" hidden={tab!=='appearance'}><AppearanceCards /></section>
-    <section role="tabpanel" id="settings-profile" aria-labelledby="tab-profile" hidden={tab!=='profile'}><p>{l.optional}</p>
+    <section role="tabpanel" id="settings-profile" aria-labelledby="tab-profile" hidden={tab!=='profile'}><p>{l.optional}</p><Link to="/onboarding">{i18n.resolvedLanguage === 'zh' ? '查看或修改10阶段引导资料' : 'Review or edit 10-stage onboarding'}</Link>
     <button disabled={!profile || busy} onClick={() => void run(async () => { setMemo(await trainingMemoryService.readTrainingMemo()); })}>{i18n.resolvedLanguage === 'zh' ? '读取全量训练备忘' : 'Read full training memo'}</button>
     {memo && <TrainingMemoView memo={memo} locale={i18n.resolvedLanguage === 'zh' ? 'zh' : 'en'} />}
-    <p role="status">{status}</p>
+    <p role="status"><AppIcon name="info"/>{status}</p>
     <form onSubmit={submit}><fieldset disabled={!profile || busy}>
       {Object.keys(blank).map(key => { const k = key as keyof Fields; return <label key={k}>{l[k]}<input value={fields[k]} onChange={e => setFields({ ...fields, [k]: e.target.value })} inputMode={['days','minutes','height','weight'].includes(k) ? 'decimal' : 'text'} /></label>; })}
       <label>{l.zone}<input value={zone} onChange={e => setZone(e.target.value)} /></label>
@@ -90,4 +91,3 @@ export function SettingsPage({ restored = false }: { restored?: boolean }) {
     <ul aria-label={l.history}>{weights.map(row => <li key={row.id}>{row.localDate} · {row.weightGrams / 1000} kg · {row.timeZone} <button disabled={busy} onClick={() => { setEditing(row); setDate(row.localDate); setWeight(String(row.weightGrams / 1000)); }}>{l.edit}</button> <button disabled={busy} onClick={() => void run(async () => { await bodyWeightService.deleteBodyWeight(row.id, row.revision); setWeights(await bodyWeightService.listBodyWeights()); if (editing?.id === row.id) setEditing(undefined); setStatus(l.deleted); })}>{l.delete}</button></li>)}</ul>
     </section></div>;
 }
-

@@ -1,0 +1,23 @@
+.theme-atlas{--ceramic-top:#eff8ff;--ceramic-bottom:#b5d3f4;--ceramic-symbol:#2a73b7;--ceramic-light:#8fcbff;--ceramic-dark:#154e89;--ceramic-stroke:#96c5e9;--ceramic-active:rgba(60,132,217,.18)}
+.theme-serene{--ceramic-top:#fffdf3;--ceramic-bottom:#d8e4c7;--ceramic-symbol:#6b9467;--ceramic-light:#a6c9a0;--ceramic-dark:#40654a;--ceramic-stroke:#b8c9ac;--ceramic-active:rgba(96,128,85,.18)}
+.theme-orbit{--ceramic-top:#fff1fb;--ceramic-bottom:#e8d9fa;--ceramic-symbol:#8868c8;--ceramic-light:#ffc7b4;--ceramic-dark:#7454a7;--ceramic-stroke:#e4c5f0;--ceramic-active:rgba(153,101,216,.19)}
+.ceramic-svg {display:inline-block;width:48px;height:48px;flex:0 0 48px;vertical-align:middle;overflow:visible;filter:drop-shadow(0 3px 3px #28325022)}
+.ceramic-figure {filter:drop-shadow(0 2px 1px #2d344533)}
+.ceramic-detail {fill:none;stroke:var(--ceramic-top);stroke-width:2.6;stroke-linecap:round}
+.app-action-icon {width:20px;height:20px;display:inline-block;vertical-align:middle;flex-shrink:0}
+.app-status-icon {display:inline-flex;margin-inline-end:6px;vertical-align:middle;color:var(--text)}
+.v31-shell .app-nav-icon,.v31-shell .app-nav-icon svg {display:inline-flex;width:50px;height:50px;flex:0 0 50px;padding:0;background:transparent;border:0}
+.v31-shell .app-sidebar nav a {padding:6px 0;border:0;background:transparent;min-height:64px}
+.v31-shell .app-sidebar nav a:hover,.v31-shell .app-sidebar nav a[aria-current=page] {background:transparent;border:0}
+.v31-shell nav a[aria-current=page] .ceramic-svg {filter:drop-shadow(0 3px 5px var(--ceramic-active));outline:2px solid var(--primary);outline-offset:2px;border-radius:16px}
+.v31-shell nav a:hover .ceramic-svg {filter:brightness(1.04) drop-shadow(0 4px 5px var(--ceramic-active))}
+.v31-shell nav a:active .ceramic-svg {transform:translateY(2px)}
+.v31-shell nav a:focus-visible {outline:3px solid var(--primary);outline-offset:3px}
+.v31-shell .v31-mobile-nav a,.v31-shell .v31-mobile-nav a[aria-current=page] {background:transparent;align-items:center;min-height:72px;padding:3px 0}
+button:disabled .app-action-icon {opacity:.45}
+.ob4 .ob4-options button {gap:10px}.ob4 .ob4-options .ceramic-svg {width:44px;height:44px;flex-basis:44px}
+.ob5-metrics {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.ob5-metrics>div {min-width:0}.ob5-metrics .ob4-label{min-height:44px;margin-bottom:8px;overflow-wrap:anywhere}.ob5-metrics .ob4-wheel{padding:4px}.ob5-metrics .ob4-wheel strong{font-size:1.65rem;padding:12px 0}.ob5-metrics .ob4-wheel small{display:block;margin:0}.ob5-metrics button.ob4-wheel-confirm,.ob5-metrics .ob5-unknown {width:100%;padding:6px 2px;font-size:.8rem;white-space:normal;min-height:44px}.ob5-unknown {margin-top:6px}
+@media(max-width:360px){.ob5-metrics{gap:4px}.ob5-metrics .ob4-wheel strong{font-size:1.4rem}.ob5-metrics .ob4-label{font-size:.76rem}.onboarding-immersive main#content{padding:8px}.ob4-card{padding:18px 10px}.v31-shell .v31-mobile-nav{left:6px;right:6px;padding:6px 3px;gap:0}.v31-shell .v31-mobile-nav a{font-size:10px}.v31-shell .app-nav-icon,.v31-shell .app-nav-icon svg{width:48px;height:48px;flex-basis:48px}}
+@media(prefers-reduced-motion:reduce){.v31-shell nav a:active .ceramic-svg{transform:none}}
+
+.v31-favorite[aria-pressed=true] .app-action-icon{fill:currentColor}.calendar-empty>.ceramic-svg,.analytics-empty>.ceramic-svg{width:64px;height:64px}.calendar-done-mark .app-action-icon{width:14px;height:14px}

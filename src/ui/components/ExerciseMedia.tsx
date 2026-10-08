@@ -1,3 +1,4 @@
+import { AppIcon } from './AppIcon';
 import { useState } from 'react';
 import { getExerciseMedia, youtubeEmbedUrl } from '../../catalog/media';
 import type { Locale } from '../../domain/models';
@@ -11,7 +12,7 @@ export function ExerciseMedia({ exerciseId, exerciseName, locale }: { exerciseId
  const url = media.videoId && youtubeEmbedUrl(media.videoId);
  return <section style={{ overflowWrap: 'anywhere' }} aria-label={zh ? `${exerciseName} 媒体参考` : `${exerciseName} media reference`}>
   {!imageFailed && <img src={media.illustration} alt={zh ? `${exerciseName} 原创示意图` : `${exerciseName} original illustration`} width="280" height="160" style={{ maxWidth: '100%', height: 'auto' }} onError={() => setImageFailed(true)} />}
-  {imageFailed && <p role="status">{zh ? '示意图不可用，仍可阅读动作步骤。' : 'Illustration unavailable. Written steps remain available.'}</p>}
+  {imageFailed && <p role="status"><AppIcon name="info"/>{zh ? '示意图不可用，仍可阅读动作步骤。' : 'Illustration unavailable. Written steps remain available.'}</p>}
   <p className="muted">{zh ? '原创示意图；动作姿势尚未经专业审核。' : 'Original illustration; movement form has not been professionally reviewed.'}</p>
   <p className="muted">{zh ? '图片为本项目原创素材；未使用第三方图片授权。' : 'The illustration is original to this project; no third-party image licence is claimed.'}</p>
   <p><a href={media.source.url} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer">{zh ? '查看来源（连接第三方）' : 'Open source (connects to a third party)'}: {media.source.title}</a></p>
@@ -35,7 +36,7 @@ export function ExerciseMedia({ exerciseId, exerciseName, locale }: { exerciseId
     <button type="button" onClick={() => setState('idle')}>{zh ? '关闭视频' : 'Close video'}</button>
    </>}
    {state === 'failed' && <>
-    <p role="status">{zh ? '视频不可用，仍可阅读动作步骤。' : 'Video unavailable. Written steps remain available.'}</p>
+    <p role="status"><AppIcon name="info"/>{zh ? '视频不可用，仍可阅读动作步骤。' : 'Video unavailable. Written steps remain available.'}</p>
     <button type="button" onClick={() => setState('loading')}>{zh ? '重试视频（连接第三方）' : 'Retry video (connects to a third party)'}</button>
     <button type="button" onClick={() => setState('idle')}>{zh ? '关闭视频' : 'Close video'}</button>
    </>}

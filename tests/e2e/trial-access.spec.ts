@@ -1,3 +1,4 @@
+import { completedPlanningProfile } from './planning-profile-fixture';
 import { expect, test } from '@playwright/test';
 
 for (const zh of [false, true]) test(`active trial enters planning and refreshes allowance without model calls (${zh ? 'zh' : 'en'})`, async ({ page }) => {
@@ -11,6 +12,7 @@ for (const zh of [false, true]) test(`active trial enters planning and refreshes
     if (path.endsWith('/status')) return route.fulfill({ json: { expiresAt: Date.now() + 86400000, period: '2026-10', used: { understand: 0, generate: 0 }, limits: { understand: 8, generate: 4 }, aiEnabled: true, pending: 0 } });
     return route.fulfill({ status: 503, json: { error: 'UNEXPECTED' } });
   });
+  await completedPlanningProfile(page);
   await page.goto('/trial');
   await page.getByRole('button', { name: zh ? '开始制定训练计划' : 'Start planning your training', exact: true }).click();
   await expect(page).toHaveURL(/\/ai$/);
@@ -140,7 +142,7 @@ for (const zh of [false, true]) {
     await page.getByRole('button', { name: zh ? '领取并启用' : 'Claim and activate', exact: true }).click();
     await expect(page.getByText(zh ? 'AI 试用有效' : 'Your AI trial is active',{exact:true})).toBeVisible();
     await page.getByRole('button',{name:zh?'开始制定训练计划':'Start planning your training',exact:true}).click();
-    await expect(page.locator('.v31-ai')).toBeVisible();
+    await expect(page).toHaveURL(/\/onboarding$/);await expect(page.locator('.ob4')).toBeVisible();
     await page.goto('/trial'); await expect(page.getByRole('button', { name: zh ? '申请延期 30 天' : 'Request 30-day extension' })).toBeVisible();
     await expect(page.getByRole('button', { name: zh ? '申请 AI 试用' : 'Apply for AI trial', exact: true })).toHaveCount(0);
   });
@@ -151,6 +153,8 @@ for (const zh of [false, true]) {
     await expect(page.getByRole('alert')).toBeVisible();
     await page.goto('/');
     await expect(page.locator('.trial-access')).toHaveCount(0);
+    await expect(page.locator('.ob4')).toBeVisible();
+    await page.getByRole('button',{name:zh?'暂时离开':'Leave for now',exact:true}).click();
     await expect(page.locator('.v31-today')).toBeVisible();
   });
 }
@@ -200,11 +204,11 @@ for (const zh of [false, true]) test(`visible invitation entry starts planning w
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({ path: test.info().outputPath(`invitation-entry-${zh ? 'zh' : 'en'}.png`), fullPage: true });
   await activate.click();
-  await expect(page).toHaveURL(/\/ai$/); await expect(page.locator('.v31-ai')).toBeVisible();
+  await expect(page).toHaveURL(/\/onboarding$/); await expect(page.locator('.ob4')).toBeVisible();
   expect(writes).toEqual(['/api/v1/trial/redeem']);
   expect(await page.evaluate(() => localStorage.getItem('fitness-trial-display-name-v1'))).toBe('Synthetic member');
   expect(await page.evaluate(() => Object.values(localStorage).some(v => v.includes('a'.repeat(64))))).toBe(false);
-  await page.reload(); await expect(page.locator('.v31-ai')).toBeVisible(); expect(writes).toHaveLength(1);
+  await page.reload(); await expect(page.locator('.ob4')).toBeVisible(); expect(writes).toHaveLength(1);
 });
 
 for (const zh of [false, true]) test(`pending applicants can enter a code and invalid codes do not activate (${zh ? 'zh' : 'en'})`, async ({ page }) => {

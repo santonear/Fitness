@@ -1,3 +1,4 @@
+import { AppIcon, StatusIcon } from '../components/AppIcon';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { trialApi } from '../components/TrialAccess';
@@ -40,8 +41,8 @@ export function ManagementPage() {
   return <div className="management-shell"><aside><a className="management-brand" href="/">Fitness.</a><p>{zh ? '管理工作台' : 'Management'}</p>
     <nav aria-label={zh ? '管理导航' : 'Management navigation'}>{(['applications','trials','budget','audit'] as const).map((name, i) => <button key={name} aria-current={tab === name ? 'page' : undefined} onClick={() => setTab(name)}>{(zh ? ['申请审核','试用资格','预算与用量','操作记录'] : ['Applications','Trials','Budget & usage','Audit log'])[i]}</button>)}</nav>
     <p>{zh ? '仅管理员可访问。训练数据仍在用户设备。' : 'Administrator only. Training data remains on users’ devices.'}</p></aside>
-    <main><header><div><span className="trial-kicker">FITNESS CONTROL</span><h1>{zh ? '应用管理' : 'Application management'}</h1></div><div><button disabled={busy} onClick={() => void run(async () => {})}>{zh ? '刷新' : 'Refresh'}</button><button onClick={() => void i18n.changeLanguage(zh ? 'en' : 'zh')}>{zh ? 'English' : '中文'}</button></div></header>
-      {error && <p role="alert">{error}{data && (zh ? ' 以下保留上次成功读取的数据，当前状态未知。' : ' Values below are from the last successful read; current status is unknown.')}</p>}{busy && <p role="status">{zh ? '正在处理…' : 'Working…'}</p>}
+    <main><header><div><span className="trial-kicker">FITNESS CONTROL</span><h1>{zh ? '应用管理' : 'Application management'}</h1></div><div><button disabled={busy} onClick={() => void run(async () => {})}><AppIcon name="refresh"/>{zh ? '刷新' : 'Refresh'}</button><button onClick={() => void i18n.changeLanguage(zh ? 'en' : 'zh')}>{zh ? 'English' : '中文'}</button></div></header>
+      {error && <p role="alert"><StatusIcon status="error"/>{error}{data && (zh ? ' 以下保留上次成功读取的数据，当前状态未知。' : ' Values below are from the last successful read; current status is unknown.')}</p>}{busy && <p role="status"><AppIcon name="info"/>{zh ? '正在处理…' : 'Working…'}</p>}
       <div className="management-summary"><article><span>{zh ? 'AI 控制开关' : 'AI control switch'}</span><strong>{data ? (data.report.aiEnabled ? (zh ? '开启' : 'Enabled') : (zh ? '关闭' : 'Disabled')) : '—'}</strong><small>{zh ? '开关状态不代表模型或网络可用' : 'This does not prove model or network availability'}</small></article>
         <article><span>{zh ? '待核算预留' : 'Reserved, not settled'}</span><strong>{reserved === undefined ? '—' : money(reserved)}</strong></article>
         <article><span>{zh ? '本月剩余预算' : 'Available monthly budget'}</span><strong>{reserved === undefined || !data ? '—' : money(Math.max(0, data.policy.budgetLimit - (budget?.spentFen ?? 0) - reserved))}</strong><small>{data ? `${zh ? '月上限' : 'Monthly cap'} ${money(data.policy.budgetLimit)} · ${zh ? '单次上界' : 'Request bound'} ${money(data.policy.reservation)}` : '—'}</small></article></div>

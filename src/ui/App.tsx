@@ -1,3 +1,4 @@
+import { AppIcon, StatusIcon } from './components/AppIcon';
 import { useEffect, useRef, useState, type ReactElement } from 'react';
 import { flushSync } from 'react-dom';
 import { useTranslation } from 'react-i18next';
@@ -18,6 +19,8 @@ import { NavigationIcon } from './components/NavigationIcon';
 import { useAppearance } from './components/Appearance';
 import { TodayPage } from './pages/TodayPage';
 import { PlansWorkspace } from './pages/PlansWorkspace';
+import { OnboardingV4Page } from './pages/OnboardingV4Page';
+import { OnboardingGate } from './components/OnboardingGate';
 
 const destinations = [
   ['today', '/'],
@@ -120,7 +123,7 @@ export function App(): ReactElement {
   }, [location.pathname]);
 
   return (
-    <div className={`app-shell fitness-workspace v31-shell theme-${theme}${navigationOpen ? ' navigation-open' : ''}`}>
+    <div className={`app-shell fitness-workspace v31-shell theme-${theme}${navigationOpen ? ' navigation-open' : ''}${location.pathname === '/onboarding' ? ' onboarding-immersive' : ''}`}>
       <a className="skip-link" href="#content">{t('skip')}</a>
       <aside className="app-sidebar" id="workspace-navigation">
         <div className="app-brand"><span className="app-brand-mark" aria-hidden="true">f·</span><span className="brand">{t('brand')}<span aria-hidden="true">.</span></span></div>
@@ -140,8 +143,8 @@ export function App(): ReactElement {
         </div>
       </aside>
       <header className="app-header">
-        <button className="workspace-menu" aria-controls="workspace-navigation" aria-expanded={navigationOpen} onClick={() => setNavigationOpen(value => !value)}>{i18n.resolvedLanguage === 'zh' ? '导航' : 'menu'}</button>
-        <p className="app-breadcrumb"><span>{i18n.resolvedLanguage === 'zh' ? '训练空间' : 'Workspace'}</span><span aria-hidden="true">/</span>{location.pathname === '/workout' ? t('today') : location.pathname === '/ai' ? t('plans') : location.pathname === '/trial' ? t('settings') : t(destinations.find(([, path]) => path === location.pathname)?.[0] ?? 'today')}</p>
+        <button className="workspace-menu" aria-controls="workspace-navigation" aria-expanded={navigationOpen} onClick={() => setNavigationOpen(value => !value)}><AppIcon name="menu"/>{i18n.resolvedLanguage === 'zh' ? '导航' : 'menu'}</button>
+        <p className="app-breadcrumb"><span>{i18n.resolvedLanguage === 'zh' ? '训练空间' : 'Workspace'}</span><span aria-hidden="true">/</span>{location.pathname === '/onboarding' ? (zh ? '新手引导' : 'Onboarding') : location.pathname === '/workout' ? t('today') : location.pathname === '/ai' ? t('plans') : location.pathname === '/trial' ? t('settings') : t(destinations.find(([, path]) => path === location.pathname)?.[0] ?? 'today')}</p>
         <label className="v31-quick-theme"><span>{zh ? '版式' : 'Layout'}</span><select aria-label={zh ? '切换版式' : 'Switch layout'} value={theme} onChange={event => change(event.target.value as typeof theme)}><option value="atlas">Atlas</option><option value="serene">Serene</option><option value="orbit">Orbit</option></select></label>
         <label className="language-control">
           <span>{t('language')}</span>
@@ -152,17 +155,18 @@ export function App(): ReactElement {
         </label>
       </header>
       <main id="content" ref={main} tabIndex={-1}>
-        {restoreError && <p role="alert">{restoreError}</p>}
+        {restoreError && <p role="alert"><StatusIcon status="warning"/>{restoreError}</p>}
         {restoreSucceeded && <p data-testid="restore-result" aria-live="polite">{i18n.resolvedLanguage === 'zh' ? '恢复成功。' : 'Restore succeeded.'}</p>}
-        {restoring ? <p role="status">{i18n.resolvedLanguage === 'zh' ? '正在读取恢复后的本地数据…' : 'Reading restored local data…'}</p> : <Routes key={libraryGeneration}>
+        {restoring ? <p role="status"><AppIcon name="info"/>{i18n.resolvedLanguage === 'zh' ? '正在读取恢复后的本地数据…' : 'Reading restored local data…'}</p> : <OnboardingGate key={libraryGeneration}><Routes>
           {destinations.map(([name, path]) => (
             <Route key={name} path={path} element={name === 'today' ? <TodayPage /> : name === 'exercises' ? <CatalogPage /> : name === 'settings' ? <SettingsPage restored={restoreSucceeded} /> : name === 'plans' ? <PlansWorkspace /> : <ProgressPage />} />
           ))}
           <Route path="/workout" element={<WorkoutPage />} />
           <Route path="/ai" element={<GuidedDialoguePage />} />
           <Route path="/trial" element={<TrialAccess />} />
+          <Route path="/onboarding" element={<OnboardingV4Page />} />
           <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>}
+        </Routes></OnboardingGate>}
       </main>
       <aside className="v31-context"><h2>{zh ? '你的训练空间' : 'Your training space'}</h2><p>{zh ? '每一次完成都独立记录。按自己的节奏安排训练，也给恢复留出空间。' : 'Each workout is recorded independently. Make room for training and recovery at your own pace.'}</p><NavLink to="/plans">{zh ? '查看训练安排' : 'View your schedule'}</NavLink><hr /><h3>{zh ? 'AI 是可选工具' : 'AI is optional'}</h3><p>{zh ? '即使资格过期或网络不可用，已加载应用中的本地训练记录、动作库与备份仍可使用。' : 'When trial access expires or the network is unavailable, local workouts, exercises and backups stay usable in the loaded app.'}</p><NavLink to="/trial">{zh ? '查看 AI 资格与额度' : 'View AI access & quota'}</NavLink><hr /><p>{t('local')}</p></aside>
       <nav className="v31-mobile-nav" aria-label={zh ? '底部导航' : 'Bottom navigation'}>{destinations.map(([name,path]) => <NavLink key={name} to={path} end tabIndex={0} className={sectionPath === path ? 'active' : undefined} aria-current={sectionPath === path ? 'page' : undefined}><NavigationIcon name={name} /><span>{t(name)}</span></NavLink>)}</nav>

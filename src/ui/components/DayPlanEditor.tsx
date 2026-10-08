@@ -1,3 +1,4 @@
+import { AppIcon, StatusIcon } from './AppIcon';
 import { useEffect, useRef, useState } from 'react';
 import { exercises } from '../../catalog/exercises';
 import { database } from '../../persistence/db';
@@ -33,6 +34,6 @@ export function DayPlanEditor({date,locale,zone,onSaved}:{date:string;locale:'en
       <button type="submit">{zh?'保存此日':'Save this date'}</button>
     </fieldset>
     {task?.completedSessionId&&<p>{zh?'此日已有完成训练，课表只读；隐藏后仍占日期槽。':'This day has completed training; its contents are read only and hiding retains its slot.'}</p>}
-    {error&&<p role="alert">{error}</p>}{status&&<p role="status">{status}</p>}
+    {error&&<p role="alert"><StatusIcon status="error"/>{error}</p>}{status&&<p role="status"><AppIcon name="info"/>{status}</p>}
   </form>;
 }

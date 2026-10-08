@@ -1,3 +1,4 @@
+import { AppIcon, StatusIcon } from './AppIcon';
 import { useEffect, useState, type FormEvent } from 'react';
 import { exercises } from '../../catalog/exercises';
 import type { Plan, PlanInput, LegacyPlanVersion, PlannedExercise, SetMetrics, MetricInput } from '../../domain/models';
@@ -217,7 +218,7 @@ export function PlanEditor({ locale, editing, busy, onSave, onRename, onCancel }
         <button type="submit">{zh ? '保存计划' : 'Save plan'}</button>
         {editing && <button type="button" onClick={onCancel}>{zh ? '取消编辑' : 'Cancel edit'}</button>}
       </fieldset>
-      {error && <p role="alert">{error}</p>}
+      {error && <p role="alert"><StatusIcon status="error"/>{error}</p>}
     </form>
   );
 }

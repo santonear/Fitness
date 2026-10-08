@@ -1,3 +1,4 @@
+import { AppIcon, StatusIcon } from './AppIcon';
 import { useEffect, useRef, useState } from 'react';
 import type { Locale, TimerEvent, TimerState } from '../../domain/models';
 import { readTimer, transitionTimer } from '../../domain/timer';
@@ -84,18 +85,18 @@ export function WorkoutTimer({sessionId,exerciseInstanceId,locale,busy,onCandida
  const disabled=busy||saving||!ready;
  return <div className="workout-timer" aria-label={zh?'计时器':'Workout timer'}>
   <p><strong>{current?.kind==='rest'?(zh?'休息':'Rest'):(zh?'动作计时':'Exercise timer')}</strong> · <output role="timer" aria-live="off" aria-label={zh?'计时秒数':'Timer seconds'}>{Math.floor((display.remainingMs??display.elapsedMs)/1000)}</output> {zh?'秒':'seconds'}</p>
-  <button type="button" disabled={disabled||active} onClick={()=>void change({type:'start'},'exercise')}>{zh?'开始动作计时':'Start exercise timer'}</button>
+  <button type="button" disabled={disabled||active} onClick={()=>void change({type:'start'},'exercise')}><AppIcon name="play"/>{zh?'开始动作计时':'Start exercise timer'}</button>
   <label>{zh?'休息秒数':'Rest seconds'}<input inputMode="numeric" value={rest} disabled={disabled||active} onChange={e=>setRest(e.target.value)}/></label>
-  <button type="button" disabled={disabled||active} onClick={()=>void change({type:'start'},'rest')}>{zh?'开始休息计时':'Start rest timer'}</button>
-  {current?.status==='running'&&<button type="button" disabled={disabled} onClick={()=>void change({type:'pause'})}>{zh?'暂停计时':'Pause timer'}</button>}
-  {current?.status==='paused'&&<button type="button" disabled={disabled} onClick={()=>void change({type:'resume'})}>{zh?'继续计时':'Resume timer'}</button>}
-  {active&&<button type="button" disabled={disabled} onClick={()=>void change({type:'stop'})}>{zh?'停止计时':'Stop timer'}</button>}
+  <button type="button" disabled={disabled||active} onClick={()=>void change({type:'start'},'rest')}><AppIcon name="play"/>{zh?'开始休息计时':'Start rest timer'}</button>
+  {current?.status==='running'&&<button type="button" disabled={disabled} onClick={()=>void change({type:'pause'})}><AppIcon name="pause"/>{zh?'暂停计时':'Pause timer'}</button>}
+  {current?.status==='paused'&&<button type="button" disabled={disabled} onClick={()=>void change({type:'resume'})}><AppIcon name="play"/>{zh?'继续计时':'Resume timer'}</button>}
+  {active&&<button type="button" disabled={disabled} onClick={()=>void change({type:'stop'})}><AppIcon name="close"/>{zh?'停止计时':'Stop timer'}</button>}
   <label><input type="checkbox" checked={sound} onChange={e=>{setSound(e.target.checked);if(e.target.checked)audio.current=new Audio(reminderWav());}}/>{zh?'启用提醒声音':'Enable reminder sound'}</label>
   <p className="muted">{zh?'动作计时停止后仅填入候选时长，请核对后记录。休息不计入训练时长；锁屏提醒不保证。':'Stopping fills a duration candidate; review before recording. Rest is excluded from training duration. Lock-screen reminders are not guaranteed.'}</p>
-  {current?.kind==='rest'&&display.finished&&<p role="alert">{zh?'休息结束':'Rest finished'}</p>}
-  {(display.clockReversed||reversed)&&<p role="alert">{zh?'设备时钟倒退，请核对时长':'Device clock moved backwards; review duration'}</p>}
-  {soundFailed&&<p role="alert">{zh?'声音不可用，视觉提醒仍有效':'Sound unavailable; visual reminder remains'}</p>}
-  {error&&<p role="alert">{error}</p>}<p aria-live="polite">{message}</p>
+  {current?.kind==='rest'&&display.finished&&<p role="alert"><StatusIcon status="warning"/>{zh?'休息结束':'Rest finished'}</p>}
+  {(display.clockReversed||reversed)&&<p role="alert"><StatusIcon status="warning"/>{zh?'设备时钟倒退，请核对时长':'Device clock moved backwards; review duration'}</p>}
+  {soundFailed&&<p role="alert"><StatusIcon status="warning"/>{zh?'声音不可用，视觉提醒仍有效':'Sound unavailable; visual reminder remains'}</p>}
+  {error&&<p role="alert"><StatusIcon status="error"/>{error}</p>}<p aria-live="polite">{message}</p>
  </div>;
 }
 function reminderWav(){

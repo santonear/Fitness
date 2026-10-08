@@ -1,9 +1,10 @@
+import { completedPlanningProfile } from './planning-profile-fixture';
 import {expect,test,type Page} from '@playwright/test';
 import {validateGuidedProviderOutput} from '../../src/backend/guided-provider';
 import {exercises} from '../../src/catalog/exercises';
 const exercise=exercises.find(item=>item.metricType==='reps'&&item.equipment==='none')!;
 const status={expiresAt:Date.now()+86400000,period:'2026-10',used:{understand:0,generate:0},limits:{understand:8,generate:4},pending:0,aiEnabled:true};
-async function begin(page:Page){await page.addInitScript(()=>localStorage.setItem('fitness.language','en'));await page.goto('/ai');await page.getByRole('textbox',{name:'Training goal and constraints',exact:true}).fill('Build a regular fitness routine');await page.getByRole('checkbox',{name:/I reviewed this information/}).check();await page.getByRole('button',{name:'Understand goal',exact:true}).click();}
+async function begin(page:Page){await page.addInitScript(()=>localStorage.setItem('fitness.language','en'));await completedPlanningProfile(page);await page.goto('/ai');await page.getByRole('textbox',{name:'Training goal and constraints',exact:true}).fill('Build a regular fitness routine');await page.getByRole('checkbox',{name:/I reviewed this information/}).check();await page.getByRole('button',{name:'Understand goal',exact:true}).click();}
 async function dates(page:Page,count=1){await page.getByRole('checkbox',{name:'I confirm this understanding is correct',exact:true}).check();await page.getByRole('button',{name:'Choose dates →',exact:true}).click();for(let i=0;i<count;i++)await page.locator('[data-plan-date]').nth(15+i).click();}
 async function preview(page:Page){await page.getByRole('button',{name:'Review sending →',exact:true}).click();await page.getByRole('checkbox',{name:/I confirm these fields and dates/}).check();}
 function raw(body:any){return body.operation==='understand'?{kind:'understand',summary:'A ready goal',uncertainties:[]}:{kind:'program',name:'Four independent days',explanation:'Synthetic schedule',days:body.dialogue.dates.map((date:string)=>({date,exercises:[{exerciseId:exercise.id,order:0,targetSets:[{metricType:'reps',reps:8}],setTimings:[{durationSeconds:40,restSeconds:30}],notes:'Controlled tempo'}]}))};}

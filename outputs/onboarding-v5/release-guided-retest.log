@@ -1,0 +1,145 @@
+
+Running 30 tests using 2 workers
+
+  ok  2 [chromium] › tests\e2e\ai-pending.spec.ts:4:45 › en pending understanding survives unknown status without releasing accounting or resending (6.4s)
+  x   1 [chromium] › tests\e2e\ai-control-status.spec.ts:3:33 › en qualification refreshes automatically; failures clear previous remaining allowance (7.3s)
+  ok  3 [chromium] › tests\e2e\ai-pending.spec.ts:4:45 › zh pending understanding survives unknown status without releasing accounting or resending (2.2s)
+  x   4 [chromium] › tests\e2e\ai-control-status.spec.ts:3:33 › zh qualification refreshes automatically; failures clear previous remaining allowance (2.7s)
+  ok  5 [chromium] › tests\e2e\guided-live.spec.ts:12:35 › pending accounting gates generation; independent daily times save once; bounded=false (3.4s)
+  ok  7 [chromium] › tests\e2e\ai-control-status.spec.ts:17:1 › static site without control API does not fabricate qualification (1.7s)
+  ok  6 [chromium] › tests\e2e\guided-live.spec.ts:12:35 › pending accounting gates generation; independent daily times save once; bounded=true (3.3s)
+  ok  8 [chromium] › tests\e2e\ai-control-status.spec.ts:22:298 › confirmed understanding distinguishes INDIVIDUAL_QUOTA_EXHAUSTED without automatic retry or history sending (2.1s)
+  ok  9 [chromium] › tests\e2e\guided-live.spec.ts:23:1 › failed confirmed generation retries only generation with identical identity and payload (2.5s)
+  ok 10 [chromium] › tests\e2e\ai-control-status.spec.ts:22:298 › confirmed understanding distinguishes GLOBAL_BUDGET_EXHAUSTED without automatic retry or history sending (2.1s)
+  ok 11 [chromium] › tests\e2e\guided-live.spec.ts:27:1 › uncertain understanding retry preserves request identity and excludes optional data (2.3s)
+  ok 12 [chromium] › tests\e2e\ai-control-status.spec.ts:22:298 › confirmed understanding distinguishes ACCOUNTING_PENDING without automatic retry or history sending (2.4s)
+  ok 13 [chromium] › tests\e2e\guided-live.spec.ts:30:1 › in-flight understanding locks edits; response does not automatically generate or save (2.0s)
+  ok 14 [chromium] › tests\e2e\ai-control-status.spec.ts:22:298 › confirmed understanding distinguishes RESULT_UNAVAILABLE without automatic retry or history sending (2.1s)
+  ok 15 [chromium] › tests\e2e\guided-live.spec.ts:35:1 › necessary clarification blocks dates; revised goal requires fresh consent and excludes archived local notes (2.3s)
+  x  16 [webkit] › tests\e2e\ai-control-status.spec.ts:3:33 › en qualification refreshes automatically; failures clear previous remaining allowance (5.3s)
+  ok 17 [webkit] › tests\e2e\ai-pending.spec.ts:4:45 › en pending understanding survives unknown status without releasing accounting or resending (4.4s)
+  ok 19 [webkit] › tests\e2e\ai-pending.spec.ts:4:45 › zh pending understanding survives unknown status without releasing accounting or resending (4.5s)
+  x  18 [webkit] › tests\e2e\ai-control-status.spec.ts:3:33 › zh qualification refreshes automatically; failures clear previous remaining allowance (4.7s)
+  ok 21 [webkit] › tests\e2e\ai-control-status.spec.ts:17:1 › static site without control API does not fabricate qualification (2.6s)
+  ok 22 [webkit] › tests\e2e\ai-control-status.spec.ts:22:298 › confirmed understanding distinguishes INDIVIDUAL_QUOTA_EXHAUSTED without automatic retry or history sending (3.1s)
+  ok 23 [webkit] › tests\e2e\ai-control-status.spec.ts:22:298 › confirmed understanding distinguishes GLOBAL_BUDGET_EXHAUSTED without automatic retry or history sending (2.9s)
+  ok 24 [webkit] › tests\e2e\ai-control-status.spec.ts:22:298 › confirmed understanding distinguishes ACCOUNTING_PENDING without automatic retry or history sending (2.9s)
+  ok 20 [webkit] › tests\e2e\guided-live.spec.ts:12:35 › pending accounting gates generation; independent daily times save once; bounded=false (13.1s)
+  ok 25 [webkit] › tests\e2e\ai-control-status.spec.ts:22:298 › confirmed understanding distinguishes RESULT_UNAVAILABLE without automatic retry or history sending (3.2s)
+  ok 26 [webkit] › tests\e2e\guided-live.spec.ts:12:35 › pending accounting gates generation; independent daily times save once; bounded=true (12.3s)
+  ok 27 [webkit] › tests\e2e\guided-live.spec.ts:23:1 › failed confirmed generation retries only generation with identical identity and payload (6.6s)
+  ok 28 [webkit] › tests\e2e\guided-live.spec.ts:27:1 › uncertain understanding retry preserves request identity and excludes optional data (3.4s)
+  ok 29 [webkit] › tests\e2e\guided-live.spec.ts:30:1 › in-flight understanding locks edits; response does not automatically generate or save (3.1s)
+  ok 30 [webkit] › tests\e2e\guided-live.spec.ts:35:1 › necessary clarification blocks dates; revised goal requires fresh consent and excludes archived local notes (5.8s)
+
+
+  1) [chromium] › tests\e2e\ai-control-status.spec.ts:3:33 › en qualification refreshes automatically; failures clear previous remaining allowance
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      12 |  await expect(page.getByRole('alert')).toContainText(t('trial has expired','试用已到期'));
+      13 |  await expect(page.getByText(/Access and allowance unknown|资格及额度未知/)).toBeVisible();await expect(page.getByText(/6 \/ 3/)).toHaveCount(0);
+    > 14 |  expect(calls.every(method=>method==='GET')).toBe(true);
+         |                                              ^
+      15 |  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+      16 | });
+      17 | test('static site without control API does not fabricate qualification',async({page})=>{
+        at D:\Project\xxgospel\Fitness\.worktrees\fitness-guided\tests\e2e\ai-control-status.spec.ts:14:46
+
+    Error Context: test-results-guided-live\ai-control-status-en-quali-c90bc-revious-remaining-allowance-chromium\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results-guided-live\ai-control-status-en-quali-c90bc-revious-remaining-allowance-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results-guided-live\ai-control-status-en-quali-c90bc-revious-remaining-allowance-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › tests\e2e\ai-control-status.spec.ts:3:33 › zh qualification refreshes automatically; failures clear previous remaining allowance
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      12 |  await expect(page.getByRole('alert')).toContainText(t('trial has expired','试用已到期'));
+      13 |  await expect(page.getByText(/Access and allowance unknown|资格及额度未知/)).toBeVisible();await expect(page.getByText(/6 \/ 3/)).toHaveCount(0);
+    > 14 |  expect(calls.every(method=>method==='GET')).toBe(true);
+         |                                              ^
+      15 |  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+      16 | });
+      17 | test('static site without control API does not fabricate qualification',async({page})=>{
+        at D:\Project\xxgospel\Fitness\.worktrees\fitness-guided\tests\e2e\ai-control-status.spec.ts:14:46
+
+    Error Context: test-results-guided-live\ai-control-status-zh-quali-cc307-revious-remaining-allowance-chromium\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results-guided-live\ai-control-status-zh-quali-cc307-revious-remaining-allowance-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results-guided-live\ai-control-status-zh-quali-cc307-revious-remaining-allowance-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [webkit] › tests\e2e\ai-control-status.spec.ts:3:33 › en qualification refreshes automatically; failures clear previous remaining allowance
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      12 |  await expect(page.getByRole('alert')).toContainText(t('trial has expired','试用已到期'));
+      13 |  await expect(page.getByText(/Access and allowance unknown|资格及额度未知/)).toBeVisible();await expect(page.getByText(/6 \/ 3/)).toHaveCount(0);
+    > 14 |  expect(calls.every(method=>method==='GET')).toBe(true);
+         |                                              ^
+      15 |  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+      16 | });
+      17 | test('static site without control API does not fabricate qualification',async({page})=>{
+        at D:\Project\xxgospel\Fitness\.worktrees\fitness-guided\tests\e2e\ai-control-status.spec.ts:14:46
+
+    Error Context: test-results-guided-live\ai-control-status-en-quali-c90bc-revious-remaining-allowance-webkit\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results-guided-live\ai-control-status-en-quali-c90bc-revious-remaining-allowance-webkit\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results-guided-live\ai-control-status-en-quali-c90bc-revious-remaining-allowance-webkit\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [webkit] › tests\e2e\ai-control-status.spec.ts:3:33 › zh qualification refreshes automatically; failures clear previous remaining allowance
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      12 |  await expect(page.getByRole('alert')).toContainText(t('trial has expired','试用已到期'));
+      13 |  await expect(page.getByText(/Access and allowance unknown|资格及额度未知/)).toBeVisible();await expect(page.getByText(/6 \/ 3/)).toHaveCount(0);
+    > 14 |  expect(calls.every(method=>method==='GET')).toBe(true);
+         |                                              ^
+      15 |  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+      16 | });
+      17 | test('static site without control API does not fabricate qualification',async({page})=>{
+        at D:\Project\xxgospel\Fitness\.worktrees\fitness-guided\tests\e2e\ai-control-status.spec.ts:14:46
+
+    Error Context: test-results-guided-live\ai-control-status-zh-quali-cc307-revious-remaining-allowance-webkit\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results-guided-live\ai-control-status-zh-quali-cc307-revious-remaining-allowance-webkit\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results-guided-live\ai-control-status-zh-quali-cc307-revious-remaining-allowance-webkit\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4 failed
+    [chromium] › tests\e2e\ai-control-status.spec.ts:3:33 › en qualification refreshes automatically; failures clear previous remaining allowance
+    [chromium] › tests\e2e\ai-control-status.spec.ts:3:33 › zh qualification refreshes automatically; failures clear previous remaining allowance
+    [webkit] › tests\e2e\ai-control-status.spec.ts:3:33 › en qualification refreshes automatically; failures clear previous remaining allowance
+    [webkit] › tests\e2e\ai-control-status.spec.ts:3:33 › zh qualification refreshes automatically; failures clear previous remaining allowance
+  26 passed (1.4m)

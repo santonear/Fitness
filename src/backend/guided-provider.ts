@@ -17,6 +17,9 @@ const program = z.strictObject({ kind: z.literal('program'), name: text, explana
 const output = z.discriminatedUnion('kind', [refusal, understanding, clarification, program]);
 
 export function validateGuidedProviderInput(request: GuidedDialogueRequest, k: number) {
+  const age = request.scope.body?.age;
+  const explicitAge = typeof age === 'number' ? age : age && typeof age === 'object' && !Array.isArray(age) ? age.value : undefined;
+  if (request.onboardingVersion === 4 && request.adultConfirmed !== true || request.adultConfirmed === false || typeof explicitAge === 'number' && explicitAge < 18) throw new ControlError('ADULT_ONLY', 403);
   try { confirmGuidedSending(request); } catch { throw new ControlError('CONFIRMATION_REQUIRED', 400); }
   if ((request.dates?.length ?? 0) > Math.min(k, guidedServiceLimits.maxDays)) throw new ControlError('DATE_BOUND_EXCEEDED', 400);
   if (request.startDate && request.endDate && (Date.parse(request.endDate) - Date.parse(request.startDate)) / 86400000 + 1 > guidedServiceLimits.maxRangeDays)

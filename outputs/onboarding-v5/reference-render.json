@@ -1,0 +1,271 @@
+{
+  "renders": [
+    {
+      "theme": "atlas",
+      "destination": "today",
+      "headings": [
+        "Fitness",
+        "今天的目标很明确：开始训练，或安排下一次训练。",
+        "接下来",
+        "最近 30 天",
+        "AI 制定计划",
+        "为什么这样改",
+        "本周概况",
+        "训练后记得恢复",
+        "AI 计划助手"
+      ]
+    },
+    {
+      "theme": "atlas",
+      "destination": "plans",
+      "headings": [
+        "Fitness",
+        "Plans · 信息架构整理",
+        "训练日历",
+        "本周概况",
+        "训练后记得恢复",
+        "AI 计划助手"
+      ]
+    },
+    {
+      "theme": "atlas",
+      "destination": "progress",
+      "headings": [
+        "Fitness",
+        "看见真实进步，不追逐虚构分数",
+        "训练趋势",
+        "身体记录",
+        "最近训练历史",
+        "本周概况",
+        "训练后记得恢复",
+        "AI 计划助手"
+      ]
+    },
+    {
+      "theme": "atlas",
+      "destination": "exercises",
+      "headings": [
+        "Fitness",
+        "每个动作，找到正确的开始方式",
+        "本周概况",
+        "训练后记得恢复",
+        "AI 计划助手"
+      ]
+    },
+    {
+      "theme": "atlas",
+      "destination": "settings",
+      "headings": [
+        "Fitness",
+        "Settings",
+        "AI Trial / Quota 状态页",
+        "本月额度",
+        "更换设备",
+        "隐私与数据说明",
+        "本周概况",
+        "训练后记得恢复",
+        "AI 计划助手"
+      ]
+    },
+    {
+      "theme": "atlas",
+      "destination": "onboarding",
+      "headings": [
+        "Fitness",
+        "先了解你，再制定适合你的计划",
+        "你的性别是？",
+        "本周概况",
+        "训练后记得恢复",
+        "AI 计划助手"
+      ]
+    },
+    {
+      "theme": "serene",
+      "destination": "today",
+      "headings": [
+        "Fitness",
+        "今天的目标很明确：开始训练，或安排下一次训练。",
+        "接下来",
+        "最近 30 天",
+        "AI 制定计划",
+        "为什么这样改",
+        "本周概况",
+        "训练后记得恢复",
+        "AI 计划助手"
+      ]
+    },
+    {
+      "theme": "serene",
+      "destination": "plans",
+      "headings": [
+        "Fitness",
+        "Plans · 信息架构整理",
+        "训练日历",
+        "本周概况",
+        "训练后记得恢复",
+        "AI 计划助手"
+      ]
+    },
+    {
+      "theme": "serene",
+      "destination": "progress",
+      "headings": [
+        "Fitness",
+        "看见真实进步，不追逐虚构分数",
+        "训练趋势",
+        "身体记录",
+        "最近训练历史",
+        "本周概况",
+        "训练后记得恢复",
+        "AI 计划助手"
+      ]
+    },
+    {
+      "theme": "serene",
+      "destination": "exercises",
+      "headings": [
+        "Fitness",
+        "每个动作，找到正确的开始方式",
+        "本周概况",
+        "训练后记得恢复",
+        "AI 计划助手"
+      ]
+    },
+    {
+      "theme": "serene",
+      "destination": "settings",
+      "headings": [
+        "Fitness",
+        "Settings",
+        "AI Trial / Quota 状态页",
+        "本月额度",
+        "更换设备",
+        "隐私与数据说明",
+        "本周概况",
+        "训练后记得恢复",
+        "AI 计划助手"
+      ]
+    },
+    {
+      "theme": "serene",
+      "destination": "onboarding",
+      "headings": [
+        "Fitness",
+        "先了解你，再制定适合你的计划",
+        "你的性别是？",
+        "本周概况",
+        "训练后记得恢复",
+        "AI 计划助手"
+      ]
+    },
+    {
+      "theme": "orbit",
+      "destination": "today",
+      "headings": [
+        "Fitness",
+        "今天的目标很明确：开始训练，或安排下一次训练。",
+        "接下来",
+        "最近 30 天",
+        "AI 制定计划",
+        "为什么这样改",
+        "本周概况",
+        "训练后记得恢复",
+        "AI 计划助手"
+      ]
+    },
+    {
+      "theme": "orbit",
+      "destination": "plans",
+      "headings": [
+        "Fitness",
+        "Plans · 信息架构整理",
+        "训练日历",
+        "本周概况",
+        "训练后记得恢复",
+        "AI 计划助手"
+      ]
+    },
+    {
+      "theme": "orbit",
+      "destination": "progress",
+      "headings": [
+        "Fitness",
+        "看见真实进步，不追逐虚构分数",
+        "训练趋势",
+        "身体记录",
+        "最近训练历史",
+        "本周概况",
+        "训练后记得恢复",
+        "AI 计划助手"
+      ]
+    },
+    {
+      "theme": "orbit",
+      "destination": "exercises",
+      "headings": [
+        "Fitness",
+        "每个动作，找到正确的开始方式",
+        "本周概况",
+        "训练后记得恢复",
+        "AI 计划助手"
+      ]
+    },
+    {
+      "theme": "orbit",
+      "destination": "settings",
+      "headings": [
+        "Fitness",
+        "Settings",
+        "AI Trial / Quota 状态页",
+        "本月额度",
+        "更换设备",
+        "隐私与数据说明",
+        "本周概况",
+        "训练后记得恢复",
+        "AI 计划助手"
+      ]
+    },
+    {
+      "theme": "orbit",
+      "destination": "onboarding",
+      "headings": [
+        "Fitness",
+        "先了解你，再制定适合你的计划",
+        "你的性别是？",
+        "本周概况",
+        "训练后记得恢复",
+        "AI 计划助手"
+      ]
+    }
+  ],
+  "errors": [],
+  "scripts": 2,
+  "svgShapes": [
+    "today",
+    "plans",
+    "progress",
+    "exercises",
+    "settings",
+    "goal",
+    "age",
+    "height",
+    "weight",
+    "waist",
+    "home",
+    "leaf",
+    "clock",
+    "heart",
+    "flame",
+    "shield",
+    "sparkles",
+    "bolt",
+    "person",
+    "office",
+    "band",
+    "treadmill",
+    "run",
+    "check",
+    "recovery",
+    "edit"
+  ]
+}

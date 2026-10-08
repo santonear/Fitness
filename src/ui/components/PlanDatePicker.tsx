@@ -1,3 +1,4 @@
+import { AppIcon } from './AppIcon';
 import { useEffect, useRef, useState } from 'react';
 
 /** Date selection is a local draft. Occupancy is advisory here and rechecked by the save transaction. */
@@ -46,6 +47,6 @@ export function PlanDatePicker({ locale, today, selected, onChange, occupied, on
       </button>)}
     </div>
     <p className="v31-help">{zh ? '● 已占用（包括隐藏的已完成训练）' : '● Occupied (including hidden completed training)'}</p>
-    {feedback && <p role="status">{feedback}</p>}
+    {feedback && <p role="status"><AppIcon name="info"/>{feedback}</p>}
   </div>;
 }

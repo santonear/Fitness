@@ -1,3 +1,4 @@
+import { AppIcon, StatusIcon } from '../AppIcon';
 import { createPortal } from 'react-dom';
 import { useEffect, useRef, useState } from 'react';
 import type { ScheduledWorkout } from '../../../domain/models';
@@ -47,7 +48,7 @@ export function TrainingTimeEditor({ task, locale, disabled, revision, generatio
       <label>{zh ? '新的开始时间' : 'New start time'}<input autoFocus type="time" disabled={busy} value={pending.time} onChange={event => setPending({...pending,time:event.target.value})} /></label>
       {pending.task.durationMinutes === undefined && <label>{zh ? '预留分钟数' : 'Reserved minutes'}<input type="number" min="1" max="1440" value={pending.durationMinutes} disabled={busy} onChange={event => setPending({...pending,durationMinutes:Number(event.target.value)})} /></label>}
       <p>{zh ? '确认后同步更新整体计划、月视图和日视图，不消耗 AI 额度。' : 'Confirm to update the plan and both calendar views. No AI allowance is used.'}</p>
-      {error && <p role="alert">{error}</p>}
+      {error && <p role="alert"><StatusIcon status="error"/>{error}</p>}
       <button disabled={busy || !trainingSlotSchema.safeParse({date:pending.task.scheduledDate,startTime:pending.time,durationMinutes:pending.durationMinutes}).success} onClick={async () => { setBusy(true); setError(''); try { await onSave(pending.task,pending.time,pending.revision,pending.generation,pending.durationMinutes); setPending(undefined); } catch { setError(zh ? '未能保存，计划或训练状态可能已变化。请取消后重新打开。' : 'Could not save. The plan or workout may have changed; cancel and reopen.'); } finally { setBusy(false); } }}>{zh ? '确认修改' : 'Confirm change'}</button>
       <button disabled={busy} onClick={() => {setPending(undefined);setError('');}}>{zh ? '取消' : 'Cancel'}</button>
     </dialog>, document.body)}

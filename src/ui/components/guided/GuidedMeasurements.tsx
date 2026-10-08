@@ -1,3 +1,4 @@
+import { AppIcon, StatusIcon } from '../AppIcon';
 import { useState } from 'react';
 import { NumericWheel } from './NumericWheel';
 import type { GuidedLocale } from './GuidedOnboarding';
@@ -61,7 +62,7 @@ export function GuidedMeasurements({ locale, onSave, observations, busy = false,
       <NumericWheel locale={locale} label={labels[kind]} value={value} onChange={setValue} {...config} unit={measurementUnit(kind)} disabled={disabled} />
       <label>{t('测量日期', 'measurement date')}<input type="date" required value={date} disabled={disabled} onChange={event => setDate(event.target.value)} /></label>
       {kind !== 'weight' && <label className="guided-measurement-method">{t('测量方法或来源', 'measurement method or source')}<input type="text" required maxLength={200} value={method} disabled={disabled} placeholder={kind === 'waist' ? t('例如软尺', 'for example, measuring tape') : t('例如体脂秤；记录设备或方法', 'for example, body fat scale; note device or method')} onChange={event => setMethod(event.target.value)} /></label>}
-      {(error || saveError) && <p role="alert">{error || saveError}</p>}
+      {(error || saveError) && <p role="alert"><StatusIcon status="warning"/>{error || saveError}</p>}
       <div className="guided-actions"><button className="guided-primary" disabled={disabled || !valid} type="submit">{disabled ? t('保存中…', 'saving…') : t('确认保存测量值', 'confirm and save measurement')}</button></div>
     </form>
     </details>
