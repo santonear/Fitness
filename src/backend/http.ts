@@ -39,7 +39,7 @@ export function createHandler(service: ControlService, options: { origins: strin
       const url = new URL(request.url), path = url.pathname;
       if (path === '/api/v1/health' && request.method === 'GET') return json({ status: options.supplierMode ?? 'local-mock', productionModelEnabled: false });
       if (path === '/api/v1/trial/application-config' && request.method === 'GET') return json({ siteKey: options.turnstileSiteKey ?? null, available: Boolean(options.verifyApplication) });
-      const known = ['/api/v1/trial/access-status', '/api/v1/trial/redeem', '/api/v1/trial/status', '/api/v1/goals/interpret', '/api/v1/plans/generate', '/api/v1/stages/summarize', '/api/v1/requests/cancel',
+      const known = ['/api/v1/admin/application-activate', '/api/v1/admin/subject-delete', '/api/v1/trial/access-status', '/api/v1/trial/redeem', '/api/v1/trial/status', '/api/v1/goals/interpret', '/api/v1/plans/generate', '/api/v1/stages/summarize', '/api/v1/requests/cancel',
         '/api/v1/trial/apply', '/api/v1/trial/applications', '/api/v1/trial/claim', '/api/v1/admin/applications', '/api/v1/admin/application-review', '/api/v1/admin/application-retention', '/api/v1/admin/quota-restore',
         '/api/v1/admin/invites', '/api/v1/admin/invites/revoke', '/api/v1/admin/revoke', '/api/v1/admin/reissue', '/api/v1/admin/mock', '/api/v1/admin/recovery', '/api/v1/admin/reconciled', '/api/v1/admin/settle', '/api/v1/admin/retention', '/api/v1/admin/report',
         ...(options.supplierMode ? ['/api/v1/admin/supplier'] : [])];
@@ -80,6 +80,14 @@ export function createHandler(service: ControlService, options: { origins: strin
         const authorization = request.headers.get('authorization') ?? '';
         if (!authorization.startsWith('Bearer ')) throw new ControlError('ADMIN_REQUIRED', 401);
         const admin = authorization.slice(7);
+        if (path === '/api/v1/admin/application-activate') {
+          const { id } = parse(z.strictObject({ id: z.uuid() }), data);
+          return json(await service.activateApplication(admin, id));
+        }
+        if (path === '/api/v1/admin/subject-delete') {
+          const { subjectId } = parse(z.strictObject({ subjectId: z.uuid() }), data);
+          await service.deleteSubject(admin, subjectId); return json({ ok: true });
+        }
         if (path === '/api/v1/admin/quota-restore') {
           const value = parse(z.strictObject({ id: z.uuid(), subjectId: z.uuid(), period: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/), reason: z.string().trim().min(1).max(200) }), data);
           return json(await service.restoreQuota(admin, value));

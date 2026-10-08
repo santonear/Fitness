@@ -105,7 +105,7 @@ export class ControlService {
       if (!invite || invite.redeemed || invite.expiresAt <= this.now()) throw new ControlError('INVITE_INVALID', 401);
       const id = invite.subjectId ?? subjectId;
       const existing = invite.subjectId && state.subjects[invite.subjectId];
-      if (invite.subjectId && (!existing || existing.expiresAt <= this.now())) throw new ControlError('SUBJECT_EXPIRED', 401);
+      if (invite.subjectId && (!existing || existing.deletedAt !== undefined || existing.expiresAt <= this.now())) throw new ControlError('SUBJECT_EXPIRED', 401);
       invite.redeemed = true; const expiry = existing ? existing.expiresAt : this.now() + 30 * DAY;
       state.subjects[id] = { expiresAt: expiry, revoked: false };
       state.sessions[sessionDigest] = { subjectId: id, revoked: false }; this.audit(state, 'invite-redeemed', id); return { subjectId: id, expiresAt: expiry };
@@ -120,10 +120,39 @@ export class ControlService {
       this.audit(state, 'subject-revoked', subjectId);
     });
   }
+  async deleteSubject(admin: string, subjectId: string) {
+    await this.admin(admin);
+    return this.store.transact(state => {
+      const subject = state.subjects[subjectId];
+      if (!subject) throw new ControlError('SUBJECT_NOT_FOUND', 404);
+      if (subject.deletedAt !== undefined) return;
+      subject.deletedAt = this.now(); subject.revoked = true;
+      for (const session of Object.values(state.sessions)) if (session.subjectId === subjectId) session.revoked = true;
+      for (const invite of Object.values(state.invites)) if (invite.subjectId === subjectId) invite.redeemed = true;
+      this.audit(state, 'subject-deleted', subjectId);
+    });
+  }
+  async activateApplication(admin: string, id: string) {
+    await this.admin(admin); const newSubjectId = crypto.randomUUID();
+    return this.store.transact(state => {
+      const application = state.applications?.[id];
+      if (!application) throw new ControlError('APPLICATION_NOT_FOUND', 404);
+      const existing = application.subjectId ? state.subjects[application.subjectId] : undefined;
+      if (existing?.deletedAt !== undefined || existing?.revoked) throw new ControlError('QUALIFICATION_REQUIRED', 401);
+      // Repeated activation never extends time, resets usage, or revives revoked access.
+      if (application.directlyActivated || existing && existing.expiresAt > this.now()) return applicationAdminView(application);
+      if (application.kind !== 'new' || !['pending', 'approved'].includes(application.state)) throw new ControlError('APPLICATION_CONFLICT');
+      const expiresAt = this.now() + 30 * DAY;
+      state.subjects[newSubjectId] = { expiresAt, revoked: false };
+      Object.assign(application, { subjectId: newSubjectId, state: 'approved', directlyActivated: true, decidedAt: this.now(), actor: 'owner', expiresAt, claimUntil: expiresAt });
+      this.audit(state, 'subject-directly-activated', newSubjectId);
+      return applicationAdminView(application);
+    });
+  }
   async reissue(admin: string, subjectId: string) {
     await this.admin(admin); const code = token(), codeDigest = await digest(code, this.config.digestSecret);
     const expiresAt = await this.store.transact(state => {
-      const subject = state.subjects[subjectId]; if (!subject || subject.expiresAt <= this.now()) throw new ControlError('SUBJECT_EXPIRED', 401);
+      const subject = state.subjects[subjectId]; if (!subject || subject.deletedAt !== undefined || subject.expiresAt <= this.now()) throw new ControlError('SUBJECT_EXPIRED', 401);
       for (const session of Object.values(state.sessions)) if (session.subjectId === subjectId) session.revoked = true;
       for (const invite of Object.values(state.invites)) if (invite.subjectId === subjectId) invite.redeemed = true;
       subject.revoked = true;
@@ -174,7 +203,9 @@ export class ControlService {
   }
   async managementReport(admin: string) {
     await this.admin(admin); const state = await this.store.read();
-    return { report: buildAdminReport(state, this.now()), applications: Object.values(state.applications ?? {}).map(applicationAdminView),
+    const report = buildAdminReport(state, this.now());
+    report.subjects = report.subjects.filter(subject => state.subjects[subject.subjectId].deletedAt === undefined);
+    return { report, applications: Object.values(state.applications ?? {}).filter(a => !a.subjectId || state.subjects[a.subjectId]?.deletedAt === undefined).map(applicationAdminView),
       invites: Object.entries(state.invites).filter(([, invite]) => !invite.redeemed && invite.expiresAt > this.now()).map(([inviteId, invite]) => ({ inviteId, expiresAt: invite.expiresAt })),
       quotas: Object.keys(state.subjects).map(subjectId => {
         const period = this.period(), used = state.usages[usageKey(subjectId, period)] ?? { understand: 0, generate: 0 };

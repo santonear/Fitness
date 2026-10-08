@@ -10,7 +10,7 @@ const counts = z.object({ understand: z.number().int().nonnegative(), generate: 
 const statusSchema = z.object({ expiresAt: z.number().finite(), used: counts, limits: counts, period: z.string().optional(), pending: z.number().int().nonnegative().optional(), reconciliationRequired: z.boolean().optional(), aiEnabled: z.boolean().optional() });
 const policyStatusSchema = statusSchema.extend({ resetAt: z.number().finite().optional(), timeZone: z.string().optional(), maxDays: z.number().int().min(1).max(14).optional(), maximumRequestCost: z.number().int().nonnegative().optional(), budgetAvailable: z.object({ understand: z.boolean(), generate: z.boolean() }).optional() });
 const accessStatusSchema = z.discriminatedUnion('qualification', [z.object({ qualification: z.literal('none'), sessionValid: z.literal(false) }), ...(['active','expired','revoked'] as const).map(qualification => policyStatusSchema.extend({ qualification: z.literal(qualification), sessionValid: z.boolean() }))]);
-const applicationSchema = z.object({ id: z.uuid(), kind: z.enum(['new','extend','replace']), state: z.enum(['pending','approved','rejected','claimed']), createdAt: z.number().finite(), decidedAt: z.number().optional(), reason: z.string().optional(), claimUntil: z.number().optional(), expiresAt: z.number().optional() });
+const applicationSchema = z.object({ id: z.uuid(), kind: z.enum(['new','extend','replace']), state: z.enum(['pending','approved','rejected','claimed']), createdAt: z.number().finite(), decidedAt: z.number().optional(), reason: z.string().optional(), claimUntil: z.number().optional(), expiresAt: z.number().optional(), directlyActivated: z.boolean().optional() });
 const configSchema = z.object({ available: z.boolean(), siteKey: z.string().nullable() });
 const receiptKey = 'fitness-trial-application-receipt-v1';
 const displayNameKey = 'fitness-trial-display-name-v1';
@@ -75,6 +75,13 @@ export function TrialAccess({ onContinue, onSkip }: { onContinue?: () => void; o
       trialApi<{ available: boolean; siteKey: string | null }>('trial/application-config'),
     ]);
     if (availability.status === 'fulfilled') setConfig(configSchema.parse(availability.value));
+    if (applications.status === 'fulfilled') {
+      const direct = z.array(applicationSchema).parse(applications.value).find(a => a.directlyActivated && (a.state === 'approved' || a.state === 'claimed') && (a.claimUntil ?? 0) > Date.now());
+      if (direct && qualification.status === 'rejected' && qualification.reason instanceof Error && qualification.reason.message === 'QUALIFICATION_REQUIRED') {
+        await trialApi('trial/claim', { receipt: owner, id: direct.id });
+        await refresh(owner, start); return;
+      }
+    }
     if (qualification.status === 'fulfilled') { setStatus(policyStatusSchema.parse(qualification.value)); setQualificationState('active'); setSessionValid(true); if (onContinue) onContinue(); }
     else {
       if (!(qualification.reason instanceof Error) || qualification.reason.message !== 'QUALIFICATION_REQUIRED') throw qualification.reason;

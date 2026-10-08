@@ -11,7 +11,7 @@ export function createFitnessWorker(control = createDeepSeekWorker(), authentica
       if (!await authenticate(request, env)) return new Response(JSON.stringify({ error: 'ADMIN_REQUIRED' }), { status: 403, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
       if (path.startsWith('/api/v1/management/')) {
         const operation = path.slice('/api/v1/management/'.length);
-        if (!['applications', 'application-review', 'application-retention', 'invites', 'invites/revoke', 'revoke', 'settle', 'quota-restore'].includes(operation)) return new Response(null, { status: 404 });
+        if (!['applications', 'application-review', 'application-activate', 'subject-delete', 'reissue', 'application-retention', 'invites', 'invites/revoke', 'revoke', 'settle', 'quota-restore'].includes(operation)) return new Response(null, { status: 404 });
         if (request.method !== 'POST' || request.headers.get('origin') !== new URL(request.url).origin || request.headers.get('sec-fetch-site') === 'cross-site') return new Response(null, { status: 403 });
         if (!env.CONTROL_ADMIN_SECRET) return new Response(null, { status: 503 });
         const url = new URL(request.url); url.pathname = `/api/v1/admin/${operation}`;
