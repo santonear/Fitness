@@ -51,3 +51,5 @@ Actual app captures: [Atlas mobile](../../outputs/v62-coach/atlas-390-webkit.png
 
 ## CI follow-up
 PR21 initial CI passed 318 browser cases and identified 18 ambiguous completion-status assertions plus 2 WebKit icon press hit-point failures. Scoped selectors and icon-centre press targeting corrected these; all 50 affected Chromium/WebKit cases passed locally in 4.2 minutes. Application code unchanged. CI rerun remains a separate release gate.
+
+Second CI exposed a real reminder overlap at active UTC hours (330 cases passed). Fixed outside-interaction and route dismissal, a 5-second interaction grace period, and late-result dismissal. 18 targeted cases passed in Chromium/WebKit with UTC timezone; explicit reminder tests use a fixed clock. Typecheck and release build passed. Real devices remain unverified.
