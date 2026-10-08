@@ -25,7 +25,7 @@ for(const language of ['en','zh'] as const) test(`${language} production UI day 
   await page.getByRole('button',{name:text('Start planned workout','开始计划训练')}).click();
   await page.getByLabel(text('Reps','次数'),{exact:true}).fill('12');await page.getByLabel(text('Set notes','组备注'),{exact:true}).fill('实际组备注');
   await page.getByRole('button',{name:text('Record set','记录组'),exact:true}).click();await expect(page.getByRole('status')).toHaveText(text('Set saved','组已保存'));
-  await page.getByRole('button',{name:text('Review completion','完成前核对')}).click();await page.getByRole('button',{name:text('Confirm completion','确认完成')}).click();await expect(page.getByRole('status')).toHaveText(text('Workout completed','训练已完成'));
+  await page.getByRole('button',{name:text('Review completion','完成前核对')}).click();await page.getByRole('button',{name:text('Confirm completion','确认完成')}).click();await expect(page.getByRole('status').filter({hasText:/^(Workout completed|训练已完成)$/})).toHaveText(text('Workout completed','训练已完成'));
   await page.goto('/plans?tab=legacy');page.once('dialog',dialog=>dialog.accept());await page.getByRole('list',{name:text('Date plans','日期计划')}).locator('li').filter({hasText:'Date A'}).getByRole('button',{name:text('Hide day plan','隐藏日计划')}).click();
   await expect(page.getByRole('list',{name:text('Date plans','日期计划')}).locator('li')).toHaveCount(1);
   await page.reload();

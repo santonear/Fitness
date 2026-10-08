@@ -12,8 +12,9 @@ test('ten stages, resume, exclusivity, wheel boundaries, summary edits and no me
  await page.getByRole('button',{name:'Home',exact:true}).click();await page.getByRole('button',{name:'Outdoors',exact:true}).click();await page.getByLabel('Other training venues').fill('Studio');await next(page);
  await page.getByLabel('Other equipment').fill('Rings');await next(page);
  await page.getByRole('button',{name:'No known limitations',exact:true}).click();await page.getByLabel('Other movement limitations').fill('Avoid jumping');await expect(page.getByRole('button',{name:'No known limitations',exact:true})).toHaveAttribute('aria-pressed','false');await next(page);
+ const frequency=page.getByRole('spinbutton',{name:'Sessions per week'});await frequency.focus();await frequency.press('End');
  const hour=page.getByRole('spinbutton',{name:'Training start time'});await hour.focus();await hour.press('Home');await expect(hour).toHaveAttribute('aria-valuenow','0');
- await expect(page.getByRole('button',{name:'Next →'})).toBeDisabled();await expect(page.getByRole('button',{name:'Back',exact:true})).toBeEnabled();await page.reload();await expect(hour).toHaveAttribute('aria-valuenow','0');
+ await expect(page.getByRole('button',{name:'Next →'})).toBeDisabled();await expect(page.getByRole('button',{name:'Back',exact:true})).toBeEnabled();await expect.poll(()=>page.evaluate(async()=>{const g='/src/application/guided.ts';const{guidedService}=await import(/* @vite-ignore */g);return (await guidedService.read()).onboarding?.answers.schedule?.value;})).toEqual(['0','','7']);await page.reload();await expect(hour).toHaveAttribute('aria-valuenow','0');
  const duration=page.getByRole('spinbutton',{name:'Session duration'});await duration.focus();await duration.press('End');await expect(duration).toHaveAttribute('aria-valuenow','120');await next(page);
  await page.getByLabel('Other preferences (optional)').fill('Quiet music');await next(page);await expect(page.getByRole('heading',{name:'Your starting point.',exact:true})).toBeVisible();
  await page.getByRole('button',{name:'Edit 6',exact:true}).click();await expect(page.getByLabel('Other training venues')).toHaveValue('Studio');await expect(page.getByRole('button',{name:'Home',exact:true})).toHaveAttribute('aria-pressed','true');
@@ -27,5 +28,5 @@ test('leave for manual work, return, theme switching and minor AI isolation',asy
  for(const theme of ['serene','orbit','atlas']){await page.getByLabel('Switch layout',{exact:true}).selectOption(theme);await expect(page.getByRole('heading',{name:'Basic body information'})).toBeVisible();}
  for(let i=0;i<8;i++)await skip(page);await page.getByRole('button',{name:'Confirm profile',exact:true}).click();await expect(page).toHaveURL(/plans/);
  let calls=0;await page.route('**/api/**',route=>{if(route.request().method()==='POST')calls++;return route.fulfill({json:{expiresAt:Date.now()+86400000,used:{understand:0,generate:0},limits:{understand:8,generate:4},aiEnabled:true}});});
- await page.goto('/ai');await expect(page.getByText(/Adult AI is unavailable/)).toBeVisible();await expect(page.getByRole('button',{name:'Understand goal',exact:true})).toBeDisabled();expect(calls).toBe(0);
+ await page.goto('/ai');await expect(page.getByText(/Adult AI is unavailable/)).toBeVisible();await expect(page.getByRole('button',{name:'Agree to send and understand goal',exact:true})).toBeDisabled();expect(calls).toBe(0);
 });

@@ -29,3 +29,9 @@ it('legacy completion remains readable, V4 completion requires all questions',()
 it('server rejects unknown or minor V4 audience and explicit minor body before provider work',()=>{
  for(const request of [{onboardingVersion:4,scope:{}},{onboardingVersion:4,adultConfirmed:false,scope:{}},{scope:{body:{age:{value:17}}}}])expect(()=>validateGuidedProviderInput(request as GuidedDialogueRequest,14)).toThrow('ADULT_ONLY');
 });
+
+it('weekly frequency accepts 1–7 and retains legacy two-field schedules',()=>{
+ for(const n of ['1','7',''])expect(validV4Answer('schedule',{status:'answered',value:['19','60',n]})).toBe(true);
+ for(const n of ['0','8','1.5'])expect(validV4Answer('schedule',{status:'answered',value:['19','60',n]})).toBe(false);
+ expect(validV4Answer('schedule',{status:'answered',value:['19','60']})).toBe(true);
+});

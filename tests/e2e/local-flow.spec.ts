@@ -63,7 +63,7 @@ for (const locale of ['en', 'zh'] as const) {
     await page.getByRole('button', { name: text('Review completion', '完成前核对'), exact: true }).click();
     await expect(page.getByRole('region', { name: text('Completion review', '完成前核对') })).toContainText('Offline acceptance evidence');
     await page.getByRole('button', { name: text('Confirm completion', '确认完成'), exact: true }).click();
-    await expect(page.getByRole('status')).toHaveText(text('Workout completed', '训练已完成'));
+    await expect(page.getByRole('status').filter({hasText:/^(Workout completed|训练已完成)$/})).toHaveText(text('Workout completed', '训练已完成'));
     await page.getByRole('navigation').getByRole('link', { name: text('Progress', '进度'), exact: true }).filter({visible:true}).click();
     await page.getByRole('button', { name: text('View history details', '查看历史详情'), exact: true }).click();
     await expect(page.getByRole('region', { name: text('History details', '历史详情') })).toContainText('Offline acceptance evidence');

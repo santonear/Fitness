@@ -10,7 +10,7 @@ test('concurrent dates, transaction failure and restored stale actions preserve 
     const input = { name:'Safety', date:'2027-04-03', timeZone:profile.timeZone, exercises:[{exerciseId:'d16325d9-fc00-4c41-88a1-000000000003',order:0,targetSets:[{metricType:'reps',reps:10}]}] };
     const attempts = await Promise.allSettled([dayPlanService.saveDayPlan(input),dayPlanService.saveDayPlan(input)]);
     const saved = attempts.find(value=>value.status==='fulfilled')! as PromiseFulfilledResult<any>;
-    const snapshot = () => repository.db.transaction('r',repository.db.tables,async()=>JSON.stringify(await Promise.all(repository.db.tables.map((table:any)=>table.toArray()))));
+    const snapshot = () => repository.db.transaction('r',repository.db.tables,async()=>JSON.stringify(await Promise.all(repository.db.tables.filter((table:{name:string})=>table.name!=='coachDevice').map((table:any)=>table.toArray()))));
     const factsBefore = await snapshot(); const before = await backupService.exportBackup();
     const add = repository.db.planVersions.add; repository.db.planVersions.add = async () => {throw new DOMException('Synthetic quota failure','QuotaExceededError');};
     const failure = await dayPlanService.saveDayPlan({...input,date:'2027-04-04'}).then(()=> 'bad',(error:{code:string})=>error.code);

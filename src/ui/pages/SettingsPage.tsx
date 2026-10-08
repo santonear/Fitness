@@ -1,3 +1,4 @@
+import { CoachPreferences } from '../components/CoachPreferences';
 import { AppIcon, StatusIcon } from '../components/AppIcon';
 import { useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -71,7 +72,7 @@ export function SettingsPage({ restored = false }: { restored?: boolean }) {
     <div className="v31-tabs" role="tablist" aria-label={i18n.resolvedLanguage === 'zh'?'设置分类':'Settings sections'}>{tabs.map((name,index)=><button key={name} role="tab" aria-selected={name===tab} aria-controls={`settings-${name}`} id={`tab-${name}`} onClick={()=>setParams({tab:name})}>{(i18n.resolvedLanguage==='zh'?['AI 资格与额度','备份恢复','偏好与资料','外观与版式']:['AI access & quota','Backup & restore','Profile & preferences','Appearance & layout'])[index]}</button>)}</div>
     <section role="tabpanel" id="settings-trial" aria-labelledby="tab-trial" hidden={tab!=='trial'}>{tab==='trial'&&<TrialAccess />}</section>
     <section role="tabpanel" id="settings-backup" aria-labelledby="tab-backup" hidden={tab!=='backup'}>{profile && <BackupPanel restored={restored} />}</section>
-    <section role="tabpanel" id="settings-appearance" aria-labelledby="tab-appearance" hidden={tab!=='appearance'}><AppearanceCards /></section>
+    <section role="tabpanel" id="settings-appearance" aria-labelledby="tab-appearance" hidden={tab!=='appearance'}><AppearanceCards />{profile && <CoachPreferences />}</section>
     <section role="tabpanel" id="settings-profile" aria-labelledby="tab-profile" hidden={tab!=='profile'}><p>{l.optional}</p><Link to="/onboarding">{i18n.resolvedLanguage === 'zh' ? '查看或修改10阶段引导资料' : 'Review or edit 10-stage onboarding'}</Link>
     <button disabled={!profile || busy} onClick={() => void run(async () => { setMemo(await trainingMemoryService.readTrainingMemo()); })}>{i18n.resolvedLanguage === 'zh' ? '读取全量训练备忘' : 'Read full training memo'}</button>
     {memo && <TrainingMemoView memo={memo} locale={i18n.resolvedLanguage === 'zh' ? 'zh' : 'en'} />}

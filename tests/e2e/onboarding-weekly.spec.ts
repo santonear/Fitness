@@ -1,0 +1,10 @@
+import {test,expect} from '@playwright/test';
+for(const theme of ['atlas','serene','orbit'])test(`${theme} weekly schedule leftmost, persisted, three matching wheels`,async({page})=>{
+ await page.addInitScript(theme=>{localStorage.setItem('fitness.language','zh');localStorage.setItem('fitness-appearance-v31',theme);},theme);
+ await page.goto('/settings');await page.evaluate(async()=>{const p='/src/application/profile.ts',g='/src/application/guided.ts';const{profileService}=await import(/* @vite-ignore */p);const{guidedService}=await import(/* @vite-ignore */g);await profileService.initialize('zh');const s=await guidedService.read();await guidedService.saveV4({schedule:{status:'answered',value:['19','60']}},10,s.revision);});
+ await page.goto('/onboarding');const wheels=page.locator('.ob4-schedule [role=spinbutton]');await expect(wheels).toHaveCount(3);
+ const weekly=page.getByRole('spinbutton',{name:'每周训练次数'});await expect(weekly).toHaveAttribute('aria-valuetext',/未确认/);await weekly.press('Home');await expect(weekly).toHaveAttribute('aria-valuenow','1');await weekly.press('End');await expect(weekly).toHaveAttribute('aria-valuenow','7');
+ await expect(page.getByRole('button',{name:'下一步 →',exact:true})).toBeEnabled();await page.getByRole('button',{name:'下一步 →',exact:true}).click();await expect(page.getByRole('heading',{name:'还有什么想告诉我们？'})).toBeVisible();await page.reload();await page.getByRole('button',{name:'上一步',exact:true}).click();await expect(weekly).toHaveAttribute('aria-valuenow','7');
+ for(const width of [320,390,1440]){await page.setViewportSize({width,height:900});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);const boxes=await Promise.all([0,1,2].map(i=>wheels.nth(i).boundingBox()));expect(boxes[0]!.x).toBeLessThan(boxes[1]!.x);expect(boxes[1]!.x).toBeLessThan(boxes[2]!.x);await page.screenshot({path:`outputs/onboarding-weekly/${theme}-${width}-${test.info().project.name}.png`,fullPage:true});}
+ await expect(page.getByText(/时长依次为|每个数值只出现一次/)).toHaveCount(0);
+});

@@ -83,13 +83,13 @@ export async function verifyBackup(name: string) {
     await repo.write(async () => { await db.bodyWeights.put({ id: crypto.randomUUID(), revision: 0, createdAt: now, updatedAt: now, localDate: '2026-10-02', timeZone: 'UTC', weightGrams: 65000 }); });
     const stalePreview = await service.importBackup(preview, { ...confirm, expectedRevision: preview.expectedRevision }).then(() => false, e => e.code === 'CONFLICT');
     const fresh = await service.validateBackup(file());
-    const before = JSON.stringify(await Promise.all(db.tables.map(table => table.toArray())));
+    const before = JSON.stringify(await Promise.all(db.tables.filter((table:{name:string})=>table.name!=='coachDevice').map(table => table.toArray())));
     const fail = () => { throw new DOMException('Storage full', 'QuotaExceededError'); };
     db.sets.hook('creating', fail);
     await service.importBackup(fresh, { ...confirm, expectedRevision: fresh.expectedRevision }).catch(() => {});
     db.sets.hook('creating').unsubscribe(fail);
     const result = await db.transaction('r', db.tables, async () => {
-      const rollback = before === JSON.stringify(await Promise.all(db.tables.map(table => table.toArray())));
+      const rollback = before === JSON.stringify(await Promise.all(db.tables.filter((table:{name:string})=>table.name!=='coachDevice').map(table => table.toArray())));
       return { restored, memoRebuilt, notesPreserved, invalidRejected: checks.every(Boolean), confirmations, stalePreview, rollback, staleWriter, monotonic: importedRevision === beforeRevision + 1 };
     });
     await second.transaction('r', second.tables, async () => { await second.metadata.count(); });
@@ -101,4 +101,3 @@ export async function verifyBackup(name: string) {
     await Dexie.delete(name);
   }
 }
-

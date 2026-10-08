@@ -15,17 +15,17 @@ test('V4 answers reach two explicit send previews; optional data is excluded; pr
   const p='/src/application/profile.ts',g='/src/application/guided.ts',d='/src/domain/onboarding-v4.ts';
   const {profileService}=await import(/* @vite-ignore */p);const {guidedService}=await import(/* @vite-ignore */g);const {onboardingKeys}=await import(/* @vite-ignore */d);await profileService.initialize('en');
   const answers=Object.fromEntries(onboardingKeys.map((key:string)=>[key,{status:'skipped'}]));
-  for(const [key,value] of Object.entries({age:18,goal:['Strength'],experience:'Beginner',location:['Home','Park'],equipment:['Mat'],safety:['No jumping'],preferences:'Quiet session',weightKg:70,schedule:['0','40']}))answers[key]={status:'answered',value};
+  for(const [key,value] of Object.entries({age:18,goal:['Strength'],experience:'Beginner',location:['Home','Park'],equipment:['Mat'],safety:['No jumping'],preferences:'Quiet session',weightKg:70,schedule:['0','40','3']}))answers[key]={status:'answered',value};
   await guidedService.saveV4(answers,12,(await guidedService.read()).revision);await guidedService.completeOnboarding((await guidedService.read()).revision);
  });
- await page.goto('/ai');await expect(page.getByLabel('Training goal and constraints')).toHaveValue('Strength');
- await expect(page.getByLabel('Usual start time')).toHaveValue('00:00');await expect(page.getByLabel('Minutes per session',{exact:true})).toHaveValue('40');
- await expect(page.getByRole('button',{name:'Understand goal',exact:true})).toBeDisabled();expect(sent).toHaveLength(0);
- await page.getByRole('checkbox',{name:/I reviewed this information/}).check();
+ await page.goto('/ai');await page.getByText('Review or edit training details',{exact:true}).click();await expect(page.getByLabel('Training goal and constraints')).toHaveValue('Strength');
+ await expect(page.getByLabel('Availability and other preferences (optional)')).toHaveValue(/3 sessions per week/);await expect(page.getByLabel('Usual start time')).toHaveValue('00:00');await expect(page.getByLabel('Minutes per session',{exact:true})).toHaveValue('40');
+ await expect(page.getByRole('button',{name:'Agree to send and understand goal',exact:true})).toBeEnabled();expect(sent).toHaveLength(0);
+
  // An answer changed in another view invalidates the already reviewed request.
  await page.evaluate(async()=>{const g='/src/application/guided.ts';const {guidedService}=await import(/* @vite-ignore */g);const s=await guidedService.read();await guidedService.saveV4({...s.onboarding.answers,preferences:{status:'answered',value:'Quiet morning'}},12,s.revision);});
- await expect(page.getByRole('checkbox',{name:/I reviewed this information/})).not.toBeChecked();
- await page.evaluate(async()=>{const g='/src/application/guided.ts';const {guidedService}=await import(/* @vite-ignore */g);await guidedService.completeOnboarding((await guidedService.read()).revision);});await page.reload();await page.getByRole('checkbox',{name:/I reviewed this information/}).check();await page.getByRole('button',{name:'Understand goal',exact:true}).click();
+ await expect(page.getByRole('checkbox',{name:/I reviewed this information/})).toHaveCount(0);
+ await page.evaluate(async()=>{const g='/src/application/guided.ts';const {guidedService}=await import(/* @vite-ignore */g);await guidedService.completeOnboarding((await guidedService.read()).revision);});await page.reload();await page.getByRole('button',{name:'Agree to send and understand goal',exact:true}).click();
  await page.getByRole('checkbox',{name:'I confirm this understanding is correct',exact:true}).check();await page.getByRole('button',{name:'Choose dates →'}).click();
  await page.locator('[data-plan-date]').nth(15).click();await page.getByRole('button',{name:'Review sending →'}).click();
  await expect(page.getByRole('button',{name:'Generate proposal →'})).toBeDisabled();
@@ -40,4 +40,3 @@ test('V4 answers reach two explicit send previews; optional data is excluded; pr
 test('existing training facts bypass first-run onboarding',async({page})=>{
  await page.goto('/workout');await page.getByRole('button',{name:'Start temporary workout',exact:true}).click();await expect(page.getByLabel('Reps',{exact:true})).toBeVisible();await page.goto('/');await expect(page.locator('.v31-hero')).toBeVisible();await expect(page).not.toHaveURL(/onboarding/);
 });
-

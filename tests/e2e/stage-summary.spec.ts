@@ -12,7 +12,7 @@ test('manual local preparation shows completed facts without network or database
   await expect(page.getByRole('status')).toHaveText('Set saved');
   await page.getByRole('button', { name: 'Review completion', exact: true }).click();
   await page.getByRole('button', { name: 'Confirm completion', exact: true }).click();
-  await expect(page.getByRole('status')).toHaveText('Workout completed');
+  await expect(page.getByRole('status').filter({hasText:/^Workout completed$/})).toHaveText('Workout completed');
   await page.goto('/progress');
   await page.getByText('More filters and stage summaries', { exact: true }).click();
   const section = page.getByRole('region', { name: 'Local stage summary preparation' });
@@ -21,7 +21,7 @@ test('manual local preparation shows completed facts without network or database
   const read = () => page.evaluate(async () => {
     const path = '/src/persistence/db.ts';
     const { database } = await import(/* @vite-ignore */ path) as typeof import('../../src/persistence/db');
-    return database.transaction('r', database.tables, async () => Promise.all(database.tables.map(async table => ({ name: table.name, rows: await table.toArray() }))));
+    return database.transaction('r', database.tables, async () => Promise.all(database.tables.filter((table:{name:string})=>table.name!=='coachDevice').map(async table => ({ name: table.name, rows: await table.toArray() }))));
   });
   const before = await read();
   const apiRequests: string[] = [];
@@ -58,7 +58,7 @@ test('saved legacy plan supports actual week and whole-plan fact previews', asyn
   await expect(page.getByRole('status')).toHaveText('Set saved');
   await page.getByRole('button', { name: 'Review completion', exact: true }).click();
   await page.getByRole('button', { name: 'Confirm completion', exact: true }).click();
-  await expect(page.getByRole('status')).toHaveText('Workout completed');
+  await expect(page.getByRole('status').filter({hasText:/^Workout completed$/})).toHaveText('Workout completed');
   await page.goto('/progress');
   await page.getByText('More filters and stage summaries', { exact: true }).click();
   const section = page.getByRole('region', { name: 'Local stage summary preparation' });

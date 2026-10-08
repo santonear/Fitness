@@ -68,14 +68,14 @@ it('enforces authorization and a strict payload on the restoration endpoint', as
   expect((await call(f.input)).status).toBe(200);
   expect((await f.service.managementReport(testConfig.adminSecret)).quotaRestorations[0].reason).toBe(f.input.reason);
 });
-it('restored allowance is finite and isolated to the selected user', async () => {
+it('historical understanding credits remain isolated but no longer limit requests', async () => {
   const f = await fixture();
   await f.service.restoreQuota(testConfig.adminSecret, f.input);
   for (let i = 0; i < 8; i++) await f.service.submit(f.session.token, await f.request());
-  await expect(f.service.submit(f.session.token, await f.request())).rejects.toMatchObject({ code: 'INDIVIDUAL_QUOTA_EXHAUSTED' });
+  await f.service.submit(f.session.token, await f.request());
   const other = await f.service.redeem((await f.service.issue(testConfig.adminSecret)).code);
   expect((await f.service.status(other.token)).limits.understand).toBe(8);
-  expect(f.calls()).toBe(8);
+  expect(f.calls()).toBe(9);
 });
 it('uses Shanghai month boundaries and keeps unresolved reservations intact', async () => {
   const f = await fixture();

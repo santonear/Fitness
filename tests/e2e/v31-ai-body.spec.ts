@@ -35,8 +35,8 @@ async function setup(page: Page, seed = true) {
   return sent;
 }
 async function review(page: Page) {
-  await page.getByRole('checkbox',{name:/I reviewed this information/}).check();
-  await page.getByRole('button',{name:'Understand goal',exact:true}).click();
+
+  await page.getByRole('button',{name:'Agree to send and understand goal',exact:true}).click();
   await page.getByRole('checkbox',{name:'I confirm this understanding is correct',exact:true}).check();
   await page.getByRole('button',{name:'Choose dates →'}).click();
   await page.locator('[data-plan-date]').nth(15).click();

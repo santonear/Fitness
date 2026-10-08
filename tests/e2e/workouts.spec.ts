@@ -40,7 +40,7 @@ test('planned training links confirmed completion to its schedule', async ({ pag
  await expect(page.getByRole('status')).toHaveText('Set saved');
  await page.getByRole('button',{name:'Review completion',exact:true}).click();
  await page.getByRole('button',{name:'Confirm completion',exact:true}).click();
- await expect(page.getByRole('status')).toHaveText('Workout completed');
+ await expect(page.getByRole('status').filter({hasText:/^(Workout completed|训练已完成)$/})).toHaveText('Workout completed');
  await page.goto('/plans?tab=legacy');await expect(page.getByRole('list',{name:'Schedule'})).toContainText('completed');
 });
 test('removal cancellation preserves facts; confirmed removal persists and terminal workouts have no removal controls', async ({page}) => {
@@ -68,7 +68,7 @@ test('removal cancellation preserves facts; confirmed removal persists and termi
  await page.getByLabel('Reps').fill('5');await page.getByLabel('Load (kg)').fill('0');
  await page.getByRole('button',{name:'Record set',exact:true}).click();await expect(page.getByRole('status')).toHaveText('Set saved');
  await page.getByRole('button',{name:'Review completion',exact:true}).click();
- await page.getByRole('button',{name:'Confirm completion',exact:true}).click();await expect(page.getByRole('status')).toHaveText('Workout completed');
+ await page.getByRole('button',{name:'Confirm completion',exact:true}).click();await expect(page.getByRole('status').filter({hasText:/^(Workout completed|训练已完成)$/})).toHaveText('Workout completed');
  await expect(page.getByRole('button',{name:'Remove saved set',exact:true})).toHaveCount(0);await expect(page.getByRole('button',{name:'Remove exercise',exact:true})).toHaveCount(0);
  await page.getByRole('button',{name:'Start another workout',exact:true}).click();
  await page.getByRole('button',{name:'Start temporary workout',exact:true}).click();

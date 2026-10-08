@@ -7,7 +7,7 @@ import { CatalogPage } from './pages/CatalogPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { WorkoutPage } from './pages/WorkoutPage';
 import { ProgressPage } from './pages/ProgressPage';
-import { GuidedDialoguePage } from './pages/GuidedDialoguePage';
+import { FloatingCoach, CoachRoute } from './components/FloatingCoach';
 import { TrialAccess } from './components/TrialAccess';
 import { profileService } from '../application/profile';
 import { liveQuery } from 'dexie';
@@ -162,7 +162,7 @@ export function App(): ReactElement {
             <Route key={name} path={path} element={name === 'today' ? <TodayPage /> : name === 'exercises' ? <CatalogPage /> : name === 'settings' ? <SettingsPage restored={restoreSucceeded} /> : name === 'plans' ? <PlansWorkspace /> : <ProgressPage />} />
           ))}
           <Route path="/workout" element={<WorkoutPage />} />
-          <Route path="/ai" element={<GuidedDialoguePage />} />
+          <Route path="/ai" element={<CoachRoute />} />
           <Route path="/trial" element={<TrialAccess />} />
           <Route path="/onboarding" element={<OnboardingV4Page />} />
           <Route path="*" element={<Navigate to="/" replace />} />
@@ -170,6 +170,7 @@ export function App(): ReactElement {
       </main>
       <aside className="v31-context"><h2>{zh ? '你的训练空间' : 'Your training space'}</h2><p>{zh ? '每一次完成都独立记录。按自己的节奏安排训练，也给恢复留出空间。' : 'Each workout is recorded independently. Make room for training and recovery at your own pace.'}</p><NavLink to="/plans">{zh ? '查看训练安排' : 'View your schedule'}</NavLink><hr /><h3>{zh ? 'AI 是可选工具' : 'AI is optional'}</h3><p>{zh ? '即使资格过期或网络不可用，已加载应用中的本地训练记录、动作库与备份仍可使用。' : 'When trial access expires or the network is unavailable, local workouts, exercises and backups stay usable in the loaded app.'}</p><NavLink to="/trial">{zh ? '查看 AI 资格与额度' : 'View AI access & quota'}</NavLink><hr /><p>{t('local')}</p></aside>
       <nav className="v31-mobile-nav" aria-label={zh ? '底部导航' : 'Bottom navigation'}>{destinations.map(([name,path]) => <NavLink key={name} to={path} end tabIndex={0} className={sectionPath === path ? 'active' : undefined} aria-current={sectionPath === path ? 'page' : undefined}><NavigationIcon name={name} /><span>{t(name)}</span></NavLink>)}</nav>
+      {!restoring && <FloatingCoach key={libraryGeneration} />}
       <footer>{t('local')}</footer>
     </div>
   );

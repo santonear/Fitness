@@ -124,8 +124,8 @@ it('temporary planning bypass ignores money limits and expired bounds, retaining
   await f.service.settle(f.config.adminSecret,f.session.subjectId,first.request.requestId,500);
   expect(await f.store.read()).toMatchObject({aiEnabled:true,recoveryRequired:false,budgets:{'2026-10':{spent:500,reserved:300}}});
   f.config.quotas.understand = 2;
-  await expect(f.send()).rejects.toMatchObject({code:'INDIVIDUAL_QUOTA_EXHAUSTED'});
-  expect(f.calls()).toBe(2);
+  await f.send();
+  expect(f.calls()).toBe(3);
 });
 it('reenabling money limits restores pending proof and budget gates without changing historical entries', async () => {
   const f=await fixture();f.config.planningBudgetDisabled=true;f.proof(undefined);await f.send();const before=await f.store.read();

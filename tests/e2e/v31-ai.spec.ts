@@ -26,8 +26,8 @@ async function fixture(page:Page, options:{fail?:'understand'|'generate';maxDays
   return sent;
 }
 async function understand(page:Page) {
-  await page.getByRole('checkbox',{name:/I reviewed this information/}).check();
-  await page.getByRole('button',{name:'Understand goal',exact:true}).click();
+
+  await page.getByRole('button',{name:'Agree to send and understand goal',exact:true}).click();
   await expect(page.getByRole('heading',{name:'AI understanding · review needed'})).toBeVisible();
   await page.getByRole('checkbox',{name:'I confirm this understanding is correct',exact:true}).check();
   await page.getByRole('button',{name:'Choose dates →',exact:true}).click();
@@ -51,7 +51,7 @@ async function taskCount(page:Page) {return page.evaluate(async()=>{const path='
 
 test('two sends require consent; history excluded; candidate editable and saved only by independent confirmation',async({page},info)=>{
   const sent=await fixture(page);
-  await expect(page.getByRole('button',{name:'Understand goal',exact:true})).toBeDisabled();
+  await expect(page.getByRole('button',{name:'Agree to send and understand goal',exact:true})).toBeEnabled();
   expect(sent).toHaveLength(0);await understand(page);expect(sent).toHaveLength(1);
   const date=await datesAndPreview(page);
   await expect(page.getByRole('button',{name:'Generate proposal →',exact:true})).toBeDisabled();
@@ -72,14 +72,14 @@ test('two sends require consent; history excluded; candidate editable and saved 
 
 test('changing goal invalidates earlier consent and understanding; explicit retry keeps request ID',async({page})=>{
   const sent=await fixture(page,{fail:'understand'});
-  await page.getByRole('checkbox',{name:/I reviewed this information/}).check();
-  await page.getByRole('button',{name:'Understand goal',exact:true}).click();
+
+  await page.getByRole('button',{name:'Agree to send and understand goal',exact:true}).click();
   await expect(page.getByRole('alert')).toBeVisible();
-  await page.getByRole('button',{name:'Retry this understanding request'}).click();
+  await page.getByRole('button',{name:'Agree to retry this understanding request'}).click();
   await expect.poll(()=>sent.length).toBe(2);expect(sent[0].requestId).toBe(sent[1].requestId);
   await page.getByRole('textbox',{name:'Training goal and constraints'}).fill('A new goal');
-  await expect(page.getByRole('checkbox',{name:/I reviewed this information/})).not.toBeChecked();
-  await expect(page.getByRole('button',{name:'Understand goal',exact:true})).toBeDisabled();
+  await expect(page.getByRole('checkbox',{name:/I reviewed this information/})).toHaveCount(0);
+  await expect(page.getByRole('button',{name:'Agree to send and understand goal',exact:true})).toBeEnabled();
   await expect(page.getByRole('button',{name:'Choose dates →'})).toBeDisabled();
 });
 
@@ -149,7 +149,7 @@ test('restore generation invalidates the old candidate without another paid requ
 
 test('invalid duration is rejected locally before an AI request',async({page})=>{
   const sent=await fixture(page);await page.getByLabel('Minutes per session',{exact:true}).fill('0');
-  await page.getByRole('checkbox',{name:/I reviewed this information/}).check();await page.getByRole('button',{name:'Understand goal',exact:true}).click();
+  await page.getByRole('button',{name:'Agree to send and understand goal',exact:true}).click();
   await expect(page.getByRole('alert')).toContainText('Enter 1–240 minutes');expect(sent).toHaveLength(0);
 });
 

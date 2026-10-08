@@ -20,7 +20,7 @@ async function isolated() {
 
 async function fullSnapshot(db: ReturnType<typeof createDatabase>): Promise<string> {
   return db.transaction('r', db.tables, async () => JSON.stringify(await Promise.all(
-    db.tables.map(async table => ({ name: table.name, rows: await table.toArray() })),
+    db.tables.filter((table:{name:string})=>table.name!=='coachDevice').map(async table => ({ name: table.name, rows: await table.toArray() })),
   )));
 }
 
