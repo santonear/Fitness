@@ -22,6 +22,9 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npx playwright install --with-deps chromium webkit
+      - name: Check narrow WebKit stage previews
+        run: npx playwright test tests/e2e/stage-summary.spec.ts --project webkit
       - run: npm run test:e2e
       - run: npx playwright test --config playwright.guided-live.config.ts
       - run: npx playwright test --config playwright.trial.config.ts
+      - run: npx playwright test --config playwright.v31-all.config.ts

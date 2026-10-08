@@ -2,6 +2,7 @@ import { canonical, digest, validateCandidate, validateRequest, type AiRequest }
 import { ControlError, type ControlState, type ControlStore, type OperationCounts } from './store';
 import { buildAdminReport } from './admin-report';
 import { TrialApplications, applicationAdminView } from './trial-applications';
+import { guidedServiceLimits } from './guided-provider';
 export { ControlError } from './store';
 
 export interface ControlConfig {
@@ -132,10 +133,37 @@ export class ControlService {
   }
   async status(value: string) {
     const sessionDigest = await digest(value, this.config.digestSecret); const state = await this.store.read(); const subjectId = this.qualification(state, sessionDigest);
+    return { subjectId, ...this.subjectStatus(state, subjectId) };
+  }
+  /** Read-only ownership lookup. A receipt never creates or authenticates a session. */
+  async accessStatus(value?: string, receipt?: string) {
+    if (receipt !== undefined && !/^[a-f0-9]{64}$/.test(receipt)) throw new ControlError('APPLICATION_CREDENTIAL_REQUIRED', 401);
+    const state = await this.store.read();
+    const session = value ? state.sessions[await digest(value, this.config.digestSecret)] : undefined;
+    const owner = receipt ? await digest(`application:${receipt}`, this.config.digestSecret) : undefined;
+    const owned = owner ? Object.values(state.applications ?? {}).filter(a => a.ownerDigest === owner && a.state === 'claimed' && a.subjectId).sort((a, b) => b.createdAt - a.createdAt)[0] : undefined;
+    // An existing cookie takes precedence: another receipt cannot change its identity.
+    const subjectId = session?.subjectId ?? owned?.subjectId;
+    const subject = subjectId ? state.subjects[subjectId] : undefined;
+    if (!subject || !subjectId) return { qualification: 'none' as const, sessionValid: false };
+    const qualification = subject.revoked ? 'revoked' as const : subject.expiresAt <= this.now() ? 'expired' as const : 'active' as const;
+    const sessionValid = qualification === 'active' && Boolean(session && !session.revoked);
+    return { qualification, sessionValid, ...this.subjectStatus(state, subjectId) };
+  }
+  private subjectStatus(state: ControlState, subjectId: string) {
     const period = this.period(); const recorded = state.usages[usageKey(subjectId, period)] ?? { understand: 0, generate: 0 };
     const summaryConfigured = (this.config.quotas.summary ?? 0) > 0 && this.config.requestBounds.summary !== undefined;
     const used = { ...recorded, ...(summaryConfigured ? { summary: recorded.summary ?? 0 } : {}) };
-    return { subjectId, expiresAt: state.subjects[subjectId].expiresAt, period, used, limits: this.quotaLimits(state, subjectId, period),
+    const budget = state.budgets[period] ?? { spent: 0, reserved: 0 };
+    const carried = this.config.allowBoundedPending ? Object.entries(state.budgets).filter(([month]) => month !== period).reduce((sum, [, value]) => sum + value.reserved, 0) : 0;
+    const available = (bound: number) => budget.spent + budget.reserved + carried + bound <= this.config.budgetLimit;
+    // Locate the actual next monthly boundary in the configured zone, including DST.
+    const month = (at: number) => new Intl.DateTimeFormat('en', { timeZone: this.config.timeZone, year: 'numeric', month: '2-digit' }).format(at);
+    let low = this.now(), high = low + 32 * DAY; const current = month(low);
+    while (high - low > 1) { const mid = Math.floor((low + high) / 2); if (month(mid) === current) low = mid; else high = mid; }
+    return { expiresAt: state.subjects[subjectId].expiresAt, period, used, limits: this.quotaLimits(state, subjectId, period),
+      resetAt: high, timeZone: this.config.timeZone, maxDays: Math.min(this.config.k, guidedServiceLimits.maxDays), maximumRequestCost: this.config.maximumRequestCost,
+      requestBounds: { ...this.config.requestBounds }, budgetAvailable: { understand: available(this.config.requestBounds.understand), generate: available(this.config.requestBounds.generate) },
       pending: Object.values(state.requests).filter(r => r.subjectId === subjectId && ['reserved', 'submitted', 'pending'].includes(r.status)).length,
       aiEnabled: state.aiEnabled && !state.recoveryRequired, reconciliationRequired: this.needsReconciliation(state, period),
       summaryAvailable: summaryConfigured && state.aiEnabled && !this.needsReconciliation(state, period) };

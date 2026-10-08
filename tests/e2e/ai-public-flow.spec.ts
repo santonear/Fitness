@@ -1,27 +1,20 @@
 import {test,expect} from '@playwright/test';
-for(const locale of ['en','zh'] as const)test(`${locale} explicit guided demo understanding and candidate save create no training facts`,async({page,baseURL})=>{
- const t=(en:string,zh:string)=>locale==='zh'?zh:en;let outbound=0;page.on('request',r=>{if(!r.url().startsWith(baseURL!))outbound++;});
- await page.addInitScript(locale=>localStorage.setItem('fitness.language',locale),locale);await page.goto('/ai');
- await page.getByRole('textbox',{name:t('goal, clarification or changes','目标、补充或调整想法'),exact:true}).fill('Regular walking');
- await page.getByRole('button',{name:t('preview scope for understanding','预览理解目标的发送范围'),exact:true}).click();
- await page.getByRole('button',{name:t('confirm sending','确认发送'),exact:true}).click();
- await expect(page.getByRole('log',{name:t('conversation','对话记录'),exact:true})).toContainText('Regular walking');
- await expect(page.getByRole('button',{name:t('preview scope for understanding','预览理解目标的发送范围'),exact:true})).toBeEnabled();
- await page.getByText(t('review the goal and exact dates','核对目标和具体日期'),{exact:true}).click();
- await expect(page.getByRole('textbox',{name:t('goal interpretation','目标理解'),exact:true})).not.toHaveValue('');
- await page.getByLabel(t('start date','开始日期'),{exact:true}).fill('2027-02-11');await page.getByLabel(t('end date','结束日期'),{exact:true}).fill('2027-02-11');
- await page.getByLabel(t('Calendar month','日历月份'),{exact:true}).fill('2027-02');
- await page.getByRole('button',{name:'2027-02-11',exact:true}).click();
- await page.getByRole('button',{name:t('confirm interpretation','确认理解'),exact:true}).click();
- await page.getByRole('button',{name:t('preview sending scope','预览本次发送范围'),exact:true}).click();
- await page.getByRole('button',{name:t('confirm sending','确认发送'),exact:true}).click();
- await expect(page.getByRole('heading',{name:t('complete candidate, not active yet','完整候选，尚未生效')})).toBeVisible();
- await page.getByRole('button',{name:t('confirm complete plan','确认完整计划'),exact:true}).click();
- await expect.poll(()=>page.evaluate(async()=>{const {database}=await import(String('/src/persistence/db.ts'));return [(await database.guidedStates.get('guided')).programs.length,await database.sessions.count(),await database.sets.count()];})).toEqual([1,0,0]);
- expect(outbound).toBe(0);
+for(const locale of ['en','zh'] as const)test(`${locale} invitation redemption sends code only; activation does not call AI or create training facts`,async({page})=>{
+ const t=(en:string,zh:string)=>locale==='zh'?zh:en;let redeemed=false;const posts:{path:string;body:any}[]=[];
+ await page.addInitScript(locale=>localStorage.setItem('fitness.language',locale),locale);
+ await page.route('**/api/v1/**',route=>{const path=new URL(route.request().url()).pathname;if(route.request().method()==='POST')posts.push({path,body:route.request().postDataJSON()});
+ if(path.endsWith('/application-config'))return route.fulfill({json:{available:false,siteKey:null}});
+ if(path.endsWith('/access-status'))return route.fulfill({json:{qualification:'none',sessionValid:false}});
+ if(path.endsWith('/redeem')){redeemed=true;return route.fulfill({json:{}});}
+ if(path.endsWith('/status'))return route.fulfill(redeemed?{json:{expiresAt:Date.now()+86400000,period:'2026-10',used:{understand:0,generate:0},limits:{understand:8,generate:4},pending:0,aiEnabled:true}}:{status:401,json:{error:'QUALIFICATION_REQUIRED'}});
+ return route.fulfill({status:503,json:{error:'UNEXPECTED_REQUEST'}});});
+ await page.goto('/trial');await page.getByLabel(t('Your name','用户名（称呼）'),{exact:true}).fill('Local-only name');await page.getByLabel(t('Invitation code','邀请码'),{exact:true}).fill('a'.repeat(64));
+ await page.getByRole('button',{name:t('Activate and start planning','启用并开始制定计划'),exact:true}).click();await expect(page).toHaveURL(/\/ai$/);
+ expect(posts.filter(call=>!call.path.endsWith('/access-status'))).toEqual([{path:'/api/v1/trial/redeem',body:{code:'a'.repeat(64)}}]);
+ expect(await page.evaluate(async()=>{const path='/src/persistence/db.ts';const{database}=await import(/* @vite-ignore */path);return[await database.sessions.count(),await database.sets.count(),await database.scheduledWorkouts.count()];})).toEqual([0,0,0]);
+ expect(await page.evaluate(()=>localStorage.getItem('fitness.trial'))).toBeNull();
 });
-test('changing goal removes the old sending confirmation',async({page})=>{
- await page.goto('/ai');const goal=page.getByRole('textbox',{name:'goal, clarification or changes',exact:true});await goal.fill('First goal');
- await page.getByRole('button',{name:'preview scope for understanding',exact:true}).click();await expect(page.getByRole('button',{name:'confirm sending',exact:true})).toBeVisible();
- await goal.fill('Changed goal');await expect(page.getByRole('button',{name:'confirm sending',exact:true})).toHaveCount(0);
+test('changing goal removes earlier sending consent without an implicit request',async({page})=>{
+ let posts=0;await page.addInitScript(()=>localStorage.setItem('fitness.language','en'));await page.route('**/api/v1/**',route=>{if(route.request().method()==='POST')posts++;return route.fulfill({json:{expiresAt:Date.now()+86400000,period:'2026-10',used:{understand:0,generate:0},limits:{understand:8,generate:4},pending:0,aiEnabled:true}});});await page.goto('/ai');
+ const goal=page.getByRole('textbox',{name:'Training goal and constraints',exact:true});await goal.fill('First goal');const consent=page.getByRole('checkbox',{name:/I reviewed this information/});await consent.check();await expect(page.getByRole('button',{name:'Understand goal',exact:true})).toBeEnabled();await goal.fill('Changed goal');await expect(consent).not.toBeChecked();await expect(page.getByRole('button',{name:'Understand goal',exact:true})).toBeDisabled();expect(posts).toBe(0);
 });

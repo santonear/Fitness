@@ -5,9 +5,11 @@ import { z } from 'zod';
 import type { ApplicationKind } from '../../backend/trial-applications';
 
 type Application = z.infer<typeof applicationSchema>;
-type Status = { expiresAt: number; used: { understand: number; generate: number }; limits: { understand: number; generate: number } };
+type Status = z.infer<typeof statusSchema>;
 const counts = z.object({ understand: z.number().int().nonnegative(), generate: z.number().int().nonnegative() });
-const statusSchema = z.object({ expiresAt: z.number().finite(), used: counts, limits: counts });
+const statusSchema = z.object({ expiresAt: z.number().finite(), used: counts, limits: counts, period: z.string().optional(), pending: z.number().int().nonnegative().optional(), reconciliationRequired: z.boolean().optional(), aiEnabled: z.boolean().optional() });
+const policyStatusSchema = statusSchema.extend({ resetAt: z.number().finite().optional(), timeZone: z.string().optional(), maxDays: z.number().int().min(1).max(14).optional(), maximumRequestCost: z.number().int().nonnegative().optional(), budgetAvailable: z.object({ understand: z.boolean(), generate: z.boolean() }).optional() });
+const accessStatusSchema = z.discriminatedUnion('qualification', [z.object({ qualification: z.literal('none'), sessionValid: z.literal(false) }), ...(['active','expired','revoked'] as const).map(qualification => policyStatusSchema.extend({ qualification: z.literal(qualification), sessionValid: z.boolean() }))]);
 const applicationSchema = z.object({ id: z.uuid(), kind: z.enum(['new','extend','replace']), state: z.enum(['pending','approved','rejected','claimed']), createdAt: z.number().finite(), decidedAt: z.number().optional(), reason: z.string().optional(), claimUntil: z.number().optional(), expiresAt: z.number().optional() });
 const configSchema = z.object({ available: z.boolean(), siteKey: z.string().nullable() });
 const receiptKey = 'fitness-trial-application-receipt-v1';
@@ -28,6 +30,8 @@ const messages: Record<string, [string, string]> = {
   VERIFICATION_REQUIRED: ['申请未提交：安全验证未通过。请在验证成功后再次点击“提交申请”；若仍失败，请联系管理员。', 'Application not submitted: security verification failed. Complete the check and submit again; contact the administrator if it still fails.'],
   QUALIFICATION_REQUIRED: ['资格已到期或不可用，请查看申请或联系管理员。', 'Your trial has expired or is unavailable. Check your application or contact the administrator.'],
   INVITE_INVALID: ['邀请码或领取资格已失效，请申请补发。', 'The invitation has expired or is no longer valid. Request a replacement.'],
+  SUBJECT_EXPIRED: ['试用已到期，本地训练仍可使用。可以申请延期。', 'Your trial has expired. Local training remains available; you can request an extension.'],
+  SUBJECT_NOT_FOUND: ['资格不可用或已撤销，本地训练数据未改变。', 'Access is unavailable or revoked. Local training data is unchanged.'],
   USE_EXTENSION: ['已有资格，请申请延期或补发。', 'You already have a trial. Request an extension or replacement.'],
 };
 export function accessError(reason: unknown, zh: boolean) {
@@ -55,7 +59,9 @@ function SecurityCheck({ siteKey, onProof }: { siteKey: string; onProof: (proof:
 export function TrialAccess({ onContinue, onSkip }: { onContinue?: () => void; onSkip?: () => void }) {
   const navigate = useNavigate();
   const { i18n } = useTranslation(); const zh = i18n.resolvedLanguage === 'zh';
-  const [status, setStatus] = useState<Status>(); const [apps, setApps] = useState<Application[]>([]);
+  const [status, setStatus] = useState<z.infer<typeof policyStatusSchema>>(); const [apps, setApps] = useState<Application[]>([]);
+  const [qualificationState, setQualificationState] = useState<'unknown'|'none'|'active'|'expired'|'revoked'>('unknown');
+  const [sessionValid, setSessionValid] = useState(false);
   const [config, setConfig] = useState<{ available: boolean; siteKey: string | null }>();
   const [receipt, setReceipt] = useState(''); const [name, setName] = useState(''); const [note, setNote] = useState('');
   const [code, setCode] = useState(''); const [proof, setProof] = useState(''); const [challenge, setChallenge] = useState(0);
@@ -63,13 +69,19 @@ export function TrialAccess({ onContinue, onSkip }: { onContinue?: () => void; o
   const [busy, setBusy] = useState(false); const [loaded, setLoaded] = useState(false); const [error, setError] = useState(''); const [notice, setNotice] = useState('');
   const [link, setLink] = useState(''); const requestId = useRef(crypto.randomUUID());
   async function refresh(owner = receipt, start = false) {
+    setQualificationState('unknown'); setStatus(undefined); setSessionValid(false);
     const [qualification, applications, availability] = await Promise.allSettled([
       trialApi<Status>('trial/status'), owner ? trialApi<Application[]>('trial/applications', { receipt: owner }) : Promise.resolve([]),
       trialApi<{ available: boolean; siteKey: string | null }>('trial/application-config'),
     ]);
     if (availability.status === 'fulfilled') setConfig(configSchema.parse(availability.value));
-    if (qualification.status === 'fulfilled') { setStatus(statusSchema.parse(qualification.value)); if (onContinue) onContinue(); }
-    else { setStatus(undefined); if (!(qualification.reason instanceof Error) || qualification.reason.message !== 'QUALIFICATION_REQUIRED') throw qualification.reason; }
+    if (qualification.status === 'fulfilled') { setStatus(policyStatusSchema.parse(qualification.value)); setQualificationState('active'); setSessionValid(true); if (onContinue) onContinue(); }
+    else {
+      if (!(qualification.reason instanceof Error) || qualification.reason.message !== 'QUALIFICATION_REQUIRED') throw qualification.reason;
+      const access = accessStatusSchema.parse(await trialApi('trial/access-status', owner ? { receipt: owner } : {}));
+      setQualificationState(access.qualification); setSessionValid(access.sessionValid);
+      if (access.qualification !== 'none') setStatus(access);
+    }
     if (applications.status === 'fulfilled') setApps(z.array(applicationSchema).parse(applications.value)); else throw applications.reason;
     if (availability.status === 'rejected') throw availability.reason;
     if (start && qualification.status === 'fulfilled' && !onContinue) navigate('/ai');
@@ -109,25 +121,40 @@ export function TrialAccess({ onContinue, onSkip }: { onContinue?: () => void; o
   }
   const pending = apps.some(a => a.state === 'pending' || a.state === 'approved' && (a.claimUntil ?? 0) > Date.now());
   const hasTrial = Boolean(status || apps.some(a => a.state === 'claimed'));
+  const active = qualificationState === 'active' && sessionValid;
+  const quotaExhausted = status && (status.used.understand >= status.limits.understand || status.used.generate >= status.limits.generate);
+  const budgetInsufficient = status?.budgetAvailable && (!status.budgetAvailable.understand || !status.budgetAvailable.generate);
+  const planningPaused = !active || quotaExhausted || budgetInsufficient || status?.aiEnabled === false || status?.reconciliationRequired;
   const words = { pending: zh ? '等待审核' : 'Awaiting review', approved: zh ? '已批准，待领取' : 'Approved · ready to claim', rejected: zh ? '未获批准' : 'Not approved', claimed: zh ? '已领取' : 'Claimed' };
+  const statusDetails = <>
+    <div className="v31-quota-grid">{(['understand','generate'] as const).map((kind,index)=><section className="v31-quota" key={kind}><h2>{(zh?['目标理解','计划生成']:['Goal understanding','Plan generation'])[index]}</h2><strong>{status?`${Math.max(0,status.limits[kind]-status.used[kind])} / ${status.limits[kind]}`:'—'}</strong><p>{status?(zh?`本期剩余 · 已用 ${status.used[kind]} 次`:`Remaining · ${status.used[kind]} used`):(zh?'资格与次数尚未确认':'Access and usage not confirmed')}</p>{status?.period&&<small>{status.period}</small>}</section>)}</div>
+    <div className="v31-service-status"><p><strong>{zh?'平台状态：':'Service: '}</strong>{status?.aiEnabled===true?(zh?'模型已启用':'Model enabled'):status?.aiEnabled===false?(zh?'模型已关闭，本地训练可继续':'Model disabled; local training stays available'):(zh?'未知':'Unknown')}</p><p><strong>{zh?'核算状态：':'Accounting: '}</strong>{status?.reconciliationRequired?(zh?'需要对账，新增请求暂停':'Reconciliation required; requests paused'):status?.pending?(zh?`${status.pending} 个请求待核算；是否允许继续由服务端判定`:`${status.pending} requests pending; the server determines availability`):status?.pending===0?(zh?'无待核算请求':'No pending requests'):(zh?'未知':'Unknown')}</p><p>{zh?'项目预算与个人次数分别限制请求。这里不推算项目剩余金额；资格有效不代表下一次 AI 请求一定获准。':'Project budget and personal quota are separate limits. Project balance is not estimated here; valid access does not guarantee admission of the next request.'}</p></div>
+  </>;
   return <section className="trial-access" aria-labelledby="trial-title">
     <span className="trial-kicker">FITNESS · AI ACCESS</span><h1 id="trial-title">{zh ? '一起开始，开启 AI 试用' : 'Start together. Unlock your AI trial.'}</h1>
     <p>{zh ? '已有邀请码？填写用户名和邀请码，即可开始。还没有邀请码可以申请试用。' : 'Have an invitation? Enter your name and code to get started, or apply for a trial.'}</p>
     {!loaded && <p role="status">{zh ? '正在查询资格…' : 'Checking your trial…'}</p>}
     {error && <p role="alert">{error}</p>}{notice && <p role="status">{notice}</p>}
-    {status && <div className="trial-summary"><strong>{zh ? 'AI 试用有效' : 'Your AI trial is active'}</strong><p>{zh ? '有效期至：' : 'Valid until: '}{new Date(status.expiresAt).toLocaleString(zh ? 'zh-CN' : 'en')}</p>
+    {loaded && qualificationState === 'none' && <p role="status">{zh ? '此浏览器尚无可验证的试用资格。可兑换邀请码或查看申请。' : 'No verified trial on this browser. Redeem an invitation or check your application.'}</p>}
+    {status && <div className="trial-summary"><strong>{qualificationState === 'expired' ? (zh ? '试用已到期，可申请延期' : 'Trial expired — request an extension') : qualificationState === 'revoked' ? (zh ? '资格已撤销，请联系管理员' : 'Access revoked — contact the administrator') : !sessionValid ? (zh ? '资格有效，但此浏览器未启用；可恢复领取或申请补发' : 'Trial active, but this browser is not activated. Recover the claim or request a replacement.') : (zh ? 'AI 试用有效' : 'Your AI trial is active')}</strong><p>{zh ? '有效期至：' : 'Valid until: '}{new Date(status.expiresAt).toLocaleString(zh ? 'zh-CN' : 'en')}</p>
       <p>{zh ? '本月剩余：理解 ' : 'Remaining this month: understanding '}{Math.max(0, status.limits.understand - status.used.understand)} · {zh ? '生成 ' : 'generation '}{Math.max(0, status.limits.generate - status.used.generate)}</p>
-      <button className="trial-primary" disabled={busy} onClick={() => navigate('/ai')}>{zh ? '开始制定训练计划' : 'Start planning your training'}</button>
-      <p>{zh ? '先完成个人资料引导，再与 AI 沟通目标并确认计划。' : 'Complete your profile, then discuss your goals with AI and confirm your plan.'}</p></div>}
-    <ul className="trial-applications">{apps.map(a => <li key={a.id}><strong>{words[a.state]}</strong><small>{a.id}</small>{a.reason && <p>{a.reason}</p>}
+      <button className="trial-primary" disabled={busy || Boolean(planningPaused)} onClick={() => navigate('/ai')}>{zh ? '开始制定训练计划' : 'Start planning your training'}</button>
+      {quotaExhausted && <p role="status">{zh ? '个人次数不足，请等待本期重置或联系管理员。' : 'Personal quota exhausted. Wait for the monthly reset or contact the administrator.'}</p>}
+      {budgetInsufficient && <p role="status">{zh ? '项目预算不足，新的 AI 请求暂不可用。请稍后刷新或联系管理员。' : 'Project budget is insufficient for new AI requests. Refresh later or contact the administrator.'}</p>}
+      {status.resetAt && <p>{zh ? '次数重置：' : 'Quota resets: '}{new Date(status.resetAt).toLocaleString(zh ? 'zh-CN' : 'en', { timeZone: status.timeZone })} {status.timeZone}</p>}
+      {status.maxDays !== undefined && <p>{zh ? `每次最多选择 ${status.maxDays} 个训练日` : `Select up to ${status.maxDays} training dates per request`}</p>}
+      {status.maximumRequestCost !== undefined && <p>{zh ? '单请求费用上限：' : 'Per-request cost limit: '}¥{(status.maximumRequestCost / 100).toFixed(2)}</p>}
+      <p>{zh ? '确认目标、选择日期、核对外发内容，再审阅并保存计划。' : 'Confirm your goal, choose dates, review what is sent, then preview and save.'}</p></div>}
+    {active && statusDetails}
+    <ul className="trial-applications">{apps.map(a => <li key={a.id}><strong>{a.kind === 'extend' ? (zh ? '延期申请 · ' : 'Extension · ') : a.kind === 'replace' ? (zh ? '补发申请 · ' : 'Replacement · ') : ''}{words[a.state]}</strong><small>{a.id}</small>{a.reason && <p>{a.reason}</p>}
       {a.state === 'approved' && <button disabled={busy || (a.claimUntil ?? 0) <= Date.now()} onClick={() => void run(async () => { await trialApi('trial/claim', { receipt, id: a.id }); await refresh(); })}>{(a.claimUntil ?? 0) <= Date.now() ? (zh ? '领取已过期' : 'Claim expired') : (zh ? '领取并启用' : 'Claim and activate')}</button>}
-      {a.state === 'claimed' && !status && <button disabled={busy} onClick={() => void run(async () => { await trialApi('trial/claim', { receipt, id: a.id }); await refresh(); })}>{zh ? '恢复领取结果' : 'Recover claim result'}</button>}</li>)}</ul>
+      {a.state === 'claimed' && !active && qualificationState === 'active' && <button disabled={busy} onClick={() => void run(async () => { await trialApi('trial/claim', { receipt, id: a.id }); await refresh(); })}>{zh ? '恢复领取结果' : 'Recover claim result'}</button>}</li>)}</ul>
     <div className="trial-actions">
-      {!status && <button aria-pressed={!form} disabled={busy} onClick={() => setForm(false)}>{zh ? '已有邀请码，开始使用' : 'Use an invitation'}</button>}
-      <button className="trial-primary" disabled={busy || pending || !config?.available} onClick={() => { setKind(hasTrial ? 'extend' : 'new'); setForm(true); }}>{hasTrial ? (zh ? '申请延期 30 天' : 'Request 30-day extension') : (zh ? '申请 AI 试用' : 'Apply for AI trial')}</button>
-      {hasTrial && <button disabled={busy || pending || !config?.available} onClick={() => { setKind('replace'); setForm(true); }}>{zh ? '申请补发／更换设备' : 'Request replacement / change device'}</button>}
+      {!active && <button aria-pressed={!form} disabled={busy} onClick={() => setForm(false)}>{zh ? '已有邀请码，开始使用' : 'Use an invitation'}</button>}
+      <button className="trial-primary" disabled={busy || pending || !config?.available || qualificationState === 'revoked'} onClick={() => { setKind(hasTrial ? 'extend' : 'new'); setForm(true); }}>{hasTrial ? (zh ? '申请延期 30 天' : 'Request 30-day extension') : (zh ? '申请 AI 试用' : 'Apply for AI trial')}</button>
+      {hasTrial && qualificationState !== 'expired' && qualificationState !== 'revoked' && <button disabled={busy || pending || !config?.available} onClick={() => { setKind('replace'); setForm(true); }}>{zh ? '申请补发／更换设备' : 'Request replacement / change device'}</button>}
     </div>
-    {!status && !form && <form className="trial-redeem" onSubmit={e => { e.preventDefault(); void redeem(); }}><fieldset disabled={busy}>
+    {!active && !form && <form className="trial-redeem" onSubmit={e => { e.preventDefault(); void redeem(); }}><fieldset disabled={busy}>
       <legend>{zh ? '使用邀请码启动' : 'Start with your invitation'}</legend>
       <label>{zh ? '用户名（称呼）' : 'Your name'}<input required maxLength={60} autoComplete="nickname" value={name} onChange={e => setName(e.target.value)} /></label>
       <label>{zh ? '邀请码' : 'Invitation code'}<input required autoComplete="off" autoCapitalize="none" spellCheck={false} value={code} onChange={e => setCode(e.target.value)} /></label>
@@ -146,6 +173,7 @@ export function TrialAccess({ onContinue, onSkip }: { onContinue?: () => void; o
       <button type="submit" disabled={!proof}>{zh ? '提交申请' : 'Submit application'}</button><button type="button" onClick={() => setForm(false)}>{zh ? '返回' : 'Back'}</button>
     </fieldset></form>}
 
+    {!active && statusDetails}
     <button disabled={busy} onClick={() => void run(() => refresh())}>{zh ? '刷新状态' : 'Refresh status'}</button>
     {receipt && <><button disabled={busy} onClick={() => setLink(`${location.origin}/trial#trial=${receipt}`)}>{zh ? '查看私密领取链接' : 'Show private claim link'}</button>{link && <label>{zh ? '请自行保管，不要公开分享' : 'Keep this private; do not share publicly'}<input readOnly value={link} onFocus={e => e.target.select()} /></label>}</>}
     {onSkip && <button className="trial-skip" onClick={onSkip}>{zh ? '先看看应用' : 'Explore the app first'}</button>}

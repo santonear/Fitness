@@ -3,11 +3,11 @@ import { test, expect } from '@playwright/test';
 test.use({locale:'en-US'});
 test.setTimeout(20000);
 test('catalog metric mismatch rejects atomically',async({page})=>{
- await page.goto('/plans');const result=await page.evaluate(async()=>{const path='/tests/e2e/helpers/plans-browser.ts';const fixture=await import(/* @vite-ignore */ path);return fixture.rejectMetricMismatch(`fitness-test-metrics-${crypto.randomUUID()}`);});
+ await page.goto('/plans?tab=legacy');const result=await page.evaluate(async()=>{const path='/tests/e2e/helpers/plans-browser.ts';const fixture=await import(/* @vite-ignore */ path);return fixture.rejectMetricMismatch(`fitness-test-metrics-${crypto.randomUUID()}`);});
  expect(result).toEqual({code:'INVALID',plans:0,versions:0,schedules:0,unchanged:true});
 });
-test('retained canonical targets are read-only and manual creation is absent',async({page})=>{
- await page.goto('/plans');
+test('retained canonical targets remain read-only in legacy compatibility',async({page})=>{
+ await page.goto('/plans?tab=legacy');
  await page.evaluate(async()=>{
   const {profileService}=await import(String('/src/application/profile.ts'));
   const {planService}=await import(String('/src/application/plans.ts'));
@@ -27,11 +27,11 @@ test('retained canonical targets are read-only and manual creation is absent',as
 });
 
 test('real IndexedDB plans preserve snapshots and force drafts during training',async({page})=>{
- await page.goto('/plans');const result=await page.evaluate(async()=>{const path='/tests/e2e/helpers/plans-browser.ts';const fixture=await import(/* @vite-ignore */ path);return fixture.exercisePlans(`fitness-test-plans-${crypto.randomUUID()}`);});
+ await page.goto('/plans?tab=legacy');const result=await page.evaluate(async()=>{const path='/tests/e2e/helpers/plans-browser.ts';const fixture=await import(/* @vite-ignore */ path);return fixture.exercisePlans(`fitness-test-plans-${crypto.randomUUID()}`);});
  expect(result).toEqual({oldStatus:'archived',activeCount:1,draftStatus:'draft',blocked:true,originalDate:'2026-10-07',scheduledDate:'2026-10-08',conflict:true,immutable:true,invalid:true,rolledBack:true,activeEditBlocked:true,editPreservesVersion:true});
 });
 test('retained legacy replacement and schedule controls preserve original date',async({page})=>{
- await page.goto('/plans');
+ await page.goto('/plans?tab=legacy');
  await seedLegacyPlan(page,'First');
  await seedLegacyPlan(page,'Second');
  await page.reload();

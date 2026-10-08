@@ -89,9 +89,11 @@
 .calendar-training-block { position:absolute; left:64px; right:8px; background:var(--fitness-orange-bg); border:1px solid var(--fitness-outline); border-radius:4px; display:flex; align-items:center; justify-content:space-between; gap:4px; padding:0 6px; font-size:12px; z-index:1; }
 .app-shell .calendar-journal .calendar-drag-handle { touch-action:none; cursor:grab; min-height:44px; padding:2px 5px; font-size:12px; }
 .calendar-drag-handle:active { cursor:grabbing; }
-.training-time-dialog { position:fixed; z-index:30; top:20%; left:50%; transform:translateX(-50%); width:min(420px,calc(100vw - 24px)); padding:20px; background:var(--fitness-solid); border:2px solid var(--fitness-outline); border-radius:12px; box-shadow:0 12px 40px #0003; }
+.training-time-dialog { position:fixed; z-index:30; inset:0; margin:auto; box-sizing:border-box; width:min(420px,calc(100vw - 24px)); max-height:calc(100dvh - 24px); overflow:auto; padding:20px; color:var(--text,var(--fitness-ink)); background:var(--surface,var(--fitness-solid)); border:2px solid var(--line,var(--fitness-outline)); border-radius:18px; box-shadow:0 12px 40px #0003; }
+.training-time-dialog::backdrop { background:rgb(15 23 42 / .45); }
 .training-time-dialog input { min-height:44px; }
-.training-time-dialog button { margin:8px 8px 0 0!important; }
+.training-time-dialog button { min-width:44px; min-height:44px; margin:8px 8px 0 0!important; }
+.training-time-dialog :focus-visible { outline:3px solid var(--primary,var(--fitness-ink)); outline-offset:3px; }
 .schedule-confirmation fieldset { margin:8px 0; padding:10px; }
 
 .schedule-preferences { display:grid; gap:12px; padding:16px; }

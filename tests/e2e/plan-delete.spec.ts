@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 
 for (const locale of ['en', 'zh'] as const) {
   test(`deleting a saved draft supports cancellation and persists (${locale})`, async ({ page }) => {
-    await page.goto('/plans');
+    await page.goto('/plans?tab=legacy');
     if (locale === 'zh') await page.getByRole('combobox', { name: 'Language', exact: true }).selectOption('zh');
     const zh = locale === 'zh';
     await seedLegacyPlan(page, 'Disposable draft', 'draft');
@@ -24,7 +24,7 @@ for (const locale of ['en', 'zh'] as const) {
 }
 
 test('plan deletion preserves history, rejects stale and ongoing writes, rolls back and round-trips backups', async ({ page }) => {
-  await page.goto('/plans');
+  await page.goto('/plans?tab=legacy');
   const result = await page.evaluate(async () => {
     const path = '/tests/e2e/helpers/plan-delete-browser.ts';
     return (await import(/* @vite-ignore */ path)).verifyPlanDeletion();

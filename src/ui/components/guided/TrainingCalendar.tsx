@@ -7,8 +7,8 @@ import type { PlanVersion, ScheduledWorkout } from '../../../domain/models';
 import { exercises } from '../../../catalog/exercises';
 import { formatGuidedTargets } from './ProgramDashboard';
 
-export function TrainingCalendar({ locale, today, tasks, versions, timeZone, revision = 0, generation = 0, lockedTaskIds = [], onReschedule }: {
-  locale: 'zh' | 'en'; today: string; tasks: ScheduledWorkout[]; versions: PlanVersion[]; timeZone: string; revision?: number; generation?: number; lockedTaskIds?: string[];
+export function TrainingCalendar({ locale, today, tasks, versions, timeZone, revision = 0, generation = 0, lockedTaskIds = [], unavailableTaskIds = [], ongoingTaskIds = [], onReschedule }: {
+  locale: 'zh' | 'en'; today: string; tasks: ScheduledWorkout[]; versions: PlanVersion[]; timeZone: string; revision?: number; generation?: number; lockedTaskIds?: string[]; unavailableTaskIds?: string[]; ongoingTaskIds?: string[];
   onReschedule?: (task: ScheduledWorkout, time: string, revision: number, generation: number, durationMinutes?: number) => Promise<unknown>;
 }) {
   const zh = locale === 'zh';
@@ -73,7 +73,7 @@ export function TrainingCalendar({ locale, today, tasks, versions, timeZone, rev
           {(day?.exercises ?? []).map(item => <div className="guided-calendar-exercise" key={`${item.exerciseId}-${item.order}`}><h4>{exercises.find(entry => entry.id === item.exerciseId)?.name[locale] ?? item.exerciseId}</h4><ul>{formatGuidedTargets(item.targetSets, locale, item.setTimings).map((target, i) => <li key={i}>{target}</li>)}</ul>{item.notes && <p>{item.notes}</p>}</div>)}
           {!task.startTime && <TrainingTimeEditor task={task} locale={locale} disabled={!onReschedule || lockedTaskIds.includes(task.id)} revision={revision} generation={generation} onSave={onReschedule ?? (async () => {})} />}
           {task.originalDate !== task.scheduledDate && <p>{zh ? '原统计日期' : 'original statistics date'} · {task.originalDate}</p>}
-          <Link to={task.completedSessionId ? '/progress' : `/workout?scheduledWorkoutId=${encodeURIComponent(task.id)}`}>{task.completedSessionId ? (zh ? '查看训练历史' : 'view workout history') : (zh ? '查看训练' : 'view workout')}</Link>
+          {(!unavailableTaskIds.includes(task.id) || task.completedSessionId || ongoingTaskIds.includes(task.id)) && <Link to={task.completedSessionId ? '/progress' : ongoingTaskIds.includes(task.id) ? '/workout' : `/workout?scheduledWorkoutId=${encodeURIComponent(task.id)}`}>{task.completedSessionId ? (zh ? '查看训练历史' : 'view workout history') : ongoingTaskIds.includes(task.id) ? (zh ? '继续训练' : 'continue workout') : (zh ? '查看训练' : 'view workout')}</Link>}
         </article>;
       })}
     </div>

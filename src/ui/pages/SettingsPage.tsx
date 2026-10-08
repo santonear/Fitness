@@ -8,7 +8,9 @@ import { trainingMemoryService } from '../../application/training-memory';
 import type { TrainingMemo } from '../../domain/models';
 import { TrainingMemoView } from '../components/CompletionReview';
 import { BackupPanel } from '../components/BackupPanel';
-import { Link } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
+import { AppearanceCards } from '../components/Appearance';
+import { TrialAccess } from '../components/TrialAccess';
 
 const labels = {
   en: { goal: 'Goal', experience: 'Experience', equipment: 'Available equipment (comma separated)', days: 'Days per week', minutes: 'Session minutes', height: 'Height (cm)', weight: 'Profile weight (kg)', constraints: 'Constraints', weekdays: 'Training weekdays (1–7, comma separated)', location: 'Training location', categories: 'Exercise preferences', zone: 'Time zone', save: 'Save profile', clear: 'Clear preferences', date: 'Observation date', observed: 'Observed weight (kg)', saveWeight: 'Save weight', history: 'Weight history', edit: 'Edit', delete: 'Delete', cancel: 'Cancel edit', saved: 'Profile saved', weightSaved: 'Weight saved', deleted: 'Weight deleted', optional: 'All training preferences are optional. You can use manual training without completing them.', local: 'Data stays in this browser. Browser cleanup can remove it; keep manual backups.' },
@@ -23,7 +25,10 @@ function kgGrams(value: string): number {
   if (!/^\d+(\.\d{1,3})?$/.test(value.trim())) throw new DomainError('INVALID', 'Enter positive kilograms with at most three decimals');
   return Math.round(Number(value) * 1000);
 }
-export function SettingsPage() {
+export function SettingsPage({ restored = false }: { restored?: boolean }) {
+  const [params, setParams] = useSearchParams();
+  const tabs = ['trial','backup','profile','appearance'] as const;
+  const tab = tabs.includes(params.get('tab') as typeof tabs[number]) ? params.get('tab')! : 'trial';
   const [memo, setMemo] = useState<TrainingMemo>();
   const { t, i18n } = useTranslation();
   const l = labels[i18n.resolvedLanguage === 'zh' ? 'zh' : 'en'];
@@ -60,12 +65,16 @@ export function SettingsPage() {
     });
   }
   function submit(e: FormEvent) { e.preventDefault(); void save(); }
-  return <div className="settings-page"><h1>{t('settings')}</h1><p>{l.local}</p><p>{l.optional}</p>
-    <Link to="/trial">{i18n.resolvedLanguage === 'zh' ? 'AI 试用资格 · 申请 / 延期 / 补发' : 'AI trial · apply / extend / replace'}</Link>
-    {profile && <BackupPanel />}
+  return <div className="settings-page v31-settings"><h1>{t('settings')}</h1><p>{l.local}</p>
+    {error && <p role="alert">{error}</p>}
+    <div className="v31-tabs" role="tablist" aria-label={i18n.resolvedLanguage === 'zh'?'设置分类':'Settings sections'}>{tabs.map((name,index)=><button key={name} role="tab" aria-selected={name===tab} aria-controls={`settings-${name}`} id={`tab-${name}`} onClick={()=>setParams({tab:name})}>{(i18n.resolvedLanguage==='zh'?['AI 资格与额度','备份恢复','偏好与资料','外观与版式']:['AI access & quota','Backup & restore','Profile & preferences','Appearance & layout'])[index]}</button>)}</div>
+    <section role="tabpanel" id="settings-trial" aria-labelledby="tab-trial" hidden={tab!=='trial'}>{tab==='trial'&&<TrialAccess />}</section>
+    <section role="tabpanel" id="settings-backup" aria-labelledby="tab-backup" hidden={tab!=='backup'}>{profile && <BackupPanel restored={restored} />}</section>
+    <section role="tabpanel" id="settings-appearance" aria-labelledby="tab-appearance" hidden={tab!=='appearance'}><AppearanceCards /></section>
+    <section role="tabpanel" id="settings-profile" aria-labelledby="tab-profile" hidden={tab!=='profile'}><p>{l.optional}</p>
     <button disabled={!profile || busy} onClick={() => void run(async () => { setMemo(await trainingMemoryService.readTrainingMemo()); })}>{i18n.resolvedLanguage === 'zh' ? '读取全量训练备忘' : 'Read full training memo'}</button>
     {memo && <TrainingMemoView memo={memo} locale={i18n.resolvedLanguage === 'zh' ? 'zh' : 'en'} />}
-    {error && <p role="alert">{error}</p>}<p role="status">{status}</p>
+    <p role="status">{status}</p>
     <form onSubmit={submit}><fieldset disabled={!profile || busy}>
       {Object.keys(blank).map(key => { const k = key as keyof Fields; return <label key={k}>{l[k]}<input value={fields[k]} onChange={e => setFields({ ...fields, [k]: e.target.value })} inputMode={['days','minutes','height','weight'].includes(k) ? 'decimal' : 'text'} /></label>; })}
       <label>{l.zone}<input value={zone} onChange={e => setZone(e.target.value)} /></label>
@@ -79,6 +88,6 @@ export function SettingsPage() {
       <button type="submit">{l.saveWeight}</button>{editing && <button type="button" onClick={() => { setEditing(undefined); setWeight(''); }}>{l.cancel}</button>}
     </fieldset></form>
     <ul aria-label={l.history}>{weights.map(row => <li key={row.id}>{row.localDate} · {row.weightGrams / 1000} kg · {row.timeZone} <button disabled={busy} onClick={() => { setEditing(row); setDate(row.localDate); setWeight(String(row.weightGrams / 1000)); }}>{l.edit}</button> <button disabled={busy} onClick={() => void run(async () => { await bodyWeightService.deleteBodyWeight(row.id, row.revision); setWeights(await bodyWeightService.listBodyWeights()); if (editing?.id === row.id) setEditing(undefined); setStatus(l.deleted); })}>{l.delete}</button></li>)}</ul>
-  </div>;
+    </section></div>;
 }
 

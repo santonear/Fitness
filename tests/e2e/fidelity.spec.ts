@@ -11,7 +11,7 @@ test.beforeEach(async ({ page }) => {
 
 for (const entry of ['service', 'JSON'] as const) {
   test(`${entry}: renaming a varied plan preserves versions, adjusted schedule and completed facts`, async ({ page }) => {
-    await page.goto('/plans');
+    await page.goto('/plans?tab=legacy');
     const seed = await page.evaluate(async () => {
       const { planService } = await import(String('/src/application/plans.ts'));
       const { workoutService } = await import(String('/src/application/workouts.ts'));
@@ -26,18 +26,20 @@ for (const entry of ['service', 'JSON'] as const) {
       return { id: plan.id, backup: await (await backupService.exportBackup()).text() };
     });
     if (entry === 'JSON') {
-      await page.goto('/settings');
+      await page.goto('/settings?tab=backup');
       await page.getByLabel('Restore JSON file', { exact: true }).setInputFiles({ name: 'varied.json', mimeType: 'application/json', buffer: Buffer.from(seed.backup) });
-      await expect(page.getByText('Backup validated', { exact: true })).toBeVisible();
+      await expect(page.getByText('Backup validated, including its data references.', { exact: true })).toBeVisible();
+      await page.getByRole('button', { name: 'Next: keep current data', exact: true }).click();
       const download = page.waitForEvent('download');
       await page.getByRole('button', { name: 'Download current data before replacement', exact: true }).click();
       await download;
       await page.getByLabel('I have downloaded and kept the current backup', { exact: true }).check();
+      await page.getByRole('button', { name: 'Next: confirm replacement', exact: true }).click();
       await page.getByLabel('I confirm replacing all local data', { exact: true }).check();
       await page.getByRole('button', { name: 'Replace local data', exact: true }).click();
-      await expect(page.getByText('Backup validated', { exact: true })).toHaveCount(0);
+      await expect(page.getByText('Restore complete', { exact: true })).toBeVisible();
     }
-    await page.goto('/plans');
+    await page.goto('/plans?tab=legacy');
     const snapshot = async () => page.evaluate(async id => {
       const { database } = await import(String('/src/persistence/db.ts'));
       const plan = (await database.plans.get(id))!;
@@ -108,7 +110,7 @@ test('saving one action preserves another draft, own success resets only its dra
 });
 
 test('rename rejects stale revisions and ongoing active edits without partial writes', async ({ page }) => {
-  await page.goto('/plans');
+  await page.goto('/plans?tab=legacy');
   const result = await page.evaluate(async () => {
     const { planService } = await import(String('/src/application/plans.ts'));
     const { workoutService } = await import(String('/src/application/workouts.ts'));

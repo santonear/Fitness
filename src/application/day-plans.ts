@@ -6,9 +6,11 @@ import { exercises } from '../catalog/exercises';
 import { civilDayInterval, projectDay } from '../domain/day-date-projection';
 import { evaluateSlot } from '../domain/day-slot-policy';
 import type { SlotTask } from '../domain/day-plan-contracts';
+import { schedulingFields, validateScheduling } from '../domain/training-time';
+import { createBackupService } from './backup';
 
 const inputSchema = z.strictObject({ id: z.uuid().optional(), name: z.string().trim().min(1), date: localDateSchema, timeZone: timeZoneSchema,
-  exercises: z.array(plannedExerciseSchema).min(1), expectedRevision: z.number().int().nonnegative().optional(), expectedGeneration: z.number().int().nonnegative().optional() });
+  exercises: z.array(plannedExerciseSchema).min(1), ...schedulingFields, expectedRevision: z.number().int().nonnegative().optional(), expectedGeneration: z.number().int().nonnegative().optional() }).superRefine(validateScheduling);
 export type DayPlanInput = z.infer<typeof inputSchema>;
 export async function slotTasks(repo: Repository, zone: string, affectedDates?: string[]): Promise<SlotTask[]> {
   const [plans, versions, rows, sessions] = await Promise.all([repo.db.plans.toArray(), repo.db.planVersions.toArray(), repo.db.scheduledWorkouts.toArray(), repo.db.sessions.where('status').equals('in_progress').toArray()]);
@@ -58,6 +60,13 @@ export function createDayPlanService(repo: Repository) {
       if (old && (!row || !previous || 'durationWeeks' in previous || row.hiddenAt || row.status === 'skipped')) throw new DomainError('INVALID', 'Rearrange released history as a new day plan');
       if (row && row.scheduledDate !== input.date) throw new DomainError('INVALID', 'Use explicit reschedule for date changes');
       if (row?.completedSessionId || (row && await db.sessions.where('status').equals('in_progress').filter(session => session.planVersionId === row.planVersionId && session.plannedDayId === row.plannedDayId).count())) throw new DomainError('WORKOUT_IN_PROGRESS', 'Completed or ongoing day plans cannot be edited');
+      const durationMinutes = input.durationMinutes ?? row?.durationMinutes;
+      // Unknown estimates remain unknown. Explicit timed targets still establish a lower bound.
+      const knownSeconds = input.exercises.reduce((total, item) => total + item.targetSets.reduce((sum, target, index) => {
+        const timing = item.setTimings?.[index];
+        return sum + (timing ? timing.durationSeconds + timing.restSeconds : 'durationSeconds' in target ? target.durationSeconds : 0);
+      }, 0), 0);
+      if (durationMinutes !== undefined && knownSeconds > durationMinutes * 60) throw new DomainError('INVALID', 'Known exercise and rest durations exceed the session duration');
       if (!row) await assertFree(input.date, input.timeZone);
       const now = new Date().toISOString(); const id = old?.id ?? crypto.randomUUID();
       const nameOnly = previous && JSON.stringify(previous.days[0].exercises) === JSON.stringify(input.exercises);
@@ -67,8 +76,20 @@ export function createDayPlanService(repo: Repository) {
       const plan = planSchema.parse({ id, createdAt: old?.createdAt ?? now, updatedAt: now, revision: (old?.revision ?? -1) + 1, model: 'date-day', name: input.name,
         source: old?.source ?? 'manual', status: 'active', currentVersionId: version.id, startDate: version.startDate, scheduleTimeZone: input.timeZone });
       const task = scheduledWorkoutSchema.parse({ id: row?.id ?? crypto.randomUUID(), createdAt: row?.createdAt ?? now, updatedAt: now,
-        revision: (row?.revision ?? -1) + 1, planVersionId: version.id, plannedDayId: version.days[0].dayId, originalDate: version.startDate, scheduledDate: input.date, status: 'pending' });
+        revision: (row?.revision ?? -1) + 1, planVersionId: version.id, plannedDayId: version.days[0].dayId, originalDate: version.startDate, scheduledDate: input.date, status: 'pending', startTime: input.startTime ?? row?.startTime, durationMinutes: input.durationMinutes ?? row?.durationMinutes });
       if (!nameOnly) await db.planVersions.add(version); await db.plans.put(plan); await db.scheduledWorkouts.put(task); return { plan, task, version };
+    });
+  }
+  async function saveDayPlans(inputs: DayPlanInput[], expectedGeneration: number) {
+    if (!Array.isArray(inputs) || inputs.length < 1 || inputs.length > 14 || inputs.some(input => input.id !== undefined) || new Set(inputs.map(input => input.date)).size !== inputs.length || new Set(inputs.map(input => input.timeZone)).size !== 1) throw new DomainError('INVALID', 'Select 1–14 distinct dates in one calendar time zone');
+    return repo.write(async () => {
+      await guardGeneration(expectedGeneration);
+      const saved = [];
+      for (const input of inputs) saved.push(await saveDayPlan({ ...input, expectedGeneration }));
+      // Check the complete library while the outer write transaction can still roll back every day.
+      // Checking individual nested writes would also inspect intermediate guided-program state.
+      await createBackupService(repo).exportBackup();
+      return saved;
     });
   }
   async function change(id: string, revision: number, action: 'hide' | 'skip' | 'reschedule', date?: string, expectedGeneration?: number) {
@@ -86,7 +107,7 @@ export function createDayPlanService(repo: Repository) {
         ...(action === 'hide' ? { hiddenAt: new Date().toISOString() } : action === 'skip' ? { status: 'skipped' as const } : { scheduledDate: date!, status: 'pending' as const }) });
     });
   }
-  return { saveDayPlan, skipDayPlan: (id: string, revision: number, generation?: number) => change(id, revision, 'skip', undefined, generation), hideDayPlan: (id: string, revision: number, generation?: number) => change(id, revision, 'hide', undefined, generation),
+  return { saveDayPlan, saveDayPlans, skipDayPlan: (id: string, revision: number, generation?: number) => change(id, revision, 'skip', undefined, generation), hideDayPlan: (id: string, revision: number, generation?: number) => change(id, revision, 'hide', undefined, generation),
     rescheduleDayPlan: (id: string, date: string, revision: number, generation?: number) => change(id, revision, 'reschedule', date, generation) };
 }
 export const dayPlanService = createDayPlanService(repository);

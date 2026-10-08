@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 test.use({ locale: 'en-US' });
 test.beforeEach(async ({ page }) => {
-  await page.goto('/plans');
+  await page.goto('/plans?tab=legacy');
   await expect.poll(() => page.evaluate(async () => {
     const { database } = await import(String('/src/persistence/db.ts'));
     return database.profiles.count();

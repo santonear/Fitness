@@ -99,6 +99,37 @@ export function createGuidedService(repo: Repository) {
       event(state, { programId, action: 'created', after: 'active' }); return programId;
     });
   }
+  // V3 candidates create independent date plans; legacy phase replacement remains an explicit older API.
+  async function saveIndependentCandidate(input: ProgramCandidate, maximumDays: number) {
+    const candidate = programCandidateSchema.parse(input);
+    if (!Number.isSafeInteger(maximumDays) || maximumDays < 1 || maximumDays > 14 || candidate.days.length > maximumDays) throw new DomainError('INVALID', 'Candidate exceeds configured support');
+    for (const day of candidate.days) {
+      if (day.exercises.length > 8 || day.exercises.some(exercise => exercise.targetSets.length > 8)) throw new DomainError('INVALID', 'Candidate exercise or set limit exceeded');
+      const seconds = day.exercises.reduce((sum, exercise) => sum + (exercise.setTimings?.reduce((total, timing) => total + timing.durationSeconds + timing.restSeconds, 0) ?? 0), 0);
+      if (day.durationMinutes !== undefined && seconds > day.durationMinutes * 60) throw new DomainError('INVALID', 'Exercise and rest estimates exceed the session duration');
+    }
+    return repo.write(async () => {
+      const state = await read();
+      const original = state.candidates.find(item => item.id === candidate.id);
+      const marker = `independent-candidate:${candidate.id}`;
+      if (!original || state.events.some(item => item.action === 'created' && item.after === marker) || state.programs.some(item => item.candidateId === candidate.id)) throw new DomainError('CONFLICT', 'Candidate unavailable or already saved');
+      const immutable = (item: ProgramCandidate) => JSON.stringify({ id: item.id, goal: item.goal, timeZone: item.timeZone, startDate: item.startDate, endDate: item.endDate, createdAt: item.createdAt, restoreGeneration: item.restoreGeneration, inputSnapshot: item.inputSnapshot, onboardingSnapshot: item.onboardingSnapshot, profileSnapshot: item.profileSnapshot, dates: item.days.map(day => day.date).sort() });
+      if (immutable(original) !== immutable(candidate)) throw new DomainError('CONFLICT', 'Candidate identity or approved dates changed');
+      const generation = (await repo.readMetadata()).restoreGeneration ?? 0;
+      if (candidate.restoreGeneration !== generation) throw new DomainError('CONFLICT', 'Candidate belongs to replaced data');
+      await requireCurrentCandidate(state, candidate);
+      const saved = await createDayPlanService(repo).saveDayPlans(candidate.days.map(day => ({ name: candidate.name, date: day.date, timeZone: candidate.timeZone, exercises: day.exercises, startTime: day.startTime, durationMinutes: day.durationMinutes })), generation);
+      for (const row of saved) {
+        await repo.db.plans.put({ ...row.plan, source: 'ai' });
+        await repo.db.planVersions.put({ ...row.version, goalSnapshot: { goal: candidate.goal }, generationMetadata: { generatedAt: candidate.createdAt } });
+      }
+      event(state, { action: 'created', after: marker, reason: JSON.stringify(saved.map(row => row.plan.id)) });
+      state.revision++;
+      await repo.db.guidedStates.put(guidedStateSchema.parse(state));
+      await createBackupService(repo).exportBackup();
+      return saved.map(row => row.plan.id);
+    });
+  }
   async function rescheduleTime(taskId: string, startTime: string, taskRevision: number, revision: number, expectedGeneration: number, durationMinutes?: number) {
     return change(revision, async state => {
       if (((await repo.readMetadata()).restoreGeneration ?? 0) !== expectedGeneration) throw new DomainError('CONFLICT', 'Data was replaced');
@@ -185,6 +216,6 @@ export function createGuidedService(repo: Repository) {
   }
   async function appendMessage(input: GuidedState['messages'][number], revision: number) { return change(revision, async state => { state.messages.push(input); }); }
   async function saveObservation(input: GuidedState['observations'][number], revision: number) { return change(revision, async state => { state.observations.push(input); }); }
-  return { read, captureDependencies, capturePlanContext, saveAnswer, setStep, resetOnboarding, completeOnboarding, retainCandidate, applyCandidate, rescheduleTime, transition, transitionLegacy, workoutTransition, decideInvitation, appendMessage, saveObservation };
+  return { read, captureDependencies, capturePlanContext, saveAnswer, setStep, resetOnboarding, completeOnboarding, retainCandidate, applyCandidate, saveIndependentCandidate, rescheduleTime, transition, transitionLegacy, workoutTransition, decideInvitation, appendMessage, saveObservation };
 }
 export const guidedService = createGuidedService(repository);

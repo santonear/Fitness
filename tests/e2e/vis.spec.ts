@@ -17,7 +17,7 @@ test.beforeEach(async({page})=>{
 });
 test('snapshot targets and notes are read-only, responsive, offline and localized in Today and Workout',async({page,context})=>{
  for(const path of ['/','/workout']){
-  await page.goto(path); const a=page.locator('.workout-exercise').first(); await expect(a).toContainText('2 sets'); const before=await facts(page);
+  await page.goto(path); if(path==='/') await page.getByRole('link',{name:'Continue workout',exact:true}).click(); const a=page.locator('.workout-exercise').first(); await expect(a).toContainText('2 sets'); const before=await facts(page);
   for(const locale of ['en','zh']){
    await page.getByLabel(/Language|语言/, {exact:true}).selectOption(locale);
    for(const width of [320,390,768,1440]){

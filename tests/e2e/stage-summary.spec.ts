@@ -1,6 +1,6 @@
 import { seedLegacyPlan } from './helpers/legacy-plan';
 import { expect, test } from '@playwright/test';
-test.use({ locale: 'en-US' });
+test.use({ locale: 'en-US', viewport: {width:320,height:700} });
 
 test('manual local preparation shows completed facts without network or database mutation', async ({ page, baseURL }) => {
   await page.goto('/workout');
@@ -14,6 +14,7 @@ test('manual local preparation shows completed facts without network or database
   await page.getByRole('button', { name: 'Confirm completion', exact: true }).click();
   await expect(page.getByRole('status')).toHaveText('Workout completed');
   await page.goto('/progress');
+  await page.getByText('More filters and stage summaries', { exact: true }).click();
   const section = page.getByRole('region', { name: 'Local stage summary preparation' });
   await expect(section.getByRole('button', { name: 'Prepare local preview' })).toBeVisible();
   expect(await section.getByRole('region', { name: 'Stage facts preview' }).count()).toBe(0);
@@ -32,7 +33,12 @@ test('manual local preparation shows completed facts without network or database
   await expect(preview).toContainText('Restore generation 0');
   expect(await read()).toEqual(before);
   expect(apiRequests).toEqual([]);
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  const overflow = await page.evaluate(() => ({width:document.documentElement.scrollWidth,viewport:innerWidth,elements:[...document.querySelectorAll('main *')].filter(el=>el.getBoundingClientRect().right>innerWidth+1).map(el=>({tag:el.tagName,cls:el.className,width:el.getBoundingClientRect().width,text:el.textContent?.slice(0,80)})).slice(-30)}));
+  if(overflow.width>overflow.viewport) console.log('OVERFLOW_ISOLATION',await page.evaluate(()=>{
+    const probes=['select','button','.progress-table-scroll','.history-detail','[aria-label="AI stage summary"]','.v31-advanced-filters'];
+    return probes.map(selector=>{const elements=[...document.querySelectorAll<HTMLElement>(selector)];const saved=elements.map(el=>el.style.display);elements.forEach(el=>el.style.display='none');const width=document.documentElement.scrollWidth;elements.forEach((el,i)=>el.style.display=saved[i]);return {selector,width};});
+  }));
+  expect(overflow.width,JSON.stringify(overflow)).toBeLessThanOrEqual(overflow.viewport);
   await page.getByLabel('Language').selectOption('zh');
   await expect(page.getByRole('heading', { name: '阶段总结本地准备', exact: true })).toBeVisible();
   await expect(page.getByRole('region', { name: '阶段事实预览' })).toContainText('1 次已完成训练');
@@ -40,7 +46,7 @@ test('manual local preparation shows completed facts without network or database
 
 test('saved legacy plan supports actual week and whole-plan fact previews', async ({ page }) => {
   await page.clock.setFixedTime(new Date('2026-10-06T12:00:00Z'));
-  await page.goto('/plans');
+  await page.goto('/plans?tab=legacy');
   await seedLegacyPlan(page, 'Summary plan');
   await page.reload();
   await page.getByRole('link', { name: 'Start / make-up', exact: true }).first().click();
@@ -54,6 +60,7 @@ test('saved legacy plan supports actual week and whole-plan fact previews', asyn
   await page.getByRole('button', { name: 'Confirm completion', exact: true }).click();
   await expect(page.getByRole('status')).toHaveText('Workout completed');
   await page.goto('/progress');
+  await page.getByText('More filters and stage summaries', { exact: true }).click();
   const section = page.getByRole('region', { name: 'Local stage summary preparation' });
   await section.getByLabel('Summary scope').selectOption('planWeek');
   await section.getByLabel('Summary plan').selectOption({ label: 'Summary plan' });
@@ -67,12 +74,18 @@ test('saved legacy plan supports actual week and whole-plan fact previews', asyn
   await section.getByRole('button', { name: 'Prepare local preview' }).click();
   await expect(preview).toContainText('2026-10-05 → 2026-10-11');
   await expect(preview).toContainText('1 completed sessions');
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  const overflow = await page.evaluate(() => ({width:document.documentElement.scrollWidth,viewport:innerWidth,elements:[...document.querySelectorAll('main *')].filter(el=>el.getBoundingClientRect().right>innerWidth+1).map(el=>({tag:el.tagName,cls:el.className,width:el.getBoundingClientRect().width,text:el.textContent?.slice(0,80)})).slice(-30)}));
+  if(overflow.width>overflow.viewport) console.log('OVERFLOW_ISOLATION',await page.evaluate(()=>{
+    const probes=['select','button','.progress-table-scroll','.history-detail','[aria-label="AI stage summary"]','.v31-advanced-filters'];
+    return probes.map(selector=>{const elements=[...document.querySelectorAll<HTMLElement>(selector)];const saved=elements.map(el=>el.style.display);elements.forEach(el=>el.style.display='none');const width=document.documentElement.scrollWidth;elements.forEach((el,i)=>el.style.display=saved[i]);return {selector,width};});
+  }));
+  expect(overflow.width,JSON.stringify(overflow)).toBeLessThanOrEqual(overflow.viewport);
 });
 
 test('empty and invalid selections remain visible and never imply AI generation', async ({ page }) => {
-  await page.goto('/plans');
+  await page.goto('/plans?tab=legacy');
   await page.goto('/progress');
+  await page.getByText('More filters and stage summaries', { exact: true }).click();
   const section = page.getByRole('region', { name: 'Local stage summary preparation' });
   await section.getByRole('button', { name: 'Prepare local preview' }).click();
   await expect(section.getByRole('alert')).toContainText('EMPTY_STAGE');

@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.use({ locale: 'en-US' });
 test.setTimeout(15_000);
-test.beforeEach(async ({ page }) => { await page.goto('/settings'); });
+test.beforeEach(async ({ page }) => { await page.goto('/settings?tab=profile'); });
 
 // Losing the IDB write or initializing over an existing profile breaks refresh.
 test('profile preferences survive refresh without becoming weight observations', async ({ page }) => {
