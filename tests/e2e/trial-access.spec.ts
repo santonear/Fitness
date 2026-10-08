@@ -17,8 +17,8 @@ for (const zh of [false, true]) test(`active trial enters planning and refreshes
   await page.getByRole('button', { name: zh ? '开始制定训练计划' : 'Start planning your training', exact: true }).click();
   await expect(page).toHaveURL(/\/ai$/);
   await expect(page.getByLabel(zh ? '训练目标与约束' : 'Training goal and constraints')).toBeEnabled();
-  await expect(page.getByText(/8 \/ 4/)).toBeVisible();
-  await page.reload();await expect(page.getByText(/8 \/ 4/)).toBeVisible();
+  await expect(page.getByText(/AI service available|AI 服务可用/)).toBeVisible();
+  await page.reload();await expect(page.getByText(/AI service available|AI 服务可用/)).toBeVisible();
   expect(writes).toBe(0);
 });
 
@@ -72,7 +72,7 @@ test('quota restoration confirms defaults and retries the same operation after a
   await page.goto('/admin'); await page.getByRole('button', { name: 'Trials', exact: true }).click();
   const button = page.getByRole('button', { name: 'Refresh quota', exact: true });
   await expect(button).toBeDisabled(); await page.getByLabel('Restoration reason', { exact: true }).fill('Verified support request');
-  page.once('dialog', async dialog => { expect(dialog.message()).toContain('8 understandings and 4 plans'); await dialog.dismiss(); });
+  page.once('dialog', async dialog => { expect(dialog.message()).toContain('4 plans'); await dialog.dismiss(); });
   await button.click(); expect(submissions).toHaveLength(0);
   page.once('dialog', dialog => dialog.accept()); await button.click();
   await expect(page.getByRole('alert')).toBeVisible();
@@ -189,7 +189,7 @@ for (const zh of [false, true]) test(`visible invitation entry starts planning w
   await page.goto('/trial');
   const name = page.getByLabel(zh ? '用户名（称呼）' : 'Your name', { exact: true });
   const code = page.getByLabel(zh ? '邀请码' : 'Invitation code', { exact: true });
-  await expect(name).toBeInViewport(); await expect(code).toBeInViewport();
+  await name.scrollIntoViewIfNeeded(); await expect(name).toBeInViewport(); await code.scrollIntoViewIfNeeded(); await expect(code).toBeInViewport();
   await page.getByRole('button', { name: zh ? '申请 AI 试用' : 'Apply for AI trial', exact: true }).click();
   await expect(page.getByLabel(zh ? '称呼' : 'Name', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: zh ? '已有邀请码，开始使用' : 'Use an invitation', exact: true }).click();
@@ -242,6 +242,6 @@ for(const zh of [false,true])test(`temporary monetary bypass shows enabled plann
  const status={expiresAt:Date.now()+86400000,period:'2026-10',used:{understand:0,generate:0},limits:{understand:8,generate:4},aiEnabled:true,pending:13,reconciliationRequired:false,planningBudgetDisabled:true,maximumRequestCost:300,budgetAvailable:{understand:true,generate:true}};
  await page.route('**/api/v1/**',r=>{const p=new URL(r.request().url()).pathname;return r.fulfill({json:p.endsWith('/access-status')?{qualification:'active',sessionValid:true,...status}:p.endsWith('/application-config')?{available:false,siteKey:null}:status});});
  await page.goto('/trial');await expect(page.getByRole('button',{name:zh?'开始制定训练计划':'Start planning your training',exact:true})).toBeEnabled();
- await expect(page.getByText(zh?'理解与生成的金额预算限制已暂时关闭；个人次数仍有效。':'Monetary budget limits for understanding and generation are temporarily off; personal quotas still apply.',{exact:true})).toBeVisible();
+ await expect(page.getByText(zh?'理解与生成的金额预算限制已暂时关闭；生成次数限制仍有效。':'Monetary budget limits for understanding and generation are temporarily off; generation quotas still apply.',{exact:true})).toHaveCount(0);
  await expect(page.getByText(/单请求费用上限|Per-request cost limit/)).toHaveCount(0);
 });

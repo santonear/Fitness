@@ -66,7 +66,7 @@ describe('BE local control', () => {
     expect(outcomes.find(r => r.status === 'rejected')).toMatchObject({ reason: { code: 'GLOBAL_BUDGET_EXHAUSTED' } });
     const q = await setup({ quotas: { understand: 1, generate: 4 } }); await q.service.enableMock(q.admin, true);
     await q.service.submit(q.session.token, await q.request());
-    await expect(q.service.submit(q.session.token, await q.request())).rejects.toMatchObject({ code: 'INDIVIDUAL_QUOTA_EXHAUSTED' });
+    await q.service.submit(q.session.token, await q.request());expect(q.calls()).toBe(2);
     const b = await setup({ maximumRequestCost: 50 }); await b.service.enableMock(b.admin, true);
     await expect(b.service.submit(b.session.token, await b.request())).rejects.toMatchObject({ code: 'REQUEST_COST_BOUND' });
   });
@@ -210,11 +210,12 @@ describe('BE local control', () => {
 
 it('temporary planning bypass admits generation and records costs above the former limits', async () => {
   const date='2026-02-05';
-  const f=await setup({planningBudgetDisabled:true,allowBoundedPending:true,budgetLimit:1,maximumRequestCost:1},async()=>({result:{days:[{date,exercises:[{exerciseId:EXERCISE_IDS.walking,order:0,targetSets:[{metricType:'duration_distance',durationSeconds:600,distanceMeters:0}]}]}]},actualCost:500}));
+  const f=await setup({planningBudgetDisabled:true,allowBoundedPending:true,budgetLimit:1,maximumRequestCost:1,quotas:{understand:0,generate:1}},async()=>({result:{days:[{date,exercises:[{exerciseId:EXERCISE_IDS.walking,order:0,targetSets:[{metricType:'duration_distance',durationSeconds:600,distanceMeters:0}]}]}]},actualCost:500}));
   await f.service.enableMock(f.admin,true);
   const base={contractVersion:1 as const,requestId:crypto.randomUUID(),operation:'generate' as const,locale:'en' as const,restoreGeneration:0,goalText:'Walk regularly',confirmedGoal:'Walk regularly',dates:[date],timeZone:'UTC',catalogVersion:1,conditions:{}};
   const request={...base,goalConfirmation:await goalConfirmationFor(base),sendConfirmation:await confirmationFor(base)};
   expect((await f.service.submit(f.session.token,request)).accounting).toBe('settled');
   expect((await f.service.status(f.session.token)).used.generate).toBe(1);
+  const next={...base,requestId:crypto.randomUUID()};await expect(f.service.submit(f.session.token,{...next,goalConfirmation:await goalConfirmationFor(next),sendConfirmation:await confirmationFor(next)})).rejects.toMatchObject({code:'INDIVIDUAL_QUOTA_EXHAUSTED'});
   expect(await f.store.read()).toMatchObject({aiEnabled:true,recoveryRequired:false,budgets:{'2026-01':{spent:500,reserved:0}}});
 });

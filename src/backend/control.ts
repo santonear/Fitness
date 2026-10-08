@@ -281,7 +281,7 @@ export class ControlService {
       if (request.operation === 'summary' && (!(this.config.quotas.summary ?? 0) || this.config.requestBounds.summary === undefined)) throw new ControlError('SUMMARY_DISABLED', 503);
       const bound = this.config.requestBounds[request.operation]!; if (!this.budgetDisabled(request.operation) && bound > this.config.maximumRequestCost) throw new ControlError('REQUEST_COST_BOUND', 400);
       const used = state.usages[usageKey(subjectId, period)] ?? { understand: 0, generate: 0 };
-      if ((used[request.operation] ?? 0) >= (this.quotaLimits(state, subjectId, period)[request.operation] ?? 0)) throw new ControlError('INDIVIDUAL_QUOTA_EXHAUSTED', 429);
+      if (request.operation !== 'understand' && (used[request.operation] ?? 0) >= (this.quotaLimits(state, subjectId, period)[request.operation] ?? 0)) throw new ControlError('INDIVIDUAL_QUOTA_EXHAUSTED', 429);
       const budget = state.budgets[period] ?? { spent: 0, reserved: 0 };
       const carriedReservations = this.config.allowBoundedPending ? Object.entries(state.budgets).reduce((sum, [key, value]) => sum + (key !== period ? value.reserved : 0), 0) : 0;
       if (!this.budgetDisabled(request.operation) && budget.spent + budget.reserved + carriedReservations + bound > this.config.budgetLimit) throw new ControlError('GLOBAL_BUDGET_EXHAUSTED', 429);

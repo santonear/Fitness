@@ -15,7 +15,7 @@
 .ob4-options button span { font-size:1.25rem; color:var(--primary); }
 .ob4-custom { display:grid; gap:8px; margin:22px 0 0; font-weight:650; }
 .ob4 textarea { box-sizing:border-box; width:100%; min-width:0; min-height:110px; padding:14px; background:var(--surface-2); color:var(--text); border:1px solid var(--line); border-radius:14px; font:inherit; resize:vertical; }
-.ob4-schedule { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+.ob4-schedule { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
 .ob4-wheel-group { min-width:0; text-align:center; }
 .ob4-label { display:block; margin-bottom:16px; font-size:.9rem; font-weight:700; }
 .ob4-wheel { touch-action:none; user-select:none; display:flex; flex-direction:column; align-items:stretch; max-width:220px; margin:auto; border:1px solid var(--line); border-radius:22px; padding:8px; background:var(--surface-2); }
@@ -49,3 +49,5 @@
  .ob4-schedule { gap:10px; }.ob4-wheel strong { font-size:1.9rem; }
  .ob4-label { min-height:38px; }.ob4-summary strong { font-size:.9rem; }
 }
+
+@media(max-width:480px){.ob4-schedule{gap:6px}.ob4-schedule .ob4-wheel{padding:8px 4px}.ob4-schedule .ob4-wheel strong{font-size:1.1rem}.ob4-schedule .ob4-wheel button{min-width:32px;padding:6px}}

@@ -19,11 +19,11 @@ for(const state of ['active','expired','revoked','none','session-missing','quota
  await page.goto('/trial');
  const start=page.getByRole('button',{name:'Start planning your training',exact:true});
  if(state==='none'){await expect(page.getByText('No verified trial on this browser.',{exact:false})).toBeVisible();await expect(start).toHaveCount(0);}
- else if(state==='query-failed'){await expect(page.getByRole('alert')).toContainText('status is unknown');await expect(page.locator('.v31-quota strong').first()).toHaveText('—');}
+ else if(state==='query-failed'){await expect(page.getByRole('alert')).toContainText('status is unknown');await expect(page.locator('.v31-quota')).toHaveCount(0);}
  else {
   await expect(page.getByText('Select up to 7 training dates per request')).toBeVisible();
   await expect(page.getByText('Per-request cost limit: ¥3.00')).toBeVisible();
-  await expect(page.getByText('Quota resets:',{exact:false})).toBeVisible();
+  await expect(page.getByText('Quota resets:',{exact:false})).toHaveCount(0);await expect(page.locator('.v31-quota')).toHaveCount(0);
   if(state==='active')await expect(start).toBeEnabled();else await expect(start).toBeDisabled();
   if(state==='expired')await expect(page.getByText('Trial expired — request an extension')).toBeVisible();
   if(state==='revoked')await expect(page.getByText('Access revoked — contact the administrator')).toBeVisible();

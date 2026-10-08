@@ -8,12 +8,12 @@ for (const locale of ['en', 'zh'] as const) test(`${locale} pending understandin
  calls++;const body=route.request().postDataJSON();return route.fulfill({json:{requestId:body.requestId,accounting:'pending',result:validateGuidedProviderOutput(body.dialogue,{kind:'understand',summary:'Retained understanding',uncertainties:[]}),context:{restoreGeneration:body.restoreGeneration,inputDigest:body.sendConfirmation}}});});
  await page.addInitScript(locale=>localStorage.setItem('fitness.language',locale),locale);await completedPlanningProfile(page);await page.goto('/ai');
  await page.getByRole('textbox',{name:t('Training goal and constraints','训练目标与约束'),exact:true}).fill('Regular walking');
- await page.getByRole('checkbox',{name:/I reviewed this information|我已核对上述内容/}).check();
- await page.getByRole('button',{name:t('Understand goal','理解目标'),exact:true}).click();
+
+ await page.getByRole('button',{name:t('Agree to send and understand goal','同意发送并理解目标'),exact:true}).click();
  await expect(page.getByText('Retained understanding',{exact:true})).toBeVisible();unknown=true;
  await page.getByRole('button',{name:t('Refresh access','刷新资格'),exact:true}).click();
  await expect(page.getByText(/Access and allowance unknown|资格及额度未知/)).toBeVisible();
  await expect(page.getByText('Retained understanding',{exact:true})).toBeVisible();expect(calls).toBe(1);
  await expect(page.getByText(/reserved budget has not been released|预留预算尚未释放/)).toBeVisible();
- await expect(page.getByRole('button',{name:t('Understand goal','理解目标'),exact:true})).toBeDisabled();
+ await expect(page.getByRole('button',{name:t('Agree to send and understand goal','同意发送并理解目标'),exact:true})).toBeDisabled();
 });

@@ -19,7 +19,7 @@ export async function verifyPlanDeletion() {
     const unused = await plans.savePlan(input());
     const edited = await plans.savePlan({ ...input(), id: unused.id }, unused.revision);
     const conflict = await plans.deletePlan(unused.id, unused.revision).then(() => false, error => error.code === 'CONFLICT');
-    const snapshot = async () => JSON.stringify(await Promise.all(db.tables.map(table => table.toArray())));
+    const snapshot = async () => JSON.stringify(await Promise.all(db.tables.filter((table:{name:string})=>table.name!=='coachDevice').map(table => table.toArray())));
     const before = await snapshot();
     const fail = () => { throw new Error('Simulated schedule deletion failure'); };
     db.scheduledWorkouts.hook('deleting', fail);

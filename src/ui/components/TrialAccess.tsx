@@ -130,12 +130,11 @@ export function TrialAccess({ onContinue, onSkip }: { onContinue?: () => void; o
   const pending = apps.some(a => a.state === 'pending' || a.state === 'approved' && (a.claimUntil ?? 0) > Date.now());
   const hasTrial = Boolean(status || apps.some(a => a.state === 'claimed'));
   const active = qualificationState === 'active' && sessionValid;
-  const quotaExhausted = status && (status.used.understand >= status.limits.understand || status.used.generate >= status.limits.generate);
+  const quotaExhausted = status && (status.used.generate >= status.limits.generate);
   const budgetInsufficient = status?.budgetAvailable && (!status.budgetAvailable.understand || !status.budgetAvailable.generate);
   const planningPaused = !active || quotaExhausted || budgetInsufficient || status?.aiEnabled === false || status?.reconciliationRequired;
   const words = { pending: zh ? '等待审核' : 'Awaiting review', approved: zh ? '已批准，待领取' : 'Approved · ready to claim', rejected: zh ? '未获批准' : 'Not approved', claimed: zh ? '已领取' : 'Claimed' };
   const statusDetails = <>
-    <div className="v31-quota-grid">{(['understand','generate'] as const).map((kind,index)=><section className="v31-quota" key={kind}><h2>{(zh?['目标理解','计划生成']:['Goal understanding','Plan generation'])[index]}</h2><strong>{status?`${Math.max(0,status.limits[kind]-status.used[kind])} / ${status.limits[kind]}`:'—'}</strong><p>{status?(zh?`本期剩余 · 已用 ${status.used[kind]} 次`:`Remaining · ${status.used[kind]} used`):(zh?'资格与次数尚未确认':'Access and usage not confirmed')}</p>{status?.period&&<small>{status.period}</small>}</section>)}</div>
     <div className="v31-service-status"><p><strong>{zh?'平台状态：':'Service: '}</strong>{status?.aiEnabled===true?(zh?'模型已启用':'Model enabled'):status?.aiEnabled===false?(zh?'模型已关闭，本地训练可继续':'Model disabled; local training stays available'):(zh?'未知':'Unknown')}</p><p><strong>{zh?'核算状态：':'Accounting: '}</strong>{status?.reconciliationRequired?(zh?'需要对账，新增请求暂停':'Reconciliation required; requests paused'):status?.pending?(zh?`${status.pending} 个请求待核算；是否允许继续由服务端判定`:`${status.pending} requests pending; the server determines availability`):status?.pending===0?(zh?'无待核算请求':'No pending requests'):(zh?'未知':'Unknown')}</p><p>{zh?'项目预算与个人次数分别限制请求。这里不推算项目剩余金额；资格有效不代表下一次 AI 请求一定获准。':'Project budget and personal quota are separate limits. Project balance is not estimated here; valid access does not guarantee admission of the next request.'}</p></div>
   </>;
   return <section className="trial-access" aria-labelledby="trial-title">
@@ -145,13 +144,10 @@ export function TrialAccess({ onContinue, onSkip }: { onContinue?: () => void; o
     {error && <p role="alert"><StatusIcon status="error"/>{error}</p>}{notice && <p role="status"><AppIcon name="info"/>{notice}</p>}
     {loaded && qualificationState === 'none' && <p role="status"><AppIcon name="info"/>{zh ? '此浏览器尚无可验证的试用资格。可兑换邀请码或查看申请。' : 'No verified trial on this browser. Redeem an invitation or check your application.'}</p>}
     {status && <div className="trial-summary"><strong>{qualificationState === 'expired' ? (zh ? '试用已到期，可申请延期' : 'Trial expired — request an extension') : qualificationState === 'revoked' ? (zh ? '资格已撤销，请联系管理员' : 'Access revoked — contact the administrator') : !sessionValid ? (zh ? '资格有效，但此浏览器未启用；可恢复领取或申请补发' : 'Trial active, but this browser is not activated. Recover the claim or request a replacement.') : (zh ? 'AI 试用有效' : 'Your AI trial is active')}</strong><p>{zh ? '有效期至：' : 'Valid until: '}{new Date(status.expiresAt).toLocaleString(zh ? 'zh-CN' : 'en')}</p>
-      <p>{zh ? '本月剩余：理解 ' : 'Remaining this month: understanding '}{Math.max(0, status.limits.understand - status.used.understand)} · {zh ? '生成 ' : 'generation '}{Math.max(0, status.limits.generate - status.used.generate)}</p>
       <button className="trial-primary" disabled={busy || Boolean(planningPaused)} onClick={() => navigate('/ai')}>{zh ? '开始制定训练计划' : 'Start planning your training'}</button>
       {quotaExhausted && <p role="status"><AppIcon name="info"/>{zh ? '个人次数不足，请等待本期重置或联系管理员。' : 'Personal quota exhausted. Wait for the monthly reset or contact the administrator.'}</p>}
       {budgetInsufficient && <p role="status"><AppIcon name="info"/>{zh ? '项目预算不足，新的 AI 请求暂不可用。请稍后刷新或联系管理员。' : 'Project budget is insufficient for new AI requests. Refresh later or contact the administrator.'}</p>}
-      {status.resetAt && <p>{zh ? '次数重置：' : 'Quota resets: '}{new Date(status.resetAt).toLocaleString(zh ? 'zh-CN' : 'en', { timeZone: status.timeZone })} {status.timeZone}</p>}
       {status.maxDays !== undefined && <p>{zh ? `每次最多选择 ${status.maxDays} 个训练日` : `Select up to ${status.maxDays} training dates per request`}</p>}
-      {status.planningBudgetDisabled && <p>{zh ? '理解与生成的金额预算限制已暂时关闭；个人次数仍有效。' : 'Monetary budget limits for understanding and generation are temporarily off; personal quotas still apply.'}</p>}
       {!status.planningBudgetDisabled && status.maximumRequestCost !== undefined && <p>{zh ? '单请求费用上限：' : 'Per-request cost limit: '}¥{(status.maximumRequestCost / 100).toFixed(2)}</p>}
       <p>{zh ? '确认目标、选择日期、核对外发内容，再审阅并保存计划。' : 'Confirm your goal, choose dates, review what is sent, then preview and save.'}</p></div>}
     {active && statusDetails}

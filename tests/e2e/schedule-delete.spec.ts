@@ -73,7 +73,7 @@ test('schedule hide preserves completion statistics, guards concurrent and ongoi
     const forgedRejected = await backupService.validateBackup(new File([JSON.stringify(forged)], 'forged.json')).then(() => false, (e: { code: string }) => e.code === 'BACKUP_REFERENCE_INVALID');
     await workoutService.abandonWorkout(session.id, session.revision);
     row.revision = (await database.scheduledWorkouts.get(row.id)).revision;
-    const snapshot = async () => JSON.stringify(await Promise.all(database.tables.map((table: { toArray: () => Promise<unknown[]> }) => table.toArray())));
+    const snapshot = async () => JSON.stringify(await Promise.all(database.tables.filter((table:{name:string})=>table.name!=='coachDevice').map((table: { toArray: () => Promise<unknown[]> }) => table.toArray())));
     const beforeFailure = await snapshot();
     const originalPut = database.scheduledWorkouts.put;
     database.scheduledWorkouts.put = () => Promise.reject(new Error('Injected schedule write failure'));
@@ -91,5 +91,3 @@ test('schedule hide preserves completion statistics, guards concurrent and ongoi
   });
   expect(result).toEqual({ stale: 'CONFLICT', ongoing: 'WORKOUT_IN_PROGRESS', forgedRejected: true, failed: true, rolledBack: true, start: 'INVALID', direct: 'INVALID', available: 0, unchanged: true, oldBackupAccepted: true });
 });
-
-

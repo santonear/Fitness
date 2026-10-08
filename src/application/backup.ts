@@ -309,7 +309,8 @@ export function createBackupService(repo: Repository) {
       const before = await repo.readMetadata();
       committedGeneration = (before.restoreGeneration ?? 0) + 1;
       if (!Number.isSafeInteger(committedGeneration) || !Number.isSafeInteger(before.dataRevision + 1)) invalid('Local revision counter exhausted');
-      for (const table of repo.db.tables) await table.clear();
+      // Device reminder preferences and suppression ledger are not portable training facts.
+      for (const table of repo.db.tables) if (table.name !== 'coachDevice') await table.clear();
       const data = envelope.data;
       await repo.db.metadata.put({ ...data.metadata, schemaVersion: 6, revision: before.revision, dataRevision: before.dataRevision, restoreGeneration: committedGeneration, importedAt: new Date().toISOString() });
       await repo.db.profiles.bulkAdd(data.profiles);

@@ -47,7 +47,7 @@ export const guidedDialogueRequestSchema = z.strictObject({
   }
 });
 export const guidedDialogueResponseSchema = z.discriminatedUnion('purpose', [
-  z.strictObject({ ...identity, purpose: z.literal('understand'), summary: z.string().min(1), uncertainties: z.array(z.string().min(1)) }),
+  z.strictObject({ ...identity, purpose: z.literal('understand'), summary: z.string().min(1), uncertainties: z.array(z.string().min(1)), draft: z.string().max(8000).optional() }),
   z.strictObject({ ...identity, purpose: z.literal('clarify'), question: z.string().min(1), field: z.enum(['goal', 'conditions', 'dates']) }),
   z.strictObject({ ...identity, purpose: z.literal('program'), candidate: programCandidateSchema }),
   z.strictObject({ ...identity, purpose: z.literal('refine'), candidate: programCandidateSchema }),

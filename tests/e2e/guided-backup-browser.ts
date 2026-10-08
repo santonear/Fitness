@@ -42,12 +42,12 @@ export async function verifyGuidedBackup(name: string) {
     const preserved = JSON.stringify(await db.guidedStates.get('guided')) === JSON.stringify(state);
     const staleWriter = await staleRepo.write(async () => { await other.guidedStates.clear(); }).then(() => false, error => error.code === 'CONFLICT');
     const generation = (await repo.readMetadata()).restoreGeneration;
-    const before = JSON.stringify(await Promise.all(db.tables.map(table => table.toArray())));
+    const before = JSON.stringify(await Promise.all(db.tables.filter((table:{name:string})=>table.name!=='coachDevice').map(table => table.toArray())));
     const fail = () => { throw new DOMException('Storage full', 'QuotaExceededError'); };
     db.guidedStates.hook('creating', fail);
     const rejected = await restore(envelope).then(() => false, () => true);
     db.guidedStates.hook('creating').unsubscribe(fail);
-    const rollback = rejected && before === JSON.stringify(await Promise.all(db.tables.map(table => table.toArray()))) && generation === (await repo.readMetadata()).restoreGeneration;
+    const rollback = rejected && before === JSON.stringify(await Promise.all(db.tables.filter((table:{name:string})=>table.name!=='coachDevice').map(table => table.toArray()))) && generation === (await repo.readMetadata()).restoreGeneration;
     const old = structuredClone(envelope); old.schemaVersion = 3; old.data.metadata.schemaVersion = 4; delete old.data.guidedStates;
     await restore(old);
     const oldCleared = await db.guidedStates.count() === 0;

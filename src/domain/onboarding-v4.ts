@@ -13,7 +13,7 @@ const fields: Record<OnboardingKey, z.ZodType> = {
   weightKg: z.number().int().min(30).max(300), waistCm: z.number().int().min(40).max(200),
   goal: list, experience: text, location: list, equipment: list,
   safety: list.refine(v => !v.includes('无已知限制') || v.length === 1),
-  schedule: z.array(z.string()).length(2).refine(v => (v[0] === '' || /^([01]?\d|2[0-3])$/.test(v[0])) && (v[1] === '' || durations.some(n => String(n) === v[1]))), preferences: text,
+  schedule: z.array(z.string()).min(2).max(3).refine(v => (v[0] === '' || /^([01]?\d|2[0-3])$/.test(v[0])) && (v[1] === '' || durations.some(n => String(n) === v[1])) && (v.length === 2 || v[2] === '' || /^[1-7]$/.test(v[2]))), preferences: text,
 };
 export function validV4Answer(key: string, answer: Answer): boolean {
   return onboardingKeys.includes(key as OnboardingKey) && (answer.status === 'skipped' || fields[key as OnboardingKey].safeParse(answer.value).success);

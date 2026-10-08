@@ -16,7 +16,7 @@ export function ManagementPage() {
   function restoreQuota(quota: Data['quotas'][number]) {
     const previous = quotaRetries.current[quota.subjectId];
     const input = previous ?? { id: crypto.randomUUID(), subjectId: quota.subjectId, period: quota.period, reason: (quotaReasons[quota.subjectId] ?? '').trim() };
-    if (!input.reason || !confirm(zh ? `将此用户 ${input.period} 剩余次数恢复为：目标理解 ${quota.defaults.understand} 次、计划生成 ${quota.defaults.generate} 次？不延长资格，不改变费用及月预算。` : `Restore this user's ${input.period} remaining quota to ${quota.defaults.understand} understandings and ${quota.defaults.generate} plans? Expiry, charges and project budget stay unchanged.`)) return;
+    if (!input.reason || !confirm(zh ? `将此用户 ${input.period} 剩余次数恢复为：计划生成 ${quota.defaults.generate} 次？不延长资格，不改变费用及月预算。` : `Restore this user's ${input.period} remaining quota to ${quota.defaults.generate} plans? Expiry, charges and project budget stay unchanged.`)) return;
     quotaRetries.current[quota.subjectId] = input;
     void run(async () => {
       await trialApi('management/quota-restore', input);
@@ -64,7 +64,7 @@ export function ManagementPage() {
         {replacement?.subjectId === s.subjectId && <label>{zh ? '新激活码（离开页面后不再显示）' : 'New activation code (shown only here)'}<input readOnly value={replacement.code} onFocus={e => e.target.select()} /></label>}
         <button disabled={busy} onClick={() => { if (confirm(zh ? '删除此账号？资格、登录会话和激活码立即失效，并从用户列表移除。保留费用、用量和操作记录；不删除设备上的训练数据。' : 'Delete this account? Access, sessions and codes stop working immediately and the account leaves this list. Billing, usage and audit records remain. Device training data is unchanged.')) void run(async () => { await trialApi('management/subject-delete', { subjectId: s.subjectId }); if (replacement?.subjectId === s.subjectId) setReplacement(undefined); }); }}>{zh ? '删除账号' : 'Delete account'}</button>
         {data.quotas?.filter(q => q.subjectId === s.subjectId).map(q => <div key={q.period}>
-          <p>{q.period} · {zh ? '剩余目标理解 / 计划生成：' : 'Remaining understandings / plans: '}{Math.max(0, q.limits.understand - q.used.understand)} / {Math.max(0, q.limits.generate - q.used.generate)}</p>
+          <p>{q.period} · {zh ? '剩余计划生成次数：' : 'Remaining plan generations: '}{Math.max(0, q.limits.generate - q.used.generate)}</p>
           <p>{zh ? '本月累计使用：' : 'Recorded monthly usage: '}{q.used.understand} / {q.used.generate}</p>
           <label>{zh ? '恢复原因' : 'Restoration reason'}<input maxLength={200} disabled={busy || Boolean(quotaRetries.current[s.subjectId])} value={quotaReasons[s.subjectId] ?? ''} onChange={e => setQuotaReasons({ ...quotaReasons, [s.subjectId]: e.target.value })} /></label>
           <button disabled={busy || s.revoked || s.expired || (!quotaReasons[s.subjectId]?.trim() && !quotaRetries.current[s.subjectId])} onClick={() => restoreQuota(q)}>{quotaRetries.current[s.subjectId] ? (zh ? '重试同一次恢复' : 'Retry same restoration') : (zh ? '刷新额度' : 'Refresh quota')}</button>
