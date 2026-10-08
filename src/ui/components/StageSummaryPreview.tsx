@@ -1,3 +1,4 @@
+import { AppIcon, StatusIcon } from './AppIcon';
 import { useEffect, useRef, useState } from 'react';
 import type { Locale } from '../../domain/models';
 import { stageSummaryService, type StageSelection, type StageSummaryResult } from '../../application/stage-summary';
@@ -56,7 +57,7 @@ export function StageSummaryPreview({ locale, plans }: { locale: Locale; plans: 
       <button disabled={busy || !timeZone} type="submit">{busy ? (zh ? '正在读取…' : 'Reading…') : (zh ? '准备本地预览' : 'Prepare local preview')}</button>
     </form>
     <p className="muted">{zh ? '周由所选起始日连续计算7个日历日。整份计划按各版本原始周期取首尾；日期计划保留原单日范围。训练按实际日期选择，完成率按原任务日期及计划时区计算，范围外补练仍可回计原任务。体重是资料级观测。' : 'A week is 7 calendar days from the chosen start. Whole plans span their original version periods; date plans retain their original day. Sessions use actual dates; completion uses original task dates and each plan time zone. Later make-ups may credit original tasks. Weight observations belong to the local profile.'}</p>
-    {result && !result.ok && <p role="alert">{result.code}: {result.code === 'EMPTY_STAGE' ? (zh ? '此范围没有已完成训练或体重观测。' : 'No completed sessions or weight observations in this range.') : result.code === 'INVALID_RANGE' ? (zh ? '请选择有效计划及首尾日期。' : 'Select a valid plan and inclusive date range.') : (zh ? '无法读取完整本地事实。请确认资料已初始化，并重新打开进度页后再试。' : 'Complete local facts are unavailable. Check that your profile is initialized, then reopen Progress and try again.')}</p>}
+    {result && !result.ok && <p role="alert"><StatusIcon status="warning"/>{result.code}: {result.code === 'EMPTY_STAGE' ? (zh ? '此范围没有已完成训练或体重观测。' : 'No completed sessions or weight observations in this range.') : result.code === 'INVALID_RANGE' ? (zh ? '请选择有效计划及首尾日期。' : 'Select a valid plan and inclusive date range.') : (zh ? '无法读取完整本地事实。请确认资料已初始化，并重新打开进度页后再试。' : 'Complete local facts are unavailable. Check that your profile is initialized, then reopen Progress and try again.')}</p>}
     {result?.ok && <div role="region" aria-label={zh ? '阶段事实预览' : 'Stage facts preview'}>
       <p>{result.range.from} → {result.range.to} · {result.range.timeZone}</p>
       <p>{zh ? '来源：已提交本地事实' : 'Source: committed local facts'} · {result.manifest.capturedAt}<br />{zh ? '数据修订' : 'Data revision'} {result.manifest.dataRevision} · {zh ? '恢复代次' : 'Restore generation'} {result.manifest.restoreGeneration}</p>

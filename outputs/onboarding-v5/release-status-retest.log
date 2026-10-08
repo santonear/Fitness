@@ -1,0 +1,9 @@
+
+Running 4 tests using 2 workers
+
+  ok 1 [chromium] › tests\e2e\ai-control-status.spec.ts:3:33 › en qualification refreshes automatically; failures clear previous remaining allowance (6.9s)
+  ok 3 [chromium] › tests\e2e\ai-control-status.spec.ts:3:33 › zh qualification refreshes automatically; failures clear previous remaining allowance (2.3s)
+  ok 2 [webkit] › tests\e2e\ai-control-status.spec.ts:3:33 › en qualification refreshes automatically; failures clear previous remaining allowance (9.8s)
+  ok 4 [webkit] › tests\e2e\ai-control-status.spec.ts:3:33 › zh qualification refreshes automatically; failures clear previous remaining allowance (4.0s)
+
+  4 passed (15.7s)

@@ -1,3 +1,4 @@
+import { AppIcon, StatusIcon } from './AppIcon';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { backupService, MAX_BACKUP_BYTES } from '../../application/backup';
@@ -107,7 +108,7 @@ export function BackupPanel({ restored = false }: { restored?: boolean }) {
         </>
       )}
       <div hidden={step!==4}><h3>{zh?'恢复完成':'Restore complete'}</h3><p>{zh?'已重新读取本地数据。训练资格和费用账本仍以服务端为准。':'Local data has been reloaded. AI access and accounting remain on the server.'}</p><button onClick={()=>setStep(1)}>{zh?'恢复另一份备份':'Restore another backup'}</button></div>
-      {error && <p role="alert">{error}</p>}
+      {error && <p role="alert"><StatusIcon status="error"/>{error}</p>}
       <p aria-live="polite">{message}</p>
     </section>
   );

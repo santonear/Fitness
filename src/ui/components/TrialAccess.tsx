@@ -1,3 +1,4 @@
+import { AppIcon, StatusIcon } from './AppIcon';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -140,14 +141,14 @@ export function TrialAccess({ onContinue, onSkip }: { onContinue?: () => void; o
   return <section className="trial-access" aria-labelledby="trial-title">
     <span className="trial-kicker">FITNESS · AI ACCESS</span><h1 id="trial-title">{zh ? '一起开始，开启 AI 试用' : 'Start together. Unlock your AI trial.'}</h1>
     <p>{zh ? '已有邀请码？填写用户名和邀请码，即可开始。还没有邀请码可以申请试用。' : 'Have an invitation? Enter your name and code to get started, or apply for a trial.'}</p>
-    {!loaded && <p role="status">{zh ? '正在查询资格…' : 'Checking your trial…'}</p>}
-    {error && <p role="alert">{error}</p>}{notice && <p role="status">{notice}</p>}
-    {loaded && qualificationState === 'none' && <p role="status">{zh ? '此浏览器尚无可验证的试用资格。可兑换邀请码或查看申请。' : 'No verified trial on this browser. Redeem an invitation or check your application.'}</p>}
+    {!loaded && <p role="status"><AppIcon name="info"/>{zh ? '正在查询资格…' : 'Checking your trial…'}</p>}
+    {error && <p role="alert"><StatusIcon status="error"/>{error}</p>}{notice && <p role="status"><AppIcon name="info"/>{notice}</p>}
+    {loaded && qualificationState === 'none' && <p role="status"><AppIcon name="info"/>{zh ? '此浏览器尚无可验证的试用资格。可兑换邀请码或查看申请。' : 'No verified trial on this browser. Redeem an invitation or check your application.'}</p>}
     {status && <div className="trial-summary"><strong>{qualificationState === 'expired' ? (zh ? '试用已到期，可申请延期' : 'Trial expired — request an extension') : qualificationState === 'revoked' ? (zh ? '资格已撤销，请联系管理员' : 'Access revoked — contact the administrator') : !sessionValid ? (zh ? '资格有效，但此浏览器未启用；可恢复领取或申请补发' : 'Trial active, but this browser is not activated. Recover the claim or request a replacement.') : (zh ? 'AI 试用有效' : 'Your AI trial is active')}</strong><p>{zh ? '有效期至：' : 'Valid until: '}{new Date(status.expiresAt).toLocaleString(zh ? 'zh-CN' : 'en')}</p>
       <p>{zh ? '本月剩余：理解 ' : 'Remaining this month: understanding '}{Math.max(0, status.limits.understand - status.used.understand)} · {zh ? '生成 ' : 'generation '}{Math.max(0, status.limits.generate - status.used.generate)}</p>
       <button className="trial-primary" disabled={busy || Boolean(planningPaused)} onClick={() => navigate('/ai')}>{zh ? '开始制定训练计划' : 'Start planning your training'}</button>
-      {quotaExhausted && <p role="status">{zh ? '个人次数不足，请等待本期重置或联系管理员。' : 'Personal quota exhausted. Wait for the monthly reset or contact the administrator.'}</p>}
-      {budgetInsufficient && <p role="status">{zh ? '项目预算不足，新的 AI 请求暂不可用。请稍后刷新或联系管理员。' : 'Project budget is insufficient for new AI requests. Refresh later or contact the administrator.'}</p>}
+      {quotaExhausted && <p role="status"><AppIcon name="info"/>{zh ? '个人次数不足，请等待本期重置或联系管理员。' : 'Personal quota exhausted. Wait for the monthly reset or contact the administrator.'}</p>}
+      {budgetInsufficient && <p role="status"><AppIcon name="info"/>{zh ? '项目预算不足，新的 AI 请求暂不可用。请稍后刷新或联系管理员。' : 'Project budget is insufficient for new AI requests. Refresh later or contact the administrator.'}</p>}
       {status.resetAt && <p>{zh ? '次数重置：' : 'Quota resets: '}{new Date(status.resetAt).toLocaleString(zh ? 'zh-CN' : 'en', { timeZone: status.timeZone })} {status.timeZone}</p>}
       {status.maxDays !== undefined && <p>{zh ? `每次最多选择 ${status.maxDays} 个训练日` : `Select up to ${status.maxDays} training dates per request`}</p>}
       {status.maximumRequestCost !== undefined && <p>{zh ? '单请求费用上限：' : 'Per-request cost limit: '}¥{(status.maximumRequestCost / 100).toFixed(2)}</p>}

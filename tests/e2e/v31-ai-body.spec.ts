@@ -1,6 +1,7 @@
 import {test, expect, type Page} from '@playwright/test';
 import {validateGuidedProviderOutput} from '../../src/backend/guided-provider';
 import {exercises} from '../../src/catalog/exercises';
+import {completedPlanningProfile} from './planning-profile-fixture';
 
 test.setTimeout(60000);
 async function setup(page: Page, seed = true) {
@@ -12,6 +13,7 @@ async function setup(page: Page, seed = true) {
     const raw = request.operation === 'understand' ? {kind:'understand',summary:'Build strength at home.',uncertainties:[]} : {kind:'program',name:'Local fixture',explanation:'Test only',days:request.dialogue.dates.map((date: string) => ({date,exercises:[{exerciseId:exercises.find(x => x.metricType === 'reps')!.id,order:0,targetSets:[{metricType:'reps',reps:8}],setTimings:[{durationSeconds:40,restSeconds:30}]}]}))};
     return route.fulfill({json:{requestId:request.requestId,accounting:'settled',result:validateGuidedProviderOutput(request.dialogue,raw),context:{restoreGeneration:request.restoreGeneration,inputDigest:request.sendConfirmation}}});
   });
+  await completedPlanningProfile(page);
   await page.goto('/ai');
   await expect(page.getByLabel('Training goal and constraints')).toBeEnabled();
   if (seed) {

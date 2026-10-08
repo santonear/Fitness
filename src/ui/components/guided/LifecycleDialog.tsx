@@ -1,3 +1,4 @@
+import { AppIcon, StatusIcon } from '../AppIcon';
 import { useEffect, useRef, useState } from 'react';
 import type { GuidedLocale } from './GuidedOnboarding';
 import '../../guided.css';
@@ -26,7 +27,7 @@ export function LifecycleDialog({ locale, action, open, busy = false, error, onC
     <p>{action === 'resume' ? t('离线也可恢复尚未过期的原安排。错过的训练不会自动补排，到期不自动延长。', 'resume unexpired sessions offline. missed workouts are not rescheduled and the end date is not extended.') : action === 'pause' ? t('本地立即停止后续安排。当前训练和历史会保留；AI 或网络不可用不影响暂停。', 'stop future sessions locally. retain the current workout and history; pausing does not depend on AI or connectivity.') : t('停止后续安排并保留历史和当前训练。取消后不会自动创建新计划。', 'stop future sessions and retain history and the current workout. cancellation does not create a new plan.')}</p>
     {action !== 'resume' && !confirmCancellation && <label>{t('原因（可不说明）', 'reason (optional)')}<textarea value={reason} maxLength={2000} disabled={busy} onChange={event => setReason(event.target.value)} /></label>}
     {confirmCancellation && reason.trim() && <p>{reason}</p>}
-    {error && <p role="alert">{error}</p>}
+    {error && <p role="alert"><StatusIcon status="error"/>{error}</p>}
     <div className="guided-actions"><button type="button" autoFocus disabled={busy} onClick={onClose}>{t('返回', 'back')}</button><button type="button" className="guided-primary" disabled={busy} onClick={() => {
       if (action === 'cancel' && !confirmCancellation) { setConfirmCancellation(true); return; }
       onConfirm(reason.trim() || undefined);

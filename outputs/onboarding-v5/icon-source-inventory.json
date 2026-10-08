@@ -1,0 +1,1592 @@
+[
+  {
+    "file": "src/ui/App.tsx",
+    "line": 17,
+    "kind": "navigation",
+    "source": "import { NavigationIcon } from './components/NavigationIcon';"
+  },
+  {
+    "file": "src/ui/App.tsx",
+    "line": 133,
+    "kind": "navigation",
+    "source": "<NavigationIcon name={name} />"
+  },
+  {
+    "file": "src/ui/App.tsx",
+    "line": 145,
+    "kind": "text control/status",
+    "source": "<button className=\"workspace-menu\" aria-controls=\"workspace-navigation\" aria-expanded={navigationOpen} onClick={() => setNavigationOpen(value => !value)}>{i18n.resolvedLanguage === 'zh' ? '导航' : 'menu'}</button>"
+  },
+  {
+    "file": "src/ui/App.tsx",
+    "line": 157,
+    "kind": "text control/status",
+    "source": "{restoreError && <p role=\"alert\">{restoreError}</p>}"
+  },
+  {
+    "file": "src/ui/App.tsx",
+    "line": 159,
+    "kind": "text control/status",
+    "source": "{restoring ? <p role=\"status\">{i18n.resolvedLanguage === 'zh' ? '正在读取恢复后的本地数据…' : 'Reading restored local data…'}</p> : <OnboardingGate key={libraryGeneration}><Routes>"
+  },
+  {
+    "file": "src/ui/App.tsx",
+    "line": 171,
+    "kind": "navigation",
+    "source": "<nav className=\"v31-mobile-nav\" aria-label={zh ? '底部导航' : 'Bottom navigation'}>{destinations.map(([name,path]) => <NavLink key={name} to={path} end tabIndex={0} className={sectionPath === path ? 'active' : undefined} aria-current={sectionPath === path ? 'page' : undefined}><NavigationIcon name={name} /><span>{t(name)}</span></NavLink>)}</nav>"
+  },
+  {
+    "file": "src/ui/components/AiCandidateEditor.tsx",
+    "line": 11,
+    "kind": "text control/status",
+    "source": "{item.targetSets.map((target,i)=><fieldset key={`${i}-${target.metricType}`}><legend>{t('Target set','目标组')} {i+1}</legend><TargetFields target={target} zh={zh} onChange={next=>update(index,{...item,targetSets:item.targetSets.map((old,j)=>j===i?next:old)})}/><button type=\"button\" disabled={item.targetSets.length===1} onClick={()=>update(index,{...item,targetSets:item.targetSets.filter((_,j)=>j!==i)})}>{t('Remove candidate set','移除候选组')}</button></fieldset>)}"
+  },
+  {
+    "file": "src/ui/components/AiCandidateEditor.tsx",
+    "line": 12,
+    "kind": "text control/status",
+    "source": "<button type=\"button\" onClick={()=>update(index,{...item,targetSets:[...item.targetSets,defaultTarget(item.exerciseId)]})}>{t('Add candidate set','添加候选组')}</button><label>{t('Candidate notes','候选备注')}<textarea aria-label={t('Candidate notes','候选备注')} value={item.notes??''} onChange={e=>update(index,{...item,notes:e.target.value})}/></label><button type=\"button\" disabled={items.length===1} onClick={()=>onItems(items.filter((_,i)=>i!==index))}>{t('Remove candidate exercise','移除候选动作')}</button>"
+  },
+  {
+    "file": "src/ui/components/AiCandidateEditor.tsx",
+    "line": 13,
+    "kind": "text control/status",
+    "source": "</fieldset>)}<button type=\"button\" onClick={()=>onItems([...items,{exerciseId:exercises[2].id as PlannedExercise['exerciseId'],order:items.length,targetSets:[defaultTarget(exercises[2].id)]}])}>{t('Add candidate exercise','添加候选动作')}</button><button type=\"submit\" disabled={!canSave}>{t('Confirm and save this candidate','确认并保存此候选')}</button></fieldset></form>;"
+  },
+  {
+    "file": "src/ui/components/Appearance.tsx",
+    "line": 18,
+    "kind": "text control/status",
+    "source": "return <section className=\"v31-appearance\"><h2>{zh ? '外观与版式' : 'Appearance & layout'}</h2><p>{zh ? '切换全站布局，当前页面、草稿和正在进行的训练保持不变。外观偏好保存在此浏览器，不包含在训练备份中。' : 'Change the app layout while keeping this page, drafts and active workout. Appearance is a browser preference outside training backups.'}</p><div className=\"theme-choice-grid\">{(['atlas', 'serene', 'orbit'] as const).map((name, index) => <button key={name} className=\"theme-choice\" aria-pressed={name === theme} onClick={() => change(name)}><span className={`theme-preview ${name}`} aria-hidden=\"true\"><i /><b /><em /></span><strong>{name[0].toUpperCase() + name.slice(1)}</strong><small>{(zh ? ['专业、清晰、信息密度高', '温和、舒展、注重恢复体验', '活泼、友好、轻量激励'] : ['Focused, clear and compact', 'Calm, spacious and restorative', 'Friendly, expressive and light'])[index]}</small><span>{name === theme ? (zh ? '正在使用' : 'Selected') : (zh ? '使用此版式' : 'Use this layout')}</span></button>)}</div></section>;"
+  },
+  {
+    "file": "src/ui/components/BackupPanel.tsx",
+    "line": 61,
+    "kind": "text control/status",
+    "source": "<button disabled={busy} onClick={() => void run(async () => {"
+  },
+  {
+    "file": "src/ui/components/BackupPanel.tsx",
+    "line": 81,
+    "kind": "text control/status",
+    "source": "{preview&&<><p>{zh?'备份校验通过。文件与引用检查已完成。':'Backup validated, including its data references.'}</p><button onClick={()=>setStep(2)}>{zh?'下一步：保管当前数据':'Next: keep current data'}</button></>}"
+  },
+  {
+    "file": "src/ui/components/BackupPanel.tsx",
+    "line": 87,
+    "kind": "text control/status",
+    "source": "<button disabled={busy} onClick={() => void run(async () => {"
+  },
+  {
+    "file": "src/ui/components/BackupPanel.tsx",
+    "line": 96,
+    "kind": "text control/status",
+    "source": "<div className=\"v31-actions\"><button disabled={busy} onClick={()=>setStep(1)}>{zh?'上一步':'Back'}</button><button disabled={busy||!exported||!kept} onClick={()=>setStep(3)}>{zh?'下一步：确认替换':'Next: confirm replacement'}</button></div></div>"
+  },
+  {
+    "file": "src/ui/components/BackupPanel.tsx",
+    "line": 100,
+    "kind": "text control/status",
+    "source": "<button disabled={busy || !exported || !kept || !confirmed} onClick={() => void run(async () => {"
+  },
+  {
+    "file": "src/ui/components/BackupPanel.tsx",
+    "line": 105,
+    "kind": "text control/status",
+    "source": "<button disabled={busy} onClick={()=>setStep(2)}>{zh?'上一步':'Back'}</button></div>"
+  },
+  {
+    "file": "src/ui/components/BackupPanel.tsx",
+    "line": 109,
+    "kind": "text control/status",
+    "source": "<div hidden={step!==4}><h3>{zh?'恢复完成':'Restore complete'}</h3><p>{zh?'已重新读取本地数据。训练资格和费用账本仍以服务端为准。':'Local data has been reloaded. AI access and accounting remain on the server.'}</p><button onClick={()=>setStep(1)}>{zh?'恢复另一份备份':'Restore another backup'}</button></div>"
+  },
+  {
+    "file": "src/ui/components/BackupPanel.tsx",
+    "line": 110,
+    "kind": "text control/status",
+    "source": "{error && <p role=\"alert\">{error}</p>}"
+  },
+  {
+    "file": "src/ui/components/CompletionReview.tsx",
+    "line": 13,
+    "kind": "symbol",
+    "source": "<p>{session.localDate} · {session.timeZone} · {session.startedAt} {session.completedAt&&`→ ${session.completedAt}`}</p>"
+  },
+  {
+    "file": "src/ui/components/CompletionReview.tsx",
+    "line": 25,
+    "kind": "text control/status",
+    "source": "const zh=locale==='zh';return <section aria-label={zh?'完成前核对':'Completion review'}><h2>{zh?'核对实际记录':'Review actual records'}</h2><WorkoutFacts session={session} sets={sets} locale={locale}/><p>{zh?'完成后记录只读，不能修改或删除。':'Completed records are read only and cannot be edited or deleted.'}</p><button disabled={busy} onClick={onBack}>{zh?'返回编辑':'Return to editing'}</button><button disabled={busy} onClick={onConfirm}>{zh?'确认完成':'Confirm completion'}</button></section>;"
+  },
+  {
+    "file": "src/ui/components/DateCalendar.tsx",
+    "line": 17,
+    "kind": "symbol",
+    "source": "<div className=\"date-calendar-header\"><button type=\"button\" aria-label={zh?'上个月':'Previous month'} onClick={()=>move(-1)}>←</button>"
+  },
+  {
+    "file": "src/ui/components/DateCalendar.tsx",
+    "line": 19,
+    "kind": "symbol",
+    "source": "<button type=\"button\" aria-label={zh?'下个月':'Next month'} onClick={()=>move(1)}>→</button></div>"
+  },
+  {
+    "file": "src/ui/components/DateCalendar.tsx",
+    "line": 25,
+    "kind": "text control/status",
+    "source": "{dates.map(date=><button type=\"button\" key={date} data-cal-date={date} aria-label={date} aria-pressed={selected.includes(date)}"
+  },
+  {
+    "file": "src/ui/components/DayPlanEditor.tsx",
+    "line": 26,
+    "kind": "text control/status",
+    "source": "<button type=\"button\" disabled={item.targetSets.length===1} onClick={()=>update(index,{...item,targetSets:item.targetSets.filter((_,j)=>j!==i)})}>{zh?'删除目标组':'Remove target set'}</button></fieldset>)}"
+  },
+  {
+    "file": "src/ui/components/DayPlanEditor.tsx",
+    "line": 27,
+    "kind": "text control/status",
+    "source": "<button type=\"button\" onClick={()=>update(index,{...item,targetSets:[...item.targetSets,defaultTarget(item.exerciseId)]})}>{zh?'添加目标组':'Add target set'}</button>"
+  },
+  {
+    "file": "src/ui/components/DayPlanEditor.tsx",
+    "line": 29,
+    "kind": "text control/status",
+    "source": "<button type=\"button\" disabled={index===0} onClick={()=>{changed();setItems(values=>{const next=[...values];[next[index-1],next[index]]=[next[index],next[index-1]];return next;});}}>{zh?'上移动作':'Move exercise up'}</button>"
+  },
+  {
+    "file": "src/ui/components/DayPlanEditor.tsx",
+    "line": 30,
+    "kind": "text control/status",
+    "source": "<button type=\"button\" disabled={items.length===1} onClick={()=>{changed();setItems(values=>values.filter((_,i)=>i!==index));}}>{zh?'移除动作':'Remove day exercise'}</button>"
+  },
+  {
+    "file": "src/ui/components/DayPlanEditor.tsx",
+    "line": 32,
+    "kind": "text control/status",
+    "source": "<button type=\"button\" onClick={()=>{changed();setItems(values=>[...values,{exerciseId:exercises[2].id as PlannedExercise['exerciseId'],order:values.length,targetSets:[{metricType:'reps',reps:10}]}]);}}>{zh?'增加动作':'Add day exercise'}</button>"
+  },
+  {
+    "file": "src/ui/components/DayPlanEditor.tsx",
+    "line": 33,
+    "kind": "text control/status",
+    "source": "<button type=\"submit\">{zh?'保存此日':'Save this date'}</button>"
+  },
+  {
+    "file": "src/ui/components/DayPlanEditor.tsx",
+    "line": 36,
+    "kind": "text control/status",
+    "source": "{error&&<p role=\"alert\">{error}</p>}{status&&<p role=\"status\">{status}</p>}"
+  },
+  {
+    "file": "src/ui/components/DayPlansPanel.tsx",
+    "line": 27,
+    "kind": "text control/status",
+    "source": "<div className=\"day-selection-tabs\">{selected.map(date=><button type=\"button\" key={date} onClick={()=>activate(date)} aria-pressed={active===date}>{date}</button>)}</div>"
+  },
+  {
+    "file": "src/ui/components/DayPlansPanel.tsx",
+    "line": 29,
+    "kind": "text control/status",
+    "source": "{error&&<p role=\"alert\">{error}</p>}"
+  },
+  {
+    "file": "src/ui/components/DayPlansPanel.tsx",
+    "line": 37,
+    "kind": "symbol",
+    "source": "return <li>{plan.name} · {row.originalDate} → {row.scheduledDate} · {row.completedSessionId?(zh?'已完成':'completed'):row.status==='skipped'?(zh?'已跳过':'skipped'):(zh?'待训练':'pending')}"
+  },
+  {
+    "file": "src/ui/components/DayPlansPanel.tsx",
+    "line": 39,
+    "kind": "text control/status",
+    "source": "<button disabled={busy} onClick={()=>{if(!window.confirm(zh?`改期到 ${date}？原日期 ${row.originalDate} 的统计归属仍保留。`:`Reschedule to ${date}? Original statistics remain attributed to ${row.originalDate}.`))return;void run(()=>dayPlanService.rescheduleDayPlan(row.id,date,row.revision,generation));}}>{zh?'改期日计划':'Reschedule day plan'}</button>"
+  },
+  {
+    "file": "src/ui/components/DayPlansPanel.tsx",
+    "line": 40,
+    "kind": "text control/status",
+    "source": "<button disabled={busy||row.status==='skipped'} onClick={()=>{void run(()=>dayPlanService.skipDayPlan(row.id,row.revision,generation));}}>{zh?'跳过日计划':'Skip day plan'}</button>"
+  },
+  {
+    "file": "src/ui/components/DayPlansPanel.tsx",
+    "line": 42,
+    "kind": "text control/status",
+    "source": "<button disabled={busy} onClick={()=>{if(!window.confirm(zh?'隐藏此日程？历史与统计保留；已完成仍占槽，未完成释放日期槽。':'Hide this schedule? Facts and statistics remain; completed days retain their slot, unfinished days release it.'))return;void run(()=>dayPlanService.hideDayPlan(row.id,row.revision,generation));}}>{zh?'隐藏日计划':'Hide day plan'}</button>"
+  },
+  {
+    "file": "src/ui/components/DayPlansPanel.tsx",
+    "line": 43,
+    "kind": "text control/status",
+    "source": "{error&&<p role=\"alert\">{error}</p>}"
+  },
+  {
+    "file": "src/ui/components/ExerciseEditor.tsx",
+    "line": 53,
+    "kind": "text control/status",
+    "source": "<button disabled={busy} onClick={() => removeSet(set.id)}>{zh ? '删除已保存组' : 'Remove saved set'}</button>"
+  },
+  {
+    "file": "src/ui/components/ExerciseEditor.tsx",
+    "line": 63,
+    "kind": "text control/status",
+    "source": "<button disabled={busy} onClick={removeExercise}>{zh ? '删除动作' : 'Remove exercise'}</button>"
+  },
+  {
+    "file": "src/ui/components/ExerciseEditor.tsx",
+    "line": 126,
+    "kind": "text control/status",
+    "source": "<button type=\"submit\">{saved ? (zh ? '更新组' : 'Update set') : (zh ? '记录组' : 'Record set')}</button>"
+  },
+  {
+    "file": "src/ui/components/ExerciseEditor.tsx",
+    "line": 127,
+    "kind": "text control/status",
+    "source": "{error && <p role=\"alert\">{error}</p>}"
+  },
+  {
+    "file": "src/ui/components/ExerciseMedia.tsx",
+    "line": 14,
+    "kind": "text control/status",
+    "source": "{imageFailed && <p role=\"status\">{zh ? '示意图不可用，仍可阅读动作步骤。' : 'Illustration unavailable. Written steps remain available.'}</p>}"
+  },
+  {
+    "file": "src/ui/components/ExerciseMedia.tsx",
+    "line": 30,
+    "kind": "text control/status",
+    "source": "{state === 'idle' && <button type=\"button\" onClick={() => setState('loading')}>{zh ? '加载 YouTube 视频（连接第三方）' : 'Load YouTube video (connects to a third party)'}</button>}"
+  },
+  {
+    "file": "src/ui/components/ExerciseMedia.tsx",
+    "line": 34,
+    "kind": "text control/status",
+    "source": "<button type=\"button\" onClick={() => setState('failed')}>{zh ? '视频无法播放' : 'Video not working'}</button>"
+  },
+  {
+    "file": "src/ui/components/ExerciseMedia.tsx",
+    "line": 35,
+    "kind": "text control/status",
+    "source": "<button type=\"button\" onClick={() => setState('idle')}>{zh ? '关闭视频' : 'Close video'}</button>"
+  },
+  {
+    "file": "src/ui/components/ExerciseMedia.tsx",
+    "line": 38,
+    "kind": "text control/status",
+    "source": "<p role=\"status\">{zh ? '视频不可用，仍可阅读动作步骤。' : 'Video unavailable. Written steps remain available.'}</p>"
+  },
+  {
+    "file": "src/ui/components/ExerciseMedia.tsx",
+    "line": 39,
+    "kind": "text control/status",
+    "source": "<button type=\"button\" onClick={() => setState('loading')}>{zh ? '重试视频（连接第三方）' : 'Retry video (connects to a third party)'}</button>"
+  },
+  {
+    "file": "src/ui/components/ExerciseMedia.tsx",
+    "line": 40,
+    "kind": "text control/status",
+    "source": "<button type=\"button\" onClick={() => setState('idle')}>{zh ? '关闭视频' : 'Close video'}</button>"
+  },
+  {
+    "file": "src/ui/components/guided/GuidedMeasurements.tsx",
+    "line": 60,
+    "kind": "text control/status",
+    "source": "<div className=\"guided-actions\" role=\"group\" aria-label={t('测量指标', 'measurement type')}>{(['weight', 'waist', 'bodyFat'] as const).map(item => <button type=\"button\" key={item} aria-pressed={kind === item} disabled={disabled} onClick={() => { setKind(item); setValue(''); setMethod(''); setSaveError(''); }}>{labels[item]}</button>)}</div>"
+  },
+  {
+    "file": "src/ui/components/guided/GuidedMeasurements.tsx",
+    "line": 64,
+    "kind": "text control/status",
+    "source": "{(error || saveError) && <p role=\"alert\">{error || saveError}</p>}"
+  },
+  {
+    "file": "src/ui/components/guided/GuidedMeasurements.tsx",
+    "line": 65,
+    "kind": "text control/status",
+    "source": "<div className=\"guided-actions\"><button className=\"guided-primary\" disabled={disabled || !valid} type=\"submit\">{disabled ? t('保存中…', 'saving…') : t('确认保存测量值', 'confirm and save measurement')}</button></div>"
+  },
+  {
+    "file": "src/ui/components/guided/GuidedOnboarding.tsx",
+    "line": 98,
+    "kind": "text control/status",
+    "source": "<nav className=\"onboarding-top\" aria-label={t('问答导航', 'Question navigation')}><button type=\"button\" disabled={locked || current === 0} onClick={back}>{t('返回', 'back')}</button><span>{t('你的训练手记', 'YOUR TRAINING JOURNAL')}</span>{!summary && key !== 'biologicalSex' && <button type=\"button\" disabled={locked} onClick={() => void save(true)}>{t('跳过', 'skip')}</button>}</nav>"
+  },
+  {
+    "file": "src/ui/components/guided/GuidedOnboarding.tsx",
+    "line": 106,
+    "kind": "symbol",
+    "source": "{summary ? <dl className=\"onboarding-summary\">{answered.map(([name, item]) => <div key={name}><dt>{prompts[name as GuidedQuestion]?.[en ? 1 : 0]}<button type=\"button\" disabled={locked} onClick={() => onStepChange(name === 'biologicalSex' ? 16 : guidedSteps.indexOf(name as GuidedQuestion))}>{t('修改', 'Edit')}</button></dt><dd>{valuesOf(item).map(value => translatedValue(value, en)).join(en ? ', ' : '、')}{numbers[name as GuidedQuestion]?.unit ? ` ${numbers[name as GuidedQuestion]?.unit}` : ''}</dd></div>)}{!answered.length && <p>{t('你尚未提供资料，可以在后续对话中补充。', 'No details shared yet. You can add them in the conversation.')}</p>}</dl> : config ? <button type=\"button\" className=\"onboarding-numeric-choice\" disabled={locked} onClick={event => setModal({ initial: numeric, trigger: event.currentTarget })}><strong>{numeric === '' ? '—' : numeric}</strong><span>{config.unit || t('岁', 'years')}</span><span>{numeric === '' ? t('填写数值', 'Choose a value') : t('点击调整', 'Tap to adjust')} <span aria-hidden=\"true\">↗</span></span></button> : <>"
+  },
+  {
+    "file": "src/ui/components/guided/GuidedOnboarding.tsx",
+    "line": 107,
+    "kind": "symbol",
+    "source": "<div className={`onboarding-options${multiple ? ' is-multiple' : ''}`} role=\"group\" aria-label={title}>{options.map(([value, english], i) => <button type=\"button\" key={value} aria-pressed={selected.includes(value)} disabled={locked} onClick={() => toggle(value)}><span className=\"onboarding-option-mark\" aria-hidden=\"true\">{selected.includes(value) ? '✓' : String(i + 1).padStart(2, '0')}</span><span>{en ? english : translatedValue(value, false)}</span></button>)}</div>"
+  },
+  {
+    "file": "src/ui/components/guided/GuidedOnboarding.tsx",
+    "line": 108,
+    "kind": "text control/status",
+    "source": "{customValues.map(value => <div className=\"onboarding-custom-row\" key={value}><button type=\"button\" className=\"onboarding-custom-answer\" disabled={locked} onClick={event => setModal({ initial: value.replace(/^(单次时长：|避免：)/, ''), custom: value, trigger: event.currentTarget })}>{translatedValue(value, en)} <small>{t('编辑', 'Edit')}</small></button><button type=\"button\" disabled={locked} aria-label={`${t('移除补充', 'Remove detail')}: ${translatedValue(value, en)}`} onClick={() => setSelected(previous => previous.filter(item => item !== value))}>×</button></div>)}"
+  },
+  {
+    "file": "src/ui/components/guided/GuidedOnboarding.tsx",
+    "line": 109,
+    "kind": "symbol",
+    "source": "{key !== 'biologicalSex' && (key !== 'safety' || safetyDetails) ? <button type=\"button\" className=\"onboarding-custom\" disabled={locked} onClick={event => setModal({ initial: safetyDetails ? selected[0] ?? '' : '', custom: safetyDetails ? selected[0] : undefined, trigger: event.currentTarget })}>{safetyDetails ? t('说明必要的限制', 'Share the relevant restrictions') : t('自定义 / 补充说明', 'Something else / add detail')} <span aria-hidden=\"true\">↗</span></button> : null}"
+  },
+  {
+    "file": "src/ui/components/guided/GuidedOnboarding.tsx",
+    "line": 113,
+    "kind": "text control/status",
+    "source": "{(error || localError) && <p role=\"alert\">{localError || t('未能完成操作，已保存的回答仍保留。请重试。', 'Could not complete this action. Saved answers are retained. Please retry.')}</p>}"
+  },
+  {
+    "file": "src/ui/components/guided/GuidedOnboarding.tsx",
+    "line": 114,
+    "kind": "symbol",
+    "source": "<div className=\"onboarding-bottom\"><button type=\"button\" className=\"guided-primary\" disabled={locked || !summary && !valid} onClick={summary ? () => { if (answers.biologicalSex?.status !== 'answered') onStepChange(16); else onComplete(); } : () => void save(false)}>{locked ? t('保存中…', 'saving…') : summary ? t('与 AI 一起制定计划', 'Plan together with AI') : t('确认并继续', 'confirm and continue')}<span aria-hidden=\"true\"> →</span></button></div>"
+  },
+  {
+    "file": "src/ui/components/guided/GuidedOnboarding.tsx",
+    "line": 115,
+    "kind": "text control/status",
+    "source": "<button type=\"button\" className=\"guided-text-action\" disabled={locked} onClick={() => setReset(true)}>{t('重新开始引导', 'restart onboarding')}</button>"
+  },
+  {
+    "file": "src/ui/components/guided/GuidedOnboarding.tsx",
+    "line": 122,
+    "kind": "text control/status",
+    "source": "<dialog ref={resetDialog} className=\"onboarding-input-dialog\" aria-labelledby=\"guided-reset-title\" onCancel={event => { event.preventDefault(); setReset(false); }}><h2 id=\"guided-reset-title\">{t('重新开始引导？', 'restart onboarding?')}</h2><p>{t('只清除引导答案和进度，保留已有计划和训练历史。', 'Clear onboarding answers and progress; keep existing plans and training history.')}</p><footer><button type=\"button\" autoFocus onClick={() => setReset(false)}>{t('保留进度', 'keep progress')}</button><button type=\"button\" disabled={locked} onClick={() => { onReset(); setReset(false); }}>{t('确认重新开始', 'confirm restart')}</button></footer></dialog>"
+  },
+  {
+    "file": "src/ui/components/guided/LifecycleDialog.tsx",
+    "line": 29,
+    "kind": "text control/status",
+    "source": "{error && <p role=\"alert\">{error}</p>}"
+  },
+  {
+    "file": "src/ui/components/guided/LifecycleDialog.tsx",
+    "line": 30,
+    "kind": "text control/status",
+    "source": "<div className=\"guided-actions\"><button type=\"button\" autoFocus disabled={busy} onClick={onClose}>{t('返回', 'back')}</button><button type=\"button\" className=\"guided-primary\" disabled={busy} onClick={() => {"
+  },
+  {
+    "file": "src/ui/components/guided/NumericWheel.tsx",
+    "line": 35,
+    "kind": "text control/status",
+    "source": "<div className=\"guided-wheel-controls\"><button type=\"button\" disabled={disabled} aria-label={t('减小', 'decrease')} onClick={() => change(-1)}>↑</button>"
+  },
+  {
+    "file": "src/ui/components/guided/NumericWheel.tsx",
+    "line": 36,
+    "kind": "text control/status",
+    "source": "<button type=\"button\" disabled={disabled} aria-label={t('增大', 'increase')} onClick={() => change(1)}>↓</button></div>"
+  },
+  {
+    "file": "src/ui/components/guided/OnboardingInputDialog.tsx",
+    "line": 58,
+    "kind": "text control/status",
+    "source": "<header><h2 id=\"onboarding-input-title\">{title}</h2><button type=\"button\" onClick={onClose} aria-label={t('关闭', 'Close')}>×</button></header>"
+  },
+  {
+    "file": "src/ui/components/guided/OnboardingInputDialog.tsx",
+    "line": 66,
+    "kind": "text control/status",
+    "source": "{!voiceNotice ? <button type=\"button\" onClick={() => setVoiceNotice(true)}>{t('语音转写', 'Voice input')}</button> : <div className=\"onboarding-voice\">"
+  },
+  {
+    "file": "src/ui/components/guided/OnboardingInputDialog.tsx",
+    "line": 68,
+    "kind": "text control/status",
+    "source": "{!Speech || !online ? <p role=\"status\">{t('此浏览器或离线状态不支持语音，请输入文字。', 'Voice is unavailable in this browser or offline. Please type instead.')}</p> : <button type=\"button\" onClick={listening ? () => recognition.current?.stop() : startVoice}>{listening ? t('停止转写', 'Stop listening') : t('同意并开始语音', 'Agree and start voice')}</button>}"
+  },
+  {
+    "file": "src/ui/components/guided/OnboardingInputDialog.tsx",
+    "line": 69,
+    "kind": "text control/status",
+    "source": "<span role=\"status\">{listening ? t('正在聆听…', 'Listening…') : voiceError}</span>"
+  },
+  {
+    "file": "src/ui/components/guided/OnboardingInputDialog.tsx",
+    "line": 72,
+    "kind": "text control/status",
+    "source": "<footer><button type=\"button\" onClick={onClose}>{t('取消', 'Cancel')}</button><button type=\"button\" className=\"guided-primary\" disabled={!valid || listening} onClick={() => { onApply(config ? Number(value) : value.trim()); onClose(); }}>{t('确认选择', 'Confirm selection')}</button></footer>"
+  },
+  {
+    "file": "src/ui/components/guided/ProgramDashboard.tsx",
+    "line": 56,
+    "kind": "symbol",
+    "source": "{(startDate || endDate) && <p>{startDate ?? '—'} → {endDate ?? '—'}</p>}"
+  },
+  {
+    "file": "src/ui/components/guided/ProgramDashboard.tsx",
+    "line": 57,
+    "kind": "text control/status",
+    "source": "<section className=\"guided-today\"><h3>{t('今天', 'today')}</h3><p>{todayLabel}</p>{onToday && <button type=\"button\" className=\"guided-primary\" disabled={busy} onClick={onToday}>{actionLabel ?? t('进入训练', 'open workout')}</button>}</section>"
+  },
+  {
+    "file": "src/ui/components/guided/ProgramDashboard.tsx",
+    "line": 60,
+    "kind": "SVG",
+    "source": "<svg viewBox=\"0 0 120 120\" aria-hidden=\"true\"><circle cx=\"60\" cy=\"60\" r=\"50\" className=\"guided-ring-track\" /><circle cx=\"60\" cy=\"60\" r=\"50\" className=\"guided-ring-fill\" pathLength=\"100\" strokeDasharray={`${percent ?? 0} 100`} /></svg>"
+  },
+  {
+    "file": "src/ui/components/guided/ProgramDashboard.tsx",
+    "line": 77,
+    "kind": "text control/status",
+    "source": "<div className=\"guided-actions\">{status === 'active' && onPause && <button type=\"button\" disabled={busy} onClick={onPause}>{t('暂停计划', 'pause plan')}</button>}{status === 'paused' && onResume && <button type=\"button\" disabled={busy} onClick={onResume}>{t('恢复原计划', 'resume plan')}</button>}{(status === 'active' || status === 'paused') && onCancel && <button type=\"button\" disabled={busy} onClick={onCancel}>{t('取消计划', 'cancel plan')}</button>}{onDialogue && <button type=\"button\" disabled={busy} onClick={onDialogue}>{t('聊一聊计划', 'discuss your plan')}</button>}</div>"
+  },
+  {
+    "file": "src/ui/components/guided/QuestionIllustration.tsx",
+    "line": 21,
+    "kind": "SVG",
+    "source": "return <div className={`guided-question-art art-${question}`} aria-hidden=\"true\"><svg viewBox=\"0 0 260 210\" fill=\"none\" stroke=\"currentColor\" strokeWidth=\"1.8\" strokeLinecap=\"round\" strokeLinejoin=\"round\"><path d=\"M54 107C45 52 91 24 146 31c63 7 79 64 52 112-21 38-99 42-126 11-10-12-15-28-18-47Z\" fill=\"var(--fitness-orange-bg)\" stroke=\"none\" /><circle cx=\"187\" cy=\"54\" r=\"19\" fill=\"var(--fitness-yellow)\" stroke=\"none\" />{artwork[question]}<path d=\"m56 51 3-8 3 8 8 3-8 3-3 8-3-8-8-3Z\" fill=\"var(--fitness-orange)\" stroke=\"none\" /></svg></div>;"
+  },
+  {
+    "file": "src/ui/components/guided/ScheduleConfirmation.tsx",
+    "line": 16,
+    "kind": "text control/status",
+    "source": "{slot && <><label>{zh ? '开始时间' : 'Start time'}<input type=\"time\" aria-label={`${date} ${zh ? '开始时间' : 'start time'}`} disabled={disabled} value={slot.startTime} onChange={event => onChange(slots.map(item => item.date === date ? { ...item, startTime: event.target.value } : item))} /></label><span> · {slot.durationMinutes} {zh ? '分钟' : 'minutes'}</span>{!trainingSlotSchema.safeParse(slot).success && <p role=\"alert\">{zh ? '请选择有效时间，并在当日午夜前结束。' : 'Choose a valid time that ends by midnight.'}</p>}</>}"
+  },
+  {
+    "file": "src/ui/components/guided/ScheduleConfirmation.tsx",
+    "line": 20,
+    "kind": "text control/status",
+    "source": "<button disabled={disabled || !valid} aria-describedby=\"schedule-quota-notice\" onClick={onConfirm}>{zh ? '确认时间，生成并保存计划' : 'Confirm times, generate and save plan'}</button>"
+  },
+  {
+    "file": "src/ui/components/guided/TrainingAnalytics.tsx",
+    "line": 23,
+    "kind": "SVG",
+    "source": "{empty || !values.length ? <div className=\"analytics-empty\"><svg viewBox=\"0 0 100 60\" aria-hidden=\"true\"><path d=\"M12 47h76M22 39V29m19 10V18m19 21V25m19 14V9\" stroke=\"currentColor\" strokeWidth=\"2\" fill=\"none\" /></svg><p>{locale==='zh'?'尚无可分析的已完成记录。':'no completed records to analyse yet.'}</p><Link to=\"/workout\">{locale==='zh'?'查看训练入口':'open workouts'}</Link></div> : <>"
+  },
+  {
+    "file": "src/ui/components/guided/TrainingAnalytics.tsx",
+    "line": 24,
+    "kind": "SVG",
+    "source": "<svg className=\"analytics-chart\" viewBox=\"0 0 600 210\" role=\"img\" aria-label={`${title} · ${unit}`}>"
+  },
+  {
+    "file": "src/ui/components/guided/TrainingAnalytics.tsx",
+    "line": 57,
+    "kind": "text control/status",
+    "source": "<div className=\"analytics-filters\"><div role=\"group\" aria-label={t('分析时间范围','analysis period')}>{[['30','30D'],['90','90D'],['180','180D'],['365','1Y'],['all',t('全部','all')]].map(([value,label])=><button key={value} aria-pressed={range===value} onClick={()=>setRange(value)}>{label}</button>)}</div><p>{range==='all'&&!report?.history.length?t('全部记录','all records'):`${effectiveFrom} — ${today}`}</p></div>"
+  },
+  {
+    "file": "src/ui/components/guided/TrainingAnalytics.tsx",
+    "line": 59,
+    "kind": "text control/status",
+    "source": "{error?<p role=\"alert\">{t('无法读取分析数据：','unable to load analytics: ')}{error}</p>:!report?<div className=\"analytics-skeleton\" role=\"status\">{t('正在读取训练记录…','loading training records…')}</div>:<>"
+  },
+  {
+    "file": "src/ui/components/guided/TrainingCalendar.tsx",
+    "line": 50,
+    "kind": "symbol",
+    "source": "<header><div><h2>{view === 'day' && `${Number(selected.slice(8))} · `}{new Intl.DateTimeFormat(locale,{timeZone:'UTC',month:'long'}).format(new Date(`${view === 'day' ? selected : month+'-01'}T12:00:00Z`))} <span className=\"calendar-year\">{view === 'day' ? selected.slice(0,4) : month.slice(0,4)}</span></h2></div><div><button aria-label={view === 'month' ? (zh ? '上个月' : 'previous month') : (zh ? '前一天' : 'previous day')} onClick={() => move(-1)}>←</button><button aria-label={view === 'month' ? (zh ? '下个月' : 'next month') : (zh ? '后一天' : 'next day')} onClick={() => move(1)}>→</button></div></header>"
+  },
+  {
+    "file": "src/ui/components/guided/TrainingCalendar.tsx",
+    "line": 51,
+    "kind": "text control/status",
+    "source": "<div className=\"calendar-toolbar\"><div role=\"group\" aria-label={zh ? '日历视图' : 'calendar view'}>{(['month','day'] as const).map(mode => <button key={mode} aria-pressed={view === mode} onClick={() => setView(mode)}>{mode === 'month' ? (zh ? '月视图' : 'month') : (zh ? '日视图' : 'day')}</button>)}</div><button onClick={() => { const date = dateInZone(now,timeZone); setMonth(date.slice(0,7)); setSelected(date); }}>{zh ? '今天' : 'today'}</button></div>"
+  },
+  {
+    "file": "src/ui/components/guided/TrainingCalendar.tsx",
+    "line": 52,
+    "kind": "text control/status",
+    "source": "{view === 'month' && <><button className=\"calendar-multi\" aria-pressed={multi} onClick={() => { setMulti(!multi); dragging.current = null; }}>{zh ? '选择多个日期' : 'select multiple days'}</button>"
+  },
+  {
+    "file": "src/ui/components/guided/TrainingCalendar.tsx",
+    "line": 58,
+    "kind": "text control/status",
+    "source": "return <button key={date} type=\"button\" data-calendar-date={date} aria-label={`${date}${entries.length ? (zh ? ' · 有训练安排' : ' · training scheduled') : ''}${done ? (zh ? ' · 已完成' : ' · completed') : ''}`} aria-pressed={multi ? selectedDates.includes(date) : selected === date} aria-current={date === today ? 'date' : undefined} className={`${date.slice(0, 7) !== month ? 'outside-month' : ''} ${done ? 'calendar-completed' : ''} ${multi && selectedDates.includes(shiftDate(date,-1)) ? 'calendar-range' : ''}`}"
+  },
+  {
+    "file": "src/ui/components/guided/TrainingCalendar.tsx",
+    "line": 61,
+    "kind": "symbol",
+    "source": "onClick={event => { if (suppressClick.current && event.detail !== 0) { suppressClick.current = false; return; } setSelected(date); if (multi) setSelectedDates(values => values.includes(date) ? values.filter(value => value !== date) : [...values,date].sort()); }}>{String(Number(date.slice(8))).padStart(2,'0')}{date === today && <span className=\"calendar-today-mark\" aria-hidden=\"true\">{zh ? '今' : 'NOW'}</span>}{entries.length > 0 && <small aria-hidden=\"true\" className={done ? 'calendar-done-mark' : 'calendar-workout-mark'}>{done ? '✓' : entries[0]?.startTime ?? '—'}</small>}</button>;"
+  },
+  {
+    "file": "src/ui/components/guided/TrainingCalendar.tsx",
+    "line": 65,
+    "kind": "text control/status",
+    "source": "{multi && <p role=\"status\">{zh ? '已选择' : 'selected'} {selectedDates.length} · {selectedDates.filter(date => visible.some(task => task.scheduledDate === date)).length} {zh ? '天已有安排。仅浏览，不覆盖或保存。' : 'days contain plans. browse only; no overwrite or save.'}</p>}</>}"
+  },
+  {
+    "file": "src/ui/components/guided/TrainingCalendar.tsx",
+    "line": 69,
+    "kind": "SVG",
+    "source": "{selectedTasks.length === 0 && <div className=\"calendar-empty\"><svg viewBox=\"0 0 100 70\" aria-hidden=\"true\"><path d=\"M22 48h56M38 20v28m24-28v28M30 25h8m24 0h8M30 43h8m24 0h8M41 32h18\" fill=\"none\" stroke=\"currentColor\" strokeWidth=\"2\" /></svg><span className=\"calendar-empty-label\">{zh ? '暂无安排' : 'NO PLAN'}</span><p>{zh ? '这一天没有训练安排。' : 'no training scheduled for this date.'}</p><Link to=\"/ai\">{zh ? '一起制定计划' : 'plan your training'} <span aria-hidden=\"true\">↗</span></Link></div>}"
+  },
+  {
+    "file": "src/ui/components/guided/TrainingTimeEditor.tsx",
+    "line": 30,
+    "kind": "text control/status",
+    "source": "<button ref={opener} disabled={blocked || busy} className=\"calendar-drag-handle\" aria-label={zh ? '拖动调整训练时间' : 'Drag to change training time'}"
+  },
+  {
+    "file": "src/ui/components/guided/TrainingTimeEditor.tsx",
+    "line": 37,
+    "kind": "text control/status",
+    "source": "</div> : <button ref={opener} disabled={blocked || busy} onClick={() => setPending({task:{...task},time:'',revision,generation,durationMinutes:30})}>{zh ? '设置训练时间' : 'Set training time'}</button>}"
+  },
+  {
+    "file": "src/ui/components/guided/TrainingTimeEditor.tsx",
+    "line": 46,
+    "kind": "symbol",
+    "source": "<h3>{zh ? '确认修改训练时间' : 'Confirm training time change'}</h3><p>{pending.task.scheduledDate} · {pending.task.startTime} → {pending.time}</p>"
+  },
+  {
+    "file": "src/ui/components/guided/TrainingTimeEditor.tsx",
+    "line": 50,
+    "kind": "text control/status",
+    "source": "{error && <p role=\"alert\">{error}</p>}"
+  },
+  {
+    "file": "src/ui/components/guided/TrainingTimeEditor.tsx",
+    "line": 51,
+    "kind": "text control/status",
+    "source": "<button disabled={busy || !trainingSlotSchema.safeParse({date:pending.task.scheduledDate,startTime:pending.time,durationMinutes:pending.durationMinutes}).success} onClick={async () => { setBusy(true); setError(''); try { await onSave(pending.task,pending.time,pending.revision,pending.generation,pending.durationMinutes); setPending(undefined); } catch { setError(zh ? '未能保存，计划或训练状态可能已变化。请取消后重新打开。' : 'Could not save. The plan or workout may have changed; cancel and reopen.'); } finally { setBusy(false); } }}>{zh ? '确认修改' : 'Confirm change'}</button>"
+  },
+  {
+    "file": "src/ui/components/guided/TrainingTimeEditor.tsx",
+    "line": 52,
+    "kind": "text control/status",
+    "source": "<button disabled={busy} onClick={() => {setPending(undefined);setError('');}}>{zh ? '取消' : 'Cancel'}</button>"
+  },
+  {
+    "file": "src/ui/components/guided/V4Wheel.tsx",
+    "line": 13,
+    "kind": "text control/status",
+    "source": "<button type=\"button\" tabIndex={-1} aria-label={`${label} −`} disabled={index===0} onClick={()=>move(-1)}>−</button>"
+  },
+  {
+    "file": "src/ui/components/guided/V4Wheel.tsx",
+    "line": 15,
+    "kind": "text control/status",
+    "source": "<button type=\"button\" tabIndex={-1} aria-label={`${label} +`} disabled={index===values.length-1} onClick={()=>move(1)}>+</button>"
+  },
+  {
+    "file": "src/ui/components/guided/V4Wheel.tsx",
+    "line": 16,
+    "kind": "text control/status",
+    "source": "</div><button type=\"button\" className=\"ob4-wheel-confirm\" onClick={()=>onChange(current)}>{value===undefined?(zh?'确认此数值':'Confirm value'):(zh?'已选择':'Selected')}</button></div>;"
+  },
+  {
+    "file": "src/ui/components/ManualInvites.tsx",
+    "line": 13,
+    "kind": "text control/status",
+    "source": "<button disabled={busy} onClick={() => {"
+  },
+  {
+    "file": "src/ui/components/ManualInvites.tsx",
+    "line": 23,
+    "kind": "text control/status",
+    "source": "<button onClick={() => { void Promise.resolve().then(() => navigator.clipboard.writeText(issued.code)).then("
+  },
+  {
+    "file": "src/ui/components/ManualInvites.tsx",
+    "line": 27,
+    "kind": "text control/status",
+    "source": "{copyStatus && <p role=\"status\">{copyStatus}</p>}"
+  },
+  {
+    "file": "src/ui/components/ManualInvites.tsx",
+    "line": 35,
+    "kind": "text control/status",
+    "source": "<button disabled={busy} aria-label={`${zh ? '撤销邀请码' : 'Revoke invitation'} ${invite.inviteId.slice(0, 12)}`} onClick={() => {"
+  },
+  {
+    "file": "src/ui/components/NavigationIcon.tsx",
+    "line": 10,
+    "kind": "navigation",
+    "source": "export function NavigationIcon({ name }: { name: keyof typeof paths }) {"
+  },
+  {
+    "file": "src/ui/components/NavigationIcon.tsx",
+    "line": 11,
+    "kind": "SVG",
+    "source": "return <span className=\"app-nav-icon\" aria-hidden=\"true\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" strokeWidth=\"1.7\" strokeLinecap=\"round\" strokeLinejoin=\"round\"><path d={paths[name]} /></svg></span>;"
+  },
+  {
+    "file": "src/ui/components/OnboardingGate.tsx",
+    "line": 18,
+    "kind": "text control/status",
+    "source": "if(check&&result?.path!==location.key)return <p role=\"status\">{zh?'正在读取本地资料…':'Loading local profile…'}</p>;"
+  },
+  {
+    "file": "src/ui/components/OnboardingGate.tsx",
+    "line": 20,
+    "kind": "text control/status",
+    "source": "return <>{result?.error&&<p role=\"alert\">{result.error}</p>}{children}</>;"
+  },
+  {
+    "file": "src/ui/components/PlanDatePicker.tsx",
+    "line": 35,
+    "kind": "text control/status",
+    "source": "<div className=\"v31-calendar-header\"><h3>{new Intl.DateTimeFormat(locale, { year: 'numeric', month: 'long', timeZone: 'UTC' }).format(first)}</h3><div className=\"v31-button-row\"><button type=\"button\" aria-label={zh ? '上个月' : 'Previous month'} onClick={() => shift(-1)}>‹</button><button type=\"button\" aria-label={zh ? '下个月' : 'Next month'} onClick={() => shift(1)}>›</button></div></div>"
+  },
+  {
+    "file": "src/ui/components/PlanDatePicker.tsx",
+    "line": 36,
+    "kind": "text control/status",
+    "source": "{mode === 'arrange' && <div className=\"v31-button-row\"><button type=\"button\" className=\"v31-touch-drag\" aria-pressed={touchDrag} onClick={() => { stop(); setTouchDrag(value => !value); }}>{touchDrag ? (zh ? '结束拖选' : 'Finish drag selection') : (zh ? '开启拖选' : 'Enable drag selection')}</button><p className=\"v31-help\">{zh ? `可跨月选择 1–${maxDates} 个不连续日期。选择不会保存计划。` : `Choose 1–${maxDates} exact dates across months. Selection does not save a plan.`}</p></div>}"
+  },
+  {
+    "file": "src/ui/components/PlanDatePicker.tsx",
+    "line": 40,
+    "kind": "text control/status",
+    "source": "{days.map((date, index) => <button type=\"button\" key={date} data-plan-date={date} aria-label={`${date}${occupied.includes(date) ? (zh ? ' 已占用' : ' occupied') : ''}`} aria-pressed={mode === 'arrange' ? selected.includes(date) : undefined} aria-current={date === today ? 'date' : undefined}"
+  },
+  {
+    "file": "src/ui/components/PlanDatePicker.tsx",
+    "line": 49,
+    "kind": "text control/status",
+    "source": "{feedback && <p role=\"status\">{feedback}</p>}"
+  },
+  {
+    "file": "src/ui/components/PlanEditor.tsx",
+    "line": 182,
+    "kind": "text control/status",
+    "source": "<button type=\"button\" disabled={item.targetSets.length === 1} onClick={() => update(index, {"
+  },
+  {
+    "file": "src/ui/components/PlanEditor.tsx",
+    "line": 190,
+    "kind": "text control/status",
+    "source": "<button type=\"button\" onClick={() => update(index, {"
+  },
+  {
+    "file": "src/ui/components/PlanEditor.tsx",
+    "line": 200,
+    "kind": "text control/status",
+    "source": "<button type=\"button\" disabled={index === 0} onClick={() => {"
+  },
+  {
+    "file": "src/ui/components/PlanEditor.tsx",
+    "line": 207,
+    "kind": "text control/status",
+    "source": "<button type=\"button\" disabled={items.length === 1}"
+  },
+  {
+    "file": "src/ui/components/PlanEditor.tsx",
+    "line": 213,
+    "kind": "text control/status",
+    "source": "<button type=\"button\" onClick={() => setItems([...items, structuredClone(defaultExercise)])}>"
+  },
+  {
+    "file": "src/ui/components/PlanEditor.tsx",
+    "line": 217,
+    "kind": "text control/status",
+    "source": "<button type=\"submit\">{zh ? '保存计划' : 'Save plan'}</button>"
+  },
+  {
+    "file": "src/ui/components/PlanEditor.tsx",
+    "line": 218,
+    "kind": "text control/status",
+    "source": "{editing && <button type=\"button\" onClick={onCancel}>{zh ? '取消编辑' : 'Cancel edit'}</button>}"
+  },
+  {
+    "file": "src/ui/components/PlanEditor.tsx",
+    "line": 220,
+    "kind": "text control/status",
+    "source": "{error && <p role=\"alert\">{error}</p>}"
+  },
+  {
+    "file": "src/ui/components/StageSummaryAi.tsx",
+    "line": 29,
+    "kind": "text control/status",
+    "source": "<button disabled={busy||!prepared} onClick={()=>void run(async()=>{setConnected(true);await readStatus();})}>{t(connected?'Refresh summary qualification':'Connect summary backend',connected?'刷新总结资格':'连接总结后端')}</button>"
+  },
+  {
+    "file": "src/ui/components/StageSummaryAi.tsx",
+    "line": 31,
+    "kind": "text control/status",
+    "source": "{pending&&<p role=\"status\">{t('Accounting is pending. The full reservation remains occupied; new requests are blocked until reconciliation. Returned summaries remain available.','费用待核算，完整预留仍被占用；核算完成前不能新请求。已返回总结仍可查看。')}</p>}"
+  },
+  {
+    "file": "src/ui/components/StageSummaryAi.tsx",
+    "line": 32,
+    "kind": "text control/status",
+    "source": "<button disabled={busy||!prepared||!eligible} onClick={()=>void run(async()=>{if(!prepared)return;const sequence=serial.current,next=await createSummaryRequest(prepared,locale);if(sequence!==serial.current)return;setRequest(next);setConfirmed(false);})}>{t('Preview summary sending','预览总结发送')}</button>"
+  },
+  {
+    "file": "src/ui/components/StageSummaryAi.tsx",
+    "line": 33,
+    "kind": "symbol",
+    "source": "{request&&<section aria-label={t('Summary sending scope','总结发送范围')}><p>{request.stage.range.from} → {request.stage.range.to} · {request.stage.range.timeZone}</p><p>{t('Selected fields and counts are shown below; notes and goal snapshots are included. No complete backup, credential, report or manifest is sent.','以下展示所选字段和数量，包含备注及目标快照；不发送完整备份、凭据、统计报告或清单。')}</p><p>{request.stage.payload.sessions.length} {t('sessions','训练')} · {request.stage.payload.sets.length} {t('sets','组')} · {request.stage.payload.scheduledWorkouts.length} {t('tasks','任务')} · {request.stage.payload.bodyWeights.length} {t('weight observations','体重观测')} · {request.stage.goals.length} {t('goal snapshots','目标快照')} · {request.stage.completionLinks.length} {t('outside-range completion identity links (no sets or notes)','范围外完成身份关联（不含组或备注）')}</p><pre style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere'}}>{JSON.stringify(request,null,2)}</pre><label><input type=\"checkbox\" disabled={busy||!eligible} checked={confirmed} onChange={event=>setConfirmed(event.target.checked)}/>{t('I confirm this summary sending scope','我确认本次总结发送范围')}</label><button disabled={busy||!confirmed||!eligible} onClick={()=>void run(send)}>{t('Send confirmed summary','发送已确认总结')}</button></section>}"
+  },
+  {
+    "file": "src/ui/components/StageSummaryAi.tsx",
+    "line": 34,
+    "kind": "text control/status",
+    "source": "{busy&&<p aria-live=\"polite\">{t('Processing summary…','正在处理总结…')}</p>}{busy&&abort.current&&<button onClick={()=>void cancel()}>{t('Cancel summary request','取消总结请求')}</button>}"
+  },
+  {
+    "file": "src/ui/components/StageSummaryAi.tsx",
+    "line": 35,
+    "kind": "symbol",
+    "source": "{received&&<section aria-label={t('Returned stage summary','已返回阶段总结')}><p>{t('Source: backend result','来源：后端结果')} · {received.request.stage.range.from} → {received.request.stage.range.to} · {received.request.stage.range.timeZone}</p><p>{t('Accounting at receipt','收到时核算状态')}: {received.response.accounting==='pending'?t('pending','待核算'):t('settled','已核算')}</p><p style={{whiteSpace:'pre-wrap'}}>{received.response.result.summary}</p><h4>{t('Next-stage advice (text only)','下一阶段建议（仅文本）')}</h4><ul>{received.response.result.nextStageAdvice.map((item,index)=><li key={index}>{item}</li>)}</ul><p>{t('This advice does not create or update a plan.','该建议不会创建或更新计划。')}</p></section>}"
+  },
+  {
+    "file": "src/ui/components/StageSummaryAi.tsx",
+    "line": 36,
+    "kind": "text control/status",
+    "source": "{feedback&&<p role=\"alert\">{feedback} {error}</p>}"
+  },
+  {
+    "file": "src/ui/components/StageSummaryPreview.tsx",
+    "line": 56,
+    "kind": "text control/status",
+    "source": "<button disabled={busy || !timeZone} type=\"submit\">{busy ? (zh ? '正在读取…' : 'Reading…') : (zh ? '准备本地预览' : 'Prepare local preview')}</button>"
+  },
+  {
+    "file": "src/ui/components/StageSummaryPreview.tsx",
+    "line": 59,
+    "kind": "text control/status",
+    "source": "{result && !result.ok && <p role=\"alert\">{result.code}: {result.code === 'EMPTY_STAGE' ? (zh ? '此范围没有已完成训练或体重观测。' : 'No completed sessions or weight observations in this range.') : result.code === 'INVALID_RANGE' ? (zh ? '请选择有效计划及首尾日期。' : 'Select a valid plan and inclusive date range.') : (zh ? '无法读取完整本地事实。请确认资料已初始化，并重新打开进度页后再试。' : 'Complete local facts are unavailable. Check that your profile is initialized, then reopen Progress and try again.')}</p>}"
+  },
+  {
+    "file": "src/ui/components/StageSummaryPreview.tsx",
+    "line": 61,
+    "kind": "symbol",
+    "source": "<p>{result.range.from} → {result.range.to} · {result.range.timeZone}</p>"
+  },
+  {
+    "file": "src/ui/components/StageSummaryPreview.tsx",
+    "line": 82,
+    "kind": "symbol",
+    "source": "{result.payload.scheduledWorkouts.map(row => <p key={row.id}>{zh ? '任务归属' : 'Task attribution'}: {row.id} · {row.planVersionId} · {row.plannedDayId} · {row.originalDate} → {row.scheduledDate} · {row.completedSessionId ?? (zh ? '未关联完成记录' : 'No completed session link')}</p>)}"
+  },
+  {
+    "file": "src/ui/components/TrialAccess.tsx",
+    "line": 143,
+    "kind": "text control/status",
+    "source": "{!loaded && <p role=\"status\">{zh ? '正在查询资格…' : 'Checking your trial…'}</p>}"
+  },
+  {
+    "file": "src/ui/components/TrialAccess.tsx",
+    "line": 144,
+    "kind": "text control/status",
+    "source": "{error && <p role=\"alert\">{error}</p>}{notice && <p role=\"status\">{notice}</p>}"
+  },
+  {
+    "file": "src/ui/components/TrialAccess.tsx",
+    "line": 145,
+    "kind": "text control/status",
+    "source": "{loaded && qualificationState === 'none' && <p role=\"status\">{zh ? '此浏览器尚无可验证的试用资格。可兑换邀请码或查看申请。' : 'No verified trial on this browser. Redeem an invitation or check your application.'}</p>}"
+  },
+  {
+    "file": "src/ui/components/TrialAccess.tsx",
+    "line": 148,
+    "kind": "text control/status",
+    "source": "<button className=\"trial-primary\" disabled={busy || Boolean(planningPaused)} onClick={() => navigate('/ai')}>{zh ? '开始制定训练计划' : 'Start planning your training'}</button>"
+  },
+  {
+    "file": "src/ui/components/TrialAccess.tsx",
+    "line": 149,
+    "kind": "text control/status",
+    "source": "{quotaExhausted && <p role=\"status\">{zh ? '个人次数不足，请等待本期重置或联系管理员。' : 'Personal quota exhausted. Wait for the monthly reset or contact the administrator.'}</p>}"
+  },
+  {
+    "file": "src/ui/components/TrialAccess.tsx",
+    "line": 150,
+    "kind": "text control/status",
+    "source": "{budgetInsufficient && <p role=\"status\">{zh ? '项目预算不足，新的 AI 请求暂不可用。请稍后刷新或联系管理员。' : 'Project budget is insufficient for new AI requests. Refresh later or contact the administrator.'}</p>}"
+  },
+  {
+    "file": "src/ui/components/TrialAccess.tsx",
+    "line": 157,
+    "kind": "text control/status",
+    "source": "{a.state === 'approved' && <button disabled={busy || (a.claimUntil ?? 0) <= Date.now()} onClick={() => void run(async () => { await trialApi('trial/claim', { receipt, id: a.id }); await refresh(); })}>{(a.claimUntil ?? 0) <= Date.now() ? (zh ? '领取已过期' : 'Claim expired') : (zh ? '领取并启用' : 'Claim and activate')}</button>}"
+  },
+  {
+    "file": "src/ui/components/TrialAccess.tsx",
+    "line": 158,
+    "kind": "text control/status",
+    "source": "{a.state === 'claimed' && !active && qualificationState === 'active' && <button disabled={busy} onClick={() => void run(async () => { await trialApi('trial/claim', { receipt, id: a.id }); await refresh(); })}>{zh ? '恢复领取结果' : 'Recover claim result'}</button>}</li>)}</ul>"
+  },
+  {
+    "file": "src/ui/components/TrialAccess.tsx",
+    "line": 160,
+    "kind": "text control/status",
+    "source": "{!active && <button aria-pressed={!form} disabled={busy} onClick={() => setForm(false)}>{zh ? '已有邀请码，开始使用' : 'Use an invitation'}</button>}"
+  },
+  {
+    "file": "src/ui/components/TrialAccess.tsx",
+    "line": 161,
+    "kind": "text control/status",
+    "source": "<button className=\"trial-primary\" disabled={busy || pending || !config?.available || qualificationState === 'revoked'} onClick={() => { setKind(hasTrial ? 'extend' : 'new'); setForm(true); }}>{hasTrial ? (zh ? '申请延期 30 天' : 'Request 30-day extension') : (zh ? '申请 AI 试用' : 'Apply for AI trial')}</button>"
+  },
+  {
+    "file": "src/ui/components/TrialAccess.tsx",
+    "line": 162,
+    "kind": "text control/status",
+    "source": "{hasTrial && qualificationState !== 'expired' && qualificationState !== 'revoked' && <button disabled={busy || pending || !config?.available} onClick={() => { setKind('replace'); setForm(true); }}>{zh ? '申请补发／更换设备' : 'Request replacement / change device'}</button>}"
+  },
+  {
+    "file": "src/ui/components/TrialAccess.tsx",
+    "line": 168,
+    "kind": "text control/status",
+    "source": "<button type=\"submit\" className=\"trial-primary\" disabled={!loaded || !name.trim() || !code.trim()}>{busy ? (zh ? '正在启用…' : 'Activating…') : (zh ? '启用并开始制定计划' : 'Activate and start planning')}</button>"
+  },
+  {
+    "file": "src/ui/components/TrialAccess.tsx",
+    "line": 180,
+    "kind": "text control/status",
+    "source": "<button type=\"submit\" disabled={!proof}>{zh ? '提交申请' : 'Submit application'}</button><button type=\"button\" onClick={() => setForm(false)}>{zh ? '返回' : 'Back'}</button>"
+  },
+  {
+    "file": "src/ui/components/TrialAccess.tsx",
+    "line": 184,
+    "kind": "text control/status",
+    "source": "<button disabled={busy} onClick={() => void run(() => refresh())}>{zh ? '刷新状态' : 'Refresh status'}</button>"
+  },
+  {
+    "file": "src/ui/components/TrialAccess.tsx",
+    "line": 185,
+    "kind": "text control/status",
+    "source": "{receipt && <><button disabled={busy} onClick={() => setLink(`${location.origin}/trial#trial=${receipt}`)}>{zh ? '查看私密领取链接' : 'Show private claim link'}</button>{link && <label>{zh ? '请自行保管，不要公开分享' : 'Keep this private; do not share publicly'}<input readOnly value={link} onFocus={e => e.target.select()} /></label>}</>}"
+  },
+  {
+    "file": "src/ui/components/TrialAccess.tsx",
+    "line": 186,
+    "kind": "text control/status",
+    "source": "{onSkip && <button className=\"trial-skip\" onClick={onSkip}>{zh ? '先看看应用' : 'Explore the app first'}</button>}"
+  },
+  {
+    "file": "src/ui/components/WorkoutLifecycleControls.tsx",
+    "line": 12,
+    "kind": "text control/status",
+    "source": "<button disabled={busy} onClick={() => { setBusy(true); setError(''); void guidedService.workoutTransition(sessionId, !paused, revision).catch(reason => setError(String(reason))).finally(() => setBusy(false)); }}>{locale === 'zh' ? paused ? '恢复训练' : '暂停训练' : paused ? 'resume workout' : 'pause workout'}</button>"
+  },
+  {
+    "file": "src/ui/components/WorkoutLifecycleControls.tsx",
+    "line": 13,
+    "kind": "text control/status",
+    "source": "{error && <p role=\"alert\">{error}</p>}</section>;"
+  },
+  {
+    "file": "src/ui/components/WorkoutTimer.tsx",
+    "line": 87,
+    "kind": "text control/status",
+    "source": "<button type=\"button\" disabled={disabled||active} onClick={()=>void change({type:'start'},'exercise')}>{zh?'开始动作计时':'Start exercise timer'}</button>"
+  },
+  {
+    "file": "src/ui/components/WorkoutTimer.tsx",
+    "line": 89,
+    "kind": "text control/status",
+    "source": "<button type=\"button\" disabled={disabled||active} onClick={()=>void change({type:'start'},'rest')}>{zh?'开始休息计时':'Start rest timer'}</button>"
+  },
+  {
+    "file": "src/ui/components/WorkoutTimer.tsx",
+    "line": 90,
+    "kind": "text control/status",
+    "source": "{current?.status==='running'&&<button type=\"button\" disabled={disabled} onClick={()=>void change({type:'pause'})}>{zh?'暂停计时':'Pause timer'}</button>}"
+  },
+  {
+    "file": "src/ui/components/WorkoutTimer.tsx",
+    "line": 91,
+    "kind": "text control/status",
+    "source": "{current?.status==='paused'&&<button type=\"button\" disabled={disabled} onClick={()=>void change({type:'resume'})}>{zh?'继续计时':'Resume timer'}</button>}"
+  },
+  {
+    "file": "src/ui/components/WorkoutTimer.tsx",
+    "line": 92,
+    "kind": "text control/status",
+    "source": "{active&&<button type=\"button\" disabled={disabled} onClick={()=>void change({type:'stop'})}>{zh?'停止计时':'Stop timer'}</button>}"
+  },
+  {
+    "file": "src/ui/components/WorkoutTimer.tsx",
+    "line": 95,
+    "kind": "text control/status",
+    "source": "{current?.kind==='rest'&&display.finished&&<p role=\"alert\">{zh?'休息结束':'Rest finished'}</p>}"
+  },
+  {
+    "file": "src/ui/components/WorkoutTimer.tsx",
+    "line": 96,
+    "kind": "text control/status",
+    "source": "{(display.clockReversed||reversed)&&<p role=\"alert\">{zh?'设备时钟倒退，请核对时长':'Device clock moved backwards; review duration'}</p>}"
+  },
+  {
+    "file": "src/ui/components/WorkoutTimer.tsx",
+    "line": 97,
+    "kind": "text control/status",
+    "source": "{soundFailed&&<p role=\"alert\">{zh?'声音不可用，视觉提醒仍有效':'Sound unavailable; visual reminder remains'}</p>}"
+  },
+  {
+    "file": "src/ui/components/WorkoutTimer.tsx",
+    "line": 98,
+    "kind": "text control/status",
+    "source": "{error&&<p role=\"alert\">{error}</p>}<p aria-live=\"polite\">{message}</p>"
+  },
+  {
+    "file": "src/ui/pages/AiPage.tsx",
+    "line": 47,
+    "kind": "text control/status",
+    "source": "{mode!=='demo'&&<button disabled={busy} onClick={()=>void run(async()=>{switchClient(await createDemoAiClient(),'demo');})}>{t('Enter local demo','进入本地演示')}</button>}"
+  },
+  {
+    "file": "src/ui/pages/AiPage.tsx",
+    "line": 48,
+    "kind": "text control/status",
+    "source": "{mode!=='backend'&&<button disabled={busy} onClick={()=>void run(async()=>{switchClient(createFetchAiClient(),'backend');await readStatus('backend');})}>{t('Connect to backend','连接后端')}</button>}"
+  },
+  {
+    "file": "src/ui/pages/AiPage.tsx",
+    "line": 51,
+    "kind": "text control/status",
+    "source": "<form onSubmit={event=>{event.preventDefault();void run(async()=>{setStatus(undefined);await flow.current.client.redeem(code);await readStatus();});}}><fieldset disabled={mode==='disabled'||busy}><legend>{t('Trial qualification','试用资格')}</legend><label>{t('Invitation code','邀请码')}<input required value={code} onChange={e=>setCode(e.target.value)} autoComplete=\"off\"/></label><button type=\"submit\">{t('Redeem code','兑换邀请码')}</button><button type=\"button\" onClick={()=>void run(readStatus)}>{t('Refresh qualification','刷新资格')}</button></fieldset></form>"
+  },
+  {
+    "file": "src/ui/pages/AiPage.tsx",
+    "line": 54,
+    "kind": "text control/status",
+    "source": "<fieldset disabled={busy}><legend>{t('Goal understanding','目标理解')}</legend><label>{t('Goal text','目标文本')}<textarea disabled={!status?.aiEnabled} aria-label={t('Goal text','目标文本')} value={goal} onChange={e=>{change();setInterpretation('');setInterpretationReceipt(undefined);setGoal(e.target.value);flow.current.setGoal(e.target.value);}}/></label><button disabled={!goal.trim()||!status?.aiEnabled||requestsBlocked} onClick={()=>void run(async()=>{const capture=await contextService.capture();await flow.current.previewUnderstanding(locale,capture.restoreGeneration);sendingContext.current=capture;setManifest(undefined);setConfirmed(false);})}>{t('Preview goal sending','预览目标发送')}</button>"
+  },
+  {
+    "file": "src/ui/pages/AiPage.tsx",
+    "line": 55,
+    "kind": "text control/status",
+    "source": "<label>{t('Goal interpretation','目标理解')}<textarea disabled={!status?.aiEnabled&&!interpretationReceipt} aria-label={t('Goal interpretation','目标理解')} value={interpretation} onChange={e=>{setInterpretation(e.target.value);flow.current.confirmedGoal='';change();}}/></label>{interpretationReceipt&&<p aria-label={t('Interpretation source','理解来源')}>{receiptText(interpretationReceipt)}</p>}<button disabled={!interpretation.trim()||(!status?.aiEnabled&&!interpretationReceipt)} onClick={()=>{flow.current.confirmGoal(interpretation);change();update();}}>{t('Confirm goal interpretation','确认目标理解')}</button>{flow.current.confirmedGoal&&<p>{t('Goal interpretation is confirmed.','目标理解已确认。')}</p>}</fieldset>"
+  },
+  {
+    "file": "src/ui/pages/AiPage.tsx",
+    "line": 63,
+    "kind": "text control/status",
+    "source": "<button type=\"submit\" disabled={requestsBlocked||!status?.aiEnabled}>{t('Preview plan sending','预览计划发送')}</button></fieldset></form>"
+  },
+  {
+    "file": "src/ui/pages/AiPage.tsx",
+    "line": 65,
+    "kind": "text control/status",
+    "source": "<label><input type=\"checkbox\" disabled={busy} checked={confirmed} onChange={e=>setConfirmed(e.target.checked)}/>{t('I confirm this sending scope','我确认本次发送范围')}</label><button disabled={busy||!confirmed||requestsBlocked} onClick={()=>void run(async()=>{const current=flow.current.preview;if(!current)throw new Error('CONFIRMATION_REQUIRED');const capture=await contextService.capture(current.operation==='generate'&&current.history?{from:current.history.range.from,to:current.history.range.to,sources:JSON.parse(current.history.text).sources,maxUtf8Bytes:32000}:undefined);if(!sendingContext.current)throw new Error('STALE_SENDING_SCOPE');assertPreviewCurrent(current,sendingContext.current,capture);flow.current.confirmSending(current.sendConfirmation);const sending=flow.current.send();update();await sending;setConfirmed(false);if(flow.current.accounting==='pending')setPendingAccounting(true);if(flow.current.error.startsWith('CANCELLED'))return;"
+  },
+  {
+    "file": "src/ui/pages/AiPage.tsx",
+    "line": 67,
+    "kind": "text control/status",
+    "source": "{busy&&<p aria-live=\"polite\">{t('Processing…','处理中…')}</p>}{flow.current.busy&&<button onClick={()=>{void flow.current.cancel().then(()=>{setError(flow.current.error);update();});}}>{t('Cancel request','取消请求')}</button>}"
+  },
+  {
+    "file": "src/ui/pages/AiPage.tsx",
+    "line": 68,
+    "kind": "text control/status",
+    "source": "{mode==='backend'&&pendingAccounting&&<p role=\"status\">{statusFeedback(planReceipt?.source==='backend'||interpretationReceipt?.source==='backend'?'CANDIDATE_ACCOUNTING_PENDING':'ACCOUNTING_PENDING',locale)}</p>}"
+  },
+  {
+    "file": "src/ui/pages/AiPage.tsx",
+    "line": 71,
+    "kind": "text control/status",
+    "source": "{errorText&&<p role=\"alert\">{errorText}</p>}{message&&<p role=\"status\">{message}</p>}"
+  },
+  {
+    "file": "src/ui/pages/CatalogPage.tsx",
+    "line": 52,
+    "kind": "text control/status",
+    "source": "<div className=\"v31-content-toolbar\"><label className=\"v31-checkbox\"><input type=\"checkbox\" checked={favoriteOnly} onChange={event => setFavoriteOnly(event.target.checked)} />{tr('只看已收藏', 'Favorites only')}</label><span role=\"status\" className=\"v31-badge\">{results.length} {tr('个动作', 'exercises')}</span><small>{tr('收藏保存在此浏览器，不包含在训练 JSON 备份中；恢复训练数据不会清除收藏。', 'Favorites stay in this browser, outside training JSON backups. Restoring training data keeps favorites.')}</small></div>"
+  },
+  {
+    "file": "src/ui/pages/CatalogPage.tsx",
+    "line": 53,
+    "kind": "text control/status",
+    "source": "{storageError && <p role=\"alert\">{storageError}</p>}"
+  },
+  {
+    "file": "src/ui/pages/CatalogPage.tsx",
+    "line": 54,
+    "kind": "text control/status",
+    "source": "{results.length === 0 && <section className=\"v31-empty\"><h2>{t('catalogNoResults')}</h2><p>{tr('试试其他名称或减少筛选条件。', 'Try another name or fewer filters.')}</p><button onClick={() => { setQuery(''); setCategory(undefined); setEquipment(undefined); setMuscle(''); setFavoriteOnly(false); }}>{tr('清除筛选', 'Clear filters')}</button></section>}"
+  },
+  {
+    "file": "src/ui/pages/CatalogPage.tsx",
+    "line": 58,
+    "kind": "symbol",
+    "source": "<div className=\"v31-exercise-art\">{media && <img src={media.illustration} alt=\"\" width=\"280\" height=\"160\" loading=\"lazy\" />}<button className=\"v31-favorite\" aria-label={tr('收藏', 'Favorite') + ' ' + exercise.name[locale]} aria-pressed={favorites.includes(exercise.id)} onClick={() => toggleFavorite(exercise.id)}>{favorites.includes(exercise.id) ? '★' : '☆'}</button></div>"
+  },
+  {
+    "file": "src/ui/pages/CatalogPage.tsx",
+    "line": 60,
+    "kind": "text control/status",
+    "source": "<button aria-expanded={isOpen} aria-controls={'exercise-' + exercise.id} onClick={() => setExpanded(current => isOpen ? current.filter(id => id !== exercise.id) : [...current, exercise.id])}>{isOpen ? tr('收起详情', 'Hide details') : tr('查看动作详情', 'View exercise details')}</button>"
+  },
+  {
+    "file": "src/ui/pages/GuidedDialoguePage.tsx",
+    "line": 258,
+    "kind": "text control/status",
+    "source": "<section className=\"v31-ai-access\"><div><strong>{zh ? 'AI 资格与额度' : 'AI access & allowance'}</strong><p role=\"status\">{checking ? (zh ? '正在更新…' : 'Updating…') : qualification ? `${zh ? '本月剩余 理解 / 生成：' : 'Remaining understanding / generation: '}${Math.max(0, qualification.limits.understand - qualification.used.understand)} / ${Math.max(0, qualification.limits.generate - qualification.used.generate)}` : (zh ? '资格及额度未知，请查询或前往试用资格。' : 'Access and allowance unknown. Refresh or check trial access.')}</p>{qualification && !qualification.aiEnabled && <p>{statusFeedback('AI_DISABLED', locale)}</p>}{accountingPending && <p>{statusFeedback('ACCOUNTING_PENDING', locale)}</p>}</div><div className=\"v31-ai-actions\"><button disabled={busy || checking} onClick={() => void run(refreshQualification)}>{zh ? '刷新资格' : 'Refresh access'}</button><Link to=\"/trial\">{zh ? '试用资格 / 邀请码' : 'Trial access / invitation'}</Link></div></section>"
+  },
+  {
+    "file": "src/ui/pages/GuidedDialoguePage.tsx",
+    "line": 259,
+    "kind": "text control/status",
+    "source": "{error && <p className=\"v31-ai-feedback\" role=\"alert\">{error}</p>}{notice && <p role=\"status\">{notice}</p>}"
+  },
+  {
+    "file": "src/ui/pages/GuidedDialoguePage.tsx",
+    "line": 260,
+    "kind": "text control/status",
+    "source": "{step === 4 && !saved && candidateConflicts.length > 0 && <p className=\"v31-ai-feedback\" role=\"status\">{zh ? '日期冲突：' : 'Date conflicts: '}{candidateConflicts.join(' · ')}. {zh ? '候选及编辑仍保留，任何冲突都会阻止整批保存。' : 'Your proposal and edits remain available. Any conflict prevents the entire save.'}</p>}"
+  },
+  {
+    "file": "src/ui/pages/GuidedDialoguePage.tsx",
+    "line": 261,
+    "kind": "text control/status",
+    "source": "{!ready && <p role=\"status\">{zh ? '正在读取本地资料…' : 'Loading local information…'}</p>}"
+  },
+  {
+    "file": "src/ui/pages/GuidedDialoguePage.tsx",
+    "line": 262,
+    "kind": "text control/status",
+    "source": "{sending && <button onClick={() => void stopWaiting()}>{zh ? '停止等待（费用可能已产生）' : 'Stop waiting (costs may apply)'}</button>}"
+  },
+  {
+    "file": "src/ui/pages/GuidedDialoguePage.tsx",
+    "line": 263,
+    "kind": "text control/status",
+    "source": "{!onboardingConfirmed && <p role=\"alert\">{zh ? '资料已修改，请重新核对并确认。' : 'Your profile changed. Review and confirm it again.'} <Link to=\"/onboarding\">{zh ? '核对资料' : 'Review profile'}</Link></p>}{ageBlocked && <p role=\"alert\">{zh ? '成人 AI 暂不可用：请在引导资料中确认年龄。12–17岁仅使用本地引导和手动训练。' : 'Adult AI is unavailable. Confirm age in onboarding; ages 12–17 can use local onboarding and manual training.'} <Link to=\"/onboarding\">{zh ? '查看引导资料' : 'Review onboarding'}</Link></p>}{archive && <aside className=\"v31-ai-feedback\"><p>{zh ? '响应保留在当前页面，尚未完整存档；刷新可能丢失。重试只保存已有响应，不再次调用 AI。' : 'The response is retained on this page but not fully archived; refreshing may lose it. Retry saves it without another AI call.'}</p><button disabled={busy} onClick={() => void run(() => archiveResponse(archive))}>{zh ? '重试保存响应' : 'Retry archiving response'}</button></aside>}"
+  },
+  {
+    "file": "src/ui/pages/GuidedDialoguePage.tsx",
+    "line": 270,
+    "kind": "text control/status",
+    "source": "<button className=\"v31-primary\" disabled={!canSend || !goalConsent || !goal.trim() || !!archive} onClick={() => void run(sendGoal)}>{sending ? (zh ? '正在理解…' : 'Understanding…') : attempt.current?.request.purpose === 'understand' ? (zh ? '重试本次理解请求' : 'Retry this understanding request') : (zh ? '理解目标' : 'Understand goal')}</button></fieldset>"
+  },
+  {
+    "file": "src/ui/pages/GuidedDialoguePage.tsx",
+    "line": 273,
+    "kind": "text control/status",
+    "source": "{step === 2 && <><h2>{zh ? '02 · 选择具体训练日期' : '02 · Choose exact training dates'}</h2><p>{zh ? `可跨月、不连续选择。当前每次最多 ${maxDates} 个日期，日期范围最多 31 天；每一天都是独立计划。` : `Choose nonconsecutive dates across months: up to ${maxDates} dates within 31 days. Each day is an independent plan.`}</p>{dates.length>maxDates&&<p role=\"alert\">{zh?`当前服务每次最多允许 ${maxDates} 个日期，请减少所选日期。`:`The current service allows up to ${maxDates} dates. Reduce your selection.`}</p>}<div className=\"v31-ai-calendar\"><PlanDatePicker locale={locale} today={dateInZone(Date.now(), zone)} selected={dates} onChange={changeDates} occupied={occupied} maxDates={maxDates} /><div><p>{zone} · {dates.length} {zh ? '个训练日' : 'training days'}</p>{slots.map(slot => <fieldset key={slot.date} disabled={busy}><legend>{slot.date}</legend><label>{zh ? '开始时间' : 'Start time'}<input type=\"time\" value={slot.startTime} onChange={event => {invalidatePlan(); setSlots(values => values.map(value => value.date === slot.date ? {...value, startTime: event.target.value} : value));}} /></label><label>{zh ? '训练分钟数' : 'Minutes'}<input type=\"number\" min=\"1\" max=\"240\" value={slot.durationMinutes} onChange={event => {invalidatePlan(); setSlots(values => values.map(value => value.date === slot.date ? {...value, durationMinutes: Number(event.target.value)} : value));}} /></label><label>{zh ? '本日训练重点（可选）' : 'Focus for this day (optional)'}<input value={slot.focus} onChange={event => {invalidatePlan(); setSlots(values => values.map(value => value.date === slot.date ? {...value, focus: event.target.value} : value));}} /></label></fieldset>)}</div></div>{conflict && <p role=\"alert\">{zh ? '有日期已被占用，请重新选择。' : 'A date is now occupied. Review your selection.'}</p>}</>}"
+  },
+  {
+    "file": "src/ui/pages/GuidedDialoguePage.tsx",
+    "line": 275,
+    "kind": "text control/status",
+    "source": "{!preview ? <button disabled={busy} onClick={() => void run(previewPlan)}>{zh ? '更新发送预览' : 'Update sending preview'}</button> : <><details open><summary>{zh ? '本次实际发送内容' : 'Exact information sent this time'}</summary><pre>{JSON.stringify({ ...preview.request.scope, confirmedSummary: preview.request.confirmedSummary, dates: preview.request.dates, schedule: preview.request.schedule, timeZone: preview.request.timeZone }, null, 2)}</pre></details><label className=\"v31-ai-consent\"><input type=\"checkbox\" disabled={busy} checked={sendConsent} onChange={event => setSendConsent(event.target.checked)} />{zh ? '我确认上述字段与日期，同意生成计划。请求受理后使用 1 次生成额度；取消或超时不代表免计费。' : 'I confirm these fields and dates and consent to plan generation. An accepted request uses 1 generation allowance; cancellation or timeout may still incur costs.'}</label></>}"
+  },
+  {
+    "file": "src/ui/pages/GuidedDialoguePage.tsx",
+    "line": 277,
+    "kind": "text control/status",
+    "source": "{step === 4 && candidate && <><h2>{zh ? '04 · 审阅候选，然后保存' : '04 · Review your proposal, then save'}</h2><p role=\"status\">{saved ? (zh ? '保存成功：已加入训练日历。' : 'Saved to your training calendar.') : (zh ? '候选尚未保存。AI 已计费不代表计划已经保存。' : 'Proposal not saved. AI usage does not mean the plan has been saved.')}</p>{!usedHistory && <p>{zh ? '本次未参考你的训练历史' : 'Your training history was not used.'}</p>}{editing && !saved && <p role=\"status\">{zh ? '编辑中 · 更改仅保留在候选中' : 'Editing · changes remain in the proposal'}</p>}<CandidateEditor candidate={candidate} locale={locale} disabled={busy || saved} onChange={value => {setCandidate(value); setEditing(true); setSaveConsent(false);}} />{candidate.restoreGeneration !== generation && <p role=\"alert\">{zh ? '本地数据库已恢复，旧候选不能保存。请重新制定计划。' : 'Your local database was restored. This previous proposal cannot be saved.'}</p>}<label className=\"v31-ai-consent\"><input type=\"checkbox\" checked={saveConsent} disabled={saved || busy} onChange={event => setSaveConsent(event.target.checked)} />{zh ? '我已逐日检查内容与时间，确认一次性保存这些独立日计划。任一日期冲突则全部不保存。' : 'I reviewed each day and time and confirm saving these independent daily plans together. Any conflict prevents the entire save.'}</label><button className=\"v31-primary\" disabled={busy || saved || !saveConsent || !!archive || candidate.restoreGeneration !== generation} onClick={() => void run(async () => {await guidedService.saveIndependentCandidate(candidate, guidedServiceLimits.maxDays); setSaved(true); setNotice(zh ? '计划已保存；原有计划和历史保持独立。' : 'Plan saved; existing plans and history remain independent.');})}>{saved ? (zh ? '已保存' : 'Saved') : (zh ? '确认保存全部日计划' : 'Confirm & save all daily plans')}</button>{saved && <Link to=\"/plans\">{zh ? '查看训练日历' : 'View training calendar'}</Link>}</>}"
+  },
+  {
+    "file": "src/ui/pages/GuidedDialoguePage.tsx",
+    "line": 279,
+    "kind": "symbol",
+    "source": "<footer className=\"v31-ai-footer\"><button disabled={busy || step === 1} onClick={() => {setStep(value => value - 1); setSendConsent(false);}}>{zh ? '← 上一步' : '← Back'}</button><span>{title[step - 1]}</span>{step === 1 && <button className=\"v31-primary\" disabled={busy || !approved || !summary || questions.length > 0} onClick={() => setStep(2)}>{zh ? '选择日期 →' : 'Choose dates →'}</button>}{step === 2 && <button className=\"v31-primary\" disabled={busy || !dates.length || dates.length > maxDates || conflict || !approved} onClick={() => void run(previewPlan)}>{zh ? '核对外发 →' : 'Review sending →'}</button>}{step === 3 && <button className=\"v31-primary\" disabled={!canSend || !preview || !sendConsent || !!archive} onClick={() => void run(() => send(attempt.current?.request.purpose === 'program' ? attempt.current : preview!))}>{sending ? (zh ? '正在生成…' : 'Generating…') : attempt.current?.request.purpose === 'program' ? (zh ? '重试本次生成请求' : 'Retry this generation request') : (zh ? '生成候选计划 →' : 'Generate proposal →')}</button>}</footer>"
+  },
+  {
+    "file": "src/ui/pages/GuidedHome.tsx",
+    "line": 93,
+    "kind": "text control/status",
+    "source": "{error && !showOnboarding && <p role=\"alert\">{error}</p>}"
+  },
+  {
+    "file": "src/ui/pages/GuidedHome.tsx",
+    "line": 100,
+    "kind": "text control/status",
+    "source": "<button className=\"guided-dashboard-link\" onClick={() => onboardingOnly ? navigate('/plans') : setPanel(true)}>{zh ? '先查看记录面板' : 'view your dashboard first'}</button>"
+  },
+  {
+    "file": "src/ui/pages/GuidedHome.tsx",
+    "line": 109,
+    "kind": "text control/status",
+    "source": "{!current && <button onClick={() => { setPanel(false); setRevisit(true); }}>{zh ? '继续欢迎引导' : 'continue onboarding'}</button>}"
+  },
+  {
+    "file": "src/ui/pages/GuidedHome.tsx",
+    "line": 115,
+    "kind": "text control/status",
+    "source": "{(['accepted', 'later', 'declined'] as const).map((decision, index) => <button key={decision} disabled={busy} onClick={() => { void run(async revision => { await guidedService.decideInvitation(invitation.id, decision, revision); if (decision === 'accepted') navigate('/ai'); }).catch(() => {}); }}>{(zh ? ['聊一聊', '稍后', '不用了'] : ['talk', 'later', 'no thanks'])[index]}</button>)}"
+  },
+  {
+    "file": "src/ui/pages/GuidedHome.tsx",
+    "line": 129,
+    "kind": "symbol",
+    "source": "<GuidedTimeline locale={locale} entries={state.events.map(item => ({ id: item.id, date: item.createdAt, title: ({ rescheduled: zh ? '训练时间已调整' : 'Training time changed', created: zh ? '新计划已生效' : 'new plan active', paused: zh ? '计划暂停' : 'plan paused', resumed: zh ? '计划恢复' : 'plan resumed', terminated: zh ? '计划终止' : 'plan stopped', replaced: zh ? '旧计划存档' : 'old plan archived', workout_paused: zh ? '训练暂停' : 'workout paused', workout_resumed: zh ? '训练恢复' : 'workout resumed', workout_ended: zh ? '训练结束' : 'workout ended' })[item.action], detail: item.reason, result: `${stateLabel(item.before)} → ${stateLabel(item.after)}` }))} />"
+  },
+  {
+    "file": "src/ui/pages/ManagementPage.tsx",
+    "line": 41,
+    "kind": "text control/status",
+    "source": "<nav aria-label={zh ? '管理导航' : 'Management navigation'}>{(['applications','trials','budget','audit'] as const).map((name, i) => <button key={name} aria-current={tab === name ? 'page' : undefined} onClick={() => setTab(name)}>{(zh ? ['申请审核','试用资格','预算与用量','操作记录'] : ['Applications','Trials','Budget & usage','Audit log'])[i]}</button>)}</nav>"
+  },
+  {
+    "file": "src/ui/pages/ManagementPage.tsx",
+    "line": 43,
+    "kind": "text control/status",
+    "source": "<main><header><div><span className=\"trial-kicker\">FITNESS CONTROL</span><h1>{zh ? '应用管理' : 'Application management'}</h1></div><div><button disabled={busy} onClick={() => void run(async () => {})}>{zh ? '刷新' : 'Refresh'}</button><button onClick={() => void i18n.changeLanguage(zh ? 'en' : 'zh')}>{zh ? 'English' : '中文'}</button></div></header>"
+  },
+  {
+    "file": "src/ui/pages/ManagementPage.tsx",
+    "line": 44,
+    "kind": "text control/status",
+    "source": "{error && <p role=\"alert\">{error}{data && (zh ? ' 以下保留上次成功读取的数据，当前状态未知。' : ' Values below are from the last successful read; current status is unknown.')}</p>}{busy && <p role=\"status\">{zh ? '正在处理…' : 'Working…'}</p>}"
+  },
+  {
+    "file": "src/ui/pages/ManagementPage.tsx",
+    "line": 48,
+    "kind": "text control/status",
+    "source": "{data && <p>{zh ? '最后读取：' : 'Last read: '}{new Date(data.report.capturedAt).toLocaleString()} · {data.policy.timeZone}{data.service.reconciliationRequired && <strong role=\"alert\"> {zh ? '账本需要核对，暂停新增调用' : 'Reconciliation required; new calls blocked'}</strong>}</p>}"
+  },
+  {
+    "file": "src/ui/pages/ManagementPage.tsx",
+    "line": 53,
+    "kind": "text control/status",
+    "source": "{a.kind === 'new' && !a.subjectId && (a.state === 'pending' || a.state === 'approved') && <button disabled={busy} onClick={() => { if (confirm(zh ? '立即开通30天？用户在原申请浏览器刷新即可使用，无需激活码。不会重置用量或增加项目预算。' : 'Activate 30 days now? The applicant can refresh the original browser without a code. Usage and project budget are unchanged.')) void run(() => trialApi('management/application-activate', { id: a.id })); }}>{zh ? '免激活码激活' : 'Activate without code'}</button>}"
+  },
+  {
+    "file": "src/ui/pages/ManagementPage.tsx",
+    "line": 57,
+    "kind": "text control/status",
+    "source": "<button disabled={busy} onClick={() => void run(() => trialApi('management/application-review', { id: a.id, decision: 'approve', reason: reasons[a.id] ?? '' }))}>{zh ? '批准' : 'Approve'}</button>"
+  },
+  {
+    "file": "src/ui/pages/ManagementPage.tsx",
+    "line": 58,
+    "kind": "text control/status",
+    "source": "<button disabled={busy || !reasons[a.id]?.trim()} onClick={() => void run(() => trialApi('management/application-review', { id: a.id, decision: 'reject', reason: reasons[a.id] }))}>{zh ? '拒绝' : 'Reject'}</button></>}"
+  },
+  {
+    "file": "src/ui/pages/ManagementPage.tsx",
+    "line": 59,
+    "kind": "text control/status",
+    "source": "</article>)}<button disabled={busy || !data} onClick={() => void run(() => trialApi('management/application-retention', {}))}>{zh ? '清理已超过保留期的申请资料' : 'Clear application details past retention'}</button></section>}"
+  },
+  {
+    "file": "src/ui/pages/ManagementPage.tsx",
+    "line": 60,
+    "kind": "text control/status",
+    "source": "{tab === 'trials' && <section><h2>{zh ? '试用资格' : 'Trial qualifications'}</h2>{data && <ManualInvites zh={zh} invites={data.invites ?? []} busy={busy} run={run} />}{data?.report.subjects.map(s => <article className=\"management-item\" key={s.subjectId}><strong>{s.subjectId}</strong><p>{new Date(s.expiresAt).toLocaleString()} · {s.revoked ? (zh ? '已撤销' : 'Revoked') : s.expired ? (zh ? '已到期' : 'Expired') : (zh ? '有效' : 'Active')}</p><button disabled={busy || s.revoked} onClick={() => { if (confirm(zh ? '撤销此资格？已保存训练不受影响。' : 'Revoke this trial? Saved training is unaffected.')) void run(() => trialApi('management/revoke', { subjectId: s.subjectId })); }}>{zh ? '撤销资格' : 'Revoke trial'}</button>"
+  },
+  {
+    "file": "src/ui/pages/ManagementPage.tsx",
+    "line": 62,
+    "kind": "text control/status",
+    "source": "<button disabled={busy || s.expired} onClick={() => { if (confirm(zh ? '为此用户生成新激活码？旧会话和旧码立即失效；原有效期和已用次数保留。新码7天内兑换，且不超过原有效期。' : 'Generate a replacement code? Existing sessions and codes stop working immediately. Expiry and usage stay unchanged. Redeem within 7 days or the original expiry, whichever is earlier.')) void run(async () => { setReplacement(undefined); setReplacement(await trialApi('management/reissue', { subjectId: s.subjectId })); }); }}>{zh ? '生成此用户激活码' : 'Generate user activation code'}</button>"
+  },
+  {
+    "file": "src/ui/pages/ManagementPage.tsx",
+    "line": 64,
+    "kind": "text control/status",
+    "source": "<button disabled={busy} onClick={() => { if (confirm(zh ? '删除此账号？资格、登录会话和激活码立即失效，并从用户列表移除。保留费用、用量和操作记录；不删除设备上的训练数据。' : 'Delete this account? Access, sessions and codes stop working immediately and the account leaves this list. Billing, usage and audit records remain. Device training data is unchanged.')) void run(async () => { await trialApi('management/subject-delete', { subjectId: s.subjectId }); if (replacement?.subjectId === s.subjectId) setReplacement(undefined); }); }}>{zh ? '删除账号' : 'Delete account'}</button>"
+  },
+  {
+    "file": "src/ui/pages/ManagementPage.tsx",
+    "line": 69,
+    "kind": "text control/status",
+    "source": "<button disabled={busy || s.revoked || s.expired || (!quotaReasons[s.subjectId]?.trim() && !quotaRetries.current[s.subjectId])} onClick={() => restoreQuota(q)}>{quotaRetries.current[s.subjectId] ? (zh ? '重试同一次恢复' : 'Retry same restoration') : (zh ? '刷新额度' : 'Refresh quota')}</button>"
+  },
+  {
+    "file": "src/ui/pages/ManagementPage.tsx",
+    "line": 70,
+    "kind": "text control/status",
+    "source": "{quotaRetries.current[s.subjectId] && <button disabled={busy} onClick={() => { if (confirm(zh ? '请先刷新并核对操作记录。确认结束此次重试？这不会撤销可能已完成的恢复。' : 'Refresh and check the audit log first. End this retry? This does not undo a restoration that may have completed.')) { delete quotaRetries.current[s.subjectId]; setQuotaReasons(values => ({ ...values, [s.subjectId]: '' })); } }}>{zh ? '结束此次重试' : 'End this retry'}</button>}"
+  },
+  {
+    "file": "src/ui/pages/ManagementPage.tsx",
+    "line": 74,
+    "kind": "text control/status",
+    "source": "{tab === 'budget' && <section><h2>{zh ? '费用核算' : 'Cost reconciliation'}</h2><p>{zh ? '预留不是实际费用。仅依据供应商账单核算；无法归属的费用继续保留。' : 'Reservations are not actual charges. Settle only against supplier billing evidence; retain unresolved amounts.'}</p>{data?.report.requests.map(r => <article key={`${r.subjectId}:${r.requestId}`} className=\"management-item\"><strong>{r.requestId}</strong><p>{r.operation} · {r.period} · {r.status} · {money(r.boundFen)}</p>{r.status === 'pending' && <><label>{zh ? '已核对实际费用（分）' : 'Verified actual cost (fen)'}<input type=\"number\" min=\"0\" step=\"1\" value={costs[`${r.subjectId}:${r.requestId}`] ?? ''} onChange={e => setCosts({ ...costs, [`${r.subjectId}:${r.requestId}`]: e.target.value })} /></label><button disabled={busy || !/^\\d+$/.test(costs[`${r.subjectId}:${r.requestId}`] ?? '')} onClick={() => { if (confirm(zh ? '确认已核对账单并按此金额结算？' : 'Confirm the bill was verified and settle this amount?')) void run(() => trialApi('management/settle', { subjectId: r.subjectId, requestId: r.requestId, actualCost: Number(costs[`${r.subjectId}:${r.requestId}`]) })); }}>{zh ? '确认核算' : 'Confirm settlement'}</button></>}</article>)}</section>}"
+  },
+  {
+    "file": "src/ui/pages/OnboardingV4Page.tsx",
+    "line": 33,
+    "kind": "text control/status",
+    "source": "if(!ready)return <p role=\"status\">{error||tr('正在读取本地资料…','Loading local answers…')}</p>;"
+  },
+  {
+    "file": "src/ui/pages/OnboardingV4Page.tsx",
+    "line": 37,
+    "kind": "text control/status",
+    "source": "{error&&<p role=\"alert\">{error}</p>}"
+  },
+  {
+    "file": "src/ui/pages/OnboardingV4Page.tsx",
+    "line": 39,
+    "kind": "symbol",
+    "source": "{options.length>0&&<div className=\"ob4-options\" role=\"group\" aria-label={questionTitles[key][zh?0:1]}>{options.map(([id,label])=><button type=\"button\" key={id} aria-pressed={selected.includes(id)} onClick={()=>pick(id)}><span aria-hidden=\"true\">{selected.includes(id)?'✓':'○'}</span>{zh?(key==='biologicalSex'?id==='女性'?'女':'男':id):label}</button>)}</div>}"
+  },
+  {
+    "file": "src/ui/pages/OnboardingV4Page.tsx",
+    "line": 44,
+    "kind": "text control/status",
+    "source": "{key==='age'&&ageAccess==='minor'&&<p role=\"status\">{tr('12–17岁可使用本地引导和手动训练。成人AI训练建议暂不开放。','Ages 12–17 can use local onboarding and manual workouts. Adult AI advice is unavailable.')}</p>}"
+  },
+  {
+    "file": "src/ui/pages/OnboardingV4Page.tsx",
+    "line": 45,
+    "kind": "text control/status",
+    "source": "</div></>:<div className=\"ob4-summary\">{onboardingKeys.map((item,index)=><article key={item}><div><strong>{questionTitles[item][zh?0:1]}</strong><p>{answered(answers,item)===undefined?tr('未知 / 已跳过','Unknown / skipped'):item==='schedule'?`${(answered(answers,item) as string[])[0]}:00 · ${(answered(answers,item) as string[])[1]} ${tr('分钟','min')}`:displayAnswer(answered(answers,item)!,locale)+(item in wheelRanges ? ' '+(item==='age'?tr('岁','years'):item==='weightKg'?'kg':'cm'):'')}</p></div><button onClick={()=>void go(index)}>{tr('修改','Edit')} {index+1}</button></article>)}<p>{tr('资料体重不会自动记入身体测量历史。','Profile weight does not create a measurement history entry.')}</p>{ageAccess!=='adult'&&<p>{tr('年龄未确认成年时，不开放成人AI；手动训练不受影响。','Adult AI is unavailable until adult eligibility is confirmed. Manual workouts remain available.')}</p>}</div>}"
+  },
+  {
+    "file": "src/ui/pages/OnboardingV4Page.tsx",
+    "line": 46,
+    "kind": "symbol",
+    "source": "<div className=\"ob4-actions\"><button disabled={busy||failed.current} onClick={()=>step?void go(step-1):void leave()}>{step?tr('上一步','Back'):tr('暂时离开','Leave for now')}</button>{step<12?<><button disabled={busy||failed.current} onClick={()=>void go(step+1,true)}>{tr('跳过此题','Skip')}</button><button className=\"ob4-primary\" disabled={busy||failed.current||!answers[key]||(key==='schedule'&&Array.isArray(value)&&value.includes(''))} onClick={()=>void go(step+1)}>{tr('下一步 →','Next →')}</button></>:<button className=\"ob4-primary\" disabled={busy||failed.current} onClick={()=>void confirm()}>{complete?tr('继续','Continue'):tr('确认资料','Confirm profile')}</button>}</div>"
+  },
+  {
+    "file": "src/ui/pages/OnboardingV4Page.tsx",
+    "line": 47,
+    "kind": "text control/status",
+    "source": "{step>0&&<button className=\"ob4-leave\" disabled={busy} onClick={()=>void leave()}>{tr('保存进度，先去手动训练','Save progress and train manually')}</button>}"
+  },
+  {
+    "file": "src/ui/pages/PlansPage.tsx",
+    "line": 64,
+    "kind": "text control/status",
+    "source": "{error && <p role=\"alert\">{error}</p>}"
+  },
+  {
+    "file": "src/ui/pages/PlansPage.tsx",
+    "line": 65,
+    "kind": "text control/status",
+    "source": "{message && <p role=\"status\">{message}</p>}"
+  },
+  {
+    "file": "src/ui/pages/PlansPage.tsx",
+    "line": 71,
+    "kind": "text control/status",
+    "source": "<button disabled={busy} onClick={() => {"
+  },
+  {
+    "file": "src/ui/pages/PlansPage.tsx",
+    "line": 79,
+    "kind": "text control/status",
+    "source": "<button disabled={busy} onClick={() => {"
+  },
+  {
+    "file": "src/ui/pages/PlansPage.tsx",
+    "line": 85,
+    "kind": "text control/status",
+    "source": "{!retainedPlans.includes(plan.id) && <button disabled={busy} onClick={() => {"
+  },
+  {
+    "file": "src/ui/pages/PlansPage.tsx",
+    "line": 110,
+    "kind": "text control/status",
+    "source": "<button onClick={() => setViewing(undefined)}>{zh ? '关闭课表' : 'close schedule'}</button>"
+  },
+  {
+    "file": "src/ui/pages/PlansPage.tsx",
+    "line": 133,
+    "kind": "symbol",
+    "source": "{row.originalDate} → {row.scheduledDate} · {row.completedSessionId ? (zh ? '已完成' : 'completed')"
+  },
+  {
+    "file": "src/ui/pages/PlansPage.tsx",
+    "line": 141,
+    "kind": "text control/status",
+    "source": "<button disabled={busy} onClick={() => {"
+  },
+  {
+    "file": "src/ui/pages/PlansPage.tsx",
+    "line": 146,
+    "kind": "text control/status",
+    "source": "<button disabled={busy || row.status === 'skipped'} onClick={() => {"
+  },
+  {
+    "file": "src/ui/pages/PlansPage.tsx",
+    "line": 156,
+    "kind": "text control/status",
+    "source": "<button disabled={busy} onClick={() => {"
+  },
+  {
+    "file": "src/ui/pages/PlansWorkspace.tsx",
+    "line": 86,
+    "kind": "text control/status",
+    "source": "<header className=\"v31-page-heading\"><div><p className=\"v31-eyebrow\">FITNESS / PLANS</p><h1>{zh ? '训练计划' : 'Training plans'}</h1><p>{zh ? '安排每一天，按自己的节奏训练。' : 'Make room for training, one day at a time.'}</p></div><button type=\"button\" onClick={() => setTab('create')}>{zh ? '＋ 创建计划' : '+ Create plan'}</button></header>"
+  },
+  {
+    "file": "src/ui/pages/PlansWorkspace.tsx",
+    "line": 87,
+    "kind": "text control/status",
+    "source": "<div className=\"v31-plans-tabs\" role=\"tablist\" aria-label={zh ? '计划导航' : 'Plan sections'}>{(['calendar', 'upcoming', 'create', 'legacy'] as Tab[]).map((value, index) => <button type=\"button\" role=\"tab\" id={`plans-tab-${value}`} aria-controls={`plans-panel-${value}`} aria-selected={tab === value} tabIndex={tab === value ? 0 : -1} key={value} onClick={() => setTab(value)} onKeyDown={event => { if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); const next = (index + (event.key === 'ArrowRight' ? 1 : 3)) % 4; const name = (['calendar', 'upcoming', 'create', 'legacy'] as Tab[])[next]; setTab(name); document.getElementById(`plans-tab-${name}`)?.focus(); } }}>{({ calendar: zh ? '日历' : 'Calendar', upcoming: zh ? '即将到来' : 'Upcoming', create: zh ? '创建计划' : 'Create plan', legacy: zh ? '旧计划兼容' : 'Legacy plans' })[value]}</button>)}</div>"
+  },
+  {
+    "file": "src/ui/pages/PlansWorkspace.tsx",
+    "line": 88,
+    "kind": "text control/status",
+    "source": "{error && <p className=\"v31-notice\" role=\"alert\">{error}</p>}{message && <p className=\"v31-notice\" role=\"status\">{message}</p>}"
+  },
+  {
+    "file": "src/ui/pages/PlansWorkspace.tsx",
+    "line": 89,
+    "kind": "text control/status",
+    "source": "{snapshot?.calendarNeedsReview && <div className=\"v31-notice\" role=\"alert\"><p>{zh ? '部分日程在当前日历时区无法确定日期。新建和保存已暂停，请先复核时区；原始日期与训练历史未改变。' : 'Some schedules have an ambiguous date in this calendar time zone. New selection and saving are paused until the time zone is reviewed. Original dates and history are unchanged.'}</p><Link to=\"/settings?tab=profile\">{zh ? '复核资料时区' : 'Review profile time zone'}</Link></div>}"
+  },
+  {
+    "file": "src/ui/pages/PlansWorkspace.tsx",
+    "line": 91,
+    "kind": "text control/status",
+    "source": "{!snapshot && !error && <p role=\"status\">{zh ? '正在读取本地计划…' : 'Loading your local plans…'}</p>}"
+  },
+  {
+    "file": "src/ui/pages/PlansWorkspace.tsx",
+    "line": 93,
+    "kind": "text control/status",
+    "source": "<div className=\"v31-calendar-layout\"><div className=\"v31-card\"><div className=\"v31-button-row\"><button type=\"button\" aria-pressed={mode === 'view'} onClick={() => setMode('view')}>{zh ? '查看模式' : 'View mode'}</button><button type=\"button\" aria-pressed={mode === 'arrange'} disabled={snapshot?.calendarNeedsReview} onClick={() => setMode('arrange')}>{zh ? '＋ 安排训练' : '+ Arrange training'}</button></div>"
+  },
+  {
+    "file": "src/ui/pages/PlansWorkspace.tsx",
+    "line": 99,
+    "kind": "text control/status",
+    "source": "{mode === 'arrange' && <><p role=\"status\">{zh ? '已选择' : 'Selected'} {selected.length} / 14</p><div className=\"v31-date-chips\">{selected.map(date => <span key={date}>{date}</span>)}</div><div className=\"v31-button-row\"><button type=\"button\" onClick={clearDraft}>{zh ? '清空草稿' : 'Clear draft'}</button><button type=\"button\" disabled={!selected.length} onClick={() => { setManual(true); setTab('create'); }}>{zh ? '为这些日期创建计划' : 'Create for these dates'}</button></div></>}"
+  },
+  {
+    "file": "src/ui/pages/PlansWorkspace.tsx",
+    "line": 101,
+    "kind": "text control/status",
+    "source": "<div className=\"v31-card v31-time-section\"><button type=\"button\" aria-expanded={showTimeline} onClick={() => setShowTimeline(value => !value)}>{zh ? '查看月 / 日时间轴并调整训练时间' : 'View month / day timeline and adjust training time'}</button>"
+  },
+  {
+    "file": "src/ui/pages/PlansWorkspace.tsx",
+    "line": 106,
+    "kind": "symbol",
+    "source": "<div className=\"v31-create-choices\"><article className=\"v31-card\"><span className=\"v31-eyebrow\">01 / MANUAL</span><h2>{zh ? '手动制定' : 'Build your own'}</h2><p>{zh ? '选择日期、时间和动作。每一天独立编辑，统一确认后保存。无需 AI 额度。' : 'Choose dates, times and exercises. Edit each day independently and save together. No AI allowance needed.'}</p><button type=\"button\" aria-expanded={manual} disabled={snapshot?.calendarNeedsReview} onClick={() => setManual(true)}>{zh ? '开始手动创建' : 'Create manually'}</button></article><article className=\"v31-card\"><span className=\"v31-eyebrow\">02 / WITH AI</span><h2>{zh ? '与 AI 一起制定' : 'Plan with AI'}</h2><p>{zh ? '确认目标 → 选择日期 → 检查发送信息 → 审阅并保存。' : 'Confirm your goal → choose dates → review what is sent → review and save.'}</p><Link className=\"v31-primary-link\" to=\"/ai\" aria-disabled={snapshot?.calendarNeedsReview} onClick={event => { if (snapshot?.calendarNeedsReview) event.preventDefault(); }} state={{ selectedDates: selected }}>{zh ? '进入 AI 计划向导' : 'Open AI plan wizard'}</Link></article></div>"
+  },
+  {
+    "file": "src/ui/pages/PlansWorkspace.tsx",
+    "line": 110,
+    "kind": "text control/status",
+    "source": "{!!selected.length && <><label className=\"v31-save-consent\"><input type=\"checkbox\" checked={saveConfirmed} onChange={event => setSaveConfirmed(event.target.checked)} />{zh ? `我已核对这 ${selected.length} 天的时间和训练内容，同意保存到当前设备。` : `I reviewed the times and training for these ${selected.length} dates and agree to save them on this device.`}</label><p className=\"v31-help\">{zh ? '遇到日期冲突或资料变化时，整批不会写入，草稿保留。' : 'If dates conflict or data changes, nothing in the batch is written. Your draft is retained.'}</p><button type=\"submit\" disabled={!saveConfirmed || !snapshot || snapshot.calendarNeedsReview || busy}>{busy ? (zh ? '正在保存…' : 'Saving…') : (zh ? '确认保存全部日期' : 'Confirm and save all dates')}</button></>}"
+  },
+  {
+    "file": "src/ui/pages/PlansWorkspace.tsx",
+    "line": 157,
+    "kind": "text control/status",
+    "source": "<button type=\"button\" disabled={item.targetSets.length < 2} onClick={() => update(index, { ...item, targetSets: item.targetSets.filter((_, i) => i !== setIndex), setTimings: item.setTimings?.filter((_, i) => i !== setIndex) })}>{zh ? '删除此组' : 'Remove set'}</button></div>)}"
+  },
+  {
+    "file": "src/ui/pages/PlansWorkspace.tsx",
+    "line": 158,
+    "kind": "text control/status",
+    "source": "<div className=\"v31-button-row\"><button type=\"button\" onClick={() => { const target = defaultTarget(item.exerciseId); update(index, { ...item, targetSets: [...item.targetSets, target], setTimings: [...(item.setTimings ?? []), { durationSeconds: 'durationSeconds' in target ? target.durationSeconds : 30, restSeconds: 60 }] }); }}>{zh ? '＋ 添加一组' : '+ Add set'}</button><button type=\"button\" disabled={value.exercises.length < 2} onClick={() => onChange({ ...value, exercises: value.exercises.filter((_, i) => i !== index) })}>{zh ? '移除动作' : 'Remove exercise'}</button></div><label>{zh ? '动作备注（可选）' : 'Exercise notes (optional)'}<textarea value={item.notes ?? ''} onChange={event => update(index, { ...item, notes: event.target.value })} /></label></fieldset>)}"
+  },
+  {
+    "file": "src/ui/pages/PlansWorkspace.tsx",
+    "line": 159,
+    "kind": "text control/status",
+    "source": "<button type=\"button\" onClick={() => onChange({ ...value, exercises: [...value.exercises, ...newDraft().exercises.map(item => ({ ...item, order: value.exercises.length }))] })}>{zh ? '＋ 添加动作' : '+ Add exercise'}</button>"
+  },
+  {
+    "file": "src/ui/pages/ProgressPage.tsx",
+    "line": 128,
+    "kind": "text control/status",
+    "source": "<header className=\"v31-section-head\"><div><p className=\"v31-eyebrow\">YOUR TRAINING · PROGRESS</p><h1>{tr('看见真实进步，不追逐虚构分数', 'See real progress, not invented scores')}</h1><p>{tr('训练、完成率、负荷和身体记录分别解释，来自本机保存的真实记录。', 'Training, completion, load and body measurements tell different stories, based on records saved on this device.')}</p></div><button onClick={openEntry}>＋ {tr('记录身体变化', 'Record a measurement')}</button></header>"
+  },
+  {
+    "file": "src/ui/pages/ProgressPage.tsx",
+    "line": 129,
+    "kind": "text control/status",
+    "source": "<div className=\"v31-content-toolbar\" role=\"group\" aria-label={tr('查看范围', 'Date range')}><span>{tr('查看范围', 'Date range')}</span>{[7, 30, 90, 180].map(days => <button key={days} aria-pressed={range === days} onClick={() => { setRange(days); setFrom(rangeStart(today, days)); setTo(today); }}>{days} {tr('天', 'days')}</button>)}<small>{from} — {to}</small></div>"
+  },
+  {
+    "file": "src/ui/pages/ProgressPage.tsx",
+    "line": 131,
+    "kind": "text control/status",
+    "source": "{error && <p role=\"alert\">{error}</p>}"
+  },
+  {
+    "file": "src/ui/pages/ProgressPage.tsx",
+    "line": 132,
+    "kind": "text control/status",
+    "source": "{!report && !error && <p role=\"status\">{tr('正在读取本地记录…', 'Reading local records…')}</p>}"
+  },
+  {
+    "file": "src/ui/pages/ProgressPage.tsx",
+    "line": 142,
+    "kind": "text control/status",
+    "source": "<div className=\"v31-section-head\"><div><h2>{tr('训练趋势', 'Training trends')}</h2><p>{tr('仅统计已完成训练，缺失时长不补成零。', 'Completed sessions only. Missing duration is not zero.')}</p></div><div className=\"v31-chart-controls\" role=\"group\" aria-label={tr('趋势指标', 'Trend metric')}><button aria-pressed={chart === 'sessions'} onClick={() => setChart('sessions')}>{tr('训练次数', 'Workouts')}</button><button aria-pressed={chart === 'duration'} onClick={() => setChart('duration')}>{tr('训练时长', 'Duration')}</button></div></div>"
+  },
+  {
+    "file": "src/ui/pages/ProgressPage.tsx",
+    "line": 144,
+    "kind": "SVG",
+    "source": "{values.some(value => value !== null) ? <svg viewBox=\"0 0 600 205\" role=\"img\" aria-label={chart === 'sessions' ? tr('按实际日期的训练次数', 'Workouts by actual date') : tr('按实际日期的已记录时长，单位分钟', 'Recorded duration by actual date, in minutes')}>"
+  },
+  {
+    "file": "src/ui/pages/ProgressPage.tsx",
+    "line": 153,
+    "kind": "text control/status",
+    "source": "<section className=\"v31-progress-card v31-body-card\"><h2>{tr('身体记录', 'Body measurements')}</h2><p>{tr('长期观察比单次波动更有参考价值。', 'Longer-term observations matter more than a single fluctuation.')}</p><strong className=\"v31-body-value\">{change === null ? '—' : (change > 0 ? '+' : '') + number(change)} <small>kg</small></strong><p>{tr('所选范围内的体重变化', 'Weight change within this range')}</p><div className=\"v31-body-latest\">{latestWeight ? <><strong>{number(latestWeight.value)} kg</strong><time>{latestWeight.date}</time></> : <p>{tr('尚无体重观测；缺测不记为零。', 'No weight observations. Missing measurements are not zero.')}</p>}</div><button onClick={openEntry}>{tr('新增观测', 'Add measurement')}</button>"
+  },
+  {
+    "file": "src/ui/pages/ProgressPage.tsx",
+    "line": 154,
+    "kind": "text control/status",
+    "source": "<div ref={entryRef}>{entry && <form className=\"v31-measurement-form\" onSubmit={saveObservation}><label>{tr('测量指标', 'Measurement')}<select value={kind} disabled={saving} onChange={event => { setKind(event.target.value as Observation['kind']); setValue(''); }}>{Object.entries(kindLabels).map(([key, label]) => <option value={key} key={key}>{label}</option>)}</select></label><label>{kindLabels[kind]} ({units[kind]})<input ref={valueRef} required type=\"number\" step=\".1\" min={limits[kind][0]} max={limits[kind][1]} value={value} disabled={saving} onChange={event => setValue(event.target.value)} /></label><label>{tr('测量日期', 'Measurement date')}<input type=\"date\" required value={measurementDate} disabled={saving} onChange={event => setMeasurementDate(event.target.value)} /></label>{kind !== 'weight' && <label>{tr('测量方法或来源', 'Method or source')}<input required maxLength={200} value={method} disabled={saving} onChange={event => setMethod(event.target.value)} /></label>}<button type=\"submit\" disabled={saving}>{saving ? tr('保存中…', 'Saving…') : tr('确认保存测量值', 'Save measurement')}</button><button type=\"button\" disabled={saving} onClick={() => setEntry(false)}>{tr('收起', 'Close')}</button></form>}</div>"
+  },
+  {
+    "file": "src/ui/pages/ProgressPage.tsx",
+    "line": 155,
+    "kind": "text control/status",
+    "source": "{saveError && <p role=\"alert\">{saveError}</p>}{saveMessage && <p role=\"status\">{saveMessage}</p>}"
+  },
+  {
+    "file": "src/ui/pages/ProgressPage.tsx",
+    "line": 159,
+    "kind": "text control/status",
+    "source": "{report && history.length ? history.map(session => <article className=\"v31-history-row\" key={session.id}><div className=\"v31-history-summary\"><div><time>{session.localDate}</time><h3>{session.exerciseSnapshots.map(exercise => exercise.name[locale]).join(' · ') || tr('训练记录', 'Workout')}</h3><p>{session.timeZone} · {session.planVersionId ? tr('计划训练', 'Planned workout') : tr('临时训练', 'Temporary workout')}</p></div><button aria-expanded={selected === session.id} aria-controls={'history-' + session.id} onClick={() => setSelected(selected === session.id ? '' : session.id)}>{selected === session.id ? tr('收起详情', 'Hide details') : tr('查看历史详情', 'View history details')}</button></div>{selected === session.id && <div id={'history-' + session.id}><HistoryDetail session={session} sets={report.historySets.filter(set => set.sessionId === session.id)} schedule={report.historySchedules.find(row => row.completedSessionId === session.id)} locale={locale} /></div>}</article>) : <div className=\"v31-empty\">{tr('此筛选下暂无已完成训练。', 'No completed training in this selection.')}</div>}"
+  },
+  {
+    "file": "src/ui/pages/SettingsPage.tsx",
+    "line": 69,
+    "kind": "text control/status",
+    "source": "{error && <p role=\"alert\">{error}</p>}"
+  },
+  {
+    "file": "src/ui/pages/SettingsPage.tsx",
+    "line": 70,
+    "kind": "text control/status",
+    "source": "<div className=\"v31-tabs\" role=\"tablist\" aria-label={i18n.resolvedLanguage === 'zh'?'设置分类':'Settings sections'}>{tabs.map((name,index)=><button key={name} role=\"tab\" aria-selected={name===tab} aria-controls={`settings-${name}`} id={`tab-${name}`} onClick={()=>setParams({tab:name})}>{(i18n.resolvedLanguage==='zh'?['AI 资格与额度','备份恢复','偏好与资料','外观与版式']:['AI access & quota','Backup & restore','Profile & preferences','Appearance & layout'])[index]}</button>)}</div>"
+  },
+  {
+    "file": "src/ui/pages/SettingsPage.tsx",
+    "line": 75,
+    "kind": "text control/status",
+    "source": "<button disabled={!profile || busy} onClick={() => void run(async () => { setMemo(await trainingMemoryService.readTrainingMemo()); })}>{i18n.resolvedLanguage === 'zh' ? '读取全量训练备忘' : 'Read full training memo'}</button>"
+  },
+  {
+    "file": "src/ui/pages/SettingsPage.tsx",
+    "line": 77,
+    "kind": "text control/status",
+    "source": "<p role=\"status\">{status}</p>"
+  },
+  {
+    "file": "src/ui/pages/SettingsPage.tsx",
+    "line": 83,
+    "kind": "text control/status",
+    "source": "<button type=\"submit\">{l.save}</button><button type=\"button\" onClick={() => void save(true)}>{l.clear}</button>"
+  },
+  {
+    "file": "src/ui/pages/SettingsPage.tsx",
+    "line": 88,
+    "kind": "text control/status",
+    "source": "<button type=\"submit\">{l.saveWeight}</button>{editing && <button type=\"button\" onClick={() => { setEditing(undefined); setWeight(''); }}>{l.cancel}</button>}"
+  },
+  {
+    "file": "src/ui/pages/SettingsPage.tsx",
+    "line": 90,
+    "kind": "text control/status",
+    "source": "<ul aria-label={l.history}>{weights.map(row => <li key={row.id}>{row.localDate} · {row.weightGrams / 1000} kg · {row.timeZone} <button disabled={busy} onClick={() => { setEditing(row); setDate(row.localDate); setWeight(String(row.weightGrams / 1000)); }}>{l.edit}</button> <button disabled={busy} onClick={() => void run(async () => { await bodyWeightService.deleteBodyWeight(row.id, row.revision); setWeights(await bodyWeightService.listBodyWeights()); if (editing?.id === row.id) setEditing(undefined); setStatus(l.deleted); })}>{l.delete}</button></li>)}</ul>"
+  },
+  {
+    "file": "src/ui/pages/TodayPage.tsx",
+    "line": 42,
+    "kind": "text control/status",
+    "source": "{error&&<p role=\"alert\">{error}</p>}"
+  },
+  {
+    "file": "src/ui/pages/TodayPage.tsx",
+    "line": 43,
+    "kind": "text control/status",
+    "source": "{!!uncertain.length&&<p role=\"status\">{zh?`${uncertain.length} 个安排的日期在当前时区无法确定，未放入今日或后续日期。`:`${uncertain.length} schedules need time-zone review and are not assigned to Today or upcoming dates.`} <Link to=\"/plans\">{zh?'复核日历':'Review calendar'}</Link></p>}"
+  },
+  {
+    "file": "src/ui/pages/WorkoutPage.tsx",
+    "line": 99,
+    "kind": "symbol",
+    "source": "{dashboard && <Link className=\"dashboard-link\" to=\"/plans\">{zh ? '查看计划' : 'View plans'} ↗</Link>}"
+  },
+  {
+    "file": "src/ui/pages/WorkoutPage.tsx",
+    "line": 112,
+    "kind": "symbol",
+    "source": "<p>{row.originalDate === row.scheduledDate ? row.scheduledDate : `${row.originalDate} → ${row.scheduledDate}`}</p>"
+  },
+  {
+    "file": "src/ui/pages/WorkoutPage.tsx",
+    "line": 113,
+    "kind": "text control/status",
+    "source": "<button disabled={busy} onClick={() => start(row.id)}>{zh ? '开始计划训练' : 'Start planned workout'}</button>"
+  },
+  {
+    "file": "src/ui/pages/WorkoutPage.tsx",
+    "line": 118,
+    "kind": "symbol",
+    "source": "<Link className=\"dashboard-secondary-link\" to=\"/plans\">{zh ? '查看训练计划' : 'Explore plans'} →</Link>"
+  },
+  {
+    "file": "src/ui/pages/WorkoutPage.tsx",
+    "line": 129,
+    "kind": "symbol",
+    "source": "<button className=\"dashboard-start\" disabled={busy} onClick={() => start()}>{zh ? '开始临时训练' : 'Start temporary workout'} <span aria-hidden=\"true\">→</span></button>"
+  },
+  {
+    "file": "src/ui/pages/WorkoutPage.tsx",
+    "line": 136,
+    "kind": "text control/status",
+    "source": "</div> : <>{exerciseChoice}<button disabled={busy} onClick={() => start()}>{zh ? '开始临时训练' : 'Start temporary workout'}</button>{scheduleContent}</>;"
+  },
+  {
+    "file": "src/ui/pages/WorkoutPage.tsx",
+    "line": 141,
+    "kind": "text control/status",
+    "source": "<button onClick={() => { setReview(false); void refresh(); }}>{zh ? '开始下一次训练' : 'Start another workout'}</button>"
+  },
+  {
+    "file": "src/ui/pages/WorkoutPage.tsx",
+    "line": 162,
+    "kind": "text control/status",
+    "source": "<button disabled={busy} onClick={() => void run(() => workoutService.adjustWorkout(session.id,"
+  },
+  {
+    "file": "src/ui/pages/WorkoutPage.tsx",
+    "line": 167,
+    "kind": "text control/status",
+    "source": "<button disabled={busy} onClick={() => setReview(true)}>{zh ? '完成前核对' : 'Review completion'}</button>"
+  },
+  {
+    "file": "src/ui/pages/WorkoutPage.tsx",
+    "line": 168,
+    "kind": "text control/status",
+    "source": "<button disabled={busy} onClick={abandon}>{zh ? '放弃训练' : 'Abandon workout'}</button>"
+  },
+  {
+    "file": "src/ui/pages/WorkoutPage.tsx",
+    "line": 169,
+    "kind": "text control/status",
+    "source": "<button disabled={busy} onClick={() => void refresh().catch(reason => setError(reason.message))}>{zh ? '重新载入已保存记录' : 'Reload saved records'}</button>"
+  },
+  {
+    "file": "src/ui/pages/WorkoutPage.tsx",
+    "line": 179,
+    "kind": "text control/status",
+    "source": "{error && <p role=\"alert\">{error}</p>}"
+  },
+  {
+    "file": "src/ui/pages/WorkoutPage.tsx",
+    "line": 180,
+    "kind": "text control/status",
+    "source": "<p role=\"status\">{message}</p>"
+  },
+  {
+    "file": "public/media/bodyweight-squat.svg",
+    "line": 1,
+    "kind": "SVG",
+    "source": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 280 160\"><rect width=\"280\" height=\"160\" rx=\"12\" fill=\"#eef3f5\"/><g fill=\"none\" stroke=\"#24566b\" stroke-width=\"6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"130\" cy=\"35\" r=\"13\"/><path d=\"M130 50 L120 90 L85 105 L100 140 M120 90 L160 105 L175 140 M130 55 L190 65\"/></g><path d=\"M30 148 H250\" stroke=\"#aac0ca\" stroke-width=\"2\"/></svg>"
+  },
+  {
+    "file": "public/media/goblet-squat.svg",
+    "line": 1,
+    "kind": "SVG",
+    "source": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 280 160\"><rect width=\"280\" height=\"160\" rx=\"12\" fill=\"#eef3f5\"/><g fill=\"none\" stroke=\"#24566b\" stroke-width=\"6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"130\" cy=\"35\" r=\"13\"/><path d=\"M130 50 L120 90 L85 105 L100 140 M120 90 L160 105 L175 140 M130 55 L155 65 L145 80\"/><rect x=\"142\" y=\"55\" width=\"20\" height=\"20\"/></g><path d=\"M30 148 H250\" stroke=\"#aac0ca\" stroke-width=\"2\"/></svg>"
+  },
+  {
+    "file": "public/media/plank.svg",
+    "line": 1,
+    "kind": "SVG",
+    "source": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 280 160\"><rect width=\"280\" height=\"160\" rx=\"12\" fill=\"#eef3f5\"/><g fill=\"none\" stroke=\"#24566b\" stroke-width=\"6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"215\" cy=\"65\" r=\"13\"/><path d=\"M200 70 L95 105 L50 140 M195 75 L190 135 L220 135\"/></g><path d=\"M30 148 H250\" stroke=\"#aac0ca\" stroke-width=\"2\"/></svg>"
+  },
+  {
+    "file": "public/media/walking.svg",
+    "line": 1,
+    "kind": "SVG",
+    "source": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 280 160\"><rect width=\"280\" height=\"160\" rx=\"12\" fill=\"#eef3f5\"/><g fill=\"none\" stroke=\"#24566b\" stroke-width=\"6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"140\" cy=\"30\" r=\"13\"/><path d=\"M140 45 L135 95 L95 140 M135 95 L180 140 M138 55 L105 85 M138 55 L170 75\"/></g><path d=\"M30 148 H250\" stroke=\"#aac0ca\" stroke-width=\"2\"/></svg>"
+  }
+]

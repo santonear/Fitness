@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { schedulingFields, validateScheduling } from './training-time';
 import { plannedExerciseSchema } from './schemas';
+import { validV4Answer, v4Complete } from './onboarding-v4';
 
 const id = z.uuid();
 const timestamp = z.iso.datetime();
@@ -12,7 +13,11 @@ export const guidedAnswerSchema = z.discriminatedUnion('status', [
   z.strictObject({ status: z.literal('skipped') }),
 ]);
 export const biologicalSexAnswerSchema = z.strictObject({ status: z.literal('answered'), value: z.enum(['女性', '男性', '其他或不确定', '不愿透露']) });
-export const onboardingSchema = z.strictObject({ id, step: revision, answers: z.record(z.string(), guidedAnswerSchema), updatedAt: timestamp, completed: z.boolean() }).superRefine((value, context) => {
+export const onboardingSchema = z.strictObject({ id, step: revision, answers: z.record(z.string(), guidedAnswerSchema), updatedAt: timestamp, completed: z.boolean(), version: z.literal(4).optional(), deferred: z.boolean().optional() }).superRefine((value, context) => {
+  if (value.version === 4) {
+    if (value.step > 12 || Object.entries(value.answers).some(([key, answer]) => !validV4Answer(key, answer)) || value.completed && !v4Complete(value.answers)) context.addIssue({ code: 'custom', message: 'INVALID_V4_ONBOARDING' });
+    return;
+  }
   // Missing in older backups is unknown; only new explicit answers are validated.
   if (value.answers.biologicalSex !== undefined && !biologicalSexAnswerSchema.safeParse(value.answers.biologicalSex).success) context.addIssue({ code: 'custom', path: ['answers', 'biologicalSex'], message: 'INVALID_BIOLOGICAL_SEX_ANSWER' });
 });

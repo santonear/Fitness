@@ -1,3 +1,4 @@
+import { AppIcon, StatusIcon } from './AppIcon';
 import { repository } from '../../persistence/repository';
 import { useEffect, useState } from 'react';
 import { liveQuery } from 'dexie';
@@ -26,7 +27,7 @@ export function DayPlansPanel({locale,readOnly=false}:{locale:'zh'|'en';readOnly
     {profile&&!readOnly&&<><DateCalendar locale={locale} today={dateInZone(Date.now(),profile.timeZone)} selected={selected} onChange={setSelected} onActive={activate} occupied={occupied} />
       <div className="day-selection-tabs">{selected.map(date=><button type="button" key={date} onClick={()=>activate(date)} aria-pressed={active===date}>{date}</button>)}</div>
       {visited.map(date=><div key={date} hidden={active!==date||!selected.includes(date)}><DayPlanEditor date={date} locale={locale} zone={profile.timeZone} onSaved={refresh} /></div>)}</>}
-    {error&&<p role="alert">{error}</p>}
+    {error&&<p role="alert"><StatusIcon status="error"/>{error}</p>}
     <ul aria-label={zh?'日期计划':'Date plans'}>{entries.sort((a,b)=>a.row.scheduledDate.localeCompare(b.row.scheduledDate)).map(({plan,row,generation})=><DayTaskRow key={row.id} plan={plan} row={row} generation={generation} zh={zh} refresh={refresh} />)}</ul>
   </section>;
 }
@@ -40,6 +41,6 @@ function DayTaskRow({plan,row,generation,zh,refresh}:{plan:Plan;row:ScheduledWor
       <button disabled={busy||row.status==='skipped'} onClick={()=>{void run(()=>dayPlanService.skipDayPlan(row.id,row.revision,generation));}}>{zh?'跳过日计划':'Skip day plan'}</button>
       {row.status==='pending'&&<Link to={`/workout?scheduledWorkoutId=${encodeURIComponent(row.id)}`}>{zh?'开始日训练':'Start day workout'}</Link>}</>}
     <button disabled={busy} onClick={()=>{if(!window.confirm(zh?'隐藏此日程？历史与统计保留；已完成仍占槽，未完成释放日期槽。':'Hide this schedule? Facts and statistics remain; completed days retain their slot, unfinished days release it.'))return;void run(()=>dayPlanService.hideDayPlan(row.id,row.revision,generation));}}>{zh?'隐藏日计划':'Hide day plan'}</button>
-    {error&&<p role="alert">{error}</p>}
+    {error&&<p role="alert"><StatusIcon status="error"/>{error}</p>}
   </li>;
 }

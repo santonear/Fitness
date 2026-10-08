@@ -1,0 +1,1038 @@
+
+[WebServer] (node:24616) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 286 tests using 2 workers
+
+(node:63036) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+(node:32048) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1/286] [chromium] › tests\e2e\cal-backup.spec.ts:3:1 › real downloaded day/legacy JSON and pre-restore file independently restore with all facts
+[2/286] [chromium] › tests\e2e\admin-account-actions.spec.ts:4:1 › administrator confirms activation, per-user code and deletion; cancelling is read-only
+[3/286] [chromium] › tests\e2e\admin-account-actions.spec.ts:26:43 › original applicant refresh claims direct activation without a code (lost response: false)
+[4/286] [chromium] › tests\e2e\admin-account-actions.spec.ts:26:43 › original applicant refresh claims direct activation without a code (lost response: true)
+[5/286] [chromium] › tests\e2e\cal-backup.spec.ts:17:1 › rejects two occupying new day plans without changing the source library
+[6/286] [chromium] › tests\e2e\cal-migration.spec.ts:2:1 › version 3 local library upgrades without rewriting old facts; old Dexie can reopen but is not compatible
+[7/286] [chromium] › tests\e2e\cal-backup.spec.ts:27:1 › legacy v2 JSON converts only runtime metadata and remains independently recoverable
+[8/286] [chromium] › tests\e2e\cal-safety.spec.ts:3:1 › concurrent dates, transaction failure and restored stale actions preserve the library
+[9/286] [chromium] › tests\e2e\cal-workouts.spec.ts:2:1 › day schedule coexistence and completed-hidden slot preserve facts and memo
+[10/286] [chromium] › tests\e2e\cal-safety.spec.ts:28:1 › ambiguous legacy days require review only for overlapping dates
+[11/286] [chromium] › tests\e2e\guided-backup.spec.ts:3:1 › guided JSON roundtrip preserves local decisions, rolls back and upgrades old backup without invented phase
+[12/286] [chromium] › tests\e2e\guided-lifecycle.spec.ts:12:1 › changed onboarding invalidates unadopted candidate and preserves unknown health
+[13/286] [chromium] › tests\e2e\next-context.spec.ts:2:1 › AI context and candidate save are read-only until one atomic provenance-preserving save
+[14/286] [chromium] › tests\e2e\guided-lifecycle.spec.ts:15:1 › paused phase prevents starting its training and can resume offline
+[15/286] [chromium] › tests\e2e\next-context.spec.ts:21:60 › AI candidate safety: ongoing-released
+[16/286] [chromium] › tests\e2e\guided-lifecycle.spec.ts:18:1 › invalid multi-day adoption rolls back termination and inserted days
+[17/286] [chromium] › tests\e2e\next-context.spec.ts:21:60 › AI candidate safety: legacy-profile
+[18/286] [chromium] › tests\e2e\guided-lifecycle.spec.ts:21:1 › paused training blocks set writes and resumes without generating completion facts
+[19/286] [chromium] › tests\e2e\next-context.spec.ts:21:60 › AI candidate safety: malformed-history
+[20/286] [chromium] › tests\e2e\guided-lifecycle.spec.ts:24:1 › phase replacement retains ongoing training and complete backup
+[21/286] [chromium] › tests\e2e\next-context.spec.ts:21:60 › AI candidate safety: completed-hidden
+[22/286] [chromium] › tests\e2e\guided-lifecycle.spec.ts:27:1 › guided history reuses bounded read-only snapshot and ignores unrelated local changes
+[23/286] [chromium] › tests\e2e\next-context.spec.ts:21:60 › AI candidate safety: invalid-and-retry
+[24/286] [chromium] › tests\e2e\guided-lifecycle.spec.ts:30:1 › managed child plan deletion is refused and restored candidates cannot be adopted
+[25/286] [chromium] › tests\e2e\next-context.spec.ts:21:60 › AI candidate safety: restore
+[26/286] [chromium] › tests\e2e\guided-lifecycle.spec.ts:33:1 › foreign occupancy prevents phase resume and leaves paused state unchanged
+[27/286] [chromium] › tests\e2e\next-context.spec.ts:21:60 › AI candidate safety: timezone
+[28/286] [chromium] › tests\e2e\onboarding-v4-ai.spec.ts:5:1 › V4 answers reach two explicit send previews; optional data is excluded; proposal waits for local save
+[29/286] [chromium] › tests\e2e\next-context.spec.ts:21:60 › AI candidate safety: conditions
+[30/286] [chromium] › tests\e2e\next-context.spec.ts:21:60 › AI candidate safety: slot
+[31/286] [chromium] › tests\e2e\next-context.spec.ts:21:60 › AI candidate safety: history
+[32/286] [chromium] › tests\e2e\next-context.spec.ts:21:60 › AI candidate safety: atomic
+[33/286] [chromium] › tests\e2e\onboarding-v4-ai.spec.ts:40:1 › existing training facts bypass first-run onboarding
+[34/286] [chromium] › tests\e2e\next-context.spec.ts:21:60 › AI candidate safety: budget
+[35/286] [chromium] › tests\e2e\next-context.spec.ts:21:60 › AI candidate safety: fidelity
+[36/286] [chromium] › tests\e2e\onboarding-v4-storage.spec.ts:2:1 › V4 local transactions keep revision and restore-generation protection, export all answers without measurements
+[37/286] [chromium] › tests\e2e\onboarding-v4-visual.spec.ts:2:47 › atlas seven widths and bilingual immersive questions
+[38/286] [chromium] › tests\e2e\onboarding-v4-storage.spec.ts:18:1 › legacy completed onboarding is not forced through the upgrade
+[39/286] [chromium] › tests\e2e\onboarding-v4-visual.spec.ts:2:47 › serene seven widths and bilingual immersive questions
+[40/286] [chromium] › tests\e2e\onboarding-v4-storage.spec.ts:21:1 › pointer and mouse wheel input, skipping unknown values and offline resume
+[41/286] [chromium] › tests\e2e\onboarding-v4-visual.spec.ts:2:47 › orbit seven widths and bilingual immersive questions
+[42/286] [chromium] › tests\e2e\onboarding-v4-storage.spec.ts:28:1 › deferring an adult draft allows manual training but AI returns to unfinished onboarding
+[43/286] [chromium] › tests\e2e\onboarding-v4.spec.ts:5:1 › ten stages, resume, exclusivity, wheel boundaries, summary edits and no measurement side effects
+[44/286] [chromium] › tests\e2e\onboarding-v5.spec.ts:3:1 › three metrics stay independent across touch, wheel, reload, skip and old progress
+[45/286] [chromium] › tests\e2e\onboarding-v5.spec.ts:15:47 › atlas ceramic navigation and triple metrics in four viewports
+[46/286] [chromium] › tests\e2e\onboarding-v4.spec.ts:23:1 › leave for manual work, return, theme switching and minor AI isolation
+[47/286] [chromium] › tests\e2e\onboarding-v5.spec.ts:15:47 › serene ceramic navigation and triple metrics in four viewports
+[48/286] [chromium] › tests\e2e\plan-delete.spec.ts:5:3 › deleting a saved draft supports cancellation and persists (en)
+[49/286] [chromium] › tests\e2e\plan-delete.spec.ts:5:3 › deleting a saved draft supports cancellation and persists (zh)
+[50/286] [chromium] › tests\e2e\onboarding-v5.spec.ts:15:47 › orbit ceramic navigation and triple metrics in four viewports
+[51/286] [chromium] › tests\e2e\plan-delete.spec.ts:26:1 › plan deletion preserves history, rejects stale and ongoing writes, rolls back and round-trips backups
+[52/286] [chromium] › tests\e2e\onboarding-v5.spec.ts:33:1 › failed local save retains selected input and prevents advancement
+[53/286] [chromium] › tests\e2e\schedule-delete.spec.ts:12:3 › en: deleting a schedule confirms, hides after reload and preserves completed facts and backup
+[54/286] [chromium] › tests\e2e\onboarding-v5.spec.ts:38:1 › local vectors render at high DPI without remote icon dependencies
+[55/286] [chromium] › tests\e2e\stage-summary.spec.ts:5:1 › manual local preparation shows completed facts without network or database mutation
+[56/286] [chromium] › tests\e2e\schedule-delete.spec.ts:12:3 › zh: deleting a schedule confirms, hides after reload and preserves completed facts and backup
+[57/286] [chromium] › tests\e2e\stage-summary.spec.ts:47:1 › saved legacy plan supports actual week and whole-plan fact previews
+[58/286] [chromium] › tests\e2e\schedule-delete.spec.ts:58:1 › schedule hide preserves completion statistics, guards concurrent and ongoing writes and rejects hidden starts
+[59/286] [chromium] › tests\e2e\timer.spec.ts:3:1 › refresh restores the active exercise timer when the clock precedes an older stopped rest timer
+[60/286] [chromium] › tests\e2e\stage-summary.spec.ts:85:1 › empty and invalid selections remain visible and never imply AI generation
+[61/286] [chromium] › tests\e2e\timer.spec.ts:22:1 › timer writes guard revisions and association without creating training facts
+[62/286] [chromium] › tests\e2e\training-schedule.spec.ts:2:1 › confirmed times survive complete backup; stale changes and active history remain protected
+[63/286] [chromium] › tests\e2e\timer.spec.ts:27:1 › exercise timer resumes after refresh and stopping only fills editable duration
+[64/286] [chromium] › tests\e2e\training-schedule.spec.ts:7:1 › version 4 plans retain unknown times until explicitly scheduled
+[65/286] [chromium] › tests\e2e\trial-access.spec.ts:3:33 › active trial enters planning and refreshes allowance without model calls (en)
+[66/286] [chromium] › tests\e2e\timer.spec.ts:40:1 › rest completion stays visible when explicitly enabled sound fails
+[67/286] [chromium] › tests\e2e\v31-ai-body.spec.ts:50:1 › current saved body measurements have sources, remain opt-in, and changes invalidate reviewed sending
+  1) [chromium] › tests\e2e\trial-access.spec.ts:3:33 › active trial enters planning and refreshes allowance without model calls (en) 
+
+    Error: expect(locator).toBeEnabled() failed
+
+    Locator: getByLabel('Training goal and constraints')
+    Expected: enabled
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeEnabled" getByLabel('Training goal and constraints') with timeout 5000ms
+      - waiting for getByLabel('Training goal and constraints')
+
+
+      15 |   await page.getByRole('button', { name: zh ? '开始制定训练计划' : 'Start planning your training', exact: true }).click();
+      16 |   await expect(page).toHaveURL(/\/ai$/);
+    > 17 |   await expect(page.getByLabel(zh ? '训练目标与约束' : 'Training goal and constraints')).toBeEnabled();
+         |                                                                                   ^
+      18 |   await expect(page.getByText(/8 \/ 4/)).toBeVisible();
+      19 |   await page.reload();await expect(page.getByText(/8 \/ 4/)).toBeVisible();
+      20 |   expect(writes).toBe(0);
+        at D:\Project\xxgospel\Fitness\.worktrees\fitness-guided\tests\e2e\trial-access.spec.ts:17:83
+
+    Error Context: outputs\onboarding-v5\regression\trial-access-active-trial--50e20-nce-without-model-calls-en--chromium\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    outputs\onboarding-v5\regression\trial-access-active-trial--50e20-nce-without-model-calls-en--chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace outputs\onboarding-v5\regression\trial-access-active-trial--50e20-nce-without-model-calls-en--chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[68/286] [chromium] › tests\e2e\v31-ai-body.spec.ts:73:1 › deselecting body and history removes both from the actual request
+
+(node:60984) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[69/286] [chromium] › tests\e2e\trial-access.spec.ts:3:33 › active trial enters planning and refreshes allowance without model calls (zh)
+[70/286] [chromium] › tests\e2e\v31-ai-body.spec.ts:81:1 › no saved body information disables optional body without inventing values
+[71/286] [chromium] › tests\e2e\v31-ai.spec.ts:52:1 › two sends require consent; history excluded; candidate editable and saved only by independent confirmation
+[72/286] [chromium] › tests\e2e\v31-ai.spec.ts:73:1 › changing goal invalidates earlier consent and understanding; explicit retry keeps request ID
+  2) [chromium] › tests\e2e\trial-access.spec.ts:3:33 › active trial enters planning and refreshes allowance without model calls (zh) 
+
+    Error: expect(locator).toBeEnabled() failed
+
+    Locator: getByLabel('训练目标与约束')
+    Expected: enabled
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeEnabled" getByLabel('训练目标与约束') with timeout 5000ms
+      - waiting for getByLabel('训练目标与约束')
+
+
+      15 |   await page.getByRole('button', { name: zh ? '开始制定训练计划' : 'Start planning your training', exact: true }).click();
+      16 |   await expect(page).toHaveURL(/\/ai$/);
+    > 17 |   await expect(page.getByLabel(zh ? '训练目标与约束' : 'Training goal and constraints')).toBeEnabled();
+         |                                                                                   ^
+      18 |   await expect(page.getByText(/8 \/ 4/)).toBeVisible();
+      19 |   await page.reload();await expect(page.getByText(/8 \/ 4/)).toBeVisible();
+      20 |   expect(writes).toBe(0);
+        at D:\Project\xxgospel\Fitness\.worktrees\fitness-guided\tests\e2e\trial-access.spec.ts:17:83
+
+    Error Context: outputs\onboarding-v5\regression\trial-access-active-trial--b85d7-nce-without-model-calls-zh--chromium\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    outputs\onboarding-v5\regression\trial-access-active-trial--b85d7-nce-without-model-calls-zh--chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace outputs\onboarding-v5\regression\trial-access-active-trial--b85d7-nce-without-model-calls-zh--chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:42052) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[73/286] [chromium] › tests\e2e\trial-access.spec.ts:23:33 › manual invitation generation and revocation (en)
+[74/286] [chromium] › tests\e2e\v31-ai.spec.ts:86:1 › occupied date appearing after generation keeps candidate and does not make a new AI request
+[75/286] [chromium] › tests\e2e\trial-access.spec.ts:23:33 › manual invitation generation and revocation (zh)
+[76/286] [chromium] › tests\e2e\v31-ai.spec.ts:98:1 › declining previously selected optional fields removes them from the exact network request
+[77/286] [chromium] › tests\e2e\trial-access.spec.ts:57:1 › quota restoration confirms defaults and retries the same operation after an uncertain response
+[78/286] [chromium] › tests\e2e\trial-access.spec.ts:82:1 › cost inputs stay independent when two subjects use the same request ID
+[79/286] [chromium] › tests\e2e\trial-access.spec.ts:108:3 › application → pending → approval → claim → explicit planning entry (en)
+[80/286] [chromium] › tests\e2e\v31-ai.spec.ts:115:1 › theme changes preserve candidate edits and do not send another model request
+[81/286] [chromium] › tests\e2e\v31-ai.spec.ts:127:1 › failed generation retries only its original request and does not save automatically
+[82/286] [chromium] › tests\e2e\v31-ai.spec.ts:135:1 › unrelated local message changes do not invalidate independent candidate save
+[83/286] [chromium] › tests\e2e\v31-ai.spec.ts:142:1 › restore generation invalidates the old candidate without another paid request
+  3) [chromium] › tests\e2e\trial-access.spec.ts:108:3 › application → pending → approval → claim → explicit planning entry (en) 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('.v31-ai')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('.v31-ai') with timeout 5000ms
+      - waiting for locator('.v31-ai')
+
+
+      141 |     await expect(page.getByText(zh ? 'AI 试用有效' : 'Your AI trial is active',{exact:true})).toBeVisible();
+      142 |     await page.getByRole('button',{name:zh?'开始制定训练计划':'Start planning your training',exact:true}).click();
+    > 143 |     await expect(page.locator('.v31-ai')).toBeVisible();
+          |                                           ^
+      144 |     await page.goto('/trial'); await expect(page.getByRole('button', { name: zh ? '申请延期 30 天' : 'Request 30-day extension' })).toBeVisible();
+      145 |     await expect(page.getByRole('button', { name: zh ? '申请 AI 试用' : 'Apply for AI trial', exact: true })).toHaveCount(0);
+      146 |   });
+        at D:\Project\xxgospel\Fitness\.worktrees\fitness-guided\tests\e2e\trial-access.spec.ts:143:43
+
+    Error Context: outputs\onboarding-v5\regression\trial-access-application-→-64bbf-explicit-planning-entry-en--chromium\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    outputs\onboarding-v5\regression\trial-access-application-→-64bbf-explicit-planning-entry-en--chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace outputs\onboarding-v5\regression\trial-access-application-→-64bbf-explicit-planning-entry-en--chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+(node:21936) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[84/286] [chromium] › tests\e2e\trial-access.spec.ts:147:3 › unavailable service allows local dashboard (en)
+[85/286] [chromium] › tests\e2e\v31-ai.spec.ts:150:1 › invalid duration is rejected locally before an AI request
+[86/286] [chromium] › tests\e2e\v31-ai.spec.ts:157:1 › AI date selection respects the current server day limit without another model call
+[87/286] [chromium] › tests\e2e\v31-day-plan-safety.spec.ts:2:1 › V3 manual batch exceeding backup capacity rolls back every write and revision
+[88/286] [chromium] › tests\e2e\v31-day-plan-safety.spec.ts:7:1 › V3 known active and rest seconds fit the effective duration without inventing missing timing
+[89/286] [chromium] › tests\e2e\v31-plans-projection.spec.ts:23:1 › cross-zone occupancy, detail and Today use the same projected date without rewriting source time
+[90/286] [chromium] › tests\e2e\v31-plans-projection.spec.ts:43:1 › future cross-zone links navigate to the projected day
+  4) [chromium] › tests\e2e\trial-access.spec.ts:147:3 › unavailable service allows local dashboard (en) 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('.v31-today')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('.v31-today') with timeout 5000ms
+      - waiting for locator('.v31-today')
+
+
+      152 |     await page.goto('/');
+      153 |     await expect(page.locator('.trial-access')).toHaveCount(0);
+    > 154 |     await expect(page.locator('.v31-today')).toBeVisible();
+          |                                              ^
+      155 |   });
+      156 | }
+      157 | test('management shows real report values, review actions and responsive layout', async ({ page }) => {
+        at D:\Project\xxgospel\Fitness\.worktrees\fitness-guided\tests\e2e\trial-access.spec.ts:154:46
+
+    Error Context: outputs\onboarding-v5\regression\trial-access-unavailable-service-allows-local-dashboard-en--chromium\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    outputs\onboarding-v5\regression\trial-access-unavailable-service-allows-local-dashboard-en--chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace outputs\onboarding-v5\regression\trial-access-unavailable-service-allows-local-dashboard-en--chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:63640) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[91/286] [chromium] › tests\e2e\trial-access.spec.ts:108:3 › application → pending → approval → claim → explicit planning entry (zh)
+[92/286] [chromium] › tests\e2e\v31-plans-projection.spec.ts:52:1 › Today continues the active workout with its own exercise snapshot instead of another scheduled task
+[93/286] [chromium] › tests\e2e\v31-plans-projection.spec.ts:68:1 › ambiguous projected dates require review and cannot be selected or saved as new plans
+[94/286] [chromium] › tests\e2e\v31-plans-visual.spec.ts:3:3 › atlas plans calendar and manual form fit desktop and mobile
+[95/286] [chromium] › tests\e2e\v31-plans-visual.spec.ts:3:3 › serene plans calendar and manual form fit desktop and mobile
+[96/286] [chromium] › tests\e2e\v31-plans-visual.spec.ts:3:3 › orbit plans calendar and manual form fit desktop and mobile
+[97/286] [chromium] › tests\e2e\v31-plans.spec.ts:3:1 › viewing dates never creates plans; independent manual dates save with their own times and content
+[98/286] [chromium] › tests\e2e\v31-plans.spec.ts:37:1 › occupied dates reject selection; cross-month drafts survive navigation and mobile drag is explicit
+  5) [chromium] › tests\e2e\trial-access.spec.ts:108:3 › application → pending → approval → claim → explicit planning entry (zh) 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('.v31-ai')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('.v31-ai') with timeout 5000ms
+      - waiting for locator('.v31-ai')
+
+
+      141 |     await expect(page.getByText(zh ? 'AI 试用有效' : 'Your AI trial is active',{exact:true})).toBeVisible();
+      142 |     await page.getByRole('button',{name:zh?'开始制定训练计划':'Start planning your training',exact:true}).click();
+    > 143 |     await expect(page.locator('.v31-ai')).toBeVisible();
+          |                                           ^
+      144 |     await page.goto('/trial'); await expect(page.getByRole('button', { name: zh ? '申请延期 30 天' : 'Request 30-day extension' })).toBeVisible();
+      145 |     await expect(page.getByRole('button', { name: zh ? '申请 AI 试用' : 'Apply for AI trial', exact: true })).toHaveCount(0);
+      146 |   });
+        at D:\Project\xxgospel\Fitness\.worktrees\fitness-guided\tests\e2e\trial-access.spec.ts:143:43
+
+    Error Context: outputs\onboarding-v5\regression\trial-access-application-→-88291-explicit-planning-entry-zh--chromium\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    outputs\onboarding-v5\regression\trial-access-application-→-88291-explicit-planning-entry-zh--chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace outputs\onboarding-v5\regression\trial-access-application-→-88291-explicit-planning-entry-zh--chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:48360) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[99/286] [chromium] › tests\e2e\trial-access.spec.ts:147:3 › unavailable service allows local dashboard (zh)
+[100/286] [chromium] › tests\e2e\v31-plans.spec.ts:61:1 › manual batch conflict keeps all drafts and performs zero partial writes
+[101/286] [chromium] › tests\e2e\v31-plans.spec.ts:76:1 › moving a manual workout time waits for confirmation and updates the saved plan
+[102/286] [chromium] › tests\e2e\v31-plans.spec.ts:108:1 › retained phase controls pause and resume offline; cancellation preserves active workout and original tasks
+[103/286] [chromium] › tests\e2e\v31-progress-catalog.spec.ts:39:3 › V3 Progress atlas seven widths: empty, long history, entry and chart
+  6) [chromium] › tests\e2e\trial-access.spec.ts:147:3 › unavailable service allows local dashboard (zh) 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('.v31-today')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('.v31-today') with timeout 5000ms
+      - waiting for locator('.v31-today')
+
+
+      152 |     await page.goto('/');
+      153 |     await expect(page.locator('.trial-access')).toHaveCount(0);
+    > 154 |     await expect(page.locator('.v31-today')).toBeVisible();
+          |                                              ^
+      155 |   });
+      156 | }
+      157 | test('management shows real report values, review actions and responsive layout', async ({ page }) => {
+        at D:\Project\xxgospel\Fitness\.worktrees\fitness-guided\tests\e2e\trial-access.spec.ts:154:46
+
+    Error Context: outputs\onboarding-v5\regression\trial-access-unavailable-service-allows-local-dashboard-zh--chromium\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    outputs\onboarding-v5\regression\trial-access-unavailable-service-allows-local-dashboard-zh--chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace outputs\onboarding-v5\regression\trial-access-unavailable-service-allows-local-dashboard-zh--chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+(node:7744) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[104/286] [chromium] › tests\e2e\trial-access.spec.ts:157:1 › management shows real report values, review actions and responsive layout
+[105/286] [chromium] › tests\e2e\trial-access.spec.ts:173:33 › visible invitation entry starts planning without an application (en)
+[106/286] [chromium] › tests\e2e\v31-progress-catalog.spec.ts:39:3 › V3 Progress serene seven widths: empty, long history, entry and chart
+[107/286] [chromium] › tests\e2e\v31-progress-catalog.spec.ts:39:3 › V3 Progress orbit seven widths: empty, long history, entry and chart
+  7) [chromium] › tests\e2e\trial-access.spec.ts:173:33 › visible invitation entry starts planning without an application (en) 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('.v31-ai')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('.v31-ai') with timeout 5000ms
+      - waiting for locator('.v31-ai')
+
+
+      201 |   await page.screenshot({ path: test.info().outputPath(`invitation-entry-${zh ? 'zh' : 'en'}.png`), fullPage: true });
+      202 |   await activate.click();
+    > 203 |   await expect(page).toHaveURL(/\/ai$/); await expect(page.locator('.v31-ai')).toBeVisible();
+          |                                                                                ^
+      204 |   expect(writes).toEqual(['/api/v1/trial/redeem']);
+      205 |   expect(await page.evaluate(() => localStorage.getItem('fitness-trial-display-name-v1'))).toBe('Synthetic member');
+      206 |   expect(await page.evaluate(() => Object.values(localStorage).some(v => v.includes('a'.repeat(64))))).toBe(false);
+        at D:\Project\xxgospel\Fitness\.worktrees\fitness-guided\tests\e2e\trial-access.spec.ts:203:80
+
+    Error Context: outputs\onboarding-v5\regression\trial-access-visible-invit-f4ce8--without-an-application-en--chromium\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    outputs\onboarding-v5\regression\trial-access-visible-invit-f4ce8--without-an-application-en--chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace outputs\onboarding-v5\regression\trial-access-visible-invit-f4ce8--without-an-application-en--chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+(node:16856) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[108/286] [chromium] › tests\e2e\trial-access.spec.ts:173:33 › visible invitation entry starts planning without an application (zh)
+[109/286] [chromium] › tests\e2e\v31-progress-catalog.spec.ts:73:1 › V3 Progress counts sessions independently and preserves missing metrics
+[110/286] [chromium] › tests\e2e\v31-progress-catalog.spec.ts:85:1 › V3 catalog real filters, details, favorite persistence and no-result recovery
+[111/286] [chromium] › tests\e2e\v31-progress-catalog.spec.ts:111:1 › V3 Chinese measurements keep source, update history and fit all three mobile layouts
+  8) [chromium] › tests\e2e\trial-access.spec.ts:173:33 › visible invitation entry starts planning without an application (zh) 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('.v31-ai')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('.v31-ai') with timeout 5000ms
+      - waiting for locator('.v31-ai')
+
+
+      201 |   await page.screenshot({ path: test.info().outputPath(`invitation-entry-${zh ? 'zh' : 'en'}.png`), fullPage: true });
+      202 |   await activate.click();
+    > 203 |   await expect(page).toHaveURL(/\/ai$/); await expect(page.locator('.v31-ai')).toBeVisible();
+          |                                                                                ^
+      204 |   expect(writes).toEqual(['/api/v1/trial/redeem']);
+      205 |   expect(await page.evaluate(() => localStorage.getItem('fitness-trial-display-name-v1'))).toBe('Synthetic member');
+      206 |   expect(await page.evaluate(() => Object.values(localStorage).some(v => v.includes('a'.repeat(64))))).toBe(false);
+        at D:\Project\xxgospel\Fitness\.worktrees\fitness-guided\tests\e2e\trial-access.spec.ts:203:80
+
+    Error Context: outputs\onboarding-v5\regression\trial-access-visible-invit-82501--without-an-application-zh--chromium\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    outputs\onboarding-v5\regression\trial-access-visible-invit-82501--without-an-application-zh--chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace outputs\onboarding-v5\regression\trial-access-visible-invit-82501--without-an-application-zh--chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:40692) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[112/286] [chromium] › tests\e2e\trial-access.spec.ts:210:33 › pending applicants can enter a code and invalid codes do not activate (en)
+[113/286] [chromium] › tests\e2e\trial-access.spec.ts:210:33 › pending applicants can enter a code and invalid codes do not activate (zh)
+[114/286] [chromium] › tests\e2e\v31-shell.spec.ts:3:1 › themes preserve active workout inputs and identity, persist, and do not call AI
+[115/286] [chromium] › tests\e2e\v31-transactions.spec.ts:2:1 › V3 batch writes are atomic; candidate saves are independent, deduplicated and restore-safe
+[116/286] [chromium] › tests\e2e\v31-shell.spec.ts:14:1 › four-step backup keeps consent guards and synchronizes restored profile across tabs
+[117/286] [chromium] › tests\e2e\v31-trial-status.spec.ts:3:142 › trial truthful state active
+[118/286] [chromium] › tests\e2e\v31-trial-status.spec.ts:3:142 › trial truthful state expired
+[119/286] [chromium] › tests\e2e\v31-trial-status.spec.ts:3:142 › trial truthful state revoked
+[120/286] [chromium] › tests\e2e\v31-trial-status.spec.ts:3:142 › trial truthful state none
+[121/286] [chromium] › tests\e2e\v31-shell.spec.ts:29:1 › loaded local workout can save a set offline
+[122/286] [chromium] › tests\e2e\v31-trial-status.spec.ts:3:142 › trial truthful state session-missing
+[123/286] [chromium] › tests\e2e\workout-backup.spec.ts:4:3 › workout timers adjustments preserve export and restore invariants
+[124/286] [chromium] › tests\e2e\v31-trial-status.spec.ts:3:142 › trial truthful state quota
+[125/286] [chromium] › tests\e2e\workout-backup.spec.ts:4:3 › workout order adjustments preserve export and restore invariants
+[126/286] [chromium] › tests\e2e\v31-trial-status.spec.ts:3:142 › trial truthful state budget
+[127/286] [chromium] › tests\e2e\workout-backup.spec.ts:4:3 › workout skip adjustments preserve export and restore invariants
+[128/286] [chromium] › tests\e2e\v31-trial-status.spec.ts:3:142 › trial truthful state pending
+[129/286] [chromium] › tests\e2e\workouts.spec.ts:4:1 › sets survive reload, review returns to editing and completed facts stay readable
+[130/286] [chromium] › tests\e2e\v31-trial-status.spec.ts:3:142 › trial truthful state unavailable
+[131/286] [chromium] › tests\e2e\v31-trial-status.spec.ts:3:142 › trial truthful state query-failed
+[132/286] [chromium] › tests\e2e\v31-trial-status.spec.ts:40:1 › application lifecycle remains visible with receipt ownership and no automatic claim
+[133/286] [chromium] › tests\e2e\workouts.spec.ts:21:1 › two connections serialize starts and revisions; facts, memo and global revision roll back together
+[134/286] [chromium] › tests\e2e\workouts.spec.ts:26:1 › planned training links confirmed completion to its schedule
+
+(node:31128) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[135/286] [chromium] › tests\e2e\capacity.spec.ts:11:3 › capacity small: actual export outcome and retained facts
+[chromium] › tests\e2e\capacity.spec.ts:11:3 › capacity small: actual export outcome and retained facts
+chromium/small: export 13457 bytes
+
+chromium/small: actual download read
+
+[136/286] [chromium] › tests\e2e\workouts.spec.ts:46:1 › removal cancellation preserves facts; confirmed removal persists and terminal workouts have no removal controls
+chromium/small: restored and fields matched
+
+[137/286] [chromium] › tests\e2e\capacity.spec.ts:11:3 › capacity 5MiB: actual export outcome and retained facts
+[chromium] › tests\e2e\capacity.spec.ts:11:3 › capacity 5MiB: actual export outcome and retained facts
+chromium/5MiB: export 10499217 bytes
+
+chromium/5MiB: actual download read
+
+chromium/5MiB: restored and fields matched
+
+[138/286] [chromium] › tests\e2e\capacity.spec.ts:11:3 › capacity 6MiB: actual export outcome and retained facts
+[chromium] › tests\e2e\capacity.spec.ts:11:3 › capacity 6MiB: actual export outcome and retained facts
+chromium/6MiB: export 12596369 bytes
+
+chromium/6MiB: actual download read
+
+chromium/6MiB: restored and fields matched
+
+[139/286] [chromium] › tests\e2e\capacity.spec.ts:11:3 › capacity 8MiB: actual export outcome and retained facts
+
+(node:4432) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[140/286] [webkit] › tests\e2e\admin-account-actions.spec.ts:4:1 › administrator confirms activation, per-user code and deletion; cancelling is read-only
+[chromium] › tests\e2e\capacity.spec.ts:11:3 › capacity 8MiB: actual export outcome and retained facts
+chromium/8MiB: export 16790673 bytes
+
+[141/286] [chromium] › tests\e2e\capacity.spec.ts:11:3 › capacity 10000: actual export outcome and retained facts
+[142/286] [webkit] › tests\e2e\admin-account-actions.spec.ts:26:43 › original applicant refresh claims direct activation without a code (lost response: false)
+[chromium] › tests\e2e\capacity.spec.ts:11:3 › capacity 10000: actual export outcome and retained facts
+chromium/10000: export 14877122 bytes
+
+chromium/10000: actual download read
+
+[143/286] [webkit] › tests\e2e\admin-account-actions.spec.ts:26:43 › original applicant refresh claims direct activation without a code (lost response: true)
+[144/286] [webkit] › tests\e2e\cal-backup.spec.ts:3:1 › real downloaded day/legacy JSON and pre-restore file independently restore with all facts
+chromium/10000: restored and fields matched
+
+[145/286] [chromium] › tests\e2e\capacity.spec.ts:44:1 › current raw UTF-8 file boundary is exact
+[146/286] [chromium] › tests\e2e\capacity.spec.ts:48:1 › post-backup writes invalidate replacement without changing any current table
+[147/286] [chromium] › tests\e2e\capacity.spec.ts:52:1 › loaded local backup downloads and restores with HTTP blocked
+
+(node:59016) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[148/286] [webkit] › tests\e2e\cal-migration.spec.ts:2:1 › version 3 local library upgrades without rewriting old facts; old Dexie can reopen but is not compatible
+
+[WebServer] 23:28:54 [vite] (client) [console.warn] Dexie.delete('cal-migration-b893a97b-889d-4a38-b81f-5573f120669a') was blocked
+[149/286] [webkit] › tests\e2e\cal-safety.spec.ts:3:1 › concurrent dates, transaction failure and restored stale actions preserve the library
+[150/286] [webkit] › tests\e2e\cal-safety.spec.ts:28:1 › ambiguous legacy days require review only for overlapping dates
+[151/286] [webkit] › tests\e2e\cal-backup.spec.ts:17:1 › rejects two occupying new day plans without changing the source library
+[152/286] [webkit] › tests\e2e\cal-workouts.spec.ts:2:1 › day schedule coexistence and completed-hidden slot preserve facts and memo
+[153/286] [webkit] › tests\e2e\guided-backup.spec.ts:3:1 › guided JSON roundtrip preserves local decisions, rolls back and upgrades old backup without invented phase
+[154/286] [webkit] › tests\e2e\cal-backup.spec.ts:27:1 › legacy v2 JSON converts only runtime metadata and remains independently recoverable
+[155/286] [webkit] › tests\e2e\guided-lifecycle.spec.ts:12:1 › changed onboarding invalidates unadopted candidate and preserves unknown health
+[156/286] [webkit] › tests\e2e\guided-lifecycle.spec.ts:15:1 › paused phase prevents starting its training and can resume offline
+[157/286] [webkit] › tests\e2e\next-context.spec.ts:2:1 › AI context and candidate save are read-only until one atomic provenance-preserving save
+[158/286] [webkit] › tests\e2e\guided-lifecycle.spec.ts:18:1 › invalid multi-day adoption rolls back termination and inserted days
+
+[WebServer] 23:29:11 [vite] (client) [console.warn] Dexie.delete('guided-test-db97b6ee-a92b-481f-9e57-f136c64d049e') was blocked
+[159/286] [webkit] › tests\e2e\next-context.spec.ts:21:60 › AI candidate safety: ongoing-released
+
+[WebServer] 23:29:13 [vite] (client) [console.warn] Dexie.delete('next-context-89f7b1f7-cac1-4322-bab9-4b1db6f18d18') was blocked
+[160/286] [webkit] › tests\e2e\guided-lifecycle.spec.ts:21:1 › paused training blocks set writes and resumes without generating completion facts
+
+[WebServer] 23:29:15 [vite] (client) [console.warn] Dexie.delete('next-context-safety-9ace1ddd-af90-49ad-819b-91a29dfd521a') was blocked
+[161/286] [webkit] › tests\e2e\next-context.spec.ts:21:60 › AI candidate safety: legacy-profile
+[162/286] [webkit] › tests\e2e\next-context.spec.ts:21:60 › AI candidate safety: malformed-history
+[WebServer] 23:29:17 [vite] (client) [console.warn] Dexie.delete('next-context-safety-d3ac37b8-cd19-4632-856e-4f804d0120b6') was blocked
+
+[163/286] [webkit] › tests\e2e\guided-lifecycle.spec.ts:24:1 › phase replacement retains ongoing training and complete backup
+
+[WebServer] 23:29:18 [vite] (client) [console.warn] Dexie.delete('guided-test-20367fb8-42e6-4545-8f5d-86b56a8bfe64') was blocked
+[164/286] [webkit] › tests\e2e\next-context.spec.ts:21:60 › AI candidate safety: completed-hidden
+[165/286] [webkit] › tests\e2e\guided-lifecycle.spec.ts:27:1 › guided history reuses bounded read-only snapshot and ignores unrelated local changes
+[166/286] [webkit] › tests\e2e\next-context.spec.ts:21:60 › AI candidate safety: invalid-and-retry
+[WebServer] 23:29:24 [vite] (client) [console.warn] Dexie.delete('next-context-safety-eb7cb799-7f5e-4601-bde9-b49e2a021d0d') was blocked
+
+[167/286] [webkit] › tests\e2e\next-context.spec.ts:21:60 › AI candidate safety: restore
+
+[WebServer] 23:29:26 [vite] (client) [console.warn] Dexie.delete('next-context-safety-b37ab128-e5a2-4fc2-be08-50087736d508') was blocked
+[168/286] [webkit] › tests\e2e\guided-lifecycle.spec.ts:30:1 › managed child plan deletion is refused and restored candidates cannot be adopted
+[WebServer] 23:29:26 [vite] (client) [console.warn] Dexie.delete('guided-test-01849f37-a2b3-4520-bd7a-08f3ea9ce3ff') was blocked
+
+
+[WebServer] 23:29:27 [vite] (client) [console.warn] Dexie.delete('next-context-safety-6d9f0b11-ad09-4f5a-9d09-291ed8c6f215') was blocked
+[169/286] [webkit] › tests\e2e\next-context.spec.ts:21:60 › AI candidate safety: timezone
+[170/286] [webkit] › tests\e2e\next-context.spec.ts:21:60 › AI candidate safety: conditions
+
+[WebServer] 23:29:28 [vite] (client) [console.warn] Dexie.delete('next-context-safety-81d2a790-7d4f-4bfc-b45c-d093eac9621b') was blocked
+[171/286] [webkit] › tests\e2e\next-context.spec.ts:21:60 › AI candidate safety: slot
+[172/286] [webkit] › tests\e2e\guided-lifecycle.spec.ts:33:1 › foreign occupancy prevents phase resume and leaves paused state unchanged
+[173/286] [webkit] › tests\e2e\next-context.spec.ts:21:60 › AI candidate safety: history
+[WebServer] 23:29:32 [vite] (client) [console.warn] Dexie.delete('next-context-safety-b670f3cb-65cc-463b-9400-4248a935446c') was blocked
+
+
+[WebServer] 23:29:33 [vite] (client) [console.warn] Dexie.delete('guided-test-88ae8851-549e-4ca7-8b4e-c468dbf05895') was blocked
+[174/286] [webkit] › tests\e2e\onboarding-v4-ai.spec.ts:5:1 › V4 answers reach two explicit send previews; optional data is excluded; proposal waits for local save
+[175/286] [webkit] › tests\e2e\next-context.spec.ts:21:60 › AI candidate safety: atomic
+[176/286] [webkit] › tests\e2e\next-context.spec.ts:21:60 › AI candidate safety: budget
+[WebServer] 23:29:36 [vite] (client) [console.warn] Dexie.delete('next-context-safety-e9a72237-1bbf-4d35-aee5-f106dc97b61e') was blocked
+
+[177/286] [webkit] › tests\e2e\next-context.spec.ts:21:60 › AI candidate safety: fidelity
+
+[WebServer] 23:29:43 [vite] (client) [console.warn] Dexie.delete('next-context-safety-ce86553e-500f-429b-8f13-9515ccab836e') was blocked
+[178/286] [webkit] › tests\e2e\onboarding-v4-storage.spec.ts:2:1 › V4 local transactions keep revision and restore-generation protection, export all answers without measurements
+[179/286] [webkit] › tests\e2e\onboarding-v4-ai.spec.ts:40:1 › existing training facts bypass first-run onboarding
+[180/286] [webkit] › tests\e2e\onboarding-v4-storage.spec.ts:18:1 › legacy completed onboarding is not forced through the upgrade
+[181/286] [webkit] › tests\e2e\onboarding-v4-visual.spec.ts:2:47 › atlas seven widths and bilingual immersive questions
+[182/286] [webkit] › tests\e2e\onboarding-v4-storage.spec.ts:21:1 › pointer and mouse wheel input, skipping unknown values and offline resume
+[183/286] [webkit] › tests\e2e\onboarding-v4-visual.spec.ts:2:47 › serene seven widths and bilingual immersive questions
+[184/286] [webkit] › tests\e2e\onboarding-v4-visual.spec.ts:2:47 › orbit seven widths and bilingual immersive questions
+[185/286] [webkit] › tests\e2e\onboarding-v4.spec.ts:5:1 › ten stages, resume, exclusivity, wheel boundaries, summary edits and no measurement side effects
+[186/286] [webkit] › tests\e2e\onboarding-v4-storage.spec.ts:28:1 › deferring an adult draft allows manual training but AI returns to unfinished onboarding
+[187/286] [webkit] › tests\e2e\onboarding-v5.spec.ts:3:1 › three metrics stay independent across touch, wheel, reload, skip and old progress
+[188/286] [webkit] › tests\e2e\onboarding-v5.spec.ts:15:47 › atlas ceramic navigation and triple metrics in four viewports
+[189/286] [webkit] › tests\e2e\onboarding-v4.spec.ts:23:1 › leave for manual work, return, theme switching and minor AI isolation
+[190/286] [webkit] › tests\e2e\onboarding-v5.spec.ts:15:47 › serene ceramic navigation and triple metrics in four viewports
+[191/286] [webkit] › tests\e2e\onboarding-v5.spec.ts:15:47 › orbit ceramic navigation and triple metrics in four viewports
+[192/286] [webkit] › tests\e2e\onboarding-v5.spec.ts:33:1 › failed local save retains selected input and prevents advancement
+[193/286] [webkit] › tests\e2e\plan-delete.spec.ts:5:3 › deleting a saved draft supports cancellation and persists (en)
+[194/286] [webkit] › tests\e2e\onboarding-v5.spec.ts:38:1 › local vectors render at high DPI without remote icon dependencies
+[195/286] [webkit] › tests\e2e\schedule-delete.spec.ts:12:3 › en: deleting a schedule confirms, hides after reload and preserves completed facts and backup
+[196/286] [webkit] › tests\e2e\plan-delete.spec.ts:5:3 › deleting a saved draft supports cancellation and persists (zh)
+[197/286] [webkit] › tests\e2e\plan-delete.spec.ts:26:1 › plan deletion preserves history, rejects stale and ongoing writes, rolls back and round-trips backups
+[198/286] [webkit] › tests\e2e\schedule-delete.spec.ts:12:3 › zh: deleting a schedule confirms, hides after reload and preserves completed facts and backup
+[199/286] [webkit] › tests\e2e\stage-summary.spec.ts:5:1 › manual local preparation shows completed facts without network or database mutation
+[200/286] [webkit] › tests\e2e\stage-summary.spec.ts:47:1 › saved legacy plan supports actual week and whole-plan fact previews
+[201/286] [webkit] › tests\e2e\schedule-delete.spec.ts:58:1 › schedule hide preserves completion statistics, guards concurrent and ongoing writes and rejects hidden starts
+[202/286] [webkit] › tests\e2e\timer.spec.ts:3:1 › refresh restores the active exercise timer when the clock precedes an older stopped rest timer
+[203/286] [webkit] › tests\e2e\stage-summary.spec.ts:85:1 › empty and invalid selections remain visible and never imply AI generation
+[204/286] [webkit] › tests\e2e\training-schedule.spec.ts:2:1 › confirmed times survive complete backup; stale changes and active history remain protected
+[205/286] [webkit] › tests\e2e\timer.spec.ts:22:1 › timer writes guard revisions and association without creating training facts
+[206/286] [webkit] › tests\e2e\timer.spec.ts:27:1 › exercise timer resumes after refresh and stopping only fills editable duration
+[207/286] [webkit] › tests\e2e\training-schedule.spec.ts:7:1 › version 4 plans retain unknown times until explicitly scheduled
+[WebServer] 23:30:57 [vite] (client) [console.warn] Dexie.delete('schedule-8cc01aef-f732-439e-84ef-da088a2f5388') was blocked
+
+[208/286] [webkit] › tests\e2e\trial-access.spec.ts:3:33 › active trial enters planning and refreshes allowance without model calls (en)
+[209/286] [webkit] › tests\e2e\timer.spec.ts:40:1 › rest completion stays visible when explicitly enabled sound fails
+[210/286] [webkit] › tests\e2e\v31-ai-body.spec.ts:50:1 › current saved body measurements have sources, remain opt-in, and changes invalidate reviewed sending
+  9) [webkit] › tests\e2e\trial-access.spec.ts:3:33 › active trial enters planning and refreshes allowance without model calls (en) 
+
+    Error: expect(locator).toBeEnabled() failed
+
+    Locator: getByLabel('Training goal and constraints')
+    Expected: enabled
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeEnabled" getByLabel('Training goal and constraints') with timeout 5000ms
+      - waiting for getByLabel('Training goal and constraints')
+
+
+      15 |   await page.getByRole('button', { name: zh ? '开始制定训练计划' : 'Start planning your training', exact: true }).click();
+      16 |   await expect(page).toHaveURL(/\/ai$/);
+    > 17 |   await expect(page.getByLabel(zh ? '训练目标与约束' : 'Training goal and constraints')).toBeEnabled();
+         |                                                                                   ^
+      18 |   await expect(page.getByText(/8 \/ 4/)).toBeVisible();
+      19 |   await page.reload();await expect(page.getByText(/8 \/ 4/)).toBeVisible();
+      20 |   expect(writes).toBe(0);
+        at D:\Project\xxgospel\Fitness\.worktrees\fitness-guided\tests\e2e\trial-access.spec.ts:17:83
+
+    Error Context: outputs\onboarding-v5\regression\trial-access-active-trial--50e20-nce-without-model-calls-en--webkit\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    outputs\onboarding-v5\regression\trial-access-active-trial--50e20-nce-without-model-calls-en--webkit\trace.zip
+    Usage:
+
+        npx playwright show-trace outputs\onboarding-v5\regression\trial-access-active-trial--50e20-nce-without-model-calls-en--webkit\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+(node:20668) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[211/286] [webkit] › tests\e2e\trial-access.spec.ts:3:33 › active trial enters planning and refreshes allowance without model calls (zh)
+[212/286] [webkit] › tests\e2e\v31-ai-body.spec.ts:73:1 › deselecting body and history removes both from the actual request
+  10) [webkit] › tests\e2e\trial-access.spec.ts:3:33 › active trial enters planning and refreshes allowance without model calls (zh) 
+
+    Error: expect(locator).toBeEnabled() failed
+
+    Locator: getByLabel('训练目标与约束')
+    Expected: enabled
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeEnabled" getByLabel('训练目标与约束') with timeout 5000ms
+      - waiting for getByLabel('训练目标与约束')
+
+
+      15 |   await page.getByRole('button', { name: zh ? '开始制定训练计划' : 'Start planning your training', exact: true }).click();
+      16 |   await expect(page).toHaveURL(/\/ai$/);
+    > 17 |   await expect(page.getByLabel(zh ? '训练目标与约束' : 'Training goal and constraints')).toBeEnabled();
+         |                                                                                   ^
+      18 |   await expect(page.getByText(/8 \/ 4/)).toBeVisible();
+      19 |   await page.reload();await expect(page.getByText(/8 \/ 4/)).toBeVisible();
+      20 |   expect(writes).toBe(0);
+        at D:\Project\xxgospel\Fitness\.worktrees\fitness-guided\tests\e2e\trial-access.spec.ts:17:83
+
+    Error Context: outputs\onboarding-v5\regression\trial-access-active-trial--b85d7-nce-without-model-calls-zh--webkit\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    outputs\onboarding-v5\regression\trial-access-active-trial--b85d7-nce-without-model-calls-zh--webkit\trace.zip
+    Usage:
+
+        npx playwright show-trace outputs\onboarding-v5\regression\trial-access-active-trial--b85d7-nce-without-model-calls-zh--webkit\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:47852) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[213/286] [webkit] › tests\e2e\trial-access.spec.ts:23:33 › manual invitation generation and revocation (en)
+[214/286] [webkit] › tests\e2e\trial-access.spec.ts:23:33 › manual invitation generation and revocation (zh)
+[215/286] [webkit] › tests\e2e\trial-access.spec.ts:57:1 › quota restoration confirms defaults and retries the same operation after an uncertain response
+[216/286] [webkit] › tests\e2e\trial-access.spec.ts:82:1 › cost inputs stay independent when two subjects use the same request ID
+[217/286] [webkit] › tests\e2e\trial-access.spec.ts:108:3 › application → pending → approval → claim → explicit planning entry (en)
+[218/286] [webkit] › tests\e2e\v31-ai-body.spec.ts:81:1 › no saved body information disables optional body without inventing values
+  11) [webkit] › tests\e2e\trial-access.spec.ts:108:3 › application → pending → approval → claim → explicit planning entry (en) 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('.v31-ai')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('.v31-ai') with timeout 5000ms
+      - waiting for locator('.v31-ai')
+
+
+      141 |     await expect(page.getByText(zh ? 'AI 试用有效' : 'Your AI trial is active',{exact:true})).toBeVisible();
+      142 |     await page.getByRole('button',{name:zh?'开始制定训练计划':'Start planning your training',exact:true}).click();
+    > 143 |     await expect(page.locator('.v31-ai')).toBeVisible();
+          |                                           ^
+      144 |     await page.goto('/trial'); await expect(page.getByRole('button', { name: zh ? '申请延期 30 天' : 'Request 30-day extension' })).toBeVisible();
+      145 |     await expect(page.getByRole('button', { name: zh ? '申请 AI 试用' : 'Apply for AI trial', exact: true })).toHaveCount(0);
+      146 |   });
+        at D:\Project\xxgospel\Fitness\.worktrees\fitness-guided\tests\e2e\trial-access.spec.ts:143:43
+
+    Error Context: outputs\onboarding-v5\regression\trial-access-application-→-64bbf-explicit-planning-entry-en--webkit\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    outputs\onboarding-v5\regression\trial-access-application-→-64bbf-explicit-planning-entry-en--webkit\trace.zip
+    Usage:
+
+        npx playwright show-trace outputs\onboarding-v5\regression\trial-access-application-→-64bbf-explicit-planning-entry-en--webkit\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:55232) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[219/286] [webkit] › tests\e2e\trial-access.spec.ts:147:3 › unavailable service allows local dashboard (en)
+[220/286] [webkit] › tests\e2e\v31-ai.spec.ts:52:1 › two sends require consent; history excluded; candidate editable and saved only by independent confirmation
+  12) [webkit] › tests\e2e\trial-access.spec.ts:147:3 › unavailable service allows local dashboard (en) 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('.v31-today')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('.v31-today') with timeout 5000ms
+      - waiting for locator('.v31-today')
+
+
+      152 |     await page.goto('/');
+      153 |     await expect(page.locator('.trial-access')).toHaveCount(0);
+    > 154 |     await expect(page.locator('.v31-today')).toBeVisible();
+          |                                              ^
+      155 |   });
+      156 | }
+      157 | test('management shows real report values, review actions and responsive layout', async ({ page }) => {
+        at D:\Project\xxgospel\Fitness\.worktrees\fitness-guided\tests\e2e\trial-access.spec.ts:154:46
+
+    Error Context: outputs\onboarding-v5\regression\trial-access-unavailable-service-allows-local-dashboard-en--webkit\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    outputs\onboarding-v5\regression\trial-access-unavailable-service-allows-local-dashboard-en--webkit\trace.zip
+    Usage:
+
+        npx playwright show-trace outputs\onboarding-v5\regression\trial-access-unavailable-service-allows-local-dashboard-en--webkit\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:60688) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[221/286] [webkit] › tests\e2e\trial-access.spec.ts:108:3 › application → pending → approval → claim → explicit planning entry (zh)
+[222/286] [webkit] › tests\e2e\v31-ai.spec.ts:73:1 › changing goal invalidates earlier consent and understanding; explicit retry keeps request ID
+[223/286] [webkit] › tests\e2e\v31-ai.spec.ts:86:1 › occupied date appearing after generation keeps candidate and does not make a new AI request
+  13) [webkit] › tests\e2e\trial-access.spec.ts:108:3 › application → pending → approval → claim → explicit planning entry (zh) 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('.v31-ai')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('.v31-ai') with timeout 5000ms
+      - waiting for locator('.v31-ai')
+
+
+      141 |     await expect(page.getByText(zh ? 'AI 试用有效' : 'Your AI trial is active',{exact:true})).toBeVisible();
+      142 |     await page.getByRole('button',{name:zh?'开始制定训练计划':'Start planning your training',exact:true}).click();
+    > 143 |     await expect(page.locator('.v31-ai')).toBeVisible();
+          |                                           ^
+      144 |     await page.goto('/trial'); await expect(page.getByRole('button', { name: zh ? '申请延期 30 天' : 'Request 30-day extension' })).toBeVisible();
+      145 |     await expect(page.getByRole('button', { name: zh ? '申请 AI 试用' : 'Apply for AI trial', exact: true })).toHaveCount(0);
+      146 |   });
+        at D:\Project\xxgospel\Fitness\.worktrees\fitness-guided\tests\e2e\trial-access.spec.ts:143:43
+
+    Error Context: outputs\onboarding-v5\regression\trial-access-application-→-88291-explicit-planning-entry-zh--webkit\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    outputs\onboarding-v5\regression\trial-access-application-→-88291-explicit-planning-entry-zh--webkit\trace.zip
+    Usage:
+
+        npx playwright show-trace outputs\onboarding-v5\regression\trial-access-application-→-88291-explicit-planning-entry-zh--webkit\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:63252) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[224/286] [webkit] › tests\e2e\trial-access.spec.ts:147:3 › unavailable service allows local dashboard (zh)
+[225/286] [webkit] › tests\e2e\v31-ai.spec.ts:98:1 › declining previously selected optional fields removes them from the exact network request
+  14) [webkit] › tests\e2e\trial-access.spec.ts:147:3 › unavailable service allows local dashboard (zh) 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('.v31-today')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('.v31-today') with timeout 5000ms
+      - waiting for locator('.v31-today')
+
+
+      152 |     await page.goto('/');
+      153 |     await expect(page.locator('.trial-access')).toHaveCount(0);
+    > 154 |     await expect(page.locator('.v31-today')).toBeVisible();
+          |                                              ^
+      155 |   });
+      156 | }
+      157 | test('management shows real report values, review actions and responsive layout', async ({ page }) => {
+        at D:\Project\xxgospel\Fitness\.worktrees\fitness-guided\tests\e2e\trial-access.spec.ts:154:46
+
+    Error Context: outputs\onboarding-v5\regression\trial-access-unavailable-service-allows-local-dashboard-zh--webkit\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    outputs\onboarding-v5\regression\trial-access-unavailable-service-allows-local-dashboard-zh--webkit\trace.zip
+    Usage:
+
+        npx playwright show-trace outputs\onboarding-v5\regression\trial-access-unavailable-service-allows-local-dashboard-zh--webkit\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:51856) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[226/286] [webkit] › tests\e2e\trial-access.spec.ts:157:1 › management shows real report values, review actions and responsive layout
+[227/286] [webkit] › tests\e2e\trial-access.spec.ts:173:33 › visible invitation entry starts planning without an application (en)
+[228/286] [webkit] › tests\e2e\v31-ai.spec.ts:115:1 › theme changes preserve candidate edits and do not send another model request
+  15) [webkit] › tests\e2e\trial-access.spec.ts:173:33 › visible invitation entry starts planning without an application (en) 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('.v31-ai')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('.v31-ai') with timeout 5000ms
+      - waiting for locator('.v31-ai')
+
+
+      201 |   await page.screenshot({ path: test.info().outputPath(`invitation-entry-${zh ? 'zh' : 'en'}.png`), fullPage: true });
+      202 |   await activate.click();
+    > 203 |   await expect(page).toHaveURL(/\/ai$/); await expect(page.locator('.v31-ai')).toBeVisible();
+          |                                                                                ^
+      204 |   expect(writes).toEqual(['/api/v1/trial/redeem']);
+      205 |   expect(await page.evaluate(() => localStorage.getItem('fitness-trial-display-name-v1'))).toBe('Synthetic member');
+      206 |   expect(await page.evaluate(() => Object.values(localStorage).some(v => v.includes('a'.repeat(64))))).toBe(false);
+        at D:\Project\xxgospel\Fitness\.worktrees\fitness-guided\tests\e2e\trial-access.spec.ts:203:80
+
+    Error Context: outputs\onboarding-v5\regression\trial-access-visible-invit-f4ce8--without-an-application-en--webkit\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    outputs\onboarding-v5\regression\trial-access-visible-invit-f4ce8--without-an-application-en--webkit\trace.zip
+    Usage:
+
+        npx playwright show-trace outputs\onboarding-v5\regression\trial-access-visible-invit-f4ce8--without-an-application-en--webkit\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:42924) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[229/286] [webkit] › tests\e2e\trial-access.spec.ts:173:33 › visible invitation entry starts planning without an application (zh)
+[230/286] [webkit] › tests\e2e\v31-ai.spec.ts:127:1 › failed generation retries only its original request and does not save automatically
+  16) [webkit] › tests\e2e\trial-access.spec.ts:173:33 › visible invitation entry starts planning without an application (zh) 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('.v31-ai')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('.v31-ai') with timeout 5000ms
+      - waiting for locator('.v31-ai')
+
+
+      201 |   await page.screenshot({ path: test.info().outputPath(`invitation-entry-${zh ? 'zh' : 'en'}.png`), fullPage: true });
+      202 |   await activate.click();
+    > 203 |   await expect(page).toHaveURL(/\/ai$/); await expect(page.locator('.v31-ai')).toBeVisible();
+          |                                                                                ^
+      204 |   expect(writes).toEqual(['/api/v1/trial/redeem']);
+      205 |   expect(await page.evaluate(() => localStorage.getItem('fitness-trial-display-name-v1'))).toBe('Synthetic member');
+      206 |   expect(await page.evaluate(() => Object.values(localStorage).some(v => v.includes('a'.repeat(64))))).toBe(false);
+        at D:\Project\xxgospel\Fitness\.worktrees\fitness-guided\tests\e2e\trial-access.spec.ts:203:80
+
+    Error Context: outputs\onboarding-v5\regression\trial-access-visible-invit-82501--without-an-application-zh--webkit\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    outputs\onboarding-v5\regression\trial-access-visible-invit-82501--without-an-application-zh--webkit\trace.zip
+    Usage:
+
+        npx playwright show-trace outputs\onboarding-v5\regression\trial-access-visible-invit-82501--without-an-application-zh--webkit\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+(node:19120) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[231/286] [webkit] › tests\e2e\trial-access.spec.ts:210:33 › pending applicants can enter a code and invalid codes do not activate (en)
+[232/286] [webkit] › tests\e2e\trial-access.spec.ts:210:33 › pending applicants can enter a code and invalid codes do not activate (zh)
+[233/286] [webkit] › tests\e2e\v31-day-plan-safety.spec.ts:2:1 › V3 manual batch exceeding backup capacity rolls back every write and revision
+[234/286] [webkit] › tests\e2e\v31-ai.spec.ts:135:1 › unrelated local message changes do not invalidate independent candidate save
+[235/286] [webkit] › tests\e2e\v31-day-plan-safety.spec.ts:7:1 › V3 known active and rest seconds fit the effective duration without inventing missing timing
+[236/286] [webkit] › tests\e2e\v31-plans-projection.spec.ts:23:1 › cross-zone occupancy, detail and Today use the same projected date without rewriting source time
+[237/286] [webkit] › tests\e2e\v31-plans-projection.spec.ts:43:1 › future cross-zone links navigate to the projected day
+[238/286] [webkit] › tests\e2e\v31-ai.spec.ts:142:1 › restore generation invalidates the old candidate without another paid request
+[239/286] [webkit] › tests\e2e\v31-plans-projection.spec.ts:52:1 › Today continues the active workout with its own exercise snapshot instead of another scheduled task
+[240/286] [webkit] › tests\e2e\v31-ai.spec.ts:150:1 › invalid duration is rejected locally before an AI request
+[241/286] [webkit] › tests\e2e\v31-ai.spec.ts:157:1 › AI date selection respects the current server day limit without another model call
+[242/286] [webkit] › tests\e2e\v31-plans-projection.spec.ts:68:1 › ambiguous projected dates require review and cannot be selected or saved as new plans
+[243/286] [webkit] › tests\e2e\v31-plans-visual.spec.ts:3:3 › atlas plans calendar and manual form fit desktop and mobile
+[244/286] [webkit] › tests\e2e\v31-plans.spec.ts:3:1 › viewing dates never creates plans; independent manual dates save with their own times and content
+[245/286] [webkit] › tests\e2e\v31-plans-visual.spec.ts:3:3 › serene plans calendar and manual form fit desktop and mobile
+[246/286] [webkit] › tests\e2e\v31-plans.spec.ts:37:1 › occupied dates reject selection; cross-month drafts survive navigation and mobile drag is explicit
+[247/286] [webkit] › tests\e2e\v31-plans-visual.spec.ts:3:3 › orbit plans calendar and manual form fit desktop and mobile
+[248/286] [webkit] › tests\e2e\v31-progress-catalog.spec.ts:39:3 › V3 Progress atlas seven widths: empty, long history, entry and chart
+[249/286] [webkit] › tests\e2e\v31-plans.spec.ts:61:1 › manual batch conflict keeps all drafts and performs zero partial writes
+[250/286] [webkit] › tests\e2e\v31-plans.spec.ts:76:1 › moving a manual workout time waits for confirmation and updates the saved plan
+[251/286] [webkit] › tests\e2e\v31-plans.spec.ts:108:1 › retained phase controls pause and resume offline; cancellation preserves active workout and original tasks
+[252/286] [webkit] › tests\e2e\v31-progress-catalog.spec.ts:39:3 › V3 Progress serene seven widths: empty, long history, entry and chart
+[253/286] [webkit] › tests\e2e\v31-shell.spec.ts:3:1 › themes preserve active workout inputs and identity, persist, and do not call AI
+[254/286] [webkit] › tests\e2e\v31-shell.spec.ts:14:1 › four-step backup keeps consent guards and synchronizes restored profile across tabs
+[255/286] [webkit] › tests\e2e\v31-progress-catalog.spec.ts:39:3 › V3 Progress orbit seven widths: empty, long history, entry and chart
+[256/286] [webkit] › tests\e2e\v31-shell.spec.ts:29:1 › loaded local workout can save a set offline
+[257/286] [webkit] › tests\e2e\v31-transactions.spec.ts:2:1 › V3 batch writes are atomic; candidate saves are independent, deduplicated and restore-safe
+[258/286] [webkit] › tests\e2e\v31-trial-status.spec.ts:3:142 › trial truthful state active
+[259/286] [webkit] › tests\e2e\v31-trial-status.spec.ts:3:142 › trial truthful state expired
+[260/286] [webkit] › tests\e2e\v31-trial-status.spec.ts:3:142 › trial truthful state revoked
+[261/286] [webkit] › tests\e2e\v31-trial-status.spec.ts:3:142 › trial truthful state none
+[262/286] [webkit] › tests\e2e\v31-progress-catalog.spec.ts:73:1 › V3 Progress counts sessions independently and preserves missing metrics
+[263/286] [webkit] › tests\e2e\v31-trial-status.spec.ts:3:142 › trial truthful state session-missing
+[264/286] [webkit] › tests\e2e\v31-trial-status.spec.ts:3:142 › trial truthful state quota
+[265/286] [webkit] › tests\e2e\v31-trial-status.spec.ts:3:142 › trial truthful state budget
+[266/286] [webkit] › tests\e2e\v31-trial-status.spec.ts:3:142 › trial truthful state pending
+[267/286] [webkit] › tests\e2e\v31-progress-catalog.spec.ts:85:1 › V3 catalog real filters, details, favorite persistence and no-result recovery
+[268/286] [webkit] › tests\e2e\v31-trial-status.spec.ts:3:142 › trial truthful state unavailable
+[269/286] [webkit] › tests\e2e\v31-trial-status.spec.ts:3:142 › trial truthful state query-failed
+[270/286] [webkit] › tests\e2e\v31-trial-status.spec.ts:40:1 › application lifecycle remains visible with receipt ownership and no automatic claim
+[271/286] [webkit] › tests\e2e\workout-backup.spec.ts:4:3 › workout timers adjustments preserve export and restore invariants
+[272/286] [webkit] › tests\e2e\v31-progress-catalog.spec.ts:111:1 › V3 Chinese measurements keep source, update history and fit all three mobile layouts
+[273/286] [webkit] › tests\e2e\workout-backup.spec.ts:4:3 › workout order adjustments preserve export and restore invariants
+[274/286] [webkit] › tests\e2e\workouts.spec.ts:4:1 › sets survive reload, review returns to editing and completed facts stay readable
+[275/286] [webkit] › tests\e2e\workout-backup.spec.ts:4:3 › workout skip adjustments preserve export and restore invariants
+(node:24932) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+
+
+(Use `node --trace-warnings ...` to show where the warning was created)
+[276/286] [webkit] › tests\e2e\capacity.spec.ts:11:3 › capacity small: actual export outcome and retained facts
+[277/286] [webkit] › tests\e2e\workouts.spec.ts:21:1 › two connections serialize starts and revisions; facts, memo and global revision roll back together
+[webkit] › tests\e2e\capacity.spec.ts:11:3 › capacity small: actual export outcome and retained facts
+webkit/small: export 13457 bytes
+
+webkit/small: actual download read
+
+webkit/small: restored and fields matched
+
+[278/286] [webkit] › tests\e2e\capacity.spec.ts:11:3 › capacity 5MiB: actual export outcome and retained facts
+[webkit] › tests\e2e\capacity.spec.ts:11:3 › capacity 5MiB: actual export outcome and retained facts
+webkit/5MiB: export 10499217 bytes
+
+[279/286] [webkit] › tests\e2e\workouts.spec.ts:26:1 › planned training links confirmed completion to its schedule
+webkit/5MiB: actual download read
+
+webkit/5MiB: restored and fields matched
+
+[280/286] [webkit] › tests\e2e\capacity.spec.ts:11:3 › capacity 6MiB: actual export outcome and retained facts
+[webkit] › tests\e2e\capacity.spec.ts:11:3 › capacity 6MiB: actual export outcome and retained facts
+webkit/6MiB: export 12596369 bytes
+
+webkit/6MiB: actual download read
+
+webkit/6MiB: restored and fields matched
+
+[281/286] [webkit] › tests\e2e\workouts.spec.ts:46:1 › removal cancellation preserves facts; confirmed removal persists and terminal workouts have no removal controls
+[282/286] [webkit] › tests\e2e\capacity.spec.ts:11:3 › capacity 8MiB: actual export outcome and retained facts
+[webkit] › tests\e2e\capacity.spec.ts:11:3 › capacity 8MiB: actual export outcome and retained facts
+webkit/8MiB: export 16790673 bytes
+
+[283/286] [webkit] › tests\e2e\capacity.spec.ts:11:3 › capacity 10000: actual export outcome and retained facts
+[webkit] › tests\e2e\capacity.spec.ts:11:3 › capacity 10000: actual export outcome and retained facts
+webkit/10000: export 14877122 bytes
+
+webkit/10000: actual download read
+
+webkit/10000: restored and fields matched
+
+[284/286] [webkit] › tests\e2e\capacity.spec.ts:44:1 › current raw UTF-8 file boundary is exact
+[285/286] [webkit] › tests\e2e\capacity.spec.ts:48:1 › post-backup writes invalidate replacement without changing any current table
+[286/286] [webkit] › tests\e2e\capacity.spec.ts:52:1 › loaded local backup downloads and restores with HTTP blocked
+  Slow test file: [webkit] › tests\e2e\capacity.spec.ts (5.5m)
+  Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
+  16 failed
+    [chromium] › tests\e2e\trial-access.spec.ts:3:33 › active trial enters planning and refreshes allowance without model calls (en) 
+    [chromium] › tests\e2e\trial-access.spec.ts:3:33 › active trial enters planning and refreshes allowance without model calls (zh) 
+    [chromium] › tests\e2e\trial-access.spec.ts:108:3 › application → pending → approval → claim → explicit planning entry (en) 
+    [chromium] › tests\e2e\trial-access.spec.ts:147:3 › unavailable service allows local dashboard (en) 
+    [chromium] › tests\e2e\trial-access.spec.ts:108:3 › application → pending → approval → claim → explicit planning entry (zh) 
+    [chromium] › tests\e2e\trial-access.spec.ts:147:3 › unavailable service allows local dashboard (zh) 
+    [chromium] › tests\e2e\trial-access.spec.ts:173:33 › visible invitation entry starts planning without an application (en) 
+    [chromium] › tests\e2e\trial-access.spec.ts:173:33 › visible invitation entry starts planning without an application (zh) 
+    [webkit] › tests\e2e\trial-access.spec.ts:3:33 › active trial enters planning and refreshes allowance without model calls (en) 
+    [webkit] › tests\e2e\trial-access.spec.ts:3:33 › active trial enters planning and refreshes allowance without model calls (zh) 
+    [webkit] › tests\e2e\trial-access.spec.ts:108:3 › application → pending → approval → claim → explicit planning entry (en) 
+    [webkit] › tests\e2e\trial-access.spec.ts:147:3 › unavailable service allows local dashboard (en) 
+    [webkit] › tests\e2e\trial-access.spec.ts:108:3 › application → pending → approval → claim → explicit planning entry (zh) 
+    [webkit] › tests\e2e\trial-access.spec.ts:147:3 › unavailable service allows local dashboard (zh) 
+    [webkit] › tests\e2e\trial-access.spec.ts:173:33 › visible invitation entry starts planning without an application (en) 
+    [webkit] › tests\e2e\trial-access.spec.ts:173:33 › visible invitation entry starts planning without an application (zh) 
+  270 passed (12.5m)

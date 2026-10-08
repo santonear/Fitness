@@ -6,6 +6,7 @@ import { evaluateSlot } from '../domain/day-slot-policy';
 import { createBackupService } from './backup';
 import { dateInZone } from './progress';
 import { scheduledWorkoutSchema } from '../domain/schemas';
+import { onboardingKeys, validV4Answer, v4Complete, type Answer } from '../domain/onboarding-v4';
 
 export function createGuidedService(repo: Repository) {
   async function read(): Promise<GuidedState> {
@@ -48,9 +49,31 @@ export function createGuidedService(repo: Repository) {
   async function setStep(step: number, revision: number) { return change(revision, async state => { if (state.onboarding) state.onboarding.step = step; }); }
   async function resetOnboarding(revision: number) { return change(revision, async state => { delete state.onboarding; }); }
   async function completeOnboarding(revision: number) { return change(revision, async state => {
+    if (state.onboarding?.version === 4) {
+      if (!v4Complete(state.onboarding.answers)) throw new DomainError('INVALID', 'Review all twelve answers');
+      state.onboarding.completed = true; state.onboarding.deferred = false; return;
+    }
     if (!biologicalSexAnswerSchema.safeParse(state.onboarding?.answers.biologicalSex).success) throw new DomainError('INVALID', 'Choose a biological sex response; prefer not to say is accepted');
     if (state.onboarding) state.onboarding.completed = true;
   }); }
+  async function saveV4(answers: Record<string, Answer>, step: number, revision: number, deferred = false) {
+    return change(revision, async state => {
+      if (Object.entries(answers).some(([key, answer]) => !validV4Answer(key, answer))) throw new DomainError('INVALID', 'Invalid onboarding answer');
+      state.onboarding = { id: state.onboarding?.id ?? crypto.randomUUID(), version: 4, answers, step, deferred, completed: false, updatedAt: new Date().toISOString() };
+    });
+  }
+  async function onboardingEntry() {
+    return repo.db.transaction('r', repo.db.tables, async () => {
+      const state = await read();
+      const facts = await repo.db.sessions.count() + await repo.db.plans.count();
+      return { state, required: !facts && !state.onboarding?.completed && !state.onboarding?.deferred };
+    });
+  }
+  function v4Answers(state: GuidedState): Record<string, Answer> {
+    return Object.fromEntries(onboardingKeys.flatMap(key => {
+      const answer = state.onboarding?.answers[key]; return answer && validV4Answer(key, answer) ? [[key, answer]] : [];
+    }));
+  }
   async function retainCandidate(input: ProgramCandidate, revision: number) {
     const candidate = programCandidateSchema.parse(input);
     return change(revision, async state => {
@@ -216,6 +239,6 @@ export function createGuidedService(repo: Repository) {
   }
   async function appendMessage(input: GuidedState['messages'][number], revision: number) { return change(revision, async state => { state.messages.push(input); }); }
   async function saveObservation(input: GuidedState['observations'][number], revision: number) { return change(revision, async state => { state.observations.push(input); }); }
-  return { read, captureDependencies, capturePlanContext, saveAnswer, setStep, resetOnboarding, completeOnboarding, retainCandidate, applyCandidate, saveIndependentCandidate, rescheduleTime, transition, transitionLegacy, workoutTransition, decideInvitation, appendMessage, saveObservation };
+  return { read, captureDependencies, capturePlanContext, saveAnswer, setStep, resetOnboarding, completeOnboarding, saveV4, onboardingEntry, v4Answers, retainCandidate, applyCandidate, saveIndependentCandidate, rescheduleTime, transition, transitionLegacy, workoutTransition, decideInvitation, appendMessage, saveObservation };
 }
 export const guidedService = createGuidedService(repository);

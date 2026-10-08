@@ -1,3 +1,4 @@
+import { AppIcon } from './AppIcon';
 import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 export function DateCalendar({locale,today,selected,onChange,onActive,occupied}:{locale:'en'|'zh';today:string;selected:string[];onChange:Dispatch<SetStateAction<string[]>>;onActive:(date:string)=>void;occupied:string[]}) {
   const zh=locale==='zh';const [month,setMonth]=useState(today.slice(0,7));const grid=useRef<HTMLDivElement>(null);
@@ -14,9 +15,9 @@ export function DateCalendar({locale,today,selected,onChange,onActive,occupied}:
   const dates=Array.from({length:42},(_,index)=>{const date=new Date(first);date.setUTCDate(1-offset+index);return date.toISOString().slice(0,10);});
   function move(delta:number){const date=new Date(first);date.setUTCMonth(date.getUTCMonth()+delta);setMonth(date.toISOString().slice(0,7));}
   return <div className="date-calendar" onKeyDown={event=>{if(event.key==='Escape'){cancel();event.preventDefault();}}}>
-    <div className="date-calendar-header"><button type="button" aria-label={zh?'上个月':'Previous month'} onClick={()=>move(-1)}>←</button>
+    <div className="date-calendar-header"><button type="button" aria-label={zh?'上个月':'Previous month'} onClick={()=>move(-1)}><AppIcon name="back"/></button>
       <label>{zh?'日历月份':'Calendar month'}<input type="month" required value={month} onChange={event=>{if(/^\d{4}-\d{2}$/.test(event.target.value)&&Number(event.target.value.slice(0,4))>=1&&Number(event.target.value.slice(5))>=1&&Number(event.target.value.slice(5))<=12)setMonth(event.target.value);}} /></label>
-      <button type="button" aria-label={zh?'下个月':'Next month'} onClick={()=>move(1)}>→</button></div>
+      <button type="button" aria-label={zh?'下个月':'Next month'} onClick={()=>move(1)}><AppIcon name="next"/></button></div>
     <p className="muted">{zh?'点击或拖选具体日期；触屏长按后拖选，滚动不会自动选择。选择不保存计划。':'Click or drag exact dates. On touch, hold before dragging; scrolling does not select. Selection does not save plans.'}</p>
     <div className="date-calendar-grid" ref={grid} onPointerUp={event=>{if(event.pointerType==='touch'&&touchStart.current&&!gesture.current)start(touchStart.current.date);stop();}}
       onPointerCancel={cancel} onPointerMove={event=>{if(touchStart.current&&!gesture.current&&Math.hypot(event.clientX-touchStart.current.x,event.clientY-touchStart.current.y)>10){clearTimer();touchStart.current=null;}

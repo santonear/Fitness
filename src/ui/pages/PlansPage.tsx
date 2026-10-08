@@ -1,3 +1,4 @@
+import { AppIcon, StatusIcon } from '../components/AppIcon';
 import { withLegacyConfirmation } from '../legacy-confirmation';
 import { DayPlansPanel } from '../components/DayPlansPanel';
 import { useEffect, useState } from 'react';
@@ -61,8 +62,8 @@ export function PlansPage() {
       <DayPlansPanel locale={locale} readOnly />
       <h2>{zh ? '旧周计划' : 'Legacy weekly plans'}</h2>
       <p>{zh ? '新计划可手动创建或由 AI 生成。旧课表和训练历史不会自动转换。' : 'Create new plans manually or with AI. Legacy schedules and training history are not converted automatically.'}</p>
-      {error && <p role="alert">{error}</p>}
-      {message && <p role="status">{message}</p>}
+      {error && <p role="alert"><StatusIcon status="error"/>{error}</p>}
+      {message && <p role="status"><AppIcon name="info"/>{message}</p>}
       <h2>{zh ? '已保存计划' : 'Saved plans'}</h2>
       <ul aria-label={zh ? '已保存计划' : 'Saved plans'}>
         {plans.map(plan => (

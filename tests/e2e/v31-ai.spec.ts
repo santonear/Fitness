@@ -1,6 +1,7 @@
 import {test, expect, type Page} from '@playwright/test';
 import {validateGuidedProviderOutput} from '../../src/backend/guided-provider';
 import {exercises} from '../../src/catalog/exercises';
+import {completedPlanningProfile} from './planning-profile-fixture';
 
 test.setTimeout(60000);
 const simple = exercises.find(item => item.metricType === 'reps' && item.equipment === 'none')!;
@@ -15,6 +16,7 @@ async function fixture(page:Page, options:{fail?:'understand'|'generate';maxDays
       {kind:'program',name:'Controlled fixture plan',explanation:'Synthetic response for a local browser test.',days:body.dialogue.dates.map((date:string)=>({date,exercises:[{exerciseId:simple.id,order:0,targetSets:[{metricType:'reps',reps:8}],setTimings:[{durationSeconds:40,restSeconds:30}],notes:'Controlled movement'}]}))};
     return route.fulfill({json:{requestId:body.requestId,accounting:'settled',result:validateGuidedProviderOutput(body.dialogue,raw),context:{restoreGeneration:body.restoreGeneration,inputDigest:body.sendConfirmation}}});
   });
+  await completedPlanningProfile(page);
   await page.goto('/ai');
   await expect(page.getByRole('textbox',{name:'Training goal and constraints'})).toBeEnabled();
   await page.getByRole('textbox',{name:'Training goal and constraints'}).fill('Build strength at home');

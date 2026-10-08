@@ -1,3 +1,4 @@
+import { AppIcon, StatusIcon } from '../AppIcon';
 import { trainingSlotSchema } from '../../../domain/training-time';
 
 export interface ScheduleSlot { date: string; startTime: string; durationMinutes: number }
@@ -13,7 +14,7 @@ export function ScheduleConfirmation({ locale, dates, slots, usualTime, duration
     {dates.map(date => {
       const slot = slots.find(item => item.date === date);
       return <fieldset key={date}><legend><label><input type="checkbox" disabled={disabled} checked={!!slot} onChange={event => onChange(event.target.checked ? [...slots, { date, startTime: usualTime, durationMinutes }].sort((a,b) => a.date.localeCompare(b.date)) : slots.filter(item => item.date !== date))} />{date}</label></legend>
-        {slot && <><label>{zh ? '开始时间' : 'Start time'}<input type="time" aria-label={`${date} ${zh ? '开始时间' : 'start time'}`} disabled={disabled} value={slot.startTime} onChange={event => onChange(slots.map(item => item.date === date ? { ...item, startTime: event.target.value } : item))} /></label><span> · {slot.durationMinutes} {zh ? '分钟' : 'minutes'}</span>{!trainingSlotSchema.safeParse(slot).success && <p role="alert">{zh ? '请选择有效时间，并在当日午夜前结束。' : 'Choose a valid time that ends by midnight.'}</p>}</>}
+        {slot && <><label>{zh ? '开始时间' : 'Start time'}<input type="time" aria-label={`${date} ${zh ? '开始时间' : 'start time'}`} disabled={disabled} value={slot.startTime} onChange={event => onChange(slots.map(item => item.date === date ? { ...item, startTime: event.target.value } : item))} /></label><span> · {slot.durationMinutes} {zh ? '分钟' : 'minutes'}</span>{!trainingSlotSchema.safeParse(slot).success && <p role="alert"><StatusIcon status="warning"/>{zh ? '请选择有效时间，并在当日午夜前结束。' : 'Choose a valid time that ends by midnight.'}</p>}</>}
       </fieldset>;
     })}
     <p id="schedule-quota-notice"><strong>{zh ? '确认后将使用 1 次计划生成额度。仅调整已保存计划的时间不消耗额度。' : 'Confirmation uses 1 plan generation allowance. Changing a saved training time uses no allowance.'}</strong></p>

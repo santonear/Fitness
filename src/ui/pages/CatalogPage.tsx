@@ -1,3 +1,4 @@
+import { AppIcon, StatusIcon } from '../components/AppIcon';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ExerciseMedia } from '../components/ExerciseMedia';
@@ -50,12 +51,12 @@ export function CatalogPage() {
       <label>{t('catalogCategory')}<select aria-label={t('catalogCategory')} value={category ?? ''} onChange={event => setCategory(event.target.value as CatalogFilters['category'] || undefined)}><option value="">{t('catalogAll')}</option>{(['strength', 'cardio', 'bodyweight'] as const).map(key => <option key={key} value={key}>{t(key)}</option>)}</select></label>
     </div>
     <div className="v31-content-toolbar"><label className="v31-checkbox"><input type="checkbox" checked={favoriteOnly} onChange={event => setFavoriteOnly(event.target.checked)} />{tr('只看已收藏', 'Favorites only')}</label><span role="status" className="v31-badge">{results.length} {tr('个动作', 'exercises')}</span><small>{tr('收藏保存在此浏览器，不包含在训练 JSON 备份中；恢复训练数据不会清除收藏。', 'Favorites stay in this browser, outside training JSON backups. Restoring training data keeps favorites.')}</small></div>
-    {storageError && <p role="alert">{storageError}</p>}
+    {storageError && <p role="alert"><StatusIcon status="warning"/>{storageError}</p>}
     {results.length === 0 && <section className="v31-empty"><h2>{t('catalogNoResults')}</h2><p>{tr('试试其他名称或减少筛选条件。', 'Try another name or fewer filters.')}</p><button onClick={() => { setQuery(''); setCategory(undefined); setEquipment(undefined); setMuscle(''); setFavoriteOnly(false); }}>{tr('清除筛选', 'Clear filters')}</button></section>}
     <div className="v31-exercise-grid">{results.map(exercise => {
       const isOpen = expanded.includes(exercise.id); const media = getExerciseMedia(exercise.id);
       return <article key={exercise.id} className="v31-exercise-card">
-        <div className="v31-exercise-art">{media && <img src={media.illustration} alt="" width="280" height="160" loading="lazy" />}<button className="v31-favorite" aria-label={tr('收藏', 'Favorite') + ' ' + exercise.name[locale]} aria-pressed={favorites.includes(exercise.id)} onClick={() => toggleFavorite(exercise.id)}>{favorites.includes(exercise.id) ? '★' : '☆'}</button></div>
+        <div className="v31-exercise-art">{media && <img src={media.illustration} alt="" width="280" height="160" loading="lazy" />}<button className="v31-favorite" aria-label={tr('收藏', 'Favorite') + ' ' + exercise.name[locale]} aria-pressed={favorites.includes(exercise.id)} onClick={() => toggleFavorite(exercise.id)}><AppIcon name="favorite"/></button></div>
         <div className="v31-exercise-content"><div className="v31-tags"><span className="v31-badge">{muscleName(muscleTags[exercise.id])}</span><span className="v31-badge">{t('equipment_' + exercise.equipment)}</span></div><h2>{exercise.name[locale]}</h2><p>{t('metric_' + exercise.metricType)}</p><p>{exercise.steps[locale][0]}</p>
           <button aria-expanded={isOpen} aria-controls={'exercise-' + exercise.id} onClick={() => setExpanded(current => isOpen ? current.filter(id => id !== exercise.id) : [...current, exercise.id])}>{isOpen ? tr('收起详情', 'Hide details') : tr('查看动作详情', 'View exercise details')}</button>
           {isOpen && <section id={'exercise-' + exercise.id} className="v31-exercise-detail"><h3>{tr('动作步骤', 'Steps')}</h3><ol>{exercise.steps[locale].map(step => <li key={step}>{step}</li>)}</ol><h3>{tr('注意事项', 'Cautions')}</h3>{exercise.cautions[locale].map(caution => <p key={caution}>{caution}</p>)}<ExerciseMedia exerciseId={exercise.id} exerciseName={exercise.name[locale]} locale={locale} /></section>}

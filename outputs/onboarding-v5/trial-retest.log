@@ -1,0 +1,45 @@
+
+[WebServer] (node:44204) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 30 tests using 2 workers
+
+
+(node:55452) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:41032) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1/30] [chromium] › tests\e2e\trial-access.spec.ts:4:33 › active trial enters planning and refreshes allowance without model calls (en)
+[2/30] [webkit] › tests\e2e\trial-access.spec.ts:4:33 › active trial enters planning and refreshes allowance without model calls (en)
+[3/30] [chromium] › tests\e2e\trial-access.spec.ts:4:33 › active trial enters planning and refreshes allowance without model calls (zh)
+[4/30] [chromium] › tests\e2e\trial-access.spec.ts:25:33 › manual invitation generation and revocation (en)
+[5/30] [webkit] › tests\e2e\trial-access.spec.ts:4:33 › active trial enters planning and refreshes allowance without model calls (zh)
+[6/30] [chromium] › tests\e2e\trial-access.spec.ts:25:33 › manual invitation generation and revocation (zh)
+[7/30] [chromium] › tests\e2e\trial-access.spec.ts:59:1 › quota restoration confirms defaults and retries the same operation after an uncertain response
+[8/30] [chromium] › tests\e2e\trial-access.spec.ts:84:1 › cost inputs stay independent when two subjects use the same request ID
+[9/30] [chromium] › tests\e2e\trial-access.spec.ts:110:3 › application → pending → approval → claim → explicit planning entry (en)
+[10/30] [webkit] › tests\e2e\trial-access.spec.ts:25:33 › manual invitation generation and revocation (en)
+[11/30] [chromium] › tests\e2e\trial-access.spec.ts:149:3 › unavailable service allows local dashboard (en)
+[12/30] [webkit] › tests\e2e\trial-access.spec.ts:25:33 › manual invitation generation and revocation (zh)
+[13/30] [chromium] › tests\e2e\trial-access.spec.ts:110:3 › application → pending → approval → claim → explicit planning entry (zh)
+[14/30] [webkit] › tests\e2e\trial-access.spec.ts:59:1 › quota restoration confirms defaults and retries the same operation after an uncertain response
+[15/30] [chromium] › tests\e2e\trial-access.spec.ts:149:3 › unavailable service allows local dashboard (zh)
+[16/30] [webkit] › tests\e2e\trial-access.spec.ts:84:1 › cost inputs stay independent when two subjects use the same request ID
+[17/30] [chromium] › tests\e2e\trial-access.spec.ts:161:1 › management shows real report values, review actions and responsive layout
+[18/30] [webkit] › tests\e2e\trial-access.spec.ts:110:3 › application → pending → approval → claim → explicit planning entry (en)
+[19/30] [chromium] › tests\e2e\trial-access.spec.ts:177:33 › visible invitation entry starts planning without an application (en)
+[20/30] [chromium] › tests\e2e\trial-access.spec.ts:177:33 › visible invitation entry starts planning without an application (zh)
+[21/30] [chromium] › tests\e2e\trial-access.spec.ts:214:33 › pending applicants can enter a code and invalid codes do not activate (en)
+[22/30] [webkit] › tests\e2e\trial-access.spec.ts:149:3 › unavailable service allows local dashboard (en)
+[23/30] [chromium] › tests\e2e\trial-access.spec.ts:214:33 › pending applicants can enter a code and invalid codes do not activate (zh)
+[24/30] [webkit] › tests\e2e\trial-access.spec.ts:110:3 › application → pending → approval → claim → explicit planning entry (zh)
+[25/30] [webkit] › tests\e2e\trial-access.spec.ts:149:3 › unavailable service allows local dashboard (zh)
+[26/30] [webkit] › tests\e2e\trial-access.spec.ts:161:1 › management shows real report values, review actions and responsive layout
+[27/30] [webkit] › tests\e2e\trial-access.spec.ts:177:33 › visible invitation entry starts planning without an application (en)
+[28/30] [webkit] › tests\e2e\trial-access.spec.ts:177:33 › visible invitation entry starts planning without an application (zh)
+[29/30] [webkit] › tests\e2e\trial-access.spec.ts:214:33 › pending applicants can enter a code and invalid codes do not activate (en)
+[30/30] [webkit] › tests\e2e\trial-access.spec.ts:214:33 › pending applicants can enter a code and invalid codes do not activate (zh)
+  30 passed (44.2s)

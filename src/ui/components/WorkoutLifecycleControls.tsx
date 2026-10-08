@@ -1,3 +1,4 @@
+import { AppIcon, StatusIcon } from './AppIcon';
 import { useEffect, useState } from 'react';
 import { liveQuery } from 'dexie';
 import { guidedService } from '../../application/guided';
@@ -10,5 +11,5 @@ export function WorkoutLifecycleControls({ sessionId, locale, onPaused }: { sess
   }, error: reason => setError(String(reason)) }); return () => subscription.unsubscribe(); }, [sessionId]);
   return <section className="guided-section"><p>{locale === 'zh' ? '训练可在离线时暂停和恢复；AI 不会自动结束训练。' : 'pause and resume offline; AI never ends this workout automatically.'}</p>
     <button disabled={busy} onClick={() => { setBusy(true); setError(''); void guidedService.workoutTransition(sessionId, !paused, revision).catch(reason => setError(String(reason))).finally(() => setBusy(false)); }}>{locale === 'zh' ? paused ? '恢复训练' : '暂停训练' : paused ? 'resume workout' : 'pause workout'}</button>
-    {error && <p role="alert">{error}</p>}</section>;
+    {error && <p role="alert"><StatusIcon status="error"/>{error}</p>}</section>;
 }

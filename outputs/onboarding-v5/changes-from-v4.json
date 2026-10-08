@@ -1,0 +1,242 @@
+[
+  {
+    "path": "src/domain/onboarding-v5.ts",
+    "kind": "new",
+    "sha256": "806174ee88d7d3562a254b9407d94171f67063fdac2f7b4e3d56743a1a31f0a7"
+  },
+  {
+    "path": "src/main.tsx",
+    "kind": "modified",
+    "sha256": "e4a24b18fda18db1fa28f9caf8310fb58abb9dc65fff91700ef7a89b9f56ce49"
+  },
+  {
+    "path": "src/ui/App.tsx",
+    "kind": "modified",
+    "sha256": "b04e0ac112e48952dcc81737b361160fdb41b67b2ceeebc5790aee3332f03da1"
+  },
+  {
+    "path": "src/ui/components/AppIcon.tsx",
+    "kind": "new",
+    "sha256": "d2f067053b1a43fcd8f3f3184380eef93a88c1142908ac827ea9052141aec483"
+  },
+  {
+    "path": "src/ui/components/BackupPanel.tsx",
+    "kind": "modified",
+    "sha256": "1e202e48d4e820b36a0e9a6540176d8b21b322b218fa72831450e1c8207a6ee1"
+  },
+  {
+    "path": "src/ui/components/DateCalendar.tsx",
+    "kind": "modified",
+    "sha256": "7e7e6e8ee75c8b49d252a692a9176e7959d46de2905c66b83867ffc114df326b"
+  },
+  {
+    "path": "src/ui/components/DayPlanEditor.tsx",
+    "kind": "modified",
+    "sha256": "d1a15c66a7f25b323cd64d4075da8cbb02cb5b7531450aee5f5db20286c9f7fa"
+  },
+  {
+    "path": "src/ui/components/DayPlansPanel.tsx",
+    "kind": "modified",
+    "sha256": "0f8b6c13f65ca3e7af1ec09e739ab618b586aad113c539951dbc3764c7995eb8"
+  },
+  {
+    "path": "src/ui/components/ExerciseEditor.tsx",
+    "kind": "modified",
+    "sha256": "7e0f0fa1ac40db0603b64b9c803a14ed11da82a8214ed318c7a8768bea9d0050"
+  },
+  {
+    "path": "src/ui/components/ExerciseMedia.tsx",
+    "kind": "modified",
+    "sha256": "e2c61b7d24bd0e528315ca8f5e7a9ecb93fdcce1cc32457ef34276a62df31774"
+  },
+  {
+    "path": "src/ui/components/guided/GuidedMeasurements.tsx",
+    "kind": "modified",
+    "sha256": "bb016e66ec1bd4c15a99b95f077553a9dfd4d7d9b2506b25fe1edaf89f347e54"
+  },
+  {
+    "path": "src/ui/components/guided/GuidedOnboarding.tsx",
+    "kind": "modified",
+    "sha256": "11dc84307c50c2e519905bf4f59125d1d4c5d4a7f9314d1b9330e212f492532e"
+  },
+  {
+    "path": "src/ui/components/guided/LifecycleDialog.tsx",
+    "kind": "modified",
+    "sha256": "b88b86d886ea29dc2aba048310a280bae91ea4e2382aebee13bbe8001f02d52b"
+  },
+  {
+    "path": "src/ui/components/guided/OnboardingInputDialog.tsx",
+    "kind": "modified",
+    "sha256": "dfd699bda65541e85beef37fa66c129134413bcb697da7a35ba51adbf11d1541"
+  },
+  {
+    "path": "src/ui/components/guided/ScheduleConfirmation.tsx",
+    "kind": "modified",
+    "sha256": "ceb9a449357efeeb8b3937c0e0047ccd7c55d9e430d42047e99de3082fe697fb"
+  },
+  {
+    "path": "src/ui/components/guided/TrainingAnalytics.tsx",
+    "kind": "modified",
+    "sha256": "db5835bc3d268ef0bc14b60a878c89b87a75935a9ef40343af7ba479cd2260a8"
+  },
+  {
+    "path": "src/ui/components/guided/TrainingCalendar.tsx",
+    "kind": "modified",
+    "sha256": "a88a38fc050e180f26a7f2cdd5fcab5202d0278e4e5864707608d33ed9515f84"
+  },
+  {
+    "path": "src/ui/components/guided/TrainingTimeEditor.tsx",
+    "kind": "modified",
+    "sha256": "f58d2cdd8b4042da9bb59eb0b0d15028d760cdd6cc46b5592a7b00bc36398fd1"
+  },
+  {
+    "path": "src/ui/components/guided/V4Wheel.tsx",
+    "kind": "modified",
+    "sha256": "45f1b9978b27c44cf3db697c8eb08c10498f5a21597fbbf2b417506345b399cc"
+  },
+  {
+    "path": "src/ui/components/ManualInvites.tsx",
+    "kind": "modified",
+    "sha256": "5fc22085b4ccfa7a9124c953c14b2595cb5a76ff8172998cccd1b07b01609c53"
+  },
+  {
+    "path": "src/ui/components/NavigationIcon.tsx",
+    "kind": "modified",
+    "sha256": "58c2d5bf0b839cd79beaa12a7cd8b50497a0612ac78957c5f8e6240fb1423acf"
+  },
+  {
+    "path": "src/ui/components/OnboardingGate.tsx",
+    "kind": "modified",
+    "sha256": "d7875ed7799349886822d878a19756f800e846f3162a7443e40c14190896cdbb"
+  },
+  {
+    "path": "src/ui/components/PlanDatePicker.tsx",
+    "kind": "modified",
+    "sha256": "78871c789b65b5c308757ab45c159e98b16fd620b748a0794764ef2b2c285e57"
+  },
+  {
+    "path": "src/ui/components/PlanEditor.tsx",
+    "kind": "modified",
+    "sha256": "317e8d25c797b071ce7b0b1e54e66f3ced1b2eb99214916d75adc6dc03bff84f"
+  },
+  {
+    "path": "src/ui/components/StageSummaryAi.tsx",
+    "kind": "modified",
+    "sha256": "fbaa14ef76da7ac4e1954b9e0146ae74063a8d8404df8e3841005871b1ddef57"
+  },
+  {
+    "path": "src/ui/components/StageSummaryPreview.tsx",
+    "kind": "modified",
+    "sha256": "aab654c305135f9c1e668535e171dc079d12cb70bd81fc303537116197da6d94"
+  },
+  {
+    "path": "src/ui/components/TrialAccess.tsx",
+    "kind": "modified",
+    "sha256": "f5b8d256ec4f6be2e459c504d95e864c2b7885ab7f6034e5fe91fb2a2445263c"
+  },
+  {
+    "path": "src/ui/components/WorkoutLifecycleControls.tsx",
+    "kind": "modified",
+    "sha256": "45242252dbc322bcb3e72573d9f046f2eb9cf4e59d162d77dff002436f877e11"
+  },
+  {
+    "path": "src/ui/components/WorkoutTimer.tsx",
+    "kind": "modified",
+    "sha256": "5a5b28e5da3a5e579402a667de9036eefbc6c186c5fbed9780acd2d494a67567"
+  },
+  {
+    "path": "src/ui/icons-v5.css",
+    "kind": "new",
+    "sha256": "89e5078e0dac98e1146fa27d021c0577a4b1486389a0cade488f91d55ee7f925"
+  },
+  {
+    "path": "src/ui/pages/AiPage.tsx",
+    "kind": "modified",
+    "sha256": "becd4a666fea0b3bc5dfd7661e3302557fabfdc959d792ad7a286314da5b3f3d"
+  },
+  {
+    "path": "src/ui/pages/CatalogPage.tsx",
+    "kind": "modified",
+    "sha256": "9be6e6fb06208daeb63bf69e199c519d809b0fb807ebe4ee2257a5b4e109ad97"
+  },
+  {
+    "path": "src/ui/pages/GuidedDialoguePage.tsx",
+    "kind": "modified",
+    "sha256": "326a775cb6a2c4c335d1ceb0c7467296186818f7ef96a668c669a65edb412076"
+  },
+  {
+    "path": "src/ui/pages/GuidedHome.tsx",
+    "kind": "modified",
+    "sha256": "b50ee34528c2d1eaa7a3c9af96c850c40ca8975fb0539998ce8f1b28c6bfbe25"
+  },
+  {
+    "path": "src/ui/pages/ManagementPage.tsx",
+    "kind": "modified",
+    "sha256": "3aeb614a8de925132abc086e25aa6464eb046a70457026bfa719e6206fbfe351"
+  },
+  {
+    "path": "src/ui/pages/OnboardingV4Page.tsx",
+    "kind": "modified",
+    "sha256": "8c5c3631aad1036492c7f1bc877079fa25940554e73345bfeec13b48cbf443c9"
+  },
+  {
+    "path": "src/ui/pages/PlansPage.tsx",
+    "kind": "modified",
+    "sha256": "6fcee43e0458031e3003040126592b4cc7fffabad337e482fd49460416d95c66"
+  },
+  {
+    "path": "src/ui/pages/PlansWorkspace.tsx",
+    "kind": "modified",
+    "sha256": "92357fcd2556a66b9e660767f261e7daae15736e95acf3757182c5753606e409"
+  },
+  {
+    "path": "src/ui/pages/ProgressPage.tsx",
+    "kind": "modified",
+    "sha256": "105f6066e606c41a774ef69f606a697de792636e0050ebc12645b4d12436f15e"
+  },
+  {
+    "path": "src/ui/pages/SettingsPage.tsx",
+    "kind": "modified",
+    "sha256": "0a24bfe26167ef2076f9efb02ad812038fa609b3ea48ff1a3e67070889b63b78"
+  },
+  {
+    "path": "src/ui/pages/TodayPage.tsx",
+    "kind": "modified",
+    "sha256": "a78147f6e7e2e77bf3970a5b457707601c18856967731db41f9b4ce959d31f66"
+  },
+  {
+    "path": "src/ui/pages/WorkoutPage.tsx",
+    "kind": "modified",
+    "sha256": "094527ace6dfd7f924abbc3a2b0215b0decd9ed5a9f05d069859a5a6fd69da71"
+  },
+  {
+    "path": "tests/e2e/onboarding-v4-storage.spec.ts",
+    "kind": "modified",
+    "sha256": "b71179904166ca632a4bcfb105ab79547f4412498b66e8c9df2ad342bcb9e506"
+  },
+  {
+    "path": "tests/e2e/onboarding-v4-visual.spec.ts",
+    "kind": "modified",
+    "sha256": "40edaac97cd5fc4d6a3c6eca41e284f644c2c3b47a432e43f41221b90b18315a"
+  },
+  {
+    "path": "tests/e2e/onboarding-v4.spec.ts",
+    "kind": "modified",
+    "sha256": "27c088adfb99b66ac4c11956fc734c4c8e30ce6ca9e93df2f17be00a81df4e05"
+  },
+  {
+    "path": "tests/e2e/onboarding-v5.spec.ts",
+    "kind": "new",
+    "sha256": "327ea77a5443de5bceb8a68b177298714c6377d54a483cedf5645678259616ac"
+  },
+  {
+    "path": "tests/e2e/trial-access.spec.ts",
+    "kind": "modified",
+    "sha256": "c7b037664f6d9f54315d694c27cd28cee10870745b8bb1948ab502f7a390aa0e"
+  },
+  {
+    "path": "tests/unit/onboarding-v5.test.ts",
+    "kind": "new",
+    "sha256": "bd7970d312b2ed1e50efdea4ffc05f2900a62c49f1230682141049481d76191d"
+  }
+]
