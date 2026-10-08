@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 test('calendar mouse cancellation and keyboard selection never save plans',async({page})=>{
- await page.clock.setFixedTime(new Date('2028-02-15T12:00:00Z'));await page.goto('/plans');
+ await page.setViewportSize({width:1440,height:1000});
+ await page.clock.setFixedTime(new Date('2028-02-15T12:00:00Z'));await page.goto('/plans');await page.getByRole('button',{name:'View month / day timeline and adjust training time',exact:true}).click();
  const calendar=page.getByRole('region',{name:'training calendar',exact:true});
  await calendar.getByRole('button',{name:'select multiple days',exact:true}).click();
  const cell=(date:string)=>calendar.locator(`[data-calendar-date="${date}"]`);
@@ -13,7 +14,7 @@ test('calendar mouse cancellation and keyboard selection never save plans',async
  expect(await page.evaluate(async()=>{const {database}=await import(String('/src/persistence/db.ts'));return [await database.plans.count(),await database.sessions.count()];})).toEqual([0,0]);
 });
 test('loaded offline calendar remains navigable and does not create facts',async({page,context})=>{
- await page.goto('/plans');const calendar=page.getByRole('region',{name:'training calendar',exact:true});await expect(calendar).toBeVisible();
+ await page.goto('/plans');await page.getByRole('button',{name:'View month / day timeline and adjust training time',exact:true}).click();const calendar=page.getByRole('region',{name:'training calendar',exact:true});await expect(calendar).toBeVisible();
  const before=await calendar.getByRole('heading',{level:2}).textContent();
  await context.route(/^https?:\/\//,route=>route.abort('internetdisconnected'));
  await calendar.getByRole('button',{name:'next month',exact:true}).click();await expect(calendar.getByRole('heading',{level:2})).not.toHaveText(before!);

@@ -2,7 +2,7 @@ import type { AiRequest } from '../backend/contracts';
 import { confirmationFor, goalConfirmationFor, validateRequest, validateCandidate } from '../backend/contracts';
 export type PlanAiRequest=Exclude<AiRequest,{operation:'summary'}>;
 export interface AiClient {
- status():Promise<{expiresAt:number;period:string;used:{understand:number;generate:number};limits:{understand:number;generate:number};pending?:number;reconciliationRequired?:boolean;aiEnabled:boolean}>;
+ status():Promise<{expiresAt:number;period:string;used:{understand:number;generate:number};limits:{understand:number;generate:number};maxDays?:number;resetAt?:number;timeZone?:string;maximumRequestCost?:number;requestBounds?:{understand:number;generate:number};budgetAvailable?:{understand:boolean;generate:boolean};pending?:number;reconciliationRequired?:boolean;aiEnabled:boolean}>;
  redeem(code:string):Promise<void>;
  submit(request:PlanAiRequest,signal?:AbortSignal):Promise<{requestId:string;result:unknown;context?:{restoreGeneration:number;inputDigest:string};accounting?:'settled'|'pending'}>;
  cancel(requestId:string):Promise<void>;

@@ -15,7 +15,7 @@ test('completed history has read-only details and survives reload', async ({ pag
   await page.getByRole('button', { name: 'Confirm completion', exact: true }).click();
   await expect(page.getByRole('status')).toHaveText('Workout completed');
   await page.goto('/progress');
-  await expect(page.getByText('No tasks due', { exact: true })).toBeVisible();
+  await expect(page.locator('.v31-metric').filter({hasText:'Completed workouts'}).locator('strong')).toHaveText('1');
   await page.getByRole('button', { name: 'View history details', exact: true }).click();
   const detail = page.getByRole('region', { name: 'History details' });
   await expect(detail).toContainText('12 reps · 2.5 kg');
@@ -27,7 +27,7 @@ test('completed history has read-only details and survives reload', async ({ pag
   await page.getByLabel('Category').selectOption('cardio');
   await expect(page.getByText('No completed training in this selection.', { exact: true })).toBeVisible();
   await page.getByLabel('Language').selectOption('zh');
-  await expect(page.getByRole('heading', { name: '训练进度', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '看见真实进步，不追逐虚构分数', exact: true })).toBeVisible();
 });
 
 test('Today exposes a continue link for the persisted ongoing session', async ({ page }) => {
@@ -37,6 +37,6 @@ test('Today exposes a continue link for the persisted ongoing session', async ({
   await page.goto('/progress');
   await expect(page.getByText('No completed training in this selection.', { exact: true })).toBeVisible();
   await page.goto('/');
-  await page.getByRole('button', { name: 'continue workout', exact: true }).click();
+  await page.getByRole('link', { name: 'Continue workout', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Review completion', exact: true })).toBeVisible();
 });

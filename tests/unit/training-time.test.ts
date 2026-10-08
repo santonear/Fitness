@@ -31,7 +31,7 @@ describe('confirmed training schedule', () => {
   it('rejects missing, duplicated, unconfirmed and over-range dates', () => {
     const req=request();
     expect(guidedDialogueRequestSchema.safeParse(req).success).toBe(true);
-    for(const changed of [{schedule:req.schedule!.slice(1)},{schedule:req.schedule!.map(()=>req.schedule![0])},{dateSelection:'ai'},{endDate:'2026-10-22'}]) expect(guidedDialogueRequestSchema.safeParse({...req,...changed}).success).toBe(false);
+    for(const changed of [{schedule:req.schedule!.slice(1)},{schedule:req.schedule!.map(()=>req.schedule![0])},{dateSelection:'ai'},{endDate:'2026-11-08'}]) expect(guidedDialogueRequestSchema.safeParse({...req,...changed}).success).toBe(false);
     expect(()=>validateGuidedProviderInput(req,14)).not.toThrow();
     expect(()=>validateGuidedProviderInput(req,7)).toThrow();
   });
@@ -40,5 +40,13 @@ describe('confirmed training schedule', () => {
     const response=validateGuidedProviderOutput(req,raw);
     expect('candidate' in response && response.candidate.days.map(day=>day.startTime)).toEqual(Array(14).fill('12:00'));
     for(const sets of [undefined,[{durationSeconds:1801,restSeconds:0}]]) expect(()=>validateGuidedProviderOutput(req,{...raw,days:raw.days.map(day=>({...day,exercises:[{...exercise,setTimings:sets}]}))})).toThrow();
+  });
+  it('accepts nonconsecutive selected dates across a month within the 31-day bound', () => {
+    const {requestId,inputSnapshot: previousSnapshot,...base}=request(2);
+    const dates=['2026-10-25','2026-11-07'];
+    const input={...base,startDate:dates[0],endDate:dates[1],dates,schedule:dates.map(date=>({date,startTime:'12:00',durationMinutes:30}))};
+    const value={...input,requestId,inputSnapshot:guidedInputSnapshot(input)};
+    expect(guidedDialogueRequestSchema.safeParse(value).success).toBe(true);
+    expect(()=>validateGuidedProviderInput(value,14)).not.toThrow();
   });
 });

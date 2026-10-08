@@ -60,7 +60,7 @@ export function PlansPage() {
       <p><Link to="/ai">{zh ? 'AI 计划助手' : 'AI plan assistant'}</Link></p>
       <DayPlansPanel locale={locale} readOnly />
       <h2>{zh ? '旧周计划' : 'Legacy weekly plans'}</h2>
-      <p>{zh ? '计划创建和内容修改已改为对话；旧数据不会自动转换。' : 'Create and revise plans through dialogue; old data is not converted automatically.'}</p>
+      <p>{zh ? '新计划可手动创建或由 AI 生成。旧课表和训练历史不会自动转换。' : 'Create new plans manually or with AI. Legacy schedules and training history are not converted automatically.'}</p>
       {error && <p role="alert">{error}</p>}
       {message && <p role="status">{message}</p>}
       <h2>{zh ? '已保存计划' : 'Saved plans'}</h2>
@@ -99,7 +99,7 @@ export function PlansPage() {
       </ul>
       {viewing && <section aria-label={zh ? '只读课表' : 'read-only schedule'}>
         <h2>{viewing.plan.name}</h2>
-        <p>{zh ? '保留原课表，只读查看。内容调整通过对话提出。' : 'original schedule retained; read only. Discuss changes through dialogue.'}</p>
+        <p>{zh ? '保留原课表，只读查看。新的训练内容可在“创建计划”中另行安排。' : 'The original schedule remains read-only. Arrange new training content in Create plan.'}</p>
         {viewing.version.days.map((day, index) => <section key={day.dayId}>
           <h3>{zh ? `第 ${index + 1} 日` : `day ${index + 1}`}</h3>
           <ul>{day.exercises.map(item => <li key={item.exerciseId + item.order}>

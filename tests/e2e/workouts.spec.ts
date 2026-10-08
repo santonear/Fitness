@@ -15,7 +15,7 @@ test('sets survive reload, review returns to editing and completed facts stay re
  await page.getByRole('button', { name: 'Review completion', exact: true }).click();
  await page.getByRole('button', { name: 'Confirm completion', exact: true }).click();
  await expect(page.getByText('Workout completed', { exact: true })).toBeVisible();
- await page.goto('/settings'); await page.getByRole('button', { name: 'Read full training memo', exact: true }).click();
+ await page.goto('/settings?tab=profile'); await page.getByRole('button', { name: 'Read full training memo', exact: true }).click();
  await expect(page.getByRole('region', { name: 'Full training memo' })).toContainText('Last reps felt steady');
 });
 test('two connections serialize starts and revisions; facts, memo and global revision roll back together', async ({ page }) => {
@@ -41,7 +41,7 @@ test('planned training links confirmed completion to its schedule', async ({ pag
  await page.getByRole('button',{name:'Review completion',exact:true}).click();
  await page.getByRole('button',{name:'Confirm completion',exact:true}).click();
  await expect(page.getByRole('status')).toHaveText('Workout completed');
- await page.goto('/plans');await expect(page.getByRole('list',{name:'Schedule'})).toContainText('completed');
+ await page.goto('/plans?tab=legacy');await expect(page.getByRole('list',{name:'Schedule'})).toContainText('completed');
 });
 test('removal cancellation preserves facts; confirmed removal persists and terminal workouts have no removal controls', async ({page}) => {
  await page.goto('/workout');

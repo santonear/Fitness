@@ -39,7 +39,7 @@ export function createHandler(service: ControlService, options: { origins: strin
       const url = new URL(request.url), path = url.pathname;
       if (path === '/api/v1/health' && request.method === 'GET') return json({ status: options.supplierMode ?? 'local-mock', productionModelEnabled: false });
       if (path === '/api/v1/trial/application-config' && request.method === 'GET') return json({ siteKey: options.turnstileSiteKey ?? null, available: Boolean(options.verifyApplication) });
-      const known = ['/api/v1/trial/redeem', '/api/v1/trial/status', '/api/v1/goals/interpret', '/api/v1/plans/generate', '/api/v1/stages/summarize', '/api/v1/requests/cancel',
+      const known = ['/api/v1/trial/access-status', '/api/v1/trial/redeem', '/api/v1/trial/status', '/api/v1/goals/interpret', '/api/v1/plans/generate', '/api/v1/stages/summarize', '/api/v1/requests/cancel',
         '/api/v1/trial/apply', '/api/v1/trial/applications', '/api/v1/trial/claim', '/api/v1/admin/applications', '/api/v1/admin/application-review', '/api/v1/admin/application-retention', '/api/v1/admin/quota-restore',
         '/api/v1/admin/invites', '/api/v1/admin/invites/revoke', '/api/v1/admin/revoke', '/api/v1/admin/reissue', '/api/v1/admin/mock', '/api/v1/admin/recovery', '/api/v1/admin/reconciled', '/api/v1/admin/settle', '/api/v1/admin/retention', '/api/v1/admin/report',
         ...(options.supplierMode ? ['/api/v1/admin/supplier'] : [])];
@@ -53,6 +53,11 @@ export function createHandler(service: ControlService, options: { origins: strin
       }
       if (request.method !== 'POST') throw new ControlError('METHOD_NOT_ALLOWED', 405);
       const data = await body(request, options.maxBodyBytes);
+      if (path === '/api/v1/trial/access-status') {
+        const value = parse(z.strictObject({ receipt: z.string().regex(/^[a-f0-9]{64}$/).optional() }), data);
+        let session: string | undefined; try { session = sessionToken(request); } catch { /* No authenticated session; only a verified receipt may identify a subject. */ }
+        return json(await service.accessStatus(session, value.receipt));
+      }
       if (path === '/api/v1/trial/applications' || path === '/api/v1/trial/claim') {
         const value = parse(z.strictObject({ receipt: z.string().regex(/^[a-f0-9]{64}$/), ...(path.endsWith('/claim') ? { id: z.uuid() } : {}) }), data);
         if (path.endsWith('/applications')) return json(await service.applications.list(value.receipt));

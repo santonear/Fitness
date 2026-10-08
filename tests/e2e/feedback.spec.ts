@@ -21,7 +21,7 @@ for (const locale of ['en', 'zh'] as const) {
   const text = (en: string, zh: string) => locale === 'zh' ? zh : en;
   test(locale + ': retained legacy plan is read-only and blocked deletion reports one error', async ({ page }) => {
     if (locale === 'zh') await page.getByLabel('Language', { exact: true }).selectOption('zh');
-    await page.goto('/plans');
+    await page.goto('/plans?tab=legacy');
     await page.evaluate(async () => {
       const { planService } = await import(String('/src/application/plans.ts'));
       await planService.savePlan({ name: 'Original plan', source: 'manual', startDate: '2026-10-05',

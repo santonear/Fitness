@@ -2,10 +2,10 @@ import { expect, test } from '@playwright/test';
 
 test('analytics counts actual completed facts, filters periods and preserves history', async ({page},testInfo) => {
   await page.addInitScript(()=>localStorage.setItem('fitness.language','en'));
-  await page.goto('/');
-  await page.getByRole('button',{name:'view your dashboard first'}).click();
-  const analytics=page.getByRole('region',{name:'training analytics',exact:true});
-  await expect(analytics.getByText('no completed records to analyse yet.').first()).toBeVisible();
+  await page.goto('/progress');
+
+  const analytics=page.locator('.v31-progress');
+  await expect(analytics.getByText('No completed training in this selection.',{exact:true})).toBeVisible();
   await page.evaluate(async()=>{
     const wp='/src/application/workouts.ts',cp='/src/catalog/exercises.ts',pp='/src/application/profile.ts';
     const {workoutService}=await import(/* @vite-ignore */wp); const {exercises}=await import(/* @vite-ignore */cp); const {profileService}=await import(/* @vite-ignore */pp);
@@ -20,29 +20,29 @@ test('analytics counts actual completed facts, filters periods and preserves his
       if(i<3)await workoutService.completeWorkout(session.id,result.revision);
     }
   });
-  const card=(name:string)=>analytics.locator('.analytics-kpis article').filter({has:page.getByRole('heading',{name,exact:true})});
-  await expect(card('completed workouts').locator('strong')).toHaveText('3');
-  await expect(card('training days').locator('strong')).toHaveText('2');
-  await expect(card('recorded volume').locator('strong')).toHaveText('35 kg·reps');
-  await expect(card('recorded duration').locator('strong')).toHaveText('2 min');
+  await analytics.getByRole('button',{name:'90 days',exact:true}).click();
+  const card=(name:string)=>analytics.locator('.v31-metric').filter({has:page.getByText(name,{exact:true})});
+  await expect(card('Completed workouts').locator('strong')).toHaveText('3');
+  await page.getByText('View chart data',{exact:true}).click();
+  await expect(page.locator('.v31-chart-data li')).toHaveCount(2);
+  await expect(card('Recorded volume').locator('strong')).toHaveText('35 kg·reps');
+  await expect(card('Total recorded duration').locator('strong')).toHaveText('2 min');
   const read=()=>page.evaluate(async()=>{const path='/src/persistence/db.ts';const {database}=await import(/* @vite-ignore */path);return JSON.stringify([await database.sessions.toArray(),await database.sets.toArray()]);});
   const before=await read();
-  await analytics.getByRole('button',{name:'30D',exact:true}).click();
-  await expect(card('completed workouts').locator('strong')).toHaveText('2');
-  await expect(card('recorded duration').locator('strong')).toHaveText('—');
-  await analytics.getByRole('button',{name:'180D',exact:true}).click();
-  await expect(card('completed workouts').locator('strong')).toHaveText('3');
+  await analytics.getByRole('button',{name:'30 days',exact:true}).click();
+  await expect(card('Completed workouts').locator('strong')).toHaveText('2');
+  await expect(card('Total recorded duration').locator('strong')).toHaveText('—');
+  await analytics.getByRole('button',{name:'180 days',exact:true}).click();
+  await expect(card('Completed workouts').locator('strong')).toHaveText('3');
   for(const width of [320,375,390,430,768,1024,1280,1440]){
     await page.setViewportSize({width,height:960});
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   }
   await page.screenshot({path:testInfo.outputPath('analytics-desktop.png'),fullPage:false});
   await page.setViewportSize({width:390,height:844});
-  await page.getByRole('button',{name:'menu',exact:true}).click();
-  await expect(page.getByRole('navigation',{name:'analytics navigation'})).toBeVisible();
-  await expect(page.getByRole('button',{name:/muscle groups/})).toBeDisabled();
+  await expect(page.getByRole('navigation',{name:'Bottom navigation',exact:true})).toBeVisible();
+  await expect(page.getByRole('navigation',{name:'Bottom navigation',exact:true}).getByRole('link')).toHaveCount(5);
   await page.screenshot({path:testInfo.outputPath('analytics-navigation-mobile.png'),fullPage:true});
-  await page.getByRole('button',{name:'menu',exact:true}).click();
   await analytics.screenshot({path:testInfo.outputPath('analytics-mobile.png')});
   expect(await read()).toBe(before);
 });

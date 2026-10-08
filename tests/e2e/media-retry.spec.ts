@@ -5,6 +5,8 @@ test('failed videos can retry and close with written steps preserved in both lan
  page.on('request', request => { if (/youtube|ytimg/.test(request.url())) remote.push(request.url()); });
  await page.route('https://www.youtube-nocookie.com/**', route => route.abort());
  await page.goto('/exercises');
+ await expect(page.getByRole('button',{name:'View exercise details',exact:true}).first()).toBeVisible();
+ for (let i=0;i<4;i++) await page.getByRole('button', {name:'View exercise details',exact:true}).first().click();
  await expect(page.getByRole('heading', { name: 'Bodyweight squat', exact: true })).toBeVisible();
  expect(remote).toEqual([]);
  await expect(page.getByText('The publisher page or document links this video; this confirms source association only.', { exact: true })).toHaveCount(3);
@@ -27,8 +29,7 @@ test('failed videos can retry and close with written steps preserved in both lan
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
  }
  await page.getByRole('combobox', { name: '语言' }).selectOption('en');
- await expect(page.getByText('Stand steadily and extend your arms for balance.', { exact: true })).toBeVisible();
- await page.getByRole('button', { name: 'menu', exact: true }).click();
- await page.getByRole('navigation').getByRole('link', { name: 'Today', exact: true }).click();
- await expect(page.getByRole('heading', { name: 'let’s start with you.', exact: true })).toBeVisible();
+ await expect(page.locator('li').getByText('Stand steadily and extend your arms for balance.', { exact: true })).toBeVisible();
+ await page.getByRole('navigation',{name:/Bottom navigation|底部导航/,exact:true}).getByRole('link', { name: 'Today', exact: true }).click();
+ await expect(page.getByRole('heading', { name: 'Make today your own.', exact: true })).toBeVisible();
 });

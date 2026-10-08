@@ -1,116 +1,49 @@
 import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
 import { liveQuery } from 'dexie';
+import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { database } from '../../persistence/db';
+import { profileService } from '../../application/profile';
 import { workoutService } from '../../application/workouts';
 import { dateInZone, progressService } from '../../application/progress';
-import type { ProgressReport } from '../../domain/models';
-import { WorkoutPage } from './WorkoutPage';
-import { profileService } from '../../application/profile';
+import { exercises } from '../../catalog/exercises';
+import type { Plan, PlanVersion, ScheduledWorkout, WorkoutSession, ProgressReport } from '../../domain/models';
+import { calendarTask, type CalendarTask } from '../calendar-projection';
 
+type Snapshot = { today: string; timeZone: string; tasks: CalendarTask[]; plans: Plan[]; versions: PlanVersion[]; active?: WorkoutSession; report: ProgressReport };
 export function TodayPage() {
-  const { i18n } = useTranslation();
-  const zh = i18n.resolvedLanguage === 'zh';
-  const locale = zh ? 'zh' : 'en';
-  const [ongoing, setOngoing] = useState(false);
-  const [report, setReport] = useState<ProgressReport>();
-  const [error, setError] = useState('');
-  // Refresh the date boundary while an open dashboard crosses midnight.
-  const [now, setNow] = useState(() => Date.now());
-  const [timeZone, setTimeZone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone);
-  useEffect(() => { const subscription = liveQuery(async () => (await profileService.getProfile())?.timeZone).subscribe(zone => { if (zone) setTimeZone(zone); }); return () => subscription.unsubscribe(); }, []);
-  const today = dateInZone(now, timeZone);
+  const { i18n } = useTranslation(); const zh = i18n.resolvedLanguage === 'zh';
+  const [data,setData] = useState<Snapshot>(); const [error,setError] = useState('');
   useEffect(() => {
-    const timer = window.setInterval(() => setNow(Date.now()), 60_000);
-    return () => window.clearInterval(timer);
-  }, []);
-  useEffect(() => {
-    const subscription = liveQuery(async () => ({
-      session: await workoutService.getActiveWorkout(),
-      progress: await progressService.queryProgress({ from: '1970-01-01', to: today, timeZone }, now),
-    })).subscribe({
-      next: ({ session, progress }) => {
-        setOngoing(Boolean(session));
-        setReport(progress);
-        setError('');
-      },
-      error: reason => setError((reason as Error).message),
-    });
-    return () => subscription.unsubscribe();
-  }, [today, timeZone, now]);
-
-  const week = Array.from({ length: 7 }, (_, index) => {
-    const date = new Date(`${today}T12:00:00Z`);
-    date.setUTCDate(date.getUTCDate() - (date.getUTCDay() + 6) % 7 + index);
-    return date.toISOString().slice(0, 10);
-  });
-  const weight = report?.bodyWeights.at(-1);
-  const rate = report?.completionRate;
-  const dateLabel = new Intl.DateTimeFormat(zh ? 'zh-CN' : 'en-US', {
-    month: 'long', day: 'numeric', weekday: 'long', timeZone,
-  }).format(now);
-
-  return (
-    <div className="dashboard">
-      <div className="dashboard-heading">
-        <div>
-          <p className="dashboard-eyebrow">{dateLabel}</p>
-          <h1>{zh ? '今日训练' : 'Today'}</h1>
-          <p className="muted">{zh ? '训练、日程与进度，清晰呈现。' : 'Your next session, schedule, and progress. All in one place.'}</p>
-        </div>
-        {ongoing && <Link className="dashboard-link" to="/workout">{zh ? '继续训练' : 'Continue workout'} <span aria-hidden="true">↗</span></Link>}
-      </div>
-      {error && <p role="alert">{error}</p>}
-      <WorkoutPage dashboard />
-      <section className="dashboard-summary" aria-label={zh ? '训练概览' : 'Training overview'} aria-busy={!report && !error}>
-        {!report ? <p className="muted">{error ? (zh ? '暂时无法读取训练概览。' : 'Training overview is unavailable.') : (zh ? '正在读取本地记录…' : 'Reading local records…')}</p> : <>
-          <div className="dashboard-stat">
-            <h2>{zh ? '已完成训练' : 'Completed sessions'}</h2>
-            <div className="dashboard-value"><strong aria-label={zh ? '已完成训练' : 'Completed sessions'}>{report.history.length}</strong><span>{zh ? '累计' : 'all time'}</span></div>
-            <div className="dashboard-activity" aria-label={zh ? '本周已完成训练' : 'Completed training this week'}>
-              {week.map(date => {
-                const count = report.history.filter(session => session.localDate === date).length;
-                return <span key={date} className={count ? 'has-session' : ''} aria-label={`${date}: ${count}`} title={`${date}: ${count}`} />;
-              })}
-            </div>
-            <p className="muted">{zh ? '本周训练记录，完成后计入。' : 'This week’s activity. Sessions count after completion.'}</p>
-          </div>
-          <div className="dashboard-stat dashboard-plan-stat">
-            <div>
-              <h2>{zh ? '计划完成率' : 'Plan completion'}</h2>
-              <div className="dashboard-value"><strong>{rate === null ? '—' : `${Math.round(rate! * 100)}%`}</strong></div>
-              <p className="muted">{rate === null ? (zh ? '暂无到期任务' : 'No tasks due') : (zh ? `${report.completedCount} / ${report.dueCount} 项到期任务已完成` : `${report.completedCount} / ${report.dueCount} due tasks completed`)}</p>
-            </div>
-            <svg className="dashboard-ring" viewBox="0 0 64 64" role="img" aria-label={zh ? '计划完成情况' : 'Plan completion indicator'}>
-              <circle cx="32" cy="32" r="26" fill="none" stroke="var(--dashboard-line)" strokeWidth="5" />
-              {rate !== null && <circle cx="32" cy="32" r="26" fill="none" stroke="var(--dashboard-accent)" strokeWidth="5" strokeDasharray={`${rate! * 163.36} 163.36`} transform="rotate(-90 32 32)" />}
-              {rate === null && <text x="32" y="37" textAnchor="middle" fill="var(--dashboard-muted)" fontSize="17">—</text>}
-            </svg>
-          </div>
-          <div className="dashboard-stat">
-            <h2>{zh ? '最近实测体重' : 'Latest weight'}</h2>
-            <div className="dashboard-value"><strong>{weight ? weight.weightGrams / 1000 : '—'}</strong><span>kg</span></div>
-            <p className="muted">{weight ? weight.localDate : (zh ? '暂无实测体重记录。' : 'No weight observations yet.')}</p>
-            <Link className="dashboard-link" to="/settings">{zh ? '管理体重记录' : 'Manage weight records'} <span aria-hidden="true">↗</span></Link>
-          </div>
-        </>}
-      </section>
-      <section className="dashboard-history" aria-label={zh ? '最近训练' : 'Recent training'}>
-        <div className="dashboard-section-heading">
-          <div><h2>{zh ? '最近训练' : 'Recent training'}</h2><p className="muted">{zh ? '已完成训练，一目了然。' : 'Completed sessions, kept together.'}</p></div>
-          <Link className="dashboard-link" to="/progress">{zh ? '查看历史与进度' : 'View history and progress'} <span aria-hidden="true">↗</span></Link>
-        </div>
-        {report && (report.history.length ? report.history.slice(0, 3).map(session => (
-          <article className="dashboard-history-row" key={session.id}>
-            <span className="dashboard-history-mark" aria-hidden="true">✓</span>
-            <div><h3>{session.exerciseSnapshots.map(exercise => exercise.name[locale]).join(' · ')}</h3><p className="muted">{session.localDate} · {session.planVersionId ? (zh ? '计划训练' : 'Planned workout') : (zh ? '临时训练' : 'Temporary workout')}</p></div>
-            <span className="dashboard-badge">{zh ? '已完成' : 'Completed'}</span>
-          </article>
-        )) : <div className="dashboard-history-row">
-          <span className="dashboard-history-mark" aria-hidden="true">↗</span>
-          <div><h3>{zh ? '暂无已完成训练。' : 'No completed sessions yet.'}</h3><p className="muted">{zh ? '完成训练后，在这里查看训练历史。' : 'Complete a workout to see your training history here.'}</p></div>
-        </div>)}
-      </section>
-    </div>
-  );
+    let alive=true;let stop=()=>{};
+    void profileService.initialize(zh?'zh':'en').then(() => {
+      if(!alive)return;
+      const subscription=liveQuery(async () => {
+        const profile=(await profileService.getProfile())!;const today=dateInZone(Date.now(),profile.timeZone);
+        const from=new Date(Date.parse(`${today}T00:00:00Z`)-29*86400000).toISOString().slice(0,10);
+        const versions=await database.planVersions.toArray();
+        return {today,timeZone:profile.timeZone,tasks:(await workoutService.listAvailableSchedule()).map(task=>calendarTask(task,versions,profile.timeZone)),plans:await database.plans.toArray(),versions,active:await workoutService.getActiveWorkout(),report:await progressService.queryProgress({from,to:today,timeZone:profile.timeZone},Date.now())};
+      }).subscribe({next:value=>setData(value),error:reason=>setError(String(reason))});stop=()=>subscription.unsubscribe();
+    }).catch(reason=>setError(String(reason)));
+    return()=>{alive=false;stop()};
+  },[]);
+  if(!data)return <p role={error?'alert':'status'}>{error||(zh?'正在读取本地训练…':'Loading local training…')}</p>;
+  const tasks=data.tasks.filter(task=>task.calendarDate!==null).sort((a,b)=>a.calendarDate!.localeCompare(b.calendarDate!)||(a.startTime??'99').localeCompare(b.startTime??'99'));
+  const current=tasks.find(task=>task.calendarDate===data.today);const upcoming=tasks.filter(task=>task.calendarDate!>data.today).slice(0,3);
+  const uncertain=data.tasks.filter(task=>task.calendarDate===null);
+  const currentDay=current&&data.versions.find(version=>version.id===current.planVersionId)?.days.find(day=>day.dayId===current.plannedDayId);
+  function name(task:ScheduledWorkout){const version=data!.versions.find(item=>item.id===task.planVersionId);return data!.plans.find(item=>item.id===version?.planId)?.name??(zh?'训练安排':'Scheduled workout')}
+  const weights=[...data.report.bodyWeights].sort((a,b)=>a.localDate.localeCompare(b.localDate));const change=weights.length>1?(weights.at(-1)!.weightGrams-weights[0].weightGrams)/1000:undefined;
+  return <div className="v31-today">
+    <section className="v31-hero"><span className="v31-eyebrow">{zh?'TODAY · 今日训练':'TODAY · YOUR TRAINING'}</span><h1>{data.active?(zh?'继续这一场训练。':'Pick up where you left off.'):current?(zh?'今天的安排，准备开始。':'Your next workout starts here.'):(zh?'按自己的节奏，开始今天。':'Make today your own.')}</h1><p>{data.active?(zh?'进行中的训练和已保存的组记录都还在。':'Your active workout and saved sets are ready.'):current?name(current):(zh?'今天还没有训练安排。你可以创建计划，也可以直接记录一次临时训练。':'Nothing scheduled today. Create a plan or start a temporary workout.')}</p>
+    {!data.active&&current&&<div className="v31-actions"><span className="v31-pill">{current.startTime??(zh?'时间未设置':'Time not set')}{current.sourceTimeZone!==data.timeZone?` · ${current.sourceTimeZone}`:''}</span>{current.durationMinutes&&<span className="v31-pill">{current.durationMinutes} {zh?'分钟':'min'}</span>}</div>}
+    {data.active?<p className="v31-workout-summary">{data.active.exerciseSnapshots.map(item=>`${item.name[zh?'zh':'en']} × ${item.targetSets.length} ${zh?'组':'sets'}`).join(' · ')}</p>:currentDay&&<p className="v31-workout-summary">{currentDay.exercises.map(item=>`${exercises.find(exercise=>exercise.id===item.exerciseId)?.name[zh?'zh':'en']??item.exerciseId} × ${item.targetSets.length} ${zh?'组':'sets'}`).join(' · ')}</p>}
+    <div className="v31-actions"><Link className="v31-button v31-primary" to={data.active?'/workout':current?`/workout?scheduledWorkoutId=${current.id}`:'/plans?tab=create'}>{data.active?(zh?'继续训练':'Continue workout'):current?(zh?'开始训练':'Start workout'):(zh?'创建训练计划':'Create a plan')}</Link><Link className="v31-button" to="/plans">{zh?'查看日历':'View calendar'}</Link><Link className="v31-button" to="/workout">{zh?'临时训练':'Temporary workout'}</Link></div></section>
+    {error&&<p role="alert">{error}</p>}
+    {!!uncertain.length&&<p role="status">{zh?`${uncertain.length} 个安排的日期在当前时区无法确定，未放入今日或后续日期。`:`${uncertain.length} schedules need time-zone review and are not assigned to Today or upcoming dates.`} <Link to="/plans">{zh?'复核日历':'Review calendar'}</Link></p>}
+    <div className="v31-grid"><section className="v31-card wide"><h2>{zh?'接下来':'Next up'}</h2><p>{zh?'只显示最近的安排，完整日历在 Plans 中。':'Your nearest sessions. Find the full calendar in Plans.'}</p><ul className="v31-list">{upcoming.map(task=><li key={task.id} className="v31-item"><div><strong>{task.calendarDate} · {name(task)}</strong><small>{task.startTime??(zh?'时间未设置':'Time not set')}{task.sourceTimeZone!==data.timeZone?' · '+task.sourceTimeZone:''}{task.durationMinutes?` · ${task.durationMinutes} ${zh?'分钟':'min'}`:''}</small></div><Link to={`/plans?date=${task.calendarDate}`}>{zh?'查看':'View'}</Link></li>)}</ul>{!upcoming.length&&<p>{zh?'还没有后续安排。休息日也可以留白。':'No upcoming sessions. It is fine to leave room for rest.'}</p>}</section>
+    <section className="v31-card narrow"><h2>{zh?'最近 30 天':'Last 30 days'}</h2><strong className="v31-stat">{data.report.history.filter(s=>s.status==='completed').length}</strong><span className="v31-muted">{zh?'已完成训练':'Completed workouts'}</span><strong className="v31-stat">{data.report.historySets.some(set=>set.completed&&set.durationSeconds!==undefined)?Math.round(data.report.totals.durationSeconds/60):'—'} {zh?'分钟':'min'}</strong><span className="v31-muted">{zh?'已记录的动作时长':'Recorded exercise duration'}</span><strong className="v31-stat">{change===undefined?'—':`${change>0?'+':''}${change.toFixed(1)} kg`}</strong><span className="v31-muted">{zh?'体重变化；不足两次观测时不计算':'Weight change; requires two observations'}</span></section>
+    <section className="v31-card ai-card"><h2>{zh?'AI 制定计划':'Plan with AI'}</h2><p>{zh?'确认目标、选择日期、核对发送信息，最后审阅并保存。':'Confirm your goal, choose dates, review what is sent, then preview and save.'}</p><div className="v31-actions"><Link className="v31-button v31-primary" to="/ai">{zh?'用 AI 创建计划':'Create with AI'}</Link><Link className="v31-button" to="/trial">{zh?'查看试用额度':'View trial access'}</Link></div></section>
+    <section className="v31-card"><h2>{zh?'记录留在你的设备':'Your records stay here'}</h2><p>{zh?'本地训练不依赖 AI 资格。请定期将完整备份保管到浏览器以外。':'Local workouts do not depend on AI access. Keep complete backups outside this browser.'}</p><div className="v31-actions"><Link className="v31-button" to="/progress">{zh?'查看训练进度':'View progress'}</Link><Link className="v31-button" to="/settings?tab=backup">{zh?'备份数据':'Back up data'}</Link></div></section></div>
+  </div>;
 }

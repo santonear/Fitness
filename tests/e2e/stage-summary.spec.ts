@@ -14,6 +14,7 @@ test('manual local preparation shows completed facts without network or database
   await page.getByRole('button', { name: 'Confirm completion', exact: true }).click();
   await expect(page.getByRole('status')).toHaveText('Workout completed');
   await page.goto('/progress');
+  await page.getByText('More filters and stage summaries', { exact: true }).click();
   const section = page.getByRole('region', { name: 'Local stage summary preparation' });
   await expect(section.getByRole('button', { name: 'Prepare local preview' })).toBeVisible();
   expect(await section.getByRole('region', { name: 'Stage facts preview' }).count()).toBe(0);
@@ -40,7 +41,7 @@ test('manual local preparation shows completed facts without network or database
 
 test('saved legacy plan supports actual week and whole-plan fact previews', async ({ page }) => {
   await page.clock.setFixedTime(new Date('2026-10-06T12:00:00Z'));
-  await page.goto('/plans');
+  await page.goto('/plans?tab=legacy');
   await seedLegacyPlan(page, 'Summary plan');
   await page.reload();
   await page.getByRole('link', { name: 'Start / make-up', exact: true }).first().click();
@@ -54,6 +55,7 @@ test('saved legacy plan supports actual week and whole-plan fact previews', asyn
   await page.getByRole('button', { name: 'Confirm completion', exact: true }).click();
   await expect(page.getByRole('status')).toHaveText('Workout completed');
   await page.goto('/progress');
+  await page.getByText('More filters and stage summaries', { exact: true }).click();
   const section = page.getByRole('region', { name: 'Local stage summary preparation' });
   await section.getByLabel('Summary scope').selectOption('planWeek');
   await section.getByLabel('Summary plan').selectOption({ label: 'Summary plan' });
@@ -71,8 +73,9 @@ test('saved legacy plan supports actual week and whole-plan fact previews', asyn
 });
 
 test('empty and invalid selections remain visible and never imply AI generation', async ({ page }) => {
-  await page.goto('/plans');
+  await page.goto('/plans?tab=legacy');
   await page.goto('/progress');
+  await page.getByText('More filters and stage summaries', { exact: true }).click();
   const section = page.getByRole('region', { name: 'Local stage summary preparation' });
   await section.getByRole('button', { name: 'Prepare local preview' }).click();
   await expect(section.getByRole('alert')).toContainText('EMPTY_STAGE');

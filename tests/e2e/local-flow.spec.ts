@@ -39,7 +39,7 @@ for (const locale of ['en', 'zh'] as const) {
   test(`${locale}: opened app offline retained plan, sets, review, history, memo and JSON restore`, async ({ page, context }, testInfo) => {
     const zh = locale === 'zh';
     const text = (en: string, cn: string) => zh ? cn : en;
-    await page.goto('/plans');
+    await page.goto('/plans?tab=legacy');
     if (zh) await page.getByLabel('Language').selectOption('zh');
     await seedLegacyPlan(page, 'Acceptance plan');
     await page.reload();
@@ -64,15 +64,15 @@ for (const locale of ['en', 'zh'] as const) {
     await expect(page.getByRole('region', { name: text('Completion review', '完成前核对') })).toContainText('Offline acceptance evidence');
     await page.getByRole('button', { name: text('Confirm completion', '确认完成'), exact: true }).click();
     await expect(page.getByRole('status')).toHaveText(text('Workout completed', '训练已完成'));
-    await page.getByRole('button', { name: text('menu', '导航'), exact: true }).click();
-    await page.getByRole('link', { name: text('Progress', '进度'), exact: true }).click();
+    await page.getByRole('navigation').getByRole('link', { name: text('Progress', '进度'), exact: true }).filter({visible:true}).click();
     await page.getByRole('button', { name: text('View history details', '查看历史详情'), exact: true }).click();
     await expect(page.getByRole('region', { name: text('History details', '历史详情') })).toContainText('Offline acceptance evidence');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-    await page.getByRole('button', { name: text('menu', '导航'), exact: true }).click();
-    await page.getByRole('link', { name: text('Settings', '设置'), exact: true }).click();
+    await page.getByRole('navigation').getByRole('link', { name: text('Settings', '设置'), exact: true }).filter({visible:true}).click();
+    await page.getByRole('tab',{name:text('Profile & preferences','偏好与资料'),exact:true}).click();
     await page.getByRole('button', { name: text('Read full training memo', '读取全量训练备忘'), exact: true }).click();
     await expect(page.getByRole('region', { name: text('Full training memo', '全量训练备忘'), exact: true })).toContainText('Offline acceptance evidence');
+    await page.getByRole('tab',{name:text('Backup & restore','备份恢复'),exact:true}).click();
     const downloaded = page.waitForEvent('download');
     await page.getByRole('button', { name: text('Export JSON backup', '导出 JSON 备份'), exact: true }).click();
     const path = await (await downloaded).path();
@@ -98,20 +98,23 @@ for (const locale of ['en', 'zh'] as const) {
       return result;
     });
     await testInfo.attach('uploaded-file-diagnostics', { body: JSON.stringify(fileDiagnostics), contentType: 'application/json' });
-    await expect(page.getByText(text('Backup validated', '备份校验通过'), { exact: true })).toBeVisible();
+    await expect(page.getByText(text('Backup validated, including its data references.', '备份校验通过。文件与引用检查已完成。'), { exact: true })).toBeVisible();
+    await page.getByRole('button',{name:text('Next: keep current data','下一步：保管当前数据'),exact:true}).click();
     const before = page.waitForEvent('download');
     await page.getByRole('button', { name: text('Download current data before replacement', '替换前下载当前数据'), exact: true }).click();
     await before;
     await page.getByLabel(text('I have downloaded and kept the current backup', '我已下载并保管当前备份'), { exact: true }).check();
-    await page.getByLabel(text('I confirm replacing all local data', '我确认替换全部本地数据'), { exact: true }).check();
+    await page.getByRole('button',{name:text('Next: confirm replacement','下一步：确认替换'),exact:true}).click();await page.getByLabel(text('I confirm replacing all local data', '我确认替换全部本地数据'), { exact: true }).check();
     await page.getByRole('button', { name: text('Replace local data', '替换本地数据'), exact: true }).click();
+    await expect(page.getByRole('heading', { name: text('Restore complete', '恢复完成'), exact: true })).toBeVisible();
+    await page.getByRole('tab',{name:text('Profile & preferences','偏好与资料'),exact:true}).click();
     await page.getByRole('button', { name: text('Read full training memo', '读取全量训练备忘'), exact: true }).click();
     await expect(page.getByRole('region', { name: text('Full training memo', '全量训练备忘'), exact: true })).toContainText('Offline acceptance evidence');
   });
 }
 
 test('editing the current plan preserves the original calendar and due classification', async ({ page }) => {
-  await page.goto('/plans');
+  await page.goto('/plans?tab=legacy');
   const result = await page.evaluate(async () => {
     const path = '/tests/e2e/helpers/acceptance-browser.ts';
     return (await import(/* @vite-ignore */ path)).calendarProvenance(`calendar-${crypto.randomUUID()}`);
