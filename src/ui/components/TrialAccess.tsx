@@ -9,7 +9,7 @@ type Application = z.infer<typeof applicationSchema>;
 type Status = z.infer<typeof statusSchema>;
 const counts = z.object({ understand: z.number().int().nonnegative(), generate: z.number().int().nonnegative() });
 const statusSchema = z.object({ expiresAt: z.number().finite(), used: counts, limits: counts, period: z.string().optional(), pending: z.number().int().nonnegative().optional(), reconciliationRequired: z.boolean().optional(), aiEnabled: z.boolean().optional() });
-const policyStatusSchema = statusSchema.extend({ resetAt: z.number().finite().optional(), timeZone: z.string().optional(), maxDays: z.number().int().min(1).max(14).optional(), maximumRequestCost: z.number().int().nonnegative().optional(), budgetAvailable: z.object({ understand: z.boolean(), generate: z.boolean() }).optional() });
+const policyStatusSchema = statusSchema.extend({ planningBudgetDisabled: z.boolean().optional(), resetAt: z.number().finite().optional(), timeZone: z.string().optional(), maxDays: z.number().int().min(1).max(14).optional(), maximumRequestCost: z.number().int().nonnegative().optional(), budgetAvailable: z.object({ understand: z.boolean(), generate: z.boolean() }).optional() });
 const accessStatusSchema = z.discriminatedUnion('qualification', [z.object({ qualification: z.literal('none'), sessionValid: z.literal(false) }), ...(['active','expired','revoked'] as const).map(qualification => policyStatusSchema.extend({ qualification: z.literal(qualification), sessionValid: z.boolean() }))]);
 const applicationSchema = z.object({ id: z.uuid(), kind: z.enum(['new','extend','replace']), state: z.enum(['pending','approved','rejected','claimed']), createdAt: z.number().finite(), decidedAt: z.number().optional(), reason: z.string().optional(), claimUntil: z.number().optional(), expiresAt: z.number().optional(), directlyActivated: z.boolean().optional() });
 const configSchema = z.object({ available: z.boolean(), siteKey: z.string().nullable() });
@@ -151,7 +151,8 @@ export function TrialAccess({ onContinue, onSkip }: { onContinue?: () => void; o
       {budgetInsufficient && <p role="status"><AppIcon name="info"/>{zh ? '项目预算不足，新的 AI 请求暂不可用。请稍后刷新或联系管理员。' : 'Project budget is insufficient for new AI requests. Refresh later or contact the administrator.'}</p>}
       {status.resetAt && <p>{zh ? '次数重置：' : 'Quota resets: '}{new Date(status.resetAt).toLocaleString(zh ? 'zh-CN' : 'en', { timeZone: status.timeZone })} {status.timeZone}</p>}
       {status.maxDays !== undefined && <p>{zh ? `每次最多选择 ${status.maxDays} 个训练日` : `Select up to ${status.maxDays} training dates per request`}</p>}
-      {status.maximumRequestCost !== undefined && <p>{zh ? '单请求费用上限：' : 'Per-request cost limit: '}¥{(status.maximumRequestCost / 100).toFixed(2)}</p>}
+      {status.planningBudgetDisabled && <p>{zh ? '理解与生成的金额预算限制已暂时关闭；个人次数仍有效。' : 'Monetary budget limits for understanding and generation are temporarily off; personal quotas still apply.'}</p>}
+      {!status.planningBudgetDisabled && status.maximumRequestCost !== undefined && <p>{zh ? '单请求费用上限：' : 'Per-request cost limit: '}¥{(status.maximumRequestCost / 100).toFixed(2)}</p>}
       <p>{zh ? '确认目标、选择日期、核对外发内容，再审阅并保存计划。' : 'Confirm your goal, choose dates, review what is sent, then preview and save.'}</p></div>}
     {active && statusDetails}
     <ul className="trial-applications">{apps.map(a => <li key={a.id}><strong>{a.kind === 'extend' ? (zh ? '延期申请 · ' : 'Extension · ') : a.kind === 'replace' ? (zh ? '补发申请 · ' : 'Replacement · ') : ''}{words[a.state]}</strong><small>{a.id}</small>{a.reason && <p>{a.reason}</p>}
