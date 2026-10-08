@@ -236,3 +236,12 @@ for (const zh of [false, true]) test(`pending applicants can enter a code and in
   await expect(code).toHaveValue('invalid-code'); await expect(page).toHaveURL(/\/trial$/);
   await expect(page.locator('.onboarding-flow')).toHaveCount(0); expect(redemptions).toBe(1);
 });
+
+for(const zh of [false,true])test(`temporary monetary bypass shows enabled planning and no old cost cap (${zh})`,async({page})=>{
+ await page.addInitScript(zh=>localStorage.setItem('fitness.language',zh?'zh':'en'),zh);
+ const status={expiresAt:Date.now()+86400000,period:'2026-10',used:{understand:0,generate:0},limits:{understand:8,generate:4},aiEnabled:true,pending:13,reconciliationRequired:false,planningBudgetDisabled:true,maximumRequestCost:300,budgetAvailable:{understand:true,generate:true}};
+ await page.route('**/api/v1/**',r=>{const p=new URL(r.request().url()).pathname;return r.fulfill({json:p.endsWith('/access-status')?{qualification:'active',sessionValid:true,...status}:p.endsWith('/application-config')?{available:false,siteKey:null}:status});});
+ await page.goto('/trial');await expect(page.getByRole('button',{name:zh?'开始制定训练计划':'Start planning your training',exact:true})).toBeEnabled();
+ await expect(page.getByText(zh?'理解与生成的金额预算限制已暂时关闭；个人次数仍有效。':'Monetary budget limits for understanding and generation are temporarily off; personal quotas still apply.',{exact:true})).toBeVisible();
+ await expect(page.getByText(/单请求费用上限|Per-request cost limit/)).toHaveCount(0);
+});

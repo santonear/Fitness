@@ -10,7 +10,7 @@ async function fixture(submissionProof?: number) {
   let proofChecks = 0;
   const store = new SqliteControlStore(':memory:'); stores.push(store);
   let now = Date.parse('2026-10-07T00:00:00Z'), calls = 0, proof: number | undefined = 212, fail = false;
-  const config = { ...testConfig, budgetLimit: 3000, maximumRequestCost: 300, allowBoundedPending: true,
+  const config = { ...testConfig, planningBudgetDisabled: false, budgetLimit: 3000, maximumRequestCost: 300, allowBoundedPending: true,
     requestBounds: { understand: 300, generate: 300 }, quotas: { understand: 100, generate: 100 } };
   const service = new ControlService(store, config, { kind: 'local-mock', costUpperBoundFen: () => submissionProof === undefined || proofChecks++ === 0 ? proof : submissionProof,
     call: async () => { calls++; if (fail) throw Error('uncertain'); return { result: { interpretedGoal: 'General fitness' } }; } }, () => now);
@@ -112,4 +112,33 @@ it('settlement exceeding the retained ceiling stops AI even below the initial re
   await f.service.settle(f.config.adminSecret, f.session.subjectId, request.requestId, 213);
   expect(await f.store.read()).toMatchObject({ aiEnabled: false, recoveryRequired: true,
     budgets: { '2026-10': { spent: 213, reserved: 0 } } });
+});
+
+
+it('temporary planning bypass ignores money limits and expired bounds, retaining accounting and quota', async () => {
+  const f = await fixture(); f.config.planningBudgetDisabled = true; f.config.maximumRequestCost = 1; f.config.budgetLimit = 1; f.proof(undefined);
+  const first = await f.send(); await f.send();
+  expect(f.calls()).toBe(2);
+  expect(await f.service.status(f.session.token)).toMatchObject({planningBudgetDisabled:true,budgetAvailable:{understand:true,generate:true},used:{understand:2},reconciliationRequired:false});
+  expect((await f.store.read()).budgets['2026-10']).toEqual({spent:0,reserved:600});
+  await f.service.settle(f.config.adminSecret,f.session.subjectId,first.request.requestId,500);
+  expect(await f.store.read()).toMatchObject({aiEnabled:true,recoveryRequired:false,budgets:{'2026-10':{spent:500,reserved:300}}});
+  f.config.quotas.understand = 2;
+  await expect(f.send()).rejects.toMatchObject({code:'INDIVIDUAL_QUOTA_EXHAUSTED'});
+  expect(f.calls()).toBe(2);
+});
+it('reenabling money limits restores pending proof and budget gates without changing historical entries', async () => {
+  const f=await fixture();f.config.planningBudgetDisabled=true;f.proof(undefined);await f.send();const before=await f.store.read();
+  f.config.planningBudgetDisabled=false;f.proof(212);
+  expect((await f.service.status(f.session.token)).reconciliationRequired).toBe(true);
+  await expect(f.send()).rejects.toMatchObject({code:'RECONCILIATION_REQUIRED'});
+  expect(await f.store.read()).toEqual(before);
+});
+it('temporary bypass does not bypass uncertain supplier failures or revoked eligibility', async()=>{
+  const f=await fixture();f.config.planningBudgetDisabled=true;f.proof(undefined);f.fail();
+  await expect(f.send()).rejects.toMatchObject({code:'ACCOUNTING_PENDING'});
+  expect((await f.service.status(f.session.token)).reconciliationRequired).toBe(true);
+  await expect(f.send()).rejects.toMatchObject({code:'RECONCILIATION_REQUIRED'});
+  await f.store.transact(s=>{s.subjects[f.session.subjectId].revoked=true;});
+  await expect(f.send()).rejects.toMatchObject({code:'QUALIFICATION_REQUIRED'});
 });

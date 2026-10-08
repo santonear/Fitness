@@ -207,3 +207,14 @@ describe('BE local control', () => {
     expect((await f.store.read()).recoveryRequired).toBe(true);
   });
 });
+
+it('temporary planning bypass admits generation and records costs above the former limits', async () => {
+  const date='2026-02-05';
+  const f=await setup({planningBudgetDisabled:true,allowBoundedPending:true,budgetLimit:1,maximumRequestCost:1},async()=>({result:{days:[{date,exercises:[{exerciseId:EXERCISE_IDS.walking,order:0,targetSets:[{metricType:'duration_distance',durationSeconds:600,distanceMeters:0}]}]}]},actualCost:500}));
+  await f.service.enableMock(f.admin,true);
+  const base={contractVersion:1 as const,requestId:crypto.randomUUID(),operation:'generate' as const,locale:'en' as const,restoreGeneration:0,goalText:'Walk regularly',confirmedGoal:'Walk regularly',dates:[date],timeZone:'UTC',catalogVersion:1,conditions:{}};
+  const request={...base,goalConfirmation:await goalConfirmationFor(base),sendConfirmation:await confirmationFor(base)};
+  expect((await f.service.submit(f.session.token,request)).accounting).toBe('settled');
+  expect((await f.service.status(f.session.token)).used.generate).toBe(1);
+  expect(await f.store.read()).toMatchObject({aiEnabled:true,recoveryRequired:false,budgets:{'2026-01':{spent:500,reserved:0}}});
+});

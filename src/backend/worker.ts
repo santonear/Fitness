@@ -15,7 +15,7 @@ export interface WorkerEnv {
 }
 const count = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 const policy = z.strictObject({ timeZone: z.string().min(1), k: count.min(1).max(14), budgetLimit: count,
-  allowBoundedPending: z.boolean().optional(), maximumRequestCost: count, requestBounds: z.strictObject({ understand: count, generate: count, summary: count.optional() }),
+  allowBoundedPending: z.boolean().optional(), planningBudgetDisabled: z.boolean().optional(), maximumRequestCost: count, requestBounds: z.strictObject({ understand: count, generate: count, summary: count.optional() }),
   quotas: z.strictObject({ understand: count, generate: count, summary: count.optional() }), maxInputBytes: count.min(1).max(65536), maxConcurrent: count.min(1).max(100) });
 type WorkerConfig = { control: ControlConfig; origins: string[] } &
   ({ mode: 'control-only' } | { mode: 'external'; transport: TransportConfig; providerId: string });
