@@ -8,7 +8,7 @@ export interface ControlState {
   aiEnabled: boolean;
   recoveryRequired: boolean;
   invites: Record<string, { expiresAt: number; redeemed: boolean; subjectId?: string }>;
-  subjects: Record<string, { expiresAt: number; revoked: boolean }>;
+  subjects: Record<string, { expiresAt: number; revoked: boolean; deletedAt?: number }>;
   sessions: Record<string, { subjectId: string; revoked: boolean }>;
   usages: Record<string, OperationCounts>;
   budgets: Record<string, { spent: number; reserved: number }>;

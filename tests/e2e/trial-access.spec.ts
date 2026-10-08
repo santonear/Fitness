@@ -68,7 +68,7 @@ test('quota restoration confirms defaults and retries the same operation after a
       policy: { budgetLimit: 3000, reservation: 300, timeZone: 'Asia/Shanghai' }, service: { reconciliationRequired: false } } });
   });
   await page.goto('/admin'); await page.getByRole('button', { name: 'Trials', exact: true }).click();
-  const button = page.getByRole('button', { name: 'Restore monthly default quota', exact: true });
+  const button = page.getByRole('button', { name: 'Refresh quota', exact: true });
   await expect(button).toBeDisabled(); await page.getByLabel('Restoration reason', { exact: true }).fill('Verified support request');
   page.once('dialog', async dialog => { expect(dialog.message()).toContain('8 understandings and 4 plans'); await dialog.dismiss(); });
   await button.click(); expect(submissions).toHaveLength(0);

@@ -9,9 +9,10 @@ export interface TrialApplication {
   subjectId?: string; decidedAt?: number; reason?: string; actor?: string;
   inviteId?: string; claimUntil?: number; sessionDigest?: string; expiresAt?: number;
   accountingClosedAt?: number;
+  directlyActivated?: boolean;
 }
 export const applicationView = (a: TrialApplication) => ({ id: a.id, kind: a.kind, state: a.state,
-  createdAt: a.createdAt, decidedAt: a.decidedAt, reason: a.reason, claimUntil: a.claimUntil, expiresAt: a.expiresAt });
+  createdAt: a.createdAt, decidedAt: a.decidedAt, reason: a.reason, claimUntil: a.claimUntil, expiresAt: a.expiresAt, directlyActivated: a.directlyActivated });
 export const applicationAdminView = (a: TrialApplication) => ({ ...applicationView(a), name: a.name, note: a.note, subjectId: a.subjectId, actor: a.actor });
 
 /** Uses the existing CAS transaction so approval and qualification cannot diverge.
@@ -107,7 +108,7 @@ export class TrialApplications {
       if (!a.claimUntil || a.claimUntil <= this.now()) throw new ControlError('INVITE_INVALID', 401);
       const subjectId = a.subjectId ?? newSubjectId;
       let subject = state.subjects[subjectId];
-      if (a.kind !== 'new' && (!subject || subject.revoked || subject.expiresAt <= this.now())) throw new ControlError('QUALIFICATION_REQUIRED', 401);
+      if (subject?.revoked || subject?.deletedAt !== undefined || (subject && subject.expiresAt <= this.now()) || a.kind !== 'new' && !subject) throw new ControlError('QUALIFICATION_REQUIRED', 401);
       subject ??= state.subjects[subjectId] = { expiresAt: this.now() + 30 * DAY, revoked: false };
       // All previous browser sessions are invalidated on replacement; recheck here too.
       if (a.kind !== 'new') for (const s of Object.values(state.sessions)) if (s.subjectId === subjectId) s.revoked = true;

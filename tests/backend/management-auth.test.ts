@@ -43,7 +43,7 @@ it('uses Workers-compatible manual redirects and rejects redirects without retry
   expect(await verifyApplicationProof('proof', 'secret', 'fitness.test', redirected)).toBe(false);
   expect(redirected).toHaveBeenCalledTimes(1);
 });
-it.each(['application-review', 'quota-restore', 'invites', 'invites/revoke'])('management gateway enforces same-origin and server credentials for %s', async operation => {
+it.each(['application-review', 'application-activate', 'subject-delete', 'reissue', 'quota-restore', 'invites', 'invites/revoke'])('management gateway enforces same-origin and server credentials for %s', async operation => {
   const handler = vi.fn(async (request: Request) => {
     expect(new URL(request.url).pathname).toBe(`/api/v1/admin/${operation}`);
     expect(request.headers.get('authorization')).toBe('Bearer server-only-secret');
