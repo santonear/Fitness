@@ -48,3 +48,6 @@ The interrupted 490-case integrated run recorded 450 passes, 36 failures and fou
 Final UI: send action occupies its own drawer footer, avoiding WebKit sticky/scroll clipping; new route dates require explicit adoption without clearing the goal; portal output exists only in create step 1. Three-mode and focus regressions passed. Typecheck passed after the final code change; production build passed. Existing 439-test unit evidence is reused because the last edits affect layout/navigation only.
 
 Actual app captures: [Atlas mobile](../../outputs/v62-coach/atlas-390-webkit.png), [Atlas desktop](../../outputs/v62-coach/atlas-1440-chromium.png), [Serene mobile](../../outputs/v62-coach/serene-390-webkit.png), [Serene desktop](../../outputs/v62-coach/serene-1440-chromium.png), [Orbit mobile](../../outputs/v62-coach/orbit-390-webkit.png), [Orbit desktop](../../outputs/v62-coach/orbit-1440-chromium.png). [Original avatar component states](../../outputs/v62-coach/avatar-states-chromium.png).
+
+## CI follow-up
+PR21 initial CI passed 318 browser cases and identified 18 ambiguous completion-status assertions plus 2 WebKit icon press hit-point failures. Scoped selectors and icon-centre press targeting corrected these; all 50 affected Chromium/WebKit cases passed locally in 4.2 minutes. Application code unchanged. CI rerun remains a separate release gate.

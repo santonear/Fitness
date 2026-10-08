@@ -6,7 +6,7 @@ test('dashboard shows empty data and updates only after recorded completion',asy
  await page.goto('/workout');await page.getByRole('button',{name:'Start temporary workout',exact:true}).click();
  await page.getByLabel('Reps',{exact:true}).fill('12');await page.getByLabel('Load (kg)',{exact:true}).fill('2.5');
  await page.getByRole('button',{name:'Record set',exact:true}).click();await expect(page.getByRole('status')).toHaveText('Set saved');
- await page.getByRole('button',{name:'Review completion',exact:true}).click();await page.getByRole('button',{name:'Confirm completion',exact:true}).click();await expect(page.getByRole('status')).toHaveText('Workout completed');
+ await page.getByRole('button',{name:'Review completion',exact:true}).click();await page.getByRole('button',{name:'Confirm completion',exact:true}).click();await expect(page.getByRole('status').filter({hasText:/^(Workout completed|训练已完成)$/})).toHaveText('Workout completed');
  await completedPlanningProfile(page);await page.goto('/');
  await expect(analytics.locator('.v31-stat').first()).toHaveText('1');
  await page.reload();

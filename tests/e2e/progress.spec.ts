@@ -13,7 +13,7 @@ test('completed history has read-only details and survives reload', async ({ pag
   await expect(page.getByRole('status')).toHaveText('Set saved');
   await page.getByRole('button', { name: 'Review completion', exact: true }).click();
   await page.getByRole('button', { name: 'Confirm completion', exact: true }).click();
-  await expect(page.getByRole('status')).toHaveText('Workout completed');
+  await expect(page.getByRole('status').filter({hasText:/^(Workout completed|训练已完成)$/})).toHaveText('Workout completed');
   await page.goto('/progress');
   await expect(page.locator('.v31-metric').filter({hasText:'Completed workouts'}).locator('strong')).toHaveText('1');
   await page.getByRole('button', { name: 'View history details', exact: true }).click();

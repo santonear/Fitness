@@ -20,7 +20,7 @@ for(const theme of ['atlas','serene','orbit'])test(`${theme} ceramic navigation 
   const first=nav.getByRole('link').last();await first.hover();await first.focus();await expect(first).toBeFocused();
   const size=await nav.locator('.ceramic-svg').first().boundingBox();expect(size!.width).toBeGreaterThanOrEqual(48);
   await page.screenshot({path:`outputs/onboarding-v5/nav-${theme}-${testInfo.project.name}-${width}.png`,fullPage:true});
-  if(width===390){const box=(await first.boundingBox())!;await page.mouse.move(box.x+box.width/2,box.y+box.height/2);await page.mouse.down();await expect(first.locator('svg')).toHaveCSS('transform','matrix(1, 0, 0, 1, 0, 2)');await page.screenshot({path:`outputs/onboarding-v5/pressed-${theme}-${testInfo.project.name}.png`});await page.mouse.up();}
+  if(width===390){await first.scrollIntoViewIfNeeded();const box=(await first.locator('svg').boundingBox())!;await page.mouse.move(box.x+box.width/2,box.y+box.height/2);await page.mouse.down();await expect(first.locator('svg')).toHaveCSS('transform','matrix(1, 0, 0, 1, 0, 2)');await page.screenshot({path:`outputs/onboarding-v5/pressed-${theme}-${testInfo.project.name}.png`});await page.mouse.up();}
  }
  await page.goto('/onboarding');await page.getByRole('button',{name:'Skip',exact:true}).click();await page.getByRole('button',{name:'Skip',exact:true}).click();
  for(const width of [320,390,768,1440]){

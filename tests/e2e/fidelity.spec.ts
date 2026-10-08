@@ -103,7 +103,7 @@ test('saving one action preserves another draft, own success resets only its dra
   await a.getByLabel('Reps', { exact: true }).last().fill('99');
   await page.getByRole('button', { name: 'Review completion', exact: true }).click();
   await page.getByRole('button', { name: 'Confirm completion', exact: true }).click();
-  await expect(page.getByRole('status')).toHaveText('Workout completed');
+  await expect(page.getByRole('status').filter({hasText:/^(Workout completed|训练已完成)$/})).toHaveText('Workout completed');
   await page.getByRole('button', { name: 'Start another workout', exact: true }).click();
   await page.getByRole('button', { name: 'Start temporary workout', exact: true }).click();
   await expect(page.getByLabel('Reps', { exact: true })).toHaveValue('');
