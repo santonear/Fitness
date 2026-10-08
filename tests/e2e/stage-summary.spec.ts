@@ -33,7 +33,11 @@ test('manual local preparation shows completed facts without network or database
   await expect(preview).toContainText('Restore generation 0');
   expect(await read()).toEqual(before);
   expect(apiRequests).toEqual([]);
-  const overflow = await page.evaluate(() => ({width:document.documentElement.scrollWidth,viewport:innerWidth,elements:[...document.querySelectorAll('main *')].filter(el=>el.getBoundingClientRect().right>innerWidth+1).map(el=>({tag:el.tagName,cls:el.className,width:el.getBoundingClientRect().width,text:el.textContent?.slice(0,80)})).slice(0,20)}));
+  const overflow = await page.evaluate(() => ({width:document.documentElement.scrollWidth,viewport:innerWidth,elements:[...document.querySelectorAll('main *')].filter(el=>el.getBoundingClientRect().right>innerWidth+1).map(el=>({tag:el.tagName,cls:el.className,width:el.getBoundingClientRect().width,text:el.textContent?.slice(0,80)})).slice(-30)}));
+  if(overflow.width>overflow.viewport) console.log('OVERFLOW_ISOLATION',await page.evaluate(()=>{
+    const probes=['select','button','.progress-table-scroll','.history-detail','[aria-label="AI stage summary"]','.v31-advanced-filters'];
+    return probes.map(selector=>{const elements=[...document.querySelectorAll<HTMLElement>(selector)];const saved=elements.map(el=>el.style.display);elements.forEach(el=>el.style.display='none');const width=document.documentElement.scrollWidth;elements.forEach((el,i)=>el.style.display=saved[i]);return {selector,width};});
+  }));
   expect(overflow.width,JSON.stringify(overflow)).toBeLessThanOrEqual(overflow.viewport);
   await page.getByLabel('Language').selectOption('zh');
   await expect(page.getByRole('heading', { name: '阶段总结本地准备', exact: true })).toBeVisible();
@@ -70,7 +74,11 @@ test('saved legacy plan supports actual week and whole-plan fact previews', asyn
   await section.getByRole('button', { name: 'Prepare local preview' }).click();
   await expect(preview).toContainText('2026-10-05 → 2026-10-11');
   await expect(preview).toContainText('1 completed sessions');
-  const overflow = await page.evaluate(() => ({width:document.documentElement.scrollWidth,viewport:innerWidth,elements:[...document.querySelectorAll('main *')].filter(el=>el.getBoundingClientRect().right>innerWidth+1).map(el=>({tag:el.tagName,cls:el.className,width:el.getBoundingClientRect().width,text:el.textContent?.slice(0,80)})).slice(0,20)}));
+  const overflow = await page.evaluate(() => ({width:document.documentElement.scrollWidth,viewport:innerWidth,elements:[...document.querySelectorAll('main *')].filter(el=>el.getBoundingClientRect().right>innerWidth+1).map(el=>({tag:el.tagName,cls:el.className,width:el.getBoundingClientRect().width,text:el.textContent?.slice(0,80)})).slice(-30)}));
+  if(overflow.width>overflow.viewport) console.log('OVERFLOW_ISOLATION',await page.evaluate(()=>{
+    const probes=['select','button','.progress-table-scroll','.history-detail','[aria-label="AI stage summary"]','.v31-advanced-filters'];
+    return probes.map(selector=>{const elements=[...document.querySelectorAll<HTMLElement>(selector)];const saved=elements.map(el=>el.style.display);elements.forEach(el=>el.style.display='none');const width=document.documentElement.scrollWidth;elements.forEach((el,i)=>el.style.display=saved[i]);return {selector,width};});
+  }));
   expect(overflow.width,JSON.stringify(overflow)).toBeLessThanOrEqual(overflow.viewport);
 });
 
