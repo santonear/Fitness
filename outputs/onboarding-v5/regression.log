@@ -79,7 +79,7 @@ Running 286 tests using 2 workers
 [65/286] [chromium] › tests\e2e\trial-access.spec.ts:3:33 › active trial enters planning and refreshes allowance without model calls (en)
 [66/286] [chromium] › tests\e2e\timer.spec.ts:40:1 › rest completion stays visible when explicitly enabled sound fails
 [67/286] [chromium] › tests\e2e\v31-ai-body.spec.ts:50:1 › current saved body measurements have sources, remain opt-in, and changes invalidate reviewed sending
-  1) [chromium] › tests\e2e\trial-access.spec.ts:3:33 › active trial enters planning and refreshes allowance without model calls (en) 
+  1) [chromium] › tests\e2e\trial-access.spec.ts:3:33 › active trial enters planning and refreshes allowance without model calls (en)
 
     Error: expect(locator).toBeEnabled() failed
 
@@ -122,7 +122,7 @@ Running 286 tests using 2 workers
 [70/286] [chromium] › tests\e2e\v31-ai-body.spec.ts:81:1 › no saved body information disables optional body without inventing values
 [71/286] [chromium] › tests\e2e\v31-ai.spec.ts:52:1 › two sends require consent; history excluded; candidate editable and saved only by independent confirmation
 [72/286] [chromium] › tests\e2e\v31-ai.spec.ts:73:1 › changing goal invalidates earlier consent and understanding; explicit retry keeps request ID
-  2) [chromium] › tests\e2e\trial-access.spec.ts:3:33 › active trial enters planning and refreshes allowance without model calls (zh) 
+  2) [chromium] › tests\e2e\trial-access.spec.ts:3:33 › active trial enters planning and refreshes allowance without model calls (zh)
 
     Error: expect(locator).toBeEnabled() failed
 
@@ -171,7 +171,7 @@ Running 286 tests using 2 workers
 [81/286] [chromium] › tests\e2e\v31-ai.spec.ts:127:1 › failed generation retries only its original request and does not save automatically
 [82/286] [chromium] › tests\e2e\v31-ai.spec.ts:135:1 › unrelated local message changes do not invalidate independent candidate save
 [83/286] [chromium] › tests\e2e\v31-ai.spec.ts:142:1 › restore generation invalidates the old candidate without another paid request
-  3) [chromium] › tests\e2e\trial-access.spec.ts:108:3 › application → pending → approval → claim → explicit planning entry (en) 
+  3) [chromium] › tests\e2e\trial-access.spec.ts:108:3 › application → pending → approval → claim → explicit planning entry (en)
 
     Error: expect(locator).toBeVisible() failed
 
@@ -216,7 +216,7 @@ Running 286 tests using 2 workers
 [88/286] [chromium] › tests\e2e\v31-day-plan-safety.spec.ts:7:1 › V3 known active and rest seconds fit the effective duration without inventing missing timing
 [89/286] [chromium] › tests\e2e\v31-plans-projection.spec.ts:23:1 › cross-zone occupancy, detail and Today use the same projected date without rewriting source time
 [90/286] [chromium] › tests\e2e\v31-plans-projection.spec.ts:43:1 › future cross-zone links navigate to the projected day
-  4) [chromium] › tests\e2e\trial-access.spec.ts:147:3 › unavailable service allows local dashboard (en) 
+  4) [chromium] › tests\e2e\trial-access.spec.ts:147:3 › unavailable service allows local dashboard (en)
 
     Error: expect(locator).toBeVisible() failed
 
@@ -262,7 +262,7 @@ Running 286 tests using 2 workers
 [96/286] [chromium] › tests\e2e\v31-plans-visual.spec.ts:3:3 › orbit plans calendar and manual form fit desktop and mobile
 [97/286] [chromium] › tests\e2e\v31-plans.spec.ts:3:1 › viewing dates never creates plans; independent manual dates save with their own times and content
 [98/286] [chromium] › tests\e2e\v31-plans.spec.ts:37:1 › occupied dates reject selection; cross-month drafts survive navigation and mobile drag is explicit
-  5) [chromium] › tests\e2e\trial-access.spec.ts:108:3 › application → pending → approval → claim → explicit planning entry (zh) 
+  5) [chromium] › tests\e2e\trial-access.spec.ts:108:3 › application → pending → approval → claim → explicit planning entry (zh)
 
     Error: expect(locator).toBeVisible() failed
 
@@ -305,7 +305,7 @@ Running 286 tests using 2 workers
 [101/286] [chromium] › tests\e2e\v31-plans.spec.ts:76:1 › moving a manual workout time waits for confirmation and updates the saved plan
 [102/286] [chromium] › tests\e2e\v31-plans.spec.ts:108:1 › retained phase controls pause and resume offline; cancellation preserves active workout and original tasks
 [103/286] [chromium] › tests\e2e\v31-progress-catalog.spec.ts:39:3 › V3 Progress atlas seven widths: empty, long history, entry and chart
-  6) [chromium] › tests\e2e\trial-access.spec.ts:147:3 › unavailable service allows local dashboard (zh) 
+  6) [chromium] › tests\e2e\trial-access.spec.ts:147:3 › unavailable service allows local dashboard (zh)
 
     Error: expect(locator).toBeVisible() failed
 
@@ -347,7 +347,7 @@ Running 286 tests using 2 workers
 [105/286] [chromium] › tests\e2e\trial-access.spec.ts:173:33 › visible invitation entry starts planning without an application (en)
 [106/286] [chromium] › tests\e2e\v31-progress-catalog.spec.ts:39:3 › V3 Progress serene seven widths: empty, long history, entry and chart
 [107/286] [chromium] › tests\e2e\v31-progress-catalog.spec.ts:39:3 › V3 Progress orbit seven widths: empty, long history, entry and chart
-  7) [chromium] › tests\e2e\trial-access.spec.ts:173:33 › visible invitation entry starts planning without an application (en) 
+  7) [chromium] › tests\e2e\trial-access.spec.ts:173:33 › visible invitation entry starts planning without an application (en)
 
     Error: expect(locator).toBeVisible() failed
 
@@ -389,7 +389,7 @@ Running 286 tests using 2 workers
 [109/286] [chromium] › tests\e2e\v31-progress-catalog.spec.ts:73:1 › V3 Progress counts sessions independently and preserves missing metrics
 [110/286] [chromium] › tests\e2e\v31-progress-catalog.spec.ts:85:1 › V3 catalog real filters, details, favorite persistence and no-result recovery
 [111/286] [chromium] › tests\e2e\v31-progress-catalog.spec.ts:111:1 › V3 Chinese measurements keep source, update history and fit all three mobile layouts
-  8) [chromium] › tests\e2e\trial-access.spec.ts:173:33 › visible invitation entry starts planning without an application (zh) 
+  8) [chromium] › tests\e2e\trial-access.spec.ts:173:33 › visible invitation entry starts planning without an application (zh)
 
     Error: expect(locator).toBeVisible() failed
 
@@ -601,7 +601,7 @@ chromium/10000: restored and fields matched
 [208/286] [webkit] › tests\e2e\trial-access.spec.ts:3:33 › active trial enters planning and refreshes allowance without model calls (en)
 [209/286] [webkit] › tests\e2e\timer.spec.ts:40:1 › rest completion stays visible when explicitly enabled sound fails
 [210/286] [webkit] › tests\e2e\v31-ai-body.spec.ts:50:1 › current saved body measurements have sources, remain opt-in, and changes invalidate reviewed sending
-  9) [webkit] › tests\e2e\trial-access.spec.ts:3:33 › active trial enters planning and refreshes allowance without model calls (en) 
+  9) [webkit] › tests\e2e\trial-access.spec.ts:3:33 › active trial enters planning and refreshes allowance without model calls (en)
 
     Error: expect(locator).toBeEnabled() failed
 
@@ -641,7 +641,7 @@ chromium/10000: restored and fields matched
 
 [211/286] [webkit] › tests\e2e\trial-access.spec.ts:3:33 › active trial enters planning and refreshes allowance without model calls (zh)
 [212/286] [webkit] › tests\e2e\v31-ai-body.spec.ts:73:1 › deselecting body and history removes both from the actual request
-  10) [webkit] › tests\e2e\trial-access.spec.ts:3:33 › active trial enters planning and refreshes allowance without model calls (zh) 
+  10) [webkit] › tests\e2e\trial-access.spec.ts:3:33 › active trial enters planning and refreshes allowance without model calls (zh)
 
     Error: expect(locator).toBeEnabled() failed
 
@@ -685,7 +685,7 @@ chromium/10000: restored and fields matched
 [216/286] [webkit] › tests\e2e\trial-access.spec.ts:82:1 › cost inputs stay independent when two subjects use the same request ID
 [217/286] [webkit] › tests\e2e\trial-access.spec.ts:108:3 › application → pending → approval → claim → explicit planning entry (en)
 [218/286] [webkit] › tests\e2e\v31-ai-body.spec.ts:81:1 › no saved body information disables optional body without inventing values
-  11) [webkit] › tests\e2e\trial-access.spec.ts:108:3 › application → pending → approval → claim → explicit planning entry (en) 
+  11) [webkit] › tests\e2e\trial-access.spec.ts:108:3 › application → pending → approval → claim → explicit planning entry (en)
 
     Error: expect(locator).toBeVisible() failed
 
@@ -725,7 +725,7 @@ chromium/10000: restored and fields matched
 
 [219/286] [webkit] › tests\e2e\trial-access.spec.ts:147:3 › unavailable service allows local dashboard (en)
 [220/286] [webkit] › tests\e2e\v31-ai.spec.ts:52:1 › two sends require consent; history excluded; candidate editable and saved only by independent confirmation
-  12) [webkit] › tests\e2e\trial-access.spec.ts:147:3 › unavailable service allows local dashboard (en) 
+  12) [webkit] › tests\e2e\trial-access.spec.ts:147:3 › unavailable service allows local dashboard (en)
 
     Error: expect(locator).toBeVisible() failed
 
@@ -766,7 +766,7 @@ chromium/10000: restored and fields matched
 [221/286] [webkit] › tests\e2e\trial-access.spec.ts:108:3 › application → pending → approval → claim → explicit planning entry (zh)
 [222/286] [webkit] › tests\e2e\v31-ai.spec.ts:73:1 › changing goal invalidates earlier consent and understanding; explicit retry keeps request ID
 [223/286] [webkit] › tests\e2e\v31-ai.spec.ts:86:1 › occupied date appearing after generation keeps candidate and does not make a new AI request
-  13) [webkit] › tests\e2e\trial-access.spec.ts:108:3 › application → pending → approval → claim → explicit planning entry (zh) 
+  13) [webkit] › tests\e2e\trial-access.spec.ts:108:3 › application → pending → approval → claim → explicit planning entry (zh)
 
     Error: expect(locator).toBeVisible() failed
 
@@ -806,7 +806,7 @@ chromium/10000: restored and fields matched
 
 [224/286] [webkit] › tests\e2e\trial-access.spec.ts:147:3 › unavailable service allows local dashboard (zh)
 [225/286] [webkit] › tests\e2e\v31-ai.spec.ts:98:1 › declining previously selected optional fields removes them from the exact network request
-  14) [webkit] › tests\e2e\trial-access.spec.ts:147:3 › unavailable service allows local dashboard (zh) 
+  14) [webkit] › tests\e2e\trial-access.spec.ts:147:3 › unavailable service allows local dashboard (zh)
 
     Error: expect(locator).toBeVisible() failed
 
@@ -847,7 +847,7 @@ chromium/10000: restored and fields matched
 [226/286] [webkit] › tests\e2e\trial-access.spec.ts:157:1 › management shows real report values, review actions and responsive layout
 [227/286] [webkit] › tests\e2e\trial-access.spec.ts:173:33 › visible invitation entry starts planning without an application (en)
 [228/286] [webkit] › tests\e2e\v31-ai.spec.ts:115:1 › theme changes preserve candidate edits and do not send another model request
-  15) [webkit] › tests\e2e\trial-access.spec.ts:173:33 › visible invitation entry starts planning without an application (en) 
+  15) [webkit] › tests\e2e\trial-access.spec.ts:173:33 › visible invitation entry starts planning without an application (en)
 
     Error: expect(locator).toBeVisible() failed
 
@@ -887,7 +887,7 @@ chromium/10000: restored and fields matched
 
 [229/286] [webkit] › tests\e2e\trial-access.spec.ts:173:33 › visible invitation entry starts planning without an application (zh)
 [230/286] [webkit] › tests\e2e\v31-ai.spec.ts:127:1 › failed generation retries only its original request and does not save automatically
-  16) [webkit] › tests\e2e\trial-access.spec.ts:173:33 › visible invitation entry starts planning without an application (zh) 
+  16) [webkit] › tests\e2e\trial-access.spec.ts:173:33 › visible invitation entry starts planning without an application (zh)
 
     Error: expect(locator).toBeVisible() failed
 
@@ -1019,20 +1019,20 @@ webkit/10000: restored and fields matched
   Slow test file: [webkit] › tests\e2e\capacity.spec.ts (5.5m)
   Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
   16 failed
-    [chromium] › tests\e2e\trial-access.spec.ts:3:33 › active trial enters planning and refreshes allowance without model calls (en) 
-    [chromium] › tests\e2e\trial-access.spec.ts:3:33 › active trial enters planning and refreshes allowance without model calls (zh) 
-    [chromium] › tests\e2e\trial-access.spec.ts:108:3 › application → pending → approval → claim → explicit planning entry (en) 
-    [chromium] › tests\e2e\trial-access.spec.ts:147:3 › unavailable service allows local dashboard (en) 
-    [chromium] › tests\e2e\trial-access.spec.ts:108:3 › application → pending → approval → claim → explicit planning entry (zh) 
-    [chromium] › tests\e2e\trial-access.spec.ts:147:3 › unavailable service allows local dashboard (zh) 
-    [chromium] › tests\e2e\trial-access.spec.ts:173:33 › visible invitation entry starts planning without an application (en) 
-    [chromium] › tests\e2e\trial-access.spec.ts:173:33 › visible invitation entry starts planning without an application (zh) 
-    [webkit] › tests\e2e\trial-access.spec.ts:3:33 › active trial enters planning and refreshes allowance without model calls (en) 
-    [webkit] › tests\e2e\trial-access.spec.ts:3:33 › active trial enters planning and refreshes allowance without model calls (zh) 
-    [webkit] › tests\e2e\trial-access.spec.ts:108:3 › application → pending → approval → claim → explicit planning entry (en) 
-    [webkit] › tests\e2e\trial-access.spec.ts:147:3 › unavailable service allows local dashboard (en) 
-    [webkit] › tests\e2e\trial-access.spec.ts:108:3 › application → pending → approval → claim → explicit planning entry (zh) 
-    [webkit] › tests\e2e\trial-access.spec.ts:147:3 › unavailable service allows local dashboard (zh) 
-    [webkit] › tests\e2e\trial-access.spec.ts:173:33 › visible invitation entry starts planning without an application (en) 
-    [webkit] › tests\e2e\trial-access.spec.ts:173:33 › visible invitation entry starts planning without an application (zh) 
+    [chromium] › tests\e2e\trial-access.spec.ts:3:33 › active trial enters planning and refreshes allowance without model calls (en)
+    [chromium] › tests\e2e\trial-access.spec.ts:3:33 › active trial enters planning and refreshes allowance without model calls (zh)
+    [chromium] › tests\e2e\trial-access.spec.ts:108:3 › application → pending → approval → claim → explicit planning entry (en)
+    [chromium] › tests\e2e\trial-access.spec.ts:147:3 › unavailable service allows local dashboard (en)
+    [chromium] › tests\e2e\trial-access.spec.ts:108:3 › application → pending → approval → claim → explicit planning entry (zh)
+    [chromium] › tests\e2e\trial-access.spec.ts:147:3 › unavailable service allows local dashboard (zh)
+    [chromium] › tests\e2e\trial-access.spec.ts:173:33 › visible invitation entry starts planning without an application (en)
+    [chromium] › tests\e2e\trial-access.spec.ts:173:33 › visible invitation entry starts planning without an application (zh)
+    [webkit] › tests\e2e\trial-access.spec.ts:3:33 › active trial enters planning and refreshes allowance without model calls (en)
+    [webkit] › tests\e2e\trial-access.spec.ts:3:33 › active trial enters planning and refreshes allowance without model calls (zh)
+    [webkit] › tests\e2e\trial-access.spec.ts:108:3 › application → pending → approval → claim → explicit planning entry (en)
+    [webkit] › tests\e2e\trial-access.spec.ts:147:3 › unavailable service allows local dashboard (en)
+    [webkit] › tests\e2e\trial-access.spec.ts:108:3 › application → pending → approval → claim → explicit planning entry (zh)
+    [webkit] › tests\e2e\trial-access.spec.ts:147:3 › unavailable service allows local dashboard (zh)
+    [webkit] › tests\e2e\trial-access.spec.ts:173:33 › visible invitation entry starts planning without an application (en)
+    [webkit] › tests\e2e\trial-access.spec.ts:173:33 › visible invitation entry starts planning without an application (zh)
   270 passed (12.5m)

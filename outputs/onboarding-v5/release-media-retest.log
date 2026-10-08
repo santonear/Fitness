@@ -1,0 +1,13 @@
+
+Running 8 tests using 4 workers
+
+  ok 2 [chromium] › tests\e2e\media.spec.ts:3:1 › media is local until keyboard consent and blocked media preserves catalogue (1.8s)
+  ok 1 [chromium] › tests\e2e\media-retry.spec.ts:3:1 › failed videos can retry and close with written steps preserved in both languages (2.3s)
+  ok 5 [chromium] › tests\e2e\media.spec.ts:31:2 › broken original illustrations retain text and bilingual video controls (1.1s)
+  ok 4 [webkit] › tests\e2e\media.spec.ts:3:1 › media is local until keyboard consent and blocked media preserves catalogue (3.9s)
+  ok 6 [chromium] › tests\e2e\media.spec.ts:44:1 › walking and plank load only their matched resources and preserve fallback at 320px (1.3s)
+  ok 7 [webkit] › tests\e2e\media.spec.ts:31:2 › broken original illustrations retain text and bilingual video controls (1.9s)
+  ok 3 [webkit] › tests\e2e\media-retry.spec.ts:3:1 › failed videos can retry and close with written steps preserved in both languages (5.9s)
+  ok 8 [webkit] › tests\e2e\media.spec.ts:44:1 › walking and plank load only their matched resources and preserve fallback at 320px (2.6s)
+
+  8 passed (10.3s)

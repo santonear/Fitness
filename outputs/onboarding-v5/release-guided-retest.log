@@ -33,7 +33,7 @@ Running 30 tests using 2 workers
   ok 30 [webkit] › tests\e2e\guided-live.spec.ts:35:1 › necessary clarification blocks dates; revised goal requires fresh consent and excludes archived local notes (5.8s)
 
 
-  1) [chromium] › tests\e2e\ai-control-status.spec.ts:3:33 › en qualification refreshes automatically; failures clear previous remaining allowance 
+  1) [chromium] › tests\e2e\ai-control-status.spec.ts:3:33 › en qualification refreshes automatically; failures clear previous remaining allowance
 
     Error: expect(received).toBe(expected) // Object.is equality
 
@@ -59,7 +59,7 @@ Running 30 tests using 2 workers
 
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-  2) [chromium] › tests\e2e\ai-control-status.spec.ts:3:33 › zh qualification refreshes automatically; failures clear previous remaining allowance 
+  2) [chromium] › tests\e2e\ai-control-status.spec.ts:3:33 › zh qualification refreshes automatically; failures clear previous remaining allowance
 
     Error: expect(received).toBe(expected) // Object.is equality
 
@@ -85,7 +85,7 @@ Running 30 tests using 2 workers
 
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-  3) [webkit] › tests\e2e\ai-control-status.spec.ts:3:33 › en qualification refreshes automatically; failures clear previous remaining allowance 
+  3) [webkit] › tests\e2e\ai-control-status.spec.ts:3:33 › en qualification refreshes automatically; failures clear previous remaining allowance
 
     Error: expect(received).toBe(expected) // Object.is equality
 
@@ -111,7 +111,7 @@ Running 30 tests using 2 workers
 
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-  4) [webkit] › tests\e2e\ai-control-status.spec.ts:3:33 › zh qualification refreshes automatically; failures clear previous remaining allowance 
+  4) [webkit] › tests\e2e\ai-control-status.spec.ts:3:33 › zh qualification refreshes automatically; failures clear previous remaining allowance
 
     Error: expect(received).toBe(expected) // Object.is equality
 
@@ -138,8 +138,8 @@ Running 30 tests using 2 workers
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
   4 failed
-    [chromium] › tests\e2e\ai-control-status.spec.ts:3:33 › en qualification refreshes automatically; failures clear previous remaining allowance 
-    [chromium] › tests\e2e\ai-control-status.spec.ts:3:33 › zh qualification refreshes automatically; failures clear previous remaining allowance 
-    [webkit] › tests\e2e\ai-control-status.spec.ts:3:33 › en qualification refreshes automatically; failures clear previous remaining allowance 
-    [webkit] › tests\e2e\ai-control-status.spec.ts:3:33 › zh qualification refreshes automatically; failures clear previous remaining allowance 
+    [chromium] › tests\e2e\ai-control-status.spec.ts:3:33 › en qualification refreshes automatically; failures clear previous remaining allowance
+    [chromium] › tests\e2e\ai-control-status.spec.ts:3:33 › zh qualification refreshes automatically; failures clear previous remaining allowance
+    [webkit] › tests\e2e\ai-control-status.spec.ts:3:33 › en qualification refreshes automatically; failures clear previous remaining allowance
+    [webkit] › tests\e2e\ai-control-status.spec.ts:3:33 › zh qualification refreshes automatically; failures clear previous remaining allowance
   26 passed (1.4m)
