@@ -2,7 +2,7 @@ import type { WorkoutRecord } from '../../domain/v8/contracts';
 import type { IncompleteTiming, ReviewDayType, ReviewTimeBand } from './contracts';
 
 /** The caller selects the review period; every instant uses its own saved timezone. */
-export function computeIncompleteTiming(workouts: readonly WorkoutRecord[]): IncompleteTiming {
+export function computeIncompleteTiming(workouts: readonly Pick<WorkoutRecord, 'status' | 'startedAt' | 'timeZone'>[]): IncompleteTiming {
   const counts = () => ({ partial: 0, notStarted: 0 });
   const bands = () => ({ morning: counts(), daytime: counts(), evening: counts() });
   const result = { weekday: bands(), weekend: bands() };
