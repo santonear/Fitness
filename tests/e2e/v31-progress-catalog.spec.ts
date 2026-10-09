@@ -83,7 +83,7 @@ test('V3 Progress counts sessions independently and preserves missing metrics', 
   await expect(page.locator('.v31-history-row')).toHaveCount(3);
 });
 test('V3 catalog real filters, details, favorite persistence and no-result recovery', async ({ page }) => {
-  await page.goto('/exercises'); await expect(page.locator('.v31-exercise-card')).toHaveCount(4);
+  await page.goto('/exercises'); await expect(page.locator('.v31-exercise-card')).toHaveCount(24);
   await page.getByLabel('Muscle / movement', { exact: true }).selectOption('legs');
   await expect(page.locator('.v31-exercise-card')).toHaveCount(2);
   await page.getByLabel('Equipment', { exact: true }).selectOption('dumbbell');
@@ -97,7 +97,7 @@ test('V3 catalog real filters, details, favorite persistence and no-result recov
   await page.getByRole('searchbox').fill('not-a-real-exercise');
   await expect(page.locator('.v31-exercise-card')).toHaveCount(0);
   await page.getByRole('button', { name: 'Clear filters', exact: true }).click();
-  await expect(page.locator('.v31-exercise-card')).toHaveCount(4);
+  await expect(page.locator('.v31-exercise-card')).toHaveCount(24);
   for (const theme of ['atlas', 'serene', 'orbit']) {
     await page.locator('.v31-quick-theme select').selectOption(theme);
     for (const width of [320, 1440]) {

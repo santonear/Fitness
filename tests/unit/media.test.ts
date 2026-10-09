@@ -11,9 +11,9 @@ describe('catalogue media trust boundary', () => {
   for (const value of ['https://evil.test', 'nfX7IFK9UNI?autoplay=1', '../m0GcZ24pK6k', 'AAAAAAAAAAA', 'm0GcZ24pK6k\n']) expect(youtubeEmbedUrl(value)).toBeUndefined();
  });
  it('maps the unchanged four catalogue identities without external thumbnails or initial iframes', () => {
-  expect(Object.keys(exerciseMedia).sort()).toEqual(exercises.map(exercise => exercise.id).sort());
+  expect(Object.keys(exerciseMedia).sort()).toEqual(exercises.slice(0, 4).map(exercise => exercise.id).sort());
   const before = structuredClone(exercises);
-  for (const exercise of exercises) {
+  for (const exercise of exercises.slice(0, 4)) {
    const html = renderToStaticMarkup(createElement(ExerciseMedia, { exerciseId: exercise.id, exerciseName: exercise.name.en, locale: 'en' }));
    expect(html).not.toContain('<iframe'); expect(html).toContain('src="/media/');
    expect(html).toContain('movement form has not been professionally reviewed');

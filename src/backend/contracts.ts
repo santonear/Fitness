@@ -1,3 +1,4 @@
+import { selectAiExercises } from '../catalog/ai-catalog';
 import { z } from 'zod';
 import { exercises, CATALOG_VERSION } from '../catalog/exercises';
 import { localeSchema, uuidSchema, localDateSchema, timeZoneSchema, plannedExerciseSchema, trainingPreferencesSchema } from '../domain/schemas';
@@ -83,9 +84,11 @@ export function validateCandidate(request: AiRequest, result: unknown) {
     const candidate = dayResult.parse(result);
     const dates = candidate.days.map(day => day.date);
     if (dates.length !== request.dates.length || new Set(dates).size !== dates.length || dates.some(date => !request.dates.includes(date))) throw new ControlError('INVALID_CANDIDATE', 502);
+    const allowed = new Set(selectAiExercises(request.confirmedGoal, request.conditions).map(item => item.id));
     for (const day of candidate.days) {
       if (new Set(day.exercises.map(exercise => exercise.order)).size !== day.exercises.length) throw new ControlError('INVALID_CANDIDATE', 502);
       for (const exercise of day.exercises) {
+        if (!allowed.has(exercise.exerciseId)) throw new ControlError('INVALID_CANDIDATE', 502);
         const catalog = exercises.find(item => item.id === exercise.exerciseId)!;
         if (exercise.targetSets.length > 100 || exercise.targetSets.some(set => set.metricType !== catalog.metricType)) throw new ControlError('INVALID_CANDIDATE', 502);
       }

@@ -18,3 +18,8 @@ test-results-*/
 .guided-vite-cache/
 .npm-cache/
 .wrangler/
+
+# RepDB licensed build inputs and generated application resources
+.cache/
+src/catalog/generated/
+public/exercise-media/repdb/

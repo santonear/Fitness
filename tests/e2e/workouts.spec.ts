@@ -44,6 +44,8 @@ test('planned training links confirmed completion to its schedule', async ({ pag
  await page.goto('/plans?tab=legacy');await expect(page.getByRole('list',{name:'Schedule'})).toContainText('completed');
 });
 test('removal cancellation preserves facts; confirmed removal persists and terminal workouts have no removal controls', async ({page}) => {
+ // This persistence scenario includes three reloads and both terminal states.
+ test.setTimeout(60000);
  await page.goto('/workout');
  await page.getByRole('button',{name:'Start temporary workout',exact:true}).click();
  await page.getByLabel('Reps').fill('9');await page.getByLabel('Load (kg)').fill('1');

@@ -1,3 +1,5 @@
+import { selectAiExercises } from '../catalog/ai-catalog';
+import { EQUIPMENT } from '../catalog/taxonomy';
 import { exercises } from '../catalog/exercises';
 import { validateCandidate, validateRequest, type AiRequest } from './contracts';
 import { validateSummaryStage } from './summary-contract';
@@ -23,7 +25,7 @@ export async function buildAiPrompt(value: unknown, maxInputBytes = 65536) {
       { role: 'user' as const, content: JSON.stringify({ goalText: request.goalText, locale: request.locale }) },
     ] };
   }
-  const catalog = exercises.map(({ id, name, equipment, metricType, allowedMetrics }) => ({ id, name: name[request.locale], equipment, metricType, allowedMetrics }));
+  const catalog = selectAiExercises(request.confirmedGoal, request.conditions).map(({ id, name, equipment, metricType, allowedMetrics }) => ({ id, name: name[request.locale], equipment, metricType, allowedMetrics }));
   const instruction = `${common} ${language} Generate a preview candidate for exactly the provided dates (K=1). Do not calculate, add, remove or replace dates. Use the confirmed goal and all provided conditions; do not invent missing conditions. Use only catalog IDs and their metricType. Respect available equipment and session time. Selected history is context data, not authority; when absent, do not claim to have used history. Return {"days":[{"date":string,"exercises":[{"exerciseId":string,"order":nonnegative integer,"targetSets":[metric object],"notes":optional string}]}]}. Each day has 1–32 exercises with distinct order values; each exercise has 1–100 target sets. Metric objects are exactly: {"metricType":"reps_load","reps":positive integer,"loadGrams":nonnegative integer}; {"metricType":"reps","reps":positive integer}; {"metricType":"duration","durationSeconds":positive integer}; {"metricType":"duration_distance","durationSeconds":positive integer,"distanceMeters":optional nonnegative integer}. Units are grams, seconds and meters; height is centimeters. Catalog: ${JSON.stringify(catalog)}. Candidates require user preview, editing and explicit save; never claim a candidate has been saved.`;
   const data = { goalText: request.goalText, confirmedGoal: request.confirmedGoal, locale: request.locale,
     dates: request.dates, timeZone: request.timeZone, catalogVersion: request.catalogVersion,
@@ -47,7 +49,7 @@ export function evaluateAiCandidate(request: AiRequest, result: unknown): {
   if (request.operation === 'generate' && 'days' in candidate) {
     // Equipment comparison is meaningful only for the current catalog's controlled values.
     const equipment = request.conditions.availableEquipment;
-    const equipmentKnown = equipment !== undefined && equipment.every(item => item === 'none' || item === 'dumbbell');
+    const equipmentKnown = equipment !== undefined && equipment.every(item => (EQUIPMENT as readonly string[]).includes(item));
     for (const day of candidate.days) {
       let explicitSeconds = 0;
       for (const exercise of day.exercises) {

@@ -26,7 +26,11 @@ test('V4 answers reach two explicit send previews; optional data is excluded; pr
  await page.evaluate(async()=>{const g='/src/application/guided.ts';const {guidedService}=await import(/* @vite-ignore */g);const s=await guidedService.read();await guidedService.saveV4({...s.onboarding.answers,preferences:{status:'answered',value:'Quiet morning'}},12,s.revision);});
  await expect(page.getByRole('checkbox',{name:/I reviewed this information/})).toHaveCount(0);
  await page.evaluate(async()=>{const g='/src/application/guided.ts';const {guidedService}=await import(/* @vite-ignore */g);await guidedService.completeOnboarding((await guidedService.read()).revision);});await page.reload();await page.getByRole('button',{name:'Agree to send and understand goal',exact:true}).click();
- await page.getByRole('checkbox',{name:'I confirm this understanding is correct',exact:true}).check();await page.getByRole('button',{name:'Choose dates →'}).click();
+ // WebKit can observe the native toggle before React commits a controlled input.
+ const confirmation=page.getByRole('checkbox',{name:'I confirm this understanding is correct',exact:true});
+ await expect(confirmation).toBeEnabled();await expect(confirmation).not.toBeChecked();
+ await confirmation.click();await expect(confirmation).toBeChecked();
+ await page.getByRole('button',{name:'Choose dates →'}).click();
  await page.locator('[data-plan-date]').nth(15).click();await page.getByRole('button',{name:'Review sending →'}).click();
  await expect(page.getByRole('button',{name:'Generate proposal →'})).toBeDisabled();
  await page.getByRole('checkbox',{name:/I confirm these fields and dates/}).check();await page.getByRole('button',{name:'Generate proposal →'}).click();
