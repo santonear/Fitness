@@ -29,17 +29,23 @@ export function FloatingCoach() {
   });
   const launcher = useRef<HTMLButtonElement>(null); const panel = useRef<HTMLDivElement>(null);
   const returnFocus = useRef<HTMLElement | null>(null);
+  const entrySequence = useRef(0);
   const hidden = location.pathname === '/onboarding';
   const show = useCallback(() => {
+    const sequence = ++entrySequence.current;
     returnFocus.current = document.activeElement instanceof HTMLElement && document.activeElement.matches('button,a[href],input,textarea,select') ? document.activeElement : null;
     void guidedService.onboardingEntry().then(entry => {
+      if (sequence !== entrySequence.current) return;
       if (entry.required || entry.state.onboarding?.version === 4 && !entry.state.onboarding.completed) { navigate('/onboarding'); return; }
       setEntryError(''); setMounted(true); setOpen(true);
-    }).catch(error => setEntryError(String(error)));
+    }).catch(error => { if (sequence === entrySequence.current) setEntryError(String(error)); });
   }, [navigate]);
-  const close = useCallback(() => { setOpen(false); requestAnimationFrame(() => { const target = returnFocus.current; (target?.isConnected && target.getClientRects().length ? target : launcher.current)?.focus({ preventScroll: true }); }); }, []);
+  const close = useCallback(() => { entrySequence.current++; setOpen(false); requestAnimationFrame(() => { const target = returnFocus.current; (target?.isConnected && target.getClientRects().length ? target : launcher.current)?.focus({ preventScroll: true }); }); }, []);
   useEffect(() => { try { localStorage.setItem(preferenceKey, JSON.stringify(dock)); } catch { /* Session-only docking remains usable. */ } }, [dock]);
-  useEffect(() => { if (location.pathname === '/ai') show(); else setOpen(false); }, [location.pathname, show]);
+  useEffect(() => {
+    if (location.pathname === '/ai') show(); else setOpen(false);
+    return () => { entrySequence.current++; };
+  }, [location.pathname, show]);
   useEffect(() => { window.addEventListener(openCoachEvent, show); return () => window.removeEventListener(openCoachEvent, show); }, [show]);
   useEffect(() => { const query = matchMedia('(max-width:767px)'); const change = () => setMobile(query.matches); query.addEventListener('change', change); return () => query.removeEventListener('change', change); }, []);
   useEffect(() => { if (visual !== 'success' && visual !== 'replying') return; const timeout = setTimeout(() => setVisual('idle'), 3500); return () => clearTimeout(timeout); }, [visual]);

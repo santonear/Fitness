@@ -1,9 +1,10 @@
 import { z } from 'zod';
 import { confirmationFor, goalConfirmationFor, requestSchema, type AiRequest } from '../backend/contracts';
-import { CATALOG_VERSION, exercises } from '../catalog/exercises';
+import { CATALOG_VERSION } from '../catalog/exercises';
 import { type GuidedDialogueRequest } from '../domain/guided-ai-contracts';
 import { assertGuidedConsentCurrent, validateGuidedResponse, type GuidedSendConsent } from './guided-dialogue';
-import { guidedServiceLimits } from '../backend/guided-provider';
+import { guidedServiceLimits } from '../domain/guided-limits';
+import { guidedAiExercises } from '../catalog/ai-catalog';
 
 export async function guidedTransportEnvelope(request: GuidedDialogueRequest): Promise<Exclude<AiRequest, { operation: 'summary' }>> {
   const base = { contractVersion: 1 as const, requestId: request.requestId, goalText: request.scope.goal,
@@ -36,7 +37,7 @@ export async function sendGuidedDialogue(request: GuidedDialogueRequest, consent
     context: z.object({ restoreGeneration: z.number(), inputDigest: z.string() }) }).safeParse(body);
   if (!parsed.success || parsed.data.requestId !== request.requestId || parsed.data.context.restoreGeneration !== request.restoreGeneration || parsed.data.context.inputDigest !== envelope.sendConfirmation)
     throw new Error('CONTROL_UNAVAILABLE');
-  const result = validateGuidedResponse(parsed.data.result, request, { expectedDates: request.dates ?? [], exerciseCatalog: exercises,
+  const result = validateGuidedResponse(parsed.data.result, request, { expectedDates: request.dates ?? [], exerciseCatalog: guidedAiExercises(request),
     restoreGeneration: request.restoreGeneration, limits: guidedServiceLimits });
   return { response: result, accounting: parsed.data.accounting };
 }
