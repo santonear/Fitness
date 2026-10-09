@@ -1,0 +1,43 @@
+/* Generated from 02-design-tokens.json; checked by v8-theme-tokens.test.ts. */
+:root[data-theme="liubai"] {
+  --c-bg: #ECEEEA;
+  --c-bg-grad: #ECEEEA;
+  --c-surface: #F4F5F2;
+  --c-surface-2: #E3E6E1;
+  --c-ink: #1C201E;
+  --c-ink-muted: #5F6662;
+  --c-line: #C9CEC9;
+  --c-primary: #1C201E;
+  --c-on-primary: #ECEEEA;
+  --c-signature: #A8372A;
+  --c-signature-2: #1C201E;
+  --c-done: #A8372A;
+  --c-on-done: #F4F2EC;
+  --c-attention: #9A5B1E;
+  --c-ai: transparent;
+  --c-focus: #1C201E;
+  --c-scrim: rgba(28,32,30,.24);
+  --f-display: "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
+  --f-body: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --f-num: "Noto Sans SC", sans-serif;
+  --w-body: 300;
+  --w-display: 400;
+  --w-num: 200;
+  --r-control: 2px;
+  --r-panel: 4px;
+  --r-chip: 2px;
+  --bw: 1px;
+  --tr-display: 0.16em;
+  --tr-body: 0.04em;
+  --mat-surface: #F4F5F2;
+  --mat-primary: #1C201E;
+  --mat-hl: none;
+  --el-1: 0 1px 0 #C9CEC9;
+  --el-2: 0 14px 30px -24px rgba(28,32,30,.45);
+  --el-3: 0 24px 48px -28px rgba(28,32,30,.5);
+  --press-inset: inset 0 3px 10px rgba(0,0,0,.35);
+  --ring: conic-gradient(from var(--ring-a), rgba(28,32,30,0) 0deg, rgba(28,32,30,.55) 50deg, #A8372A 80deg, rgba(28,32,30,0) 120deg, rgba(28,32,30,0) 360deg);
+  --ring-w: 1px;
+  --glow: rgba(28,32,30,.28);
+  --glow-blur: 26px;
+}

@@ -1,0 +1,43 @@
+/* Generated from 02-design-tokens.json; checked by v8-theme-tokens.test.ts. */
+:root[data-theme="zhuangse"] {
+  --c-bg: #FAF6EC;
+  --c-bg-grad: #FAF6EC;
+  --c-surface: #FFFFFF;
+  --c-surface-2: #F1ECE0;
+  --c-ink: #000000;
+  --c-ink-muted: #3D3A33;
+  --c-line: #000000;
+  --c-primary: #2340FF;
+  --c-on-primary: #FFFFFF;
+  --c-signature: #FFD43B;
+  --c-signature-2: #FF5533;
+  --c-done: #6EE7B7;
+  --c-on-done: #000000;
+  --c-attention: #FF5533;
+  --c-ai: #E4DBFF;
+  --c-focus: #2340FF;
+  --c-scrim: rgba(0,0,0,.35);
+  --f-display: "Noto Sans SC", "PingFang SC", sans-serif;
+  --f-body: "Noto Sans SC", "PingFang SC", sans-serif;
+  --f-num: "Archivo", "Noto Sans SC", sans-serif;
+  --w-body: 500;
+  --w-display: 900;
+  --w-num: 900;
+  --r-control: 12px;
+  --r-panel: 16px;
+  --r-chip: 999px;
+  --bw: 2.5px;
+  --tr-display: 0;
+  --tr-body: 0;
+  --mat-surface: #FFFFFF;
+  --mat-primary: #2340FF;
+  --mat-hl: none;
+  --el-1: 3px 3px 0 #000000;
+  --el-2: 4px 4px 0 #000000;
+  --el-3: 8px 8px 0 #000000;
+  --press-inset: inset 0 3px 0 rgba(0,0,0,.25);
+  --ring: conic-gradient(from var(--ring-a), #000000 0 25%, #FFD43B 0 50%, #000000 0 75%, #FF5533 0 100%);
+  --ring-w: 4px;
+  --glow: none;
+  --glow-blur: 0;
+}

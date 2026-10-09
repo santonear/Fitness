@@ -1,0 +1,43 @@
+/* Generated from 02-design-tokens.json; checked by v8-theme-tokens.test.ts. */
+:root[data-theme="jingshe"] {
+  --c-bg: #191A18;
+  --c-bg-grad: radial-gradient(130% 70% at 50% 0%, #22231F 0%, #191A18 60%, #141513 100%);
+  --c-surface: #222320;
+  --c-surface-2: #2C2D29;
+  --c-ink: #EDE8DF;
+  --c-ink-muted: #8D8A83;
+  --c-line: #34352F;
+  --c-primary: #C8B48A;
+  --c-on-primary: #191A18;
+  --c-signature: #C8B48A;
+  --c-signature-2: #EDE8DF;
+  --c-done: #C8B48A;
+  --c-on-done: #191A18;
+  --c-attention: #D9A35E;
+  --c-ai: #222320;
+  --c-focus: #EDE8DF;
+  --c-scrim: rgba(0,0,0,.5);
+  --f-display: "Noto Sans SC", "PingFang SC", sans-serif;
+  --f-body: "Noto Sans SC", "PingFang SC", sans-serif;
+  --f-num: "Jost", "Noto Sans SC", sans-serif;
+  --w-body: 300;
+  --w-display: 300;
+  --w-num: 200;
+  --r-control: 999px;
+  --r-panel: 20px;
+  --r-chip: 999px;
+  --bw: 1px;
+  --tr-display: 0.16em;
+  --tr-body: 0.06em;
+  --mat-surface: linear-gradient(180deg,#262724 0%,#222320 100%);
+  --mat-primary: linear-gradient(115deg,#B9A57B 0%,#E4D3AD 45%,#C8B48A 60%,#AE9A70 100%);
+  --mat-hl: inset 0 1px 0 rgba(255,255,255,.06);
+  --el-1: 0 8px 18px -10px rgba(0,0,0,.6);
+  --el-2: 0 22px 44px -22px rgba(0,0,0,.7);
+  --el-3: 0 32px 64px -24px rgba(0,0,0,.8);
+  --press-inset: inset 0 4px 12px rgba(0,0,0,.45);
+  --ring: conic-gradient(from var(--ring-a), rgba(200,180,138,0) 0deg, #E4D3AD 60deg, rgba(200,180,138,0) 140deg, rgba(200,180,138,.25) 250deg, rgba(200,180,138,0) 360deg);
+  --ring-w: 1px;
+  --glow: rgba(200,180,138,.22);
+  --glow-blur: 26px;
+}

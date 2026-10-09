@@ -1,0 +1,43 @@
+/* Generated from 02-design-tokens.json; checked by v8-theme-tokens.test.ts. */
+:root[data-theme="qingci"] {
+  --c-bg: #DDE6E0;
+  --c-bg-grad: radial-gradient(120% 60% at 50% 0%, #E6EEE9 0%, #DDE6E0 55%, #D5E0D9 100%);
+  --c-surface: #F2F5F1;
+  --c-surface-2: #E6EDE8;
+  --c-ink: #1E2B26;
+  --c-ink-muted: #4F5F58;
+  --c-line: #C8D5CD;
+  --c-primary: #3E6B5C;
+  --c-on-primary: #F2F5F1;
+  --c-signature: #8FB3A5;
+  --c-signature-2: #C7A867;
+  --c-done: #3E6B5C;
+  --c-on-done: #F2F5F1;
+  --c-attention: #765822;
+  --c-ai: #F2F5F1;
+  --c-focus: #1E2B26;
+  --c-scrim: rgba(30,43,38,.28);
+  --f-display: "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
+  --f-body: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --f-num: "Cormorant Garamond", "Noto Serif SC", serif;
+  --w-body: 300;
+  --w-display: 400;
+  --w-num: 300;
+  --r-control: 999px;
+  --r-panel: 28px;
+  --r-chip: 24px;
+  --bw: 1px;
+  --tr-display: 0.08em;
+  --tr-body: 0.04em;
+  --mat-surface: linear-gradient(180deg,#FFFFFF 0%,#F2F5F1 100%);
+  --mat-primary: linear-gradient(180deg,#4A7A69 0%,#3E6B5C 55%,#355E50 100%);
+  --mat-hl: inset 0 1px 0 rgba(255,255,255,.9);
+  --el-1: 0 6px 14px -8px rgba(30,60,48,.35);
+  --el-2: 0 18px 40px -22px rgba(30,60,48,.45);
+  --el-3: 0 30px 60px -24px rgba(30,60,48,.55);
+  --press-inset: inset 0 4px 12px rgba(20,48,38,.32);
+  --ring: conic-gradient(from var(--ring-a), rgba(143,179,165,0) 0deg, #8FB3A5 70deg, #C7A867 120deg, rgba(143,179,165,0) 180deg, rgba(143,179,165,.35) 270deg, rgba(143,179,165,0) 360deg);
+  --ring-w: 1.5px;
+  --glow: rgba(62,107,92,.45);
+  --glow-blur: 22px;
+}
