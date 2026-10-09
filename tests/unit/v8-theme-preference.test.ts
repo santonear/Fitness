@@ -31,10 +31,10 @@ describe('V8 browser preference', () => {
     expect(migrateTheme(store)).toBe(true);
     expect(readTheme(store)).toBe('qingci');
   });
-  it('retains an existing V8 choice when cleaning a leftover legacy key', () => {
+  it('defers mutation of coexisting valid keys pending the precedence decision', () => {
     const store = storage({ [themeKey]: 'jingshe', [legacyThemeKey]: 'atlas' });
-    expect(migrateTheme(store)).toBe(true);
-    expect(store.values).toEqual(new Map([[themeKey, 'jingshe']]));
+    expect(migrateTheme(store)).toBe(false);
+    expect(store.values).toEqual(new Map([[themeKey, 'jingshe'], [legacyThemeKey, 'atlas']]));
   });
   it('falls back on invalid values and inaccessible storage', () => {
     expect(readTheme(storage({ [themeKey]: 'atlas' }))).toBe('qingci');
