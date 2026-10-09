@@ -14,7 +14,9 @@ test('manual local preparation shows completed facts without network or database
   await page.getByRole('button', { name: 'Confirm completion', exact: true }).click();
   await expect(page.getByRole('status').filter({hasText:/^Workout completed$/})).toHaveText('Workout completed');
   await page.goto('/progress');
+  await expect(page.locator('.v31-metric-grid')).toHaveAttribute('aria-busy', 'false');
   await page.getByText('More filters and stage summaries', { exact: true }).click();
+  await expect(page.locator('details').filter({ has: page.getByText('More filters and stage summaries', { exact: true }) })).toHaveAttribute('open', '');
   const section = page.getByRole('region', { name: 'Local stage summary preparation' });
   await expect(section.getByRole('button', { name: 'Prepare local preview' })).toBeVisible();
   expect(await section.getByRole('region', { name: 'Stage facts preview' }).count()).toBe(0);
@@ -60,7 +62,9 @@ test('saved legacy plan supports actual week and whole-plan fact previews', asyn
   await page.getByRole('button', { name: 'Confirm completion', exact: true }).click();
   await expect(page.getByRole('status').filter({hasText:/^Workout completed$/})).toHaveText('Workout completed');
   await page.goto('/progress');
+  await expect(page.locator('.v31-metric-grid')).toHaveAttribute('aria-busy', 'false');
   await page.getByText('More filters and stage summaries', { exact: true }).click();
+  await expect(page.locator('details').filter({ has: page.getByText('More filters and stage summaries', { exact: true }) })).toHaveAttribute('open', '');
   const section = page.getByRole('region', { name: 'Local stage summary preparation' });
   await section.getByLabel('Summary scope').selectOption('planWeek');
   await section.getByLabel('Summary plan').selectOption({ label: 'Summary plan' });
@@ -85,7 +89,9 @@ test('saved legacy plan supports actual week and whole-plan fact previews', asyn
 test('empty and invalid selections remain visible and never imply AI generation', async ({ page }) => {
   await page.goto('/plans?tab=legacy');
   await page.goto('/progress');
+  await expect(page.locator('.v31-metric-grid')).toHaveAttribute('aria-busy', 'false');
   await page.getByText('More filters and stage summaries', { exact: true }).click();
+  await expect(page.locator('details').filter({ has: page.getByText('More filters and stage summaries', { exact: true }) })).toHaveAttribute('open', '');
   const section = page.getByRole('region', { name: 'Local stage summary preparation' });
   await section.getByRole('button', { name: 'Prepare local preview' }).click();
   await expect(section.getByRole('alert')).toContainText('EMPTY_STAGE');
