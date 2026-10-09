@@ -44,7 +44,7 @@
 |src/application/history-context.ts|保留|0：保持既有业务边界，按需由统筹转交|
 |src/application/legacy-collisions.ts|保留|0：保持既有业务边界，按需由统筹转交|
 |src/application/plans.ts|保留|0：保持既有业务边界，按需由统筹转交|
-|src/application/profile.ts|保留|0：保持既有业务边界，按需由统筹转交|
+|src/application/profile.ts|改造|B：仅负责新库 metadata 初始化与迁移版本一致；不混同 Dexie、metadata 和备份 envelope 版本|
 |src/application/progress-calculation.ts|保留|0：保持既有业务边界，按需由统筹转交|
 |src/application/progress.ts|保留|0：保持既有业务边界，按需由统筹转交|
 |src/application/stage-summary-core.ts|保留|0：保持既有业务边界，按需由统筹转交|
@@ -192,3 +192,9 @@ B线按用户新要求从V5/V6.2/V7.1的真实UI导出流程生成样本，禁�
 |H|进行中|A/C等待后已填补槽位，后台独立改造|
 
 B独占 tests/fixtures/legacy-backups/ 和其中生成脚本/来源清单。MapSchedule归C，不与B重复实施。
+
+## B 迁移决定（2026-10-10）
+
+- 用户已确认无损保留：旧计划及训练历史原样只读；新 V8 计划把同一旧动作中连续且目标相同的组归为一个条目，目标不同则拆条目并保持原顺序。旧备注及计时保留在历史中。
+- `legacyItemsToV8` 已有对应投影与测试；这不是完整数据库升级或备份恢复验收。
+- 待用户确认：多个旧日期计划的归组及当前计划选择；缺失或超出 15–120 分钟的时长，以及缺少 V8 必需字段的旧训练记录如何兼容。未确认前不推断数据、不注册不完整升级。
