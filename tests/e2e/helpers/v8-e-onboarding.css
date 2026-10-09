@@ -1,0 +1,5 @@
+body { margin: 0; background: var(--c-bg); color: var(--c-ink); font-family: var(--f-body); font-weight: var(--w-body); }
+.fixture-suggestions { display: flex; flex-direction: column; gap: var(--s2); }
+.fixture-suggestions button { justify-content: start; text-align: start; }
+.fixture-brand { font-size: var(--t5); }
+.fixture-counts { display: flex; justify-content: center; gap: var(--s5); }
