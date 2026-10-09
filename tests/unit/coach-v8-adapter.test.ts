@@ -12,13 +12,15 @@ const target = { planId: id, versionId: id, revision: 4 };
 const template = { id: 'A', name: 'A', estimatedMinutes: 20, items: [{ exerciseId: EXERCISE_IDS.bodyweightSquat, equipment: 'none', sets: 2, target: { metricType: 'reps' as const, reps: 8 } }] };
 const profile = { goalText: '练出习惯', weeklyTarget: 2, sessionMinutes: 20, scheduleOriginalText: '每次20分钟', place: 'home' as const, equipment: [], adultConfirmed: true as const, cautions: [] };
 const proposal = { goalText: profile.goalText, weeklyTarget: 2, sessionMinutes: 20, scheduleOriginalText: profile.scheduleOriginalText, templates: [template, { ...template, id: 'B' }], reasons: ['a', 'b', 'c'] };
+const timingBands = { morning: { partial: 1, notStarted: 0 }, daytime: { partial: 0, notStarted: 2 }, evening: { partial: 0, notStarted: 0 } };
+const incompleteTiming = { weekday: timingBands, weekend: timingBands };
 const identity = { requestId: id, restoreGeneration: 2, mutationAllowed: false };
 const onboard: CoachRequest = { ...common, task: 'ONBOARD_PLAN', profile };
 const cases: { request: CoachRequest; response: Record<string, unknown> }[] = [
   { request: onboard, response: { ...identity, type: 'plan_proposal', proposal } },
   { request: { ...common, task: 'ADJUST_TODAY', target, workoutId: id, template, instruction: 'shorter' }, response: { ...identity, type: 'today_adjustment', target, workoutId: id, template, summary: 'shorter' } },
   { request: { ...common, task: 'MODIFY_PLAN', target, plan: { ...proposal, reasons: ['a', 'b', 'c'] }, instruction: 'change' }, response: { ...identity, type: 'change_proposal', target, proposal, changes: ['change'] } },
-  { request: { ...common, task: 'PERIOD_REVIEW', target, kind: 'week', facts: { from: '2026-10-01', to: '2026-10-07', complete: 0, partial: 0, notStarted: 4, movementCount: 0, missingCount: 0, activityMinutes: 0, trainingSeconds: 0, activityCounts: { walk: 0, run: 0, cycle: 0, swim: 0, yoga: 0, stairs: 0, other: 0 }, reasonCounts: { time: 0, fatigue: 0, discomfort: 0, equipment_busy: 0, not_today: 0, other: 0 }, hasBodyWeight: false, improvements: [] } }, response: { ...identity, type: 'review_summary', target, opening: 'a', encouragement: 'b', gap: 'c', dataBoundary: 'd' } },
+  { request: { ...common, task: 'PERIOD_REVIEW', target, kind: 'week', facts: { from: '2026-10-01', to: '2026-10-07', complete: 0, partial: 0, notStarted: 4, movementCount: 0, missingCount: 0, activityMinutes: 0, trainingSeconds: 0, activityCounts: { walk: 0, run: 0, cycle: 0, swim: 0, yoga: 0, stairs: 0, other: 0 }, reasonCounts: { time: 0, fatigue: 0, discomfort: 0, equipment_busy: 0, not_today: 0, other: 0 }, hasBodyWeight: false, incompleteTiming, improvements: [] } }, response: { ...identity, type: 'review_summary', target, opening: 'a', encouragement: 'b', gap: 'c', dataBoundary: ['d'] } },
 ];
 
 describe('V8 response boundary', () => {
@@ -85,11 +87,38 @@ describe('V8 response boundary', () => {
     if (adjustment.task !== 'ADJUST_TODAY') throw new Error('fixture');
     expect(() => adaptCoachResponse({ ...adjustment, workoutId: undefined }, cases[1].response)).toThrow();
   });
+  it('accepts review boundary arrays including empty and rejects legacy strings', () => {
+    const review = cases[3];
+    for (const dataBoundary of [[], ['No body-weight records.'], ['a', 'b']]) {
+      expect(adaptCoachResponse(review.request, { ...review.response, dataBoundary })).toEqual({ ...review.response, dataBoundary });
+    }
+    for (const dataBoundary of ['legacy', [''], [1], undefined]) {
+      expect(() => adaptCoachResponse(review.request, { ...review.response, dataBoundary })).toThrow();
+    }
+  });
+  it('requires complete nonnegative timing facts without changing them', () => {
+    const review = cases[3];
+    const request = review.request;
+    if (request.task !== 'PERIOD_REVIEW') throw new Error('fixture');
+    for (const timing of [undefined, {}, { ...incompleteTiming, weekday: { ...timingBands, morning: { partial: -1, notStarted: 0 } } }]) {
+      expect(() => adaptCoachResponse({ ...request, facts: { ...request.facts, incompleteTiming: timing } } as CoachRequest, review.response)).toThrow();
+    }
+    const facts = { ...request.facts, from: '2026-09-01', to: '2026-09-30' };
+    expect(adaptCoachResponse({ ...request, kind: 'month', facts }, review.response).type).toBe('review_summary');
+    expect(facts.incompleteTiming).toEqual(incompleteTiming);
+  });
+  it('does not inherit legacy eight movement or eight set limits', () => {
+    const large = { ...template, items: Array.from({ length: 9 }, () => ({ ...template.items[0], sets: 9 })) };
+    expect(adaptCoachResponse(onboard, { ...cases[0].response, proposal: { ...proposal, templates: [large, { ...large, id: 'B' }] } }).type).toBe('plan_proposal');
+  });
   it('versions V8 prompts independently and retains legacy prompts', () => {
     expect(coachPromptHeader('create')).toContain('@v7.1.0');
     cases.forEach(({ request }) => expect(coachV8PromptHeader(request.task)).toContain('@v8.0.0'));
     expect(coachV8PromptHeader('ONBOARD_PLAN')).toContain('20 means 20');
     expect(coachV8PromptHeader('PERIOD_REVIEW')).toContain('not_started is excluded');
+    expect(coachV8PromptHeader('PERIOD_REVIEW')).toContain('dataBoundary is a string array');
+    expect(coachV8PromptHeader('PERIOD_REVIEW')).toContain('otherwise return []');
+    expect(coachV8PromptHeader('PERIOD_REVIEW')).toContain('incompleteTiming');
   });
 });
 
