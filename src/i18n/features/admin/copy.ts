@@ -1,7 +1,7 @@
 export const adminCopy = {
   zh: {
     columns: ['称呼', '类型', '状态', '时间', '备注', '操作'],
-    table: '申请审核', copy: '复制申请 ID', copied: '已复制完整 ID', copyFailed: '复制失败，请重试。',
+    table: '申请审核', copy: '复制申请 ID', copied: '已复制完整 ID', errors: { copyFailed: '复制失败，请重试。' },
     note: '处理说明', approve: '批准', reject: '拒绝', activate: '免邀请码直接开通',
     activated: '已免码激活，请用户在原申请浏览器刷新。',
     confirm: '立即开通30天？用户在原申请浏览器刷新即可使用，无需激活码。不会重置用量或增加项目预算。',
@@ -11,7 +11,7 @@ export const adminCopy = {
   },
   en: {
     columns: ['Name', 'Type', 'Status', 'Time', 'Notes', 'Actions'],
-    table: 'Application review', copy: 'Copy application ID', copied: 'Full ID copied', copyFailed: 'Copy failed. Please retry.',
+    table: 'Application review', copy: 'Copy application ID', copied: 'Full ID copied', errors: { copyFailed: 'Copy failed. Please retry.' },
     note: 'Review note', approve: 'Approve', reject: 'Reject', activate: 'Activate without code',
     activated: 'Activated without code. Ask the applicant to refresh the original browser.',
     confirm: 'Activate 30 days now? The applicant can refresh the original browser without a code. Usage and project budget are unchanged.',

@@ -12,7 +12,7 @@ export function ApplicationsTable({ applications, zh, busy, run, reasons, setRea
   const text = adminCopy[zh ? 'zh' : 'en'];
   const [copyStatus, setCopyStatus] = useState<'copied' | 'copyFailed'>();
   return <>
-    {copyStatus && <p role="status">{text[copyStatus]}</p>}
+    {copyStatus && <p role="status">{copyStatus === 'copyFailed' ? text.errors.copyFailed : text.copied}</p>}
     <div className="admin-table-scroll" role="region" aria-label={text.table} tabIndex={0}>
       <table className="admin-applications" aria-label={text.table}>
         <thead><tr>{text.columns.map(column => <th key={column} scope="col">{column}</th>)}</tr></thead>
