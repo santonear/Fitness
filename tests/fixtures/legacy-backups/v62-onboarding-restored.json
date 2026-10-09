@@ -1,0 +1,108 @@
+{
+  "format": "fitness-local",
+  "schemaVersion": 5,
+  "exportedAt": "2026-10-09T17:05:36.092Z",
+  "catalogVersion": 1,
+  "data": {
+    "metadata": {
+      "schemaVersion": 6,
+      "localProfileId": "a594be7d-a784-4765-9d6d-c34c001662a6",
+      "catalogVersion": 1,
+      "revision": 2,
+      "dataRevision": 2,
+      "importedAt": "2026-10-09T17:05:35.979Z",
+      "restoreGeneration": 1
+    },
+    "profiles": [
+      {
+        "id": "a594be7d-a784-4765-9d6d-c34c001662a6",
+        "createdAt": "2026-10-09T17:05:33.732Z",
+        "updatedAt": "2026-10-09T17:05:33.732Z",
+        "revision": 0,
+        "locale": "en",
+        "timeZone": "Etc/GMT-8",
+        "units": "metric"
+      }
+    ],
+    "plans": [],
+    "planVersions": [],
+    "sessions": [],
+    "sets": [],
+    "scheduledWorkouts": [],
+    "bodyWeights": [],
+    "trainingMemo": {
+      "schemaVersion": 1,
+      "revision": 1,
+      "updatedAt": "2026-10-09T17:05:36.094Z",
+      "sourceRevision": 2,
+      "sessions": []
+    },
+    "aiMemoryNotes": [],
+    "timers": [],
+    "mediaAssets": [],
+    "guidedStates": [
+      {
+        "id": "guided",
+        "revision": 16,
+        "onboarding": {
+          "id": "40c7d7a1-4acc-48eb-8239-275e1d6b1d5e",
+          "step": 12,
+          "answers": {
+            "biologicalSex": {
+              "status": "answered",
+              "value": "女性"
+            },
+            "age": {
+              "status": "answered",
+              "value": 13
+            },
+            "heightCm": {
+              "status": "skipped"
+            },
+            "weightKg": {
+              "status": "skipped"
+            },
+            "waistCm": {
+              "status": "skipped"
+            },
+            "goal": {
+              "status": "answered",
+              "value": [
+                "提升力量",
+                "Synthetic migration fixture: climb better"
+              ]
+            },
+            "experience": {
+              "status": "skipped"
+            },
+            "location": {
+              "status": "skipped"
+            },
+            "equipment": {
+              "status": "skipped"
+            },
+            "safety": {
+              "status": "skipped"
+            },
+            "schedule": {
+              "status": "skipped"
+            },
+            "preferences": {
+              "status": "skipped"
+            }
+          },
+          "updatedAt": "2026-10-09T17:05:34.509Z",
+          "completed": true,
+          "version": 4,
+          "deferred": false
+        },
+        "programs": [],
+        "candidates": [],
+        "messages": [],
+        "events": [],
+        "observations": [],
+        "invitations": []
+      }
+    ]
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "kind": "synthetic-data-entered-through-legacy-ui",
+  "modelCalls": 0,
+  "generatedAt": "2026-10-09T17:05:28.878Z",
+  "cases": [
+    {
+      "version": "v5",
+      "sourceCommit": "dc76b501bd2fee9ad6920687e77cd79717c62b7c",
+      "file": "v5-onboarding.json",
+      "sha256": "608a0b9704ac3ab84055756a6f923f9ba768c9dad36da4cc846a23d60f387e2b",
+      "schemaVersion": 5,
+      "coverage": [
+        "onboarding-only"
+      ],
+      "mock": "API unavailable; no generated plans",
+      "browser": "153.0.8010.12"
+    },
+    {
+      "version": "v5",
+      "sourceCommit": "dc76b501bd2fee9ad6920687e77cd79717c62b7c",
+      "file": "v5-onboarding-restored.json",
+      "sha256": "73c6d11f80ec2b65bc78899c7e101af46ec8847854e0791b4839ff72f9225a9b",
+      "coverage": [
+        "restore-old-export-then-reexport"
+      ],
+      "original": "v5-onboarding.json"
+    },
+    {
+      "version": "v62",
+      "sourceCommit": "e94c59f37cdd03ef6f8fdcd277ae96e63b8d31ec",
+      "file": "v62-onboarding.json",
+      "sha256": "38298b9d0d40eb05357ef6c5b96f9650b448d2e9adf4ef63137b6147235f653a",
+      "schemaVersion": 5,
+      "coverage": [
+        "onboarding-only"
+      ],
+      "mock": "API unavailable; no generated plans",
+      "browser": "153.0.8010.12"
+    },
+    {
+      "version": "v62",
+      "sourceCommit": "e94c59f37cdd03ef6f8fdcd277ae96e63b8d31ec",
+      "file": "v62-onboarding-restored.json",
+      "sha256": "8bf160c6408ee5536708fc55a5eddf5a7dd24dbc6aa8a5af73814c0b87a11120",
+      "coverage": [
+        "restore-old-export-then-reexport"
+      ],
+      "original": "v62-onboarding.json"
+    },
+    {
+      "version": "v71",
+      "sourceCommit": "9d2a2120e85fbe33e025734ee1ce5433fe0ce92c",
+      "file": "v71-onboarding.json",
+      "sha256": "f81e79bdf144af161f5ffa99c4f577e45014de84ef0e582dfc081f73ac018545",
+      "schemaVersion": 5,
+      "coverage": [
+        "onboarding-only"
+      ],
+      "mock": "API unavailable; no generated plans",
+      "browser": "153.0.8010.12"
+    },
+    {
+      "version": "v71",
+      "sourceCommit": "9d2a2120e85fbe33e025734ee1ce5433fe0ce92c",
+      "file": "v71-onboarding-restored.json",
+      "sha256": "e9a7071274ed90467cd2a5eae369b8b3c0c3a844486247baf22c4576ef6c9fa7",
+      "coverage": [
+        "restore-old-export-then-reexport"
+      ],
+      "original": "v71-onboarding.json"
+    }
+  ]
+}
