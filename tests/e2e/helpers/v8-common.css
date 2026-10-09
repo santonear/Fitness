@@ -1,0 +1,6 @@
+body { margin: 0; background: var(--c-bg); color: var(--c-ink); font-family: var(--f-body); font-weight: var(--w-body); }
+main { box-sizing: border-box; max-width: var(--layout-desktop-main); margin: auto; padding: var(--s5); }
+h1 { font-family: var(--f-display); font-size: var(--t6); font-weight: var(--w-display); line-height: var(--lh-tight); }
+.v8-sheet { display: flex; flex-direction: column; align-items: stretch; gap: var(--s4); }
+.v8-icon-button { align-self: start; }
+p { margin: 0; }
