@@ -23,6 +23,7 @@
   --w-body: 300;
   --w-display: 300;
   --w-num: 200;
+  --w-strong: 400;
   --r-control: 999px;
   --r-panel: 20px;
   --r-chip: 999px;
@@ -40,4 +41,6 @@
   --ring-w: 1px;
   --glow: rgba(200,180,138,.22);
   --glow-blur: 26px;
+  --press-transform: scale(0.96);
+  --press-shadow: inset 0 4px 12px rgba(0,0,0,.45);
 }

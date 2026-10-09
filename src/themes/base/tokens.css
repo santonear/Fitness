@@ -24,4 +24,16 @@
   --fade: 220ms cubic-bezier(.2,.7,.2,1);
   --breath: 6s;
   --ring-cycle: 14s;
+  --touch-min: 44px;
+  --touch-primary: 56px;
+  --touch-workout: 72px;
+  --touch-secondary: 48px;
+  --touch-row: 52px;
+  --lh-tight: 1.2;
+  --lh-body: 1.7;
+  --lh-reading: 1.85;
+  --layout-mobile-max: 480px;
+  --layout-desktop-rail: 88px;
+  --layout-desktop-main: 560px;
+  --layout-desktop-breakpoint: 960px;
 }

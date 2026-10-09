@@ -87,35 +87,35 @@
 |src/ui/components/CoachPreferences.tsx|改造|F：保留全局单实例与状态|
 |src/ui/components/CoachScopeDetails.tsx|保留|0：保持既有业务边界，按需由统筹转交|
 |src/ui/components/CompletionReview.tsx|保留|0：保持既有业务边界，按需由统筹转交|
-|src/ui/components/DateCalendar.tsx|保留|0：保持既有业务边界，按需由统筹转交|
-|src/ui/components/DayPlanEditor.tsx|保留|0：保持既有业务边界，按需由统筹转交|
-|src/ui/components/DayPlansPanel.tsx|保留|0：保持既有业务边界，按需由统筹转交|
+|src/ui/components/DateCalendar.tsx|改造|0：仅供历史查看，删除排期、拖动及修改日期行为|
+|src/ui/components/DayPlanEditor.tsx|删除（第 3 波）|0：旧资料读取兼容留在数据层；替换路由后删除旧引导/排期UI|
+|src/ui/components/DayPlansPanel.tsx|删除（第 3 波）|0：旧资料读取兼容留在数据层；替换路由后删除旧引导/排期UI|
 |src/ui/components/ExerciseDetails.tsx|保留|0：保持既有业务边界，按需由统筹转交|
 |src/ui/components/ExerciseEditor.tsx|保留|0：保持既有业务边界，按需由统筹转交|
 |src/ui/components/ExerciseMedia.tsx|保留|0：保持既有业务边界，按需由统筹转交|
 |src/ui/components/ExerciseTargets.tsx|保留|0：保持既有业务边界，按需由统筹转交|
 |src/ui/components/FloatingCoach.tsx|改造|F：保留全局单实例与状态|
 |src/ui/components/guided/CandidateEditor.tsx|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
-|src/ui/components/guided/GuidedMeasurements.tsx|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
-|src/ui/components/guided/GuidedOnboarding.tsx|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
+|src/ui/components/guided/GuidedMeasurements.tsx|删除（第 3 波）|0：旧资料读取兼容留在数据层；替换路由后删除旧引导/排期UI|
+|src/ui/components/guided/GuidedOnboarding.tsx|删除（第 3 波）|0：旧资料读取兼容留在数据层；替换路由后删除旧引导/排期UI|
 |src/ui/components/guided/index.ts|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
 |src/ui/components/guided/LifecycleDialog.tsx|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
 |src/ui/components/guided/NumericWheel.tsx|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
-|src/ui/components/guided/onboarding-content.ts|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
-|src/ui/components/guided/onboarding-v4-content.ts|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
-|src/ui/components/guided/OnboardingInputDialog.tsx|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
+|src/ui/components/guided/onboarding-content.ts|删除（第 3 波）|0：旧资料读取兼容留在数据层；替换路由后删除旧引导/排期UI|
+|src/ui/components/guided/onboarding-v4-content.ts|删除（第 3 波）|0：旧资料读取兼容留在数据层；替换路由后删除旧引导/排期UI|
+|src/ui/components/guided/OnboardingInputDialog.tsx|删除（第 3 波）|0：旧资料读取兼容留在数据层；替换路由后删除旧引导/排期UI|
 |src/ui/components/guided/ProgramDashboard.tsx|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
-|src/ui/components/guided/QuestionIllustration.tsx|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
-|src/ui/components/guided/ScheduleConfirmation.tsx|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
+|src/ui/components/guided/QuestionIllustration.tsx|删除（第 3 波）|0：旧资料读取兼容留在数据层；替换路由后删除旧引导/排期UI|
+|src/ui/components/guided/ScheduleConfirmation.tsx|删除（第 3 波）|0：旧资料读取兼容留在数据层；替换路由后删除旧引导/排期UI|
 |src/ui/components/guided/TrainingAnalytics.tsx|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
-|src/ui/components/guided/TrainingCalendar.tsx|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
-|src/ui/components/guided/TrainingTimeEditor.tsx|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
-|src/ui/components/guided/V4Wheel.tsx|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
+|src/ui/components/guided/TrainingCalendar.tsx|改造|0：仅供历史查看，删除排期、拖动及修改日期行为|
+|src/ui/components/guided/TrainingTimeEditor.tsx|删除（第 3 波）|0：旧资料读取兼容留在数据层；替换路由后删除旧引导/排期UI|
+|src/ui/components/guided/V4Wheel.tsx|删除（第 3 波）|0：旧资料读取兼容留在数据层；替换路由后删除旧引导/排期UI|
 |src/ui/components/HistoryDetail.tsx|保留|0：保持既有业务边界，按需由统筹转交|
 |src/ui/components/ManualInvites.tsx|保留|0：保持既有业务边界，按需由统筹转交|
 |src/ui/components/NavigationIcon.tsx|改造|A：主题与陶瓷组件|
-|src/ui/components/OnboardingGate.tsx|保留|0：保持既有业务边界，按需由统筹转交|
-|src/ui/components/PlanDatePicker.tsx|保留|0：保持既有业务边界，按需由统筹转交|
+|src/ui/components/OnboardingGate.tsx|删除（第 3 波）|0：旧资料读取兼容留在数据层；替换路由后删除旧引导/排期UI|
+|src/ui/components/PlanDatePicker.tsx|删除（第 3 波）|0：旧资料读取兼容留在数据层；替换路由后删除旧引导/排期UI|
 |src/ui/components/PlanEditor.tsx|保留|0：保持既有业务边界，按需由统筹转交|
 |src/ui/components/RepDBAttribution.tsx|保留|0：保持既有业务边界，按需由统筹转交|
 |src/ui/components/RepDBMedia.tsx|保留|0：保持既有业务边界，按需由统筹转交|
@@ -133,10 +133,10 @@
 |src/ui/onboarding-v4.css|删除|0：第3波替换并确认无引用后删除；暂不删除|
 |src/ui/pages/AiPage.tsx|改造|0：E/F在独占目录实现新页，统筹第3波替换旧路由|
 |src/ui/pages/CatalogPage.tsx|改造|0：E/F在独占目录实现新页，统筹第3波替换旧路由|
-|src/ui/pages/GuidedDialoguePage.tsx|改造|0：E/F在独占目录实现新页，统筹第3波替换旧路由|
-|src/ui/pages/GuidedHome.tsx|改造|0：E/F在独占目录实现新页，统筹第3波替换旧路由|
+|src/ui/pages/GuidedDialoguePage.tsx|删除（第 3 波）|0：旧资料读取兼容留在数据层；替换路由后删除旧引导/排期UI|
+|src/ui/pages/GuidedHome.tsx|删除（第 3 波）|0：旧资料读取兼容留在数据层；替换路由后删除旧引导/排期UI|
 |src/ui/pages/ManagementPage.tsx|改造|H：后台紧凑UI|
-|src/ui/pages/OnboardingV4Page.tsx|改造|0：E/F在独占目录实现新页，统筹第3波替换旧路由|
+|src/ui/pages/OnboardingV4Page.tsx|删除（第 3 波）|0：旧资料读取兼容留在数据层；替换路由后删除旧引导/排期UI|
 |src/ui/pages/PlansPage.tsx|改造|0：E/F在独占目录实现新页，统筹第3波替换旧路由|
 |src/ui/pages/PlansWorkspace.tsx|改造|0：E/F在独占目录实现新页，统筹第3波替换旧路由|
 |src/ui/pages/ProgressPage.tsx|改造|0：E/F在独占目录实现新页，统筹第3波替换旧路由|
@@ -183,9 +183,9 @@ B线按用户新要求从V5/V6.2/V7.1的真实UI导出流程生成样本，禁�
 
 |线|状态|阻塞 / 下个交付|
 |---|---|---|
-|A|纯令牌首批已提交，等待接口决定|Pressable/通用组件未交付，不释放E/F|
+|A|令牌补齐已批准，随V8.0.3统一合入|合入后优先Pressable/通用组件，再释放E/F|
 |B|进行中|旧版UI导出样本与迁移；来源dc76b50/e94c59f/9d2a212|
-|C|时长映射/禁词已提交，等待接口决定|动作级反馈与统计口径待批|
+|C|时长映射/禁词已提交；本次动作反馈/时段接口获批|按V8.0.3继续；缺少次数口径沿用现有契约，未确认变更不实施|
 |D|进行中|四任务适配与后端提示版本|
 |E/F|排队|A首个核心PR合入|
 |G|排队|A骨架与青瓷签名合入|

@@ -31,12 +31,12 @@ describe('V8 tokens', () => {
     });
   }
 
-  it('maps every available frozen name and explicitly leaves undefined strong weight unresolved', () => {
+  it('maps every approved frozen name including V8.0.3 additions', () => {
     const contract = read('src/themes/contract.ts');
     const names = [...contract.matchAll(/"(--[\w-]+)"/g)].map(match => match[1]);
     for (const id of themes) {
-      expect(Object.keys({ ...sharedTokens(), ...themeTokens(id) }).sort()).toEqual(names.filter(name => name !== '--w-strong').sort());
-      expect(themeTokens(id)).not.toHaveProperty('--w-strong');
+      expect(Object.keys({ ...sharedTokens(), ...themeTokens(id) }).sort()).toEqual(names.sort());
+      expect(themeTokens(id)['--w-strong']).toBe(source.themes[id].font.weightStrong);
     }
   });
 });

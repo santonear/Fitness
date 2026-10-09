@@ -1,6 +1,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { coachCopyViolations } from './coach-language.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 export function violations(file, source) {
@@ -13,7 +14,7 @@ export function violations(file, source) {
     if (/font-family|fontFamily/.test(source)) found.push('font-family');
   }
   if (ui && /AI\s*架构评审|契约示例|评测面板|Prompt\s*结构/.test(source)) found.push('developer-entry');
-  if (/^src\/i18n\/features\//.test(file) && /偷懒|没坚持住|你必须|你应该|你是最棒的/.test(source)) found.push('coach-language');
+  found.push(...coachCopyViolations(file, source));
   return found;
 }
 async function walk(dir) {
@@ -22,7 +23,7 @@ async function walk(dir) {
 }
 export async function scan() {
   const results = [];
-  for (const file of await walk('src')) {
+  for (const file of [...await walk('src'), ...await walk('tests/backend'), ...await walk('tests/fixtures')]) {
     if (!/\.(css|tsx?|json)$/.test(file)) continue;
     const rules = violations(file, await readFile(path.join(root, file), 'utf8'));
     for (const rule of rules) results.push(`${file}:${rule}`);
