@@ -20,20 +20,29 @@ function templateName(index: number): string {
   return name;
 }
 
-/** Pure projection: the transaction must retain all original legacy tables separately. */
-export function migrateLegacyPlans(
+async function migratedVersionId(originalId: string): Promise<string> {
+  const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`fitness:v8:legacy-plan-version:${originalId}`))).slice(0, 16);
+  digest[6] = (digest[6] & 0x0f) | 0x80;
+  digest[8] = (digest[8] & 0x3f) | 0x80;
+  const hex = Array.from(digest, byte => byte.toString(16).padStart(2, '0')).join('');
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
+/** Pure projection. Retain legacy tables separately; precompute before writes or keep the Dexie upgrade alive with waitFor. */
+export async function migrateLegacyPlans(
   source: LegacyPlansInput,
   estimate: (exercises: LegacyPlanVersion['days'][number]['exercises']) => number,
   migratedAt: string,
-): { plans: { id: string; name: string; currentVersionId: string; readOnly: boolean }[]; versions: PlanVersion[]; currentPlanId?: string } {
+): Promise<{ plans: { id: string; name: string; currentVersionId: string; readOnly: boolean }[]; versions: PlanVersion[]; currentPlanId?: string }> {
   const onboarding = source.guidedStates?.find(state => state.id === 'guided')?.onboarding;
   const schedule = onboarding?.answers.schedule;
   const scheduleValue = schedule?.status === 'answered' ? schedule.value : undefined;
   const onboardingSlot = Array.isArray(scheduleValue) && scheduleValue[1] !== '' ? Number(scheduleValue[1]) : undefined;
-  const versions = source.plans.map(plan => {
+  const retainedPlans = source.plans.filter(plan => !plan.deletedAt);
+  const versions = await Promise.all(retainedPlans.map(async plan => {
     const original = source.planVersions.find(version => version.id === plan.currentVersionId && version.planId === plan.id);
     if (!original) throw new DomainError('INVALID', 'Legacy current plan version is missing');
-    const id = `v8:migrated:${original.id}`;
+    const id = await migratedVersionId(original.id);
     const templates: SessionTemplate[] = [];
     const unique = new Set<string>();
     let estimated = false;
@@ -55,16 +64,18 @@ export function migrateLegacyPlans(
     return {
       id, planId: plan.id, versionNumber: original.versionNumber + 1,
       goalText: original.goalSnapshot.goal,
-      weeklyTarget: Math.max(1, Math.min(7, Math.round(original.days.length / ('durationWeeks' in original ? original.durationWeeks : 1)))),
-      scheduleOriginalText: typeof scheduleValue === 'string' ? scheduleValue : '',
+      // Period-plan days already contain every week; date-day plans contain exactly one day.
+      weeklyTarget: 'durationWeeks' in original ? Math.max(1, Math.min(7, Math.round(original.days.length / original.durationWeeks))) : 1,
+      // Legacy plan versions have no plan-scoped original schedule text. A current global answer is not its provenance.
+      scheduleOriginalText: '',
       sessionMinutes: legacyPlanMinutes(onboardingSlot, templates.map(template => template.estimatedMinutes)),
       templates, createdAt: migratedAt, origin: 'migrated' as const,
       changeSummary: estimated ? ['部分时长按动作估算'] : [], basedOnVersionId: original.id,
     };
-  });
+  }));
   const current = selectLegacyCurrentPlan(source.plans, source.planVersions, source.sessions);
   return {
-    plans: source.plans.map((plan, index) => ({ id: plan.id, name: plan.name, currentVersionId: versions[index].id, readOnly: plan.id !== current?.id })),
+    plans: retainedPlans.map((plan, index) => ({ id: plan.id, name: plan.name, currentVersionId: versions[index].id, readOnly: plan.id !== current?.id })),
     versions, ...(current ? { currentPlanId: current.id } : {}),
   };
 }
