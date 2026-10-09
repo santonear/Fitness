@@ -1,4 +1,4 @@
-import core from './generated/core.json';
+import core from './generated/core.json' with { type: 'json' };
 import type { Exercise } from '../domain/models';
 import { exerciseSchema } from '../domain/schemas';
 import { EXERCISE_IDS } from './exercise-ids';

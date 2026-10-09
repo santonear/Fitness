@@ -1,4 +1,4 @@
-import registry from './generated/registry.json';
+import registry from './generated/registry.json' with { type: 'json' };
 import { EXERCISE_IDS } from './exercise-ids';
 
 // Provider metadata stays outside training snapshots and user backups.
