@@ -1,16 +1,19 @@
 {
   "$schema": "fitness-design-tokens-v8",
-  "version": "8.0.0",
-  "updated": "2026-10-09",
+  "version": "8.0.3",
+  "updated": "2026-10-10",
   "note": "唯一的设计变量来源。页面与通用组件只能引用这里的语义名；主题差异只在 themes 中定义。shared 中的值所有主题共用，不可被主题覆盖（除非 themes.<id>.overrides 显式列出）。",
   "defaultTheme": "qingci",
   "shared": {
     "space": { "s1": "4px", "s2": "8px", "s3": "12px", "s4": "16px", "s5": "24px", "s6": "32px", "s7": "48px", "s8": "64px" },
     "type": { "t1": "12px", "t2": "13px", "t3": "15px", "t4": "17px", "t5": "22px", "t6": "28px", "t7": "40px", "t8": "72px" },
     "lineHeight": { "tight": 1.2, "body": 1.7, "reading": 1.85 },
-    "touch": { "min": "44px", "primaryAction": "56px", "workoutAction": "72px" },
+    "touch": { "min": "44px", "primaryAction": "56px", "workoutAction": "72px", "secondaryAction": "48px", "row": "52px" },
     "motion": {
       "pressScale": 0.96,
+      "sinkScale": 0.98,
+      "sinkTranslate": "3px",
+      "sinkShadow": "none",
       "pressDuration": "420ms",
       "springEasing": "cubic-bezier(.18,1.36,.3,1)",
       "morphDuration": "520ms",
@@ -45,7 +48,7 @@
         "display": "\"Noto Serif SC\", \"Songti SC\", \"STSong\", \"SimSun\", serif",
         "body": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
         "num": "\"Cormorant Garamond\", \"Noto Serif SC\", serif",
-        "weightBody": 300, "weightDisplay": 400, "weightNum": 300
+        "weightBody": 300, "weightDisplay": 400, "weightNum": 300, "weightStrong": 400
       },
       "shape": { "control": "999px", "panel": "28px", "chip": "24px", "border": "1px" },
       "tracking": { "display": "0.08em", "body": "0.04em" },
@@ -87,7 +90,7 @@
         "display": "\"Noto Serif SC\", \"Songti SC\", \"STSong\", \"SimSun\", serif",
         "body": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
         "num": "\"Noto Sans SC\", sans-serif",
-        "weightBody": 300, "weightDisplay": 400, "weightNum": 200
+        "weightBody": 300, "weightDisplay": 400, "weightNum": 200, "weightStrong": 400
       },
       "shape": { "control": "2px", "panel": "4px", "chip": "2px", "border": "1px" },
       "tracking": { "display": "0.16em", "body": "0.04em" },
@@ -129,7 +132,7 @@
         "display": "\"Noto Sans SC\", \"PingFang SC\", sans-serif",
         "body": "\"Noto Sans SC\", \"PingFang SC\", sans-serif",
         "num": "\"Jost\", \"Noto Sans SC\", sans-serif",
-        "weightBody": 300, "weightDisplay": 300, "weightNum": 200
+        "weightBody": 300, "weightDisplay": 300, "weightNum": 200, "weightStrong": 400
       },
       "shape": { "control": "999px", "panel": "20px", "chip": "999px", "border": "1px" },
       "tracking": { "display": "0.16em", "body": "0.06em" },
@@ -171,7 +174,7 @@
         "display": "\"Noto Sans SC\", \"PingFang SC\", sans-serif",
         "body": "\"Noto Sans SC\", \"PingFang SC\", sans-serif",
         "num": "\"Archivo\", \"Noto Sans SC\", sans-serif",
-        "weightBody": 500, "weightDisplay": 900, "weightNum": 900
+        "weightBody": 500, "weightDisplay": 900, "weightNum": 900, "weightStrong": 700
       },
       "shape": { "control": "12px", "panel": "16px", "chip": "999px", "border": "2.5px" },
       "tracking": { "display": "0", "body": "0" },

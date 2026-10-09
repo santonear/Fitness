@@ -25,26 +25,29 @@ const common = {
   messages: z.array(z.strictObject({ role: z.enum(['user', 'assistant']), content: z.string().max(1600) })).max(8),
   body: z.record(z.string(), z.json()).optional(), history: z.string().max(32000).optional(),
 };
-const reviewFacts = z.strictObject({
+const timingCounts = z.strictObject({ partial: count, notStarted: count });
+const timeBands = z.strictObject({ morning: timingCounts, daytime: timingCounts, evening: timingCounts });
+export const reviewFactsSchema = z.strictObject({
   from: z.iso.date(), to: z.iso.date(), complete: count, partial: count, notStarted: count,
   movementCount: count, missingCount: count, activityMinutes: count, trainingSeconds: count,
   activityCounts: z.record(z.enum(['walk', 'run', 'cycle', 'swim', 'yoga', 'stairs', 'other']), count),
   reasonCounts: z.record(z.enum(['time', 'fatigue', 'discomfort', 'equipment_busy', 'not_today', 'other']), count),
   hasBodyWeight: z.boolean(),
+  incompleteTiming: z.strictObject({ weekday: timeBands, weekend: timeBands }),
   improvements: z.array(z.strictObject({ exerciseId: exerciseIdSchema, metric: z.enum(['loadGrams', 'reps', 'durationSeconds']), previous: count, current: count })),
 });
 export const coachRequestSchema = z.discriminatedUnion('task', [
   z.strictObject({ ...common, task: z.literal('ONBOARD_PLAN'), profile }),
   z.strictObject({ ...common, task: z.literal('ADJUST_TODAY'), target, workoutId: id.optional(), template: sessionTemplateSchema, instruction: text }),
   z.strictObject({ ...common, task: z.literal('MODIFY_PLAN'), target, plan: planProposalSchema, instruction: text }),
-  z.strictObject({ ...common, task: z.literal('PERIOD_REVIEW'), target, kind: z.enum(['week', 'month']), facts: reviewFacts }),
+  z.strictObject({ ...common, task: z.literal('PERIOD_REVIEW'), target, kind: z.enum(['week', 'month']), facts: reviewFactsSchema }),
 ]);
 const responseIdentity = { requestId: id, restoreGeneration: count, mutationAllowed: z.literal(false) };
 export const coachResponseSchema = z.discriminatedUnion('type', [
   z.strictObject({ ...responseIdentity, type: z.literal('plan_proposal'), proposal: planProposalSchema }),
   z.strictObject({ ...responseIdentity, type: z.literal('today_adjustment'), target, workoutId: id.optional(), template: sessionTemplateSchema, summary: text }),
   z.strictObject({ ...responseIdentity, type: z.literal('change_proposal'), target, proposal: planProposalSchema, changes: z.array(text).min(1) }),
-  z.strictObject({ ...responseIdentity, type: z.literal('review_summary'), target, opening: text, encouragement: text, gap: text, dataBoundary: text, suggestion: z.strictObject({ id: text, summary: text, proposal: planProposalSchema }).optional() }),
+  z.strictObject({ ...responseIdentity, type: z.literal('review_summary'), target, opening: text, encouragement: text, gap: text, dataBoundary: z.array(text), suggestion: z.strictObject({ id: text, summary: text, proposal: planProposalSchema }).optional() }),
   z.strictObject({ ...responseIdentity, type: z.literal('clarify'), question: text }),
   z.strictObject({ ...responseIdentity, type: z.literal('refused'), reason: text }),
 ]);

@@ -1,19 +1,37 @@
 import { describe, expect, it } from 'vitest';
-import { coachRequestSchema, coachResponseSchema, planProposalSchema } from '../../src/coach/contracts';
+import { coachRequestSchema, coachResponseSchema, planProposalSchema, reviewFactsSchema } from '../../src/coach/contracts';
 import { v8Routes } from '../../src/ui/routes.contract';
 import { v8Namespaces } from '../../src/i18n/namespaces.contract';
 import type { WorkoutRecord, MapSchedule } from '../../src/domain/v8/contracts';
 import type { ThemeSlots } from '../../src/themes/contract';
-import type { PlanProposal } from '../../src/application/review/contracts';
+import type { PlanProposal, ReviewFacts } from '../../src/application/review/contracts';
 import type { z } from 'zod';
 
 // Compile-time checks: C's proposal can cross D's wire boundary without a second model.
 type WireProposal = z.infer<typeof planProposalSchema>;
 const toWire: (value: PlanProposal) => WireProposal = value => value;
 const toApplication: (value: WireProposal) => PlanProposal = value => value;
+const reviewToWire: (value: ReviewFacts) => z.infer<typeof reviewFactsSchema> = value => ({ ...value, improvements: [...value.improvements] });
 
 const identity = { requestId: '11111111-1111-4111-8111-111111111111', restoreGeneration: 0, mutationAllowed: false };
 describe('V8 wave 0 contracts', () => {
+  it('accepts empty or multiple boundary statements, never a legacy scalar', () => {
+    const response = { ...identity, type: 'review_summary', target: { planId: identity.requestId, versionId: identity.requestId, revision: 0 }, opening: 'a', encouragement: 'b', gap: 'c' };
+    for (const dataBoundary of [[], ['饮食信息未知'], ['饮食信息未知', '体重未记录']]) {
+      expect(coachResponseSchema.safeParse({ ...response, dataBoundary }).success).toBe(true);
+    }
+    for (const dataBoundary of ['旧字符串', [null], ['']]) {
+      expect(coachResponseSchema.safeParse({ ...response, dataBoundary }).success).toBe(false);
+    }
+  });
+  it('requires all six incomplete timing cells with separate nonnegative counts', () => {
+    const bands = { morning: { partial: 1, notStarted: 0 }, daytime: { partial: 0, notStarted: 2 }, evening: { partial: 0, notStarted: 0 } };
+    const schema = reviewFactsSchema.shape.incompleteTiming;
+    expect(schema.safeParse({ weekday: bands, weekend: bands }).success).toBe(true);
+    expect(schema.safeParse({ weekday: bands }).success).toBe(false);
+    expect(schema.safeParse({ weekday: { ...bands, morning: { partial: -1, notStarted: 0 } }, weekend: bands }).success).toBe(false);
+    expect(typeof reviewToWire).toBe('function');
+  });
   it('never accepts write authority or legacy date payloads', () => {
     expect(coachResponseSchema.safeParse({ ...identity, type: 'refused', reason: 'unavailable' }).success).toBe(true);
     expect(coachResponseSchema.safeParse({ ...identity, type: 'refused', reason: 'unavailable', mutationAllowed: true }).success).toBe(false);

@@ -1,0 +1,39 @@
+/* Generated from 02-design-tokens.json; checked by v8-theme-tokens.test.ts. */
+:root {
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+  --s7: 48px;
+  --s8: 64px;
+  --t1: 12px;
+  --t2: 13px;
+  --t3: 15px;
+  --t4: 17px;
+  --t5: 22px;
+  --t6: 28px;
+  --t7: 40px;
+  --t8: 72px;
+  --press-scale: 0.96;
+  --press-dur: 420ms;
+  --spring: cubic-bezier(.18,1.36,.3,1);
+  --morph-dur: 520ms;
+  --morph-ease: cubic-bezier(.14,.82,.24,1);
+  --fade: 220ms cubic-bezier(.2,.7,.2,1);
+  --breath: 6s;
+  --ring-cycle: 14s;
+  --touch-min: 44px;
+  --touch-primary: 56px;
+  --touch-workout: 72px;
+  --touch-secondary: 48px;
+  --touch-row: 52px;
+  --lh-tight: 1.2;
+  --lh-body: 1.7;
+  --lh-reading: 1.85;
+  --layout-mobile-max: 480px;
+  --layout-desktop-rail: 88px;
+  --layout-desktop-main: 560px;
+  --layout-desktop-breakpoint: 960px;
+}
