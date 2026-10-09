@@ -1,21 +1,21 @@
 {
   "format": "fitness-local",
   "schemaVersion": 5,
-  "exportedAt": "2026-10-09T17:07:50.037Z",
+  "exportedAt": "2026-10-09T17:10:23.298Z",
   "catalogVersion": 1,
   "data": {
     "metadata": {
       "schemaVersion": 6,
-      "localProfileId": "6b1536e3-6fb5-4d48-bd2d-7e040c308f66",
+      "localProfileId": "42aca80a-b533-4ec2-b8a1-a48d670f2d83",
       "catalogVersion": 1,
       "revision": 1,
       "dataRevision": 1
     },
     "profiles": [
       {
-        "id": "6b1536e3-6fb5-4d48-bd2d-7e040c308f66",
-        "createdAt": "2026-10-09T17:07:49.873Z",
-        "updatedAt": "2026-10-09T17:07:49.873Z",
+        "id": "42aca80a-b533-4ec2-b8a1-a48d670f2d83",
+        "createdAt": "2026-10-09T17:10:23.140Z",
+        "updatedAt": "2026-10-09T17:10:23.140Z",
         "revision": 0,
         "locale": "en",
         "timeZone": "Etc/GMT-8",
@@ -31,7 +31,7 @@
     "trainingMemo": {
       "schemaVersion": 1,
       "revision": 0,
-      "updatedAt": "2026-10-09T17:07:50.038Z",
+      "updatedAt": "2026-10-09T17:10:23.299Z",
       "sourceRevision": 1,
       "sessions": []
     },

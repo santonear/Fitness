@@ -17,6 +17,9 @@ const servers = [];
 try {
   for (const [version, commit, port] of versions) {
     const cwd = resolve(process.cwd(), `../fitness-v8-legacy-${version}`);
+    const expectedCommit = execFileSync('git', ['rev-parse', commit], { encoding: 'utf8' }).trim();
+    const actualCommit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd, encoding: 'utf8' }).trim();
+    if (actualCommit !== expectedCommit || execFileSync('git', ['diff', 'HEAD', '--name-only'], { cwd, encoding: 'utf8' }).trim()) throw Error(`Legacy source ${version} differs from its pinned commit`);
     const server = spawn(process.execPath, ['node_modules/vite/bin/vite.js', '--host', '127.0.0.1', '--port', String(port), '--strictPort'], { cwd, windowsHide: true, stdio: 'pipe' });
     servers.push(server);
     await new Promise((resolveReady, reject) => {
@@ -60,7 +63,7 @@ try {
     const mixedName = `${version}-plans-weight.json`;
     await (await mixedDownload).saveAs(resolve(output, mixedName));
     const mixedBytes = await readFile(resolve(output, mixedName));
-    manifest.cases.push({ version, sourceCommit, file: mixedName, sha256: createHash('sha256').update(mixedBytes).digest('hex'), coverage: ['past-and-future-date-plans', 'body-weight', ...(version === 'v5' ? [] : ['device-reminder-preferences-not-exported'])], modelCalls: 0 });
+    manifest.cases.push({ version, sourceCommit, file: mixedName, sha256: createHash('sha256').update(mixedBytes).digest('hex'), coverage: ['past-and-future-date-plans', 'body-weight', 'all-planned-sets-completed', 'part-of-planned-sets-completed', 'actual-set-notes', ...(version === 'v5' ? [] : ['device-reminder-preferences-not-exported'])], modelCalls: 0 });
     await context.close();
     const restoreContext = await browser.newContext({ locale: 'en-US' });
     const restorePage = await restoreContext.newPage();

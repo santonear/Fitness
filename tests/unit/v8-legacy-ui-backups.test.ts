@@ -20,11 +20,17 @@ describe('legacy UI exports (synthetic user input, no database seeding)', () => 
     });
     it(`${version} preserves date plans, instructions, and a weight observation`, () => {
       const data = validateBackupEnvelope(JSON.parse(read(`${version}-plans-weight.json`).toString())).data;
-      expect(data.plans).toHaveLength(2);
-      expect(data.scheduledWorkouts).toHaveLength(2);
+      expect(data.plans).toHaveLength(3);
+      expect(data.scheduledWorkouts).toHaveLength(3);
       expect(data.bodyWeights.map(row => row.weightGrams)).toEqual([70200]);
       expect(data.planVersions.every(version => version.days[0].exercises[0].notes === 'Synthetic preserved instruction')).toBe(true);
       expect(data).not.toHaveProperty('coachDevice');
+      expect(data.sessions).toHaveLength(2);
+      expect(data.sessions.every(session => session.status === 'completed')).toBe(true);
+      expect(data.sessions.map(session => data.sets.filter(set => set.sessionId === session.id && set.completed).length).sort()).toEqual([1, 2]);
+      expect(data.sessions.every(session => session.originalExerciseSnapshots[0].targetSets.length === 2)).toBe(true);
+      expect(data.sets.every(set => set.notes?.startsWith('Synthetic actual set'))).toBe(true);
+      expect(data.scheduledWorkouts.filter(task => !task.completedSessionId)).toHaveLength(1);
     });
   }
   it('pins every primary export to its source and downloaded bytes', () => {
