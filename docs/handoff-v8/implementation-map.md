@@ -1,6 +1,6 @@
 # V8 implementation map — Wave 0
 
-状态：Wave 0 接口候选已完成，待用户整体验收。唯一设计规范为 docs/uiux/UIUX20261008.md。
+状态：用户授权基于Wave 0接口开始滚动排队；共享接口补充必须另批。唯一设计规范为 docs/uiux/UIUX20261008.md。
 
 基线：9d2a2120e85fbe33e025734ee1ce5433fe0ce92c；集成分支 v8/integration。主目录旧工作树保留不动。
 
@@ -18,7 +18,7 @@
 |G|fitness-v8-g / codex/v8-g|src/themes/liubai/、jingshe/、zhuangse/；A 合并后转交，不改页面|
 |H|fitness-v8-h / codex/v8-h|src/ui/pages/ManagementPage.tsx、src/ui/admin/、src/i18n/features/admin/；后台UI测试，不改后端|
 
-共享接口仅由统筹修改，必须先获用户确认；目录所有权不授予冻结接口修改权。Wave 0 串行，不启动 A–H。Wave 1 A–D，Wave 2 E–H；实际平台最多4个代理槽，含统筹，不超过用户5条线限制。
+共享接口仅由统筹修改，必须先获用户确认；目录所有权不授予冻结接口修改权。同时最多4条线，统筹不占任务位。当前平台4代理槽含统筹：A/B/C子代理，统筹兼D实现，合计4条线。若代理槽受限，不伪称4个子代理同时运行。A/B优先；E/F等待A首个核心PR；G等待A主题骨架与青瓷签名；H填空位。
 
 ## 验证与限制
 
@@ -87,35 +87,35 @@
 |src/ui/components/CoachPreferences.tsx|改造|F：保留全局单实例与状态|
 |src/ui/components/CoachScopeDetails.tsx|保留|0：保持既有业务边界，按需由统筹转交|
 |src/ui/components/CompletionReview.tsx|保留|0：保持既有业务边界，按需由统筹转交|
-|src/ui/components/DateCalendar.tsx|保留|0：保持既有业务边界，按需由统筹转交|
-|src/ui/components/DayPlanEditor.tsx|保留|0：保持既有业务边界，按需由统筹转交|
-|src/ui/components/DayPlansPanel.tsx|保留|0：保持既有业务边界，按需由统筹转交|
+|src/ui/components/DateCalendar.tsx|改造|0：仅供历史查看，删除排期、拖动及修改日期行为|
+|src/ui/components/DayPlanEditor.tsx|删除（第 3 波）|0：旧资料读取兼容留在数据层；替换路由后删除旧引导/排期UI|
+|src/ui/components/DayPlansPanel.tsx|删除（第 3 波）|0：旧资料读取兼容留在数据层；替换路由后删除旧引导/排期UI|
 |src/ui/components/ExerciseDetails.tsx|保留|0：保持既有业务边界，按需由统筹转交|
 |src/ui/components/ExerciseEditor.tsx|保留|0：保持既有业务边界，按需由统筹转交|
 |src/ui/components/ExerciseMedia.tsx|保留|0：保持既有业务边界，按需由统筹转交|
 |src/ui/components/ExerciseTargets.tsx|保留|0：保持既有业务边界，按需由统筹转交|
 |src/ui/components/FloatingCoach.tsx|改造|F：保留全局单实例与状态|
 |src/ui/components/guided/CandidateEditor.tsx|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
-|src/ui/components/guided/GuidedMeasurements.tsx|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
-|src/ui/components/guided/GuidedOnboarding.tsx|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
+|src/ui/components/guided/GuidedMeasurements.tsx|删除（第 3 波）|0：旧资料读取兼容留在数据层；替换路由后删除旧引导/排期UI|
+|src/ui/components/guided/GuidedOnboarding.tsx|删除（第 3 波）|0：旧资料读取兼容留在数据层；替换路由后删除旧引导/排期UI|
 |src/ui/components/guided/index.ts|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
 |src/ui/components/guided/LifecycleDialog.tsx|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
 |src/ui/components/guided/NumericWheel.tsx|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
-|src/ui/components/guided/onboarding-content.ts|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
-|src/ui/components/guided/onboarding-v4-content.ts|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
-|src/ui/components/guided/OnboardingInputDialog.tsx|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
+|src/ui/components/guided/onboarding-content.ts|删除（第 3 波）|0：旧资料读取兼容留在数据层；替换路由后删除旧引导/排期UI|
+|src/ui/components/guided/onboarding-v4-content.ts|删除（第 3 波）|0：旧资料读取兼容留在数据层；替换路由后删除旧引导/排期UI|
+|src/ui/components/guided/OnboardingInputDialog.tsx|删除（第 3 波）|0：旧资料读取兼容留在数据层；替换路由后删除旧引导/排期UI|
 |src/ui/components/guided/ProgramDashboard.tsx|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
-|src/ui/components/guided/QuestionIllustration.tsx|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
-|src/ui/components/guided/ScheduleConfirmation.tsx|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
+|src/ui/components/guided/QuestionIllustration.tsx|删除（第 3 波）|0：旧资料读取兼容留在数据层；替换路由后删除旧引导/排期UI|
+|src/ui/components/guided/ScheduleConfirmation.tsx|删除（第 3 波）|0：旧资料读取兼容留在数据层；替换路由后删除旧引导/排期UI|
 |src/ui/components/guided/TrainingAnalytics.tsx|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
-|src/ui/components/guided/TrainingCalendar.tsx|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
-|src/ui/components/guided/TrainingTimeEditor.tsx|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
-|src/ui/components/guided/V4Wheel.tsx|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
+|src/ui/components/guided/TrainingCalendar.tsx|改造|0：仅供历史查看，删除排期、拖动及修改日期行为|
+|src/ui/components/guided/TrainingTimeEditor.tsx|删除（第 3 波）|0：旧资料读取兼容留在数据层；替换路由后删除旧引导/排期UI|
+|src/ui/components/guided/V4Wheel.tsx|删除（第 3 波）|0：旧资料读取兼容留在数据层；替换路由后删除旧引导/排期UI|
 |src/ui/components/HistoryDetail.tsx|保留|0：保持既有业务边界，按需由统筹转交|
 |src/ui/components/ManualInvites.tsx|保留|0：保持既有业务边界，按需由统筹转交|
 |src/ui/components/NavigationIcon.tsx|改造|A：主题与陶瓷组件|
-|src/ui/components/OnboardingGate.tsx|保留|0：保持既有业务边界，按需由统筹转交|
-|src/ui/components/PlanDatePicker.tsx|保留|0：保持既有业务边界，按需由统筹转交|
+|src/ui/components/OnboardingGate.tsx|删除（第 3 波）|0：旧资料读取兼容留在数据层；替换路由后删除旧引导/排期UI|
+|src/ui/components/PlanDatePicker.tsx|删除（第 3 波）|0：旧资料读取兼容留在数据层；替换路由后删除旧引导/排期UI|
 |src/ui/components/PlanEditor.tsx|保留|0：保持既有业务边界，按需由统筹转交|
 |src/ui/components/RepDBAttribution.tsx|保留|0：保持既有业务边界，按需由统筹转交|
 |src/ui/components/RepDBMedia.tsx|保留|0：保持既有业务边界，按需由统筹转交|
@@ -133,10 +133,10 @@
 |src/ui/onboarding-v4.css|删除|0：第3波替换并确认无引用后删除；暂不删除|
 |src/ui/pages/AiPage.tsx|改造|0：E/F在独占目录实现新页，统筹第3波替换旧路由|
 |src/ui/pages/CatalogPage.tsx|改造|0：E/F在独占目录实现新页，统筹第3波替换旧路由|
-|src/ui/pages/GuidedDialoguePage.tsx|改造|0：E/F在独占目录实现新页，统筹第3波替换旧路由|
-|src/ui/pages/GuidedHome.tsx|改造|0：E/F在独占目录实现新页，统筹第3波替换旧路由|
+|src/ui/pages/GuidedDialoguePage.tsx|删除（第 3 波）|0：旧资料读取兼容留在数据层；替换路由后删除旧引导/排期UI|
+|src/ui/pages/GuidedHome.tsx|删除（第 3 波）|0：旧资料读取兼容留在数据层；替换路由后删除旧引导/排期UI|
 |src/ui/pages/ManagementPage.tsx|改造|H：后台紧凑UI|
-|src/ui/pages/OnboardingV4Page.tsx|改造|0：E/F在独占目录实现新页，统筹第3波替换旧路由|
+|src/ui/pages/OnboardingV4Page.tsx|删除（第 3 波）|0：旧资料读取兼容留在数据层；替换路由后删除旧引导/排期UI|
 |src/ui/pages/PlansPage.tsx|改造|0：E/F在独占目录实现新页，统筹第3波替换旧路由|
 |src/ui/pages/PlansWorkspace.tsx|改造|0：E/F在独占目录实现新页，统筹第3波替换旧路由|
 |src/ui/pages/ProgressPage.tsx|改造|0：E/F在独占目录实现新页，统筹第3波替换旧路由|
@@ -164,7 +164,7 @@
 |src/i18n/namespaces.contract.ts|每功能中英独立文件；common 归 A，coach 归 F|
 |tests/unit/v8-contracts.test.ts|4项当前契约测试＋5项明确 TODO；统筹维护接口断言，B/C/D在各自测试目录实现业务验证|
 
-上述文件在用户批准 Wave 0 后冻结。任何变更先停下向用户确认，由统筹统一修改；所属目录负责人不得自行改接口。
+上述文件作为已冻结接口。任何变更先停下向用户确认，由统筹统一修改；所属目录负责人不得自行改接口。
 
 ## Wave 0 证据
 
@@ -177,4 +177,18 @@
 
 ## 后续仍需兑现的验证
 
-真实旧备份3份由B线验收；当前未取得，不能用合成夹具代替。CI骨架不等于全部V8机械验收；数值字号/圆角/阴影、对比度与触控几何验收由A补齐。旧路由Trial/Backup/历史等由统筹保持兼容，不因新路由表遗漏而删除。
+B线按用户新要求从V5/V6.2/V7.1的真实UI导出流程生成样本，禁止手写JSON/DB种子；模型mock需披露。上线前有外部用户则另补用户备份。CI骨架不等于全部V8机械验收；数值字号/圆角/阴影、对比度与触控几何验收由A补齐。旧路由Trial/Backup/历史等由统筹保持兼容，不因新路由表遗漏而删除。
+
+## 当前滚动队列（2026-10-10）
+
+|线|状态|阻塞 / 下个交付|
+|---|---|---|
+|A|令牌补齐已批准，随V8.0.3统一合入|合入后优先Pressable/通用组件，再释放E/F|
+|B|进行中|旧版UI导出样本与迁移；来源dc76b50/e94c59f/9d2a212|
+|C|时长映射/禁词已提交；本次动作反馈/时段接口获批|按V8.0.3继续；缺少次数口径沿用现有契约，未确认变更不实施|
+|D|进行中|四任务适配与后端提示版本|
+|E/F|排队|A首个核心PR合入|
+|G|排队|A骨架与青瓷签名合入|
+|H|进行中|A/C等待后已填补槽位，后台独立改造|
+
+B独占 tests/fixtures/legacy-backups/ 和其中生成脚本/来源清单。MapSchedule归C，不与B重复实施。
