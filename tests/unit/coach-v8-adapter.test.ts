@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { EXERCISE_IDS, exercises } from '../../src/catalog/exercises';
 import { adaptCoachResponse, coachV8Exercises } from '../../src/coach/response-adapter';
 import type { CoachRequest } from '../../src/coach/contracts';
-import { coachPromptHeader, coachV8PromptHeader } from '../../src/backend/coach-prompt-registry';
+import { coachPromptHeader } from '../../src/backend/coach-prompt-registry';
+import { coachV8PromptHeader } from '../../src/backend/coach-v8-prompt-registry';
 
 const id = '11111111-1111-4111-8111-111111111111';
 const other = '22222222-2222-4222-8222-222222222222';
