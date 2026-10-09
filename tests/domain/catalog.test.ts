@@ -11,8 +11,11 @@ describe('exercise catalogue', () => {
   });
   it('searches both languages and respects equipment filters', () => {
     expect(searchExercises('深蹲', 'en', {}).map((item) => item.name.en)).toContain('Bodyweight squat');
-    expect(searchExercises('SQUAT', 'zh', { equipment: 'none' }).map((item) => item.name.zh)).toEqual(['徒手深蹲']);
-    expect(searchExercises('squat', 'en', { equipment: 'dumbbell' }).map((item) => item.name.en)).toEqual(['Goblet squat']);
+    expect(searchExercises('SQUAT', 'zh', { equipment: 'none' }).map((item) => item.name.zh)).toContain('徒手深蹲');
+    expect(searchExercises('squat', 'en', { equipment: 'dumbbell' }).map((item) => item.name.en)).toContain('Goblet squat');
+  });
+  it('filters every expanded result by equipment', () => {
+    for (const equipment of ['none', 'dumbbell', 'barbell'] as const) expect(searchExercises('squat', 'en', { equipment }).every(item => item.equipment === equipment)).toBe(true);
   });
   it('rejects unknown exercise IDs', () => {
     expect(() => getExercise('unknown')).toThrow();

@@ -12,6 +12,8 @@
 
 需要 Node.js 24 或更新版本。依赖由 `package-lock.json` 锁定。
 
+首次运行会从 RepDB 官方 CDN 下载并校验固定版本的免费素材包（约 27 MB）；后续复用本地缓存。源码仓库不包含批量动作数据或图片。来源更新导致 SHA256 不匹配时会停止构建，需先复核许可与适配。
+
 ```sh
 npm ci
 npm run dev -- --host 127.0.0.1
@@ -47,3 +49,9 @@ npm run test:e2e
 - [软件设计文档](docs/software-design.md)
 - [技术与部署选型（推荐方案与预算测算）](docs/technology-deployment.md)
 - [初始项目启动准备（历史记录）](docs/project-kickoff.md)
+
+## 动作数据与图片来源
+
+Exercise data by [RepDB](https://repdb.co/).
+
+RepDB 数据和图片适用独立的 [Free Tier License v1.0](third_party/repdb/LICENSE.md)，不属于 Fitness 自有素材。集成范围、来源校验和分发限制见 [来源说明](third_party/repdb/README.md)。

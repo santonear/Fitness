@@ -1,3 +1,4 @@
+import { RepDBAttribution } from '../components/RepDBAttribution';
 import { CoachPreferences } from '../components/CoachPreferences';
 import { AppIcon, StatusIcon } from '../components/AppIcon';
 import { useEffect, useState, type FormEvent } from 'react';
@@ -90,5 +91,5 @@ export function SettingsPage({ restored = false }: { restored?: boolean }) {
       <button type="submit">{l.saveWeight}</button>{editing && <button type="button" onClick={() => { setEditing(undefined); setWeight(''); }}>{l.cancel}</button>}
     </fieldset></form>
     <ul aria-label={l.history}>{weights.map(row => <li key={row.id}>{row.localDate} · {row.weightGrams / 1000} kg · {row.timeZone} <button disabled={busy} onClick={() => { setEditing(row); setDate(row.localDate); setWeight(String(row.weightGrams / 1000)); }}>{l.edit}</button> <button disabled={busy} onClick={() => void run(async () => { await bodyWeightService.deleteBodyWeight(row.id, row.revision); setWeights(await bodyWeightService.listBodyWeights()); if (editing?.id === row.id) setEditing(undefined); setStatus(l.deleted); })}>{l.delete}</button></li>)}</ul>
-    </section></div>;
+    </section><section aria-label={i18n.resolvedLanguage === 'zh' ? '关于与来源' : 'About & credits'}><h2>{i18n.resolvedLanguage === 'zh' ? '关于与来源' : 'About & credits'}</h2><RepDBAttribution /><p><a href="/exercise-media/repdb/notices/LICENSE.md" target="_blank" rel="noopener noreferrer">RepDB Free Tier License v1.0</a></p></section></div>;
 }

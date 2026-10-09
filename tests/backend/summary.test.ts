@@ -171,7 +171,7 @@ it('outside-range completed links preserve completion attribution without leakin
 it('completed source facts retain four metrics, recorded zero and missing distance; reject false completion/foreign metrics', async () => {
   const req = await request(); if (req.operation !== 'summary') throw new Error();
   const stage = structuredClone(req.stage); const sessionId = id('10');
-  const snapshots = exercises.map((exercise, order) => {
+  const snapshots = exercises.slice(0, 4).map((exercise, order) => {
     const { steps: _steps, cautions: _cautions, ...fields } = exercise;
     return { ...fields, allowedMetrics: [...fields.allowedMetrics].sort(), exerciseInstanceId: id(String(20 + order)), exerciseId: exerciseIdSchema.parse(exercise.id), order, targetSets: [] };
   });

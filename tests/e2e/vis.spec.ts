@@ -10,7 +10,7 @@ test.beforeEach(async({page})=>{
   const {profileService}=await import(String('/src/application/profile.ts'));
   const profile=await profileService.getProfile(); await profileService.saveProfile({locale:'en',timeZone:'UTC',units:'metric'},profile.revision);
   const targets=[[{metricType:'reps_load',reps:8,loadGrams:1250},{metricType:'reps_load',reps:12,loadGrams:0}],[{metricType:'duration_distance',durationSeconds:90,distanceMeters:1500},{metricType:'duration_distance',durationSeconds:60},{metricType:'duration_distance',durationSeconds:30,distanceMeters:0}],[{metricType:'reps',reps:7}],[{metricType:'duration',durationSeconds:90}]];
-  const day=await dayPlanService.saveDayPlan({name:'VIS snapshot',date:'2026-10-05',timeZone:'UTC',exercises:exercises.map((e: {id:string},order:number)=>({exerciseId:e.id,order,targetSets:targets[order],notes:'中文 English\n<script>window.visUnsafe=true</script>\n'+'Long text '.repeat(100)}))});
+  const day=await dayPlanService.saveDayPlan({name:'VIS snapshot',date:'2026-10-05',timeZone:'UTC',exercises:exercises.slice(0, 4).map((e: {id:string},order:number)=>({exerciseId:e.id,order,targetSets:targets[order],notes:'中文 English\n<script>window.visUnsafe=true</script>\n'+'Long text '.repeat(100)}))});
   let session=await workoutService.startWorkout({sessionId:crypto.randomUUID(),scheduledWorkoutId:day.task.id,localDate:'2026-10-05',timeZone:'UTC'});
   await workoutService.recordSet(session.id,{id:crypto.randomUUID(),exerciseInstanceId:session.exerciseSnapshots[0].exerciseInstanceId,order:0,metricType:'reps_load',reps:5,loadGrams:0,completed:true,notes:'Saved 原文\nsecond line'},session.revision);
  });

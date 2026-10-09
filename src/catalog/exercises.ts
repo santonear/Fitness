@@ -1,3 +1,4 @@
+import core from './generated/core.json';
 import type { Exercise } from '../domain/models';
 import { exerciseSchema } from '../domain/schemas';
 import { EXERCISE_IDS } from './exercise-ids';
@@ -34,4 +35,5 @@ export const exercises: Exercise[] = [
     steps: { zh: ['以前臂和脚尖支撑身体。', '保持躯干稳定，记录保持时长。'], en: ['Support your body on your forearms and toes.', 'Keep your torso steady and record the hold duration.'] },
     cautions: { zh: ['保持呼吸，不强行延长已无法稳定的支撑。'], en: ['Keep breathing and end the hold when you can no longer stay steady.'] },
   },
+  ...core.filter(item => !Object.values(EXERCISE_IDS).includes(item.id as typeof EXERCISE_IDS[keyof typeof EXERCISE_IDS])),
 ].map((exercise) => exerciseSchema.parse(exercise));

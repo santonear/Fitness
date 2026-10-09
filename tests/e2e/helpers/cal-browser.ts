@@ -24,7 +24,7 @@ export async function seedCalLibrary(repo:Repository=repository){
   const profileService=createProfileService(repo);let profile=await profileService.initialize('en');profile=await profileService.saveProfile({locale:'en',timeZone:'UTC',units:'metric'},profile.revision);
   const plans=createPlanService(repo),days=createDayPlanService(repo),workouts=createWorkoutService(repo),backup=createBackupService(repo);
   const targets=[{metricType:'reps_load',reps:8,loadGrams:0},{metricType:'duration_distance',durationSeconds:90,distanceMeters:0},{metricType:'reps',reps:10},{metricType:'duration',durationSeconds:60}] as const;
-  const items:PlannedExercise[]=exercises.map((exercise,order)=>({exerciseId:exercise.id as PlannedExercise['exerciseId'],order,targetSets:[{...targets[order]}],notes:`计划备注 ${order}`}));
+  const items:PlannedExercise[]=exercises.slice(0, 4).map((exercise,order)=>({exerciseId:exercise.id as PlannedExercise['exerciseId'],order,targetSets:[{...targets[order]}],notes:`计划备注 ${order}`}));
   const legacy=await plans.savePlan({name:'Legacy',source:'manual',startDate:'2027-01-04',scheduleTimeZone:'UTC',goalSnapshot:{goal:'旧目标'},durationWeeks:1,daysPerWeek:1,
     days:[{dayId:crypto.randomUUID(),weekIndex:1,dayOfWeek:1,exercises:[items[2]]}]});
   const legacyTask=(await repo.db.scheduledWorkouts.where('planVersionId').equals(legacy.currentVersionId).first())!;

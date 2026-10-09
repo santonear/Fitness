@@ -15,7 +15,12 @@
     "check": "npm run typecheck && npm test && npm run build",
     "deploy:dry-run": "wrangler deploy --dry-run",
     "deploy:cloudflare": "wrangler deploy --config wrangler.production.jsonc",
-    "preview:cloudflare": "wrangler dev --ip 127.0.0.1 --port 5176"
+    "preview:cloudflare": "wrangler dev --ip 127.0.0.1 --port 5176",
+    "catalog:prepare": "node tools/catalog/build.mjs",
+    "predev": "npm run catalog:prepare",
+    "pretypecheck": "npm run catalog:prepare",
+    "prebuild": "npm run catalog:prepare",
+    "pretest": "npm run catalog:prepare"
   },
   "dependencies": {
     "dexie": "4.4.6",

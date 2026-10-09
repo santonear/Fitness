@@ -31,7 +31,7 @@ export async function prepareCapacity(kind: 'small' | '5MiB' | '6MiB' | '8MiB' |
   const stamp = '2026-10-04T00:00:00Z';
   const sessions: WorkoutSession[] = []; const sets: SetRecord[] = [];
   for (let i = 0; i < count; i++) {
-    const snapshots: ExerciseSnapshot[] = exercises.map((exercise, order) => {
+    const snapshots: ExerciseSnapshot[] = exercises.slice(0, 4).map((exercise, order) => {
       const { steps: _steps, cautions: _cautions, ...data } = exercise;
       return { ...data, exerciseId: exercise.id as ExerciseSnapshot['exerciseId'], exerciseInstanceId: crypto.randomUUID(), order, targetSets: [] };
     });

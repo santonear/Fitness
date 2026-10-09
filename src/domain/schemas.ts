@@ -1,10 +1,11 @@
 import { z } from 'zod';
 import { schedulingFields, validateScheduling, setTimingSchema } from './training-time';
-import { EXERCISE_IDS } from '../catalog/exercise-ids';
+import { knownExerciseIds } from '../catalog/registry';
+import { EQUIPMENT } from '../catalog/taxonomy';
 import { guidedStateSchema } from './guided-contracts';
 export const localeSchema = z.enum(['zh', 'en']);
 export const uuidSchema = z.uuid();
-export const exerciseIdSchema = z.enum(EXERCISE_IDS);
+export const exerciseIdSchema = z.uuid().refine(id => knownExerciseIds.has(id), 'Unknown exercise ID');
 export const localDateSchema = z.iso.date();
 export const utcTimestampSchema = z.iso.datetime();
 export const timeZoneSchema = z.string().refine((value) => {
@@ -13,7 +14,7 @@ export const timeZoneSchema = z.string().refine((value) => {
 }, 'Expected an IANA time zone');
 export const metricTypeSchema = z.enum(['reps_load', 'reps', 'duration', 'duration_distance']);
 export const categorySchema = z.enum(['strength', 'cardio', 'bodyweight']);
-export const equipmentSchema = z.enum(['none', 'dumbbell']);
+export const equipmentSchema = z.enum(EQUIPMENT);
 export const bilingualTextSchema = z.strictObject({ zh: z.string().min(1), en: z.string().min(1) });
 const positive = z.number().int().positive().max(Number.MAX_SAFE_INTEGER);
 const nonnegative = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);

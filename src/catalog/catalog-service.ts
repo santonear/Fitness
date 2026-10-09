@@ -1,3 +1,4 @@
+import { catalogMetadata } from './registry';
 import { DomainError } from '../domain/errors';
 import type { CatalogFilters, Exercise, Locale } from '../domain/models';
 import { exercises } from './exercises';
@@ -8,7 +9,7 @@ export function searchExercises(query: string, locale: Locale, filters: CatalogF
     (!filters.category || exercise.category === filters.category) &&
     (!filters.equipment || exercise.equipment === filters.equipment) &&
     (!filters.metricType || exercise.metricType === filters.metricType) &&
-    `${exercise.name.zh} ${exercise.name.en}`.toLocaleLowerCase(locale).includes(needle),
+    `${exercise.name.zh} ${exercise.name.en} ${(catalogMetadata.get(exercise.id)?.aliases ?? []).join(' ')}`.toLocaleLowerCase(locale).includes(needle),
   ).map((exercise) => structuredClone(exercise));
 }
 

@@ -1,3 +1,5 @@
+import { catalogMetadata } from '../../catalog/registry';
+import { RepDBMedia } from './RepDBMedia';
 import { AppIcon } from './AppIcon';
 import { useState } from 'react';
 import { getExerciseMedia, youtubeEmbedUrl } from '../../catalog/media';
@@ -8,7 +10,8 @@ export function ExerciseMedia({ exerciseId, exerciseName, locale }: { exerciseId
  const [state, setState] = useState<'idle' | 'loading' | 'failed'>('idle');
  const [imageFailed, setImageFailed] = useState(false);
  const zh = locale === 'zh';
- if (!media) return null;
+ const repdb = catalogMetadata.has(exerciseId);
+ if (!media) return repdb ? <RepDBMedia exerciseId={exerciseId} exerciseName={exerciseName} locale={locale} /> : null;
  const url = media.videoId && youtubeEmbedUrl(media.videoId);
  return <section style={{ overflowWrap: 'anywhere' }} aria-label={zh ? `${exerciseName} 媒体参考` : `${exerciseName} media reference`}>
   {!imageFailed && <img src={media.illustration} alt={zh ? `${exerciseName} 原创示意图` : `${exerciseName} original illustration`} width="280" height="160" style={{ maxWidth: '100%', height: 'auto' }} onError={() => setImageFailed(true)} />}
