@@ -4,11 +4,16 @@ export interface ReviewInput {
   workouts: readonly WorkoutRecord[]; activities: readonly ActivityRecord[];
   bodyWeights: readonly { localDate: string; weightGrams: number }[];
 }
+export type ReviewDayType = 'weekday' | 'weekend';
+export type ReviewTimeBand = 'morning' | 'daytime' | 'evening';
+/** Local startedAt: 05:00–11:59 / 12:00–16:59 / all other times. */
+export type IncompleteTiming = Readonly<Record<ReviewDayType, Readonly<Record<ReviewTimeBand, Readonly<{ partial: number; notStarted: number }>>>>>;
 export interface ReviewFacts {
   from: string; to: string; complete: number; partial: number; notStarted: number;
   movementCount: number; missingCount: number; activityMinutes: number; trainingSeconds: number;
   activityCounts: Readonly<Record<ActivityRecord['type'], number>>;
   reasonCounts: Readonly<Record<ShortfallReason, number>>; hasBodyWeight: boolean;
+  incompleteTiming: IncompleteTiming;
   improvements: readonly { exerciseId: string; metric: 'loadGrams' | 'reps' | 'durationSeconds'; previous: number; current: number }[];
 }
 export interface WeekFacts extends ReviewFacts { previousMovementCount: number }
