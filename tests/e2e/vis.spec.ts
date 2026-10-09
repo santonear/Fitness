@@ -15,23 +15,24 @@ test.beforeEach(async({page})=>{
   await workoutService.recordSet(session.id,{id:crypto.randomUUID(),exerciseInstanceId:session.exerciseSnapshots[0].exerciseInstanceId,order:0,metricType:'reps_load',reps:5,loadGrams:0,completed:true,notes:'Saved 原文\nsecond line'},session.revision);
  });
 });
-test('snapshot targets and notes are read-only, responsive, offline and localized in Today and Workout',async({page,context})=>{
- for(const path of ['/','/workout']){
-  await page.goto(path); if(path==='/') await page.getByRole('link',{name:'Continue workout',exact:true}).click(); const a=page.locator('.workout-exercise').first(); await expect(a).toContainText('2 sets'); const before=await facts(page);
-  for(const locale of ['en','zh']){
-   await page.getByLabel(/Language|语言/, {exact:true}).selectOption(locale);
-   for(const width of [320,390,768,1440]){
-   await page.setViewportSize({width,height:1000});
-   for(const details of await page.locator('.exercise-targets details').all()) await details.evaluate(e=>(e as HTMLDetailsElement).open=true);
-   await expect(a).toContainText(locale==='zh'?'8 次 · 1.25 kg':'8 reps · 1.25 kg'); await expect(a).toContainText(locale==='zh'?'12 次 · 0 kg':'12 reps · 0 kg');
-   await expect(page.locator('.workout-exercise').nth(1)).toContainText(locale==='zh'?'距离未设置':'Distance not set');
-   await expect(page.locator('.workout-exercise').nth(1)).toContainText('30 s · 0 km');
-   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
-   }
-  }
-  await page.getByLabel(/Language|语言/, {exact:true}).selectOption('en');
-  expect(await facts(page)).toBe(before); expect(await page.evaluate(()=> 'visUnsafe' in window)).toBe(false);
+// Each route/language gets its own timeout budget; retain every viewport assertion.
+for(const path of ['/','/workout']) for(const locale of ['en','zh']) test('snapshot targets and notes remain read-only and responsive: '+path+' '+locale,async({page})=>{
+ await page.goto(path); if(path==='/') await page.getByRole('link',{name:'Continue workout',exact:true}).click();
+ const a=page.locator('.workout-exercise').first(); await expect(a).toContainText('2 sets'); const before=await facts(page);
+ await page.getByLabel(/Language|语言/,{exact:true}).selectOption(locale);
+ for(const width of [320,390,768,1440]){
+  await page.setViewportSize({width,height:1000});
+  for(const details of await page.locator('.exercise-targets details').all()) await details.evaluate(e=>(e as HTMLDetailsElement).open=true);
+  await expect(a).toContainText(locale==='zh'?'8 次 · 1.25 kg':'8 reps · 1.25 kg'); await expect(a).toContainText(locale==='zh'?'12 次 · 0 kg':'12 reps · 0 kg');
+  await expect(page.locator('.workout-exercise').nth(1)).toContainText(locale==='zh'?'距离未设置':'Distance not set');
+  await expect(page.locator('.workout-exercise').nth(1)).toContainText('30 s · 0 km');
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  }
+ await page.getByLabel(/Language|语言/,{exact:true}).selectOption('en');
+ expect(await facts(page)).toBe(before); expect(await page.evaluate(()=> 'visUnsafe' in window)).toBe(false);
+});
+test('draft notes survive language changes and loaded target previews work offline',async({page,context})=>{
+ await page.goto('/workout');
  const a=page.locator('.workout-exercise').first(), next=a.getByRole('group',{name:'Next set',exact:true});
  await next.getByLabel('Set notes',{exact:true}).fill('Draft 原文');
  await expect(a).toContainText('Saved set notes: Saved 原文');
