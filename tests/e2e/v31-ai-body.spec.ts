@@ -10,7 +10,7 @@ async function setup(page: Page, seed = true) {
   await page.route('**/api/v1/**', async route => {
     if (route.request().method() === 'GET') return route.fulfill({json:{expiresAt:Date.now()+86400000,period:'2026-10',used:{understand:0,generate:0},limits:{understand:8,generate:4},pending:0,aiEnabled:true}});
     const request = route.request().postDataJSON(); sent.push(request);
-    const raw = request.operation === 'understand' ? {kind:'understand',summary:'Build strength at home.',uncertainties:[]} : {kind:'program',name:'Local fixture',explanation:'Test only',days:request.dialogue.dates.map((date: string) => ({date,exercises:[{exerciseId:exercises.find(x => x.metricType === 'reps')!.id,order:0,targetSets:[{metricType:'reps',reps:8}],setTimings:[{durationSeconds:40,restSeconds:30}]}]}))};
+    const raw = request.operation === 'understand' ? {kind:'proposal',summary:'Build strength at home.',sessions:[{name:'Strength',focus:'Gradual whole body training',durationMinutes:30}],needsExactDates:true} : {kind:'program',name:'Local fixture',explanation:'Test only',days:request.dialogue.dates.map((date: string) => ({date,exercises:[{exerciseId:exercises.find(x => x.metricType === 'reps')!.id,order:0,targetSets:[{metricType:'reps',reps:8}],setTimings:[{durationSeconds:40,restSeconds:30}]}]}))};
     return route.fulfill({json:{requestId:request.requestId,accounting:'settled',result:validateGuidedProviderOutput(request.dialogue,raw),context:{restoreGeneration:request.restoreGeneration,inputDigest:request.sendConfirmation}}});
   });
   await completedPlanningProfile(page);
@@ -53,6 +53,10 @@ test('current saved body measurements have sources, remain opt-in, and changes i
   expect(sent[0].dialogue.scope.conditions.restrictions).toBe('Avoid jumping');
   const checkbox=page.getByRole('checkbox',{name:'Optional: include supplied body information'});
   await expect(checkbox).not.toBeChecked(); await checkbox.check();
+  await page.getByRole('checkbox',{name:'Send body field: heightCm',exact:true}).check();
+  await page.getByRole('checkbox',{name:'Send body field: weightKg',exact:true}).check();
+  expect(await page.locator('.coach-scroll').evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
+  await page.screenshot({path:`outputs/v71/selected-body-${test.info().project.name}.png`});
   await page.getByRole('button',{name:'Update sending preview'}).click();
   await page.getByRole('checkbox',{name:/I confirm these fields and dates/}).check();
   await page.evaluate(async() => {
@@ -66,8 +70,8 @@ test('current saved body measurements have sources, remain opt-in, and changes i
   const body=sent[1].dialogue.scope.body;
   expect(body.heightCm).toEqual({value:178,unit:'cm',source:'profile',recordedAt:'2026-10-01T00:00:00Z'});
   expect(body.weightKg).toMatchObject({value:72,unit:'kg',source:'body-weight-observation',observedOn:'2026-10-04'});
-  expect(body.waistCm).toMatchObject({value:82,source:'body-observation',observedOn:'2026-10-03',method:'Tape / scale'});
-  expect(body.bodyFatPercent).toMatchObject({value:20,unit:'%'});
+  expect(body).not.toHaveProperty('waistCm');
+  expect(body).not.toHaveProperty('bodyFatPercent');
   expect(sent[1].dialogue.scope).not.toHaveProperty('history');
 });
 test('deselecting body and history removes both from the actual request',async({page}) => {

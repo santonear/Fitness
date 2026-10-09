@@ -3,6 +3,7 @@ import { EQUIPMENT } from '../catalog/taxonomy';
 import { exercises } from '../catalog/exercises';
 import { validateCandidate, validateRequest, type AiRequest } from './contracts';
 import { validateSummaryStage } from './summary-contract';
+import { evaluateCoachResponse } from './coach-evaluation';
 
 export const PROMPT_VERSION = 'date-candidate-v1';
 
@@ -40,8 +41,15 @@ export type CandidateDiagnostic = 'INVALID_CANDIDATE' | 'EQUIPMENT_UNAVAILABLE' 
 
 /** Offline diagnostics for an already validated request; not a save gate or content review. */
 export function evaluateAiCandidate(request: AiRequest, result: unknown): {
-  schemaValid: boolean; deterministicIssues: CandidateDiagnostic[]; contentQuality: 'not-assessed';
+  schemaValid: boolean; deterministicIssues: CandidateDiagnostic[]; contentQuality: 'not-assessed' | 'offline-assessed';
+  coachEvaluation?: ReturnType<typeof evaluateCoachResponse>;
 } {
+  if ('dialogue' in request && request.dialogue) {
+    const report = evaluateCoachResponse(request.dialogue, result, request.operation === 'generate' ? request.dates.length : 1);
+    return { schemaValid: report.structuralGate === 'pass',
+      deterministicIssues: report.structuralGate === 'fail' ? ['INVALID_CANDIDATE'] : report.deterministicIssues.filter((issue): issue is CandidateDiagnostic => issue === 'EQUIPMENT_UNAVAILABLE' || issue === 'DURATION_EXCEEDS_SESSION'),
+      contentQuality: 'offline-assessed', coachEvaluation: report };
+  }
   let candidate: ReturnType<typeof validateCandidate>;
   try { candidate = validateCandidate(request, result); }
   catch { return { schemaValid: false, deterministicIssues: ['INVALID_CANDIDATE'], contentQuality: 'not-assessed' }; }

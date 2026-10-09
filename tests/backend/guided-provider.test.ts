@@ -67,6 +67,7 @@ it('uses existing admission and pending accounting with no plaintext dialogue in
   expect(result).toMatchObject({ accounting: 'pending', result: { purpose: 'program' } });
   await expect(service.submit(session.token, envelope)).rejects.toMatchObject({ code: 'REQUEST_IN_PROGRESS' });
   expect(calls).toBe(1); expect(JSON.stringify(await store.read())).not.toContain(envelope.goalText);
+  expect(Object.values((await store.read()).requests)[0].coachContract).toMatchObject({promptVersion:'v7.1.0',schemaVersion:'guided-dialogue-v1',task:'generate-days'});
 });
 
 it('client validates server identity and performs one same-origin request without retries', async () => {

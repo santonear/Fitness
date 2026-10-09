@@ -3,6 +3,8 @@ import { ControlError, type ControlState, type ControlStore, type OperationCount
 import { buildAdminReport } from './admin-report';
 import { TrialApplications, applicationAdminView } from './trial-applications';
 import { guidedServiceLimits } from './guided-provider';
+import { COACH_PROMPT_VERSION, coachTask } from './coach-prompt-registry';
+import { CATALOG_VERSION } from '../catalog/exercises';
 export { ControlError } from './store';
 
 export interface ControlConfig {
@@ -288,6 +290,8 @@ export class ControlService {
       if (Object.values(state.requests).filter(r => ['reserved', 'submitted'].includes(r.status)).length >= this.config.maxConcurrent) throw new ControlError('CONCURRENCY_LIMIT', 429);
       used[request.operation] = (used[request.operation] ?? 0) + 1; budget.reserved += bound; state.usages[usageKey(subjectId, period)] = used; state.budgets[period] = budget;
       state.requests[key] = { subjectId, requestId: request.requestId, inputDigest, operation: request.operation, period, bound, status: 'reserved', cancelled: false,
+        ...('dialogue' in request && request.dialogue ? { coachContract: { promptVersion: COACH_PROMPT_VERSION,
+          schemaVersion: request.dialogue.version, catalogVersion: CATALOG_VERSION, task: request.dialogue.coachTask ?? coachTask(request.dialogue.purpose) } } : {}),
         ...(verifiedBoundFen === undefined ? {} : { verifiedBoundFen }) };
       return key;
     });
