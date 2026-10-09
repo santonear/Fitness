@@ -31,9 +31,10 @@ describe('V8 browser preference', () => {
     expect(migrateTheme(store)).toBe(true);
     expect(readTheme(store)).toBe('qingci');
   });
-  it('defers mutation of coexisting valid keys pending the precedence decision', () => {
+  it('uses the valid V8 choice without deleting either coexisting preference', () => {
     const store = storage({ [themeKey]: 'jingshe', [legacyThemeKey]: 'atlas' });
-    expect(migrateTheme(store)).toBe(false);
+    expect(migrateTheme(store)).toBe(true);
+    expect(readTheme(store)).toBe('jingshe');
     expect(store.values).toEqual(new Map([[themeKey, 'jingshe'], [legacyThemeKey, 'atlas']]));
   });
   it('falls back on invalid values and inaccessible storage', () => {

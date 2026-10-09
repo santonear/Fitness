@@ -19,8 +19,8 @@ export function migrateTheme(storage: ThemeStorage): boolean {
     const legacy = storage.getItem(legacyThemeKey);
     if (!['atlas', 'serene', 'orbit'].includes(legacy ?? '')) return true;
     const previous = storage.getItem(themeKey);
-    // Coexisting valid keys need an explicit product precedence decision.
-    if (isThemeId(previous)) return false;
+    // Keep the explicit V8 choice and the old key; coexistence does not require migration.
+    if (isThemeId(previous)) return true;
     storage.setItem(themeKey, defaultThemeId);
     try { storage.removeItem(legacyThemeKey); }
     catch {
