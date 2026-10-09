@@ -1,0 +1,2 @@
+# Preserve actual downloaded bytes so manifest SHA256 survives Windows checkout.
+*.json -text

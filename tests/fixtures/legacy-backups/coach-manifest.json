@@ -1,0 +1,25 @@
+{
+  "kind": "synthetic-data-entered-through-legacy-ui-with-fixed-model-mock",
+  "sourceCommit": "9d2a2120e85fbe33e025734ee1ce5433fe0ce92c",
+  "file": "v71-coach-plan.json",
+  "sha256": "b02b2e0fb9c0d772d1f238443d9fdb15d164a48d866f5f0e6de5842569702892",
+  "realModelCalls": 0,
+  "mockOperations": [
+    "understand",
+    "generate"
+  ],
+  "blockedExternal": [],
+  "browser": "153.0.8010.12",
+  "generatedAt": "2026-10-09T17:39:07.068Z",
+  "coverage": [
+    "adult-profile-entered-in-ui",
+    "mock-coach-candidate",
+    "explicit-ui-confirmation-save",
+    "settings-ui-export"
+  ],
+  "mockSource": "generate-coach.mjs",
+  "limitations": [
+    "No real model quality or provider integration verified",
+    "No direct database or application service seeding"
+  ]
+}

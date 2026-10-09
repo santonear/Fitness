@@ -44,7 +44,7 @@
 |src/application/history-context.ts|保留|0：保持既有业务边界，按需由统筹转交|
 |src/application/legacy-collisions.ts|保留|0：保持既有业务边界，按需由统筹转交|
 |src/application/plans.ts|保留|0：保持既有业务边界，按需由统筹转交|
-|src/application/profile.ts|保留|0：保持既有业务边界，按需由统筹转交|
+|src/application/profile.ts|改造|B：仅负责新库 metadata 初始化与迁移版本一致；不混同 Dexie、metadata 和备份 envelope 版本|
 |src/application/progress-calculation.ts|保留|0：保持既有业务边界，按需由统筹转交|
 |src/application/progress.ts|保留|0：保持既有业务边界，按需由统筹转交|
 |src/application/stage-summary-core.ts|保留|0：保持既有业务边界，按需由统筹转交|
@@ -192,3 +192,13 @@ B线按用户新要求从V5/V6.2/V7.1的真实UI导出流程生成样本，禁�
 |H|进行中|A/C等待后已填补槽位，后台独立改造|
 
 B独占 tests/fixtures/legacy-backups/ 和其中生成脚本/来源清单。MapSchedule归C，不与B重复实施。
+
+## B 迁移决定（2026-10-10）
+
+- 用户已确认无损保留：旧计划及训练历史原样只读；新 V8 计划把同一旧动作中连续且目标相同的组归为一个条目，目标不同则拆条目并保持原顺序。旧备注及计时保留在历史中。
+- `legacyItemsToV8` 已有对应投影与测试；这不是完整数据库升级或备份恢复验收。
+- 用户已确认多个旧计划各自迁移，按明确当前/进行中、最近训练、最近创建的顺序自动选当前；其他计划只读。时长按 V8.0.4 规则保留原值、复用基础计划估算并限制范围；异常实际用时只排除时长统计，不删除记录。完整规则在唯一规范第 2 部分第 10 节。
+- V8.0.5 已批准共用估算参数和计划提案空原话；共享函数与契约见 PR #34。数据库 8 升级、备份 6、旧事实保留及回滚已完成本地测试，详见 docs/verification/v8-migration-805.md。旧资料缺少新字段时不补造历史事实。
+
+## 2026-10-10 主线优先调整
+用户取消集成前阶段等待：CI 全绿合入 v8/integration；优先 A/B/C 与 E/F 青瓷主线，G/H 空闲后排。普通细节记 pending-decisions 后实施。主分支和公网仍待最终验收。V8.0.6 自由训练及 B 历史读取已完成本地验证，PR #35 待新 CI；新增可选 legacyWorkouts 由 C 读取，不写入重复历史。

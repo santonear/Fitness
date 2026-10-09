@@ -43,7 +43,7 @@ export async function verifyLegacyTime() {
     const profile=await createProfileService(repo).initialize('en'), guided=createGuidedService(repo), backups=createBackupService(repo);
     const candidate:ProgramCandidate={id:crypto.randomUUID(),name:'Legacy',goal:'Fixture',startDate:'2099-01-01',endDate:'2099-01-01',timeZone:profile.timeZone,createdAt:new Date().toISOString(),restoreGeneration:0,...await guided.captureDependencies(),explanation:'Fixture',days:[{date:'2099-01-01',exercises:[{exerciseId:EXERCISE_IDS.bodyweightSquat,order:0,targetSets:[{metricType:'reps',reps:8}]}]}]};
     await guided.retainCandidate(candidate,0);await guided.applyCandidate(candidate.id,(await guided.read()).revision,14);
-    const old=JSON.parse(await (await backups.exportBackup()).text());old.schemaVersion=4;old.data.metadata.schemaVersion=5;
+    const old=JSON.parse(await (await backups.exportBackup()).text());old.schemaVersion=4;old.data.metadata.schemaVersion=5;delete old.data.v8;
     const checked=await backups.validateBackup(new File([JSON.stringify(old)],'legacy-v4.json'));
     await backups.importBackup(checked,{backupExported:true,replacementConfirmed:true,expectedRevision:checked.expectedRevision});
     const task=(await db.scheduledWorkouts.toArray())[0];const unknown=task.startTime===undefined&&task.durationMinutes===undefined;

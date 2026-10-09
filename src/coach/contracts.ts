@@ -10,7 +10,7 @@ const target = z.strictObject({ planId: id, versionId: id, revision: count });
 const item = z.strictObject({ exerciseId: exerciseIdSchema, equipment: text, sets: z.number().int().min(1), target: setMetricsSchema });
 export const sessionTemplateSchema = z.strictObject({ id: text, name: text, estimatedMinutes: minutes, items: z.array(item).min(1) });
 export const planProposalSchema = z.strictObject({
-  goalText: text, weeklyTarget: z.number().int().min(1).max(7), scheduleOriginalText: text,
+  goalText: text, weeklyTarget: z.number().int().min(1).max(7), scheduleOriginalText: z.string().max(8000),
   sessionMinutes: minutes, templates: z.array(sessionTemplateSchema).min(1), reasons: z.tuple([text, text, text]),
 });
 const profile = z.strictObject({

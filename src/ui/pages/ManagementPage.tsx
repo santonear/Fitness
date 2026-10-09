@@ -1,3 +1,6 @@
+import { ApplicationsTable } from '../admin/ApplicationsTable';
+import { adminTokens } from '../admin/tokens';
+import '../admin/admin.css';
 import { AppIcon, StatusIcon } from '../components/AppIcon';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -7,7 +10,11 @@ import type { ControlService } from '../../backend/control';
 type Data = Awaited<ReturnType<ControlService['managementReport']>>;
 export function ManagementPage() {
   const { i18n } = useTranslation(); const zh = i18n.resolvedLanguage === 'zh';
-  const [data, setData] = useState<Data>(); const [busy, setBusy] = useState(false); const [error, setError] = useState('');
+  useEffect(() => {
+    try { if (!localStorage.getItem('fitness.language')) void i18n.changeLanguage('zh'); }
+    catch { void i18n.changeLanguage('zh'); }
+  }, [i18n]);
+  const [data, setData] = useState<Data>(); const [busy, setBusy] = useState(false); const [error, setError] = useState(false);
   const [reasons, setReasons] = useState<Record<string, string>>({});
   const [costs, setCosts] = useState<Record<string, string>>({});
   const [quotaReasons, setQuotaReasons] = useState<Record<string, string>>({});
@@ -27,22 +34,21 @@ export function ManagementPage() {
   const [tab, setTab] = useState<'applications' | 'trials' | 'budget' | 'audit'>('applications');
   async function refresh() { setData(await trialApi<Data>('management/applications', {})); }
   async function run(action: () => Promise<unknown>) {
-    setBusy(true); setError(''); try { await action(); await refresh(); }
-    catch { setError(zh ? '操作或状态查询失败，请刷新核对。不要将未知状态当成成功。' : 'The operation or status check failed. Refresh to verify; the outcome is unknown.'); }
+    setBusy(true); setError(false); try { await action(); await refresh(); }
+    catch { setError(true); }
     finally { setBusy(false); }
   }
   useEffect(() => { void run(async () => {}); }, []);
   const money = (fen: number) => `¥${(fen / 100).toFixed(2)}`;
-  const label = (value: string) => zh ? ({ new: '新试用', extend: '延期', replace: '补发', pending: '待处理', approved: '已批准', rejected: '已拒绝', claimed: '已领取', understand: '理解', generate: '生成', summary: '总结', reserved: '已预留', submitted: '已提交', settled: '已核算', released: '已释放' } as Record<string,string>)[value] ?? value : value;
   const period = new Intl.DateTimeFormat('en-CA', { timeZone: data?.policy.timeZone ?? 'Asia/Shanghai', year: 'numeric', month: '2-digit' }).formatToParts(new Date());
   const month = `${period.find(p => p.type === 'year')?.value}-${period.find(p => p.type === 'month')?.value}`;
   const budget = data?.report.budgets.find(b => b.period === month);
   const reserved = data?.report.budgets.reduce((sum, b) => sum + b.reservedFen, 0);
-  return <div className="management-shell"><aside><a className="management-brand" href="/">Fitness.</a><p>{zh ? '管理工作台' : 'Management'}</p>
+  return <div className="admin-console" style={adminTokens}><aside><a className="management-brand" href="/">Fitness.</a><p>{zh ? '管理工作台' : 'Management'}</p>
     <nav aria-label={zh ? '管理导航' : 'Management navigation'}>{(['applications','trials','budget','audit'] as const).map((name, i) => <button key={name} aria-current={tab === name ? 'page' : undefined} onClick={() => setTab(name)}>{(zh ? ['申请审核','试用资格','预算与用量','操作记录'] : ['Applications','Trials','Budget & usage','Audit log'])[i]}</button>)}</nav>
     <p>{zh ? '仅管理员可访问。训练数据仍在用户设备。' : 'Administrator only. Training data remains on users’ devices.'}</p></aside>
-    <main><header><div><span className="trial-kicker">FITNESS CONTROL</span><h1>{zh ? '应用管理' : 'Application management'}</h1></div><div><button disabled={busy} onClick={() => void run(async () => {})}><AppIcon name="refresh"/>{zh ? '刷新' : 'Refresh'}</button><button onClick={() => void i18n.changeLanguage(zh ? 'en' : 'zh')}>{zh ? 'English' : '中文'}</button></div></header>
-      {error && <p role="alert"><StatusIcon status="error"/>{error}{data && (zh ? ' 以下保留上次成功读取的数据，当前状态未知。' : ' Values below are from the last successful read; current status is unknown.')}</p>}{busy && <p role="status"><AppIcon name="info"/>{zh ? '正在处理…' : 'Working…'}</p>}
+    <main><header><div><span className="admin-kicker">FITNESS CONTROL</span><h1>{zh ? '应用管理' : 'Application management'}</h1></div><div><button disabled={busy} onClick={() => void run(async () => {})}><AppIcon name="refresh"/>{zh ? '刷新' : 'Refresh'}</button><button onClick={() => void i18n.changeLanguage(zh ? 'en' : 'zh')}>{zh ? 'English' : '中文'}</button></div></header>
+      {error && <p role="alert"><StatusIcon status="error"/>{zh ? '操作或状态查询失败，请刷新核对。不要将未知状态当成成功。' : 'The operation or status check failed. Refresh to verify; the outcome is unknown.'}{data && (zh ? ' 以下保留上次成功读取的数据，当前状态未知。' : ' Values below are from the last successful read; current status is unknown.')}</p>}{busy && <p role="status"><AppIcon name="info"/>{zh ? '正在处理…' : 'Working…'}</p>}
       <div className="management-summary"><article><span>{zh ? 'AI 控制开关' : 'AI control switch'}</span><strong>{data ? (data.report.aiEnabled ? (zh ? '开启' : 'Enabled') : (zh ? '关闭' : 'Disabled')) : '—'}</strong><small>{zh ? '开关状态不代表模型或网络可用' : 'This does not prove model or network availability'}</small></article>
         <article><span>{zh ? '待核算预留' : 'Reserved, not settled'}</span><strong>{reserved === undefined ? '—' : money(reserved)}</strong></article>
         <article><span>{zh ? '本月剩余预算' : 'Available monthly budget'}</span><strong>{data?.policy.planningBudgetDisabled ? (zh ? '暂不限制' : 'Temporarily unlimited') : reserved === undefined || !data ? '—' : money(Math.max(0, data.policy.budgetLimit - (budget?.spentFen ?? 0) - reserved))}</strong><small>{data?.policy.planningBudgetDisabled ? (zh ? '理解/生成金额限制关闭；费用继续记录' : 'Planning budget limits off; accounting retained') : data ? `${zh ? '月上限' : 'Monthly cap'} ${money(data.policy.budgetLimit)} · ${zh ? '单次上界' : 'Request bound'} ${money(data.policy.reservation)}` : '—'}</small></article></div>
@@ -50,14 +56,7 @@ export function ManagementPage() {
       <p>{zh ? '当前站点：' : 'Current site: '}{location.origin} · {zh ? '供应商连接状态未主动探测；此页不发起模型调用。' : 'Provider connectivity is not actively probed; this page makes no model calls.'}</p>
       {tab === 'audit' && <section><h2>{zh ? '最近操作记录' : 'Recent audit events'}</h2><ul>{data?.audit.map((item, index) => <li key={index}>{new Date(item.at).toLocaleString()} · {item.event} {item.subjectId}</li>)}</ul><h3>{zh ? '额度恢复记录' : 'Quota restorations'}</h3>{data?.quotaRestorations?.map(item => <p key={item.id}>{new Date(item.at).toLocaleString()} · {item.subjectId} · {item.period} · {item.reason}</p>)}</section>}
       {tab === 'applications' && <section><h2>{zh ? '申请审核' : 'Application review'}</h2>{data?.applications.length === 0 && <p>{zh ? '暂无申请' : 'No applications yet'}</p>}
-        {data?.applications.map(a => <article className="management-item" key={a.id}><h3>{a.name}</h3><p>{label(a.kind)} · {label(a.state)}</p><small>{a.id} · {new Date(a.createdAt).toLocaleString()}</small><p>{a.note}</p>{a.reason && <p>{a.reason}</p>}
-          {a.kind === 'new' && !a.subjectId && (a.state === 'pending' || a.state === 'approved') && <button disabled={busy} onClick={() => { if (confirm(zh ? '立即开通30天？用户在原申请浏览器刷新即可使用，无需激活码。不会重置用量或增加项目预算。' : 'Activate 30 days now? The applicant can refresh the original browser without a code. Usage and project budget are unchanged.')) void run(() => trialApi('management/application-activate', { id: a.id })); }}>{zh ? '免激活码激活' : 'Activate without code'}</button>}
-          {a.directlyActivated && <p>{zh ? '已免码激活，请用户在原申请浏览器刷新。' : 'Activated without code. Ask the applicant to refresh the original browser.'}</p>}
-          {a.state === 'pending' && <><label>{zh ? '处理说明' : 'Review note'}<input maxLength={200} value={reasons[a.id] ?? ''} onChange={e => setReasons({ ...reasons, [a.id]: e.target.value })} /></label>
-            <p>{a.kind === 'extend' ? (zh ? '批准后延期 30 天，不重置次数或费用。' : 'Approval adds 30 days without resetting usage or costs.') : a.kind === 'replace' ? (zh ? '批准将撤销旧浏览器资格，保留期限与次数。' : 'Approval revokes old browser sessions and preserves expiry and usage.') : (zh ? '批准后 7 天内领取，兑换后试用 30 天。' : 'Claim within 7 days for a 30-day trial.')}</p>
-            <button disabled={busy} onClick={() => void run(() => trialApi('management/application-review', { id: a.id, decision: 'approve', reason: reasons[a.id] ?? '' }))}>{zh ? '批准' : 'Approve'}</button>
-            <button disabled={busy || !reasons[a.id]?.trim()} onClick={() => void run(() => trialApi('management/application-review', { id: a.id, decision: 'reject', reason: reasons[a.id] }))}>{zh ? '拒绝' : 'Reject'}</button></>}
-        </article>)}<button disabled={busy || !data} onClick={() => void run(() => trialApi('management/application-retention', {}))}>{zh ? '清理已超过保留期的申请资料' : 'Clear application details past retention'}</button></section>}
+        {data && <ApplicationsTable applications={data.applications} zh={zh} busy={busy} run={run} reasons={reasons} setReasons={setReasons} />}<button disabled={busy || !data} onClick={() => void run(() => trialApi('management/application-retention', {}))}>{zh ? '清理已超过保留期的申请资料' : 'Clear application details past retention'}</button></section>}
       {tab === 'trials' && <section><h2>{zh ? '试用资格' : 'Trial qualifications'}</h2>{data && <ManualInvites zh={zh} invites={data.invites ?? []} busy={busy} run={run} />}{data?.report.subjects.map(s => <article className="management-item" key={s.subjectId}><strong>{s.subjectId}</strong><p>{new Date(s.expiresAt).toLocaleString()} · {s.revoked ? (zh ? '已撤销' : 'Revoked') : s.expired ? (zh ? '已到期' : 'Expired') : (zh ? '有效' : 'Active')}</p><button disabled={busy || s.revoked} onClick={() => { if (confirm(zh ? '撤销此资格？已保存训练不受影响。' : 'Revoke this trial? Saved training is unaffected.')) void run(() => trialApi('management/revoke', { subjectId: s.subjectId })); }}>{zh ? '撤销资格' : 'Revoke trial'}</button>
         <p>{data.applications.find(a => a.subjectId === s.subjectId)?.name ?? (zh ? '邀请码用户' : 'Invitation user')}</p>
         <button disabled={busy || s.expired} onClick={() => { if (confirm(zh ? '为此用户生成新激活码？旧会话和旧码立即失效；原有效期和已用次数保留。新码7天内兑换，且不超过原有效期。' : 'Generate a replacement code? Existing sessions and codes stop working immediately. Expiry and usage stay unchanged. Redeem within 7 days or the original expiry, whichever is earlier.')) void run(async () => { setReplacement(undefined); setReplacement(await trialApi('management/reissue', { subjectId: s.subjectId })); }); }}>{zh ? '生成此用户激活码' : 'Generate user activation code'}</button>

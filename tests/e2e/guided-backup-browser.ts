@@ -48,10 +48,10 @@ export async function verifyGuidedBackup(name: string) {
     const rejected = await restore(envelope).then(() => false, () => true);
     db.guidedStates.hook('creating').unsubscribe(fail);
     const rollback = rejected && before === JSON.stringify(await Promise.all(db.tables.filter((table:{name:string})=>table.name!=='coachDevice').map(table => table.toArray()))) && generation === (await repo.readMetadata()).restoreGeneration;
-    const old = structuredClone(envelope); old.schemaVersion = 3; old.data.metadata.schemaVersion = 4; delete old.data.guidedStates;
+    const old = structuredClone(envelope); old.schemaVersion = 3; old.data.metadata.schemaVersion = 4; delete old.data.guidedStates; delete old.data.v8;
     await restore(old);
     const oldCleared = await db.guidedStates.count() === 0;
-    const upgraded = (await repo.readMetadata()).schemaVersion === 6;
+    const upgraded = (await repo.readMetadata()).schemaVersion === 8;
     const noInventedProgram = (JSON.parse(await (await backup.exportBackup()).text()).data.guidedStates as unknown[]).length === 0;
     return { version: envelope.schemaVersion, preserved, staleWriter, rollback, oldCleared, upgraded, noInventedProgram };
   } finally {
