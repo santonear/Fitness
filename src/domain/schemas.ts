@@ -141,7 +141,7 @@ export const v8PlanVersionSchema = z.strictObject({
 const v8Feel = z.enum(['easy', 'right', 'tired', 'very_tired']);
 const v8Reason = z.enum(['time', 'fatigue', 'discomfort', 'equipment_busy', 'not_today', 'other']);
 export const v8WorkoutSchema = z.strictObject({
-  id: uuidSchema, planVersionId: uuidSchema, templateId: z.string().optional(), startedAt: utcTimestampSchema, endedAt: utcTimestampSchema.optional(),
+  id: uuidSchema, planVersionId: uuidSchema.optional(), templateId: z.string().optional(), startedAt: utcTimestampSchema, endedAt: utcTimestampSchema.optional(),
   localDate: localDateSchema, timeZone: timeZoneSchema, status: z.enum(['in_progress', 'complete', 'partial', 'not_started', 'abandoned']), variant: z.literal('short').optional(),
   sets: z.array(z.strictObject({ exerciseId: exerciseIdSchema, itemIndex: nonnegative, setIndex: nonnegative, reps: positive.optional(), durationSeconds: positive.optional(),
     distanceMeters: nonnegative.optional(), loadGrams: nonnegative.nullable().optional(), completedAt: utcTimestampSchema, substitutedFrom: exerciseIdSchema.optional() })),

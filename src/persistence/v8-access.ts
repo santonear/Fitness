@@ -2,6 +2,7 @@ import { DomainError } from '../domain/errors';
 import { legacyTrainingSeconds } from '../domain/v8/legacy-selection';
 import type { Repository } from './repository';
 import { v8WorkoutSchema } from '../domain/schemas';
+import { projectLegacyWorkouts } from '../domain/v8/legacy-workouts';
 
 export async function assertLegacyPlanEditable(repo: Repository, planId: string): Promise<void> {
   if ((await repo.db.v8State.get('v8'))?.legacyPlanIds.includes(planId)) throw new DomainError('SESSION_READ_ONLY', 'Retained legacy plans are read-only');
@@ -34,5 +35,11 @@ export function createV8DataService(repo: Repository) {
       return next;
     });
   }
-  return { getMigrationNotice, acknowledgeMigrationNotice, getLegacyHistory, appendWorkoutNote };
+  async function getReviewWorkouts() {
+    return repo.db.transaction('r', [repo.db.sessions, repo.db.sets, repo.db.v8Workouts], async () => ({
+      workouts: await repo.db.v8Workouts.toArray(),
+      legacyWorkouts: projectLegacyWorkouts(await repo.db.sessions.toArray(), await repo.db.sets.toArray()),
+    }));
+  }
+  return { getMigrationNotice, acknowledgeMigrationNotice, getLegacyHistory, getReviewWorkouts, appendWorkoutNote };
 }

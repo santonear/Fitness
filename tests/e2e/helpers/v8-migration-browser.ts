@@ -6,6 +6,7 @@ import { createBackupService } from '../../../src/application/backup';
 import { createV8DataService } from '../../../src/persistence/v8-access';
 import { createPlanService } from '../../../src/application/plans';
 import type { BackupEnvelope } from '../../../src/domain/models';
+import { v8WorkoutSchema } from '../../../src/domain/schemas';
 
 const oldStores = { profiles: 'id', metadata: 'localProfileId', bodyWeights: 'id,localDate', plans: 'id,status,currentVersionId', planVersions: 'id,planId,[planId+versionNumber]',
   sessions: 'id,status,localDate,planVersionId', sets: 'id,sessionId,[sessionId+exerciseInstanceId]', scheduledWorkouts: 'id,planVersionId,scheduledDate,completedSessionId',
@@ -47,6 +48,8 @@ export async function verifyV8Migration(envelope: BackupEnvelope, failUpgrade = 
     const first = await snapshot(db); db.close(); await db.open();
     const idempotent = await snapshot(db) === first;
     const history = await access.getLegacyHistory();
+    const projected = await access.getReviewWorkouts();
+    if (projected.legacyWorkouts.length !== history.length || projected.workouts.length !== 0) throw new Error('Legacy review projection lost or duplicated records');
     const invalidDurationsExcluded = history.filter(({ session }) => session.completedAt && (Date.parse(session.completedAt) < Date.parse(session.startedAt) || Date.parse(session.completedAt) - Date.parse(session.startedAt) > 43200000)).every(row => row.trainingSeconds === undefined);
     const workout = { id: crypto.randomUUID(), planVersionId: versions[0].id, templateId: versions[0].templates[0].id,
       startedAt: '2026-10-10T00:00:00.000Z', endedAt: '2026-10-10T00:00:00.000Z', localDate: '2026-10-10', timeZone: 'UTC',
@@ -55,6 +58,8 @@ export async function verifyV8Migration(envelope: BackupEnvelope, failUpgrade = 
     const noted = await access.appendWorkoutNote(workout.id, 'Append-only test note');
     const { appendedNotes, ...unchangedWorkout } = noted;
     const notesPreserved = JSON.stringify({ ...workout, ...unchangedWorkout }) === JSON.stringify(workout) && appendedNotes?.[0].text === 'Append-only test note';
+    const { planVersionId: _plan, templateId: _template, ...free } = workout;
+    await repo.write(async () => { await db.v8Workouts.add(v8WorkoutSchema.parse({ ...free, id: crypto.randomUUID() })); });
     const backup = createBackupService(repo); const exported = JSON.parse(await (await backup.exportBackup()).text());
     const target = createDatabase(`v8-restore-${crypto.randomUUID()}`); const targetRepo = createRepository(target);
     try {

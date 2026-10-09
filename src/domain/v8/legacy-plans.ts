@@ -65,7 +65,7 @@ export async function migrateLegacyPlans(
       id, planId: plan.id, versionNumber: original.versionNumber + 1,
       goalText: original.goalSnapshot.goal,
       // Period-plan days already contain every week; date-day plans contain exactly one day.
-      weeklyTarget: 'durationWeeks' in original ? Math.max(1, Math.min(7, Math.round(original.days.length / original.durationWeeks))) : 1,
+      weeklyTarget: 'durationWeeks' in original ? original.daysPerWeek : 1,
       // Legacy plan versions have no plan-scoped original schedule text. A current global answer is not its provenance.
       scheduleOriginalText: '',
       sessionMinutes: legacyPlanMinutes(onboardingSlot, templates.map(template => template.estimatedMinutes)),

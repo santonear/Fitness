@@ -106,8 +106,8 @@ export function validateBackupEnvelope(value: unknown): BackupEnvelope {
     }
     distinct(library.planVersions.map(version => `${version.planId}:${version.versionNumber}`), 'V8 version number');
     for (const workout of library.workouts) {
-      const version = v8Versions.get(workout.planVersionId);
-      if (!version || workout.templateId && !version.templates.some(template => template.id === workout.templateId)) invalid('V8 workout plan or template missing');
+      const version = workout.planVersionId ? v8Versions.get(workout.planVersionId) : undefined;
+      if (workout.planVersionId && !version || workout.templateId && !version?.templates.some(template => template.id === workout.templateId)) invalid('V8 workout plan or template missing');
       validDate(workout.localDate);
     }
     library.activities.forEach(activity => validDate(activity.localDate));

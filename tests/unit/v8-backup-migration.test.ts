@@ -57,4 +57,16 @@ describe('V8 backup migration boundary', () => {
     v8.plans[0].currentVersionId = crypto.randomUUID();
     expect(() => validateBackupEnvelope({ ...source, schemaVersion: 6, data: { ...source.data, metadata: { ...source.data.metadata, schemaVersion: 8 }, v8 } })).toThrow();
   });
+  it('backs up free training but refuses an unattached template or unknown plan', async () => {
+    const source = validateBackupEnvelope(read('v71-coach-plan'));
+    const v8 = await prepareV8Migration(source.data, at);
+    v8.workouts.push({ id: crypto.randomUUID(), startedAt: at, localDate: '2026-10-10', timeZone: 'UTC', status: 'not_started', sets: [], plannedSetCount: 0 });
+    const envelope = { ...source, schemaVersion: 6, data: { ...source.data, metadata: { ...source.data.metadata, schemaVersion: 8 }, v8 } };
+    expect(validateBackupEnvelope(envelope).data.v8?.workouts[0].planVersionId).toBeUndefined();
+    v8.workouts[0].templateId = 'orphan';
+    expect(() => validateBackupEnvelope(envelope)).toThrow();
+    delete v8.workouts[0].templateId;
+    v8.workouts[0].planVersionId = crypto.randomUUID();
+    expect(() => validateBackupEnvelope(envelope)).toThrow();
+  });
 });
