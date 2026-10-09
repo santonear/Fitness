@@ -6,6 +6,8 @@ import { expandSchedule } from '../domain/calendar';
 import { repository, type Repository } from '../persistence/repository';
 import { synchronizeTrainingMemo } from './training-memory';
 import { projectDay } from '../domain/day-date-projection';
+import { prepareV8Migration, writeV8Library } from '../persistence/v8-migration';
+import Dexie from 'dexie';
 
 // UTF-8 file bytes, not characters. Candidate verified on synthetic desktop data;
 // physical-phone capacity support remains unverified.
@@ -51,7 +53,7 @@ function validateVersion(version: PlanVersion): void {
 function validateSession(session: WorkoutSession, sets: SetRecord[], versions: Map<string, PlanVersion>): void {
   validDate(session.localDate);
   if ((session.status === 'completed') !== (session.completedAt !== undefined)) invalid('Workout completion timestamp does not match status');
-  if (session.completedAt && Date.parse(session.completedAt) < Date.parse(session.startedAt)) invalid('Workout completes before it starts');
+  // Historical clock anomalies remain exportable; V8 duration statistics exclude them.
   if ((session.planVersionId === undefined) !== (session.plannedDayId === undefined)) invalid('Workout plan references must appear together');
   if (session.planVersionId && !versions.get(session.planVersionId)?.days.some(day => day.dayId === session.plannedDayId)) invalid('Workout plan day not found');
   const version = session.planVersionId ? versions.get(session.planVersionId) : undefined;
@@ -77,8 +79,8 @@ function validateSession(session: WorkoutSession, sets: SetRecord[], versions: M
 }
 
 export function validateBackupEnvelope(value: unknown): BackupEnvelope {
-  if (typeof value === 'object' && value !== null && 'schemaVersion' in value && value.schemaVersion !== 2 && value.schemaVersion !== 3 && value.schemaVersion !== 4 && value.schemaVersion !== 5) {
-    throw new DomainError('BACKUP_VERSION_UNSUPPORTED', 'Unsupported JSON backup version; versions 2, 3, 4 and 5 are supported');
+  if (typeof value === 'object' && value !== null && 'schemaVersion' in value && value.schemaVersion !== 2 && value.schemaVersion !== 3 && value.schemaVersion !== 4 && value.schemaVersion !== 5 && value.schemaVersion !== 6) {
+    throw new DomainError('BACKUP_VERSION_UNSUPPORTED', 'Unsupported JSON backup version; versions 2 through 6 are supported');
   }
   const parsed = backupEnvelopeSchema.safeParse(value);
   if (!parsed.success) throw new DomainError('BACKUP_INVALID', `Invalid backup: ${parsed.error.message}`);
@@ -86,8 +88,30 @@ export function validateBackupEnvelope(value: unknown): BackupEnvelope {
   const data = envelope.data;
   if (envelope.schemaVersion >= 4 && !data.guidedStates) invalid('Guided state collection is required in backup versions 4 and 5');
   if (envelope.schemaVersion < 4 && data.guidedStates?.length) invalid('Guided state requires backup version 4');
-  if (envelope.catalogVersion !== 1 || data.metadata.catalogVersion !== 1 || data.metadata.schemaVersion !== envelope.schemaVersion + 1 || data.trainingMemo.schemaVersion !== 1) {
+  if (envelope.catalogVersion !== 1 || data.metadata.catalogVersion !== 1 || data.metadata.schemaVersion !== (envelope.schemaVersion === 6 ? 8 : envelope.schemaVersion + 1) || data.trainingMemo.schemaVersion !== 1) {
     throw new DomainError('BACKUP_VERSION_UNSUPPORTED', 'Unsupported catalog, metadata or memo version');
+  }
+  if (envelope.schemaVersion === 6 && !data.v8 || envelope.schemaVersion < 6 && data.v8) invalid('V8 collections require backup version 6');
+  if (data.v8) {
+    const library = data.v8;
+    const v8Plans = new Map(library.plans.map(plan => [plan.id, plan]));
+    const v8Versions = new Map(library.planVersions.map(version => [version.id, version]));
+    for (const [label, rows] of Object.entries(library)) if (Array.isArray(rows)) distinct(rows.map(row => row.id), `V8 ${label}`);
+    if (library.state.currentPlanId && !v8Plans.has(library.state.currentPlanId)) invalid('V8 current plan missing');
+    if (library.plans.some(plan => v8Versions.get(plan.currentVersionId)?.planId !== plan.id || plan.readOnly !== (plan.id !== library.state.currentPlanId))) invalid('V8 current version or read-only state invalid');
+    for (const version of library.planVersions) {
+      if (!v8Plans.has(version.planId)) invalid('V8 version parent missing');
+      distinct(version.templates.map(template => template.id), 'V8 template');
+      if (version.origin === 'migrated' && !data.planVersions.some(original => original.id === version.basedOnVersionId && original.planId === version.planId)) invalid('V8 migration source missing');
+    }
+    distinct(library.planVersions.map(version => `${version.planId}:${version.versionNumber}`), 'V8 version number');
+    for (const workout of library.workouts) {
+      const version = v8Versions.get(workout.planVersionId);
+      if (!version || workout.templateId && !version.templates.some(template => template.id === workout.templateId)) invalid('V8 workout plan or template missing');
+      validDate(workout.localDate);
+    }
+    library.activities.forEach(activity => validDate(activity.localDate));
+    if (library.state.legacyPlanIds.some(id => !data.plans.some(plan => plan.id === id))) invalid('V8 retained legacy plan missing');
   }
   for (const [label, rows] of Object.entries(data)) {
     if (Array.isArray(rows)) distinct(rows.map(row => row.id), `${label} ID`);
@@ -264,12 +288,14 @@ export function createBackupService(repo: Repository) {
       const versions = await repo.db.planVersions.toArray();
       const previousMemo = await repo.db.trainingMemo.get(1);
       return validateBackupEnvelope({
-        format: 'fitness-local', schemaVersion: 5, catalogVersion: 1, exportedAt: new Date().toISOString(),
+        format: 'fitness-local', schemaVersion: 6, catalogVersion: 1, exportedAt: new Date().toISOString(),
         data: {
           metadata, profiles: await repo.db.profiles.toArray(), plans: await repo.db.plans.toArray(), planVersions: versions,
           sessions, sets, scheduledWorkouts: await repo.db.scheduledWorkouts.toArray(), bodyWeights: await repo.db.bodyWeights.toArray(),
           aiMemoryNotes: await repo.db.aiMemoryNotes.toArray(), timers: await repo.db.timers.toArray(), mediaAssets: await repo.db.mediaAssets.toArray(),
           guidedStates: await repo.db.guidedStates.toArray(),
+          v8: { state: await repo.db.v8State.get('v8'), plans: await repo.db.v8Plans.toArray(), planVersions: await repo.db.v8PlanVersions.toArray(),
+            workouts: await repo.db.v8Workouts.toArray(), activities: await repo.db.v8Activities.toArray() },
           trainingMemo: {
             schemaVersion: 1, revision: previousMemo?.revision ?? 0, sourceRevision: metadata.dataRevision, updatedAt: new Date().toISOString(),
             sessions: sessions.map(session => ({ session, sets: sets.filter(set => set.sessionId === session.id).sort((a, b) => a.order - b.order),
@@ -304,6 +330,7 @@ export function createBackupService(repo: Repository) {
     }
     const envelope = validateBackupEnvelope(input.envelope);
     checkBackupBytes(new Blob([JSON.stringify(envelope)]).size);
+    const v8 = envelope.data.v8 ?? await prepareV8Migration(envelope.data, new Date().toISOString());
     let committedGeneration = 0;
     await repo.write(async () => {
       const before = await repo.readMetadata();
@@ -312,19 +339,21 @@ export function createBackupService(repo: Repository) {
       // Device reminder preferences and suppression ledger are not portable training facts.
       for (const table of repo.db.tables) if (table.name !== 'coachDevice') await table.clear();
       const data = envelope.data;
-      await repo.db.metadata.put({ ...data.metadata, schemaVersion: 6, revision: before.revision, dataRevision: before.dataRevision, restoreGeneration: committedGeneration, importedAt: new Date().toISOString() });
+      await repo.db.metadata.put({ ...data.metadata, schemaVersion: 8, revision: before.revision, dataRevision: before.dataRevision, restoreGeneration: committedGeneration, importedAt: new Date().toISOString() });
       await repo.db.profiles.bulkAdd(data.profiles);
       await repo.db.plans.bulkAdd(data.plans);
       await repo.db.planVersions.bulkAdd(data.planVersions);
       await repo.db.sessions.bulkAdd(data.sessions);
       await repo.db.sets.bulkAdd(data.sets);
-      await repo.db.scheduledWorkouts.bulkAdd(data.scheduledWorkouts);
+      // Retained raw durations are intentionally wider than the editable scheduling model.
+      await Dexie.currentTransaction!.table('scheduledWorkouts').bulkAdd(data.scheduledWorkouts);
       await repo.db.bodyWeights.bulkAdd(data.bodyWeights);
       await repo.db.aiMemoryNotes.bulkAdd(data.aiMemoryNotes);
       await repo.db.timers.bulkAdd(data.timers);
       await repo.db.mediaAssets.bulkAdd(data.mediaAssets);
       if (data.guidedStates) await repo.db.guidedStates.bulkAdd(data.guidedStates);
       await repo.db.trainingMemo.put(data.trainingMemo);
+      await writeV8Library(Dexie.currentTransaction!, v8);
       await synchronizeTrainingMemo(repo);
     }, input.expectedRevision);
     // Synchronous observers remove stale forms before this repository adopts the new generation.

@@ -10,7 +10,7 @@ interface LegacyPlansInput {
   plans: readonly Plan[];
   planVersions: readonly LegacyPlanVersion[];
   sessions: readonly WorkoutSession[];
-  scheduledWorkouts: readonly ScheduledWorkout[];
+  scheduledWorkouts: readonly (Omit<ScheduledWorkout, 'durationMinutes'> & { durationMinutes?: unknown })[];
   guidedStates?: readonly GuidedState[];
 }
 

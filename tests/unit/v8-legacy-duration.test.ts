@@ -28,11 +28,18 @@ describe('approved legacy duration normalization', () => {
   it('uses the median for absent and invalid slots without changing template ordering', () => {
     const durations = [90, 15, 30];
     for (const slot of [undefined, null, 0, '30', 15, 25, 121]) expect(legacyPlanMinutes(slot, durations)).toBe(30);
-    expect(legacyPlanMinutes(undefined, [40, 15, 25, 60])).toBe(32.5);
+    expect(legacyPlanMinutes(undefined, [40, 15, 25, 60])).toBe(33);
     expect(durations).toEqual([90, 15, 30]);
   });
   it('never invents a median without valid templates', () => {
     expect(() => legacyPlanMinutes(undefined, [])).toThrow('valid template durations');
     expect(() => legacyPlanMinutes(undefined, [0, 60])).toThrow('valid template durations');
+  });
+  it('rounds legacy fractional minutes before deciding whether estimation is needed', () => {
+    const estimate = vi.fn(() => 40);
+    expect(legacyTemplateMinutes(14.5, estimate)).toEqual({ minutes: 15, estimated: false });
+    expect(legacyTemplateMinutes(120.4, estimate)).toEqual({ minutes: 120, estimated: false });
+    expect(legacyTemplateMinutes(120.5, estimate)).toEqual({ minutes: 40, estimated: true });
+    expect(estimate).toHaveBeenCalledTimes(1);
   });
 });
