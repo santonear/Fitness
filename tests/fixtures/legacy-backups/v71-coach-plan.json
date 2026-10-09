@@ -1,0 +1,255 @@
+{
+  "format": "fitness-local",
+  "schemaVersion": 5,
+  "exportedAt": "2026-10-09T17:39:06.905Z",
+  "catalogVersion": 1,
+  "data": {
+    "metadata": {
+      "schemaVersion": 6,
+      "localProfileId": "adff3c5f-a2b7-4fd9-b6ce-2122083cfec7",
+      "catalogVersion": 1,
+      "revision": 37,
+      "dataRevision": 37
+    },
+    "profiles": [
+      {
+        "id": "adff3c5f-a2b7-4fd9-b6ce-2122083cfec7",
+        "createdAt": "2026-10-09T17:39:04.715Z",
+        "updatedAt": "2026-10-09T17:39:04.715Z",
+        "revision": 0,
+        "locale": "en",
+        "timeZone": "Etc/GMT-8",
+        "units": "metric"
+      }
+    ],
+    "plans": [
+      {
+        "id": "f2c4b4f2-63b7-47ba-be42-56d5ccb696ec",
+        "createdAt": "2026-10-09T17:39:06.427Z",
+        "updatedAt": "2026-10-09T17:39:06.427Z",
+        "revision": 0,
+        "name": "Reviewed synthetic coach plan",
+        "source": "ai",
+        "status": "active",
+        "currentVersionId": "b2e26484-3639-4013-8427-0d45b2a26109",
+        "startDate": "2026-10-13",
+        "scheduleTimeZone": "Etc/GMT-8",
+        "model": "date-day"
+      }
+    ],
+    "planVersions": [
+      {
+        "id": "b2e26484-3639-4013-8427-0d45b2a26109",
+        "createdAt": "2026-10-09T17:39:06.427Z",
+        "updatedAt": "2026-10-09T17:39:06.427Z",
+        "revision": 0,
+        "model": "date-day",
+        "planId": "f2c4b4f2-63b7-47ba-be42-56d5ccb696ec",
+        "versionNumber": 1,
+        "goalSnapshot": {
+          "goal": "Synthetic fixture: beginner, build strength at home with no equipment, 30 minutes"
+        },
+        "startDate": "2026-10-13",
+        "scheduleTimeZone": "Etc/GMT-8",
+        "days": [
+          {
+            "dayId": "de65034b-70a7-425a-83cd-522ce8aa9dd1",
+            "date": "2026-10-13",
+            "exercises": [
+              {
+                "exerciseId": "d16325d9-fc00-4c41-88a1-000000000003",
+                "order": 0,
+                "targetSets": [
+                  {
+                    "metricType": "reps",
+                    "reps": 8
+                  }
+                ],
+                "setTimings": [
+                  {
+                    "durationSeconds": 40,
+                    "restSeconds": 30
+                  }
+                ],
+                "notes": "Synthetic coach instruction"
+              }
+            ]
+          }
+        ],
+        "generationMetadata": {
+          "generatedAt": "2026-10-09T17:39:06.263Z"
+        }
+      }
+    ],
+    "sessions": [],
+    "sets": [],
+    "scheduledWorkouts": [
+      {
+        "id": "8d08d36d-514f-45b3-8bea-a075d91b03d2",
+        "createdAt": "2026-10-09T17:39:06.427Z",
+        "updatedAt": "2026-10-09T17:39:06.427Z",
+        "revision": 0,
+        "planVersionId": "b2e26484-3639-4013-8427-0d45b2a26109",
+        "plannedDayId": "de65034b-70a7-425a-83cd-522ce8aa9dd1",
+        "originalDate": "2026-10-13",
+        "scheduledDate": "2026-10-13",
+        "startTime": "12:00",
+        "durationMinutes": 30,
+        "status": "pending"
+      }
+    ],
+    "bodyWeights": [],
+    "trainingMemo": {
+      "schemaVersion": 1,
+      "revision": 0,
+      "updatedAt": "2026-10-09T17:39:06.907Z",
+      "sourceRevision": 37,
+      "sessions": []
+    },
+    "aiMemoryNotes": [],
+    "timers": [],
+    "mediaAssets": [],
+    "guidedStates": [
+      {
+        "id": "guided",
+        "revision": 36,
+        "onboarding": {
+          "id": "b4eb87b1-4bb2-4b43-af70-552e7ab781f1",
+          "step": 12,
+          "answers": {
+            "biologicalSex": {
+              "status": "skipped"
+            },
+            "age": {
+              "status": "answered",
+              "value": 30
+            },
+            "heightCm": {
+              "status": "skipped"
+            },
+            "weightKg": {
+              "status": "skipped"
+            },
+            "waistCm": {
+              "status": "skipped"
+            },
+            "goal": {
+              "status": "skipped"
+            },
+            "experience": {
+              "status": "skipped"
+            },
+            "location": {
+              "status": "skipped"
+            },
+            "equipment": {
+              "status": "skipped"
+            },
+            "safety": {
+              "status": "skipped"
+            },
+            "schedule": {
+              "status": "skipped"
+            },
+            "preferences": {
+              "status": "skipped"
+            }
+          },
+          "updatedAt": "2026-10-09T17:39:05.622Z",
+          "completed": true,
+          "version": 4,
+          "deferred": false
+        },
+        "programs": [],
+        "candidates": [
+          {
+            "id": "86765432-1234-4234-8234-123456789abc",
+            "name": "Synthetic coach fixture",
+            "goal": "Synthetic fixture: beginner, build strength at home with no equipment, 30 minutes",
+            "startDate": "2026-10-13",
+            "endDate": "2026-10-13",
+            "timeZone": "Etc/GMT-8",
+            "days": [
+              {
+                "date": "2026-10-13",
+                "startTime": "12:00",
+                "durationMinutes": 30,
+                "exercises": [
+                  {
+                    "exerciseId": "d16325d9-fc00-4c41-88a1-000000000003",
+                    "order": 0,
+                    "targetSets": [
+                      {
+                        "metricType": "reps",
+                        "reps": 8
+                      }
+                    ],
+                    "setTimings": [
+                      {
+                        "durationSeconds": 40,
+                        "restSeconds": 30
+                      }
+                    ],
+                    "notes": "Synthetic coach instruction"
+                  }
+                ]
+              }
+            ],
+            "explanation": "Fixed local mock response, not a real model recommendation.",
+            "createdAt": "2026-10-09T17:39:06.263Z",
+            "restoreGeneration": 0,
+            "inputSnapshot": "{\"adultConfirmed\":true,\"confirmedSummary\":\"Synthetic mock: beginner bodyweight training at home for 30 minutes.\",\"conversationId\":\"178481f4-9626-4a02-939a-8058c8084d32\",\"dates\":[\"2026-10-13\"],\"endDate\":\"2026-10-13\",\"locale\":\"en\",\"onboardingVersion\":4,\"purpose\":\"program\",\"restoreGeneration\":0,\"schedule\":[{\"date\":\"2026-10-13\",\"durationMinutes\":30,\"startTime\":\"12:00\"}],\"scope\":{\"conditions\":{\"conversation\":[{\"content\":\"Synthetic fixture: beginner, build strength at home with no equipment, 30 minutes\",\"role\":\"user\"},{\"content\":\"Synthetic mock: beginner bodyweight training at home for 30 minutes.\",\"role\":\"assistant\"}],\"dailyFocus\":[{\"date\":\"2026-10-13\",\"focus\":\"\"}],\"equipment\":\"None\",\"experience\":\"Beginner\",\"otherConditions\":\"\",\"restrictions\":\"\",\"sessionMinutes\":30,\"usualStartTime\":\"19:00\",\"venue\":\"Home\"},\"goal\":\"Synthetic fixture: beginner, build strength at home with no equipment, 30 minutes\"},\"startDate\":\"2026-10-13\",\"timeZone\":\"Etc/GMT-8\",\"version\":\"guided-dialogue-v1\"}",
+            "onboardingSnapshot": "{\"biologicalSex\":{\"status\":\"skipped\"},\"age\":{\"status\":\"answered\",\"value\":30},\"heightCm\":{\"status\":\"skipped\"},\"weightKg\":{\"status\":\"skipped\"},\"waistCm\":{\"status\":\"skipped\"},\"goal\":{\"status\":\"skipped\"},\"experience\":{\"status\":\"skipped\"},\"location\":{\"status\":\"skipped\"},\"equipment\":{\"status\":\"skipped\"},\"safety\":{\"status\":\"skipped\"},\"schedule\":{\"status\":\"skipped\"},\"preferences\":{\"status\":\"skipped\"}}",
+            "profileSnapshot": "{\"timeZone\":\"Etc/GMT-8\"}"
+          }
+        ],
+        "messages": [
+          {
+            "id": "79e376d9-088b-4f97-920a-0b2be7acef28",
+            "conversationId": "178481f4-9626-4a02-939a-8058c8084d32",
+            "role": "user",
+            "content": "Synthetic fixture: beginner, build strength at home with no equipment, 30 minutes",
+            "createdAt": "2026-10-09T17:39:05.934Z",
+            "requestId": "3c850283-b6de-4d52-b397-2c557921d131"
+          },
+          {
+            "id": "edaa79b7-61e9-4af1-b988-87ea16016bd4",
+            "conversationId": "178481f4-9626-4a02-939a-8058c8084d32",
+            "role": "assistant",
+            "content": "Synthetic mock: beginner bodyweight training at home for 30 minutes.",
+            "createdAt": "2026-10-09T17:39:05.934Z",
+            "requestId": "3c850283-b6de-4d52-b397-2c557921d131"
+          },
+          {
+            "id": "ec2e4c2f-1b2f-4a08-97b9-0173ef9b7e25",
+            "conversationId": "178481f4-9626-4a02-939a-8058c8084d32",
+            "role": "user",
+            "content": "Synthetic fixture: beginner, build strength at home with no equipment, 30 minutes",
+            "createdAt": "2026-10-09T17:39:06.287Z",
+            "requestId": "40f902cb-26bd-4e03-8f8a-a83a7d06406a"
+          },
+          {
+            "id": "b43006b6-a6ac-4794-bcd9-6e05b098b00d",
+            "conversationId": "178481f4-9626-4a02-939a-8058c8084d32",
+            "role": "assistant",
+            "content": "Synthetic coach fixture\nFixed local mock response, not a real model recommendation.",
+            "createdAt": "2026-10-09T17:39:06.287Z",
+            "candidateId": "86765432-1234-4234-8234-123456789abc",
+            "requestId": "40f902cb-26bd-4e03-8f8a-a83a7d06406a"
+          }
+        ],
+        "events": [
+          {
+            "id": "bb0f73c1-274a-4bda-8f6e-177e975ffc30",
+            "createdAt": "2026-10-09T17:39:06.432Z",
+            "action": "created",
+            "after": "independent-candidate:86765432-1234-4234-8234-123456789abc",
+            "reason": "[\"f2c4b4f2-63b7-47ba-be42-56d5ccb696ec\"]"
+          }
+        ],
+        "observations": [],
+        "invitations": []
+      }
+    ]
+  }
+}
