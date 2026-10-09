@@ -1,0 +1,198 @@
+{
+  "$schema": "fitness-design-tokens-v8",
+  "version": "8.0.0",
+  "updated": "2026-10-09",
+  "note": "唯一的设计变量来源。页面与通用组件只能引用这里的语义名；主题差异只在 themes 中定义。shared 中的值所有主题共用，不可被主题覆盖（除非 themes.<id>.overrides 显式列出）。",
+  "defaultTheme": "qingci",
+  "shared": {
+    "space": { "s1": "4px", "s2": "8px", "s3": "12px", "s4": "16px", "s5": "24px", "s6": "32px", "s7": "48px", "s8": "64px" },
+    "type": { "t1": "12px", "t2": "13px", "t3": "15px", "t4": "17px", "t5": "22px", "t6": "28px", "t7": "40px", "t8": "72px" },
+    "lineHeight": { "tight": 1.2, "body": 1.7, "reading": 1.85 },
+    "touch": { "min": "44px", "primaryAction": "56px", "workoutAction": "72px" },
+    "motion": {
+      "pressScale": 0.96,
+      "pressDuration": "420ms",
+      "springEasing": "cubic-bezier(.18,1.36,.3,1)",
+      "morphDuration": "520ms",
+      "morphEasing": "cubic-bezier(.14,.82,.24,1)",
+      "fadeDuration": "220ms",
+      "fadeEasing": "cubic-bezier(.2,.7,.2,1)",
+      "breathCycle": "6s",
+      "ringCycle": "14s",
+      "reducedMotion": "所有持续动画停止；按压与变形改为 120ms 透明度过渡"
+    },
+    "layout": { "mobileMax": "480px", "desktopRail": "88px", "desktopMain": "560px", "desktopBreakpoint": "960px" }
+  },
+  "themes": {
+    "qingci": {
+      "name": { "zh": "青瓷", "en": "Celadon" },
+      "tagline": { "zh": "涟漪与呼吸，温润安静", "en": "Ripples and breath" },
+      "colorScheme": "light",
+      "color": {
+        "bg": "#DDE6E0", "bgGradient": "radial-gradient(120% 60% at 50% 0%, #E6EEE9 0%, #DDE6E0 55%, #D5E0D9 100%)",
+        "surface": "#F2F5F1", "surface2": "#E6EDE8",
+        "ink": "#1E2B26", "inkMuted": "#4F5F58",
+        "line": "#C8D5CD",
+        "primary": "#3E6B5C", "onPrimary": "#F2F5F1",
+        "signature": "#8FB3A5", "signature2": "#C7A867",
+        "done": "#3E6B5C", "onDone": "#F2F5F1",
+        "attention": "#765822",
+        "aiVoice": "#F2F5F1",
+        "focus": "#1E2B26",
+        "scrim": "rgba(30,43,38,.28)"
+      },
+      "font": {
+        "display": "\"Noto Serif SC\", \"Songti SC\", \"STSong\", \"SimSun\", serif",
+        "body": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+        "num": "\"Cormorant Garamond\", \"Noto Serif SC\", serif",
+        "weightBody": 300, "weightDisplay": 400, "weightNum": 300
+      },
+      "shape": { "control": "999px", "panel": "28px", "chip": "24px", "border": "1px" },
+      "tracking": { "display": "0.08em", "body": "0.04em" },
+      "material": {
+        "surfaceGradient": "linear-gradient(180deg,#FFFFFF 0%,#F2F5F1 100%)",
+        "primaryGradient": "linear-gradient(180deg,#4A7A69 0%,#3E6B5C 55%,#355E50 100%)",
+        "highlight": "inset 0 1px 0 rgba(255,255,255,.9)",
+        "elevation1": "0 6px 14px -8px rgba(30,60,48,.35)",
+        "elevation2": "0 18px 40px -22px rgba(30,60,48,.45)",
+        "elevation3": "0 30px 60px -24px rgba(30,60,48,.55)",
+        "pressInset": "inset 0 4px 12px rgba(20,48,38,.32)",
+        "texture": "none"
+      },
+      "effects": {
+        "ring": "conic-gradient(from var(--ring-a), rgba(143,179,165,0) 0deg, #8FB3A5 70deg, #C7A867 120deg, rgba(143,179,165,0) 180deg, rgba(143,179,165,.35) 270deg, rgba(143,179,165,0) 360deg)",
+        "ringWidth": "1.5px",
+        "glow": "rgba(62,107,92,.45)", "glowBlur": "22px",
+        "pressStyle": "scale"
+      }
+    },
+    "liubai": {
+      "name": { "zh": "留白", "en": "Blank" },
+      "tagline": { "zh": "宋体竖排、墨线与朱印", "en": "Ink, space and seal" },
+      "colorScheme": "light",
+      "color": {
+        "bg": "#ECEEEA", "bgGradient": "#ECEEEA",
+        "surface": "#F4F5F2", "surface2": "#E3E6E1",
+        "ink": "#1C201E", "inkMuted": "#5F6662",
+        "line": "#C9CEC9",
+        "primary": "#1C201E", "onPrimary": "#ECEEEA",
+        "signature": "#A8372A", "signature2": "#1C201E",
+        "done": "#A8372A", "onDone": "#F4F2EC",
+        "attention": "#9A5B1E",
+        "aiVoice": "transparent",
+        "focus": "#1C201E",
+        "scrim": "rgba(28,32,30,.24)"
+      },
+      "font": {
+        "display": "\"Noto Serif SC\", \"Songti SC\", \"STSong\", \"SimSun\", serif",
+        "body": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+        "num": "\"Noto Sans SC\", sans-serif",
+        "weightBody": 300, "weightDisplay": 400, "weightNum": 200
+      },
+      "shape": { "control": "2px", "panel": "4px", "chip": "2px", "border": "1px" },
+      "tracking": { "display": "0.16em", "body": "0.04em" },
+      "material": {
+        "surfaceGradient": "#F4F5F2",
+        "primaryGradient": "#1C201E",
+        "highlight": "none",
+        "elevation1": "0 1px 0 #C9CEC9",
+        "elevation2": "0 14px 30px -24px rgba(28,32,30,.45)",
+        "elevation3": "0 24px 48px -28px rgba(28,32,30,.5)",
+        "pressInset": "inset 0 3px 10px rgba(0,0,0,.35)",
+        "texture": "宣纸纹理：SVG 噪点，透明度 0.035，铺满 bg"
+      },
+      "effects": {
+        "ring": "conic-gradient(from var(--ring-a), rgba(28,32,30,0) 0deg, rgba(28,32,30,.55) 50deg, #A8372A 80deg, rgba(28,32,30,0) 120deg, rgba(28,32,30,0) 360deg)",
+        "ringWidth": "1px",
+        "glow": "rgba(28,32,30,.28)", "glowBlur": "26px",
+        "pressStyle": "scale"
+      }
+    },
+    "jingshe": {
+      "name": { "zh": "静奢", "en": "Quiet" },
+      "tagline": { "zh": "炭黑、骨白与香槟，深色", "en": "Charcoal and champagne" },
+      "colorScheme": "dark",
+      "color": {
+        "bg": "#191A18", "bgGradient": "radial-gradient(130% 70% at 50% 0%, #22231F 0%, #191A18 60%, #141513 100%)",
+        "surface": "#222320", "surface2": "#2C2D29",
+        "ink": "#EDE8DF", "inkMuted": "#8D8A83",
+        "line": "#34352F",
+        "primary": "#C8B48A", "onPrimary": "#191A18",
+        "signature": "#C8B48A", "signature2": "#EDE8DF",
+        "done": "#C8B48A", "onDone": "#191A18",
+        "attention": "#D9A35E",
+        "aiVoice": "#222320",
+        "focus": "#EDE8DF",
+        "scrim": "rgba(0,0,0,.5)"
+      },
+      "font": {
+        "display": "\"Noto Sans SC\", \"PingFang SC\", sans-serif",
+        "body": "\"Noto Sans SC\", \"PingFang SC\", sans-serif",
+        "num": "\"Jost\", \"Noto Sans SC\", sans-serif",
+        "weightBody": 300, "weightDisplay": 300, "weightNum": 200
+      },
+      "shape": { "control": "999px", "panel": "20px", "chip": "999px", "border": "1px" },
+      "tracking": { "display": "0.16em", "body": "0.06em" },
+      "material": {
+        "surfaceGradient": "linear-gradient(180deg,#262724 0%,#222320 100%)",
+        "primaryGradient": "linear-gradient(115deg,#B9A57B 0%,#E4D3AD 45%,#C8B48A 60%,#AE9A70 100%)",
+        "highlight": "inset 0 1px 0 rgba(255,255,255,.06)",
+        "elevation1": "0 8px 18px -10px rgba(0,0,0,.6)",
+        "elevation2": "0 22px 44px -22px rgba(0,0,0,.7)",
+        "elevation3": "0 32px 64px -24px rgba(0,0,0,.8)",
+        "pressInset": "inset 0 4px 12px rgba(0,0,0,.45)",
+        "texture": "暗角：bg 四周 radial 渐暗"
+      },
+      "effects": {
+        "ring": "conic-gradient(from var(--ring-a), rgba(200,180,138,0) 0deg, #E4D3AD 60deg, rgba(200,180,138,0) 140deg, rgba(200,180,138,.25) 250deg, rgba(200,180,138,0) 360deg)",
+        "ringWidth": "1px",
+        "glow": "rgba(200,180,138,.22)", "glowBlur": "26px",
+        "pressStyle": "scale"
+      }
+    },
+    "zhuangse": {
+      "name": { "zh": "撞色", "en": "Bold" },
+      "tagline": { "zh": "新野兽派，粗线、硬投影与色块", "en": "Neo-brutalist blocks" },
+      "colorScheme": "light",
+      "color": {
+        "bg": "#FAF6EC", "bgGradient": "#FAF6EC",
+        "surface": "#FFFFFF", "surface2": "#F1ECE0",
+        "ink": "#000000", "inkMuted": "#3D3A33",
+        "line": "#000000",
+        "primary": "#2340FF", "onPrimary": "#FFFFFF",
+        "signature": "#FFD43B", "signature2": "#FF5533",
+        "done": "#6EE7B7", "onDone": "#000000",
+        "attention": "#FF5533",
+        "aiVoice": "#E4DBFF",
+        "focus": "#2340FF",
+        "scrim": "rgba(0,0,0,.35)"
+      },
+      "font": {
+        "display": "\"Noto Sans SC\", \"PingFang SC\", sans-serif",
+        "body": "\"Noto Sans SC\", \"PingFang SC\", sans-serif",
+        "num": "\"Archivo\", \"Noto Sans SC\", sans-serif",
+        "weightBody": 500, "weightDisplay": 900, "weightNum": 900
+      },
+      "shape": { "control": "12px", "panel": "16px", "chip": "999px", "border": "2.5px" },
+      "tracking": { "display": "0", "body": "0" },
+      "material": {
+        "surfaceGradient": "#FFFFFF",
+        "primaryGradient": "#2340FF",
+        "highlight": "none",
+        "elevation1": "3px 3px 0 #000000",
+        "elevation2": "4px 4px 0 #000000",
+        "elevation3": "8px 8px 0 #000000",
+        "pressInset": "inset 0 3px 0 rgba(0,0,0,.25)",
+        "texture": "none"
+      },
+      "effects": {
+        "ring": "conic-gradient(from var(--ring-a), #000000 0 25%, #FFD43B 0 50%, #000000 0 75%, #FF5533 0 100%)",
+        "ringWidth": "4px",
+        "glow": "none", "glowBlur": "0",
+        "pressStyle": "sink",
+        "breath": "硬投影 5px↔9px 往复，2.8s"
+      },
+      "extra": { "mint": "#6EE7B7", "butter": "#FFD43B", "tomato": "#FF5533", "cobalt": "#2340FF", "lilac": "#E4DBFF" }
+    }
+  }
+}

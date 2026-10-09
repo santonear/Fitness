@@ -2,7 +2,7 @@ name: Local MVP checks
 
 on:
   push:
-    branches: [main]
+    branches: [main, v8/integration]
   pull_request:
 
 permissions:
@@ -25,6 +25,8 @@ jobs:
           node-version: '24'
           package-manager-cache: false
       - run: npm ci
+      - run: node --test tools/v8/check.test.mjs
+      - run: node tools/v8/check.mjs
       - run: npm run check
       - run: node tools/check-coach-client-boundary.mjs
       - name: Collect all browser suites before installing browsers
