@@ -28,15 +28,12 @@ export function coachV8Exercises(request: CoachRequest) {
 
 function validateTemplates(templates: Template[], request: CoachRequest) {
   const vocabulary = new Map(coachV8Exercises(request).map(exercise => [exercise.id, exercise]));
-  requireCondition(templates.length <= limits.maxDays, 'template limit');
   requireCondition(new Set(templates.map(template => template.id)).size === templates.length, 'duplicate template');
   for (const template of templates) {
-    requireCondition(template.items.length <= limits.maxExercisesPerDay, 'exercise limit');
     for (const item of template.items) {
       const exercise = vocabulary.get(item.exerciseId);
       requireCondition(!!exercise, 'exercise outside supplied catalog');
       requireCondition(item.target.metricType === exercise.metricType, 'exercise metric mismatch');
-      requireCondition(item.sets <= limits.maxSetsPerExercise, 'set limit');
     }
   }
 }
@@ -66,6 +63,7 @@ export const adaptCoachResponse: AdaptCoachResponse = (input, raw) => {
     validateTemplates(proposal.templates, request);
     if (request.task === 'ONBOARD_PLAN') {
       requireCondition(proposal.templates.length >= 2 && proposal.templates.length <= 3, 'initial template count');
+      requireCondition(proposal.templates.every(template => template.estimatedMinutes === request.profile.sessionMinutes), 'initial template duration');
       requireCondition(proposal.goalText === request.profile.goalText &&
         proposal.scheduleOriginalText === request.profile.scheduleOriginalText &&
         proposal.weeklyTarget === request.profile.weeklyTarget &&

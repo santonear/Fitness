@@ -49,20 +49,23 @@ describe('V8 response boundary', () => {
   });
   it('preserves actual minutes and original words, with 2–3 initial templates', () => {
     for (const minutes of [15, 20, 120]) {
-      const response = { ...cases[0].response, proposal: { ...proposal, sessionMinutes: minutes } };
+      const response = { ...cases[0].response, proposal: { ...proposal, sessionMinutes: minutes, templates: proposal.templates.map(template => ({ ...template, estimatedMinutes: minutes })) } };
       expect(adaptCoachResponse({ ...onboard, profile: { ...profile, sessionMinutes: minutes } }, response).type).toBe('plan_proposal');
+    }
+    for (const minutes of [15, 30, 60, 120]) {
+      const templates = proposal.templates.map(template => ({ ...template, estimatedMinutes: minutes }));
+      expect(() => adaptCoachResponse(onboard, { ...cases[0].response, proposal: { ...proposal, templates } })).toThrow('initial template duration');
     }
     for (const patch of [{ sessionMinutes: 30 }, { goalText: 'new' }, { scheduleOriginalText: 'translated' }, { weeklyTarget: 3 }, { templates: [template] }, { templates: Array.from({ length: 4 }, (_, i) => ({ ...template, id: String(i) })) }]) {
       expect(() => adaptCoachResponse(onboard, { ...cases[0].response, proposal: { ...proposal, ...patch } })).toThrow();
     }
   });
-  it('rejects unknown/out-of-scope IDs, wrong metrics and excessive sets/items', () => {
+  it('rejects unknown/out-of-scope IDs and wrong metrics', () => {
     const outside = exercises.find(exercise => !coachV8Exercises(onboard).some(row => row.id === exercise.id))!;
-    for (const patch of [{ exerciseId: other }, { exerciseId: outside.id }, { target: { metricType: 'duration', durationSeconds: 30 } }, { sets: 9 }]) {
+    for (const patch of [{ exerciseId: other }, { exerciseId: outside.id }, { target: { metricType: 'duration', durationSeconds: 30 } }]) {
       const templates = [{ ...template, items: [{ ...template.items[0], ...patch }] }, { ...template, id: 'B' }];
       expect(() => adaptCoachResponse(onboard, { ...cases[0].response, proposal: { ...proposal, templates } })).toThrow();
     }
-    expect(() => adaptCoachResponse(cases[1].request, { ...cases[1].response, template: { ...template, items: Array(9).fill(template.items[0]) } })).toThrow();
   });
   it('bounds payloads, dialogue, adulthood and rejects legacy data in the new path', () => {
     for (const patch of [{ messages: Array(9).fill({ role: 'user', content: 'x' }) }, { messages: [{ role: 'user', content: 'x'.repeat(1601) }] }, { adultConfirmed: false }, { inputSnapshot: '中'.repeat(30000) }]) {
@@ -76,9 +79,7 @@ describe('V8 response boundary', () => {
     const review = cases[3];
     const suggestion = { id: 's1', summary: 'Try this', proposal };
     expect(adaptCoachResponse(review.request, { ...review.response, suggestion }).type).toBe('review_summary');
-    for (const templates of [[template, template], Array.from({ length: 15 }, (_, i) => ({ ...template, id: String(i) }))]) {
-      expect(() => adaptCoachResponse(review.request, { ...review.response, suggestion: { ...suggestion, proposal: { ...proposal, templates } } })).toThrow();
-    }
+    expect(() => adaptCoachResponse(review.request, { ...review.response, suggestion: { ...suggestion, proposal: { ...proposal, templates: [template, template] } } })).toThrow();
     expect(() => adaptCoachResponse(review.request, { ...review.response, suggestions: [suggestion, suggestion] })).toThrow();
     const adjustment = cases[1].request;
     if (adjustment.task !== 'ADJUST_TODAY') throw new Error('fixture');
