@@ -1,13 +1,13 @@
 {
   "kind": "synthetic-data-entered-through-legacy-ui",
   "modelCalls": 0,
-  "generatedAt": "2026-10-09T17:05:28.878Z",
+  "generatedAt": "2026-10-09T17:07:39.113Z",
   "cases": [
     {
       "version": "v5",
       "sourceCommit": "dc76b501bd2fee9ad6920687e77cd79717c62b7c",
       "file": "v5-onboarding.json",
-      "sha256": "608a0b9704ac3ab84055756a6f923f9ba768c9dad36da4cc846a23d60f387e2b",
+      "sha256": "fdb1349dab4bd389b2a9f3e714e4c912097f40ef81062633e88b59155c654163",
       "schemaVersion": 5,
       "coverage": [
         "onboarding-only"
@@ -18,8 +18,19 @@
     {
       "version": "v5",
       "sourceCommit": "dc76b501bd2fee9ad6920687e77cd79717c62b7c",
+      "file": "v5-plans-weight.json",
+      "sha256": "bd87cc4f838b8fe9d0728d74de5168d120694bec4196a7a51e41391832649cb0",
+      "coverage": [
+        "past-and-future-date-plans",
+        "body-weight"
+      ],
+      "modelCalls": 0
+    },
+    {
+      "version": "v5",
+      "sourceCommit": "dc76b501bd2fee9ad6920687e77cd79717c62b7c",
       "file": "v5-onboarding-restored.json",
-      "sha256": "73c6d11f80ec2b65bc78899c7e101af46ec8847854e0791b4839ff72f9225a9b",
+      "sha256": "12d99ecd63391776c0bb7290f9adccf3cec0c9911c9b4ff7ee2e4047f46e2db8",
       "coverage": [
         "restore-old-export-then-reexport"
       ],
@@ -29,7 +40,7 @@
       "version": "v62",
       "sourceCommit": "e94c59f37cdd03ef6f8fdcd277ae96e63b8d31ec",
       "file": "v62-onboarding.json",
-      "sha256": "38298b9d0d40eb05357ef6c5b96f9650b448d2e9adf4ef63137b6147235f653a",
+      "sha256": "a451b4a59e817cacd11c915bd9d8c43c37bd533bc6f9c36fdc8ff15dee556e14",
       "schemaVersion": 5,
       "coverage": [
         "onboarding-only"
@@ -40,8 +51,20 @@
     {
       "version": "v62",
       "sourceCommit": "e94c59f37cdd03ef6f8fdcd277ae96e63b8d31ec",
+      "file": "v62-plans-weight.json",
+      "sha256": "250537439be07f1b0834c82732860eb9ca7f53207f049f7834530229b6afb911",
+      "coverage": [
+        "past-and-future-date-plans",
+        "body-weight",
+        "device-reminder-preferences-not-exported"
+      ],
+      "modelCalls": 0
+    },
+    {
+      "version": "v62",
+      "sourceCommit": "e94c59f37cdd03ef6f8fdcd277ae96e63b8d31ec",
       "file": "v62-onboarding-restored.json",
-      "sha256": "8bf160c6408ee5536708fc55a5eddf5a7dd24dbc6aa8a5af73814c0b87a11120",
+      "sha256": "960ca101e8434786fddeeaa89e1671488d3b6385f2bb6b165360d8256852e98c",
       "coverage": [
         "restore-old-export-then-reexport"
       ],
@@ -51,7 +74,7 @@
       "version": "v71",
       "sourceCommit": "9d2a2120e85fbe33e025734ee1ce5433fe0ce92c",
       "file": "v71-onboarding.json",
-      "sha256": "f81e79bdf144af161f5ffa99c4f577e45014de84ef0e582dfc081f73ac018545",
+      "sha256": "946b5ea6469f2830f2eb26612965cb1617d735b8a5f9a6a2920b83ab09af8d15",
       "schemaVersion": 5,
       "coverage": [
         "onboarding-only"
@@ -62,8 +85,20 @@
     {
       "version": "v71",
       "sourceCommit": "9d2a2120e85fbe33e025734ee1ce5433fe0ce92c",
+      "file": "v71-plans-weight.json",
+      "sha256": "a3f783df690da24288f88b906277b4604902cda096fbf6671227d2c8f650519a",
+      "coverage": [
+        "past-and-future-date-plans",
+        "body-weight",
+        "device-reminder-preferences-not-exported"
+      ],
+      "modelCalls": 0
+    },
+    {
+      "version": "v71",
+      "sourceCommit": "9d2a2120e85fbe33e025734ee1ce5433fe0ce92c",
       "file": "v71-onboarding-restored.json",
-      "sha256": "e9a7071274ed90467cd2a5eae369b8b3c0c3a844486247baf22c4576ef6c9fa7",
+      "sha256": "9558d38d1bc8566ae0ae02289039550d92c5ad69041815ca5bcf4a3f490183b3",
       "coverage": [
         "restore-old-export-then-reexport"
       ],

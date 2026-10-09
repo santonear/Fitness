@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { execFileSync, spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
+import { enterMixedData } from './mixed-ui.mjs';
 
 // Run against unmodified, isolated legacy Vite servers. No DB/service writes.
 const output = fileURLToPath(new URL('./', import.meta.url));
@@ -52,6 +53,14 @@ try {
     if (exported.data.guidedStates.length !== 1 || exported.data.sessions.length !== 0) throw Error('Unexpected onboarding fixture');
     await page.screenshot({ path: resolve(output, `${version}-onboarding-export.png`) });
     manifest.cases.push({ version, sourceCommit: execFileSync('git', ['rev-parse', commit], { encoding: 'utf8' }).trim(), file: filename, sha256: createHash('sha256').update(bytes).digest('hex'), schemaVersion: exported.schemaVersion, coverage: ['onboarding-only'], mock: 'API unavailable; no generated plans', browser: browser.version() });
+    const sourceCommit = manifest.cases.at(-1).sourceCommit;
+    await enterMixedData(page, base, version);
+    const mixedDownload = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'Export JSON backup', exact: true }).click();
+    const mixedName = `${version}-plans-weight.json`;
+    await (await mixedDownload).saveAs(resolve(output, mixedName));
+    const mixedBytes = await readFile(resolve(output, mixedName));
+    manifest.cases.push({ version, sourceCommit, file: mixedName, sha256: createHash('sha256').update(mixedBytes).digest('hex'), coverage: ['past-and-future-date-plans', 'body-weight', ...(version === 'v5' ? [] : ['device-reminder-preferences-not-exported'])], modelCalls: 0 });
     await context.close();
     const restoreContext = await browser.newContext({ locale: 'en-US' });
     const restorePage = await restoreContext.newPage();
@@ -78,7 +87,7 @@ try {
     const restored = JSON.parse(restoredBytes.toString());
     expect(restored.data.guidedStates).toEqual(exported.data.guidedStates);
     expect(restored.data.profiles).toEqual(exported.data.profiles);
-    manifest.cases.push({ version, sourceCommit: manifest.cases.at(-1).sourceCommit, file: reexportName, sha256: createHash('sha256').update(restoredBytes).digest('hex'), coverage: ['restore-old-export-then-reexport'], original: filename });
+    manifest.cases.push({ version, sourceCommit, file: reexportName, sha256: createHash('sha256').update(restoredBytes).digest('hex'), coverage: ['restore-old-export-then-reexport'], original: filename });
     await restoreContext.close();
     console.log(`${version}: UI export verified`);
   }

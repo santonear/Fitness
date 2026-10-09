@@ -1,0 +1,249 @@
+{
+  "format": "fitness-local",
+  "schemaVersion": 5,
+  "exportedAt": "2026-10-09T17:07:49.353Z",
+  "catalogVersion": 1,
+  "data": {
+    "metadata": {
+      "schemaVersion": 6,
+      "localProfileId": "8b0fe78b-760b-4cd9-8bc3-e76cbc8a9b3a",
+      "catalogVersion": 1,
+      "revision": 19,
+      "dataRevision": 19
+    },
+    "profiles": [
+      {
+        "id": "8b0fe78b-760b-4cd9-8bc3-e76cbc8a9b3a",
+        "createdAt": "2026-10-09T17:07:45.697Z",
+        "updatedAt": "2026-10-09T17:07:45.697Z",
+        "revision": 0,
+        "locale": "en",
+        "timeZone": "Etc/GMT-8",
+        "units": "metric"
+      }
+    ],
+    "plans": [
+      {
+        "id": "2a2b9a90-330e-4e94-96a7-cccd2a080234",
+        "createdAt": "2026-10-09T17:07:47.834Z",
+        "updatedAt": "2026-10-09T17:07:47.834Z",
+        "revision": 0,
+        "name": "Synthetic future plan",
+        "source": "manual",
+        "status": "active",
+        "currentVersionId": "517c9e90-abff-4bdb-bce4-e987ed22a0ad",
+        "startDate": "2026-10-31",
+        "scheduleTimeZone": "Etc/GMT-8",
+        "model": "date-day"
+      },
+      {
+        "id": "e24913de-3895-4cb9-a789-a9e470ff1eb0",
+        "createdAt": "2026-10-09T17:07:47.829Z",
+        "updatedAt": "2026-10-09T17:07:47.829Z",
+        "revision": 0,
+        "name": "Synthetic past plan",
+        "source": "manual",
+        "status": "active",
+        "currentVersionId": "01957345-df28-47d4-8687-736f96e12baf",
+        "startDate": "2026-10-01",
+        "scheduleTimeZone": "Etc/GMT-8",
+        "model": "date-day"
+      }
+    ],
+    "planVersions": [
+      {
+        "id": "01957345-df28-47d4-8687-736f96e12baf",
+        "createdAt": "2026-10-09T17:07:47.829Z",
+        "updatedAt": "2026-10-09T17:07:47.829Z",
+        "revision": 0,
+        "model": "date-day",
+        "planId": "e24913de-3895-4cb9-a789-a9e470ff1eb0",
+        "versionNumber": 1,
+        "goalSnapshot": {
+          "goal": ""
+        },
+        "startDate": "2026-10-01",
+        "scheduleTimeZone": "Etc/GMT-8",
+        "days": [
+          {
+            "dayId": "9362e5d4-ca96-48f3-87f5-8311d758f6f3",
+            "date": "2026-10-01",
+            "exercises": [
+              {
+                "exerciseId": "d16325d9-fc00-4c41-88a1-000000000003",
+                "order": 0,
+                "targetSets": [
+                  {
+                    "metricType": "reps",
+                    "reps": 10
+                  }
+                ],
+                "setTimings": [
+                  {
+                    "durationSeconds": 30,
+                    "restSeconds": 60
+                  }
+                ],
+                "notes": "Synthetic preserved instruction"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "517c9e90-abff-4bdb-bce4-e987ed22a0ad",
+        "createdAt": "2026-10-09T17:07:47.834Z",
+        "updatedAt": "2026-10-09T17:07:47.834Z",
+        "revision": 0,
+        "model": "date-day",
+        "planId": "2a2b9a90-330e-4e94-96a7-cccd2a080234",
+        "versionNumber": 1,
+        "goalSnapshot": {
+          "goal": ""
+        },
+        "startDate": "2026-10-31",
+        "scheduleTimeZone": "Etc/GMT-8",
+        "days": [
+          {
+            "dayId": "47d40318-cd6c-469f-adb6-b82b05079589",
+            "date": "2026-10-31",
+            "exercises": [
+              {
+                "exerciseId": "d16325d9-fc00-4c41-88a1-000000000003",
+                "order": 0,
+                "targetSets": [
+                  {
+                    "metricType": "reps",
+                    "reps": 10
+                  }
+                ],
+                "setTimings": [
+                  {
+                    "durationSeconds": 30,
+                    "restSeconds": 60
+                  }
+                ],
+                "notes": "Synthetic preserved instruction"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "sessions": [],
+    "sets": [],
+    "scheduledWorkouts": [
+      {
+        "id": "202dfa30-5d65-4823-be72-23f5e0b481db",
+        "createdAt": "2026-10-09T17:07:47.829Z",
+        "updatedAt": "2026-10-09T17:07:47.829Z",
+        "revision": 0,
+        "planVersionId": "01957345-df28-47d4-8687-736f96e12baf",
+        "plannedDayId": "9362e5d4-ca96-48f3-87f5-8311d758f6f3",
+        "originalDate": "2026-10-01",
+        "scheduledDate": "2026-10-01",
+        "startTime": "14:00",
+        "durationMinutes": 30,
+        "status": "pending"
+      },
+      {
+        "id": "3ff5806f-d052-47bf-ad54-1b62e9ee6300",
+        "createdAt": "2026-10-09T17:07:47.834Z",
+        "updatedAt": "2026-10-09T17:07:47.834Z",
+        "revision": 0,
+        "planVersionId": "517c9e90-abff-4bdb-bce4-e987ed22a0ad",
+        "plannedDayId": "47d40318-cd6c-469f-adb6-b82b05079589",
+        "originalDate": "2026-10-31",
+        "scheduledDate": "2026-10-31",
+        "startTime": "14:00",
+        "durationMinutes": 30,
+        "status": "pending"
+      }
+    ],
+    "bodyWeights": [
+      {
+        "id": "6dd71239-c2c8-4095-b72b-7d59212d98db",
+        "createdAt": "2026-10-09T17:07:48.238Z",
+        "updatedAt": "2026-10-09T17:07:48.238Z",
+        "revision": 0,
+        "localDate": "2026-10-01",
+        "timeZone": "Etc/GMT-8",
+        "weightGrams": 70200
+      }
+    ],
+    "trainingMemo": {
+      "schemaVersion": 1,
+      "revision": 0,
+      "updatedAt": "2026-10-09T17:07:49.355Z",
+      "sourceRevision": 19,
+      "sessions": []
+    },
+    "aiMemoryNotes": [],
+    "timers": [],
+    "mediaAssets": [],
+    "guidedStates": [
+      {
+        "id": "guided",
+        "revision": 16,
+        "onboarding": {
+          "id": "9a10d01a-382d-4c9c-8734-75bea3f8ec59",
+          "step": 12,
+          "answers": {
+            "biologicalSex": {
+              "status": "answered",
+              "value": "女性"
+            },
+            "age": {
+              "status": "answered",
+              "value": 13
+            },
+            "heightCm": {
+              "status": "skipped"
+            },
+            "weightKg": {
+              "status": "skipped"
+            },
+            "waistCm": {
+              "status": "skipped"
+            },
+            "goal": {
+              "status": "answered",
+              "value": [
+                "提升力量",
+                "Synthetic migration fixture: climb better"
+              ]
+            },
+            "experience": {
+              "status": "skipped"
+            },
+            "location": {
+              "status": "skipped"
+            },
+            "equipment": {
+              "status": "skipped"
+            },
+            "safety": {
+              "status": "skipped"
+            },
+            "schedule": {
+              "status": "skipped"
+            },
+            "preferences": {
+              "status": "skipped"
+            }
+          },
+          "updatedAt": "2026-10-09T17:07:46.454Z",
+          "completed": true,
+          "version": 4,
+          "deferred": false
+        },
+        "programs": [],
+        "candidates": [],
+        "messages": [],
+        "events": [],
+        "observations": [],
+        "invitations": []
+      }
+    ]
+  }
+}
