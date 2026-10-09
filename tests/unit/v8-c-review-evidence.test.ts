@@ -48,6 +48,23 @@ describe('incomplete timing facts (caller supplies the review period)', () => {
 describe('exercise evidence from one workout', () => {
   const plannedExercises = [{ exerciseId: 'squat', itemIndex: 0, plannedSetCount: 2 }];
   const sets = [set('squat', 0, 0), set('squat', 0, 1)];
+  it.each(['in_progress', 'abandoned'] as const)('excludes %s records from both kinds of review evidence', status => {
+    expect(computeExerciseEvidence(workout({ status, plannedExercises, sets,
+      feedback: { feel: 'easy', reasons: ['discomfort'], discomfortExerciseIds: ['squat'] },
+      substitutions: [{ fromExerciseId: 'squat', toExerciseId: 'bridge', itemIndex: 0, reason: 'discomfort', createdAt: '2026-10-09T06:05:00Z' }],
+    }))).toEqual({ easyCompletedExerciseIds: [], discomfortExerciseIds: [] });
+  });
+  it('retains not_started discomfort substitution evidence without easy-completion evidence', () => {
+    expect(computeExerciseEvidence(workout({ status: 'not_started', plannedExercises, sets,
+      feedback: { feel: 'easy', reasons: [] },
+      substitutions: [{ fromExerciseId: 'squat', toExerciseId: 'bridge', itemIndex: 0, reason: 'discomfort', createdAt: '2026-10-09T06:05:00Z' }],
+    }))).toEqual({ easyCompletedExerciseIds: [], discomfortExerciseIds: ['squat'] });
+  });
+  it.each([[0, 99], [1, 2], [-1, 0]])('requires every planned zero-based set index: %j', (...indices) => {
+    expect(computeExerciseEvidence(workout({ plannedExercises,
+      sets: indices.map(index => set('squat', 0, index)), feedback: { feel: 'easy', reasons: [] },
+    })).easyCompletedExerciseIds).toEqual([]);
+  });
   it.each(['easy', 'right'] as const)('requires all snapshot sets, including in a partial workout with %s feel', feel => {
     expect(computeExerciseEvidence(workout({ plannedExercises, sets, feedback: { feel, reasons: [] } })).easyCompletedExerciseIds).toEqual(['squat']);
     expect(computeExerciseEvidence(workout({ plannedExercises, sets: sets.slice(0, 1), feedback: { feel, reasons: [] } })).easyCompletedExerciseIds).toEqual([]);

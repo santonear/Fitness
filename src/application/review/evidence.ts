@@ -24,6 +24,9 @@ export function computeIncompleteTiming(workouts: readonly WorkoutRecord[]): Inc
 export function computeExerciseEvidence(workout: WorkoutRecord): {
   easyCompletedExerciseIds: string[]; discomfortExerciseIds: string[];
 } {
+  if (workout.status === 'in_progress' || workout.status === 'abandoned') {
+    return { easyCompletedExerciseIds: [], discomfortExerciseIds: [] };
+  }
   const discomfort = new Set<string>();
   const performed = new Set(workout.sets.map(set => set.exerciseId));
   if (workout.feedback?.reasons.includes('discomfort')) {
@@ -37,13 +40,19 @@ export function computeExerciseEvidence(workout: WorkoutRecord): {
 
   const easyCompletedExerciseIds: string[] = [];
   const feel = workout.feedback?.feel;
-  if (feel === 'easy' || feel === 'right') {
+  if ((workout.status === 'complete' || workout.status === 'partial') && (feel === 'easy' || feel === 'right')) {
     const planned = workout.plannedExercises ?? [];
     for (const id of new Set(planned.map(item => item.exerciseId))) {
       const items = planned.filter(item => item.exerciseId === id);
-      const allComplete = items.every(item => item.plannedSetCount > 0 &&
-        new Set(workout.sets.filter(set => set.exerciseId === id && set.itemIndex === item.itemIndex)
-          .map(set => set.setIndex)).size >= item.plannedSetCount);
+      const allComplete = items.every(item => {
+        if (item.plannedSetCount <= 0) return false;
+        const completed = new Set(workout.sets.filter(set => set.exerciseId === id && set.itemIndex === item.itemIndex)
+          .map(set => set.setIndex));
+        for (let index = 0; index < item.plannedSetCount; index++) {
+          if (!completed.has(index)) return false;
+        }
+        return true;
+      });
       if (allComplete) easyCompletedExerciseIds.push(id);
     }
   }
