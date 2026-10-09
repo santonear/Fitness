@@ -8,10 +8,14 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: fitness-checks-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  verify:
+  checks:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
         with:
@@ -22,10 +26,61 @@ jobs:
           package-manager-cache: false
       - run: npm ci
       - run: npm run check
+      - name: Collect all browser suites before installing browsers
+        run: |
+          npx playwright test --list > /dev/null
+          npx playwright test --list --config playwright.guided-live.config.ts > /dev/null
+          npx playwright test --list --config playwright.trial.config.ts > /dev/null
+          npx playwright test --list --config playwright.v31-all.config.ts > /dev/null
+
+  browser-main:
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci
+      - run: npm run catalog:prepare
       - run: npx playwright install --with-deps chromium webkit
       - name: Check narrow WebKit stage previews
         run: npx playwright test tests/e2e/stage-summary.spec.ts --project webkit
       - run: npm run test:e2e
+
+  browser-flows:
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci
+      - run: npm run catalog:prepare
+      - run: npx playwright install --with-deps chromium webkit
       - run: npx playwright test --config playwright.guided-live.config.ts
       - run: npx playwright test --config playwright.trial.config.ts
       - run: npx playwright test --config playwright.v31-all.config.ts
+
+  # Preserve the existing required check name and fail closed if any group fails.
+  verify:
+    if: always()
+    needs: [checks, browser-main, browser-flows]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Require all checks
+        env:
+          CHECKS: ${{ needs.checks.result }}
+          MAIN: ${{ needs.browser-main.result }}
+          FLOWS: ${{ needs.browser-flows.result }}
+        run: test "$CHECKS" = success && test "$MAIN" = success && test "$FLOWS" = success

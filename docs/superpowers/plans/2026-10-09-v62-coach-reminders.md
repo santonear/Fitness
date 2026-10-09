@@ -1,6 +1,6 @@
 # V6.2 implementation — canonical plan
 
-Status: P-A shell implemented locally; 8 shell browser tests, 6 AI flow browser tests, 25 selected unit tests, typecheck and build passed. Avatar final design sign-off and real-device testing remain pending. P-B through P-E not complete. Design HTML located at C:/Users/xxgos/Desktop/UIUX/Fitness_UX_V6_2_Floating_AI_Coach_Reminders_20261009.html. SHA256: 6F3B85B46E9C913461B25F4D74EAC31B5CF9D56A1F9AA60026200D2EDDAAA381. Handoff Markdown read in full; HTML initial structure and floating-assistant script inspected. Full semantic review/render and asset approval remain pending.
+Status: Delivered and published in PR #21 (merge e94c59f). The P-A-only status below was superseded by docs/verification/v62-complete-local-2026-10-09.md and docs/verification/pr-21-public-release-2026-10-09.md. Physical-device and paid-model acceptance remain unverified; this is not an unfinished implementation phase.
 
 Baseline: worktree fitness-guided, base branch codex/temporary-budget-bypass; implementation branch codex/v62-coach-reminders, HEAD 07fb6c630c6a6a9b53d5d727c7394debfa715cea. Preserve 20 modified tracked files and unrelated untracked artifacts. Root and worktree AGENTS.md files absent; apply conversation instructions. Owner for all shared files: primary agent, no delegated writes.
 

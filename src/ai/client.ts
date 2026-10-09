@@ -1,3 +1,4 @@
+import {claimDirectActivation,readTrialReceipt} from './trial-recovery';
 import type {AiClient} from './workflow';
 import {ControlService,type ControlConfig} from '../backend/control';
 import type {ControlState,ControlStore} from '../backend/store';
@@ -8,6 +9,9 @@ import {uuidSchema} from '../domain/schemas';
 const count=z.number().int().nonnegative();
 const publicErrors=new Set(['QUALIFICATION_REQUIRED','INVITE_NOT_FOUND','INVITE_INVALID','SUBJECT_EXPIRED','SUBJECT_NOT_FOUND','RECONCILIATION_REQUIRED','REQUEST_CONFLICT','REQUEST_IN_PROGRESS','RESULT_UNAVAILABLE','AI_DISABLED','REQUEST_COST_BOUND','INDIVIDUAL_QUOTA_EXHAUSTED','GLOBAL_BUDGET_EXHAUSTED','CONCURRENCY_LIMIT','NOT_SUBMITTED','ACCOUNTING_PENDING','CANCELLED','ALREADY_SUBMITTED','REQUEST_NOT_FOUND','STALE_RESTORE_GENERATION','STALE_INPUT','INVALID_INPUT','RANGE_TOO_LARGE','ORIGIN_DENIED','CONTROL_UNAVAILABLE','DATE_BOUND_EXCEEDED','INVALID_REQUEST','CONFIRMATION_REQUIRED']);
 const statusSchema=z.object({expiresAt:count.max(8_640_000_000_000_000),period:z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/),used:z.object({understand:count,generate:count}),limits:z.object({understand:count,generate:count}),maxDays:count.min(1).max(14).optional(),resetAt:count.optional(),timeZone:z.string().optional(),maximumRequestCost:count.optional(),requestBounds:z.object({understand:count,generate:count}).optional(),budgetAvailable:z.object({understand:z.boolean(),generate:z.boolean()}).optional(),pending:count.optional(),reconciliationRequired:z.boolean().optional(),aiEnabled:z.boolean()});
+
+// Consumers refreshing the same browser session share the pending status request.
+const statusRefreshes=new WeakMap<typeof fetch,Promise<z.infer<typeof statusSchema>>>();
 
 export const disabledAiClient:AiClient={status:async()=>{throw new Error('AI_DISABLED');},redeem:async()=>{throw new Error('AI_DISABLED');},submit:async()=>{throw new Error('AI_DISABLED');},cancel:async()=>{}};
 /** Explicit page-only demo. Reuses admission policy; no cookies/storage/network or real credentials. */
@@ -24,7 +28,17 @@ export function createFetchAiClient(fetcher:typeof fetch=fetch):AiClient{
   if(response.redirected||response.status>=300&&response.status<400||response.type==='opaqueredirect')throw new Error('CONTROL_UNAVAILABLE');
   let body:unknown;try{body=await response.json();}catch{throw new Error('CONTROL_UNAVAILABLE');}if(!response.ok){const code=typeof body==='object'&&body&&'error' in body?body.error:undefined;throw new Error(typeof code==='string'&&publicErrors.has(code)?code:'CONTROL_UNAVAILABLE');}return body;
  }
- return {status:async()=>{const result=statusSchema.safeParse(await request('trial/status',undefined,AbortSignal.timeout(10000)));if(!result.success)throw new Error('CONTROL_UNAVAILABLE');return result.data;},redeem:async code=>{await request('trial/redeem',{code});},submit:async(payload,signal)=>{
+ async function readStatus(){const result=statusSchema.safeParse(await request('trial/status',undefined,AbortSignal.timeout(10000)));if(!result.success)throw new Error('CONTROL_UNAVAILABLE');return result.data;}
+ async function recoverStatus(){
+  try{return await readStatus();}catch(error){
+   if(!(error instanceof Error)||error.message!=='QUALIFICATION_REQUIRED')throw error;
+   const receipt=readTrialReceipt();if(!receipt)throw error;
+   const applications=await request('trial/applications',{receipt},AbortSignal.timeout(10000));
+   if(!await claimDirectActivation(receipt,applications,body=>request('trial/claim',body,AbortSignal.timeout(10000))))throw error;
+   return readStatus(); // One attempt only: a rejected or missing cookie must not loop.
+  }
+ }
+ return {status:()=>{const current=statusRefreshes.get(fetcher);if(current)return current;const pending=recoverStatus().finally(()=>statusRefreshes.delete(fetcher));statusRefreshes.set(fetcher,pending);return pending;},redeem:async code=>{await request('trial/redeem',{code});},submit:async(payload,signal)=>{
   const response=z.object({requestId:uuidSchema,result:z.unknown(),context:z.strictObject({restoreGeneration:count.max(Number.MAX_SAFE_INTEGER),inputDigest:z.string().regex(/^[a-f0-9]{64}$/)}),accounting:z.enum(['settled','pending'])}).safeParse(await request(payload.operation==='understand'?'goals/interpret':'plans/generate',payload,signal));
   if(!response.success||response.data.requestId!==payload.requestId||response.data.context.restoreGeneration!==payload.restoreGeneration||response.data.context.inputDigest!==payload.sendConfirmation)throw new Error('CONTROL_UNAVAILABLE');
   try{return {...response.data,result:validateCandidate(payload,response.data.result)};}catch{throw new Error('CONTROL_UNAVAILABLE');}

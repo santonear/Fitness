@@ -1,3 +1,4 @@
+import {applicationSchema,claimDirectActivation,receiptKey} from '../../ai/trial-recovery';
 import { AppIcon, StatusIcon } from './AppIcon';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -11,9 +12,7 @@ const counts = z.object({ understand: z.number().int().nonnegative(), generate: 
 const statusSchema = z.object({ expiresAt: z.number().finite(), used: counts, limits: counts, period: z.string().optional(), pending: z.number().int().nonnegative().optional(), reconciliationRequired: z.boolean().optional(), aiEnabled: z.boolean().optional() });
 const policyStatusSchema = statusSchema.extend({ planningBudgetDisabled: z.boolean().optional(), resetAt: z.number().finite().optional(), timeZone: z.string().optional(), maxDays: z.number().int().min(1).max(14).optional(), maximumRequestCost: z.number().int().nonnegative().optional(), budgetAvailable: z.object({ understand: z.boolean(), generate: z.boolean() }).optional() });
 const accessStatusSchema = z.discriminatedUnion('qualification', [z.object({ qualification: z.literal('none'), sessionValid: z.literal(false) }), ...(['active','expired','revoked'] as const).map(qualification => policyStatusSchema.extend({ qualification: z.literal(qualification), sessionValid: z.boolean() }))]);
-const applicationSchema = z.object({ id: z.uuid(), kind: z.enum(['new','extend','replace']), state: z.enum(['pending','approved','rejected','claimed']), createdAt: z.number().finite(), decidedAt: z.number().optional(), reason: z.string().optional(), claimUntil: z.number().optional(), expiresAt: z.number().optional(), directlyActivated: z.boolean().optional() });
 const configSchema = z.object({ available: z.boolean(), siteKey: z.string().nullable() });
-const receiptKey = 'fitness-trial-application-receipt-v1';
 const displayNameKey = 'fitness-trial-display-name-v1';
 export async function trialApi<T>(path: string, body?: unknown): Promise<T> {
   const response = await fetch(`/api/v1/${path}`, { method: body === undefined ? 'GET' : 'POST', credentials: 'same-origin', redirect: 'error', cache: 'no-store',
@@ -71,17 +70,14 @@ export function TrialAccess({ onContinue, onSkip }: { onContinue?: () => void; o
   const [link, setLink] = useState(''); const requestId = useRef(crypto.randomUUID());
   async function refresh(owner = receipt, start = false) {
     setQualificationState('unknown'); setStatus(undefined); setSessionValid(false);
-    const [qualification, applications, availability] = await Promise.allSettled([
+    let [qualification, applications, availability] = await Promise.allSettled([
       trialApi<Status>('trial/status'), owner ? trialApi<Application[]>('trial/applications', { receipt: owner }) : Promise.resolve([]),
       trialApi<{ available: boolean; siteKey: string | null }>('trial/application-config'),
     ]);
     if (availability.status === 'fulfilled') setConfig(configSchema.parse(availability.value));
-    if (applications.status === 'fulfilled') {
-      const direct = z.array(applicationSchema).parse(applications.value).find(a => a.directlyActivated && (a.state === 'approved' || a.state === 'claimed') && (a.claimUntil ?? 0) > Date.now());
-      if (direct && qualification.status === 'rejected' && qualification.reason instanceof Error && qualification.reason.message === 'QUALIFICATION_REQUIRED') {
-        await trialApi('trial/claim', { receipt: owner, id: direct.id });
-        await refresh(owner, start); return;
-      }
+    if (applications.status === 'fulfilled' && qualification.status === 'rejected' && qualification.reason instanceof Error && qualification.reason.message === 'QUALIFICATION_REQUIRED' &&
+      await claimDirectActivation(owner, applications.value, body => trialApi('trial/claim', body))) {
+      [qualification, applications] = await Promise.allSettled([trialApi<Status>('trial/status'), trialApi<Application[]>('trial/applications', { receipt: owner })]);
     }
     if (qualification.status === 'fulfilled') { setStatus(policyStatusSchema.parse(qualification.value)); setQualificationState('active'); setSessionValid(true); if (onContinue) onContinue(); }
     else {
