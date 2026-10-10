@@ -17,6 +17,7 @@ export function pwaBuild(): Plugin {
       }
       const source = await readFile(new URL('../public/pwa/sw-template.js', import.meta.url), 'utf8');
       revision.update(source);
+      for (const name of ['manifest.webmanifest', 'pwa/icon.svg', 'pwa/icon-192.png', 'pwa/icon-512.png']) revision.update(await readFile(new URL(`../public/${name}`, import.meta.url)));
       this.emitFile({ type: 'asset', fileName: 'fitness-sw.js', source: source
         .replace('__FITNESS_REVISION__', revision.digest('hex').slice(0, 20))
         .replace('__FITNESS_ASSETS__', JSON.stringify(['/', '/manifest.webmanifest', '/pwa/icon.svg', '/pwa/icon-192.png', '/pwa/icon-512.png', ...assets])) });

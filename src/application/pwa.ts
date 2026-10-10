@@ -7,6 +7,7 @@ let configuration = Promise.resolve();
 const supported = () => typeof window !== 'undefined' && window.isSecureContext && 'serviceWorker' in navigator;
 const optedIn = () => { try { return localStorage.getItem(OPT_IN) === 'true'; } catch { return false; } };
 export function systemNotificationsEnabled() { return optedIn(); }
+export function pwaRegistration() { return registration; }
 export function notificationStatus(): NotificationStatus {
   if (!flags.offlineEnabled || !flags.notificationsEnabled) return 'disabled';
   const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);

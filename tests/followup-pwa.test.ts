@@ -55,3 +55,16 @@ it('service worker never intercepts API/admin/cross-origin or non-GET requests',
     const respondWith = vi.fn(); handlers.fetch({ request: { url, method, mode }, respondWith }); expect(respondWith).not.toHaveBeenCalled();
   }
 });
+it('background push shows only generic content and respects completed browser unsubscribe', async () => {
+  const handlers: Record<string, (event: any) => void> = {};
+  const showNotification = vi.fn().mockResolvedValue(undefined);
+  const getSubscription = vi.fn().mockResolvedValue(null);
+  const source = readFileSync('public/pwa/sw-template.js', 'utf8').replace('__FITNESS_ASSETS__', '[]');
+  runInNewContext(source, { self: { location: { origin: 'https://fitness.test' }, registration: { pushManager: { getSubscription }, showNotification }, addEventListener: (name: string, handler: any) => { handlers[name] = handler; } }, URL, Set });
+  let completion: Promise<void> = Promise.resolve();
+  handlers.push({ waitUntil: (promise: Promise<void>) => { completion = promise; }, data: { text: () => 'private unwanted payload' } }); await completion;
+  expect(showNotification).not.toHaveBeenCalled();
+  getSubscription.mockResolvedValue({}); handlers.push({ waitUntil: (promise: Promise<void>) => { completion = promise; } }); await completion;
+  expect(showNotification).toHaveBeenCalledWith('Fitness', expect.objectContaining({ silent: true, tag: 'fitness-scheduled-reminder' }));
+  expect(JSON.stringify(showNotification.mock.calls)).not.toContain('private');
+});

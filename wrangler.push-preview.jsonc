@@ -1,0 +1,11 @@
+{
+  "name": "fitness-push-preview",
+  "main": "src/backend/push-worker.ts",
+  "compatibility_date": "2026-10-10",
+  "workers_dev": false,
+  "vars": { "PUSH_ENABLED": "false", "APP_ORIGIN": "http://127.0.0.1:5318" },
+  "triggers": { "crons": ["* * * * *"] }
+  // Before any preview deployment: provision an approved dedicated PUSH_DB binding,
+  // apply tools/push-schema.sql, configure VAPID secrets and an exact APP_ORIGIN.
+  // No production resource IDs or credentials are stored in this file.
+}
