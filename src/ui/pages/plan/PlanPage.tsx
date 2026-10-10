@@ -1,4 +1,4 @@
-import type { PlannedItem, PlanVersion } from '../../../domain/v8/contracts';
+import type { PlannedItem, PlanVersion, SessionTemplate } from '../../../domain/v8/contracts';
 import { planMessages, type PlanLanguage } from '../../../i18n/features/plan/messages';
 import { Button, Chip, Row, Sheet } from '../../components/common';
 import './plan.css';
@@ -25,6 +25,10 @@ export function itemTarget(item: PlannedItem, language: PlanLanguage): string {
   return `${t.sets(item.sets)} · ${value}`;
 }
 
+export function templateLabel(template: Pick<SessionTemplate, 'id' | 'name'>, language: PlanLanguage): string {
+  return template.id === 'review-short' && template.name === '20 min' ? planMessages[language].minutes(20) : template.name;
+}
+
 export function PlanPage({ version, currentVersionId, language, exerciseName, onVersions, onExercises, onExercise, onDiscuss }: PlanPageProps) {
   const t = planMessages[language], current = version.id === currentVersionId;
   return <section className="plan-page" aria-labelledby="plan-title">
@@ -33,8 +37,8 @@ export function PlanPage({ version, currentVersionId, language, exerciseName, on
     </header>
     <div className="plan-overview"><Sheet><dl className="plan-summary"><dt>{t.goal}</dt><dd>{version.goalText}</dd></dl></Sheet><Sheet><dl className="plan-summary"><dt>{t.rhythm}</dt><dd>{t.pace(version.weeklyTarget)}</dd><dd className="plan-muted">{t.minutes(version.sessionMinutes)}</dd></dl></Sheet></div>
     {version.scheduleOriginalText.trim() && <p className="plan-muted">{version.scheduleOriginalText}</p>}
-    {version.templates.map(template => <section className="plan-session" key={template.id} aria-label={template.name}>
-      <Row><h2>{template.name}</h2><span className="plan-muted">{t.minutes(template.estimatedMinutes)}</span></Row>
+    {version.templates.map(template => <section className="plan-session" key={template.id} aria-label={templateLabel(template, language)}>
+      <Row><h2>{templateLabel(template, language)}</h2><span className="plan-muted">{t.minutes(template.estimatedMinutes)}</span></Row>
       <div className="plan-items">{template.items.map((item, index) => <Chip key={`${item.exerciseId}-${index}`} selected={false}
         onClick={() => onExercise(version, template.id, index)}>{exerciseName(item.exerciseId)} · {itemTarget(item, language)}</Chip>)}</div>
     </section>)}
