@@ -6,7 +6,7 @@ export type ThemeId = keyof typeof tokens.themes;
 export type TokenSource = typeof tokens;
 export interface BrandMarkProps { label: string }
 export interface WeekProgressProps { complete: number; partial: number; target: number; label: string }
-export interface StartHeroProps { name: string; templateId: string; estimatedMinutes: number; startLabel: string; disabled?: boolean; onStart: () => void }
+export interface StartHeroProps { templateLabel?: string; nextLabel?: string; name: string; templateId: string; estimatedMinutes: number; startLabel: string; disabled?: boolean; onStart: () => void }
 export interface SuggestionsProps { label: string; options: readonly { id: string; label: string }[]; onSelect: (id: string) => void; disabled?: boolean }
 export interface AiLineProps { children: ReactNode }
 export interface SetValueProps { label: string; loadText: string; targetText: string; disabled?: boolean; onEdit: () => void }
@@ -39,3 +39,4 @@ export type ThemeTokenName = SharedLayoutTokenName | "--c-bg" | "--c-bg-grad" | 
 
 /** V8.0.3 semantic keys approved from the existing specification/prototype. */
 export type SharedLayoutTokenName = "--touch-min" | "--touch-primary" | "--touch-workout" | "--touch-secondary" | "--touch-row" | "--lh-tight" | "--lh-body" | "--lh-reading" | "--layout-mobile-max" | "--layout-desktop-rail" | "--layout-desktop-main" | "--layout-desktop-breakpoint" | "--press-transform" | "--press-shadow";
+

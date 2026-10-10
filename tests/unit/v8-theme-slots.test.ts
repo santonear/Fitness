@@ -8,7 +8,7 @@ describe('V8 signature slots', () => {
   it('resolves nine frozen signatures for every registered theme', () => {
     for (const theme of themes) expect(Object.keys(getThemeSlots(theme.id)).sort()).toEqual(Object.keys(baseSlots).sort());
     expect(getThemeSlots('qingci').BrandMark).not.toBe(baseSlots.BrandMark);
-    expect(getThemeSlots('liubai').BrandMark).toBe(baseSlots.BrandMark);
+    for (const id of ['liubai', 'jingshe', 'zhuangse']) for (const key of Object.keys(baseSlots) as (keyof typeof baseSlots)[]) expect(getThemeSlots(id)[key]).not.toBe(baseSlots[key]);
   });
   it('renders elapsed rest without announcing each second or counting down', () => {
     const html = renderToStaticMarkup(createElement(baseSlots.RestClock, { elapsedSeconds: 125, label: '已歇' }));
@@ -32,3 +32,4 @@ describe('V8 signature slots', () => {
     expect(new Set(ids).size).toBe(2); expect(icons).not.toContain('<button'); expect(icons).not.toContain('<a ');
   });
 });
+

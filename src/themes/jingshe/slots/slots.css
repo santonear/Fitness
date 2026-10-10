@@ -1,0 +1,21 @@
+.v8-jingshe-brand { font-family: var(--f-body); font-weight: var(--w-display); letter-spacing: var(--tr-display); }
+.v8-jingshe-week .v8-week-dots i[data-state="complete"] { background: var(--c-signature); border-color: var(--c-signature); }
+.v8-jingshe-start .v8-minutes { font-size: 96px; font-weight: 200; color: var(--c-signature); }
+.v8-jingshe-start h2 { font-family: var(--f-body); font-size: var(--t4); }
+.v8-jingshe-suggestions .v8-suggestions > div { display: grid; justify-content: stretch; }
+.v8-jingshe-suggestions button { justify-content: start; border: 0; border-block-end: var(--bw) solid var(--c-line); background: transparent; box-shadow: none; border-radius: var(--r-panel); }
+.v8-jingshe-suggestions button::before { content: ''; inline-size: var(--s1); block-size: var(--s1); border-radius: 50%; background: var(--c-signature); }
+.v8-jingshe-ai .v8-ai-line { font-family: var(--f-body); font-weight: 300; font-size: var(--t6); }
+.v8-jingshe-set .v8-set-value { font-weight: 200; }
+.v8-jingshe-rest .v8-rest { color: var(--c-signature); }
+.v8-jingshe-nav .v8-nav-body { fill: var(--nav-glaze); stroke: var(--c-signature); }
+.v8-jingshe-nav .v8-nav-icon { color: var(--c-signature); }
+.v8-jingshe-feature .v8-feature::before { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: var(--ring-w); background: var(--ring); mask: linear-gradient(white 0 0) content-box, linear-gradient(white 0 0); mask-composite: exclude; pointer-events: none; }
+.v8-jingshe-feature .v8-feature::after { content: ''; position: absolute; z-index: -1; inset-inline: 15%; bottom: 0; block-size: var(--s5); background: var(--glow); filter: blur(var(--glow-blur)); border-radius: 50%; opacity: .35; pointer-events: none; }
+.v8-jingshe-feature [data-motion="on"]::before { animation: v8-jingshe-ring var(--ring-cycle) linear infinite; }
+.v8-jingshe-feature [data-motion="on"]::after { animation: v8-jingshe-breath var(--breath) ease-in-out infinite; }
+@keyframes v8-jingshe-ring { to { --ring-a: 360deg; } }
+@keyframes v8-jingshe-breath { 0%, 100% { opacity: .35; transform: scaleX(.82); } 50% { opacity: .85; transform: scaleX(1.06); } }
+@media (prefers-reduced-motion: reduce) { .v8-jingshe-feature .v8-feature::before, .v8-jingshe-feature .v8-feature::after { animation: none; } }
+
+
