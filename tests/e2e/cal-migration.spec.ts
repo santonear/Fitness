@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 test('version 3 local library upgrades without rewriting old facts; old Dexie can reopen but is not compatible',async({page})=>{
   await page.goto('/');const result=await page.evaluate(async()=>{
-    const load=(path:string)=>import(/* @vite-ignore */ path);const {default:Dexie}=await load('/node_modules/.vite/deps/dexie.js');
+    const load=(path:string)=>import(/* @vite-ignore */ path);const {Dexie}=await load('/tests/e2e/helpers/cal-browser.ts');
     const {createDatabase}=await load('/src/persistence/db.ts');const {createRepository}=await load('/src/persistence/repository.ts');
     const {seedCalLibrary}=await load('/tests/e2e/helpers/cal-browser.ts');
     const fixture=createDatabase(`cal-migration-source-${crypto.randomUUID()}`);const repo=createRepository(fixture);const seeded=await seedCalLibrary(repo);const data=JSON.parse(seeded.oldJson).data;fixture.close();await fixture.delete();
@@ -11,5 +11,5 @@ test('version 3 local library upgrades without rewriting old facts; old Dexie ca
     const snapshot=(db:any)=>db.transaction('r',db.tables,async()=>JSON.stringify(await Promise.all(db.tables.filter((table:any)=>Object.keys(stores).includes(table.name)&&table.name!=='metadata').sort((a:any,b:any)=>a.name.localeCompare(b.name)).map((table:any)=>table.toArray()))));
     const before=await snapshot(old);old.close();const upgraded=createDatabase(name);await upgraded.open();const unchanged=before===await snapshot(upgraded);const version=(await upgraded.metadata.toCollection().first()).schemaVersion;upgraded.close();
     const rollback=new Dexie(name);rollback.version(3).stores(stores);const reopened=await rollback.open().then(()=>true,()=>false);const runtimeVersion=reopened?(await rollback.table('metadata').toCollection().first()).schemaVersion:null;rollback.close();await upgraded.delete();return {unchanged,version,reopened,runtimeVersion};
-  });expect(result).toEqual({unchanged:true,version:8,reopened:true,runtimeVersion:8});
+  });expect(result).toEqual({unchanged:true,version:9,reopened:true,runtimeVersion:9});
 });

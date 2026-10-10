@@ -5,8 +5,11 @@ import { DomainError } from '../domain/errors';
 import { localDateSchema, timeZoneSchema } from '../domain/schemas';
 import type { LocalProfile, Metadata, BodyWeightObservation, Plan, PlanVersion, WorkoutSession, SetRecord, ScheduledWorkout, TrainingMemo, AiMemoryNote, TimerState, MediaAsset } from '../domain/models';
 import { upgradeToV8, type V8Library } from './v8-migration';
+import type { NutritionRecord, ActivityImportReceipt } from '../domain/lifestyle';
 
 export class FitnessDatabase extends Dexie {
+  nutritionRecords!: Table<NutritionRecord, string>;
+  activityImportReceipts!: Table<ActivityImportReceipt, string>;
   v8Plans!: Table<V8Library['plans'][number], string>;
   v8PlanVersions!: Table<V8Library['planVersions'][number], string>;
   v8Workouts!: Table<V8Library['workouts'][number], string>;
@@ -66,6 +69,10 @@ export class FitnessDatabase extends Dexie {
       v8Plans: 'id,currentVersionId', v8PlanVersions: 'id,planId,[planId+versionNumber]',
       v8Workouts: 'id,planVersionId,localDate,status', v8Activities: 'id,localDate', v8State: 'id',
     }).upgrade(upgradeToV8);
+    this.version(9).stores({ nutritionRecords: 'id,localDate', activityImportReceipts: 'id,&activityId' }).upgrade(async transaction => {
+      // Additive only: every existing fact remains byte-for-byte unchanged.
+      await transaction.table('metadata').toCollection().modify((row: Metadata) => { row.schemaVersion = 9; });
+    });
   }
 }
 export function createDatabase(name: string): FitnessDatabase { return new FitnessDatabase(name); }

@@ -6,5 +6,5 @@ test('guided JSON roundtrip preserves local decisions, rolls back and upgrades o
     const path = '/tests/e2e/guided-backup-browser.ts';
     return (await import(/* @vite-ignore */ path)).verifyGuidedBackup(`guided-backup-${crypto.randomUUID()}`);
   });
-  expect(result).toEqual({ version: 6, preserved: true, staleWriter: true, rollback: true, oldCleared: true, upgraded: true, noInventedProgram: true });
+  expect(result).toEqual({ version: 7, preserved: true, staleWriter: true, rollback: true, oldCleared: true, upgraded: true, noInventedProgram: true });
 });

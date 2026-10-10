@@ -1,4 +1,4 @@
-.v8-zhuangse-brand { padding: var(--s2) var(--s4); transform: rotate(-5deg); background: var(--c-primary); color: var(--c-ink); border: var(--bw) solid var(--c-ink); box-shadow: var(--el-1); font-weight: var(--w-strong); }
+.v8-zhuangse-brand { padding: var(--s2) var(--s4); transform: rotate(-5deg); background: var(--c-signature); color: var(--c-ink); border: var(--bw) solid var(--c-ink); box-shadow: var(--el-1); font-weight: var(--w-strong); }
 .v8-zhuangse-week .v8-week-dots i { border-radius: 0; border-color: var(--c-ink); }
 .v8-zhuangse-start h2 { font-family: var(--f-num); font-size: var(--t8); font-weight: 900; font-stretch: 118%; }
 .v8-zhuangse-start .v8-minutes { background: var(--c-signature); padding: var(--s2) var(--s3); border: var(--bw) solid var(--c-ink); transform: rotate(5deg); }
@@ -9,10 +9,12 @@
 .v8-zhuangse-rest .v8-rest { width: fit-content; margin-inline: auto; padding: var(--s2) var(--s4); border: var(--bw) solid var(--c-ink); border-radius: var(--r-chip); background: var(--c-surface); }
 .v8-zhuangse-nav .v8-nav-body { fill: var(--c-surface); stroke: var(--c-ink); stroke-width: 2.5; }
 .v8-zhuangse-nav .v8-nav-icon { color: var(--c-ink); filter: drop-shadow(3px 3px 0 var(--c-ink)); }
-.v8-zhuangse-nav .v8-nav-icon[data-selected="true"] .v8-nav-body { fill: var(--c-primary); }
+.v8-zhuangse-nav .v8-nav-icon[data-selected="true"] .v8-nav-body { fill: var(--c-signature); stroke: var(--c-ink); }
 .v8-zhuangse-feature .v8-feature::before { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: var(--ring-w); background: var(--ring); mask: linear-gradient(white 0 0) content-box, linear-gradient(white 0 0); mask-composite: exclude; pointer-events: none; }
 .v8-zhuangse-feature [data-motion="on"]::before { animation: v8-zhuangse-ring var(--ring-cycle) linear infinite; }
 .v8-zhuangse-feature [data-motion="on"] { animation: v8-zhuangse-shadow var(--breath) ease-in-out infinite; }
 @keyframes v8-zhuangse-ring { to { --ring-a: 360deg; } }
 @keyframes v8-zhuangse-shadow { 0%,100% { box-shadow: 5px 5px 0 var(--c-ink); } 50% { box-shadow: 9px 9px 0 var(--c-ink); } }
 @media (prefers-reduced-motion: reduce) { .v8-zhuangse-feature .v8-feature, .v8-zhuangse-feature .v8-feature::before { animation: none; } }
+
+.v8-zhuangse-start .v8-button-primary { background: var(--c-signature); color: var(--c-ink); border-color: var(--c-ink); }

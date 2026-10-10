@@ -1,8 +1,8 @@
 import source from '../../docs/handoff-v8/02-design-tokens.json';
-import type { ThemeId, ThemeTokenName } from './contract';
+import type { BuiltinThemeId, ThemeTokenName } from './contract';
 
 /** The JSON is the only value source; this adapter only assigns frozen CSS names. */
-export function themeTokens(id: ThemeId): Partial<Record<ThemeTokenName, string | number>> {
+export function themeTokens(id: BuiltinThemeId): Partial<Record<ThemeTokenName, string | number>> {
   const { color: c, font: f, shape: s, tracking: t, material: m, effects: e } = source.themes[id];
   return {
     '--c-bg': c.bg, '--c-bg-grad': c.bgGradient, '--c-surface': c.surface,

@@ -1,0 +1,4 @@
+.v8-exercise-media .repdb-media { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s3); }
+.v8-exercise-media .repdb-media img { display: block; inline-size: 100%; block-size: auto; object-fit: contain; }
+.v8-exercise-media .repdb-media > :last-child { grid-column: 1 / -1; }
+@media (min-width: 768px) { .v8-exercise-media .repdb-media { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

@@ -1,0 +1,12 @@
+{
+  "source": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing/",
+  "checkedAt": "2026-10-11",
+  "retrieval": "Official documentation text returned by web search; direct open timed out",
+  "model": "deepseek-flash",
+  "currency": "CNY",
+  "units": "per million tokens",
+  "peakInputCacheMiss": 2,
+  "peakInputCacheHit": 0.04,
+  "peakOutput": 8,
+  "note": "Normalized price facts, not a hash of the remote webpage; peak rates used for conservative estimates"
+}

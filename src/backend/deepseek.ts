@@ -1,4 +1,5 @@
 import { coachV8ProviderPrompt } from './coach-v8-provider';
+import type { CoachPromptRelease } from './coach-v8-version';
 import { validateTransportRequest } from './contracts';
 import { z } from 'zod';
 import { buildAiPrompt } from './prompt';
@@ -14,7 +15,7 @@ const envelope = z.object({ choices: z.array(z.object({ finish_reason: z.literal
 })).length(1) });
 
 /** Explicit server adapter; no default activation, retries, SDK telemetry or credentials. */
-export function createDeepSeekCodec(options: { maxOutputTokens: number; pricingVerifiedUntil?: string }): ProviderCodec {
+export function createDeepSeekCodec(options: { maxOutputTokens: number; pricingVerifiedUntil?: string; coachPromptRelease?: CoachPromptRelease }): ProviderCodec {
   if (!Number.isSafeInteger(options.maxOutputTokens) || options.maxOutputTokens < 1 || options.maxOutputTokens > 8192)
     throw new ControlError('INVALID_SUPPLIER_CONFIG', 500);
   return {
@@ -27,7 +28,7 @@ export function createDeepSeekCodec(options: { maxOutputTokens: number; pricingV
       return Math.ceil((1_048_576 * 200 + options.maxOutputTokens * 800) / 1_000_000);
     },
     async encode(request) {
-      if('coach' in request){await validateTransportRequest(request,14,65536);return {model:'deepseek-flash',messages:coachV8ProviderPrompt(request.coach),thinking:{type:'disabled'},max_tokens:options.maxOutputTokens,response_format:{type:'json_object'},stream:false};}
+      if('coach' in request){await validateTransportRequest(request,14,65536);return {model:'deepseek-flash',messages:coachV8ProviderPrompt(request.coach,options.coachPromptRelease),thinking:{type:'disabled'},max_tokens:options.maxOutputTokens,response_format:{type:'json_object'},stream:false};}
       if ('dialogue' in request && request.dialogue) {
         await validateRequest(request, guidedServiceLimits.maxDays, guidedServiceLimits.maxInputBytes);
         return { model: 'deepseek-flash', messages: guidedProviderPrompt(request.dialogue), thinking: { type: 'disabled' },

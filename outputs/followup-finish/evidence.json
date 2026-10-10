@@ -1,0 +1,389 @@
+{
+  "date": "2026-10-11",
+  "base": "492b9f7",
+  "browsers": [
+    "Chromium",
+    "WebKit"
+  ],
+  "scope": "Local app, real IndexedDB and local RepDB assets; feature configuration and admin network responses are mocked; no live models or deployment",
+  "uniqueBrowserCasesPassed": 44,
+  "adminBrowserCasesPassed": 10,
+  "targetedUnitTestsPassed": 26,
+  "typecheck": "pass",
+  "styleViolations": 0,
+  "temporaryFifthFolderRemoved": true,
+  "fontBudgetsBytes": {
+    "qingci": 1062348,
+    "liubai": 1039804,
+    "jingshe": 884848,
+    "zhuangse": 1016720
+  },
+  "attempts": [
+    "Initial matrix 41 passed, 1 rapid coach-open race before plan-loaded state; later screenshot test waits for the real start button. Root notified; race itself not claimed fixed.",
+    "Affected signature/font rerun 22 passed.",
+    "Paper texture and fifth-theme UI run 10 passed, 2 initial Vite 504 Outdated Optimize Dep failures due to shared cache.",
+    "Worktree-local Vite cache: both failed liubai cases and all final zhuangse cases passed (12)."
+  ],
+  "screenshots": [
+    {
+      "file": "chromium-jingshe-1024-next.png",
+      "bytes": 166914,
+      "sha256": "a741c8640fb60a71110acb93f4b882bbd7ee59df207c686a2399e8514aa53263"
+    },
+    {
+      "file": "chromium-jingshe-1024-repdb.png",
+      "bytes": 149646,
+      "sha256": "a1570164a099813d7efa6497154bb9771ef011931ee85f7e5168c2697ee68d7d"
+    },
+    {
+      "file": "chromium-jingshe-320-coach.png",
+      "bytes": 112863,
+      "sha256": "7bb0733408a72ab34894dd2fda82d428f66165ba78e1377a0c230feda5e388b4"
+    },
+    {
+      "file": "chromium-jingshe-375-next.png",
+      "bytes": 114007,
+      "sha256": "f086d18241ac15425f53bebe69c65d5a3813e85f7aa3163b27f6ae4115510ac7"
+    },
+    {
+      "file": "chromium-jingshe-375-repdb.png",
+      "bytes": 120052,
+      "sha256": "538dd890f6b6b3460474cfbd9cd0ba50920de5675780af207639615ef029e007"
+    },
+    {
+      "file": "chromium-jingshe-430-next.png",
+      "bytes": 116945,
+      "sha256": "22cecf60567e31893c77976981c87d77bd64512b79f39460991ce5331118ac18"
+    },
+    {
+      "file": "chromium-jingshe-430-repdb.png",
+      "bytes": 137949,
+      "sha256": "eacaeaa0a0b08da6d31920fdd61cb3abbb78ff770e78fcc3e97163a755f6923b"
+    },
+    {
+      "file": "chromium-jingshe-768-next.png",
+      "bytes": 146015,
+      "sha256": "2e842ba9aabe9224468abd4609b191804de23d8b992151868134625cf8a8e00f"
+    },
+    {
+      "file": "chromium-jingshe-768-repdb.png",
+      "bytes": 141231,
+      "sha256": "b8539f8ac93a90be45f2606084a0bb920fff0006ad4cd0ccfff8266bff7d5624"
+    },
+    {
+      "file": "chromium-liubai-1024-next.png",
+      "bytes": 277770,
+      "sha256": "a45ab791af42aa8631a717121301ee9ce51e8c0e0c81de753ebda7925aab1ca9"
+    },
+    {
+      "file": "chromium-liubai-1024-repdb.png",
+      "bytes": 249075,
+      "sha256": "96a573a2fd214f91cec537b8708fc51d320c175f1946a3a40324b555750f464b"
+    },
+    {
+      "file": "chromium-liubai-320-coach.png",
+      "bytes": 141411,
+      "sha256": "97c85e20048b14a590503467bf510d3d350b371d66d4897e6413c32c646cfaab"
+    },
+    {
+      "file": "chromium-liubai-375-next.png",
+      "bytes": 169833,
+      "sha256": "89b0986b1b95491ec28ec64dffb2600bd63d2dcfb55d615a93616c5a493e0509"
+    },
+    {
+      "file": "chromium-liubai-375-repdb.png",
+      "bytes": 139589,
+      "sha256": "05519d2588e6d29b30ac87c9245bd80701198ab716f03df70e9aaff5a5ab15a5"
+    },
+    {
+      "file": "chromium-liubai-430-next.png",
+      "bytes": 182266,
+      "sha256": "1b0cdf3589407e6f54b461f88b624e17a886c13a26a2606cf63965485ac878b2"
+    },
+    {
+      "file": "chromium-liubai-430-repdb.png",
+      "bytes": 160798,
+      "sha256": "f043ac3f5e01e6ed7a0e62e453f1890aa9dcbce6326741b07147183e60ede996"
+    },
+    {
+      "file": "chromium-liubai-768-next.png",
+      "bytes": 262181,
+      "sha256": "fc41458e3d1e6030cddd4484e0df5a8ad230ca4b817e2d8e0d92f4fadd1d1e50"
+    },
+    {
+      "file": "chromium-liubai-768-repdb.png",
+      "bytes": 240874,
+      "sha256": "66ba2e4a11dec56963af50e315503bba014beff898767117d29bbfe89506f0ef"
+    },
+    {
+      "file": "chromium-qingci-1024-next.png",
+      "bytes": 189428,
+      "sha256": "756ed8b817a2c240b7b5d45bb7ba7590f0a37bc0261e62095323196aec18c689"
+    },
+    {
+      "file": "chromium-qingci-1024-repdb.png",
+      "bytes": 182566,
+      "sha256": "979b2b782560360150f9cee31eb3aed9f5af2b39aeebe80bbbd984984e0e9ca3"
+    },
+    {
+      "file": "chromium-qingci-320-coach.png",
+      "bytes": 143213,
+      "sha256": "a9f3294b3f76eef55279bef1706ccaff3c9da5381da04e16e659c768ceb4a262"
+    },
+    {
+      "file": "chromium-qingci-375-next.png",
+      "bytes": 129203,
+      "sha256": "af8199a9bc2792a5ce3f26ecc14aa5e65a5ce60a690ff82e4bda1d82a470ffda"
+    },
+    {
+      "file": "chromium-qingci-375-repdb.png",
+      "bytes": 139060,
+      "sha256": "9f962aa025ee01b41f85dfaf12767842c48a13ee98e49f0bebcd60e389c1fa0e"
+    },
+    {
+      "file": "chromium-qingci-430-next.png",
+      "bytes": 132267,
+      "sha256": "d549616cf1271bbf14a044c017a74aca9144d3ddcd25eb1852f54ee66cf16c79"
+    },
+    {
+      "file": "chromium-qingci-430-repdb.png",
+      "bytes": 157302,
+      "sha256": "5383bb933ceb4dae113e02283001179077aa45ff20ac6d01441dd0c4cc6690a5"
+    },
+    {
+      "file": "chromium-qingci-768-next.png",
+      "bytes": 167376,
+      "sha256": "85c2be27333dd1486ad30d0595ba3491035b71898427bf9117a19c06d1d7ffe8"
+    },
+    {
+      "file": "chromium-qingci-768-repdb.png",
+      "bytes": 172708,
+      "sha256": "812483088e076de2e0df679a7b4827fdeb760ceeeb92e03bb706eaedf03cacb9"
+    },
+    {
+      "file": "chromium-zhuangse-1024-next.png",
+      "bytes": 72836,
+      "sha256": "453df995e817db088e199ac54ca94baf1a112c4861a4908441ca33aa1ea9de48"
+    },
+    {
+      "file": "chromium-zhuangse-1024-repdb.png",
+      "bytes": 89377,
+      "sha256": "feea5789d45f43d3cb68bc57c7eff99bc99ac4366228f2f11266477bc47e8978"
+    },
+    {
+      "file": "chromium-zhuangse-320-coach.png",
+      "bytes": 56911,
+      "sha256": "467a64d5dbbce94765ed35149dd1e70f2a4d2a2bca5dacfe3ad448a1fa4e4cb6"
+    },
+    {
+      "file": "chromium-zhuangse-375-next.png",
+      "bytes": 64807,
+      "sha256": "8d246010121102dabd2834b38df5f50024d388f9e011935ad16d361b6d06b451"
+    },
+    {
+      "file": "chromium-zhuangse-375-repdb.png",
+      "bytes": 102193,
+      "sha256": "40a68d3582e7edb6e05a836335b39e618ffb212f816f7d3ea36899a83665ea5c"
+    },
+    {
+      "file": "chromium-zhuangse-430-next.png",
+      "bytes": 65079,
+      "sha256": "7c1df5b98c2cd6c48e37c902f3adeedd3ea4c73d970b25b2e04acf6a39c24e2e"
+    },
+    {
+      "file": "chromium-zhuangse-430-repdb.png",
+      "bytes": 118501,
+      "sha256": "81ecf74f0b70bff0290c522c02ef35d19906e1d934c2831a33518111605ae53c"
+    },
+    {
+      "file": "chromium-zhuangse-768-next.png",
+      "bytes": 67852,
+      "sha256": "2242dd4471f0fc7ed1356223bc6f7b161c8f3805d4d6d3c7c9a708e2b9cf9b95"
+    },
+    {
+      "file": "chromium-zhuangse-768-repdb.png",
+      "bytes": 93700,
+      "sha256": "0c2a87179730a3c1584ce27b7f54951f03ea077441348be7c92a983364754d1c"
+    },
+    {
+      "file": "webkit-jingshe-1024-next.png",
+      "bytes": 50088,
+      "sha256": "27cf63fb29c27869fc6e8052817bcebb63f1ae9c9669d7f190333cda01bb62c3"
+    },
+    {
+      "file": "webkit-jingshe-1024-repdb.png",
+      "bytes": 97947,
+      "sha256": "4e255954f5a9eeafad019e5077b17a643c4fb8dd8d162c41936eb995180e5e86"
+    },
+    {
+      "file": "webkit-jingshe-320-coach.png",
+      "bytes": 27338,
+      "sha256": "d510c4a77f064f9eb3875a1335ac9d1997b79fbd4c7c1aa501d91662aeffbcdb"
+    },
+    {
+      "file": "webkit-jingshe-375-next.png",
+      "bytes": 38329,
+      "sha256": "703583bd0bd30343b9484fc29686e0dd8f86558b21d709fab6d2e12c85cc5043"
+    },
+    {
+      "file": "webkit-jingshe-375-repdb.png",
+      "bytes": 113428,
+      "sha256": "081b5487cf09983664e60b0d06686ef76146c6f061e126d20eabf792a8ad39a7"
+    },
+    {
+      "file": "webkit-jingshe-430-next.png",
+      "bytes": 39024,
+      "sha256": "2d9c24e2e19b511796eb1b496bb206dc0aa5cd20dccbbfd65d7f17639a02e372"
+    },
+    {
+      "file": "webkit-jingshe-430-repdb.png",
+      "bytes": 132347,
+      "sha256": "ebca6bde82ef3174a213b07b0d7458a444c1448ebba023fb90d5676a787f3fc7"
+    },
+    {
+      "file": "webkit-jingshe-768-next.png",
+      "bytes": 46163,
+      "sha256": "75ef308e64e1a41aa55831b7a8ed83f7adc5c2189d0dbbbbc89f0d0ce81bdcc0"
+    },
+    {
+      "file": "webkit-jingshe-768-repdb.png",
+      "bytes": 99486,
+      "sha256": "73bd17efa60ec67a12a9f43a98ba3c2eb7fa3a8d1be3a2fd96b91632392ed92a"
+    },
+    {
+      "file": "webkit-liubai-1024-next.png",
+      "bytes": 245159,
+      "sha256": "9f6fd1b91b5497ff3615e479fd5e96c699924fb06bfd7c8255986f6ea6e6ef4e"
+    },
+    {
+      "file": "webkit-liubai-1024-repdb.png",
+      "bytes": 245990,
+      "sha256": "9025a4cb3de927d391cec486d0bfc5f99332ee7840b48f121ad0dcd10a341c48"
+    },
+    {
+      "file": "webkit-liubai-320-coach.png",
+      "bytes": 17845,
+      "sha256": "8621902122f0a02b4d9d751aaf56d0ef8fec5fa5c1cd9c18c474b026ba2c53ed"
+    },
+    {
+      "file": "webkit-liubai-375-next.png",
+      "bytes": 183838,
+      "sha256": "c2f200b4cc01cbad68394bea6caac1d471a58cd7f03b53c55dafa4a2dcad6c9b"
+    },
+    {
+      "file": "webkit-liubai-375-repdb.png",
+      "bytes": 144782,
+      "sha256": "1323836dd001c6f82fba20635ec7874e8a189b2e655a14c531e7a6384a8b1cd9"
+    },
+    {
+      "file": "webkit-liubai-430-next.png",
+      "bytes": 161895,
+      "sha256": "602f31b2b9e1b0850091000247a93dee262c4e8882811e04a330ca00b79897ac"
+    },
+    {
+      "file": "webkit-liubai-430-repdb.png",
+      "bytes": 167570,
+      "sha256": "32b48333d8b0caa072a8bddb6135a7e641ea35226e78a80f35332bacba911ab8"
+    },
+    {
+      "file": "webkit-liubai-768-next.png",
+      "bytes": 220491,
+      "sha256": "92bddb771f6bfa48b7fbf5a567d5d17e090febfcc929e7457ef8d6be85e4189a"
+    },
+    {
+      "file": "webkit-liubai-768-repdb.png",
+      "bytes": 229559,
+      "sha256": "cbd699abbc6da27e339b86b02a2508a4b46349372d8a0a8341b6ea8ca1ee7042"
+    },
+    {
+      "file": "webkit-qingci-1024-next.png",
+      "bytes": 101521,
+      "sha256": "972a82313dc66f496ffaa2725825a6a5895a488906fc67165155610fb92aca46"
+    },
+    {
+      "file": "webkit-qingci-1024-repdb.png",
+      "bytes": 118568,
+      "sha256": "057ebed42c59c1603467e6f1b903e56230cb5905adf331d64ab4046124e4df88"
+    },
+    {
+      "file": "webkit-qingci-320-coach.png",
+      "bytes": 34098,
+      "sha256": "356f8eeed64a13275fc04718ff9fb2b54c561bf02f399205bc790038d7e9bcec"
+    },
+    {
+      "file": "webkit-qingci-375-next.png",
+      "bytes": 42050,
+      "sha256": "8ef2387f9082dd509c09403fe68530fc89d3e35a5b2a4e71d8a2f8102481f8af"
+    },
+    {
+      "file": "webkit-qingci-375-repdb.png",
+      "bytes": 124938,
+      "sha256": "e6e41562afedfc8836e42f776e5d543d79d9b407dd8581559d3b6e4c554140d5"
+    },
+    {
+      "file": "webkit-qingci-430-next.png",
+      "bytes": 43217,
+      "sha256": "7579a218d2967e05ce4c1bb04724713f2ad3dbf4a7974a17e23483da0ce87d33"
+    },
+    {
+      "file": "webkit-qingci-430-repdb.png",
+      "bytes": 143430,
+      "sha256": "a6ab8abf5ec01a736c9dd63987c0b53618f64836d576a927c390ce4e3117ff5c"
+    },
+    {
+      "file": "webkit-qingci-768-next.png",
+      "bytes": 49999,
+      "sha256": "ba5ce6c2daceb581c92d73586fda7683142892f463d8c81a0b0f356f13a45b85"
+    },
+    {
+      "file": "webkit-qingci-768-repdb.png",
+      "bytes": 120613,
+      "sha256": "bebd4f958e63e0d10949a82608dd2140e7fd6708acf7fca7ed4ad42f20c8419c"
+    },
+    {
+      "file": "webkit-zhuangse-1024-next.png",
+      "bytes": 29704,
+      "sha256": "86f19127bbc2135b854b5b8161bf0a605e4bdf6672da409f23c10dd90be45fc0"
+    },
+    {
+      "file": "webkit-zhuangse-1024-repdb.png",
+      "bytes": 89662,
+      "sha256": "411ff9b2a5620c4ea6f9c3e173544f8efd1582758dddd15f7823e31f72135af6"
+    },
+    {
+      "file": "webkit-zhuangse-320-coach.png",
+      "bytes": 20865,
+      "sha256": "ec4c066ecc6daa7f1b334f4b8e1e83f11f023249dd3b0e6a3b2ce82544502a7e"
+    },
+    {
+      "file": "webkit-zhuangse-375-next.png",
+      "bytes": 25038,
+      "sha256": "ae9fef01cff8fded9755db3a0caec5850993f34a31652905b52fcd3bd1e8ac95"
+    },
+    {
+      "file": "webkit-zhuangse-375-repdb.png",
+      "bytes": 110968,
+      "sha256": "cdec2380625a63e8d99b2898aca033edd517b3c440e226b395a3c136a202dbff"
+    },
+    {
+      "file": "webkit-zhuangse-430-next.png",
+      "bytes": 24486,
+      "sha256": "9821b482d862975b4d234f2800aabbf6c90567a84f897915886a0c07ac422682"
+    },
+    {
+      "file": "webkit-zhuangse-430-repdb.png",
+      "bytes": 129736,
+      "sha256": "e37d481b56c00a4d585b6ff8f70275f91924b7417b1702526e56f87d1209e34e"
+    },
+    {
+      "file": "webkit-zhuangse-768-next.png",
+      "bytes": 26913,
+      "sha256": "a8c6c0603f815b19b8f34d977b4acee373846a1d01aabf121ffa056931259ed1"
+    },
+    {
+      "file": "webkit-zhuangse-768-repdb.png",
+      "bytes": 89981,
+      "sha256": "3edc33c33a60f53c52c74eb10b8591cd2e8419b4f53ac25a8f4a3ddcfcfa1ae0"
+    }
+  ]
+}

@@ -55,3 +55,22 @@ test('a second turn includes the actual first user and displayed assistant reply
  await page.goto('/tests/fixtures/v8-coach/index.html');await page.getByRole('button',{name:'跟芽芽说',exact:true}).click();await page.getByRole('textbox',{name:'跟芽芽说'}).fill('想开始训练');await page.getByRole('button',{name:'发送',exact:true}).click();await expect(page.getByText('想在哪里练？',{exact:true})).toBeVisible();await page.keyboard.press('Escape');await page.getByRole('button',{name:'跟芽芽说',exact:true}).click();await page.getByRole('textbox',{name:'跟芽芽说'}).fill('在家里');await page.getByRole('button',{name:'发送',exact:true}).click();await expect(page.getByText('每次有多少时间？',{exact:true})).toBeVisible();
  expect(requests).toHaveLength(2);expect(requests[1].messages).toEqual([{role:'user',content:'想开始训练'},{role:'assistant',content:'想在哪里练？'},{role:'user',content:'在家里'}]);for(const request of requests){expect(request.body).toBeUndefined();expect(request.history).toBeUndefined();}
 });
+
+test('diet consent is separate and withdrawing it removes diet-derived conversation',async({page})=>{
+ const requests:any[]=[];
+ await page.route('**/api/v1/plans/generate',async route=>{const sent=route.request().postDataJSON();requests.push(sent.coach);await route.fulfill({json:{requestId:sent.requestId,context:{restoreGeneration:0,inputDigest:sent.sendConfirmation},accounting:'settled',result:{requestId:sent.requestId,restoreGeneration:0,mutationAllowed:false,type:'clarify',question:sent.coach.nutrition?'饮食测试回声':'普通测试回复'}}});});
+ await page.goto('/tests/fixtures/v8-coach/index.html');
+ await page.evaluate(async()=>{
+  const fp='/src/application/feature-flags.ts',dp='/src/persistence/repository.ts';
+  await(await import(/* @vite-ignore */ fp)).refreshFeatureFlags(async()=>new Response(JSON.stringify({version:1,flags:{nutrition:true},expiresAt:Date.now()+60000})));
+  await(await import(/* @vite-ignore */ dp)).repository.db.nutritionRecords.add({id:crypto.randomUUID(),localDate:'2026-01-01',timeZone:'Asia/Shanghai',meal:'lunch',portion:'合成饮食资料',createdAt:'2026-01-01T00:00:00Z'});
+ });
+ await page.getByRole('button',{name:'跟芽芽说',exact:true}).click();
+ const diet=page.locator('label').filter({hasText:'饮食记录'}).getByRole('checkbox');
+ await expect(diet).not.toBeChecked();
+ const send=async(text:string,reply:string)=>{await page.getByRole('textbox',{name:'跟芽芽说'}).fill(text);await page.getByRole('button',{name:'发送',exact:true}).click();await expect(page.getByText(reply,{exact:true})).toBeVisible();};
+ await send('第一轮','普通测试回复'); expect(requests[0].nutrition).toBeUndefined();expect(requests[0].body).toBeUndefined();expect(requests[0].history).toBeUndefined();
+ await diet.check();await send('第二轮','饮食测试回声');expect(requests[1].nutrition).toEqual([{localDate:'2026-01-01',meal:'lunch',portion:'合成饮食资料'}]);
+ await diet.uncheck();await send('第三轮','普通测试回复');expect(requests[2].nutrition).toBeUndefined();expect(requests[2].messages).toEqual([{role:'user',content:'第三轮'}]);
+ await diet.check();await page.keyboard.press('Escape');await page.getByRole('button',{name:'跟芽芽说',exact:true}).click();await expect(diet).not.toBeChecked();
+});

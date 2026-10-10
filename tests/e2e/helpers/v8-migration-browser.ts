@@ -38,8 +38,8 @@ export async function verifyV8Migration(envelope: BackupEnvelope, failUpgrade = 
       return { rejected, unchanged, version };
     }
     await db.open();
-    const omit = ['metadata', 'v8Plans', 'v8PlanVersions', 'v8Workouts', 'v8Activities', 'v8State'];
-    const unchanged = await snapshot(db, omit) === legacyBefore;
+    const omit = ['metadata', 'v8Plans', 'v8PlanVersions', 'v8Workouts', 'v8Activities', 'v8State', 'nutritionRecords', 'activityImportReceipts'];
+    const unchanged = await snapshot(db, omit) === legacyBefore && await db.nutritionRecords.count() === 0 && await db.activityImportReceipts.count() === 0;
     const repo = createRepository(db); const access = createV8DataService(repo);
     const notice = await access.getMigrationNotice(); await access.acknowledgeMigrationNotice();
     const versions = await db.v8PlanVersions.toArray(); const state = await db.v8State.get('v8');

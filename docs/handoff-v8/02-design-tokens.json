@@ -74,7 +74,7 @@
       "tagline": { "zh": "宋体竖排、墨线与朱印", "en": "Ink, space and seal" },
       "colorScheme": "light",
       "color": {
-        "bg": "#ECEEEA", "bgGradient": "#ECEEEA",
+        "bg": "#ECEEEA", "bgGradient": "url(\"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27180%27 height=%27180%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%27.8%27 numOctaves=%273%27 stitchTiles=%27stitch%27/%3E%3C/filter%3E%3Crect width=%27100%25%27 height=%27100%25%27 filter=%27url(%23n)%27 opacity=%27.035%27/%3E%3C/svg%3E\"), #ECEEEA",
         "surface": "#F4F5F2", "surface2": "#E3E6E1",
         "ink": "#1C201E", "inkMuted": "#5F6662",
         "line": "#C9CEC9",
