@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { confirmationFor, type CoachEnvelope } from '../backend/contracts';
+import { confirmationFor } from '../domain/request-fingerprint';
+import type { CoachEnvelope } from '../backend/contracts';
 import { coachRequestSchema, type CoachRequest } from './contracts';
 import { adaptCoachResponse } from './response-adapter';
 

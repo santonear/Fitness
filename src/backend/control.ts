@@ -1,4 +1,4 @@
-import { COACH_V8_PROMPT_VERSION } from './coach-v8-prompt-registry';
+import { COACH_V8_PROMPT_VERSION } from './coach-v8-version';
 import { canonical, digest, validateCandidate, validateTransportRequest, type TransportRequest as AiRequest } from './contracts';
 import { ControlError, type ControlState, type ControlStore, type OperationCounts } from './store';
 import { buildAdminReport } from './admin-report';

@@ -1,3 +1,5 @@
+import { canonical, confirmationFor, goalConfirmationFor } from '../domain/request-fingerprint';
+export { canonical, confirmationFor, goalConfirmationFor } from '../domain/request-fingerprint';
 import { selectAiExercises } from '../catalog/ai-catalog';
 import { z } from 'zod';
 import { exercises, CATALOG_VERSION } from '../catalog/exercises';
@@ -9,27 +11,11 @@ import { validateGuidedProviderInput, validateGuidedProviderOutput } from './gui
 import { coachRequestSchema } from '../coach/contracts';
 import { adaptCoachResponse } from '../coach/response-adapter';
 
-export function canonical(value: unknown): string {
-  if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
-  if (value && typeof value === 'object') return `{${Object.entries(value).filter(([, item]) => item !== undefined).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0).map(([key, item]) => `${JSON.stringify(key)}:${canonical(item)}`).join(',')}}`;
-  return JSON.stringify(value);
-}
 export async function digest(value: string, secret: string): Promise<string> {
   const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
   return hex(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(value)));
 }
 function hex(value: ArrayBuffer) { return Array.from(new Uint8Array(value), byte => byte.toString(16).padStart(2, '0')).join(''); }
-function confirmedPayload(value: unknown) {
-  const entries = Object.entries(value as Record<string, unknown>).filter(([key]) => !['requestId', 'sendConfirmation', 'goalConfirmation'].includes(key));
-  return Object.fromEntries(entries);
-}
-/** Public content fingerprint, binds confirmation to actual fields; it is not an identity credential. */
-export async function confirmationFor(value: unknown) {
-  return hex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(canonical(confirmedPayload(value)))));
-}
-export async function goalConfirmationFor(value: { goalText: string; confirmedGoal: string }) {
-  return hex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(canonical({ goalText: value.goalText, confirmedGoal: value.confirmedGoal }))));
-}
 const text = z.string().min(1).max(8000);
 const base = { contractVersion: z.literal(1), requestId: uuidSchema, goalText: text, locale: localeSchema,
   restoreGeneration: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER), sendConfirmation: z.string().length(64) };

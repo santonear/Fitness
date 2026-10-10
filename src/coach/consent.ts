@@ -1,4 +1,4 @@
-import { confirmationFor } from '../backend/contracts';
+import { confirmationFor } from '../domain/request-fingerprint';
 import { coachRequestSchema, type CoachRequest } from './contracts';
 
 /** Optional sensitive fields are absent, not empty placeholders, until selected. */
