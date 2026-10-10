@@ -12,6 +12,8 @@ test('modal animation, keyboard containment, composer and focus restoration', as
  await expect(page.getByRole('textbox',{name:'跟芽芽说'})).toHaveValue('');
  await page.keyboard.press('Tab');
  expect(await page.evaluate(()=>document.querySelector('dialog')?.contains(document.activeElement))).toBe(true);
+ await page.getByRole('button',{name:'关闭',exact:true}).focus(); await page.keyboard.press('Shift+Tab'); await expect(page.getByRole('textbox',{name:'跟芽芽说'})).toBeFocused();
+ await page.keyboard.press('Tab'); await expect(page.getByRole('button',{name:'关闭',exact:true})).toBeFocused();
  await page.keyboard.press('Escape'); await expect(dialog).not.toBeVisible(); await expect(trigger).toBeFocused();
  await expect(page.getByRole('status')).not.toBeVisible({timeout:3500});
 });
@@ -29,9 +31,11 @@ test('close measures the current trigger and IME Enter does not send', async({pa
  const trigger=page.getByRole('button',{name:'深蹲 · 20 kg × 8'}); await trigger.click(); await page.waitForTimeout(550);
  const input=page.getByRole('textbox',{name:'跟芽芽说'}); await input.fill('输入中');
  await input.dispatchEvent('compositionstart'); await input.press('Enter'); await expect(input).toHaveValue('输入中'); await expect(page.getByRole('status')).not.toBeVisible(); await input.dispatchEvent('compositionend');
- await trigger.evaluate(el=>{el.style.transform='translateY(80px)';}); const rect=await trigger.boundingBox();
+ const rect=await page.locator('main > button').first().evaluate(el=>{el.style.transform='translateY(80px)';return {y:el.getBoundingClientRect().y};});
  await page.keyboard.press('Escape');
  const last=await page.getByRole('dialog').evaluate(el=>(el.getAnimations()[0].effect as KeyframeEffect)?.getKeyframes().at(-1));
  expect(last?.top).toBe(`${rect!.y}px`); await expect(trigger).toBeFocused();
 });
+
+
 
