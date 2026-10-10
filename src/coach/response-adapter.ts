@@ -1,4 +1,6 @@
 import { selectAiExercises } from '../catalog/ai-catalog';
+import { exercises } from '../catalog/exercises';
+import { checkCoachLanguage } from '../application/rules/coach-language';
 import { guidedServiceLimits as limits } from '../domain/guided-limits';
 import { coachRequestSchema, coachResponseSchema, type AdaptCoachResponse, type CoachRequest, type CoachResponse } from './contracts';
 
@@ -18,10 +20,17 @@ function bounded(value: unknown, max: number) {
 
 /** Same bounded vocabulary must be supplied to the provider and checked on return. */
 export function coachV8Exercises(request: CoachRequest) {
+  const referenced = request.task === 'ADJUST_TODAY' ? request.template.items.map(item => item.exerciseId)
+    : request.task === 'MODIFY_PLAN' ? request.plan.templates.flatMap(template => template.items.map(item => item.exerciseId)) : [];
+  const ids = new Set(referenced);
+  requireCondition(ids.size <= 64, 'referenced catalog limit');
+  const retained = exercises.filter(exercise => ids.has(exercise.id));
+  requireCondition(retained.length === ids.size, 'unknown referenced exercise');
+  const boundedCatalog = (selected: typeof exercises) => [...new Map([...retained, ...selected].map(exercise => [exercise.id, exercise])).values()].slice(0, 64);
   switch (request.task) {
     case 'ONBOARD_PLAN': return selectAiExercises(request.profile.goalText, request.profile);
-    case 'ADJUST_TODAY': return selectAiExercises(request.instruction, request.template);
-    case 'MODIFY_PLAN': return selectAiExercises(request.plan.goalText, request.plan, request.instruction);
+    case 'ADJUST_TODAY': return boundedCatalog(selectAiExercises(request.instruction, request.template));
+    case 'MODIFY_PLAN': return boundedCatalog(selectAiExercises(request.plan.goalText, request.plan, request.instruction));
     case 'PERIOD_REVIEW': return selectAiExercises('general fitness', request.facts);
   }
 }
@@ -44,6 +53,13 @@ export const adaptCoachResponse: AdaptCoachResponse = (input, raw) => {
   const request = coachRequestSchema.parse(input);
   bounded(raw, limits.maxOutputBytes);
   const response = coachResponseSchema.parse(typeof raw === 'string' ? JSON.parse(raw) : raw);
+  // Check generated prose only; copied goals and user conditions are not coach speech.
+  const prose = response.type === 'review_summary' ? [response.opening, response.encouragement, response.gap, ...response.dataBoundary, ...(response.suggestion ? [response.suggestion.summary, ...response.suggestion.proposal.reasons] : [])]
+    : response.type === 'plan_proposal' ? response.proposal.reasons
+    : response.type === 'change_proposal' ? [...response.changes, ...response.proposal.reasons]
+    : response.type === 'today_adjustment' ? [response.summary]
+    : response.type === 'clarify' ? [response.question] : [response.reason];
+  requireCondition(prose.every(text => checkCoachLanguage(text).length === 0), 'coach language');
   requireCondition(response.requestId === request.requestId, 'request identity');
   requireCondition(response.restoreGeneration === request.restoreGeneration, 'restore generation');
   if (response.type === 'clarify' || response.type === 'refused') return response;

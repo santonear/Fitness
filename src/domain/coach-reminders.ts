@@ -1,12 +1,12 @@
 export type ReminderKind = 'workout' | 'completion' | 'encourage';
 export type ReminderStatus = 'shown' | 'dismissed' | 'snoozed' | 'opened' | 'expired' | 'cancelled';
-export interface CoachPreferences { enabled: boolean; dailyLimit: 0 | 1 | 2; quietStart: string; quietEnd: string; timeZone: string; side: 'left' | 'right' }
+export interface CoachPreferences { enabled: boolean; dailyLimit: 0 | 1 | 2; quietStart: string; quietEnd: string; timeZone: string; side: 'left' | 'right'; weekdays?: number[]; time?: string }
 export interface ReminderSource { id: string; kind: ReminderKind; taskId?: string; versionId?: string; sessionId?: string; date: string; startTime?: string; timeZone: string; name?: string; from: number; until: number }
 export interface ReminderRecord extends ReminderSource { profileId: string; generation: number; shownAt: number; day: string; status: ReminderStatus }
 export interface CoachLedger { id: string; preferences: CoachPreferences; records: ReminderRecord[]; watermark: number; snoozeUntil: number; generation: number; initializedAt: number }
 export interface ReminderContext { now: number; generation: number; profileId: string; foreground: boolean; focused: boolean; training: boolean; onboarding: boolean; chat: boolean; modal: boolean; idleSince: number }
 const hour = 3600000;
-export const defaultCoachPreferences = (timeZone: string): CoachPreferences => ({ enabled: true, dailyLimit: 2, quietStart: '22:00', quietEnd: '08:00', timeZone, side: 'right' });
+export const defaultCoachPreferences = (timeZone: string): CoachPreferences => ({ enabled: false, dailyLimit: 2, quietStart: '22:00', quietEnd: '08:00', timeZone, side: 'right' });
 export function zonedMinute(at: number, timeZone: string) {
   const parts = new Intl.DateTimeFormat('en-CA', { timeZone, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', hourCycle:'h23' }).formatToParts(at);
   const get = (key: string) => parts.find(p => p.type === key)!.value;
@@ -27,6 +27,14 @@ export function quietAt(now: number, preferences: CoachPreferences) {
   const current=zonedMinute(now,preferences.timeZone).time;
   const {quietStart:start,quietEnd:end}=preferences;
   return start===end ? false : start<end ? current>=start&&current<end : current>=start||current<end;
+}
+/** V8 sources come exclusively from a user's explicitly selected weekday and time. */
+export function userReminderSources(now:number, preferences:CoachPreferences):ReminderSource[]{
+  const day=zonedMinute(now,preferences.timeZone).day;
+  const weekday=(new Date(day+'T12:00:00Z').getUTCDay()+6)%7+1;
+  if(!preferences.time||!preferences.weekdays?.includes(weekday))return [];
+  const at=scheduledInstant(day,preferences.time,preferences.timeZone);
+  return at===null?[]:[{id:`user:${day}:${preferences.time}:${preferences.timeZone}`,kind:'workout',date:day,startTime:preferences.time,timeZone:preferences.timeZone,from:at,until:at+3600000}];
 }
 export function eligibleReminder(sources: ReminderSource[], ledger: CoachLedger, context: ReminderContext): ReminderSource | undefined {
   const {now}=context,p=ledger.preferences;

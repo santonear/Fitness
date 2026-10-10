@@ -4,6 +4,7 @@ import { adaptCoachResponse, coachV8Exercises } from '../../src/coach/response-a
 import type { CoachRequest } from '../../src/coach/contracts';
 import { coachPromptHeader } from '../../src/backend/coach-prompt-registry';
 import { coachV8PromptHeader } from '../../src/backend/coach-v8-prompt-registry';
+import { basicProposal } from '../../src/application/v8-workflow';
 
 const id = '11111111-1111-4111-8111-111111111111';
 const other = '22222222-2222-4222-8222-222222222222';
@@ -25,6 +26,16 @@ const cases: { request: CoachRequest; response: Record<string, unknown> }[] = [
 ];
 
 describe('V8 response boundary', () => {
+  it('keeps all existing basic-plan exercises inside the 64-item adjustment vocabulary',()=>{
+    const basic=basicProposal({...profile,equipment:['瑜伽垫'],confirmedAt:'2026-10-10T00:00:00Z'})!;
+    const current=basic.templates[0];
+    const request:CoachRequest={...common,task:'ADJUST_TODAY',target,template:current,instruction:'每个动作只做一组'};
+    expect(coachV8Exercises(request).length).toBeLessThanOrEqual(64);
+    expect(current.items.every(item=>coachV8Exercises(request).some(e=>e.id===item.exerciseId))).toBe(true);
+    const response={...identity,type:'today_adjustment',target,template:{...current,items:current.items.map(item=>({...item,sets:1}))},summary:'这次每个动作做一组。'};
+    expect(adaptCoachResponse(request,response)).toEqual(response);
+    expect(()=>coachV8Exercises({...request,template:{...current,items:[...current.items,{...current.items[0],exerciseId:'unknown'}]}})).toThrow();
+  });
   it.each(cases)('accepts $request.task without mutating inputs', ({ request, response }) => {
     const before = JSON.stringify({ request, response });
     expect(adaptCoachResponse(request, JSON.stringify(response))).toEqual(response);

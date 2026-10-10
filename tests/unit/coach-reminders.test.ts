@@ -1,7 +1,7 @@
 import {describe,it,expect} from 'vitest';
 import {eligibleReminder,quietAt,scheduledInstant,defaultCoachPreferences,type CoachLedger,type ReminderContext,type ReminderSource} from '../../src/domain/coach-reminders';
 const now=Date.parse('2026-10-09T04:00:00Z');
-const ledger=():CoachLedger=>({id:'coach:a',preferences:defaultCoachPreferences('Asia/Shanghai'),records:[],watermark:now-1000,snoozeUntil:0,generation:0,initializedAt:now-3600000});
+const ledger=():CoachLedger=>({id:'coach:a',preferences:{...defaultCoachPreferences('Asia/Shanghai'),enabled:true},records:[],watermark:now-1000,snoozeUntil:0,generation:0,initializedAt:now-3600000});
 const context=():ReminderContext=>({now,generation:0,profileId:'a',foreground:true,focused:true,training:false,onboarding:false,chat:false,modal:false,idleSince:now-60001});
 const source:ReminderSource={id:'w:a:v:2026-10-09:13:00',kind:'workout',taskId:'a',versionId:'v',date:'2026-10-09',startTime:'13:00',timeZone:'Asia/Shanghai',from:now-30*60000,until:now+30*60000};
 describe('reminders civil time and admission',()=>{

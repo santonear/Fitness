@@ -78,6 +78,7 @@ export async function validateTransportRequest(value: unknown,k:number,maxBytes:
  if(!value||typeof value!=='object'||!('coach' in value))return validateRequest(value,k,maxBytes);
  const parsed=coachEnvelope.safeParse(value);if(!parsed.success)throw new ControlError('INVALID_INPUT',400);
  const request=parsed.data,coach=request.coach;
+ if(coach.body && typeof coach.body.age==='number' && coach.body.age<18)throw new ControlError('INVALID_INPUT',400);
  if(new TextEncoder().encode(canonical(request)).byteLength>maxBytes)throw new ControlError('RANGE_TOO_LARGE',413);
  if(request.requestId!==coach.requestId||request.restoreGeneration!==coach.restoreGeneration||request.locale!==coach.locale||request.operation!==(coach.task==='PERIOD_REVIEW'?'summary':'generate'))throw new ControlError('INVALID_INPUT',400);
  if(request.sendConfirmation!==await confirmationFor(request)||coach.sendConfirmation!==await confirmationFor(coach))throw new ControlError('CONFIRMATION_REQUIRED',400);
