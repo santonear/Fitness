@@ -5,6 +5,7 @@ async function plan(page:Page){
  await page.getByLabel('你的回答').fill('每周3次，每次30分钟');await page.getByRole('button',{name:'继续',exact:true}).click();
  await page.getByLabel('你的回答').fill('在家，只有瑜伽垫');await page.getByRole('button',{name:'继续',exact:true}).click();
  await page.getByLabel('我已年满 18 岁',{exact:false}).check();await page.getByRole('button',{name:'生成我的第一版计划'}).click();await page.getByRole('button',{name:'就用这份计划'}).click();
+ await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
 }
 test('plan details morph from a chip, preserve read-only versions, and restore keyboard focus',async({page})=>{
  await plan(page);await page.goto('/plans');const chip=page.locator('.plan-items button').first();await chip.click();
