@@ -7,6 +7,7 @@ import { verifyApplicationProof } from './application-verification';
 import { assertOperatorSecret, createSupplierTransport, type ProviderCodec, type TransportConfig } from './supplier-transport';
 import { DailyUsageStore, withDailyUsage } from './daily-usage-store';
 import { readFeatureFlags, type FeatureConfigEnv } from './feature-config';
+import { supplierDiagnostics } from './supplier-diagnostics';
 
 export interface WorkerEnv extends FeatureConfigEnv {
   TURNSTILE_SECRET_KEY?: string; TURNSTILE_SITE_KEY?: string;
@@ -16,6 +17,7 @@ export interface WorkerEnv extends FeatureConfigEnv {
   CONTROL_DB?: D1Binding;
   FITNESS_OPS_DB?: D1Binding;
   FITNESS_DAILY_LIMITS?: string;
+  FITNESS_SUPPLIER_DIAGNOSTICS?: string;
 }
 const count = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 const policy = z.strictObject({ timeZone: z.string().min(1), k: count.min(1).max(14), budgetLimit: count,
@@ -60,8 +62,9 @@ export function createWorker(dependencies: { store?: (env: WorkerEnv) => Control
       if (config.mode === 'control-only' && ['/api/v1/goals/interpret', '/api/v1/plans/generate', '/api/v1/stages/summarize', '/api/v1/admin/supplier', '/api/v1/admin/mock'].includes(path))
         return json({ error: 'AI_DISABLED' }, 503);
       if (config.mode === 'external' && (!dependencies.codec || dependencies.codec.providerId !== config.providerId)) throw new ControlError('PROVIDER_SELECTION_REQUIRED', 503);
+      const diagnostic = supplierDiagnostics(env.FITNESS_SUPPLIER_DIAGNOSTICS === 'errors');
       let supplier = config.mode === 'external'
-        ? createSupplierTransport(config.transport, dependencies.codec!, dependencies.transport ?? fetch)
+        ? createSupplierTransport({ ...config.transport, onFailure: diagnostic }, dependencies.codec!, dependencies.transport ?? fetch)
         : { kind: 'external-transport' as const, call: async () => { throw new ControlError('AI_DISABLED', 503); } };
       if ((await readFeatureFlags(env)).aiOperations) {
         if (!env.FITNESS_OPS_DB) throw new ControlError('DAILY_USAGE_FALLBACK',503);
@@ -73,7 +76,7 @@ export function createWorker(dependencies: { store?: (env: WorkerEnv) => Control
       if (!store) throw new ControlError('CONTROL_UNAVAILABLE', 503);
       if (config.mode === 'control-only' && path === '/api/v1/health' && request.method === 'GET')
         return json({ status: 'control-only', productionModelEnabled: false });
-      const service = new ControlService(store, config.control, supplier);
+      const service = new ControlService(store, config.control, supplier, Date.now, () => diagnostic({ stage: 'candidate' }));
       return createHandler(service, { origins: config.origins, maxBodyBytes: config.control.maxInputBytes,
         nutritionEnabled: (await readFeatureFlags(env)).nutrition,
         ...(env.TURNSTILE_SECRET_KEY && env.TURNSTILE_SITE_KEY ? { turnstileSiteKey: env.TURNSTILE_SITE_KEY,

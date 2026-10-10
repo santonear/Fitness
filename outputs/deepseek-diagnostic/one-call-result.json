@@ -1,0 +1,16 @@
+{
+  "at": "2026-10-10T18:59:29.925Z",
+  "httpStatus": 200,
+  "result": {
+    "stage": "passed",
+    "status": 200,
+    "boundFen": 8,
+    "modelCalls": 1,
+    "elapsedMs": 3045
+  },
+  "productionKey": true,
+  "isolatedPreview": true,
+  "ledgerBinding": false,
+  "attemptLimit": 1,
+  "limitFen": 10
+}

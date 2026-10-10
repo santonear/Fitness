@@ -15,6 +15,25 @@ const post = (path: string, data: unknown, cookie?: string, admin = 'a'.repeat(4
     Authorization: `Bearer ${admin}`, ...(cookie ? { Cookie: cookie } : {}) }, body: JSON.stringify(data),
 });
 
+it.each(['off','http','candidate'] as const)('bounded diagnostics %s preserves pending accounting and never logs payloads',async mode=>{
+ const store=new SqliteControlStore(':memory:');const log=vi.spyOn(console,'warn').mockImplementation(()=>{});
+ const transport=vi.fn(async()=>mode==='candidate'
+  ? new Response(JSON.stringify({choices:[{finish_reason:'stop',message:{role:'assistant',content:'{"private":"content"}'}}]}))
+  : new Response('private upstream content',{status:401}));
+ const config={...env(),...(mode==='off'?{}:{FITNESS_SUPPLIER_DIAGNOSTICS:'errors'})};
+ const worker=createDeepSeekWorker({store:()=>store,transport});
+ try{
+  const issued=await (await worker.fetch(post('admin/invites',{}),config)).json() as {code:string};
+  const redeem=await worker.fetch(post('trial/redeem',{code:issued.code}),config);const cookie=redeem.headers.get('set-cookie')!.split(';')[0];
+  await worker.fetch(post('admin/supplier',{enabled:true}),config);
+  expect(await(await worker.fetch(post('plans/generate',await currentCoachEnvelope(),cookie),config)).json()).toEqual({error:'ACCOUNTING_PENDING'});
+  expect(transport).toHaveBeenCalledTimes(1);
+  expect(Object.values((await store.read()).requests)[0]).toMatchObject({status:'pending',error:'SUPPLIER_UNCERTAIN'});
+  if(mode==='off')expect(log).not.toHaveBeenCalled();
+  else expect(log.mock.calls).toEqual([[mode==='http'?{event:'supplier_failure',stage:'http',httpStatus:401}:{event:'supplier_failure',stage:'candidate'}]]);
+ }finally{log.mockRestore();store.close();}
+});
+
 it('DeepSeek entrypoint defaults off without accessing the store or transport', async () => {
   const store = vi.fn(() => { throw new Error('unexpected store'); });
   const transport = vi.fn(async () => { throw new Error('unexpected network'); });

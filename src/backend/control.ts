@@ -29,7 +29,8 @@ const usageKey = (subjectId: string, period: string) => `${subjectId}:${period}`
 export class ControlService {
   get applications() { return new TrialApplications(this.store, this.config.digestSecret, this.now); }
   constructor(private readonly store: ControlStore, private readonly config: ControlConfig,
-    private readonly supplier: MockSupplier | ExternalSupplier, private readonly now = Date.now) {
+    private readonly supplier: MockSupplier | ExternalSupplier, private readonly now = Date.now,
+    private readonly onCandidateFailure?: () => void) {
     new Intl.DateTimeFormat('en', { timeZone: config.timeZone });
     if (!((config.mode === 'local-test' && supplier.kind === 'local-mock') || (config.mode === 'external' && supplier.kind === 'external-transport')) || !config.adminSecret || !config.digestSecret ||
       ![config.k, config.budgetLimit, config.maximumRequestCost, config.maxConcurrent, config.maxInputBytes,
@@ -312,8 +313,10 @@ export class ControlService {
     });
     if (!submitted) throw new ControlError('NOT_SUBMITTED');
     let response: { result: unknown; actualCost?: number };
+    let supplierReturned = false;
     try {
       const supplied: unknown = await this.supplier.call(request);
+      supplierReturned = true;
       if (!supplied || typeof supplied !== 'object' || Array.isArray(supplied) || !Object.hasOwn(supplied, 'result')) throw new Error('invalid envelope');
       const envelope = supplied as { result: unknown; actualCost?: unknown };
       const hasCost = Object.hasOwn(envelope, 'actualCost');
@@ -324,7 +327,10 @@ export class ControlService {
       response = { result: hasCost ? envelope.result : validateCandidate(request, envelope.result),
         ...(hasCost ? { actualCost: actualCost as number } : {}) };
     }
-    catch { await this.pending(key); throw new ControlError('ACCOUNTING_PENDING', 503); }
+    catch {
+      if (supplierReturned) { try { this.onCandidateFailure?.(); } catch { /* Diagnostics cannot change accounting. */ } }
+      await this.pending(key); throw new ControlError('ACCOUNTING_PENDING', 503);
+    }
     if (response.actualCost === undefined) {
       // Candidate delivery does not prove a bill. Only excess above a verified ceiling can be released.
       // Observe cancellation and independent settlement in the same transaction.
