@@ -24,6 +24,7 @@ function useController() {
  const navigate = useNavigate(), location = useLocation(), appearance = useTheme();
  const [data,setData] = useState<Awaited<ReturnType<typeof workflow.snapshot>>>();
  const [monthFacts,setMonthFacts] = useState<MonthFacts>(), [previousFacts,setPreviousFacts]=useState<WeekFacts>(), [facts,setFacts] = useState<WeekFacts>(), [answers,setAnswers] = useState(blank), [step,setStep] = useState<0|1|2|3>(0);
+ const [completedWeeks,setCompletedWeeks] = useState<[WeekFacts,WeekFacts]>();
  const [candidate,setCandidate] = useState<LocalCandidate>(), [busy,setBusy] = useState(false), [error,setError] = useState('');
  const [workoutValues,setWorkoutValues]=useState<Record<string,number>>({}),[focusIndex,setFocusIndex]=useState(0);
  const [ready,setReady] = useState(false); const draftKey = useRef(''), lock = useRef(false);
@@ -34,7 +35,9 @@ function useController() {
   const input={ ...week(next.profile?.timeZone ?? 'Asia/Shanghai'), timeZone: next.profile?.timeZone ?? 'Asia/Shanghai', weeklyTarget: next.version?.weeklyTarget ?? 2, ...review, activities: next.activities, bodyWeights: await repository.db.bodyWeights.toArray() };
   setFacts(computeWeekFacts(input));
   const shift=(d:string,n:number)=>new Date(Date.parse(d+'T00:00:00Z')+n*86400000).toISOString().slice(0,10);
-  setPreviousFacts(computeWeekFacts({...input,from:shift(input.from,-7),to:shift(input.from,-1)}));
+  const previous=computeWeekFacts({...input,from:shift(input.from,-7),to:shift(input.from,-1)});
+  setPreviousFacts(previous);
+  setCompletedWeeks([computeWeekFacts({...input,from:shift(input.from,-14),to:shift(input.from,-8)}),previous]);
   const today=new Intl.DateTimeFormat('en-CA',{timeZone:input.timeZone,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
   const year=Number(today.find(p=>p.type==='year')!.value),month=Number(today.find(p=>p.type==='month')!.value);
   setMonthFacts(computeMonthFacts({...input,from:new Date(Date.UTC(year,month-1,1)).toISOString().slice(0,10),to:new Date(Date.UTC(year,month,0)).toISOString().slice(0,10)}));
@@ -52,7 +55,7 @@ function useController() {
  const slots=getThemeSlots(appearance.theme);
  const name=(id:string)=>exercises.find(e=>e.id===id)?.name[locale]??id;
  const start=(templateId?:string,manualId?:string)=>run(async()=>{const record=await workflow.start(templateId,manualId);setWorkoutValues({});setFocusIndex(0);navigate(`/workout/${record.id}`);});
- return {monthFacts,previousFacts,workoutValues,setWorkoutValues,focusIndex,setFocusIndex,data,facts,answers,setAnswers,step,setStep,candidate,setCandidate,busy,error,locale,t,slots,name,navigate,run,reload,start,appearance};
+ return {completedWeeks,monthFacts,previousFacts,workoutValues,setWorkoutValues,focusIndex,setFocusIndex,data,facts,answers,setAnswers,step,setStep,candidate,setCandidate,busy,error,locale,t,slots,name,navigate,run,reload,start,appearance};
 }
 const Context=createContext<ReturnType<typeof useController>|null>(null);
 export const useMainline=()=>{const value=useContext(Context);if(!value)throw new Error('Missing mainline provider');return value;};
