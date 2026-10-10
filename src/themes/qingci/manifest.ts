@@ -1,2 +1,3 @@
 import { createManifest } from '../manifest';
-export default createManifest('qingci');
+import { qingciSlots } from './slots';
+export default { ...createManifest('qingci'), slots: qingciSlots };

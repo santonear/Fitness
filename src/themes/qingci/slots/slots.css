@@ -1,0 +1,13 @@
+@property --ring-a { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+.v8-qingci-brand svg { inline-size: var(--s7); block-size: var(--s7); fill: none; stroke: var(--c-primary); stroke-width: 2; }
+.v8-qingci-start .v8-button-primary { inline-size: calc(var(--s8) * 2); block-size: calc(var(--s8) * 2); border-radius: 50%; box-shadow: 0 0 0 var(--s3) var(--c-surface-2), 0 0 0 var(--s4) var(--c-line), var(--el-2); }
+.v8-qingci-start { padding: var(--s5); }
+.v8-qingci-nav .v8-nav-body { fill: var(--nav-glaze); }
+.v8-qingci-feature .v8-feature::before { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: var(--ring-w); background: var(--ring); mask: linear-gradient(white 0 0) content-box, linear-gradient(white 0 0); mask-composite: exclude; pointer-events: none; }
+.v8-qingci-feature .v8-feature::after { content: ''; position: absolute; z-index: -1; inset-inline: 15%; bottom: 0; block-size: var(--s5); background: var(--glow); filter: blur(var(--glow-blur)); border-radius: 50%; opacity: .35; pointer-events: none; }
+.v8-qingci-feature [data-motion="on"]::before { animation: v8-qingci-ring var(--ring-cycle) linear infinite; }
+.v8-qingci-feature [data-motion="on"]::after { animation: v8-qingci-breath var(--breath) ease-in-out infinite; }
+@keyframes v8-qingci-ring { to { --ring-a: 360deg; } }
+@keyframes v8-qingci-breath { 0%, 100% { opacity: .35; transform: scaleX(.82); } 50% { opacity: .85; transform: scaleX(1.06); } }
+@media (prefers-reduced-motion: reduce) { .v8-qingci-feature .v8-feature::before, .v8-qingci-feature .v8-feature::after { animation: none; } }
+

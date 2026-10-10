@@ -43,7 +43,7 @@ export function Toggle({ checked, onCheckedChange, children, className, onClick,
 }) {
   return <Pressable {...props} role="switch" aria-checked={checked} className={classes('v8-control', 'v8-toggle', className)}
     onClick={event => { onClick?.(event); if (!event.defaultPrevented) onCheckedChange(!checked); }}>
-    <span>{children}</span><span className="v8-toggle-mark" aria-hidden="true">{checked ? '✓' : '−'}</span>
+    <span>{children}</span><span className="v8-toggle-track" aria-hidden="true"><span className="v8-toggle-thumb" /></span>
   </Pressable>;
 }
 
