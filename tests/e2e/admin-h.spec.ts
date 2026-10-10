@@ -13,7 +13,9 @@ function report() {
 async function mock(page: Page, options: { failRead?: boolean; failQuota?: boolean } = {}) {
   const writes: { op: string; body: Record<string, unknown> }[] = [];
   await page.route('**/api/v1/**', async route => {
-    const op = new URL(route.request().url()).pathname.replace('/api/v1/management/', '');
+    const path = new URL(route.request().url()).pathname;
+    if (path === '/api/v1/features') return route.fulfill({ json: { version: 1, flags: {}, expiresAt: Date.now() + 60_000 } });
+    const op = path.replace('/api/v1/management/', '');
     if (op === 'applications') return route.fulfill({ status: options.failRead ? 403 : 200, json: options.failRead ? { error: 'FORBIDDEN' } : report() });
     writes.push({ op, body: route.request().postDataJSON() });
     if (op === 'quota-restore' && options.failQuota) return route.fulfill({ status: 503, json: { error: 'UNAVAILABLE' } });

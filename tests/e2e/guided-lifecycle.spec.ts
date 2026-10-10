@@ -22,13 +22,13 @@ test('paused training blocks set writes and resumes without generating completio
   expect(await scenario(page, 'workout')).toEqual({ rejected: true, sets: 1, session: 'completed', events: ['created', 'workout_paused', 'workout_resumed', 'workout_ended'] });
 });
 test('phase replacement retains ongoing training and complete backup', async ({ page }) => {
-  expect(await scenario(page, 'replace')).toEqual({ old: 'terminated', sessionUnchanged: true, denied: true, sets: 1, backup: 6 });
+  expect(await scenario(page, 'replace')).toEqual({ old: 'terminated', sessionUnchanged: true, denied: true, sets: 1, backup: 7 });
 });
 test('guided history reuses bounded read-only snapshot and ignores unrelated local changes', async ({ page }) => {
   expect(await scenario(page, 'history')).toEqual({ readOnly: true, same: true, bounded: true, limitReadOnly: true, sessions: 1, sets: 1, status: 'in_progress', localAnswersExcluded: true });
 });
 test('managed child plan deletion is refused and restored candidates cannot be adopted', async ({ page }) => {
-  expect(await scenario(page, 'protected')).toEqual({ deleteDenied: true, planPreserved: true, editCode: 'CONFLICT', dayPreserved: true, backup: 6, staleCandidateDenied: true, generation: 1, programs: 1 });
+  expect(await scenario(page, 'protected')).toEqual({ deleteDenied: true, planPreserved: true, editCode: 'CONFLICT', dayPreserved: true, backup: 7, staleCandidateDenied: true, generation: 1, programs: 1 });
 });
 test('foreign occupancy prevents phase resume and leaves paused state unchanged', async ({ page }) => {
   expect(await scenario(page, 'collision')).toEqual({ conflictCode: 'CONFLICT', preserved: true, status: 'paused', foreign: 'active' });

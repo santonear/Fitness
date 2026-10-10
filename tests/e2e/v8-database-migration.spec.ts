@@ -9,7 +9,7 @@ for (const name of ['v5-plans-weight', 'v62-plans-weight', 'v71-plans-weight', '
       const path = '/tests/e2e/helpers/v8-migration-browser.ts';
       return (await import(/* @vite-ignore */ path)).verifyV8Migration(source);
     }, envelope);
-    expect(result).toEqual({ unchanged: true, idempotent: true, readOnly: true, schemaVersion: 8, envelopeVersion: 6,
+    expect(result).toEqual({ unchanged: true, idempotent: true, readOnly: true, schemaVersion: 9, envelopeVersion: 7,
       planCount: envelope.data.plans.filter((plan: { deletedAt?: string }) => !plan.deletedAt).length,
       noticeCount: envelope.data.plans.filter((plan: { deletedAt?: string }) => !plan.deletedAt).length,
       noticeCleared: true, historyCount: envelope.data.sessions.length, oldRestoreSame: true, roundTrip: true, reminderPreserved: true, restoreRejected: true, restoreRolledBack: true, invalidDurationsExcluded: true, notesPreserved: true });

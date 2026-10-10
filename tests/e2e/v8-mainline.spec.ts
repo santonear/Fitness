@@ -69,7 +69,7 @@ async function onboard(page: Page, caution?: string) {
   await expect(page.getByRole('heading', { name: '你的第一版计划' })).toBeVisible();
 }
 test('real local mainline persists a confirmed plan, training and review with no model requests', async ({ page }) => {
-  let calls = 0; page.on('request', request => { if (request.url().includes('/api/')) calls++; });
+  let calls = 0; page.on('request', request => { if (request.url().includes('/api/') && new URL(request.url()).pathname !== '/api/v1/features') calls++; });
   await onboard(page);
   expect(await page.evaluate(async () => { const p = '/src/persistence/db.ts'; return (await import(/* @vite-ignore */ p)).database.v8Plans.count(); })).toBe(0);
   await page.getByRole('button', { name: '就用这份计划' }).click();

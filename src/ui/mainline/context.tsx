@@ -1,3 +1,4 @@
+import { countUsage, reportSafeError } from '../../application/monitoring-client';
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../themes/ThemeProvider';
@@ -53,8 +54,11 @@ function useController() {
  const [workoutValues,setWorkoutValues]=useState<Record<string,number>>({}),[focusIndex,setFocusIndex]=useState(0);
  const [ready,setReady] = useState(false); const draftKey = useRef(''), lock = useRef(false);
  const locale: 'zh'|'en' = data?.profile?.locale === 'en' ? 'en' : 'zh', t = locale === 'zh' ? zh : en;
+ const observedCounts=useRef<{plans:number;started:number;completed:number}|undefined>(undefined);
  async function reload() {
   const next = await workflow.snapshot(); setData(next);
+  const counters={plans:next.versions.length,started:next.workouts.length,completed:next.workouts.filter(w=>['complete','partial','not_started'].includes(w.status)).length};
+  if(observedCounts.current){for(const [key,event] of [['plans','plan_confirmed'],['started','workout_started'],['completed','workout_completed']] as const){const delta=counters[key]-observedCounts.current[key];if(delta>0)countUsage(event,delta);}}observedCounts.current=counters;
   const review = await createV8DataService(repository).getReviewWorkouts();
   const legacyAnswers=(await repository.db.guidedStates.get('guided'))?.onboarding?.answers;
   setOptionalCoach({body:optionalCoachBody(next.profile,legacyAnswers),history:optionalCoachHistory([...review.legacyWorkouts,...review.workouts],activityDate(next.profile?.timeZone??'Asia/Shanghai'),next.profile?.timeZone??'Asia/Shanghai',next.profile?.locale==='en'?'en':'zh')});
@@ -69,7 +73,7 @@ function useController() {
   setMonthFacts(computeMonthFacts({...input,from:new Date(Date.UTC(year,month-1,1)).toISOString().slice(0,10),to:new Date(Date.UTC(year,month,0)).toISOString().slice(0,10)}));
   return next;
  }
- async function run(action: () => Promise<void>) { if(lock.current)return; lock.current=true;setBusy(true);setError('');try{await action();await reload();}catch{setError(t.saveError);}finally{lock.current=false;setBusy(false);} }
+ async function run(action: () => Promise<void>) { if(lock.current)return; lock.current=true;setBusy(true);setError('');try{await action();await reload();}catch{reportSafeError('storage');setError(t.saveError);}finally{lock.current=false;setBusy(false);} }
  useEffect(()=>{let alive=true;void(async()=>{
   let initialLocale:'zh'|'en'='zh';try{if(localStorage.getItem('fitness.language')==='en')initialLocale='en';}catch{/* Use the default when storage is unavailable. */}await profileService.initialize(initialLocale);const next=await reload();if(!alive)return;
   if(next.profile)await i18n.changeLanguage(next.profile.locale);if(!alive)return;

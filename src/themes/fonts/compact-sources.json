@@ -5,16 +5,16 @@
     "sourceSha256": "c426c064971cd18c7213ed1e167f77997e780e469568f0dc8c5b312f8ac2f8c2",
     "requiredGlyphs": 3662,
     "missingGlyphs": [],
-    "appCjkGlyphs": 879,
+    "appCjkGlyphs": 905,
     "missingAppCjkGlyphs": []
   },
   "notoserifsc": {
-    "bytes": 170904,
-    "sha256": "1844659e72e9830b6a77697716450d8e979052ddc4f30accf1fd3f12652c0635",
+    "bytes": 175528,
+    "sha256": "f6e1669eeabb83eecadb177f81a170798828a68752a187a30ccd0cfdfd14602a",
     "sourceSha256": "f2698b292b20844789f7d28ab19875ab9780ad9fcbe8eb439ce24f1bb0e6d9e4",
-    "requiredGlyphs": 1010,
+    "requiredGlyphs": 1036,
     "missingGlyphs": [],
-    "appCjkGlyphs": 879,
+    "appCjkGlyphs": 905,
     "missingAppCjkGlyphs": []
   }
 }

@@ -2,11 +2,17 @@ import { disabledFeatures, parseFeatureFlags, type FeatureName, type FeatureFlag
 let flags = disabledFeatures();
 let expiresAt = 0;
 let pending: Promise<void> | undefined;
+let expiryTimer: ReturnType<typeof setTimeout> | undefined;
 const listeners = new Set<() => void>();
 export const subscribeFeatureFlags = (listener: () => void) => { listeners.add(listener); return () => { listeners.delete(listener); }; };
 export function isFeatureEnabled(name: FeatureName): boolean { return expiresAt > Date.now() && flags[name]; }
 export function getFeatureFlags(): FeatureFlags { return expiresAt > Date.now() ? flags : disabledFeatures(); }
-function publish(next: FeatureFlags, until: number) { flags = next; expiresAt = until; for (const listener of listeners) listener(); }
+export const hasValidRemoteConfig = () => expiresAt > Date.now();
+function publish(next: FeatureFlags, until: number) {
+  clearTimeout(expiryTimer); flags = next; expiresAt = until;
+  if (until > Date.now()) expiryTimer = setTimeout(() => publish(disabledFeatures(), 0), until - Date.now());
+  for (const listener of listeners) listener();
+}
 /** No user ID, cookies, profile, or device details are sent to the public config endpoint. */
 export function refreshFeatureFlags(transport: typeof fetch = fetch): Promise<void> {
   if (pending) return pending;

@@ -5,7 +5,7 @@ const port=process.env.V8_TEST_PORT??'5291';
 export default defineConfig({
   testDir: './tests/e2e',
   // HTTP qualification tests require the production transport, not the local demo.
-  testIgnore: ['v8-final-matrix.spec.ts', 'trial-access.spec.ts', 'v8-mainline.spec.ts', 'v8-plan-review.spec.ts', 'v8-coach-panel.spec.ts'],
+  testIgnore: ['followup-finish.spec.ts', 'followup-pwa.spec.ts', 'v8-final-matrix.spec.ts', 'trial-access.spec.ts', 'v8-mainline.spec.ts', 'v8-plan-review.spec.ts', 'v8-coach-panel.spec.ts'],
   workers: 4,
   use: {
     baseURL: `http://127.0.0.1:${port}`,

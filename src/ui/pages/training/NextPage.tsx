@@ -35,6 +35,6 @@ export function NextPage(){
  <div className="v8-row"><Button disabled={templates.length<2} onClick={()=>setChoice(templates[(templates.findIndex(item=>item.id===selected.id)+1)%templates.length].id)}>{t.switch}</Button><Button onClick={()=>navigate('/manual')}>{t.manual}</Button></div></>:<Button variant="primary" onClick={()=>navigate('/onboarding')}>{t.create}</Button>}
  <Button onClick={()=>navigate('/activity')}>{t.recordActivity}</Button>
  {homePreview&&<section><CoachScopeDisclosure request={homePreview} locale={locale}/><Composer value={message} onChange={value=>setMessage(value.slice(0,1600))} label={coachCopy.input} sendLabel={coachCopy.send} disabled={busy} onSend={()=>{if(homePreview&&message.trim())sendHomeCoach(homePreview,message);}}/></section>}
- <Button onClick={()=>openCoach('ADJUST_TODAY',selected?.id)}><CoachVisual/>{t.askCoach}</Button>
+ <Button disabled={busy} onClick={()=>openCoach('ADJUST_TODAY',selected?.id)}><CoachVisual/>{t.askCoach}</Button>
  </main>;
 }

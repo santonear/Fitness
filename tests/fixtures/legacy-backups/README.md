@@ -17,3 +17,7 @@ V7.1 芽芽计划使用独立生成模式：`node tests/fixtures/legacy-backups/
 验证：`node node_modules/vitest/vitest.mjs run tests/unit/v8-legacy-ui-backups.test.ts`。
 
 芽芽样本验证：`node node_modules/vitest/vitest.mjs run tests/unit/v8-legacy-coach-backup.test.ts`。
+
+## V8.0.7 上一发布版样本
+
+`generate-v807.mjs` 在隔离检出 `492b9f7d762b319edd1e3e59350c9fb10b8ee6c3` 的实际界面中完成成年引导、基础计划确认、一组训练及部分完成反馈，然后经设置导出。`v807-mainline.json` 是实际下载结果，`v807-manifest.json` 保存来源、哈希和覆盖范围；没有直接写数据库、手写备份或模型调用。

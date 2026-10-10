@@ -14,5 +14,5 @@ test('rejects two occupying new day plans without changing the source library',a
 });
 test('legacy v2 JSON retains original facts and adds V8 plans on restore',async({page})=>{
   await page.goto('/tests/e2e/helpers/capacity-entry.html');const result=await page.evaluate(async()=>{const p='/tests/e2e/helpers/cal-browser.ts';const h=await import(/* @vite-ignore */ p);const {oldJson}=await h.seedCalLibrary();return h.verifyIsolatedRestore(oldJson);});
-  expect(result).toEqual({same:true,version:6,metadata:8});
+  expect(result).toEqual({same:true,version:7,metadata:9});
 });

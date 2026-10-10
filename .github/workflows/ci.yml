@@ -53,6 +53,8 @@ jobs:
       - run: npm run catalog:prepare
       - run: npx playwright install --with-deps chromium webkit
       - run: npm run test:e2e
+      - run: npx playwright test --config tests/e2e/followup-finish.config.ts
+      - run: npm run build && npx playwright test --config followup-pwa.config.ts
 
   browser-flows:
     needs: checks
