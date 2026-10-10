@@ -202,3 +202,18 @@ B独占 tests/fixtures/legacy-backups/ 和其中生成脚本/来源清单。MapS
 
 ## 2026-10-10 主线优先调整
 用户取消集成前阶段等待：CI 全绿合入 v8/integration；优先 A/B/C 与 E/F 青瓷主线，G/H 空闲后排。普通细节记 pending-decisions 后实施。主分支和公网仍待最终验收。V8.0.6 自由训练及 B 历史读取已完成本地验证，PR #35 待新 CI；新增可选 legacyWorkouts 由 C 读取，不写入重复历史。
+
+## 2026-10-10 四线并行（取代上方旧队列）
+
+统筹兼任①，另三位 Agent 分别承担②③④，运行时四个执行位置全部使用。每条线独立工作树、分支；统筹负责共享接口、路由接入、文档和 CI 合并。
+
+| 线 | 独占实现文件 | 排队顺序 |
+|---|---|---|
+| ① 外壳与训练 | src/ui/mainline/*、src/ui/routes.contract.ts、src/ui/pages/training/*、src/ui/pages/onboarding/*、src/application/v8-workflow.ts、v8-activity.ts、v8-onboarding-backfill.ts、training/onboarding 文案 | 导航与留白→记录活动→迁移提示→旧资料回填→双语 |
+| ② 计划与回顾 | src/application/review/*、src/application/v8-review.ts、相关建议规则、src/ui/pages/plan/*、src/ui/pages/review/*、plan/review 文案 | 计划/版本→五条周建议→月回顾→动作库 |
+| ③ 芽芽与设置 | src/coach/*、src/backend/coach-v8-* 及实际传输适配、src/ui/components/coach/*、src/ui/pages/settings/*、提醒模块、coach/settings 文案 | 面板/外发→设置→用户提醒→更多模板 |
+| ④ 组件与主题 | src/ui/components/common/*、src/themes/*、字体资源、后台目录 | MorphPanel/Toast/Composer 小PR→字体→三主题九签名→后台 |
+
+共享 domain schema、备份完整性校验和 CI 配置由统筹修改。②③仅提交所需路由条目，实际挂载由①完成。可选字段可直接新增并记入待审；删除或改变含义仍先确认。
+
+PR #38 已在 CI 全绿后合入 v8/integration。全部四线合入后才进行旧代码清理、新入口默认切换、四主题截图矩阵、对比度及样式报告。合并 main 前通知用户验收；当前不发布公网。

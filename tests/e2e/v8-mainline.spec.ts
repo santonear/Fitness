@@ -1,6 +1,20 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 
+test('a confirmed today adjustment changes only one workout and survives reload',async({page})=>{
+ await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();await expect(page.getByRole('heading',{name:'下一次'})).toBeVisible();
+ const result=await page.evaluate(async()=>{
+  const p='/src/ui/mainline/context.tsx',c='/src/coach/response-adapter.ts';const {workflow}=await import(/* @vite-ignore */ p);const {adaptCoachResponse}=await import(/* @vite-ignore */ c);
+  const s=await workflow.snapshot(),before=JSON.stringify(s.version),template=s.version.templates[0],requestId=crypto.randomUUID();
+  const target={planId:s.plan.id,versionId:s.version.id,revision:s.metadata.dataRevision};
+  const request={version:'fitness-coach-v8',requestId,conversationId:crypto.randomUUID(),restoreGeneration:s.metadata.restoreGeneration??0,inputSnapshot:'local revision',sendConfirmation:'test-confirmed',locale:'zh',timeZone:'Asia/Shanghai',adultConfirmed:true,messages:[],task:'ADJUST_TODAY',target,template,instruction:'今天少一组'};
+  const response=adaptCoachResponse(request,{requestId,restoreGeneration:request.restoreGeneration,mutationAllowed:false,type:'today_adjustment',target,template:{...template,items:template.items.map((i:any)=>({...i,sets:1}))},summary:'今天少一组'});
+  await workflow.applyCoachCandidate({request,response,expectedRevision:s.metadata.dataRevision});const staged=await workflow.snapshot();return {before,after:JSON.stringify(staged.version),staged:!!staged.state.nextWorkoutOverride};
+ });expect(result.before).toBe(result.after);expect(result.staged).toBe(true);
+ await page.reload();await page.getByRole('button',{name:'开始训练',exact:true}).first().click();await expect(page.getByText('第 1 组，共 1 组',{exact:true})).toBeVisible();
+ const saved=await page.evaluate(async()=>{const p='/src/ui/mainline/context.tsx';const s=await(await import(/* @vite-ignore */ p)).workflow.snapshot();return {override:s.state.nextWorkoutOverride,sets:s.active.templateSnapshot.items[0].sets,planSets:s.version.templates[0].items[0].sets};});expect(saved.override).toBeUndefined();expect(saved.sets).toBe(1);expect(saved.planSets).toBe(2);
+});
+
 async function onboard(page: Page, caution?: string) {
   await page.goto('/'); await expect(page).toHaveURL(/onboarding/);
   await page.getByLabel('你的回答').fill('想有些力量，不再容易累'); await page.getByRole('button', { name: '继续', exact: true }).click();

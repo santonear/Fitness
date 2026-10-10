@@ -57,6 +57,14 @@ describe('V8 backup migration boundary', () => {
     v8.plans[0].currentVersionId = crypto.randomUUID();
     expect(() => validateBackupEnvelope({ ...source, schemaVersion: 6, data: { ...source.data, metadata: { ...source.data.metadata, schemaVersion: 8 }, v8 } })).toThrow();
   });
+  it('retains a today-only override and rejects orphan targets',async()=>{
+    const source=validateBackupEnvelope(read('v71-coach-plan')),v8=await prepareV8Migration(source.data,at);
+    const plan=v8.plans.find(p=>p.id===v8.state.currentPlanId)!,version=v8.planVersions.find(v=>v.id===plan.currentVersionId)!;
+    v8.state.nextWorkoutOverride={planVersionId:version.id,templateId:version.templates[0].id,template:structuredClone(version.templates[0]),requestId:crypto.randomUUID()};
+    const envelope={...source,schemaVersion:6,data:{...source.data,metadata:{...source.data.metadata,schemaVersion:8},v8}};
+    expect(validateBackupEnvelope(envelope).data.v8?.state.nextWorkoutOverride).toEqual(v8.state.nextWorkoutOverride);
+    v8.state.nextWorkoutOverride.planVersionId=crypto.randomUUID();expect(()=>validateBackupEnvelope(envelope)).toThrow();
+  });
   it('backs up free training but refuses an unattached template or unknown plan', async () => {
     const source = validateBackupEnvelope(read('v71-coach-plan'));
     const v8 = await prepareV8Migration(source.data, at);
