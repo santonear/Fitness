@@ -4,6 +4,7 @@ import { SqliteControlStore } from '../../src/backend/sqlite-store';
 import { digest, confirmationFor, goalConfirmationFor } from '../../src/backend/contracts';
 import { createHandler } from '../../src/backend/http';
 import { EXERCISE_IDS } from '../../src/catalog/exercise-ids';
+import { currentCoachEnvelope } from '../fixtures/current-coach-envelope';
 
 const stores: SqliteControlStore[] = [];
 afterEach(() => stores.splice(0).forEach(store => store.close()));
@@ -168,7 +169,7 @@ describe('BE local control', () => {
     const f = await setup({}, async () => { throw new Error('private secret failure'); }); await f.service.enableMock(f.admin, true);
     const handler = createHandler(f.service, { origins: ['https://local.test'], maxBodyBytes: 2000 });
     const headers = { Origin: 'https://local.test', 'Content-Type': 'application/json', Cookie: `__Host-fitness_trial=${f.session.token}` };
-    const response = await handler(new Request('https://local.test/api/v1/goals/interpret', { method: 'POST', headers, body: JSON.stringify(await f.request()) }));
+    const response = await handler(new Request('https://local.test/api/v1/plans/generate', { method: 'POST', headers, body: JSON.stringify(await currentCoachEnvelope()) }));
     expect(response.status).toBe(503); expect(await response.json()).toEqual({ error: 'ACCOUNTING_PENDING' });
     expect((await handler(new Request('https://local.test/api/v1/goals/interpret', { method: 'POST', headers, body: JSON.stringify({ padding: 'x'.repeat(2100) }) }))).status).toBe(413);
     expect(() => createHandler(f.service, { origins: [], maxBodyBytes: 2000 })).toThrowError('INVALID_HTTP_CONFIG');

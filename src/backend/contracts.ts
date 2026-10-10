@@ -7,7 +7,7 @@ import { localeSchema, uuidSchema, localDateSchema, timeZoneSchema, plannedExerc
 import { ControlError } from './store';
 import { summaryStageSchema, summaryResultSchema, validateSummaryStage } from './summary-contract';
 import { guidedDialogueRequestSchema } from '../domain/guided-ai-contracts';
-import { validateGuidedProviderInput, validateGuidedProviderOutput } from './guided-provider';
+import { validateGuidedProviderInput, validateGuidedProviderOutput } from './legacy-guided-reader';
 import { coachRequestSchema } from '../coach/contracts';
 import { adaptCoachResponse } from '../coach/response-adapter';
 import { coachWireVersions, readCoachResponseEnvelope } from '../coach/wire-versions';

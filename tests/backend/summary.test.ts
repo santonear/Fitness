@@ -2,7 +2,7 @@ import { expect, it } from 'vitest';
 import { buildStageSummary } from '../../src/application/stage-summary-core';
 import { confirmationFor, validateCandidate, validateRequest } from '../../src/backend/contracts';
 import { validateSummaryStage, summaryStageSchema } from '../../src/backend/summary-contract';
-import { buildAiPrompt } from '../../src/backend/prompt';
+import { buildStageSummaryPrompt as buildAiPrompt } from '../../src/backend/summary-provider';
 import { createDeepSeekCodec } from '../../src/backend/deepseek';
 import { ControlService, testConfig } from '../../src/backend/control';
 import { SqliteControlStore } from '../../src/backend/sqlite-store';

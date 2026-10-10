@@ -5,7 +5,7 @@ import { plannedExerciseSchema } from '../../src/domain/schemas';
 import { EXERCISE_IDS } from '../../src/catalog/exercises';
 import { guidedInputSnapshot } from '../../src/ai/guided-dialogue';
 import { guidedDialogueRequestSchema, type GuidedDialogueRequest } from '../../src/domain/guided-ai-contracts';
-import { validateGuidedProviderInput, validateGuidedProviderOutput } from '../../src/backend/guided-provider';
+import { validateGuidedProviderInput, validateGuidedProviderOutput } from '../../src/backend/legacy-guided-reader';
 
 const id = 'd16325d9-fc00-4c41-88a1-000000000001';
 function request(days = 14): GuidedDialogueRequest {

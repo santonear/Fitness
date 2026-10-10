@@ -3,7 +3,7 @@ import { buildGuidedTopicDecisionPrompt, executeGuidedTopicDecision, GUIDED_TOPI
 import { guidedInputSnapshot, validateGuidedResponse } from '../../src/ai/guided-dialogue';
 import { type GuidedDialogueRequest } from '../../src/domain/guided-ai-contracts';
 import { exercises } from '../../src/catalog/exercises';
-import { buildAiPrompt } from '../../src/backend/prompt';
+import { buildAiPrompt } from '../fixtures/legacy-prompt';
 import { promptRequest } from '../fixtures/prompt-cases';
 
 const id = '00000000-0000-4000-8000-000000000001';

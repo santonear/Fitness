@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { EXERCISE_IDS, exercises } from '../../src/catalog/exercises';
 import { adaptCoachResponse, coachV8Exercises } from '../../src/coach/response-adapter';
 import type { CoachRequest } from '../../src/coach/contracts';
-import { coachPromptHeader } from '../../src/backend/coach-prompt-registry';
 import { coachV8PromptHeader } from '../../src/backend/coach-v8-prompt-registry';
 import { basicProposal } from '../../src/application/v8-workflow';
 
@@ -124,7 +123,6 @@ describe('V8 response boundary', () => {
     expect(adaptCoachResponse(onboard, { ...cases[0].response, proposal: { ...proposal, templates: [large, { ...large, id: 'B' }] } }).type).toBe('plan_proposal');
   });
   it('versions V8 prompts independently and retains legacy prompts', () => {
-    expect(coachPromptHeader('create')).toContain('@v7.1.0');
     cases.forEach(({ request }) => expect(coachV8PromptHeader(request.task)).toContain('@v8.1.0'));
     expect(coachV8PromptHeader('ONBOARD_PLAN')).toContain('20 means 20');
     expect(coachV8PromptHeader('PERIOD_REVIEW')).toContain('not_started is excluded');

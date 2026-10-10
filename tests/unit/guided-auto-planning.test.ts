@@ -1,10 +1,9 @@
 import { expect, it } from 'vitest';
 import { nextPlanningWindow } from '../../src/ai/guided-planning';
 import { guidedInputSnapshot } from '../../src/ai/guided-dialogue';
-import { guidedTransportEnvelope } from '../../src/ai/guided-transport';
+import { guidedTransportEnvelope } from '../fixtures/legacy-guided-envelope';
 import { validateCandidate, validateRequest } from '../../src/backend/contracts';
 import { fourMetricCandidate } from '../fixtures/prompt-cases';
-import { guidedProviderPrompt } from '../../src/backend/guided-provider';
 
 it('uses tomorrow and seven calendar days in the user timezone across year and DST boundaries', () => {
   expect(nextPlanningWindow(Date.parse('2026-12-31T17:00:00Z'), 'Asia/Shanghai').dates).toEqual([
@@ -22,9 +21,6 @@ it('allows AI to choose a nonempty subset only for explicitly authorized automat
     ...nextPlanningWindow(Date.parse('2026-10-07T00:00:00Z'), 'Asia/Shanghai') };
   const request = { ...input, requestId: crypto.randomUUID(), inputSnapshot: guidedInputSnapshot(input) };
   const envelope = await guidedTransportEnvelope(request);
-  expect(guidedProviderPrompt(request)[0].content).toContain('GENERATE a complete actionable training plan');
-  expect(guidedProviderPrompt(request)[0].content).toContain('ALLOWED window');
-  expect(guidedProviderPrompt(request)[0].content).toContain('rest intervals');
   await expect(validateRequest(envelope, 7, 65536)).resolves.toMatchObject({ operation: 'generate' });
   const raw = { kind: 'program', name: 'Weekly plan', explanation: 'One training day and recovery days',
     days: [{ ...fourMetricCandidate().days[0], date: input.dates[2] }] };

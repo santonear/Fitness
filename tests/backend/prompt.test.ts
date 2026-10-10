@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { buildAiPrompt, evaluateAiCandidate } from '../../src/backend/prompt';
+import { buildAiPrompt, evaluateAiCandidate } from '../fixtures/legacy-prompt';
 import { confirmationFor, goalConfirmationFor } from '../../src/backend/contracts';
 import { fourMetricCandidate, promptRequest } from '../fixtures/prompt-cases';
 
