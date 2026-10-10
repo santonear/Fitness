@@ -49,12 +49,15 @@
 .v8-stat dd { margin: 0; font-family: var(--f-num); font-size: var(--t6); font-weight: var(--w-num); }
 .v8-stat .v8-stat-description { font-family: var(--f-body); font-size: var(--t2); color: var(--c-ink-muted); }
 .v8-toggle { justify-content: space-between; }
-.v8-toggle-mark { color: var(--c-ink-muted); }
-.v8-toggle[aria-checked="true"] .v8-toggle-mark { color: var(--c-primary); }
+.v8-toggle-track { position: relative; flex-shrink: 0; inline-size: var(--touch-min); block-size: var(--s5); border-radius: var(--r-chip); background: var(--c-line); transition: background var(--press-dur) var(--spring); }
+.v8-toggle-thumb { position: absolute; inset-block-start: var(--s1); inset-inline-start: var(--s1); inline-size: var(--s4); block-size: var(--s4); border-radius: var(--r-chip); background: var(--c-on-primary); box-shadow: var(--el-1); transition: transform var(--press-dur) var(--spring); }
+.v8-toggle[aria-checked="true"] .v8-toggle-track { background: var(--c-primary); }
+.v8-toggle[aria-checked="true"] .v8-toggle-thumb { transform: translateX(calc(var(--touch-min) - var(--s4) - var(--s2))); }
+[dir="rtl"] .v8-toggle[aria-checked="true"] .v8-toggle-thumb { transform: translateX(calc(var(--s4) + var(--s2) - var(--touch-min))); }
 .v8-segmented { min-inline-size: 0; margin: 0; padding: 0; border: 0; font-family: var(--f-body); color: var(--c-ink); }
 .v8-segmented legend { padding: 0; margin-block-end: var(--s2); font-size: var(--t2); }
 .v8-segmented > div { display: flex; flex-wrap: wrap; gap: var(--s2); }
 @media (prefers-reduced-motion: reduce) {
-  .v8-press { transition: none; }
+  .v8-press, .v8-toggle-track, .v8-toggle-thumb { transition: none; }
   .v8-press:active:not(:disabled) { transform: none; }
 }

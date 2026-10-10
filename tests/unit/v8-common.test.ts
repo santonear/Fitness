@@ -13,6 +13,7 @@ describe('V8 native control contracts', () => {
   it('exposes controlled selection, switch state and native links', () => {
     expect(renderToStaticMarkup(createElement(Chip, { selected: true, children: 'A' }))).toContain('aria-pressed="true"');
     const toggle = renderToStaticMarkup(createElement(Toggle, { checked: false, onCheckedChange() {}, children: 'Reminders' }));
+    expect(toggle).toContain('v8-toggle-track'); expect(toggle).toContain('v8-toggle-thumb'); expect(toggle).not.toMatch(/[✓−]/);
     expect(toggle).toContain('role="switch"'); expect(toggle).toContain('aria-checked="false"');
     expect(renderToStaticMarkup(createElement(Link, { href: '#plan', children: 'Plan' }))).toContain('href="#plan"');
   });

@@ -1,0 +1,9 @@
+{
+  "brand": "Yaya", "suggestions": "You might say", "next": "Continue", "back": "Back", "answer": "Your answer",
+  "questions": ["Hi, I’m Yaya. What would you like to change for yourself?", "How often could you train each week, and for how long?", "Where do you usually train? What equipment do you have?"],
+  "answers": [["I’d like to lose weight and feel lighter", "I’d like more strength and energy", "I sit a lot and want to move more freely", "I’m not sure. I just want to get moving"], ["Twice a week, 30 minutes each time", "Three times a week, 30–45 minutes each time", "Four or more times a week", "I’m not sure. Help me decide"], ["At home, with a pair of dumbbells", "At home, with just a yoga mat", "At the gym", "Mostly outdoors"]],
+  "safety": "Two final checks, for your safety.", "adult": "I am at least 18 years old", "cautions": "Areas that need care", "parts": {"none": "None", "knee": "Knees", "back": "Lower back", "shoulder": "Shoulders", "wrist": "Wrists", "other": "Other"},
+  "minor": "If you’re under 18, train with guidance from a parent or a qualified professional.", "manual": "Train manually", "generate": "Generate my first plan", "basic": "Basic plan", "working": "Preparing your plan…",
+  "consent": "By selecting Generate, you agree to send the following to Yaya", "fields": ["Your goal, in your words", "Your availability, in your words", "Your space and equipment, in your words", "Age 18 or over", "Areas that need care"],
+  "draft": "Your first plan", "weekly": "{count} times a week", "minutes": "About {count} minutes", "why": "Why this plan", "accept": "Use this plan", "change": "I’d like changes. Talk to Yaya", "saving": "Saving…", "sets": "{count} sets", "reps": "{count} reps", "seconds": "{count} seconds", "meters": "{count} metres", "kg": "{count} kg"
+}
