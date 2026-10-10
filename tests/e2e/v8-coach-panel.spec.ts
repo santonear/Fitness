@@ -22,3 +22,20 @@ test('candidate preview shows repetitions load duration and distance before conf
  await page.goto('/tests/fixtures/v8-coach/index.html');await page.getByRole('button',{name:'跟芽芽说',exact:true}).click();await page.getByRole('textbox',{name:'跟芽芽说'}).fill('帮我看看');await page.getByRole('button',{name:'发送',exact:true}).click();
  await expect(page.getByText('高脚杯深蹲 · 2 组 · 8 次 · 12.5 kg').first()).toBeVisible();await expect(page.getByText('步行 · 1 组 · 600 s · 0.75 km').first()).toBeVisible();await expect(page.getByText('徒手深蹲 · 3 组 · 10 次').first()).toBeVisible();await expect(page.getByText('平板支撑 · 2 组 · 25 s').first()).toBeVisible();
 });
+test('duplicate apply is locked and a failed save retains the candidate without regenerating',async({page})=>{
+ let modelCalls=0,applyCalls=0;let finishApply:(()=>void)|undefined;
+ await page.route('**/api/v1/plans/generate',async route=>{modelCalls++;const sent=route.request().postDataJSON(),p=sent.coach.profile;
+  const item={exerciseId:EXERCISE_IDS.bodyweightSquat,equipment:'none',sets:2,target:{metricType:'reps',reps:8}};
+  await route.fulfill({json:{requestId:sent.requestId,context:{restoreGeneration:0,inputDigest:sent.sendConfirmation},accounting:'settled',result:{requestId:sent.requestId,restoreGeneration:0,mutationAllowed:false,type:'plan_proposal',proposal:{goalText:p.goalText,weeklyTarget:p.weeklyTarget,sessionMinutes:p.sessionMinutes,scheduleOriginalText:p.scheduleOriginalText,reasons:['a','b','c'],templates:[{id:'A',name:'A',estimatedMinutes:20,items:[item]},{id:'B',name:'B',estimatedMinutes:20,items:[item]}]}}}});
+ });
+ await page.route('**/fixture/apply',async route=>{applyCalls++;if(applyCalls===1){await new Promise<void>(resolve=>{finishApply=resolve;});await route.fulfill({status:409,body:'conflict'});}else await route.fulfill({status:200,body:'saved'});});
+ await page.goto('/tests/fixtures/v8-coach/index.html?apply-test');await page.getByRole('button',{name:'跟芽芽说',exact:true}).click();await page.getByRole('textbox',{name:'跟芽芽说'}).fill('帮我看看');await page.getByRole('button',{name:'发送',exact:true}).click();
+ const apply=page.getByRole('button',{name:'确认应用'});await expect(apply).toBeVisible();await apply.evaluate((element:HTMLButtonElement)=>{element.click();element.click();});await expect(apply).toBeDisabled();await expect.poll(()=>applyCalls).toBe(1);finishApply!();
+ await expect(page.getByRole('alert')).toHaveText('资料或计划已变化，请重新查看建议。');await expect(apply).toBeEnabled();await expect(page.getByText('徒手深蹲 · 2 组 · 8 次').first()).toBeVisible();expect(modelCalls).toBe(1);
+ await apply.click();await expect(page.getByText('已保存',{exact:true})).toBeVisible();expect(applyCalls).toBe(2);expect(modelCalls).toBe(1);
+});
+test('settings language persists and keeps the backup panel in the same language',async({page})=>{
+ await page.goto('/settings');await page.getByRole('combobox',{name:'语言'}).selectOption('en');await expect(page.getByRole('heading',{name:'Settings',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'Backup and restore',exact:true}).click();await expect(page.getByRole('heading',{name:'Backup and restore',exact:true})).toBeVisible();
+ await page.reload();await expect(page.getByRole('combobox',{name:'Language'})).toHaveValue('en');await page.getByRole('combobox',{name:'Language'}).selectOption('zh');await expect(page.getByRole('heading',{name:'设置',exact:true})).toBeVisible();
+});

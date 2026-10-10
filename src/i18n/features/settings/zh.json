@@ -31,5 +31,8 @@
   "reminder2": "开始训练",
   "reminder3": "4 小时后再说",
   "reminder4": "关闭本次",
-  "reminder5": "关闭全部提醒"
+  "reminder5": "关闭全部提醒",
+  "language": "语言",
+  "chinese": "中文",
+  "english": "English"
 }

@@ -28,6 +28,7 @@ function readable(value:unknown,copy:typeof zh,locale:'zh'|'en'):string{
 export function CoachPanel({open,onClose,request,expectedRevision,onApply,onResponse,triggerRef:externalTrigger,onLocalPlan,onLocalReview,locale,unavailableReason}:CoachPanelProps){
  const [text,setText]=useState(''),[body,setBody]=useState(false),[history,setHistory]=useState(false),[state,setState]=useState<CoachVisualState>('idle'),[error,setError]=useState(''),[candidate,setCandidate]=useState<CoachApplication>();
  const [requestId,setRequestId]=useState(()=>crypto.randomUUID());
+ const [applying,setApplying]=useState(false),applyLock=useRef(false);
  const controller=useRef<AbortController|undefined>(undefined),sequence=useRef(0),triggerRef=useRef<HTMLButtonElement>(null),sending=useRef(false);
  const t=(request?.locale??locale)==='en'?en:zh,lang=(request?.locale??locale)==='en'?1:0;
  const [noAccess,setNoAccess]=useState(false);
@@ -36,12 +37,12 @@ export function CoachPanel({open,onClose,request,expectedRevision,onApply,onResp
  useEffect(()=>()=>{sequence.current++;controller.current?.abort();},[]);
  useEffect(()=>{sequence.current++;controller.current?.abort();setState('idle');setCandidate(undefined);setBody(false);setHistory(false);},[request?.restoreGeneration,request?.conversationId]);
  async function send(){
-  if(!preview||sending.current)return;sending.current=true;const serial=++sequence.current;const abort=new AbortController();controller.current=abort;setError('');setNoAccess(false);setState('thinking');
+  if(!preview||sending.current||applyLock.current)return;sending.current=true;const serial=++sequence.current;const abort=new AbortController();controller.current=abort;setError('');setNoAccess(false);setState('thinking');
   try{const approved=await approveCoachScope(preview);const result=await sendCoach(approved,abort.signal);if(serial!==sequence.current)return;
    const next={request:approved,response:result.response,expectedRevision};setCandidate(next);setState('replying');onResponse?.(next);
   }catch(e){if(serial!==sequence.current)return;setState('idle');const denied=e instanceof Error&&['QUALIFICATION_REQUIRED','SUBJECT_EXPIRED','AI_DISABLED','INDIVIDUAL_QUOTA_EXHAUSTED','GLOBAL_BUDGET_EXHAUSTED'].includes(e.message);setNoAccess(denied);if(!abort.signal.aborted)setError(denied?t.qualification:t.offline);}finally{sending.current=false;setRequestId(crypto.randomUUID());}
  }
- async function apply(){if(!candidate||busy)return;setError('');try{await onApply(candidate);setState('success');}catch{setError(t.stale);}}
+ async function apply(){if(!candidate||busy||applyLock.current)return;applyLock.current=true;setApplying(true);setError('');try{await onApply(candidate);setState('success');}catch{setError(t.stale);}finally{applyLock.current=false;setApplying(false);}}
  const proposal=candidate&&('proposal' in candidate.response?candidate.response.proposal:candidate.response.type==='review_summary'?candidate.response.suggestion?.proposal:undefined);
  const templates=proposal?.templates??(candidate?.response.type==='today_adjustment'?[candidate.response.template]:[]);
  const canApply=candidate&&(['plan_proposal','change_proposal','today_adjustment'].includes(candidate.response.type)||candidate.response.type==='review_summary'&&candidate.response.suggestion);
@@ -50,10 +51,10 @@ export function CoachPanel({open,onClose,request,expectedRevision,onApply,onResp
   <CoachVisual state={state}/><div aria-live="polite">{busy?t.thinking:state==='success'?t.saved:''}</div>
   {!request&&<p>{unavailableReason??t.unavailable}</p>}
   {(!request||noAccess)&&<>{onLocalPlan&&<Button onClick={onLocalPlan}>{t.localPlan}</Button>}{onLocalReview&&<Button onClick={onLocalReview}>{t.localReview}</Button>}</>}
-  {candidate&&<section>{responseText(candidate.response).map((line,index)=><p key={index}>{line}</p>)}{templates.map(template=><section key={template.id}><h3>{template.name}</h3><p>{template.estimatedMinutes} {t.minutes}</p><ul>{template.items.map((item,index)=><li key={index}>{exercises.find(e=>e.id===item.exerciseId)?.name[lang?'en':'zh']??item.exerciseId} · {item.sets} {t.sets} · {targetText(item.target,lang?'en':'zh')}</li>)}</ul></section>)}{canApply&&state!=='success'&&<Button onClick={()=>void apply()}>{t.apply}</Button>}</section>}
+  {candidate&&<section>{responseText(candidate.response).map((line,index)=><p key={index}>{line}</p>)}{templates.map(template=><section key={template.id}><h3>{template.name}</h3><p>{template.estimatedMinutes} {t.minutes}</p><ul>{template.items.map((item,index)=><li key={index}>{exercises.find(e=>e.id===item.exerciseId)?.name[lang?'en':'zh']??item.exerciseId} · {item.sets} {t.sets} · {targetText(item.target,lang?'en':'zh')}</li>)}</ul></section>)}{canApply&&state!=='success'&&<Button disabled={applying} onClick={()=>void apply()}>{t.apply}</Button>}</section>}
   {preview&&<><label><input type="checkbox" checked={body} disabled={busy||!request?.body} onChange={e=>setBody(e.target.checked)}/>{t.body}</label><label><input type="checkbox" checked={history} disabled={busy||!request?.history} onChange={e=>setHistory(e.target.checked)}/>{t.history}</label>
    <details><summary>{t.scope}</summary><p>{t.consent}</p><p>{t.taskNames[preview.task]}</p><dl>{Object.entries(preview).filter(([key])=>['profile','body','history','messages','template','instruction','plan','kind','facts'].includes(key)).map(([key,value])=><div key={key}><dt>{t.fields[key as keyof typeof t.fields]}</dt><dd>{readable(value,t,lang?'en':'zh')}</dd></div>)}</dl><details><summary>{t.technical}</summary><dl>{coachScopeFields(preview).map(field=><div key={field.key}><dt>{t.fields[field.key as keyof typeof t.fields]??field.key}</dt><dd>{field.value}</dd></div>)}</dl></details></details>
-   <Composer value={text} onChange={setText} onSend={()=>void send()} label={t.input} sendLabel={t.send} busy={busy} disabled={busy}/></>}
+   <Composer value={text} onChange={setText} onSend={()=>void send()} label={t.input} sendLabel={t.send} busy={busy} disabled={busy||applying}/></>}
   {busy&&<Button onClick={()=>{sequence.current++;controller.current?.abort();setState('idle');}}>{t.cancel}</Button>}{error&&<p role="alert">{error}</p>}
   </div></MorphPanel>;
 }

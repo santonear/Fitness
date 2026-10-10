@@ -31,5 +31,8 @@
   "reminder2": "Start training",
   "reminder3": "In 4 hours",
   "reminder4": "Dismiss",
-  "reminder5": "Turn off reminders"
+  "reminder5": "Turn off reminders",
+  "language": "Language",
+  "chinese": "中文",
+  "english": "English"
 }
