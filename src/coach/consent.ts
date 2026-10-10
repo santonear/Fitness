@@ -6,6 +6,11 @@ export function coachScope(request: CoachRequest, includeBody = false, includeHi
   const { body, history, ...required } = structuredClone(request);
   return coachRequestSchema.parse({ ...required, ...(includeBody && body ? { body } : {}), ...(includeHistory && history ? { history } : {}) });
 }
+/** Shared by the home disclosure and its explicitly authorized panel send. */
+export function coachMessageScope(request:CoachRequest,message:string):CoachRequest{
+  const text=message.trim();
+  return coachScope({...request,...('instruction' in request&&text?{instruction:text}:{}),messages:text?[...request.messages.slice(-7),{role:'user',content:text}]:request.messages});
+}
 
 export async function approveCoachScope(request: CoachRequest): Promise<CoachRequest> {
   const parsed = coachRequestSchema.parse(request);

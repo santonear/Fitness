@@ -34,5 +34,11 @@
   "reminder5": "Turn off reminders",
   "language": "Language",
   "chinese": "中文",
-  "english": "English"
+  "english": "English",
+  "dailyLimit": "Maximum reminders per day",
+  "quietStart": "Quiet hours start",
+  "quietEnd": "Quiet hours end",
+  "quietConflict": "This reminder falls within quiet hours and will not appear during that time. Adjust the reminder time or quiet hours.",
+  "zeroLimit": "The daily limit is 0. Reminders will not appear.",
+  "trial": "Trial access and invitation code"
 }

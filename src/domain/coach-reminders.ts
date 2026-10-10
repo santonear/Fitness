@@ -6,7 +6,7 @@ export interface ReminderRecord extends ReminderSource { profileId: string; gene
 export interface CoachLedger { id: string; preferences: CoachPreferences; records: ReminderRecord[]; watermark: number; snoozeUntil: number; generation: number; initializedAt: number }
 export interface ReminderContext { now: number; generation: number; profileId: string; foreground: boolean; focused: boolean; training: boolean; onboarding: boolean; chat: boolean; modal: boolean; idleSince: number }
 const hour = 3600000;
-export const defaultCoachPreferences = (timeZone: string): CoachPreferences => ({ enabled: false, dailyLimit: 2, quietStart: '22:00', quietEnd: '08:00', timeZone, side: 'right' });
+export const defaultCoachPreferences = (timeZone: string): CoachPreferences => ({ enabled: false, dailyLimit: 1, quietStart: '22:00', quietEnd: '08:00', timeZone, side: 'right' });
 export function zonedMinute(at: number, timeZone: string) {
   const parts = new Intl.DateTimeFormat('en-CA', { timeZone, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', hourCycle:'h23' }).formatToParts(at);
   const get = (key: string) => parts.find(p => p.type === key)!.value;

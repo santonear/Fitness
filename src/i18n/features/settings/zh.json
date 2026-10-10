@@ -34,5 +34,11 @@
   "reminder5": "关闭全部提醒",
   "language": "语言",
   "chinese": "中文",
-  "english": "English"
+  "english": "English",
+  "dailyLimit": "每天最多提醒几次",
+  "quietStart": "静默开始时间",
+  "quietEnd": "静默结束时间",
+  "quietConflict": "这个提醒时间在静默时段内，静默期间不会显示提醒。可以调整提醒时间或静默时段。",
+  "zeroLimit": "每日上限为0，不会显示提醒。",
+  "trial": "试用资格与邀请码"
 }

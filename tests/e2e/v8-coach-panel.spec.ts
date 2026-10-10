@@ -39,3 +39,10 @@ test('settings language persists and keeps the backup panel in the same language
  await page.getByRole('button',{name:'Backup and restore',exact:true}).click();await expect(page.getByRole('heading',{name:'Backup and restore',exact:true})).toBeVisible();
  await page.reload();await expect(page.getByRole('combobox',{name:'Language'})).toHaveValue('en');await page.getByRole('combobox',{name:'Language'}).selectOption('zh');await expect(page.getByRole('heading',{name:'设置',exact:true})).toBeVisible();
 });
+test('an explicitly authorized home send is consumed once and excludes optional fields',async({page})=>{
+ let calls=0;await page.route('**/api/v1/plans/generate',async route=>{calls++;const sent=route.request().postDataJSON();expect(sent.coach.body).toBeUndefined();expect(sent.coach.history).toBeUndefined();expect(sent.coach.messages.at(-1).content).toBe('首页已确认的话');await route.fulfill({json:{requestId:sent.requestId,context:{restoreGeneration:0,inputDigest:sent.sendConfirmation},accounting:'settled',result:{requestId:sent.requestId,restoreGeneration:0,mutationAllowed:false,type:'clarify',question:'想在哪里练？'}}});});
+ await page.goto('/tests/fixtures/v8-coach/index.html');await page.getByRole('button',{name:'首页发送'}).click();await expect(page.getByText('想在哪里练？')).toBeVisible();await page.keyboard.press('Escape');await page.getByRole('button',{name:'首页发送'}).click();await expect(page.getByText('想在哪里练？')).toBeVisible();await page.getByRole('textbox',{name:'跟芽芽说'}).fill('仅修改草稿');expect(calls).toBe(1);
+});
+test('reminder settings expose quiet-time conflicts and legacy zero caps',async({page})=>{
+ await page.goto('/settings#reminders');await page.getByLabel('时间',{exact:true}).fill('06:00');await expect(page.getByText('这个提醒时间在静默时段内，静默期间不会显示提醒。可以调整提醒时间或静默时段。')).toBeVisible();await page.getByLabel('静默结束时间').fill('06:00');await expect(page.getByText('这个提醒时间在静默时段内，静默期间不会显示提醒。可以调整提醒时间或静默时段。')).not.toBeVisible();await page.getByLabel('每天最多提醒几次').selectOption('0');await expect(page.getByText('每日上限为0，不会显示提醒。')).toBeVisible();await expect(page.getByRole('button',{name:'试用资格与邀请码'})).toBeVisible();
+});

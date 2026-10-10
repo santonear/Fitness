@@ -3,7 +3,7 @@ import { Button, Composer, MorphPanel } from './common';
 import { CoachVisual } from './CoachVisual';
 import type { CoachVisualState } from './CoachAvatar';
 import type { CoachRequest, CoachResponse } from '../../coach/contracts';
-import { approveCoachScope, coachScope, coachScopeFields } from '../../coach/consent';
+import { approveCoachScope, coachScope, coachScopeFields, coachMessageScope } from '../../coach/consent';
 import { sendCoach } from '../../coach/transport';
 import zh from '../../i18n/features/coach/zh.json';
 import en from '../../i18n/features/coach/en.json';
@@ -12,6 +12,7 @@ import { targetText } from './ExerciseTargets';
 
 export type CoachApplication = { request: CoachRequest; response: CoachResponse; expectedRevision: number };
 export type CoachPanelProps = { open: boolean; onClose: () => void; request?: CoachRequest; expectedRevision: number;
+  initialSend?:{nonce:string;message:string;request:CoachRequest;expectedRevision:number};
   triggerRef?: RefObject<HTMLElement|null>; onLocalPlan?:()=>void; onLocalReview?:()=>void; locale?:'zh'|'en'; unavailableReason?:string; onApply: (candidate: CoachApplication) => Promise<unknown>; onResponse?: (candidate: CoachApplication) => void };
 
 function responseText(response: CoachResponse): string[] {
@@ -25,22 +26,24 @@ function readable(value:unknown,copy:typeof zh,locale:'zh'|'en'):string{
  return String(value);
 }
 /** Keep mounted when closed so drafts and reviewed candidates survive panel dismissal. */
-export function CoachPanel({open,onClose,request,expectedRevision,onApply,onResponse,triggerRef:externalTrigger,onLocalPlan,onLocalReview,locale,unavailableReason}:CoachPanelProps){
+export function CoachPanel({open,onClose,request,expectedRevision,onApply,onResponse,triggerRef:externalTrigger,onLocalPlan,onLocalReview,locale,unavailableReason,initialSend}:CoachPanelProps){
  const [text,setText]=useState(''),[body,setBody]=useState(false),[history,setHistory]=useState(false),[state,setState]=useState<CoachVisualState>('idle'),[error,setError]=useState(''),[candidate,setCandidate]=useState<CoachApplication>();
  const [requestId,setRequestId]=useState(()=>crypto.randomUUID());
  const [applying,setApplying]=useState(false),applyLock=useRef(false);
+ const consumedInitialSends=useRef(new Set<string>());
  const controller=useRef<AbortController|undefined>(undefined),sequence=useRef(0),triggerRef=useRef<HTMLButtonElement>(null),sending=useRef(false);
  const t=(request?.locale??locale)==='en'?en:zh,lang=(request?.locale??locale)==='en'?1:0;
  const [noAccess,setNoAccess]=useState(false);
  const busy=state==='thinking';
  const preview=request?coachScope({...request,requestId,...('instruction' in request&&text.trim()?{instruction:text.trim()}:{}),messages:text.trim()?[...request.messages.slice(-7),{role:'user',content:text.trim()}]:request.messages},body,history):undefined;
  useEffect(()=>()=>{sequence.current++;controller.current?.abort();},[]);
- useEffect(()=>{sequence.current++;controller.current?.abort();setState('idle');setCandidate(undefined);setBody(false);setHistory(false);},[request?.restoreGeneration,request?.conversationId]);
- async function send(){
-  if(!preview||sending.current||applyLock.current)return;sending.current=true;const serial=++sequence.current;const abort=new AbortController();controller.current=abort;setError('');setNoAccess(false);setState('thinking');
-  try{const approved=await approveCoachScope(preview);const result=await sendCoach(approved,abort.signal);if(serial!==sequence.current)return;
-   const next={request:approved,response:result.response,expectedRevision};setCandidate(next);setState('replying');onResponse?.(next);
-  }catch(e){if(serial!==sequence.current)return;setState('idle');const denied=e instanceof Error&&['QUALIFICATION_REQUIRED','SUBJECT_EXPIRED','AI_DISABLED','INDIVIDUAL_QUOTA_EXHAUSTED','GLOBAL_BUDGET_EXHAUSTED'].includes(e.message);setNoAccess(denied);if(!abort.signal.aborted)setError(denied?t.qualification:t.offline);}finally{sending.current=false;setRequestId(crypto.randomUUID());}
+ useEffect(()=>{sequence.current++;controller.current?.abort();sending.current=false;setState('idle');setCandidate(undefined);setBody(false);setHistory(false);},[request?.restoreGeneration,request?.conversationId]);
+ useEffect(()=>{if(!open||!initialSend||applyLock.current||consumedInitialSends.current.has(initialSend.nonce))return;sequence.current++;controller.current?.abort();sending.current=false;consumedInitialSends.current.add(initialSend.nonce);setText(initialSend.message);setBody(false);setHistory(false);void send(coachMessageScope(initialSend.request,initialSend.message),initialSend.expectedRevision);},[open,initialSend?.nonce,applying]);
+ async function send(scope=preview,revision=expectedRevision){
+  if(!scope||sending.current||applyLock.current)return;sending.current=true;const serial=++sequence.current;const abort=new AbortController();controller.current=abort;setError('');setNoAccess(false);setState('thinking');
+  try{const approved=await approveCoachScope(scope);const result=await sendCoach(approved,abort.signal);if(serial!==sequence.current)return;
+   const next={request:approved,response:result.response,expectedRevision:revision};setCandidate(next);setState('replying');onResponse?.(next);
+  }catch(e){if(serial!==sequence.current)return;setState('idle');const denied=e instanceof Error&&['QUALIFICATION_REQUIRED','SUBJECT_EXPIRED','AI_DISABLED','INDIVIDUAL_QUOTA_EXHAUSTED','GLOBAL_BUDGET_EXHAUSTED'].includes(e.message);setNoAccess(denied);if(!abort.signal.aborted)setError(denied?t.qualification:t.offline);}finally{if(serial===sequence.current){sending.current=false;setRequestId(crypto.randomUUID());}}
  }
  async function apply(){if(!candidate||busy||applyLock.current)return;applyLock.current=true;setApplying(true);setError('');try{await onApply(candidate);setState('success');}catch{setError(t.stale);}finally{applyLock.current=false;setApplying(false);}}
  const proposal=candidate&&('proposal' in candidate.response?candidate.response.proposal:candidate.response.type==='review_summary'?candidate.response.suggestion?.proposal:undefined);
@@ -55,6 +58,6 @@ export function CoachPanel({open,onClose,request,expectedRevision,onApply,onResp
   {preview&&<><label><input type="checkbox" checked={body} disabled={busy||!request?.body} onChange={e=>setBody(e.target.checked)}/>{t.body}</label><label><input type="checkbox" checked={history} disabled={busy||!request?.history} onChange={e=>setHistory(e.target.checked)}/>{t.history}</label>
    <details><summary>{t.scope}</summary><p>{t.consent}</p><p>{t.taskNames[preview.task]}</p><dl>{Object.entries(preview).filter(([key])=>['profile','body','history','messages','template','instruction','plan','kind','facts'].includes(key)).map(([key,value])=><div key={key}><dt>{t.fields[key as keyof typeof t.fields]}</dt><dd>{readable(value,t,lang?'en':'zh')}</dd></div>)}</dl><details><summary>{t.technical}</summary><dl>{coachScopeFields(preview).map(field=><div key={field.key}><dt>{t.fields[field.key as keyof typeof t.fields]??field.key}</dt><dd>{field.value}</dd></div>)}</dl></details></details>
    <Composer value={text} onChange={setText} onSend={()=>void send()} label={t.input} sendLabel={t.send} busy={busy} disabled={busy||applying}/></>}
-  {busy&&<Button onClick={()=>{sequence.current++;controller.current?.abort();setState('idle');}}>{t.cancel}</Button>}{error&&<p role="alert">{error}</p>}
+  {busy&&<Button onClick={()=>{sequence.current++;controller.current?.abort();sending.current=false;setState('idle');}}>{t.cancel}</Button>}{error&&<p role="alert">{error}</p>}
   </div></MorphPanel>;
 }

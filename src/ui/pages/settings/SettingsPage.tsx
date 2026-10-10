@@ -14,6 +14,7 @@ export function SettingsPage(){const{t,navigate,locale,run,busy}=useMainline();c
  <Button onClick={()=>setSection(section==='reminders'?'':'reminders')}>{copy.settingsPage0}</Button>
  <Button onClick={()=>setSection(section==='backup'?'':'backup')}>{copy.settingsPage1}</Button>
  <Button onClick={()=>setSection(section==='privacy'?'':'privacy')}>{copy.settingsPage2}</Button>
+ <Button onClick={()=>navigate('/trial')}>{copy.trial}</Button>
  <Button onClick={()=>navigate('/onboarding')}>{copy.settingsPage3}</Button>
  {section==='reminders'&&<ReminderSettings locale={locale}/>}{section==='backup'&&<BackupPanel/>}
  {section==='privacy'&&<section><h2>{copy.settingsPage4}</h2><p>{copy.settingsPage5}</p></section>}
