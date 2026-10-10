@@ -1,3 +1,4 @@
+import './fonts/fonts.css';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import tokens from '../../docs/handoff-v8/02-design-tokens.json';
 import type { ThemeId, ThemeManifest } from './contract';
@@ -45,3 +46,4 @@ export function useTheme(): ThemeContextValue {
   if (!context) throw new Error('useTheme requires ThemeProvider');
   return context;
 }
+

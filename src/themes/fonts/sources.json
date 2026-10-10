@@ -1,0 +1,37 @@
+{
+  "commonCharacters": 3500,
+  "subsetCharacters": 3663,
+  "characterListSource": "https://github.com/shengdoushi/common-standard-chinese-characters-table/blob/master/level-1.txt",
+  "fonts": {
+    "notosanssc": {
+      "source": "https://github.com/google/fonts/tree/main/ofl/notosanssc",
+      "sourceSha256": "a3041811a78c361b1de50f953c805e0244951c21c5bd412f7232ef0d899af0da",
+      "bytes": 962504,
+      "sha256": "c426c064971cd18c7213ed1e167f77997e780e469568f0dc8c5b312f8ac2f8c2"
+    },
+    "notoserifsc": {
+      "source": "https://github.com/google/fonts/tree/main/ofl/notoserifsc",
+      "sourceSha256": "050080d9255a86808f2945bffac582b31ef32bc36411ce29563b4961670c66f9",
+      "bytes": 654204,
+      "sha256": "f2698b292b20844789f7d28ab19875ab9780ad9fcbe8eb439ce24f1bb0e6d9e4"
+    },
+    "cormorantgaramond": {
+      "source": "https://github.com/google/fonts/tree/main/ofl/cormorantgaramond",
+      "sourceSha256": "b20b7d9626dd956b2c5e558692ad328b1f19e3275e2782db4fa07670d83f35e0",
+      "bytes": 22544,
+      "sha256": "835b332d102b00c2872725a2f4a00d2b087d3c2433bf8906390866875ec11ea8"
+    },
+    "jost": {
+      "source": "https://github.com/google/fonts/tree/main/ofl/jost",
+      "sourceSha256": "6343b70971000b04c5d401c96ae08ce371086135e999d5e1e1413039c0213076",
+      "bytes": 15948,
+      "sha256": "f45f9e77e63cbc83a7954b854f062f00cb72942be4aaae764732c2973023d99b"
+    },
+    "archivo": {
+      "source": "https://github.com/google/fonts/tree/main/ofl/archivo",
+      "sourceSha256": "0e094a7d3c7c4c25cf1310c4b30014f1dae9332220b1c2c88f4fa996f0b05053",
+      "bytes": 54216,
+      "sha256": "02737c9be21be552fad5efbc50bcf7758b8c72df8a6d24b58188f19daa0e04ba"
+    }
+  }
+}

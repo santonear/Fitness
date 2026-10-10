@@ -1,0 +1,6 @@
+/* Local OFL fonts: faces download only when the active theme uses them. */
+@font-face { font-family: 'Noto Sans SC'; src: url('./notosanssc.woff2') format('woff2'); font-style: normal; font-weight: 100 900; font-display: swap; }
+@font-face { font-family: 'Noto Serif SC'; src: url('./notoserifsc.woff2') format('woff2'); font-style: normal; font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Cormorant Garamond'; src: url('./cormorantgaramond.woff2') format('woff2'); font-style: normal; font-weight: 300 700; font-display: swap; }
+@font-face { font-family: 'Jost'; src: url('./jost.woff2') format('woff2'); font-style: normal; font-weight: 100 900; font-display: swap; }
+@font-face { font-family: 'Archivo'; src: url('./archivo.woff2') format('woff2'); font-style: normal; font-weight: 100 900; font-stretch: 62% 125%; font-display: swap; }
