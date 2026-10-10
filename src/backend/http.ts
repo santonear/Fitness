@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { ControlService, ControlError } from './control';
+import { assertCurrentAiExecution } from './retired-ai';
 
 const cookieName = '__Host-fitness_trial';
 const json = (data: unknown, status = 200, headers: Record<string, string> = {}) => new Response(JSON.stringify(data), {
@@ -124,6 +125,7 @@ export function createHandler(service: ControlService, options: { origins: strin
       const token = sessionToken(request);
       if (path.endsWith('/cancel')) { const { requestId } = parse(z.strictObject({ requestId: z.uuid() }), data); await service.cancel(token, requestId); return json({ status: 'cancelled', accounting: 'may-be-charged' }); }
       const operation = (data as { operation?: string } | null)?.operation;
+      assertCurrentAiExecution(data);
       if (operation !== (path.endsWith('/interpret') ? 'understand' : path.endsWith('/summarize') ? 'summary' : 'generate')) throw new ControlError('INVALID_INPUT', 400);
       return json(await service.submit(token, data));
     } catch (error) {

@@ -1,8 +1,8 @@
-import type { GuidedDialogueRequest } from '../domain/guided-ai-contracts';
-import { validateGuidedProviderInput, validateGuidedProviderOutput } from './guided-provider';
-import { COACH_PROMPT_VERSION, coachTask } from './coach-prompt-registry';
-import { guidedAiExercises } from '../catalog/ai-catalog';
-import { EQUIPMENT } from '../catalog/taxonomy';
+import type { GuidedDialogueRequest } from '../../src/domain/guided-ai-contracts';
+import { validateGuidedProviderInput, validateGuidedProviderOutput } from '../../src/backend/legacy-guided-reader';
+import { COACH_PROMPT_VERSION, coachTask } from '../../src/backend/coach-prompt-registry';
+import { guidedAiExercises } from '../../src/catalog/ai-catalog';
+import { EQUIPMENT } from '../../src/catalog/taxonomy';
 
 /** Offline evidence only. No network, persistence, automatic retries or clinical scoring. */
 export function evaluateCoachResponse(request: GuidedDialogueRequest, raw: unknown, k: number) {

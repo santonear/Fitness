@@ -106,4 +106,4 @@ export function createGuidedDialogueMockClient(fixture: (request: GuidedDialogue
   };
 }
 // Transport is implemented; actual availability still requires live qualification and server configuration.
-export const guidedProductionTransportAvailable = true;
+export const guidedProductionTransportAvailable = false;

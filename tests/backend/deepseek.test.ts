@@ -1,3 +1,4 @@
+import { currentCoachEnvelope } from '../fixtures/current-coach-envelope';
 import { expect, it } from 'vitest';
 import { createDeepSeekCodec } from '../../src/backend/deepseek';
 import { promptRequest, fourMetricCandidate } from '../fixtures/prompt-cases';
@@ -6,11 +7,11 @@ const codec = () => createDeepSeekCodec({ maxOutputTokens: 2048 });
 const response = (content: string, finish_reason = 'stop') => ({ choices: [{ finish_reason, message: { role: 'assistant', content } }] });
 it('encodes only confirmed synthetic inputs with JSON mode, bounded output and disabled thinking', async () => {
   for (const locale of ['en','zh'] as const) {
-    const body = await codec().encode(await promptRequest(locale,'understand')) as any;
+    const body = await codec().encode(await currentCoachEnvelope(locale)) as any;
     expect(body.model).toBe('deepseek-flash'); expect(body.max_tokens).toBe(2048);
     expect(body.thinking).toEqual({type:'disabled'}); expect(body.response_format).toEqual({type:'json_object'});
     expect(body.stream).toBe(false); expect(body.tools).toBeUndefined();
-    expect(Object.keys(JSON.parse(body.messages[1].content))).toEqual(['goalText','locale']);
+    expect(JSON.parse(body.messages[1].content).request.locale).toBe(locale);
   }
 });
 it('decodes valid candidates without treating usage as settled cost', async () => {
@@ -26,13 +27,11 @@ it('rejects truncation, empty/malformed/nonobject responses, multiple choices an
 });
 it('rejects stale send confirmation before constructing supplier input', async () => {
   const request = await promptRequest('en'); if (request.operation !== 'generate') throw new Error(); request.dates=['2026-10-07'];
-  await expect(codec().encode(request)).rejects.toMatchObject({code:'CONFIRMATION_REQUIRED'});
+  await expect(codec().encode(request)).rejects.toMatchObject({code:'AI_CONTRACT_RETIRED'});
 });
 
-it('makes targetSets array shape explicit instead of relying on JSON mode to enforce schema', async () => {
-  const body = await codec().encode(await promptRequest('en')) as any;
-  expect(body.messages[0].content).toContain('targetSets must always be an array');
-  expect(body.messages[0].content).toContain('"targetSets":[{"metricType":"reps","reps":8}]');
+it('refuses retired date generation before building a provider payload', async () => {
+ await expect(codec().encode(await promptRequest('en'))).rejects.toThrow('AI_CONTRACT_RETIRED');
 });
 
 it('requires matching model and complete bounded usage before allowing later pending calls', () => {

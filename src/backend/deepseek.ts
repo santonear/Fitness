@@ -2,12 +2,10 @@ import { coachV8ProviderPrompt } from './coach-v8-provider';
 import type { CoachPromptRelease } from './coach-v8-version';
 import { validateTransportRequest } from './contracts';
 import { z } from 'zod';
-import { buildAiPrompt } from './prompt';
-import { exercises } from '../catalog/exercises';
+import { buildStageSummaryPrompt } from './summary-provider';
 import { ControlError } from './store';
 import type { ProviderCodec } from './supplier-transport';
-import { validateRequest } from './contracts';
-import { guidedProviderPrompt, guidedServiceLimits } from './guided-provider';
+import { assertCurrentAiExecution } from './retired-ai';
 
 export const DEEPSEEK_ENDPOINT = 'https://api.deepseek.com/chat/completions';
 const envelope = z.object({ choices: z.array(z.object({ finish_reason: z.literal('stop'),
@@ -29,19 +27,8 @@ export function createDeepSeekCodec(options: { maxOutputTokens: number; pricingV
     },
     async encode(request) {
       if('coach' in request){await validateTransportRequest(request,14,65536);return {model:'deepseek-flash',messages:coachV8ProviderPrompt(request.coach,options.coachPromptRelease),thinking:{type:'disabled'},max_tokens:options.maxOutputTokens,response_format:{type:'json_object'},stream:false};}
-      if ('dialogue' in request && request.dialogue) {
-        await validateRequest(request, guidedServiceLimits.maxDays, guidedServiceLimits.maxInputBytes);
-        return { model: 'deepseek-flash', messages: guidedProviderPrompt(request.dialogue), thinking: { type: 'disabled' },
-          max_tokens: options.maxOutputTokens, response_format: { type: 'json_object' }, stream: false };
-      }
-      const prompt = await buildAiPrompt(request);
-      if (request.operation === 'generate') {
-        const example = { days: [{ date: request.dates[0], exercises: [{
-          exerciseId: exercises.find(item => item.metricType === 'reps')!.id,
-          order: 0, targetSets: [{ metricType: 'reps', reps: 8 }],
-        }] }] };
-        prompt.messages[0].content += ` targetSets must always be an array, even for a single set; never a metric object. Represent every planned set as a separate array item, not only as a set count in notes. Shape example only, not a prescribed training plan: ${JSON.stringify(example)}. Choose appropriate exercises and targets from the actual confirmed conditions.`;
-      }
+      assertCurrentAiExecution(request);
+      const prompt = await buildStageSummaryPrompt(request);
       return { model: 'deepseek-flash', messages: prompt.messages, thinking: { type: 'disabled' },
         max_tokens: options.maxOutputTokens, response_format: { type: 'json_object' }, stream: false };
     },

@@ -1,3 +1,4 @@
+import { currentCoachEnvelope, currentCoachRefusal } from '../fixtures/current-coach-envelope';
 import { expect, it, vi } from 'vitest';
 import { createDeepSeekWorker, type DeepSeekWorkerEnv } from '../../src/backend/deepseek-worker';
 import { SqliteControlStore } from '../../src/backend/sqlite-store';
@@ -64,7 +65,7 @@ it('DeepSeek requests require origin, qualification and explicit ledger activati
   const transport = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     captured = new Request(input, init);
     return new Response(JSON.stringify({ choices: [{ finish_reason: 'stop',
-      message: { role: 'assistant', content: '{"interpretedGoal":"synthetic interpretation"}' } }],
+      message: { role: 'assistant', content: JSON.stringify(currentCoachRefusal) } }],
       usage: { prompt_tokens: 20, completion_tokens: 10 } }));
   });
   const worker = createDeepSeekWorker({ store: () => store, transport }); const config = env();
@@ -72,24 +73,23 @@ it('DeepSeek requests require origin, qualification and explicit ledger activati
     expect((await worker.fetch(post('admin/supplier', { enabled: true }, undefined, 'wrong'), config)).status).toBe(401);
     const issued = await worker.fetch(post('admin/invites', {}), config); const { code } = await issued.json() as { code: string };
     const redeemed = await worker.fetch(post('trial/redeem', { code }), config); const cookie = redeemed.headers.get('set-cookie')!.split(';')[0];
-    const base = { operation: 'understand', contractVersion: 1, requestId: crypto.randomUUID(), goalText: 'synthetic goal', locale: 'en', restoreGeneration: 0 };
-    const data = { ...base, sendConfirmation: await confirmationFor(base) };
-    expect(await (await worker.fetch(post('goals/interpret', data, cookie), config)).json()).toEqual({ error: 'AI_DISABLED' });
+    const data = await currentCoachEnvelope();
+    expect(await (await worker.fetch(post('plans/generate', data, cookie), config)).json()).toEqual({ error: 'AI_DISABLED' });
     expect(transport).not.toHaveBeenCalled();
     expect((await worker.fetch(post('admin/supplier', { enabled: true }), config)).status).toBe(200);
-    expect((await worker.fetch(post('goals/interpret', data), config)).status).toBe(401);
-    const wrongOrigin = post('goals/interpret', data, cookie); wrongOrigin.headers.set('Origin', 'https://other.test');
+    expect((await worker.fetch(post('plans/generate', data), config)).status).toBe(401);
+    const wrongOrigin = post('plans/generate', data, cookie); wrongOrigin.headers.set('Origin', 'https://other.test');
     expect((await worker.fetch(wrongOrigin, config)).status).toBe(403);
     expect(transport).not.toHaveBeenCalled();
-    expect(await (await worker.fetch(post('goals/interpret', data, cookie), config)).json()).toEqual({ requestId: data.requestId,
-      result: { interpretedGoal: 'synthetic interpretation' }, context: { restoreGeneration: 0, inputDigest: data.sendConfirmation }, accounting: 'pending' });
+    expect(await (await worker.fetch(post('plans/generate', data, cookie), config)).json()).toEqual({ requestId: data.requestId,
+      result: currentCoachRefusal, context: { restoreGeneration: 0, inputDigest: data.sendConfirmation }, accounting: 'pending' });
     expect(captured!.url).toBe('https://api.deepseek.com/chat/completions');
     expect(captured!.redirect).toBe('manual'); expect(captured!.headers.get('authorization')).toBe(`Bearer ${config.DEEPSEEK_API_KEY}`);
     expect(captured!.headers.get('x-goog-api-key')).toBeNull();
     const payload = await captured!.json() as { model: string; max_tokens: number }; expect(payload.model).toBe('deepseek-flash'); expect(payload.max_tokens).toBe(8192);
-    expect(await (await worker.fetch(post('goals/interpret', data, cookie), config)).json()).toEqual({ error: 'REQUEST_IN_PROGRESS' });
+    expect(await (await worker.fetch(post('plans/generate', data, cookie), config)).json()).toEqual({ error: 'REQUEST_IN_PROGRESS' });
     expect(transport).toHaveBeenCalledTimes(1);
-    const state = await store.read(); expect(Object.values(state.budgets)[0]).toEqual({ spent: 0, reserved: 100 });
+    const state = await store.read(); expect(Object.values(state.budgets)[0]).toEqual({ spent: 0, reserved: 300 });
     expect(Object.values(state.requests)[0].status).toBe('pending');
     for (const value of ['synthetic goal', 'synthetic interpretation', config.DEEPSEEK_API_KEY!]) expect(JSON.stringify(state)).not.toContain(value);
   } finally { store.close(); }
