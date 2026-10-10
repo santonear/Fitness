@@ -12,6 +12,8 @@ test('modal animation, keyboard containment, composer and focus restoration', as
  await expect(page.getByRole('textbox',{name:'跟芽芽说'})).toHaveValue('');
  await page.keyboard.press('Tab');
  expect(await page.evaluate(()=>document.querySelector('dialog')?.contains(document.activeElement))).toBe(true);
+ await page.getByRole('button',{name:'关闭',exact:true}).focus(); await page.keyboard.press('Shift+Tab'); await expect(page.getByRole('textbox',{name:'跟芽芽说'})).toBeFocused();
+ await page.keyboard.press('Tab'); await expect(page.getByRole('button',{name:'关闭',exact:true})).toBeFocused();
  await page.keyboard.press('Escape'); await expect(dialog).not.toBeVisible(); await expect(trigger).toBeFocused();
  await expect(page.getByRole('status')).not.toBeVisible({timeout:3500});
 });
@@ -34,5 +36,6 @@ test('close measures the current trigger and IME Enter does not send', async({pa
  const last=await page.getByRole('dialog').evaluate(el=>(el.getAnimations()[0].effect as KeyframeEffect)?.getKeyframes().at(-1));
  expect(last?.top).toBe(`${rect!.y}px`); await expect(trigger).toBeFocused();
 });
+
 
 
