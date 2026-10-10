@@ -2,6 +2,8 @@
 .v8-qingci-brand svg { inline-size: var(--s7); block-size: var(--s7); fill: none; stroke: var(--c-primary); stroke-width: 2; }
 .v8-qingci-start .v8-button-primary { inline-size: calc(var(--s8) * 2); block-size: calc(var(--s8) * 2); border-radius: 50%; box-shadow: 0 0 0 var(--s3) var(--c-surface-2), 0 0 0 var(--s4) var(--c-line), var(--el-2); }
 .v8-qingci-start { padding: var(--s5); }
+.v8-qingci-start .v8-button-primary { display: flex; flex-direction: column; gap: var(--s2); }
+.v8-qingci-start .v8-hero-name { font: var(--w-display) var(--t5)/var(--lh-tight) var(--f-display); }
 .v8-qingci-nav .v8-nav-body { fill: var(--nav-glaze); }
 .v8-qingci-feature .v8-feature::before { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: var(--ring-w); background: var(--ring); mask: linear-gradient(white 0 0) content-box, linear-gradient(white 0 0); mask-composite: exclude; pointer-events: none; }
 .v8-qingci-feature .v8-feature::after { content: ''; position: absolute; z-index: -1; inset-inline: 15%; bottom: 0; block-size: var(--s5); background: var(--glow); filter: blur(var(--glow-blur)); border-radius: 50%; opacity: .35; pointer-events: none; }

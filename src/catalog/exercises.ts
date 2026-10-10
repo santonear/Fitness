@@ -35,5 +35,12 @@ export const exercises: Exercise[] = [
     steps: { zh: ['以前臂和脚尖支撑身体。', '保持躯干稳定，记录保持时长。'], en: ['Support your body on your forearms and toes.', 'Keep your torso steady and record the hold duration.'] },
     cautions: { zh: ['保持呼吸，不强行延长已无法稳定的支撑。'], en: ['Keep breathing and end the hold when you can no longer stay steady.'] },
   },
+  {
+    id: EXERCISE_IDS.selfResistedRow, catalogVersion: CATALOG_VERSION,
+    name: { zh: '自阻力划船', en: 'Self-resisted Row' }, category: 'bodyweight', equipment: 'none',
+    metricType: 'reps', allowedMetrics: ['reps'],
+    steps: { zh: ['一手轻握另一侧手腕，保持躯干稳定。', '屈肘向后拉，另一只手施加轻微阻力；左右交替，使用舒适的幅度。'], en: ['Gently hold one wrist with the opposite hand, keeping the torso steady.', 'Draw the elbow back against light resistance from the other hand. Alternate sides through a comfortable range.'] },
+    cautions: { zh: ['不憋气，不猛拉；有肩、手腕或腰背不适时不安排此动作。'], en: ['Breathe normally and avoid jerking. Do not select this movement with shoulder, wrist or back discomfort.'] },
+  },
   ...core.filter(item => !Object.values(EXERCISE_IDS).includes(item.id as typeof EXERCISE_IDS[keyof typeof EXERCISE_IDS])),
 ].map((exercise) => exerciseSchema.parse(exercise));

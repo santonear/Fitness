@@ -92,3 +92,14 @@ describe('legacy plan migration projection with injected duration estimator', ()
     expect((await migrateLegacyPlans(source, () => 30, migratedAt)).versions[0].weeklyTarget).toBe(3);
   });
 });
+
+it('combines an explicit independent-candidate batch without changing old facts', async () => {
+ const source=read('v71-coach-plan'), originalPlan=source.plans[0], originalVersion=source.planVersions[0], originalTask=source.scheduledWorkouts[0];
+ if('durationWeeks' in originalVersion)throw new Error('date fixture required');
+ const dates=['2026-10-01','2026-10-03','2026-10-08','2026-10-10'];
+ source.plans=[];source.planVersions=[];source.scheduledWorkouts=[];source.sessions=[];
+ for(const date of dates){const planId=crypto.randomUUID(),versionId=crypto.randomUUID(),dayId=crypto.randomUUID();source.plans.push({...originalPlan,id:planId,currentVersionId:versionId,startDate:date,status:'active'});source.planVersions.push({...originalVersion,id:versionId,planId,startDate:date,days:[{...originalVersion.days[0],dayId,date}]});source.scheduledWorkouts.push({...originalTask,id:crypto.randomUUID(),planVersionId:versionId,plannedDayId:dayId,originalDate:date,scheduledDate:date});}
+ const guided=emptyGuidedState();guided.events.push({id:crypto.randomUUID(),createdAt:migratedAt,action:'created',after:'independent-candidate:fixture',reason:JSON.stringify(source.plans.map(p=>p.id))} as typeof guided.events[number]);source.guidedStates=[guided];
+ const before=structuredClone(source), result=await migrateLegacyPlans(source,()=>30,migratedAt);
+ expect(result.plans).toHaveLength(1);expect(result.versions[0].templates).toHaveLength(4);expect(result.versions[0].weeklyTarget).toBe(2);expect(result.currentPlanId).toBe(result.plans[0].id);expect(source).toEqual(before);expect(await migrateLegacyPlans(source,()=>30,migratedAt)).toEqual(result);
+});

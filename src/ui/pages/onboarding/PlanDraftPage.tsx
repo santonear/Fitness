@@ -30,7 +30,7 @@ export function PlanDraftPage({ locale, candidate, basic = false, busy = false, 
       </section>)}
       <section><h2>{t.why}</h2><ul>{plan.reasons.map((reason, i) => <li key={i}>{reason}</li>)}</ul></section>
       {error && <p role="alert">{error}</p>}
-      <footer><Button variant="primary" disabled={busy} onClick={() => { if (!busy) onConfirm(candidate); }}>{busy ? t.saving : t.accept}</Button><Button disabled={busy} onClick={onDiscuss}>{t.change}</Button></footer>
+      <footer><Button variant="primary" disabled={busy || !plan.templates.length} onClick={() => { if (!busy && plan.templates.length) onConfirm(candidate); }}>{busy ? t.saving : t.accept}</Button><Button disabled={busy} onClick={onDiscuss}>{t.change}</Button></footer>
     </section>
   </main>;
 }

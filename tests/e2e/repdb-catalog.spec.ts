@@ -4,7 +4,7 @@ test.use({ locale: 'en-US' });
 test('RepDB filters, dual and single images, credits and three layouts', async ({ page }) => {
   await page.goto('/exercises');
   await expect(page.locator('.v31-exercise-card')).toHaveCount(24);
-  await expect(page.getByText('639 exercises', { exact: true })).toBeVisible();
+  await expect(page.getByText('640 exercises', { exact: true })).toBeVisible();
   await page.getByRole('searchbox').fill('Arnold');
   const card = page.locator('.v31-exercise-card').first();
   await card.getByRole('button', { name: 'View exercise details', exact: true }).click();
@@ -66,3 +66,4 @@ test('new manual movement survives backup round trip alongside an existing plan'
   expect(result.ids).toEqual(expect.arrayContaining([result.added, result.old]));
   expect(result.providerInBackup).toBe(false);
 });
+

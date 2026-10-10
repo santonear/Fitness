@@ -17,3 +17,21 @@
 .v8-facts { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s4); }
 .v8-shell[data-training-active=true] *, .v8-shell[data-training-active=true] *::before, .v8-shell[data-training-active=true] *::after { animation: none; }
 @media (prefers-reduced-motion: reduce) { .v8-shell *, .v8-shell *::before, .v8-shell *::after { animation: none; transition: none; } }
+.v8-topline { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); }
+.v8-center { text-align: center; }
+.v8-focus { display: grid; gap: var(--s4); text-align: center; justify-items: center; padding-block: var(--s5); }
+.v8-focus h1 { margin: 0; }
+.v8-capsules { display: flex; flex-wrap: wrap; gap: var(--s3); }
+.v8-capsules > details { background: var(--c-surface); border: var(--bw) solid var(--c-line); border-radius: var(--r-chip); padding: var(--s3) var(--s4); }
+.v8-capsules summary { min-height: var(--touch-min); display: flex; align-items: center; cursor: pointer; }
+.v8-capsules details[open] { flex-basis: 100%; border-radius: var(--r-panel); }
+.v8-inline-panel { display: grid; gap: var(--s4); background: var(--c-surface); border: var(--bw) solid var(--c-line); border-radius: var(--r-panel); padding: var(--s5); }
+.v8-shell .v8-feature { padding: var(--s5); }
+.v8-shell .v8-button-workout { width: 100%; }
+.v8-shell > nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); box-sizing: border-box; width: 100%; max-width: var(--layout-desktop-main); padding: var(--s2) var(--s4) calc(var(--s2) + env(safe-area-inset-bottom)); background: color-mix(in srgb, var(--c-bg) 90%, transparent); backdrop-filter: blur(var(--s3)); border-top: var(--bw) solid var(--c-line); z-index: 5; }
+.v8-shell > nav button { background: transparent; border: 0; border-radius: 0; box-shadow: none; padding: 0; gap: var(--s1); font-size: var(--t2); }
+.v8-shell > nav .v8-nav-icon { width: var(--touch-secondary); height: var(--touch-secondary); }
+.v8-shell main { padding-bottom: calc(var(--touch-workout) + var(--s6)); }
+.v8-topline h1 { margin-block: var(--s3); font-size: var(--t5); }
+.v8-capsules > details { padding: var(--s2) var(--s3); flex: 1 1 40%; }
+.v8-capsules summary { min-height: var(--touch-min); }

@@ -11,9 +11,10 @@ import { RepDBAttribution } from '../../src/ui/components/RepDBAttribution';
 import { CatalogImage } from '../../src/ui/components/RepDBMedia';
 
 it('loads all 637 source exercises and retains the two distinct legacy squat variants', () => {
-  expect(catalogMetadata.size).toBe(637); expect(exercises).toHaveLength(639);
-  expect(knownExerciseIds.size).toBe(639);
-  expect(exercises.slice(0, 4).map(x => x.id)).toEqual(Object.values(EXERCISE_IDS));
+  expect(catalogMetadata.size).toBe(637); expect(exercises).toHaveLength(640);
+  expect(knownExerciseIds.size).toBe(640);
+  expect(exercises.slice(0, 4).map(x => x.id)).toEqual(Object.values(EXERCISE_IDS).slice(0, 4));
+  expect(catalogMetadata.has(EXERCISE_IDS.selfResistedRow)).toBe(false);
   expect(exercises.find(x => x.id === EXERCISE_IDS.gobletSquat)).toMatchObject({ equipment: 'dumbbell', metricType: 'reps_load' });
   const squat = [...catalogMetadata.values()].find(x => x.slug === 'squat')!;
   expect(squat.id).not.toBe(EXERCISE_IDS.bodyweightSquat);
