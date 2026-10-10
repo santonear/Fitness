@@ -1,5 +1,14 @@
 import type { SuggestionInput, ReviewSuggestion, PlanProposal } from './contracts';
 import { computeExerciseEvidence } from './evidence';
+import { discomfortReplacement } from '../rules/basic-items';
+
+export function recurringDiscomfort(input: SuggestionInput): string[] {
+ const rows=input.workouts.filter(w=>w.planVersionId===input.plan.id&&w.localDate>=input.previous.from&&w.localDate<=input.current.to&&!['in_progress','abandoned'].includes(w.status)).sort((a,b)=>b.startedAt.localeCompare(a.startedAt));
+ return [...new Set(rows.flatMap(w=>computeExerciseEvidence(w).discomfortExerciseIds))].filter(id=>{
+  const attempts=rows.filter(w=>w.sets.some(s=>s.exerciseId===id)||w.substitutions?.some(s=>s.fromExerciseId===id));
+  return attempts.length>=2&&attempts.slice(0,2).every(w=>computeExerciseEvidence(w).discomfortExerciseIds.includes(id));
+ });
+}
 
 /** Pure candidates only. No saved plans or facts are mutated here. */
 export function suggestChange(input: SuggestionInput): ReviewSuggestion | null {
@@ -17,6 +26,18 @@ export function suggestChange(input: SuggestionInput): ReviewSuggestion | null {
   .sort((a,b) => b.startedAt.localeCompare(a.startedAt));
  // Do not offer load increases while any relevant discomfort is unresolved.
  const discomfort = new Set(rows.flatMap(w => computeExerciseEvidence(w).discomfortExerciseIds));
+ const repeated=recurringDiscomfort(input);
+ if(repeated.length) {
+  if(!input.profile)return null;
+  for(const id of repeated){
+   const replacement=discomfortReplacement(id,input.profile);
+   if(!replacement)continue;
+   let changed=false;
+   for(const template of base.templates)template.items=template.items.map(item=>{if(item.exerciseId!==id)return item;changed=true;return structuredClone(replacement);});
+   if(changed)return candidate('discomfort',base,id);
+  }
+  return null;
+ }
  if (current.reasonCounts.time >= 2 && !plan.templates.some(t => t.id === 'review-short')) {
   const source=plan.templates.find(t => t.items.length >= 3);
   if(source) return candidate('time', { ...base, templates: [...base.templates, { ...structuredClone(source), id:'review-short', name:'20 min', estimatedMinutes:20, items:source.items.slice(0,3).map(i=>({...structuredClone(i),sets:2})) }] });
