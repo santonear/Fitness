@@ -1,0 +1,35 @@
+import { test, expect } from '@playwright/test';
+test('production shell reloads offline and preserves actual recorded training', async ({ page, context }) => {
+  const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
+  page.on('requestfailed', request => errors.push(`${request.url()} ${request.failure()?.errorText}`));
+  await page.goto('/');
+  await expect(page.getByLabel('你的回答')).toBeVisible();
+  // Exercise the actual built worker; central flag/UI wiring is owned by integration.
+  await page.evaluate(async () => { await navigator.serviceWorker.register('/fitness-sw.js'); await navigator.serviceWorker.ready; });
+  await expect.poll(() => page.evaluate(() => !!navigator.serviceWorker.controller)).toBe(true);
+  const cached = await page.evaluate(async () => { const name = (await caches.keys()).find(key => key.startsWith('fitness-pwa-'))!; return (await (await caches.open(name)).keys()).map(item => new URL(item.url).pathname); });
+  expect(cached.some(path => /MainlineApp.*\.js/.test(path))).toBe(true);
+  expect(cached.some(path => /\.woff2$/.test(path))).toBe(true);
+  expect(cached.some(path => path.startsWith('/api/'))).toBe(false);
+  await context.setOffline(true); await page.reload();
+  await expect(page.getByLabel('你的回答')).toBeVisible().catch(async error => { throw new Error(`${error}\n${errors.join('\n')}\n${await page.content()}`); });
+  await page.getByLabel('你的回答').fill('想有些力量，不再容易累'); await page.getByRole('button', { name: '继续', exact: true }).click();
+  await page.getByLabel('你的回答').fill('每周 2 次，每次 20 分钟'); await page.getByRole('button', { name: '继续', exact: true }).click();
+  await page.getByLabel('你的回答').fill('在家，只有瑜伽垫'); await page.getByRole('button', { name: '继续', exact: true }).click();
+  await page.getByLabel('我已年满 18 岁').check(); await page.getByRole('button', { name: '生成我的第一版计划' }).click();
+  await page.getByRole('button', { name: '就用这份计划' }).click();
+  await expect(page.getByRole('heading', { name: '下一次' })).toBeVisible();
+  await page.getByRole('button', { name: '开始训练', exact: true }).first().click();
+  await page.getByRole('button', { name: '完成这一组', exact: true }).click();
+  await expect(page.getByText('第 2 组，共 2 组', { exact: true })).toBeVisible();
+  await page.reload(); await expect(page.getByText('第 2 组，共 2 组', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '暂停或结束' }).click();
+  await page.getByRole('button', { name: '结束并记下', exact: true }).click();
+  await page.getByRole('button', { name: '时间不够', exact: true }).click();
+  await page.getByLabel('想补充一句（可不填）').fill('离线记录验证');
+  await page.getByRole('button', { name: '记下来', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '本周回顾' })).toBeVisible();
+  await expect(page.getByText('离线记录验证', { exact: true })).toBeVisible();
+  await page.reload(); await expect(page.getByText('离线记录验证', { exact: true })).toBeVisible();
+  await context.setOffline(false);
+});

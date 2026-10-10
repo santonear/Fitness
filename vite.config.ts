@@ -1,7 +1,8 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { pwaBuild } from './tools/pwa-build';
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), pwaBuild()],
   server: { watch: { ignored: ['**/outputs/**', '**/test-results*/**', '**/.superpowers/**'] } },
   build: {
     rolldownOptions: {
