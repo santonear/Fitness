@@ -23,12 +23,17 @@ export interface PlanVersion {
 }
 export interface SetFact { exerciseId: string; itemIndex: number; setIndex: number; reps?: number; durationSeconds?: number; distanceMeters?: number; loadGrams?: number | null; completedAt: string; substitutedFrom?: string }
 export interface WorkoutRecord {
-  id: string; planVersionId: string; templateId?: string; startedAt: string; endedAt?: string;
+  id: string; planVersionId?: string; templateId?: string; startedAt: string; endedAt?: string;
   localDate: string; timeZone: string; status: 'in_progress' | 'complete' | 'partial' | 'not_started' | 'abandoned';
   variant?: 'short'; sets: SetFact[]; plannedSetCount: number; feedback?: Feedback;
   plannedExercises?: PlannedExerciseFact[]; substitutions?: ExerciseSubstitution[];
   /** Append only after completion; all other completed facts remain immutable. */
   appendedNotes?: AppendedNote[];
+}
+/** Read projection only. Old sets have update times, not exact completion times. */
+export interface LegacyWorkoutProjection extends Omit<WorkoutRecord, 'sets'> {
+  source: 'legacy';
+  sets: (Omit<SetFact, 'completedAt'> & { completedAt?: never; legacyUpdatedAt: string })[];
 }
 export interface ActivityRecord { id: string; type: 'walk' | 'run' | 'cycle' | 'swim' | 'yoga' | 'stairs' | 'other'; customName?: string; minutes: number; localDate: string; timeZone: string; feel?: Feel; note?: string; createdAt: string }
 export interface ReminderSetting { enabled: boolean; weekdays: number[]; time: string }

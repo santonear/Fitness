@@ -4,8 +4,14 @@ import type { GuidedState } from '../domain/guided-contracts';
 import { DomainError } from '../domain/errors';
 import { localDateSchema, timeZoneSchema } from '../domain/schemas';
 import type { LocalProfile, Metadata, BodyWeightObservation, Plan, PlanVersion, WorkoutSession, SetRecord, ScheduledWorkout, TrainingMemo, AiMemoryNote, TimerState, MediaAsset } from '../domain/models';
+import { upgradeToV8, type V8Library } from './v8-migration';
 
 export class FitnessDatabase extends Dexie {
+  v8Plans!: Table<V8Library['plans'][number], string>;
+  v8PlanVersions!: Table<V8Library['planVersions'][number], string>;
+  v8Workouts!: Table<V8Library['workouts'][number], string>;
+  v8Activities!: Table<V8Library['activities'][number], string>;
+  v8State!: Table<V8Library['state'], string>;
   coachDevice!: Table<CoachLedger, string>;
   guidedStates!: Table<GuidedState, string>;
   profiles!: Table<LocalProfile, string>;
@@ -56,6 +62,10 @@ export class FitnessDatabase extends Dexie {
     this.version(6).stores({}).upgrade(async transaction => {
       await transaction.table('metadata').toCollection().modify((row: Metadata) => { row.schemaVersion = 6; });
     });
+    this.version(8).stores({
+      v8Plans: 'id,currentVersionId', v8PlanVersions: 'id,planId,[planId+versionNumber]',
+      v8Workouts: 'id,planVersionId,localDate,status', v8Activities: 'id,localDate', v8State: 'id',
+    }).upgrade(upgradeToV8);
   }
 }
 export function createDatabase(name: string): FitnessDatabase { return new FitnessDatabase(name); }

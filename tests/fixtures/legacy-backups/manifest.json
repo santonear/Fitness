@@ -1,0 +1,117 @@
+{
+  "kind": "synthetic-data-entered-through-legacy-ui",
+  "modelCalls": 0,
+  "generatedAt": "2026-10-09T17:10:09.419Z",
+  "cases": [
+    {
+      "version": "v5",
+      "sourceCommit": "dc76b501bd2fee9ad6920687e77cd79717c62b7c",
+      "file": "v5-onboarding.json",
+      "sha256": "f0f5d227a94dc329c81f503503748d54b084223c325d230ee4cb6a946a0fdfb3",
+      "schemaVersion": 5,
+      "coverage": [
+        "onboarding-only"
+      ],
+      "mock": "API unavailable; no generated plans",
+      "browser": "153.0.8010.12"
+    },
+    {
+      "version": "v5",
+      "sourceCommit": "dc76b501bd2fee9ad6920687e77cd79717c62b7c",
+      "file": "v5-plans-weight.json",
+      "sha256": "2c53b87fe333f7cba552c5b46ff3a242e925f40ac60359936c7b3aed6a67a1bb",
+      "coverage": [
+        "past-and-future-date-plans",
+        "body-weight",
+        "all-planned-sets-completed",
+        "part-of-planned-sets-completed",
+        "actual-set-notes"
+      ],
+      "modelCalls": 0
+    },
+    {
+      "version": "v5",
+      "sourceCommit": "dc76b501bd2fee9ad6920687e77cd79717c62b7c",
+      "file": "v5-onboarding-restored.json",
+      "sha256": "5402e6090ea4aff513cff824c4e589e9d24668213c994e772c085de7220f0da1",
+      "coverage": [
+        "restore-old-export-then-reexport"
+      ],
+      "original": "v5-onboarding.json"
+    },
+    {
+      "version": "v62",
+      "sourceCommit": "e94c59f37cdd03ef6f8fdcd277ae96e63b8d31ec",
+      "file": "v62-onboarding.json",
+      "sha256": "35354120f9b19450fec38a12a59c34af120998fdcb47c16f68e22dcf6238eeb1",
+      "schemaVersion": 5,
+      "coverage": [
+        "onboarding-only"
+      ],
+      "mock": "API unavailable; no generated plans",
+      "browser": "153.0.8010.12"
+    },
+    {
+      "version": "v62",
+      "sourceCommit": "e94c59f37cdd03ef6f8fdcd277ae96e63b8d31ec",
+      "file": "v62-plans-weight.json",
+      "sha256": "c7a4fcb9ecbbede3c753b0da4211094961f9cac4f22d5dfaa5df84d7bac9a54d",
+      "coverage": [
+        "past-and-future-date-plans",
+        "body-weight",
+        "all-planned-sets-completed",
+        "part-of-planned-sets-completed",
+        "actual-set-notes",
+        "device-reminder-preferences-not-exported"
+      ],
+      "modelCalls": 0
+    },
+    {
+      "version": "v62",
+      "sourceCommit": "e94c59f37cdd03ef6f8fdcd277ae96e63b8d31ec",
+      "file": "v62-onboarding-restored.json",
+      "sha256": "bd322c7f3c35520997ee1a4856c71152371557c8539b03044f55ef0beb3fb902",
+      "coverage": [
+        "restore-old-export-then-reexport"
+      ],
+      "original": "v62-onboarding.json"
+    },
+    {
+      "version": "v71",
+      "sourceCommit": "9d2a2120e85fbe33e025734ee1ce5433fe0ce92c",
+      "file": "v71-onboarding.json",
+      "sha256": "ed8deedef0b19b4736c4d48ecb21621dd373ec906565fceca5d2af51fa1a1f94",
+      "schemaVersion": 5,
+      "coverage": [
+        "onboarding-only"
+      ],
+      "mock": "API unavailable; no generated plans",
+      "browser": "153.0.8010.12"
+    },
+    {
+      "version": "v71",
+      "sourceCommit": "9d2a2120e85fbe33e025734ee1ce5433fe0ce92c",
+      "file": "v71-plans-weight.json",
+      "sha256": "24a45bf57489f87f8892cf0710bd4541e4c966d927283f09ddde515c2516dc5b",
+      "coverage": [
+        "past-and-future-date-plans",
+        "body-weight",
+        "all-planned-sets-completed",
+        "part-of-planned-sets-completed",
+        "actual-set-notes",
+        "device-reminder-preferences-not-exported"
+      ],
+      "modelCalls": 0
+    },
+    {
+      "version": "v71",
+      "sourceCommit": "9d2a2120e85fbe33e025734ee1ce5433fe0ce92c",
+      "file": "v71-onboarding-restored.json",
+      "sha256": "381fbfcc9517cacb9a4c7269cf8d49c0f4a9638ea254c7e68c2353f9db22733f",
+      "coverage": [
+        "restore-old-export-then-reexport"
+      ],
+      "original": "v71-onboarding.json"
+    }
+  ]
+}

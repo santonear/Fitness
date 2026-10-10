@@ -1,0 +1,923 @@
+{
+  "format": "fitness-local",
+  "schemaVersion": 5,
+  "exportedAt": "2026-10-09T17:10:22.630Z",
+  "catalogVersion": 1,
+  "data": {
+    "metadata": {
+      "schemaVersion": 6,
+      "localProfileId": "abf8993d-6ae1-43d7-8a25-1a2f045d0f5a",
+      "catalogVersion": 1,
+      "revision": 26,
+      "dataRevision": 26
+    },
+    "profiles": [
+      {
+        "id": "abf8993d-6ae1-43d7-8a25-1a2f045d0f5a",
+        "createdAt": "2026-10-09T17:10:17.396Z",
+        "updatedAt": "2026-10-09T17:10:17.396Z",
+        "revision": 0,
+        "locale": "en",
+        "timeZone": "Etc/GMT-8",
+        "units": "metric"
+      }
+    ],
+    "plans": [
+      {
+        "id": "624d689a-acdd-42ad-86e5-a95ed157cf56",
+        "createdAt": "2026-10-09T17:10:19.907Z",
+        "updatedAt": "2026-10-09T17:10:19.907Z",
+        "revision": 0,
+        "name": "Synthetic future plan",
+        "source": "manual",
+        "status": "active",
+        "currentVersionId": "d3cc82c4-b7fe-4780-b4a7-8b5b54d026b9",
+        "startDate": "2026-10-31",
+        "scheduleTimeZone": "Etc/GMT-8",
+        "model": "date-day"
+      },
+      {
+        "id": "c4286525-8d17-4bd5-9795-866c94516640",
+        "createdAt": "2026-10-09T17:10:19.898Z",
+        "updatedAt": "2026-10-09T17:10:19.898Z",
+        "revision": 0,
+        "name": "Synthetic past plan",
+        "source": "manual",
+        "status": "active",
+        "currentVersionId": "89f95ee3-5cb0-47d0-a2aa-5d448793bb14",
+        "startDate": "2026-10-01",
+        "scheduleTimeZone": "Etc/GMT-8",
+        "model": "date-day"
+      },
+      {
+        "id": "edb86e1f-4578-4cff-a648-b055de1ab18a",
+        "createdAt": "2026-10-09T17:10:19.904Z",
+        "updatedAt": "2026-10-09T17:10:19.904Z",
+        "revision": 0,
+        "name": "Synthetic future plan",
+        "source": "manual",
+        "status": "active",
+        "currentVersionId": "78307f96-7c48-4eb3-b534-de957e10e74c",
+        "startDate": "2026-10-02",
+        "scheduleTimeZone": "Etc/GMT-8",
+        "model": "date-day"
+      }
+    ],
+    "planVersions": [
+      {
+        "id": "78307f96-7c48-4eb3-b534-de957e10e74c",
+        "createdAt": "2026-10-09T17:10:19.904Z",
+        "updatedAt": "2026-10-09T17:10:19.904Z",
+        "revision": 0,
+        "model": "date-day",
+        "planId": "edb86e1f-4578-4cff-a648-b055de1ab18a",
+        "versionNumber": 1,
+        "goalSnapshot": {
+          "goal": ""
+        },
+        "startDate": "2026-10-02",
+        "scheduleTimeZone": "Etc/GMT-8",
+        "days": [
+          {
+            "dayId": "f64a4c28-e08d-4f44-ba85-e3ca7474277c",
+            "date": "2026-10-02",
+            "exercises": [
+              {
+                "exerciseId": "d16325d9-fc00-4c41-88a1-000000000003",
+                "order": 0,
+                "targetSets": [
+                  {
+                    "metricType": "reps",
+                    "reps": 10
+                  },
+                  {
+                    "metricType": "reps",
+                    "reps": 10
+                  }
+                ],
+                "setTimings": [
+                  {
+                    "durationSeconds": 30,
+                    "restSeconds": 60
+                  },
+                  {
+                    "durationSeconds": 30,
+                    "restSeconds": 60
+                  }
+                ],
+                "notes": "Synthetic preserved instruction"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "89f95ee3-5cb0-47d0-a2aa-5d448793bb14",
+        "createdAt": "2026-10-09T17:10:19.898Z",
+        "updatedAt": "2026-10-09T17:10:19.898Z",
+        "revision": 0,
+        "model": "date-day",
+        "planId": "c4286525-8d17-4bd5-9795-866c94516640",
+        "versionNumber": 1,
+        "goalSnapshot": {
+          "goal": ""
+        },
+        "startDate": "2026-10-01",
+        "scheduleTimeZone": "Etc/GMT-8",
+        "days": [
+          {
+            "dayId": "5c9b5f09-6268-4b17-b0a6-575bde2e581f",
+            "date": "2026-10-01",
+            "exercises": [
+              {
+                "exerciseId": "d16325d9-fc00-4c41-88a1-000000000003",
+                "order": 0,
+                "targetSets": [
+                  {
+                    "metricType": "reps",
+                    "reps": 10
+                  },
+                  {
+                    "metricType": "reps",
+                    "reps": 10
+                  }
+                ],
+                "setTimings": [
+                  {
+                    "durationSeconds": 30,
+                    "restSeconds": 60
+                  },
+                  {
+                    "durationSeconds": 30,
+                    "restSeconds": 60
+                  }
+                ],
+                "notes": "Synthetic preserved instruction"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "d3cc82c4-b7fe-4780-b4a7-8b5b54d026b9",
+        "createdAt": "2026-10-09T17:10:19.907Z",
+        "updatedAt": "2026-10-09T17:10:19.907Z",
+        "revision": 0,
+        "model": "date-day",
+        "planId": "624d689a-acdd-42ad-86e5-a95ed157cf56",
+        "versionNumber": 1,
+        "goalSnapshot": {
+          "goal": ""
+        },
+        "startDate": "2026-10-31",
+        "scheduleTimeZone": "Etc/GMT-8",
+        "days": [
+          {
+            "dayId": "7e498f1a-1c56-42bc-acda-ca40ad611837",
+            "date": "2026-10-31",
+            "exercises": [
+              {
+                "exerciseId": "d16325d9-fc00-4c41-88a1-000000000003",
+                "order": 0,
+                "targetSets": [
+                  {
+                    "metricType": "reps",
+                    "reps": 10
+                  },
+                  {
+                    "metricType": "reps",
+                    "reps": 10
+                  }
+                ],
+                "setTimings": [
+                  {
+                    "durationSeconds": 30,
+                    "restSeconds": 60
+                  },
+                  {
+                    "durationSeconds": 30,
+                    "restSeconds": 60
+                  }
+                ],
+                "notes": "Synthetic preserved instruction"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "sessions": [
+      {
+        "id": "278f7747-cf43-4dce-928f-b2a972670dd8",
+        "createdAt": "2026-10-09T17:10:21.316Z",
+        "updatedAt": "2026-10-09T17:10:21.498Z",
+        "revision": 2,
+        "planVersionId": "78307f96-7c48-4eb3-b534-de957e10e74c",
+        "plannedDayId": "f64a4c28-e08d-4f44-ba85-e3ca7474277c",
+        "status": "completed",
+        "startedAt": "2026-10-09T17:10:21.316Z",
+        "completedAt": "2026-10-09T17:10:21.498Z",
+        "localDate": "2026-10-10",
+        "timeZone": "Etc/GMT-8",
+        "originalExerciseSnapshots": [
+          {
+            "id": "d16325d9-fc00-4c41-88a1-000000000003",
+            "catalogVersion": 1,
+            "name": {
+              "zh": "徒手深蹲",
+              "en": "Bodyweight squat"
+            },
+            "category": "bodyweight",
+            "equipment": "none",
+            "metricType": "reps",
+            "allowedMetrics": [
+              "reps"
+            ],
+            "exerciseInstanceId": "c57dd2df-e2b2-448b-932d-cbcd3a437bf8",
+            "exerciseId": "d16325d9-fc00-4c41-88a1-000000000003",
+            "order": 0,
+            "targetSets": [
+              {
+                "metricType": "reps",
+                "reps": 10
+              },
+              {
+                "metricType": "reps",
+                "reps": 10
+              }
+            ],
+            "setTimings": [
+              {
+                "durationSeconds": 30,
+                "restSeconds": 60
+              },
+              {
+                "durationSeconds": 30,
+                "restSeconds": 60
+              }
+            ],
+            "notes": "Synthetic preserved instruction"
+          }
+        ],
+        "exerciseSnapshots": [
+          {
+            "id": "d16325d9-fc00-4c41-88a1-000000000003",
+            "catalogVersion": 1,
+            "name": {
+              "zh": "徒手深蹲",
+              "en": "Bodyweight squat"
+            },
+            "category": "bodyweight",
+            "equipment": "none",
+            "metricType": "reps",
+            "allowedMetrics": [
+              "reps"
+            ],
+            "exerciseInstanceId": "c57dd2df-e2b2-448b-932d-cbcd3a437bf8",
+            "exerciseId": "d16325d9-fc00-4c41-88a1-000000000003",
+            "order": 0,
+            "targetSets": [
+              {
+                "metricType": "reps",
+                "reps": 10
+              },
+              {
+                "metricType": "reps",
+                "reps": 10
+              }
+            ],
+            "setTimings": [
+              {
+                "durationSeconds": 30,
+                "restSeconds": 60
+              },
+              {
+                "durationSeconds": 30,
+                "restSeconds": 60
+              }
+            ],
+            "notes": "Synthetic preserved instruction"
+          }
+        ]
+      },
+      {
+        "id": "62208e30-88f4-4895-a6d9-da0ebaa8bfeb",
+        "createdAt": "2026-10-09T17:10:20.699Z",
+        "updatedAt": "2026-10-09T17:10:20.965Z",
+        "revision": 3,
+        "planVersionId": "89f95ee3-5cb0-47d0-a2aa-5d448793bb14",
+        "plannedDayId": "5c9b5f09-6268-4b17-b0a6-575bde2e581f",
+        "status": "completed",
+        "startedAt": "2026-10-09T17:10:20.699Z",
+        "completedAt": "2026-10-09T17:10:20.965Z",
+        "localDate": "2026-10-10",
+        "timeZone": "Etc/GMT-8",
+        "originalExerciseSnapshots": [
+          {
+            "id": "d16325d9-fc00-4c41-88a1-000000000003",
+            "catalogVersion": 1,
+            "name": {
+              "zh": "徒手深蹲",
+              "en": "Bodyweight squat"
+            },
+            "category": "bodyweight",
+            "equipment": "none",
+            "metricType": "reps",
+            "allowedMetrics": [
+              "reps"
+            ],
+            "exerciseInstanceId": "fbc08c9d-0d7f-4638-be37-cdee0d626feb",
+            "exerciseId": "d16325d9-fc00-4c41-88a1-000000000003",
+            "order": 0,
+            "targetSets": [
+              {
+                "metricType": "reps",
+                "reps": 10
+              },
+              {
+                "metricType": "reps",
+                "reps": 10
+              }
+            ],
+            "setTimings": [
+              {
+                "durationSeconds": 30,
+                "restSeconds": 60
+              },
+              {
+                "durationSeconds": 30,
+                "restSeconds": 60
+              }
+            ],
+            "notes": "Synthetic preserved instruction"
+          }
+        ],
+        "exerciseSnapshots": [
+          {
+            "id": "d16325d9-fc00-4c41-88a1-000000000003",
+            "catalogVersion": 1,
+            "name": {
+              "zh": "徒手深蹲",
+              "en": "Bodyweight squat"
+            },
+            "category": "bodyweight",
+            "equipment": "none",
+            "metricType": "reps",
+            "allowedMetrics": [
+              "reps"
+            ],
+            "exerciseInstanceId": "fbc08c9d-0d7f-4638-be37-cdee0d626feb",
+            "exerciseId": "d16325d9-fc00-4c41-88a1-000000000003",
+            "order": 0,
+            "targetSets": [
+              {
+                "metricType": "reps",
+                "reps": 10
+              },
+              {
+                "metricType": "reps",
+                "reps": 10
+              }
+            ],
+            "setTimings": [
+              {
+                "durationSeconds": 30,
+                "restSeconds": 60
+              },
+              {
+                "durationSeconds": 30,
+                "restSeconds": 60
+              }
+            ],
+            "notes": "Synthetic preserved instruction"
+          }
+        ]
+      }
+    ],
+    "sets": [
+      {
+        "id": "765a4803-73d7-49a2-91cc-0f64ad273ceb",
+        "createdAt": "2026-10-09T17:10:20.780Z",
+        "updatedAt": "2026-10-09T17:10:20.780Z",
+        "revision": 0,
+        "sessionId": "62208e30-88f4-4895-a6d9-da0ebaa8bfeb",
+        "exerciseInstanceId": "fbc08c9d-0d7f-4638-be37-cdee0d626feb",
+        "order": 0,
+        "metricType": "reps",
+        "reps": 10,
+        "completed": true,
+        "notes": "Synthetic actual set 1"
+      },
+      {
+        "id": "79767a08-50d4-4175-98bf-4b2e40aa1234",
+        "createdAt": "2026-10-09T17:10:20.864Z",
+        "updatedAt": "2026-10-09T17:10:20.864Z",
+        "revision": 0,
+        "sessionId": "62208e30-88f4-4895-a6d9-da0ebaa8bfeb",
+        "exerciseInstanceId": "fbc08c9d-0d7f-4638-be37-cdee0d626feb",
+        "order": 1,
+        "metricType": "reps",
+        "reps": 10,
+        "completed": true,
+        "notes": "Synthetic actual set 2"
+      },
+      {
+        "id": "80c08c40-eaec-4bb2-a4fa-375b64b32cbf",
+        "createdAt": "2026-10-09T17:10:21.398Z",
+        "updatedAt": "2026-10-09T17:10:21.398Z",
+        "revision": 0,
+        "sessionId": "278f7747-cf43-4dce-928f-b2a972670dd8",
+        "exerciseInstanceId": "c57dd2df-e2b2-448b-932d-cbcd3a437bf8",
+        "order": 0,
+        "metricType": "reps",
+        "reps": 10,
+        "completed": true,
+        "notes": "Synthetic actual set 1"
+      }
+    ],
+    "scheduledWorkouts": [
+      {
+        "id": "0a027700-e99d-4534-8357-359098ffb523",
+        "createdAt": "2026-10-09T17:10:19.898Z",
+        "updatedAt": "2026-10-09T17:10:20.963Z",
+        "revision": 1,
+        "planVersionId": "89f95ee3-5cb0-47d0-a2aa-5d448793bb14",
+        "plannedDayId": "5c9b5f09-6268-4b17-b0a6-575bde2e581f",
+        "originalDate": "2026-10-01",
+        "scheduledDate": "2026-10-01",
+        "startTime": "14:00",
+        "durationMinutes": 30,
+        "status": "pending",
+        "completedSessionId": "62208e30-88f4-4895-a6d9-da0ebaa8bfeb"
+      },
+      {
+        "id": "2a54f692-4bc4-471e-888d-1699242486dd",
+        "createdAt": "2026-10-09T17:10:19.907Z",
+        "updatedAt": "2026-10-09T17:10:19.907Z",
+        "revision": 0,
+        "planVersionId": "d3cc82c4-b7fe-4780-b4a7-8b5b54d026b9",
+        "plannedDayId": "7e498f1a-1c56-42bc-acda-ca40ad611837",
+        "originalDate": "2026-10-31",
+        "scheduledDate": "2026-10-31",
+        "startTime": "14:00",
+        "durationMinutes": 30,
+        "status": "pending"
+      },
+      {
+        "id": "59244c03-d4db-46e8-9203-f29320ae17b9",
+        "createdAt": "2026-10-09T17:10:19.904Z",
+        "updatedAt": "2026-10-09T17:10:21.497Z",
+        "revision": 1,
+        "planVersionId": "78307f96-7c48-4eb3-b534-de957e10e74c",
+        "plannedDayId": "f64a4c28-e08d-4f44-ba85-e3ca7474277c",
+        "originalDate": "2026-10-02",
+        "scheduledDate": "2026-10-02",
+        "startTime": "14:00",
+        "durationMinutes": 30,
+        "status": "pending",
+        "completedSessionId": "278f7747-cf43-4dce-928f-b2a972670dd8"
+      }
+    ],
+    "bodyWeights": [
+      {
+        "id": "365f6fe0-a16a-4d71-af09-033a7bbcfe2f",
+        "createdAt": "2026-10-09T17:10:20.330Z",
+        "updatedAt": "2026-10-09T17:10:20.330Z",
+        "revision": 0,
+        "localDate": "2026-10-01",
+        "timeZone": "Etc/GMT-8",
+        "weightGrams": 70200
+      }
+    ],
+    "trainingMemo": {
+      "schemaVersion": 1,
+      "revision": 7,
+      "updatedAt": "2026-10-09T17:10:22.631Z",
+      "sourceRevision": 26,
+      "sessions": [
+        {
+          "session": {
+            "id": "278f7747-cf43-4dce-928f-b2a972670dd8",
+            "createdAt": "2026-10-09T17:10:21.316Z",
+            "updatedAt": "2026-10-09T17:10:21.498Z",
+            "revision": 2,
+            "planVersionId": "78307f96-7c48-4eb3-b534-de957e10e74c",
+            "plannedDayId": "f64a4c28-e08d-4f44-ba85-e3ca7474277c",
+            "status": "completed",
+            "startedAt": "2026-10-09T17:10:21.316Z",
+            "completedAt": "2026-10-09T17:10:21.498Z",
+            "localDate": "2026-10-10",
+            "timeZone": "Etc/GMT-8",
+            "originalExerciseSnapshots": [
+              {
+                "id": "d16325d9-fc00-4c41-88a1-000000000003",
+                "catalogVersion": 1,
+                "name": {
+                  "zh": "徒手深蹲",
+                  "en": "Bodyweight squat"
+                },
+                "category": "bodyweight",
+                "equipment": "none",
+                "metricType": "reps",
+                "allowedMetrics": [
+                  "reps"
+                ],
+                "exerciseInstanceId": "c57dd2df-e2b2-448b-932d-cbcd3a437bf8",
+                "exerciseId": "d16325d9-fc00-4c41-88a1-000000000003",
+                "order": 0,
+                "targetSets": [
+                  {
+                    "metricType": "reps",
+                    "reps": 10
+                  },
+                  {
+                    "metricType": "reps",
+                    "reps": 10
+                  }
+                ],
+                "setTimings": [
+                  {
+                    "durationSeconds": 30,
+                    "restSeconds": 60
+                  },
+                  {
+                    "durationSeconds": 30,
+                    "restSeconds": 60
+                  }
+                ],
+                "notes": "Synthetic preserved instruction"
+              }
+            ],
+            "exerciseSnapshots": [
+              {
+                "id": "d16325d9-fc00-4c41-88a1-000000000003",
+                "catalogVersion": 1,
+                "name": {
+                  "zh": "徒手深蹲",
+                  "en": "Bodyweight squat"
+                },
+                "category": "bodyweight",
+                "equipment": "none",
+                "metricType": "reps",
+                "allowedMetrics": [
+                  "reps"
+                ],
+                "exerciseInstanceId": "c57dd2df-e2b2-448b-932d-cbcd3a437bf8",
+                "exerciseId": "d16325d9-fc00-4c41-88a1-000000000003",
+                "order": 0,
+                "targetSets": [
+                  {
+                    "metricType": "reps",
+                    "reps": 10
+                  },
+                  {
+                    "metricType": "reps",
+                    "reps": 10
+                  }
+                ],
+                "setTimings": [
+                  {
+                    "durationSeconds": 30,
+                    "restSeconds": 60
+                  },
+                  {
+                    "durationSeconds": 30,
+                    "restSeconds": 60
+                  }
+                ],
+                "notes": "Synthetic preserved instruction"
+              }
+            ]
+          },
+          "sets": [
+            {
+              "id": "80c08c40-eaec-4bb2-a4fa-375b64b32cbf",
+              "createdAt": "2026-10-09T17:10:21.398Z",
+              "updatedAt": "2026-10-09T17:10:21.398Z",
+              "revision": 0,
+              "sessionId": "278f7747-cf43-4dce-928f-b2a972670dd8",
+              "exerciseInstanceId": "c57dd2df-e2b2-448b-932d-cbcd3a437bf8",
+              "order": 0,
+              "metricType": "reps",
+              "reps": 10,
+              "completed": true,
+              "notes": "Synthetic actual set 1"
+            }
+          ],
+          "planVersionSnapshot": {
+            "id": "78307f96-7c48-4eb3-b534-de957e10e74c",
+            "createdAt": "2026-10-09T17:10:19.904Z",
+            "updatedAt": "2026-10-09T17:10:19.904Z",
+            "revision": 0,
+            "model": "date-day",
+            "planId": "edb86e1f-4578-4cff-a648-b055de1ab18a",
+            "versionNumber": 1,
+            "goalSnapshot": {
+              "goal": ""
+            },
+            "startDate": "2026-10-02",
+            "scheduleTimeZone": "Etc/GMT-8",
+            "days": [
+              {
+                "dayId": "f64a4c28-e08d-4f44-ba85-e3ca7474277c",
+                "date": "2026-10-02",
+                "exercises": [
+                  {
+                    "exerciseId": "d16325d9-fc00-4c41-88a1-000000000003",
+                    "order": 0,
+                    "targetSets": [
+                      {
+                        "metricType": "reps",
+                        "reps": 10
+                      },
+                      {
+                        "metricType": "reps",
+                        "reps": 10
+                      }
+                    ],
+                    "setTimings": [
+                      {
+                        "durationSeconds": 30,
+                        "restSeconds": 60
+                      },
+                      {
+                        "durationSeconds": 30,
+                        "restSeconds": 60
+                      }
+                    ],
+                    "notes": "Synthetic preserved instruction"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "session": {
+            "id": "62208e30-88f4-4895-a6d9-da0ebaa8bfeb",
+            "createdAt": "2026-10-09T17:10:20.699Z",
+            "updatedAt": "2026-10-09T17:10:20.965Z",
+            "revision": 3,
+            "planVersionId": "89f95ee3-5cb0-47d0-a2aa-5d448793bb14",
+            "plannedDayId": "5c9b5f09-6268-4b17-b0a6-575bde2e581f",
+            "status": "completed",
+            "startedAt": "2026-10-09T17:10:20.699Z",
+            "completedAt": "2026-10-09T17:10:20.965Z",
+            "localDate": "2026-10-10",
+            "timeZone": "Etc/GMT-8",
+            "originalExerciseSnapshots": [
+              {
+                "id": "d16325d9-fc00-4c41-88a1-000000000003",
+                "catalogVersion": 1,
+                "name": {
+                  "zh": "徒手深蹲",
+                  "en": "Bodyweight squat"
+                },
+                "category": "bodyweight",
+                "equipment": "none",
+                "metricType": "reps",
+                "allowedMetrics": [
+                  "reps"
+                ],
+                "exerciseInstanceId": "fbc08c9d-0d7f-4638-be37-cdee0d626feb",
+                "exerciseId": "d16325d9-fc00-4c41-88a1-000000000003",
+                "order": 0,
+                "targetSets": [
+                  {
+                    "metricType": "reps",
+                    "reps": 10
+                  },
+                  {
+                    "metricType": "reps",
+                    "reps": 10
+                  }
+                ],
+                "setTimings": [
+                  {
+                    "durationSeconds": 30,
+                    "restSeconds": 60
+                  },
+                  {
+                    "durationSeconds": 30,
+                    "restSeconds": 60
+                  }
+                ],
+                "notes": "Synthetic preserved instruction"
+              }
+            ],
+            "exerciseSnapshots": [
+              {
+                "id": "d16325d9-fc00-4c41-88a1-000000000003",
+                "catalogVersion": 1,
+                "name": {
+                  "zh": "徒手深蹲",
+                  "en": "Bodyweight squat"
+                },
+                "category": "bodyweight",
+                "equipment": "none",
+                "metricType": "reps",
+                "allowedMetrics": [
+                  "reps"
+                ],
+                "exerciseInstanceId": "fbc08c9d-0d7f-4638-be37-cdee0d626feb",
+                "exerciseId": "d16325d9-fc00-4c41-88a1-000000000003",
+                "order": 0,
+                "targetSets": [
+                  {
+                    "metricType": "reps",
+                    "reps": 10
+                  },
+                  {
+                    "metricType": "reps",
+                    "reps": 10
+                  }
+                ],
+                "setTimings": [
+                  {
+                    "durationSeconds": 30,
+                    "restSeconds": 60
+                  },
+                  {
+                    "durationSeconds": 30,
+                    "restSeconds": 60
+                  }
+                ],
+                "notes": "Synthetic preserved instruction"
+              }
+            ]
+          },
+          "sets": [
+            {
+              "id": "765a4803-73d7-49a2-91cc-0f64ad273ceb",
+              "createdAt": "2026-10-09T17:10:20.780Z",
+              "updatedAt": "2026-10-09T17:10:20.780Z",
+              "revision": 0,
+              "sessionId": "62208e30-88f4-4895-a6d9-da0ebaa8bfeb",
+              "exerciseInstanceId": "fbc08c9d-0d7f-4638-be37-cdee0d626feb",
+              "order": 0,
+              "metricType": "reps",
+              "reps": 10,
+              "completed": true,
+              "notes": "Synthetic actual set 1"
+            },
+            {
+              "id": "79767a08-50d4-4175-98bf-4b2e40aa1234",
+              "createdAt": "2026-10-09T17:10:20.864Z",
+              "updatedAt": "2026-10-09T17:10:20.864Z",
+              "revision": 0,
+              "sessionId": "62208e30-88f4-4895-a6d9-da0ebaa8bfeb",
+              "exerciseInstanceId": "fbc08c9d-0d7f-4638-be37-cdee0d626feb",
+              "order": 1,
+              "metricType": "reps",
+              "reps": 10,
+              "completed": true,
+              "notes": "Synthetic actual set 2"
+            }
+          ],
+          "planVersionSnapshot": {
+            "id": "89f95ee3-5cb0-47d0-a2aa-5d448793bb14",
+            "createdAt": "2026-10-09T17:10:19.898Z",
+            "updatedAt": "2026-10-09T17:10:19.898Z",
+            "revision": 0,
+            "model": "date-day",
+            "planId": "c4286525-8d17-4bd5-9795-866c94516640",
+            "versionNumber": 1,
+            "goalSnapshot": {
+              "goal": ""
+            },
+            "startDate": "2026-10-01",
+            "scheduleTimeZone": "Etc/GMT-8",
+            "days": [
+              {
+                "dayId": "5c9b5f09-6268-4b17-b0a6-575bde2e581f",
+                "date": "2026-10-01",
+                "exercises": [
+                  {
+                    "exerciseId": "d16325d9-fc00-4c41-88a1-000000000003",
+                    "order": 0,
+                    "targetSets": [
+                      {
+                        "metricType": "reps",
+                        "reps": 10
+                      },
+                      {
+                        "metricType": "reps",
+                        "reps": 10
+                      }
+                    ],
+                    "setTimings": [
+                      {
+                        "durationSeconds": 30,
+                        "restSeconds": 60
+                      },
+                      {
+                        "durationSeconds": 30,
+                        "restSeconds": 60
+                      }
+                    ],
+                    "notes": "Synthetic preserved instruction"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "aiMemoryNotes": [],
+    "timers": [],
+    "mediaAssets": [],
+    "guidedStates": [
+      {
+        "id": "guided",
+        "revision": 18,
+        "onboarding": {
+          "id": "bb1dc1ae-18b3-4567-a1a0-12acdc8b427c",
+          "step": 12,
+          "answers": {
+            "biologicalSex": {
+              "status": "answered",
+              "value": "女性"
+            },
+            "age": {
+              "status": "answered",
+              "value": 13
+            },
+            "heightCm": {
+              "status": "skipped"
+            },
+            "weightKg": {
+              "status": "skipped"
+            },
+            "waistCm": {
+              "status": "skipped"
+            },
+            "goal": {
+              "status": "answered",
+              "value": [
+                "提升力量",
+                "Synthetic migration fixture: climb better"
+              ]
+            },
+            "experience": {
+              "status": "skipped"
+            },
+            "location": {
+              "status": "skipped"
+            },
+            "equipment": {
+              "status": "skipped"
+            },
+            "safety": {
+              "status": "skipped"
+            },
+            "schedule": {
+              "status": "skipped"
+            },
+            "preferences": {
+              "status": "skipped"
+            }
+          },
+          "updatedAt": "2026-10-09T17:10:18.180Z",
+          "completed": true,
+          "version": 4,
+          "deferred": false
+        },
+        "programs": [],
+        "candidates": [],
+        "messages": [],
+        "events": [
+          {
+            "id": "b4256ba3-161e-418e-a9da-528bd1591a8d",
+            "createdAt": "2026-10-09T17:10:20.964Z",
+            "sessionId": "62208e30-88f4-4895-a6d9-da0ebaa8bfeb",
+            "action": "workout_ended",
+            "before": "in_progress",
+            "after": "completed"
+          },
+          {
+            "id": "4e690b17-e7cd-4baf-93c8-6acc889daf62",
+            "createdAt": "2026-10-09T17:10:21.498Z",
+            "sessionId": "278f7747-cf43-4dce-928f-b2a972670dd8",
+            "action": "workout_ended",
+            "before": "in_progress",
+            "after": "completed"
+          }
+        ],
+        "observations": [],
+        "invitations": [
+          {
+            "id": "46812635-acc0-4cb1-804a-7ea9b59472a2",
+            "eventId": "b4256ba3-161e-418e-a9da-528bd1591a8d",
+            "decision": "pending"
+          },
+          {
+            "id": "f326cf70-34eb-44e7-a476-fd6a14e81d10",
+            "eventId": "4e690b17-e7cd-4baf-93c8-6acc889daf62",
+            "decision": "pending"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -5,14 +5,17 @@ import { DomainError } from '../domain/errors';
 import { planSchema, legacyPlanVersionSchema, localDateSchema } from '../domain/schemas';
 import { expandSchedule } from '../domain/calendar';
 import { exercises } from '../catalog/exercises';
+import { assertLegacyPlanEditable } from '../persistence/v8-access';
 export function createPlanService(repo: Repository) {
  const db=repo.db;
  async function requireUnmanaged(id:string) {
+  await assertLegacyPlanEditable(repo, id);
   const guided=await db.guidedStates.get('guided');
   if(guided?.programs.some(program=>program.planIds.includes(id))) throw new DomainError('CONFLICT','This plan belongs to a retained phase; use phase controls instead');
  }
  async function renamePlan(id: string, name: string, expectedRevision: number): Promise<Plan> {
   return repo.write(async () => {
+   await assertLegacyPlanEditable(repo, id);
    const plan = await db.plans.get(id);
    if (!plan || plan.deletedAt) throw new DomainError('INVALID', 'Plan not found or deleted');
    if (plan.revision !== expectedRevision) throw new DomainError('CONFLICT', 'Plan changed; reload before saving');
@@ -26,7 +29,8 @@ export function createPlanService(repo: Repository) {
   });
  }
  async function archiveOthers(id:string,now:string) {
-  for(const plan of await db.plans.where('status').equals('active').toArray()) if(plan.id!==id&&!plan.model) { await requireUnmanaged(plan.id); await db.plans.put({...plan,status:'archived',updatedAt:now,revision:plan.revision+1}); }
+  const retained = (await db.v8State.get('v8'))?.legacyPlanIds ?? [];
+  for(const plan of await db.plans.where('status').equals('active').toArray()) if(plan.id!==id&&!plan.model&&!retained.includes(plan.id)) { await requireUnmanaged(plan.id); await db.plans.put({...plan,status:'archived',updatedAt:now,revision:plan.revision+1}); }
  }
  async function savePlan(input: PlanInput, expectedRevision?: number, confirmation?: LegacyConfirmation): Promise<Plan> {
   return repo.write(async()=>{
@@ -59,6 +63,7 @@ export function createPlanService(repo: Repository) {
  }
  async function activateDraftPlan(id: string, revision: number, confirmation?: LegacyConfirmation): Promise<Plan> {
   return repo.write(async()=>{
+   await assertLegacyPlanEditable(repo, id);
    const plan=await db.plans.get(id);if(!plan || plan.revision!==revision)throw new DomainError('CONFLICT','Plan changed');
    if(plan.model)throw new DomainError('INVALID','Day plans do not use legacy draft activation');
    if(plan.deletedAt)throw new DomainError('INVALID','This plan was deleted');
@@ -72,6 +77,7 @@ export function createPlanService(repo: Repository) {
    const row=await db.scheduledWorkouts.get(id);if(!row || row.revision!==revision)throw new DomainError('CONFLICT','Schedule changed');
    if(row.hiddenAt)throw new DomainError('INVALID','This schedule was hidden');
    const version=await db.planVersions.get(row.planVersionId);
+   if (version) await assertLegacyPlanEditable(repo, version.planId);
    if(version&&!('durationWeeks' in version))throw new DomainError('INVALID','Use the day plan schedule operation');
    if(!version || (await db.plans.get(version.planId))?.deletedAt)throw new DomainError('INVALID','This plan was deleted');
    if(row.completedSessionId)throw new DomainError('SESSION_READ_ONLY','Completed training is read only');
@@ -89,6 +95,7 @@ export function createPlanService(repo: Repository) {
    if (!row || row.revision !== revision) throw new DomainError('CONFLICT', 'Schedule changed; reload before deleting');
    if (row.hiddenAt) throw new DomainError('INVALID', 'This schedule was hidden');
    const version = await db.planVersions.get(row.planVersionId);
+   if (version) await assertLegacyPlanEditable(repo, version.planId);
    if (!version || (await db.plans.get(version.planId))?.deletedAt) throw new DomainError('INVALID', 'This plan was deleted');
    if (await db.sessions.where('status').equals('in_progress').filter(session => session.planVersionId === row.planVersionId && session.plannedDayId === row.plannedDayId).count()) {
     throw new DomainError('WORKOUT_IN_PROGRESS', 'Finish or abandon this training before deleting its schedule');

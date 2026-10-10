@@ -1,0 +1,43 @@
+{
+  "format": "fitness-local",
+  "schemaVersion": 5,
+  "exportedAt": "2026-10-09T17:10:33.414Z",
+  "catalogVersion": 1,
+  "data": {
+    "metadata": {
+      "schemaVersion": 6,
+      "localProfileId": "d15eaad8-02fd-443f-a223-3afc7db379f9",
+      "catalogVersion": 1,
+      "revision": 1,
+      "dataRevision": 1
+    },
+    "profiles": [
+      {
+        "id": "d15eaad8-02fd-443f-a223-3afc7db379f9",
+        "createdAt": "2026-10-09T17:10:33.252Z",
+        "updatedAt": "2026-10-09T17:10:33.252Z",
+        "revision": 0,
+        "locale": "en",
+        "timeZone": "Etc/GMT-8",
+        "units": "metric"
+      }
+    ],
+    "plans": [],
+    "planVersions": [],
+    "sessions": [],
+    "sets": [],
+    "scheduledWorkouts": [],
+    "bodyWeights": [],
+    "trainingMemo": {
+      "schemaVersion": 1,
+      "revision": 0,
+      "updatedAt": "2026-10-09T17:10:33.415Z",
+      "sourceRevision": 1,
+      "sessions": []
+    },
+    "aiMemoryNotes": [],
+    "timers": [],
+    "mediaAssets": [],
+    "guidedStates": []
+  }
+}

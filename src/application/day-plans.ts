@@ -52,6 +52,7 @@ export function createDayPlanService(repo: Repository) {
       await guardGeneration(input.expectedGeneration); const profile = await db.profiles.toCollection().first();
       if (profile?.timeZone !== input.timeZone) throw new DomainError('INVALID', 'Use the saved profile calendar time zone');
       const old = input.id ? await db.plans.get(input.id) : undefined;
+      if (input.id) await assertLegacyPlanEditable(repo, input.id);
       if (input.id && (await db.guidedStates.get('guided'))?.programs.some(program => program.planIds.includes(input.id!))) throw new DomainError('CONFLICT', 'Retained phase content cannot be changed through a day plan editor');
       if (input.id && (!old || old.model !== 'date-day' || old.deletedAt)) throw new DomainError('INVALID', 'Day plan not found');
       if (old && old.revision !== input.expectedRevision) throw new DomainError('CONFLICT', 'Day plan changed; reopen it');
@@ -96,6 +97,7 @@ export function createDayPlanService(repo: Repository) {
     return repo.write(async () => {
       await guardGeneration(expectedGeneration);
       const row = await db.scheduledWorkouts.get(id); const version = row && await db.planVersions.get(row.planVersionId);
+      if (version) await assertLegacyPlanEditable(repo, version.planId);
       if (!row || !version || 'durationWeeks' in version || row.revision !== revision) throw new DomainError('CONFLICT', 'Day task changed');
       const plan = await db.plans.get(version.planId); if (!plan || plan.deletedAt || row.hiddenAt) throw new DomainError('INVALID', 'Day plan unavailable');
       if (await db.sessions.where('status').equals('in_progress').filter(session => session.planVersionId === row.planVersionId && session.plannedDayId === row.plannedDayId).count()) throw new DomainError('WORKOUT_IN_PROGRESS', 'Finish or abandon this training first');
@@ -111,3 +113,4 @@ export function createDayPlanService(repo: Repository) {
     rescheduleDayPlan: (id: string, date: string, revision: number, generation?: number) => change(id, revision, 'reschedule', date, generation) };
 }
 export const dayPlanService = createDayPlanService(repository);
+import { assertLegacyPlanEditable } from '../persistence/v8-access';

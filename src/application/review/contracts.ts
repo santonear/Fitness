@@ -1,7 +1,8 @@
-import type { ActivityRecord, CoachProfile, PlanVersion, SessionTemplate, WorkoutRecord, ShortfallReason } from '../../domain/v8/contracts';
+import type { ActivityRecord, CoachProfile, PlanVersion, SessionTemplate, WorkoutRecord, ShortfallReason, LegacyWorkoutProjection } from '../../domain/v8/contracts';
 export interface ReviewInput {
   from: string; to: string; timeZone: string; weeklyTarget: number;
   workouts: readonly WorkoutRecord[]; activities: readonly ActivityRecord[];
+  legacyWorkouts?: readonly LegacyWorkoutProjection[];
   bodyWeights: readonly { localDate: string; weightGrams: number }[];
 }
 export type ReviewDayType = 'weekday' | 'weekend';
