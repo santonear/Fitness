@@ -1,21 +1,21 @@
 {
   "format": "fitness-local",
   "schemaVersion": 7,
-  "exportedAt": "2026-10-10T18:13:47.711Z",
+  "exportedAt": "2026-10-10T18:31:16.391Z",
   "catalogVersion": 1,
   "data": {
     "metadata": {
       "schemaVersion": 9,
-      "localProfileId": "5795cee3-5fdc-4f29-b27e-4844e5164a06",
+      "localProfileId": "f1fb9279-e444-4b35-9599-d3fd9b81f959",
       "catalogVersion": 1,
       "revision": 5,
       "dataRevision": 5
     },
     "profiles": [
       {
-        "id": "5795cee3-5fdc-4f29-b27e-4844e5164a06",
-        "createdAt": "2026-10-10T18:13:42.069Z",
-        "updatedAt": "2026-10-10T18:13:42.069Z",
+        "id": "f1fb9279-e444-4b35-9599-d3fd9b81f959",
+        "createdAt": "2026-10-10T18:31:10.638Z",
+        "updatedAt": "2026-10-10T18:31:10.638Z",
         "revision": 0,
         "locale": "zh",
         "timeZone": "Etc/GMT-8",
@@ -31,7 +31,7 @@
     "trainingMemo": {
       "schemaVersion": 1,
       "revision": 0,
-      "updatedAt": "2026-10-10T18:13:47.713Z",
+      "updatedAt": "2026-10-10T18:31:16.393Z",
       "sourceRevision": 5,
       "sessions": []
     },
@@ -42,8 +42,8 @@
     "v8": {
       "state": {
         "id": "v8",
-        "currentPlanId": "8c108003-3bae-4010-82db-763a3dc99f31",
-        "migratedAt": "2026-10-10T18:13:42.069Z",
+        "currentPlanId": "7a798fab-3931-4c25-947c-fbc7997ef345",
+        "migratedAt": "2026-10-10T18:31:10.638Z",
         "legacyPlanIds": [],
         "notice": {
           "planCount": 0,
@@ -60,21 +60,21 @@
           ],
           "adultConfirmed": true,
           "cautions": [],
-          "confirmedAt": "2026-10-10T18:13:42.746Z"
+          "confirmedAt": "2026-10-10T18:31:11.311Z"
         }
       },
       "plans": [
         {
-          "id": "8c108003-3bae-4010-82db-763a3dc99f31",
+          "id": "7a798fab-3931-4c25-947c-fbc7997ef345",
           "name": "想有些力量，不再容易累",
-          "currentVersionId": "54871124-7171-4982-93b7-8bc778acfbf5",
+          "currentVersionId": "7ee02b2a-a2e4-41e5-abed-5cd38d902a0e",
           "readOnly": false
         }
       ],
       "planVersions": [
         {
-          "id": "54871124-7171-4982-93b7-8bc778acfbf5",
-          "planId": "8c108003-3bae-4010-82db-763a3dc99f31",
+          "id": "7ee02b2a-a2e4-41e5-abed-5cd38d902a0e",
+          "planId": "7a798fab-3931-4c25-947c-fbc7997ef345",
           "versionNumber": 1,
           "goalText": "想有些力量，不再容易累",
           "weeklyTarget": 2,
@@ -168,18 +168,18 @@
               ]
             }
           ],
-          "createdAt": "2026-10-10T18:13:42.827Z",
+          "createdAt": "2026-10-10T18:31:11.391Z",
           "origin": "onboard",
           "changeSummary": []
         }
       ],
       "workouts": [
         {
-          "id": "50489c7a-fcbc-4ab9-a739-ceb168fa4c30",
-          "planVersionId": "54871124-7171-4982-93b7-8bc778acfbf5",
+          "id": "1e24b32f-6b62-4251-bca7-6511ad464e78",
+          "planVersionId": "7ee02b2a-a2e4-41e5-abed-5cd38d902a0e",
           "templateId": "basic-0",
-          "startedAt": "2026-10-10T18:13:42.895Z",
-          "endedAt": "2026-10-10T18:13:43.128Z",
+          "startedAt": "2026-10-10T18:31:11.459Z",
+          "endedAt": "2026-10-10T18:31:11.675Z",
           "localDate": "2026-10-11",
           "timeZone": "Etc/GMT-8",
           "status": "partial",
@@ -189,7 +189,7 @@
               "itemIndex": 0,
               "setIndex": 0,
               "reps": 8,
-              "completedAt": "2026-10-10T18:13:42.961Z"
+              "completedAt": "2026-10-10T18:31:11.524Z"
             }
           ],
           "plannedSetCount": 8,

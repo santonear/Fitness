@@ -3,6 +3,8 @@ import {mkdirSync,writeFileSync,readFileSync} from 'node:fs';
 const o=JSON.parse(readFileSync('src/i18n/features/onboarding/zh.json','utf8'));
 const t=JSON.parse(readFileSync('src/i18n/features/training/zh.json','utf8'));
 async function enable(page:Page,flags:Record<string,boolean>){
+ // Drain the initial request before replacing its response: refresh intentionally deduplicates in-flight requests.
+ await page.evaluate(async()=>{const path='/src/application/feature-flags.ts';await (await import(/* @vite-ignore */path)).refreshFeatureFlags();});
  await page.route('**/api/v1/features',route=>route.fulfill({json:{version:1,expiresAt:Date.now()+60000,flags}}));
  await page.evaluate(async()=>{const path='/src/application/feature-flags.ts';await (await import(/* @vite-ignore */path)).refreshFeatureFlags();});
 }
