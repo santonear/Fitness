@@ -1,0 +1,18 @@
+[
+  {
+    "file": "evaluation-report.md",
+    "sha256": "8D2ED01F5259F2118BD8C51330178F572FB32424FEB81095D41276FE32E75F24"
+  },
+  {
+    "file": "offline-language-summary.json",
+    "sha256": "887389D6BB1CFEC3206E3A0B11E79C9C94E5FF65937FD554197BCFD9FEB51D91"
+  },
+  {
+    "file": "price-source.json",
+    "sha256": "383D44FBF7B6250C7E02EC4CA297B4796B6B07C642903B6F5AA36B8F1BA763F9"
+  },
+  {
+    "file": "synthetic-evaluation.json",
+    "sha256": "D48EDF1ACEB13CE4AC23CAD879F036FF42DC0E80C7A07E3EB9FD7924E21552E2"
+  }
+]

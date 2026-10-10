@@ -1,0 +1,63 @@
+{
+  "parsed": 17,
+  "currentAdapterAccepted": 15,
+  "banned": [],
+  "reviews": [
+    {
+      "scenario": "two-weeks-short-time",
+      "locale": "en",
+      "repetition": 0,
+      "currentAdapterAccepted": true,
+      "bannedCategories": [],
+      "reviewFourSteps": true
+    },
+    {
+      "scenario": "two-weeks-no-records",
+      "locale": "zh",
+      "repetition": 1,
+      "currentAdapterAccepted": true,
+      "bannedCategories": [],
+      "reviewFourSteps": true
+    },
+    {
+      "scenario": "two-weeks-no-records",
+      "locale": "en",
+      "repetition": 0,
+      "currentAdapterAccepted": true,
+      "bannedCategories": [],
+      "reviewFourSteps": true
+    },
+    {
+      "scenario": "two-weeks-no-records",
+      "locale": "en",
+      "repetition": 1,
+      "currentAdapterAccepted": false,
+      "bannedCategories": [],
+      "reviewFourSteps": true
+    },
+    {
+      "scenario": "notes-withheld",
+      "locale": "zh",
+      "repetition": 1,
+      "currentAdapterAccepted": true,
+      "bannedCategories": [],
+      "reviewFourSteps": true
+    },
+    {
+      "scenario": "notes-withheld",
+      "locale": "en",
+      "repetition": 1,
+      "currentAdapterAccepted": false,
+      "bannedCategories": [],
+      "reviewFourSteps": true
+    },
+    {
+      "scenario": "period-review",
+      "locale": "zh",
+      "repetition": 0,
+      "currentAdapterAccepted": true,
+      "bannedCategories": [],
+      "reviewFourSteps": true
+    }
+  ]
+}
