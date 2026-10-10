@@ -1,0 +1,703 @@
+{
+  "sourceBranch": "codex/v8-cleanup-final",
+  "baseCommit": "327b18a013aaa2a360438325200c4e65cf4d4a4b",
+  "mainStates": 120,
+  "screenshots": 135,
+  "mainWidths": [
+    390,
+    1440
+  ],
+  "narrowWidth": 320,
+  "themes": [
+    "qingci",
+    "liubai",
+    "jingshe",
+    "zhuangse"
+  ],
+  "languages": [
+    "zh",
+    "qingci/en"
+  ],
+  "checks": {
+    "noHorizontalOverflow": true,
+    "allVisibleInteractiveTargetsAtLeast44px": true,
+    "reducedMotionNoRunningAnimationsAfterFiniteTransitions": true
+  },
+  "images": [
+    {
+      "file": "screenshots/jingshe-zh-1440-01-onboarding.png",
+      "bytes": 143520,
+      "sha256": "19c761d11ce6e54f0a63c455e606a433b58234c4083e822bb11cc7342da0b49c"
+    },
+    {
+      "file": "screenshots/jingshe-zh-1440-02-draft.png",
+      "bytes": 219083,
+      "sha256": "023afe9a21f47cbed38f6ab384571eb5fe70842d7fc4eac0c73cb129e730e921"
+    },
+    {
+      "file": "screenshots/jingshe-zh-1440-03-next.png",
+      "bytes": 199172,
+      "sha256": "77ce26544907d202f1f86c280387dce0a30b26940f84111e31f5297114ec4748"
+    },
+    {
+      "file": "screenshots/jingshe-zh-1440-04-capsule.png",
+      "bytes": 175523,
+      "sha256": "02399d096dada23d1eb35bd0f3a02f9012c1d4bd9223e32a67142084bbe8b1da"
+    },
+    {
+      "file": "screenshots/jingshe-zh-1440-05-training.png",
+      "bytes": 169305,
+      "sha256": "755d6ae94db0e8c7d591c288519e9cd215b94c8ba9835513d988e297ccc324c2"
+    },
+    {
+      "file": "screenshots/jingshe-zh-1440-06-finish.png",
+      "bytes": 166977,
+      "sha256": "51f9389695ad8d0902f5b3a68c285f3e625d3734c9bae4ad4f5a80d69074447d"
+    },
+    {
+      "file": "screenshots/jingshe-zh-1440-07-activity.png",
+      "bytes": 5851,
+      "sha256": "99db2a93b06fa1bf617f5c495e02dcf6c0b76961108491217e2cf4fed8699d35"
+    },
+    {
+      "file": "screenshots/jingshe-zh-1440-08-plan.png",
+      "bytes": 181361,
+      "sha256": "13d2f179b8fede5679d347353303a0ee42ec574c22de5694f1692c71c9aa0cd6"
+    },
+    {
+      "file": "screenshots/jingshe-zh-1440-09-week.png",
+      "bytes": 290053,
+      "sha256": "5a882ab726b5d517f11eb61624e53a9b112d3ec588b80f54d89823f73848ac8e"
+    },
+    {
+      "file": "screenshots/jingshe-zh-1440-10-month.png",
+      "bytes": 326499,
+      "sha256": "bb9c0f8c8ef1cfc81681ab238fac375e58c79ca4ba8c91359dbc75b8e84686ac"
+    },
+    {
+      "file": "screenshots/jingshe-zh-1440-11-appearance.png",
+      "bytes": 5851,
+      "sha256": "99db2a93b06fa1bf617f5c495e02dcf6c0b76961108491217e2cf4fed8699d35"
+    },
+    {
+      "file": "screenshots/jingshe-zh-1440-12-coach.png",
+      "bytes": 185982,
+      "sha256": "83bf6232952bcb6871a710401b5a077e2e89703e30bba51ef463eeb0200dc4fa"
+    },
+    {
+      "file": "screenshots/jingshe-zh-320-next.png",
+      "bytes": 2423,
+      "sha256": "4e7db6d7b050158d4d55bb2baa8271c3865c197af3147bec95eca152782a7985"
+    },
+    {
+      "file": "screenshots/jingshe-zh-320-review.png",
+      "bytes": 2423,
+      "sha256": "4e7db6d7b050158d4d55bb2baa8271c3865c197af3147bec95eca152782a7985"
+    },
+    {
+      "file": "screenshots/jingshe-zh-320-training.png",
+      "bytes": 100290,
+      "sha256": "ae87425aa631f8d798530e9e9ef2097783f265d184110665001d37d2d751e687"
+    },
+    {
+      "file": "screenshots/jingshe-zh-390-01-onboarding.png",
+      "bytes": 92121,
+      "sha256": "deeb2f65dd60a2e10c483fa9853442e4d84163027657686ec151028bbb54c901"
+    },
+    {
+      "file": "screenshots/jingshe-zh-390-02-draft.png",
+      "bytes": 135940,
+      "sha256": "f464f80903b64b3241d166b9262e760c90bcfd3627aa31d388e105b949cb3ce2"
+    },
+    {
+      "file": "screenshots/jingshe-zh-390-03-next.png",
+      "bytes": 114400,
+      "sha256": "4f147e7cedb0b13fbd7c183b487864cc5cd14db940b3a0fbaa5885920099182e"
+    },
+    {
+      "file": "screenshots/jingshe-zh-390-04-capsule.png",
+      "bytes": 110190,
+      "sha256": "8935f628cc5656793b38fa6e9ea4fe7dbabfa9a937c443bd766d01380711c832"
+    },
+    {
+      "file": "screenshots/jingshe-zh-390-05-training.png",
+      "bytes": 107941,
+      "sha256": "675e373e1eb2039914eb5da942d1683c1f4bcd61796230334bc65decbc95716f"
+    },
+    {
+      "file": "screenshots/jingshe-zh-390-06-finish.png",
+      "bytes": 105263,
+      "sha256": "7fdb8c4b579d875cf0e2daab59445ebf9cf29301379c6e99a14b57f7f4997198"
+    },
+    {
+      "file": "screenshots/jingshe-zh-390-07-activity.png",
+      "bytes": 2915,
+      "sha256": "3041d996afa19b08e53fb21c9dda04644020a7dc610c82f49b04bb1bde862b70"
+    },
+    {
+      "file": "screenshots/jingshe-zh-390-08-plan.png",
+      "bytes": 130022,
+      "sha256": "6f9d04e4d710f86b160bb8ccc2544ea02c904be4f677b5b940fb2cb672e25619"
+    },
+    {
+      "file": "screenshots/jingshe-zh-390-09-week.png",
+      "bytes": 176005,
+      "sha256": "166fa052a9256e92e8b4a70ff6819cb475102db99fb52ea8a9b5380b37fa0be5"
+    },
+    {
+      "file": "screenshots/jingshe-zh-390-10-month.png",
+      "bytes": 183609,
+      "sha256": "2ed8e32d2754a77877d2b903edebd2e8ad304ea18298e76414e1ddb3e38ac43b"
+    },
+    {
+      "file": "screenshots/jingshe-zh-390-11-appearance.png",
+      "bytes": 2915,
+      "sha256": "3041d996afa19b08e53fb21c9dda04644020a7dc610c82f49b04bb1bde862b70"
+    },
+    {
+      "file": "screenshots/jingshe-zh-390-12-coach.png",
+      "bytes": 103744,
+      "sha256": "e0b36d5ca8a746aaaca0216d1082c69da5136381f6cf9876bd9bccc645875a16"
+    },
+    {
+      "file": "screenshots/liubai-zh-1440-01-onboarding.png",
+      "bytes": 37610,
+      "sha256": "f10115657a2bd39ea0c9a8ef0d58fb488aafbfc277a475744ce1cd529f2a166c"
+    },
+    {
+      "file": "screenshots/liubai-zh-1440-02-draft.png",
+      "bytes": 61420,
+      "sha256": "475221779912e47724ba27d81e6d41fdf4b6f6e7995816d22cd13e505cddb7aa"
+    },
+    {
+      "file": "screenshots/liubai-zh-1440-03-next.png",
+      "bytes": 65493,
+      "sha256": "93273646faecc1e683b44b56eb44c6bf9cda98085b8a552ac94e3599f2487199"
+    },
+    {
+      "file": "screenshots/liubai-zh-1440-04-capsule.png",
+      "bytes": 78134,
+      "sha256": "32115b6fc40073b51269cf1db92d8feb9e5e832ff479d244bf932868873fd235"
+    },
+    {
+      "file": "screenshots/liubai-zh-1440-05-training.png",
+      "bytes": 44411,
+      "sha256": "d201bc31ce75e56291e907a3f103749b35a752f1a3a8a0e8f6756cb80e4e6d05"
+    },
+    {
+      "file": "screenshots/liubai-zh-1440-06-finish.png",
+      "bytes": 41322,
+      "sha256": "47483f65d07055f2b646f22b532cee810b97507974952fa9dc4e1f448f9c92e8"
+    },
+    {
+      "file": "screenshots/liubai-zh-1440-07-activity.png",
+      "bytes": 5851,
+      "sha256": "99db2a93b06fa1bf617f5c495e02dcf6c0b76961108491217e2cf4fed8699d35"
+    },
+    {
+      "file": "screenshots/liubai-zh-1440-08-plan.png",
+      "bytes": 67802,
+      "sha256": "78e6f985ec45162b1919489b030577c0c6a08501ba518f61f79e481ff3e73ddd"
+    },
+    {
+      "file": "screenshots/liubai-zh-1440-09-week.png",
+      "bytes": 85738,
+      "sha256": "243d8bdbf88704ce0a63730c9a72cb7d37bd8a550873acdc06e95dd6095fef0f"
+    },
+    {
+      "file": "screenshots/liubai-zh-1440-10-month.png",
+      "bytes": 91734,
+      "sha256": "918805f4081d95cd8143d5bea1c8c29dda1a98ee91b6752528dfc6d3e653b4ae"
+    },
+    {
+      "file": "screenshots/liubai-zh-1440-11-appearance.png",
+      "bytes": 5851,
+      "sha256": "99db2a93b06fa1bf617f5c495e02dcf6c0b76961108491217e2cf4fed8699d35"
+    },
+    {
+      "file": "screenshots/liubai-zh-1440-12-coach.png",
+      "bytes": 60984,
+      "sha256": "95305aeaeec29d8d219ee727f05fc20ac62c48b260b055a30d5bfbb87ca8642b"
+    },
+    {
+      "file": "screenshots/liubai-zh-320-next.png",
+      "bytes": 2423,
+      "sha256": "4e7db6d7b050158d4d55bb2baa8271c3865c197af3147bec95eca152782a7985"
+    },
+    {
+      "file": "screenshots/liubai-zh-320-review.png",
+      "bytes": 2423,
+      "sha256": "4e7db6d7b050158d4d55bb2baa8271c3865c197af3147bec95eca152782a7985"
+    },
+    {
+      "file": "screenshots/liubai-zh-320-training.png",
+      "bytes": 39136,
+      "sha256": "ae408c8e3665190cb0d0306b40439bac56dbb7433472ba48d9bfe16d9fe285e1"
+    },
+    {
+      "file": "screenshots/liubai-zh-390-01-onboarding.png",
+      "bytes": 33335,
+      "sha256": "87444d1aa4793cea642045c39463e64d69eaa8fdd556e52cddcebd396ba374c6"
+    },
+    {
+      "file": "screenshots/liubai-zh-390-02-draft.png",
+      "bytes": 54786,
+      "sha256": "cc7d0baf7e72e8fc0e3829e67aaa93c75d2939a3ada110a0a5fd1df17c80963c"
+    },
+    {
+      "file": "screenshots/liubai-zh-390-03-next.png",
+      "bytes": 55018,
+      "sha256": "d4bc569dccbc382b6a775d7dc9f8c165e5fd288839e3756e89e3a1a316be1d56"
+    },
+    {
+      "file": "screenshots/liubai-zh-390-04-capsule.png",
+      "bytes": 68664,
+      "sha256": "021da39f8c00750a0340d4e27d4060d2a83b625eec7627501e57b9b4b8f365a6"
+    },
+    {
+      "file": "screenshots/liubai-zh-390-05-training.png",
+      "bytes": 39741,
+      "sha256": "4eeff94611bb9101ad1141fa3a5b28b31bd9b7869bbb7420130d5494ff1aeca8"
+    },
+    {
+      "file": "screenshots/liubai-zh-390-06-finish.png",
+      "bytes": 37092,
+      "sha256": "d856e2d682101401c4a5541aedec403c9a88369e2cc4934c14de6268321db9e1"
+    },
+    {
+      "file": "screenshots/liubai-zh-390-07-activity.png",
+      "bytes": 2915,
+      "sha256": "3041d996afa19b08e53fb21c9dda04644020a7dc610c82f49b04bb1bde862b70"
+    },
+    {
+      "file": "screenshots/liubai-zh-390-08-plan.png",
+      "bytes": 60397,
+      "sha256": "9ec43edfe561c9147c6e5531fc773552b269ba2cfc85b0daeeaf8cce8301f8e9"
+    },
+    {
+      "file": "screenshots/liubai-zh-390-09-week.png",
+      "bytes": 73587,
+      "sha256": "df56032e01f2df2bed4515a159a44bf46ec1db85685d6a1dc4a40d958f8b7cf6"
+    },
+    {
+      "file": "screenshots/liubai-zh-390-10-month.png",
+      "bytes": 77791,
+      "sha256": "d8f09ba878313ad16ee268a15c0801fba969b495c5b153fbac0b6abc804d8269"
+    },
+    {
+      "file": "screenshots/liubai-zh-390-11-appearance.png",
+      "bytes": 2915,
+      "sha256": "3041d996afa19b08e53fb21c9dda04644020a7dc610c82f49b04bb1bde862b70"
+    },
+    {
+      "file": "screenshots/liubai-zh-390-12-coach.png",
+      "bytes": 54570,
+      "sha256": "8a2f24131889d6af69daa3b97ec8b1f238ceda7f408a981d4f73f55699103004"
+    },
+    {
+      "file": "screenshots/qingci-en-1440-01-onboarding.png",
+      "bytes": 178212,
+      "sha256": "7cf20b7b9b8ddf630db2a7533384a4bcc5060202baad256a2d97bc0efa873ddf"
+    },
+    {
+      "file": "screenshots/qingci-en-1440-02-draft.png",
+      "bytes": 264772,
+      "sha256": "7f853d8c33ea89a17eca7fc4694c37bb8cc61ab0829b281e32d8931676d76f5b"
+    },
+    {
+      "file": "screenshots/qingci-en-1440-03-next.png",
+      "bytes": 236576,
+      "sha256": "50258a52fc3760569a9fa725ee9b9125f5c0158322d9a64cf735a56c1b97174c"
+    },
+    {
+      "file": "screenshots/qingci-en-1440-04-capsule.png",
+      "bytes": 250128,
+      "sha256": "8e024fb7aaf7648ed9c3fd4b93c2d01da4b621260ac908166a0cd0efdfdf3bae"
+    },
+    {
+      "file": "screenshots/qingci-en-1440-05-training.png",
+      "bytes": 195382,
+      "sha256": "f93902ccf524725dcf71553cf31d30f7b993b1fbe0b8ca87947bcbe251cbe60a"
+    },
+    {
+      "file": "screenshots/qingci-en-1440-06-finish.png",
+      "bytes": 194492,
+      "sha256": "7f8619d834a9ad76a84fd9bbe0f236f2580c25df10d707173d48f8950f5aa2f9"
+    },
+    {
+      "file": "screenshots/qingci-en-1440-07-activity.png",
+      "bytes": 5851,
+      "sha256": "99db2a93b06fa1bf617f5c495e02dcf6c0b76961108491217e2cf4fed8699d35"
+    },
+    {
+      "file": "screenshots/qingci-en-1440-08-plan.png",
+      "bytes": 229488,
+      "sha256": "9112dd43ddd333bc23bd3beeadda9f9ec90f8e0b255a0dcd9ed52528ccfd0e06"
+    },
+    {
+      "file": "screenshots/qingci-en-1440-09-week.png",
+      "bytes": 362490,
+      "sha256": "a78a5e5d082ff8541bce740994a22cff6a840f620e7c590a2fd16838c4f35ff8"
+    },
+    {
+      "file": "screenshots/qingci-en-1440-10-month.png",
+      "bytes": 406028,
+      "sha256": "95dbfe1738012244859d69a5a3a7754f7b8d3a048dafc6c225602fea169c17c9"
+    },
+    {
+      "file": "screenshots/qingci-en-1440-11-appearance.png",
+      "bytes": 5851,
+      "sha256": "99db2a93b06fa1bf617f5c495e02dcf6c0b76961108491217e2cf4fed8699d35"
+    },
+    {
+      "file": "screenshots/qingci-en-1440-12-coach.png",
+      "bytes": 227352,
+      "sha256": "9b87d6241c21074eff1dec4b7051b9f37589a1f0896d7b7c7eef1e054b3b98b8"
+    },
+    {
+      "file": "screenshots/qingci-en-320-next.png",
+      "bytes": 2423,
+      "sha256": "4e7db6d7b050158d4d55bb2baa8271c3865c197af3147bec95eca152782a7985"
+    },
+    {
+      "file": "screenshots/qingci-en-320-review.png",
+      "bytes": 2423,
+      "sha256": "4e7db6d7b050158d4d55bb2baa8271c3865c197af3147bec95eca152782a7985"
+    },
+    {
+      "file": "screenshots/qingci-en-320-training.png",
+      "bytes": 123814,
+      "sha256": "6921e56e957efb9402be506a1a0757889cabc1b2b82784e8974f7091161a8f35"
+    },
+    {
+      "file": "screenshots/qingci-en-390-01-onboarding.png",
+      "bytes": 111810,
+      "sha256": "c52b14c99aa8e21e6b74ac84cf10ae1b3721188572b0af13058c2e010a7378ba"
+    },
+    {
+      "file": "screenshots/qingci-en-390-02-draft.png",
+      "bytes": 151708,
+      "sha256": "d88702420bf99fec772f4ca85e428609aaa7f8878e413c7d81c5101f91079c84"
+    },
+    {
+      "file": "screenshots/qingci-en-390-03-next.png",
+      "bytes": 137215,
+      "sha256": "925d64ca611ec4b196c74d6a68456925d5ed587ef047c1cad4eb16a80db40fb6"
+    },
+    {
+      "file": "screenshots/qingci-en-390-04-capsule.png",
+      "bytes": 135802,
+      "sha256": "2bd525ae186cbc8b5efe363072e204f4a96749faada44b50eb8381012ec37456"
+    },
+    {
+      "file": "screenshots/qingci-en-390-05-training.png",
+      "bytes": 121657,
+      "sha256": "45a0e531c3c37d40f9735d15026c52cef97470e5ac7f9d06f91623fd3cdf103f"
+    },
+    {
+      "file": "screenshots/qingci-en-390-06-finish.png",
+      "bytes": 118503,
+      "sha256": "180b7423dda07d3067a0d04606c5193057fe647bfa249df49193688ba90535bd"
+    },
+    {
+      "file": "screenshots/qingci-en-390-07-activity.png",
+      "bytes": 2915,
+      "sha256": "3041d996afa19b08e53fb21c9dda04644020a7dc610c82f49b04bb1bde862b70"
+    },
+    {
+      "file": "screenshots/qingci-en-390-08-plan.png",
+      "bytes": 157819,
+      "sha256": "71fc0e34a5f7b1b09c570cea57735fd6faa4389883cc5e3f28cf19f4bb205271"
+    },
+    {
+      "file": "screenshots/qingci-en-390-09-week.png",
+      "bytes": 206301,
+      "sha256": "0d0ed90c39d0a1d53b3c75f9f7502e73b215b796175234daa56e672a439f4cd2"
+    },
+    {
+      "file": "screenshots/qingci-en-390-10-month.png",
+      "bytes": 226997,
+      "sha256": "a7e263ab8d35c5e2a05792e60ba48e2e7cc40fd2f2145730f00f3cd226c0221d"
+    },
+    {
+      "file": "screenshots/qingci-en-390-11-appearance.png",
+      "bytes": 2915,
+      "sha256": "3041d996afa19b08e53fb21c9dda04644020a7dc610c82f49b04bb1bde862b70"
+    },
+    {
+      "file": "screenshots/qingci-en-390-12-coach.png",
+      "bytes": 130540,
+      "sha256": "a3b39b2b220fc8b9b35813322af3893a15764027f166e3eea4db6d65a13aaf73"
+    },
+    {
+      "file": "screenshots/qingci-zh-1440-01-onboarding.png",
+      "bytes": 167286,
+      "sha256": "a2c13779442cc333c4690c8156e518341baaf83761fc48240c2b78ac41b8b819"
+    },
+    {
+      "file": "screenshots/qingci-zh-1440-02-draft.png",
+      "bytes": 259796,
+      "sha256": "c27d16d02946a991731e5bfabd5a9105ee05b4c35224554dc00d79084e653c5d"
+    },
+    {
+      "file": "screenshots/qingci-zh-1440-03-next.png",
+      "bytes": 226812,
+      "sha256": "e19dccb3bbc8f1d5ac2a3c0fb09616536d4aa6be8654831388faf9adb1ca568d"
+    },
+    {
+      "file": "screenshots/qingci-zh-1440-04-capsule.png",
+      "bytes": 220082,
+      "sha256": "fd611916379122a4e92aedbd3132fd35473fc1fdaf79bdc5e8e801062c0d15f3"
+    },
+    {
+      "file": "screenshots/qingci-zh-1440-05-training.png",
+      "bytes": 182394,
+      "sha256": "92da7fbac796fe03099277a7046ac7aaf9635cc0f9990f30631adba67bb1be4f"
+    },
+    {
+      "file": "screenshots/qingci-zh-1440-06-finish.png",
+      "bytes": 194416,
+      "sha256": "60d9ca95a01a48af950f14fc83442ee5da41c5725a87038cdbe21f89f0988ab4"
+    },
+    {
+      "file": "screenshots/qingci-zh-1440-07-activity.png",
+      "bytes": 5851,
+      "sha256": "99db2a93b06fa1bf617f5c495e02dcf6c0b76961108491217e2cf4fed8699d35"
+    },
+    {
+      "file": "screenshots/qingci-zh-1440-08-plan.png",
+      "bytes": 210087,
+      "sha256": "9db846d0d0d8fde026157b6b0320e35df18e324bbc4e4dc3068250026e017883"
+    },
+    {
+      "file": "screenshots/qingci-zh-1440-09-week.png",
+      "bytes": 347838,
+      "sha256": "f1214504ef8910ea14f3e62156cd05a59f4ebb2db0197d3b803d058ef37e0154"
+    },
+    {
+      "file": "screenshots/qingci-zh-1440-10-month.png",
+      "bytes": 392620,
+      "sha256": "1fd587dd545384d6a82903944ab55db64721f07bec377dab34e515fc5f929cea"
+    },
+    {
+      "file": "screenshots/qingci-zh-1440-11-appearance.png",
+      "bytes": 5851,
+      "sha256": "99db2a93b06fa1bf617f5c495e02dcf6c0b76961108491217e2cf4fed8699d35"
+    },
+    {
+      "file": "screenshots/qingci-zh-1440-12-coach.png",
+      "bytes": 215368,
+      "sha256": "f086cd15ce2a1c9a38bfaaf2903b251963d478dcb9247bb5eb72c170ebf79560"
+    },
+    {
+      "file": "screenshots/qingci-zh-320-next.png",
+      "bytes": 2423,
+      "sha256": "4e7db6d7b050158d4d55bb2baa8271c3865c197af3147bec95eca152782a7985"
+    },
+    {
+      "file": "screenshots/qingci-zh-320-review.png",
+      "bytes": 2423,
+      "sha256": "4e7db6d7b050158d4d55bb2baa8271c3865c197af3147bec95eca152782a7985"
+    },
+    {
+      "file": "screenshots/qingci-zh-320-training.png",
+      "bytes": 103920,
+      "sha256": "fa59579bfa69ab9d3d109d342fa55fb43637d707c6f59451a063b42fffac723e"
+    },
+    {
+      "file": "screenshots/qingci-zh-390-01-onboarding.png",
+      "bytes": 105644,
+      "sha256": "74d0c12d11aa0e4b67e42e3a976aaf42044e1f48c9ae4581d137ac638edf415c"
+    },
+    {
+      "file": "screenshots/qingci-zh-390-02-draft.png",
+      "bytes": 151421,
+      "sha256": "b5b3c97ab1b82ebe0ff714f38010e08a77d67bfb4eb6293d2d7419e81ed740ca"
+    },
+    {
+      "file": "screenshots/qingci-zh-390-03-next.png",
+      "bytes": 129501,
+      "sha256": "7ee9bd9e59081d086587f112f2accd327e49ebca3d398618c5824b3e33ab184a"
+    },
+    {
+      "file": "screenshots/qingci-zh-390-04-capsule.png",
+      "bytes": 133764,
+      "sha256": "d515bfb2f962cfde5848a49c5b0fc490f8fe51dd6f2545e2f107c2e4d28e3ec1"
+    },
+    {
+      "file": "screenshots/qingci-zh-390-05-training.png",
+      "bytes": 113690,
+      "sha256": "1cb06d85fc11eeb6d7c591296cf9109cd78dc112d575b3f7682727f8e735ef2e"
+    },
+    {
+      "file": "screenshots/qingci-zh-390-06-finish.png",
+      "bytes": 118520,
+      "sha256": "8a3982a475baba324caf82c9790874f22fa66a1503debcbc88b180084e1064aa"
+    },
+    {
+      "file": "screenshots/qingci-zh-390-07-activity.png",
+      "bytes": 2915,
+      "sha256": "3041d996afa19b08e53fb21c9dda04644020a7dc610c82f49b04bb1bde862b70"
+    },
+    {
+      "file": "screenshots/qingci-zh-390-08-plan.png",
+      "bytes": 148552,
+      "sha256": "128f0b30afc71a063a616b11fac73224aac3b51340f57cb43acda77d506f0ded"
+    },
+    {
+      "file": "screenshots/qingci-zh-390-09-week.png",
+      "bytes": 193536,
+      "sha256": "b745d632b01b66a7d3b6c5497ae21a90b382c23abb1807810b4ca6cf7a16a47b"
+    },
+    {
+      "file": "screenshots/qingci-zh-390-10-month.png",
+      "bytes": 204063,
+      "sha256": "65311ea88d988fbe5360146347f13a9f6529d147b72a2cb66a649efc5b567df2"
+    },
+    {
+      "file": "screenshots/qingci-zh-390-11-appearance.png",
+      "bytes": 2915,
+      "sha256": "3041d996afa19b08e53fb21c9dda04644020a7dc610c82f49b04bb1bde862b70"
+    },
+    {
+      "file": "screenshots/qingci-zh-390-12-coach.png",
+      "bytes": 121783,
+      "sha256": "10d0baa997f4ec00cb373e9e86649a819954cdf4a7a5dcd10f29fa3b41902dbc"
+    },
+    {
+      "file": "screenshots/zhuangse-zh-1440-01-onboarding.png",
+      "bytes": 52106,
+      "sha256": "b0af9191b3a19d3029228ce20315767898e296a4840381812db39662f335ffae"
+    },
+    {
+      "file": "screenshots/zhuangse-zh-1440-02-draft.png",
+      "bytes": 87772,
+      "sha256": "c6dafb0f4669c58272b049806db4fc81b52077dc69faff350c979ab4c1182fbe"
+    },
+    {
+      "file": "screenshots/zhuangse-zh-1440-03-next.png",
+      "bytes": 76919,
+      "sha256": "82afae67584a85851ad9ed3c6510cfc5ab6e45a82f331ae2ec890a54178c0518"
+    },
+    {
+      "file": "screenshots/zhuangse-zh-1440-04-capsule.png",
+      "bytes": 91483,
+      "sha256": "db70024e1252ddb743f8714289439d145c627b806ec1ceb948c51f756ab5fd3f"
+    },
+    {
+      "file": "screenshots/zhuangse-zh-1440-05-training.png",
+      "bytes": 55571,
+      "sha256": "98af410959c715b8da73147562aaf4271f03d21ea105e1e3df2c38cb95838950"
+    },
+    {
+      "file": "screenshots/zhuangse-zh-1440-06-finish.png",
+      "bytes": 52400,
+      "sha256": "ae51d53bc1a9ccf4c6fadfe89837496ce3d914e7ab52f8085020f48b50a37dec"
+    },
+    {
+      "file": "screenshots/zhuangse-zh-1440-07-activity.png",
+      "bytes": 5851,
+      "sha256": "99db2a93b06fa1bf617f5c495e02dcf6c0b76961108491217e2cf4fed8699d35"
+    },
+    {
+      "file": "screenshots/zhuangse-zh-1440-08-plan.png",
+      "bytes": 82400,
+      "sha256": "abdbd33bb6bcd46dd7f758ae44ba4762ac500a84164501c6a9e65bea6537d365"
+    },
+    {
+      "file": "screenshots/zhuangse-zh-1440-09-week.png",
+      "bytes": 103324,
+      "sha256": "764e4a13389ba00108982c1a9f6afc6fa7f002a804f91914a11b514036c28c75"
+    },
+    {
+      "file": "screenshots/zhuangse-zh-1440-10-month.png",
+      "bytes": 109785,
+      "sha256": "6d8fd5caab4664af6723e520177b5551f0a3a65beeeb6cc8f9f3aa40337cd3fe"
+    },
+    {
+      "file": "screenshots/zhuangse-zh-1440-11-appearance.png",
+      "bytes": 5851,
+      "sha256": "99db2a93b06fa1bf617f5c495e02dcf6c0b76961108491217e2cf4fed8699d35"
+    },
+    {
+      "file": "screenshots/zhuangse-zh-1440-12-coach.png",
+      "bytes": 70827,
+      "sha256": "838c7ef79d085244dc41b942809bef2709441e80f0d8e95da3ebee9025f58c8c"
+    },
+    {
+      "file": "screenshots/zhuangse-zh-320-next.png",
+      "bytes": 2423,
+      "sha256": "4e7db6d7b050158d4d55bb2baa8271c3865c197af3147bec95eca152782a7985"
+    },
+    {
+      "file": "screenshots/zhuangse-zh-320-review.png",
+      "bytes": 2423,
+      "sha256": "4e7db6d7b050158d4d55bb2baa8271c3865c197af3147bec95eca152782a7985"
+    },
+    {
+      "file": "screenshots/zhuangse-zh-320-training.png",
+      "bytes": 50663,
+      "sha256": "e501c3bc62dd17e0212cfa1914d78260be3160cf9ab4846c6b0d8e3d432b07bd"
+    },
+    {
+      "file": "screenshots/zhuangse-zh-390-01-onboarding.png",
+      "bytes": 48691,
+      "sha256": "7b6b9b53550ae80a3034ea95f13163548fee02a9613e4227fe3ca1628a0427e1"
+    },
+    {
+      "file": "screenshots/zhuangse-zh-390-02-draft.png",
+      "bytes": 79176,
+      "sha256": "e3fb0b0be4fc96cacd1f07aa335aa43401802204d5e2ca9a96b85d74f9012768"
+    },
+    {
+      "file": "screenshots/zhuangse-zh-390-03-next.png",
+      "bytes": 63498,
+      "sha256": "d3dc7cb390225853578ea54136a923c5ce2198c26c663de3af25d6c30a8d29f2"
+    },
+    {
+      "file": "screenshots/zhuangse-zh-390-04-capsule.png",
+      "bytes": 77835,
+      "sha256": "1c6fd45c91e3725602fe6eee589fd2555ab53702434a14fac9dcad5e52d7b73a"
+    },
+    {
+      "file": "screenshots/zhuangse-zh-390-05-training.png",
+      "bytes": 51008,
+      "sha256": "21253abd50a3ef48cbf483bec6215bd6e6f515294405a7c86ec4f0bfd43d59c4"
+    },
+    {
+      "file": "screenshots/zhuangse-zh-390-06-finish.png",
+      "bytes": 49762,
+      "sha256": "c9a0820014b6c236eaa7070aa7852d539b54fed7e9dd8156030492525a063eb0"
+    },
+    {
+      "file": "screenshots/zhuangse-zh-390-07-activity.png",
+      "bytes": 2915,
+      "sha256": "3041d996afa19b08e53fb21c9dda04644020a7dc610c82f49b04bb1bde862b70"
+    },
+    {
+      "file": "screenshots/zhuangse-zh-390-08-plan.png",
+      "bytes": 79112,
+      "sha256": "90f06d2cc1108cc49aa1b1921b0fd6f06bfe02431c7b6d9de857cbde3dcaeac9"
+    },
+    {
+      "file": "screenshots/zhuangse-zh-390-09-week.png",
+      "bytes": 88397,
+      "sha256": "2e6089895ef9d3fbf40e52c6405959b22e94b164b83ac048a0a44fbf94036467"
+    },
+    {
+      "file": "screenshots/zhuangse-zh-390-10-month.png",
+      "bytes": 94290,
+      "sha256": "42a8df6ef68c01f746f14987944567351229dfdf269e411013b187ab00e369a8"
+    },
+    {
+      "file": "screenshots/zhuangse-zh-390-11-appearance.png",
+      "bytes": 2915,
+      "sha256": "3041d996afa19b08e53fb21c9dda04644020a7dc610c82f49b04bb1bde862b70"
+    },
+    {
+      "file": "screenshots/zhuangse-zh-390-12-coach.png",
+      "bytes": 58927,
+      "sha256": "134deac5b9dae8e43d458a036b5ab58811ffbfb500e535b0be27f3e2ac46ca59"
+    }
+  ]
+}

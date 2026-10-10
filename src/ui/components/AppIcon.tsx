@@ -6,13 +6,13 @@ today:<><circle cx="32" cy="32" r="10"/><path d="M32 11v8 M32 45v8 M11 32h8 M45 
 plans:<><rect x="16" y="18" width="32" height="30" rx="6"/><path className="ceramic-detail" d="M16 28h32 M24 13v11 M40 13v11 M24 35h3 M33 35h3 M42 35h2 M24 42h3 M33 42h3"/></>,
 progress:<><rect x="17" y="34" width="8" height="14" rx="3"/><rect x="28" y="25" width="8" height="23" rx="3"/><rect x="39" y="16" width="8" height="32" rx="3"/></>,
 exercises:<><rect x="14" y="22" width="7" height="20" rx="3"/><rect x="22" y="26" width="6" height="12" rx="2"/><rect x="36" y="26" width="6" height="12" rx="2"/><rect x="43" y="22" width="7" height="20" rx="3"/><rect x="25" y="30" width="14" height="4" rx="2"/></>,
-settings:<><path d="M29 11h6l2 6 5 2 6-2 4 5-4 5v10l4 5-4 5-6-2-5 2-2 6h-6l-2-6-5-2-6 2-4-5 4-5V27l-4-5 4-5 6 2 5-2z"/><circle cx="32" cy="32" r="8" fill="var(--ceramic-top)" stroke="var(--ceramic-dark)" strokeWidth="2"/></>,
-goal:<><circle cx="32" cy="32" r="18" fill="none" stroke="var(--ceramic-dark)" strokeWidth="6"/><circle cx="32" cy="32" r="9"/><circle cx="32" cy="32" r="3" fill="var(--ceramic-top)"/></>,
+settings:<><path d="M29 11h6l2 6 5 2 6-2 4 5-4 5v10l4 5-4 5-6-2-5 2-2 6h-6l-2-6-5-2-6 2-4-5 4-5V27l-4-5 4-5 6 2 5-2z"/><circle cx="32" cy="32" r="8" fill="var(--c-surface)" stroke="var(--c-ink)" strokeWidth="2"/></>,
+goal:<><circle cx="32" cy="32" r="18" fill="none" stroke="var(--c-ink)" strokeWidth="6"/><circle cx="32" cy="32" r="9"/><circle cx="32" cy="32" r="3" fill="var(--c-surface)"/></>,
 age:<><path d="M22 14h20l-5 12-5 7 5 7 5 10H22l5-10 5-7-5-7z"/></>,
 height:<><rect x="24" y="12" width="16" height="40" rx="4"/><path className="ceramic-detail" d="M28 21h8 M28 28h5 M28 35h8 M28 42h5"/></>,
 weight:<><path d="M22 26h20l5 22H17z"/><path className="ceramic-detail" d="M27 25v-5a5 5 0 0 1 10 0v5"/></>,
 waist:<><path d="M19 22c5-8 21-8 26 0v20c-6 9-20 9-26 0z"/><path className="ceramic-detail" d="M20 31c7 3 17 3 24 0 M24 35v5 M31 35v5 M38 35v5"/></>,
-home:<><path d="M13 30 32 15l19 15v19H13z"/><rect x="27" y="34" width="10" height="15" rx="2" fill="var(--ceramic-top)"/></>,
+home:<><path d="M13 30 32 15l19 15v19H13z"/><rect x="27" y="34" width="10" height="15" rx="2" fill="var(--c-surface)"/></>,
 leaf:<><path d="M14 46C12 25 25 13 48 14c2 24-13 35-34 32z"/><path className="ceramic-detail" d="M20 43c5-10 12-16 22-23"/></>,
 clock:<><circle cx="32" cy="32" r="19"/><path className="ceramic-detail" d="M32 19v14l10 6"/></>,
 heart:<><path d="M32 49 14 32c-10-15 6-23 18-10 12-13 28-5 18 10z"/></>,
@@ -22,7 +22,7 @@ sparkles:<><path d="m32 12 6 14 14 6-14 6-6 14-6-14-14-6 14-6z"/></>,
 bolt:<><path d="M35 10 18 35h14l-3 19 18-29H33z"/></>,
 person:<><circle cx="32" cy="21" r="8"/><path d="M17 50c0-13 7-19 15-19s15 6 15 19z"/></>,
 office:<><rect x="19" y="15" width="26" height="36" rx="3"/><path className="ceramic-detail" d="M26 24h4 M35 24h4 M26 32h4 M35 32h4 M26 40h4 M35 40h4"/></>,
-band:<><path d="M17 38c-7-17 11-29 25-17 12 13-1 30-16 24-8-3-12-13-9-17" fill="none" stroke="var(--ceramic-symbol)" strokeWidth="8"/></>,
+band:<><path d="M17 38c-7-17 11-29 25-17 12 13-1 30-16 24-8-3-12-13-9-17" fill="none" stroke="var(--c-primary)" strokeWidth="8"/></>,
 treadmill:<><rect x="16" y="35" width="33" height="9" rx="3"/><path className="ceramic-detail" d="M20 17h15v17 M18 48h33"/></>,
 run:<><circle cx="38" cy="15" r="6"/><path className="ceramic-detail" d="M33 22l-8 10 13 6 M32 28l12 5 M32 35l-8 14 M37 37l11 12"/></>,
 check:<><circle cx="32" cy="32" r="19"/><path className="ceramic-detail" d="m21 33 8 8 15-17"/></>,
@@ -59,6 +59,6 @@ export type IconName = 'today'|'plans'|'progress'|'exercises'|'settings'|'goal'|
 export function AppIcon({name,ceramic=false}:{name:IconName;ceramic?:boolean}) {
  const id=useId().replaceAll(':','');
  if(!ceramic&&name in actionPaths)return <svg className="app-action-icon" data-icon={name} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d={actionPaths[name as keyof typeof actionPaths]}/></svg>;
- return <svg className="ceramic-svg" data-icon={name} viewBox="0 0 64 64" aria-hidden="true" focusable="false"><defs><linearGradient id={id+'tile'} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="var(--ceramic-top)"/><stop offset="1" stopColor="var(--ceramic-bottom)"/></linearGradient><linearGradient id={id+'figure'} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="var(--ceramic-light)"/><stop offset=".6" stopColor="var(--ceramic-symbol)"/><stop offset="1" stopColor="var(--ceramic-dark)"/></linearGradient></defs><rect x="2" y="2" width="60" height="60" rx="19" fill={'url(#'+id+'tile)'} stroke="var(--ceramic-stroke)" strokeWidth="1.4"/><path d="M9 20Q9 9 20 9H44" fill="none" stroke="white" opacity=".7" strokeWidth="2" strokeLinecap="round"/><g className="ceramic-figure" fill={'url(#'+id+'figure)'} stroke="var(--ceramic-dark)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">{ceramicShapes[name]}</g></svg>;
+ return <svg className="ceramic-svg" data-icon={name} viewBox="0 0 64 64" aria-hidden="true" focusable="false"><defs><linearGradient id={id+'tile'} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="var(--c-surface)"/><stop offset="1" stopColor="var(--c-surface-2)"/></linearGradient><linearGradient id={id+'figure'} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="var(--c-signature)"/><stop offset=".6" stopColor="var(--c-primary)"/><stop offset="1" stopColor="var(--c-ink)"/></linearGradient></defs><rect x="2" y="2" width="60" height="60" rx="19" fill={'url(#'+id+'tile)'} stroke="var(--c-line)" strokeWidth="1.4"/><path d="M9 20Q9 9 20 9H44" fill="none" stroke="var(--c-surface)" opacity=".7" strokeWidth="2" strokeLinecap="round"/><g className="ceramic-figure" fill={'url(#'+id+'figure)'} stroke="var(--c-ink)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">{ceramicShapes[name]}</g></svg>;
 }
 export function StatusIcon({status}:{status:'success'|'warning'|'error'|'pending'}) {return <span className={'app-status-icon status-'+status}><AppIcon name={status}/></span>;}

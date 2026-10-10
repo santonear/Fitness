@@ -40,5 +40,7 @@
   "quietEnd": "Quiet hours end",
   "quietConflict": "This reminder falls within quiet hours and will not appear during that time. Adjust the reminder time or quiet hours.",
   "zeroLimit": "The daily limit is 0. Reminders will not appear.",
-  "trial": "Trial access and invitation code"
+  "trial": "Trial access and invitation code",
+  "restVibration": "Vibrate once after 90 seconds of rest (this device)",
+  "vibrationUnavailable": "Vibration is unavailable on this device."
 }

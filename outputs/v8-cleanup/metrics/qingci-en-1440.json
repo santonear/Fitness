@@ -1,0 +1,852 @@
+[
+  {
+    "page": "01-onboarding",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "controls": [
+      {
+        "tag": "TEXTAREA",
+        "text": "",
+        "width": 512,
+        "height": 102.5
+      },
+      {
+        "tag": "BUTTON",
+        "text": "I’d like to lose weight and feel lighter",
+        "width": 323.421875,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "I’d like more strength and energy",
+        "width": 294.1875,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "I sit a lot and want to move more freely",
+        "width": 327.96875,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "I’m not sure. I just want to get moving",
+        "width": 329.1875,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Continue",
+        "width": 512,
+        "height": 56
+      }
+    ],
+    "animations": 0
+  },
+  {
+    "page": "02-draft",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "controls": [
+      {
+        "tag": "SUMMARY",
+        "text": "Bodyweight squat · 2 sets",
+        "width": 510,
+        "height": 49.5
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "Wall Push Ups · 2 sets",
+        "width": 510,
+        "height": 49.5
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "Self-resisted Row · 2 sets",
+        "width": 510,
+        "height": 49.5
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "Dead Bug · 2 sets",
+        "width": 510,
+        "height": 49.5
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "Glute Bridge · 2 sets",
+        "width": 510,
+        "height": 49.5
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "Wall Push Ups · 2 sets",
+        "width": 510,
+        "height": 49.5
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "Self-resisted Row · 2 sets",
+        "width": 510,
+        "height": 49.5
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "Plank · 2 sets",
+        "width": 510,
+        "height": 49.5
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Use this plan",
+        "width": 250,
+        "height": 56
+      },
+      {
+        "tag": "BUTTON",
+        "text": "I’d like changes. Talk to Yaya",
+        "width": 250,
+        "height": 54
+      }
+    ],
+    "animations": 0
+  },
+  {
+    "page": "03-next",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "text": "Settings",
+        "width": 95.53125,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "AStart training",
+        "width": 128,
+        "height": 128
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "Bodyweight squat · 2 sets",
+        "width": 248,
+        "height": 44
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "Wall Push Ups · 2 sets",
+        "width": 248,
+        "height": 44
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "Self-resisted Row · 2 sets",
+        "width": 248,
+        "height": 44
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "Dead Bug · 2 sets",
+        "width": 248,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Choose another",
+        "width": 153.125,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Manual training",
+        "width": 152.453125,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Record another activity",
+        "width": 560,
+        "height": 48
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "What will be sent to Yaya",
+        "width": 560,
+        "height": 44
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "View exact request",
+        "width": 560,
+        "height": 44
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "width": 479.890625,
+        "height": 51.5
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Send",
+        "width": 72.109375,
+        "height": 56
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Talk to Yaya",
+        "width": 560,
+        "height": 86.375
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Training",
+        "width": 71,
+        "height": 83.1875
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Plan",
+        "width": 71,
+        "height": 83.1875
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Review",
+        "width": 71,
+        "height": 83.1875
+      }
+    ],
+    "animations": 0
+  },
+  {
+    "page": "04-capsule",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "text": "Bodyweight squat · 2 sets · 8 reps",
+        "width": 305.234375,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Wall Push Ups · 2 sets · 8 reps",
+        "width": 275.5,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Self-resisted Row · 2 sets · 8 reps",
+        "width": 299.296875,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Dead Bug · 2 sets · 8 reps",
+        "width": 241.046875,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Glute Bridge · 2 sets · 8 reps",
+        "width": 262.9375,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Wall Push Ups · 2 sets · 8 reps",
+        "width": 275.5,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Self-resisted Row · 2 sets · 8 reps",
+        "width": 299.296875,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Plank · 2 sets · 20 sec",
+        "width": 213.15625,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "View previous versions",
+        "width": 205.625,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Exercise library",
+        "width": 148.90625,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "×",
+        "width": 44,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Load YouTube video (connects to a third ",
+        "width": 338.1875,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "width": 98,
+        "height": 86.375
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Training",
+        "width": 71,
+        "height": 83.1875
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Plan",
+        "width": 71,
+        "height": 83.1875
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Review",
+        "width": 71,
+        "height": 83.1875
+      }
+    ],
+    "animations": 0
+  },
+  {
+    "page": "08-plan",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "text": "Bodyweight squat · 2 sets · 8 reps",
+        "width": 305.234375,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Wall Push Ups · 2 sets · 8 reps",
+        "width": 275.5,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Self-resisted Row · 2 sets · 8 reps",
+        "width": 299.296875,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Dead Bug · 2 sets · 8 reps",
+        "width": 241.046875,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Glute Bridge · 2 sets · 8 reps",
+        "width": 262.9375,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Wall Push Ups · 2 sets · 8 reps",
+        "width": 275.5,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Self-resisted Row · 2 sets · 8 reps",
+        "width": 299.296875,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Plank · 2 sets · 20 sec",
+        "width": 213.15625,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "View previous versions",
+        "width": 205.625,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Exercise library",
+        "width": 148.90625,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "width": 98,
+        "height": 86.375
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Training",
+        "width": 71,
+        "height": 83.1875
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Plan",
+        "width": 71,
+        "height": 83.1875
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Review",
+        "width": 71,
+        "height": 83.1875
+      }
+    ],
+    "animations": 0
+  },
+  {
+    "page": "05-training",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "text": "Pause or finish",
+        "width": 144.65625,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "width": 78,
+        "height": 65.015625
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Bodyweight×8 reps",
+        "width": 560,
+        "height": 72
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Change exercise",
+        "width": 155.453125,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Complete this set",
+        "width": 560,
+        "height": 72
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Bodyweight squat",
+        "width": 169.859375,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Wall Push Ups",
+        "width": 140.125,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Self-resisted Row",
+        "width": 163.921875,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Dead Bug",
+        "width": 105.671875,
+        "height": 44
+      }
+    ],
+    "animations": 0
+  },
+  {
+    "page": "06-finish",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "text": "Easy",
+        "width": 68.515625,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Right",
+        "width": 73.875,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Tired",
+        "width": 73.328125,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Very tired",
+        "width": 107.03125,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Not enough time",
+        "width": 160.1875,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Too tired",
+        "width": 101.78125,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Discomfort",
+        "width": 116.9375,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Equipment busy",
+        "width": 156.4375,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Not today",
+        "width": 108.0625,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Other",
+        "width": 77.03125,
+        "height": 44
+      },
+      {
+        "tag": "TEXTAREA",
+        "text": "",
+        "width": 560,
+        "height": 77
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Save this workout",
+        "width": 560,
+        "height": 56
+      }
+    ],
+    "animations": 0
+  },
+  {
+    "page": "07-activity",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "controls": [],
+    "animations": 0
+  },
+  {
+    "page": "09-week",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "text": "This week",
+        "width": 108.828125,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "This month",
+        "width": 119.5,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Use this adjustment",
+        "width": 184.34375,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Keep it as it is",
+        "width": 138.671875,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Next workout",
+        "width": 560,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "width": 98,
+        "height": 86.375
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Training",
+        "width": 71,
+        "height": 83.1875
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Plan",
+        "width": 71,
+        "height": 83.1875
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Review",
+        "width": 71,
+        "height": 83.1875
+      }
+    ],
+    "animations": 0
+  },
+  {
+    "page": "10-month",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "text": "This week",
+        "width": 108.828125,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "This month",
+        "width": 119.5,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Use this adjustment",
+        "width": 184.34375,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Keep it as it is",
+        "width": 138.671875,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Next workout",
+        "width": 560,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "width": 98,
+        "height": 86.375
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Training",
+        "width": 71,
+        "height": 83.1875
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Plan",
+        "width": 71,
+        "height": 83.1875
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Review",
+        "width": 71,
+        "height": 83.1875
+      }
+    ],
+    "animations": 0
+  },
+  {
+    "page": "11-appearance",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "controls": [],
+    "animations": 0
+  },
+  {
+    "page": "12-coach",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "text": "Settings",
+        "width": 95.53125,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "BStart training",
+        "width": 128,
+        "height": 128
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "Glute Bridge · 2 sets",
+        "width": 248,
+        "height": 44
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "Wall Push Ups · 2 sets",
+        "width": 248,
+        "height": 44
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "Self-resisted Row · 2 sets",
+        "width": 248,
+        "height": 44
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "Plank · 2 sets",
+        "width": 248,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Choose another",
+        "width": 153.125,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Manual training",
+        "width": 152.453125,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Record another activity",
+        "width": 560,
+        "height": 48
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "What will be sent to Yaya",
+        "width": 560,
+        "height": 44
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "View exact request",
+        "width": 560,
+        "height": 44
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "width": 479.890625,
+        "height": 51.5
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Send",
+        "width": 72.109375,
+        "height": 56
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Talk to Yaya",
+        "width": 560,
+        "height": 86.375
+      },
+      {
+        "tag": "BUTTON",
+        "text": "×",
+        "width": 44,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Apply changes",
+        "width": 142.828125,
+        "height": 48
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "width": 406,
+        "height": 44
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "What will be sent to Yaya",
+        "width": 406,
+        "height": 44
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "View exact request",
+        "width": 406,
+        "height": 44
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "width": 325.890625,
+        "height": 51.5
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Send",
+        "width": 72.109375,
+        "height": 56
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Training",
+        "width": 71,
+        "height": 83.1875
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Plan",
+        "width": 71,
+        "height": 83.1875
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Review",
+        "width": 71,
+        "height": 83.1875
+      }
+    ],
+    "animations": 0
+  }
+]
