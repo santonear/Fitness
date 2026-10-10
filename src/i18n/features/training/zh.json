@@ -86,5 +86,6 @@
  "dismissMigration": "不用了",
  "setReminder": "设为提醒",
  "migrationPlans": "你以前有 {count} 份计划，当前用的是 {name}，其他的在计划版本里",
- "understood": "知道了"
+ "understood": "知道了",
+ "askCoach": "和芽芽聊聊"
 }

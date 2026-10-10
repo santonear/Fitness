@@ -4,8 +4,9 @@ import { useMainline, format } from '../../mainline/context';
 import { exercises } from '../../../catalog/exercises';
 import { createV8DataService } from '../../../persistence/v8-access';
 import { repository } from '../../../persistence/repository';
+import { CoachVisual } from '../../components/CoachVisual';
 export function NextPage(){
- const {data,facts,t,slots,name,start,navigate,busy,run}=useMainline(); const [choice,setChoice]=useState<string>();
+ const {data,facts,t,slots,name,start,navigate,busy,run,openCoach}=useMainline(); const [choice,setChoice]=useState<string>();
  const version=data?.version, templates=version?.templates??[];
  const last=data?.workouts.filter(w=>w.planVersionId===version?.id&&w.status!=='in_progress'&&w.status!=='abandoned').sort((a,b)=>b.startedAt.localeCompare(a.startedAt))[0];
  const suggested=templates[(templates.findIndex(s=>s.id===last?.templateId)+1)%Math.max(1,templates.length)];
@@ -25,5 +26,6 @@ export function NextPage(){
  <p>{t.details}</p><div className="v8-capsules">{selected.items.map((item,index)=><details key={index}><summary>{name(item.exerciseId)} · {item.sets} {t.sets}</summary><p>{exercises.find(e=>e.id===item.exerciseId)?.steps[data?.profile?.locale??'zh'].join(' ')}</p></details>)}</div>
  <div className="v8-row"><Button disabled={templates.length<2} onClick={()=>setChoice(templates[(templates.findIndex(item=>item.id===selected.id)+1)%templates.length].id)}>{t.switch}</Button><Button onClick={()=>navigate('/manual')}>{t.manual}</Button></div></>:<Button variant="primary" onClick={()=>navigate('/onboarding')}>{t.create}</Button>}
  <Button onClick={()=>navigate('/activity')}>{t.recordActivity}</Button>
+ <Button onClick={()=>openCoach('ADJUST_TODAY',selected?.id)}><CoachVisual/>{t.askCoach}</Button>
  </main>;
 }

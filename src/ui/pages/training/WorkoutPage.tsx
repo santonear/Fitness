@@ -3,8 +3,9 @@ import { Button,Chip } from '../../components/common';
 import { useMainline,workflow,format } from '../../mainline/context';
 import { exercises } from '../../../catalog/exercises';
 import { useTrainingWakeLock } from './useTrainingWakeLock';
+import { CoachVisual } from '../../components/CoachVisual';
 export function WorkoutPage(){
- const {data,t,locale,name,navigate,run,busy,slots,focusIndex:index,setFocusIndex:setIndex,workoutValues:values,setWorkoutValues:setValues}=useMainline();const active=data?.active;
+ const {data,t,locale,name,navigate,run,busy,slots,openCoach,focusIndex:index,setFocusIndex:setIndex,workoutValues:values,setWorkoutValues:setValues}=useMainline();const active=data?.active;
  const [panel,setPanel]=useState<'pause'|'edit'|'swap'>(),[replacement,setReplacement]=useState(''),[reason,setReason]=useState<'other'|'discomfort'>('other');
  const [rest,setRest]=useState(0);useTrainingWakeLock(!!active&&!panel);
  useEffect(()=>{const last=active?.sets.at(-1)?.completedAt;if(!last)return;const update=()=>setRest(Math.max(0,Math.floor((Date.now()-Date.parse(last))/1000)));update();const timer=window.setInterval(update,1000);return()=>clearInterval(timer);},[active?.sets.length]);
@@ -21,7 +22,7 @@ export function WorkoutPage(){
  const load=values[`${key}:kg`]??(previous?.loadGrams!==undefined?Number(previous.loadGrams)/1000:matching&&'loadGrams'in matching?matching.loadGrams/1000:0);
  const done=active.sets.filter(s=>s.itemIndex===item.itemIndex).length,allDone=active.sets.length>=active.plannedSetCount,thisDone=done>=item.plannedSetCount;
  const complete=()=>void run(async()=>{if(allDone){navigate(`/workout/${active.id}/finish`);return;}if(thisDone){setIndex(items.findIndex(p=>active.sets.filter(s=>s.itemIndex===p.itemIndex).length<p.plannedSetCount));return;}let nextSet=0;while(active.sets.some(s=>s.itemIndex===item.itemIndex&&s.setIndex===nextSet))nextSet++;await workflow.recordSet(active.id,item.itemIndex,nextSet,timed?{durationSeconds:value}:{reps:value,...(exercise.metricType==='reps_load'?{loadGrams:Math.round(load*1000)}:{})});});
- return <main data-training-active="true"><div className="v8-topline"><Button onClick={()=>setPanel('pause')}>{t.pause}</Button><span>{template?.name??t.manual}</span></div>
+ return <main data-training-active="true"><div className="v8-topline"><Button onClick={()=>setPanel('pause')}>{t.pause}</Button><span>{template?.name??t.manual}</span><Button aria-label={t.askCoach} onClick={()=>openCoach('ADJUST_TODAY',active.templateId)}><CoachVisual/></Button></div>
  <section className="v8-focus"><p>{format(t.setCount,{current:Math.min(done+1,item.plannedSetCount),total:item.plannedSetCount})}</p><h1>{name(effectiveId)}</h1>
  <slots.SetValue label={t.edit} loadText={exercise.metricType==='reps_load'?`${load} ${t.kg}`:t.bodyweight} targetText={`${value} ${timed?t.seconds:t.reps}`} onEdit={()=>setPanel('edit')} disabled={busy||thisDone}/><p>{t.metricHint}</p>
  <p>{exercise.steps[locale].join(' ')}</p><Button onClick={()=>{setReplacement('');setReason('other');setPanel('swap');}} disabled={thisDone}>{t.changeExercise}</Button></section>

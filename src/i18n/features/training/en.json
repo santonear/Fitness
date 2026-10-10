@@ -86,5 +86,6 @@
  "dismissMigration": "No thanks",
  "setReminder": "Set reminders",
  "migrationPlans": "You had {count} plans. Your current plan is {name}; the others are in plan versions.",
- "understood": "Got it"
+ "understood": "Got it",
+ "askCoach": "Talk to Yaya"
 }

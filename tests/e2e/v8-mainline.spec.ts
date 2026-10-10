@@ -15,6 +15,17 @@ test('a confirmed today adjustment changes only one workout and survives reload'
  const saved=await page.evaluate(async()=>{const p='/src/ui/mainline/context.tsx';const s=await(await import(/* @vite-ignore */ p)).workflow.snapshot();return {override:s.state.nextWorkoutOverride,sets:s.active.templateSnapshot.items[0].sets,planSets:s.version.templates[0].items[0].sets};});expect(saved.override).toBeUndefined();expect(saved.sets).toBe(1);expect(saved.planSets).toBe(2);
 });
 
+test('backup restoration resets active editors in this tab and another tab',async({page,context})=>{
+ await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();await page.getByRole('button',{name:'开始训练',exact:true}).first().click();
+ const exported=await page.evaluate(async()=>{const p='/src/application/backup.ts';return (await(await import(/* @vite-ignore */ p)).backupService.exportBackup()).text();});
+ const other=await context.newPage();await other.goto(page.url());await expect(other.getByText('第 1 组，共 2 组',{exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'完成这一组',exact:true}).click();await expect(page.getByText('第 2 组，共 2 组',{exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'和芽芽聊聊',exact:true}).click();await expect(page.getByRole('dialog')).toBeVisible();
+ await page.evaluate(async text=>{const p='/src/application/backup.ts',service=(await import(/* @vite-ignore */ p)).backupService;await service.exportBackup();const input=await service.validateBackup(new File([text],'saved.json',{type:'application/json'}));await service.importBackup(input,{backupExported:true,replacementConfirmed:true,expectedRevision:input.expectedRevision});},exported);
+ await expect(page.getByRole('dialog')).not.toBeVisible();await expect(page.getByText('第 1 组，共 2 组',{exact:true})).toBeVisible();await expect(other.getByText('第 1 组，共 2 组',{exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'完成这一组',exact:true}).click();await expect(page.getByText('第 2 组，共 2 组',{exact:true})).toBeVisible();await other.close();
+});
+
 async function onboard(page: Page, caution?: string) {
   await page.goto('/'); await expect(page).toHaveURL(/onboarding/);
   await page.getByLabel('你的回答').fill('想有些力量，不再容易累'); await page.getByRole('button', { name: '继续', exact: true }).click();
@@ -97,7 +108,7 @@ test('responsive navigation leaves all home actions clickable and activities per
  await page.getByRole('button',{name:'骑行',exact:true}).click();await page.getByLabel('时长（分钟）').fill('5');
  await expect(page.getByRole('button',{name:'减少 10 分钟'})).toBeDisabled();
  await page.getByRole('button',{name:'增加 10 分钟'}).click();await page.getByLabel('想补充一句（可不填）').fill('公园骑行');
- await page.getByRole('button',{name:'记下来',exact:true}).click();await expect(page.getByText('公园骑行',{exact:true})).toBeVisible();await page.reload();await expect(page.getByText('公园骑行',{exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'记下来',exact:true}).click();await expect(page).toHaveURL(/review/);await expect(page.getByText('公园骑行',{exact:true})).toBeVisible();await page.reload();await expect(page.getByText('公园骑行',{exact:true})).toBeVisible();
  const saved=await page.evaluate(async()=>{const p='/src/persistence/db.ts';const db=(await import(/* @vite-ignore */ p)).database;return {activities:await db.v8Activities.toArray(),workouts:await db.v8Workouts.count(),versions:await db.v8PlanVersions.count()};});
  expect(saved.activities).toHaveLength(1);expect(saved.activities[0]).toMatchObject({type:'cycle',minutes:15});expect(saved.workouts).toBe(0);expect(saved.versions).toBe(1);
  await page.goto('/plans');await expect(page.getByRole('heading',{name:'我的计划',exact:true})).toBeVisible();

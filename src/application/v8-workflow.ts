@@ -64,7 +64,8 @@ export function createV8Workflow(repo: Repository) {
       await db.v8Plans.toCollection().modify({ readOnly: true });
       await db.v8Plans.add({ id: candidate.requestId, currentVersionId: id, readOnly: false, name: proposal.goalText });
       await db.v8PlanVersions.add(version);
-      await db.v8State.put({ ...state, currentPlanId: candidate.requestId, coachProfile: profile });
+      const { nextWorkoutOverride: _previousOverride, ...retained } = state;
+      await db.v8State.put({ ...retained, currentPlanId: candidate.requestId, coachProfile: profile });
       return version;
     }, candidate.expectedRevision);
   }
