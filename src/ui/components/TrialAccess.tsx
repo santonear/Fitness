@@ -56,7 +56,7 @@ function SecurityCheck({ siteKey, onProof }: { siteKey: string; onProof: (proof:
   return <div ref={host} />;
 }
 
-export function TrialAccess({ onContinue, onSkip }: { onContinue?: () => void; onSkip?: () => void }) {
+export function TrialAccess({ onContinue, onSkip, onStartPlanning }: { onContinue?: () => void; onSkip?: () => void; onStartPlanning?: () => void }) {
   const navigate = useNavigate();
   const { i18n } = useTranslation(); const zh = i18n.resolvedLanguage === 'zh';
   const [status, setStatus] = useState<z.infer<typeof policyStatusSchema>>(); const [apps, setApps] = useState<Application[]>([]);
@@ -88,7 +88,7 @@ export function TrialAccess({ onContinue, onSkip }: { onContinue?: () => void; o
     }
     if (applications.status === 'fulfilled') setApps(z.array(applicationSchema).parse(applications.value)); else throw applications.reason;
     if (availability.status === 'rejected') throw availability.reason;
-    if (start && qualification.status === 'fulfilled' && !onContinue) navigate('/ai');
+    if (start && qualification.status === 'fulfilled' && !onContinue) { if(onStartPlanning)onStartPlanning();else navigate('/ai'); }
   }
   useEffect(() => {
     let value = '';
@@ -140,7 +140,7 @@ export function TrialAccess({ onContinue, onSkip }: { onContinue?: () => void; o
     {error && <p role="alert"><StatusIcon status="error"/>{error}</p>}{notice && <p role="status"><AppIcon name="info"/>{notice}</p>}
     {loaded && qualificationState === 'none' && <p role="status"><AppIcon name="info"/>{zh ? '此浏览器尚无可验证的试用资格。可兑换邀请码或查看申请。' : 'No verified trial on this browser. Redeem an invitation or check your application.'}</p>}
     {status && <div className="trial-summary"><strong>{qualificationState === 'expired' ? (zh ? '试用已到期，可申请延期' : 'Trial expired — request an extension') : qualificationState === 'revoked' ? (zh ? '资格已撤销，请联系管理员' : 'Access revoked — contact the administrator') : !sessionValid ? (zh ? '资格有效，但此浏览器未启用；可恢复领取或申请补发' : 'Trial active, but this browser is not activated. Recover the claim or request a replacement.') : (zh ? 'AI 试用有效' : 'Your AI trial is active')}</strong><p>{zh ? '有效期至：' : 'Valid until: '}{new Date(status.expiresAt).toLocaleString(zh ? 'zh-CN' : 'en')}</p>
-      <button className="trial-primary" disabled={busy || Boolean(planningPaused)} onClick={() => navigate('/ai')}>{zh ? '开始制定训练计划' : 'Start planning your training'}</button>
+      <button className="trial-primary" disabled={busy || Boolean(planningPaused)} onClick={() => onStartPlanning ? onStartPlanning() : navigate('/ai')}>{zh ? '开始制定训练计划' : 'Start planning your training'}</button>
       {quotaExhausted && <p role="status"><AppIcon name="info"/>{zh ? '个人次数不足，请等待本期重置或联系管理员。' : 'Personal quota exhausted. Wait for the monthly reset or contact the administrator.'}</p>}
       {budgetInsufficient && <p role="status"><AppIcon name="info"/>{zh ? '项目预算不足，新的 AI 请求暂不可用。请稍后刷新或联系管理员。' : 'Project budget is insufficient for new AI requests. Refresh later or contact the administrator.'}</p>}
       {status.maxDays !== undefined && <p>{zh ? `每次最多选择 ${status.maxDays} 个训练日` : `Select up to ${status.maxDays} training dates per request`}</p>}

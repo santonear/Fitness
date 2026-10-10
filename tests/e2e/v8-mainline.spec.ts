@@ -13,6 +13,26 @@ test('coach uses explicit send and confirmation before changing a single workout
  await page.getByRole('button',{name:'开始训练',exact:true}).first().click();await expect(page.getByText('第 1 组，共 1 组',{exact:true})).toBeVisible();expect(calls).toBe(1);
 });
 
+test('home composer opens coach and sends once with optional data excluded',async({page})=>{
+ let calls=0;await page.route('**/api/v1/plans/generate',async route=>{calls++;const request=route.request().postDataJSON().coach;expect(request.body).toBeUndefined();expect(request.history).toBeUndefined();expect(request.instruction).toBe('今天轻一点');await route.fulfill({status:503,json:{error:'AI_DISABLED'}});});
+ await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();
+ await page.getByRole('textbox',{name:'跟芽芽说'}).fill('今天轻一点');expect(calls).toBe(0);
+ await page.getByRole('button',{name:'发送',exact:true}).click();await expect.poll(()=>calls).toBe(1);
+ await expect(page.getByRole('dialog')).toBeVisible();await page.keyboard.press('Escape');
+ await page.getByRole('button',{name:'和芽芽聊聊',exact:true}).click();expect(calls).toBe(1);
+});
+
+test('monthly review sends the visible month instead of the current week',async({page})=>{
+ let received:any;
+ await page.route('**/api/v1/stages/summarize',async route=>{received=route.request().postDataJSON().coach;await route.fulfill({status:503,json:{error:'AI_DISABLED'}});});
+ await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();
+ await page.goto('/review');await page.getByRole('button',{name:'本月回顾',exact:true}).click();
+ await page.getByRole('button',{name:'和芽芽聊聊',exact:true}).click();
+ await page.getByRole('textbox',{name:'跟芽芽说'}).fill('看看这个月');await page.getByRole('button',{name:'发送',exact:true}).click();
+ await expect.poll(()=>received?.kind).toBe('month');expect(received.facts.from).toMatch(/-01$/);
+ expect(received.body).toBeUndefined();expect(received.history).toBeUndefined();
+});
+
 test('a confirmed today adjustment changes only one workout and survives reload',async({page})=>{
  await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();await expect(page.getByRole('heading',{name:'下一次'})).toBeVisible();
  const result=await page.evaluate(async()=>{

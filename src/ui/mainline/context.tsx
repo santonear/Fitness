@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../themes/ThemeProvider';
 import { getThemeSlots } from '../../themes/registry';
 import { createV8Workflow, type LocalCandidate } from '../../application/v8-workflow';
+import { optionalCoachBody,optionalCoachHistory } from '../../application/v8-coach-optional';
+import { activityDate } from '../../application/v8-activity';
 import { backfillOnboarding } from '../../application/v8-onboarding-backfill';
 import { buildCoachRequest } from '../../coach/request-builder';
 import type { CoachRequest } from '../../coach/contracts';
@@ -30,13 +32,18 @@ function useController() {
  const [data,setData] = useState<Awaited<ReturnType<typeof workflow.snapshot>>>();
  const [monthFacts,setMonthFacts] = useState<MonthFacts>(), [previousFacts,setPreviousFacts]=useState<WeekFacts>(), [facts,setFacts] = useState<WeekFacts>(), [answers,setAnswers] = useState(blank), [step,setStep] = useState<0|1|2|3>(0);
  const [completedWeeks,setCompletedWeeks] = useState<[WeekFacts,WeekFacts]>();
+ const [optionalCoach,setOptionalCoach]=useState<{body?:CoachRequest['body'];history?:string}>({});
+ const [reviewKind,setReviewKind] = useState<'week'|'month'>('week');
  const [candidate,setCandidate] = useState<LocalCandidate>(), [busy,setBusy] = useState(false), [error,setError] = useState('');
  const [coachOpen,setCoachOpen]=useState(false),[coachRequest,setCoachRequest]=useState<CoachRequest>(),[coachRevision,setCoachRevision]=useState(0);
+ const [coachInitialSend,setCoachInitialSend]=useState<{nonce:string;message:string;request:CoachRequest;expectedRevision:number}>();
+ function sendHomeCoach(request:CoachRequest,message:string){if(!data)return;coachTrigger.current=document.activeElement instanceof HTMLElement?document.activeElement:null;setCoachRequest(request);setCoachRevision(data.metadata.dataRevision);setCoachInitialSend({nonce:crypto.randomUUID(),message,request,expectedRevision:data.metadata.dataRevision});setCoachOpen(true);}
  const coachTrigger=useRef<HTMLElement|null>(null);
  function openCoach(task:CoachRequest['task']='MODIFY_PLAN',templateId?:string,profile?:CoachProfile){
   if(!data)return;
   coachTrigger.current=document.activeElement instanceof HTMLElement?document.activeElement:null;
-  const nextRequest=buildCoachRequest({task,data,templateId,profile,facts:facts?{...facts,improvements:[...facts.improvements]}:undefined,kind:'week'});
+  const selectedFacts=reviewKind==='month'?monthFacts:facts;
+  const nextRequest=buildCoachRequest({...optionalCoach,task,data,templateId,profile,facts:selectedFacts?{...selectedFacts,improvements:[...selectedFacts.improvements]}:undefined,kind:reviewKind});
   const key=(request:CoachRequest|undefined)=>{if(!request)return '';const{requestId:_requestId,conversationId:_conversationId,...content}=request;return JSON.stringify(content);};
   if(key(nextRequest)!==key(coachRequest)||coachRevision!==data.metadata.dataRevision){
    setCoachRequest(nextRequest);setCoachRevision(data.metadata.dataRevision);
@@ -49,6 +56,8 @@ function useController() {
  async function reload() {
   const next = await workflow.snapshot(); setData(next);
   const review = await createV8DataService(repository).getReviewWorkouts();
+  const legacyAnswers=(await repository.db.guidedStates.get('guided'))?.onboarding?.answers;
+  setOptionalCoach({body:optionalCoachBody(next.profile,legacyAnswers),history:optionalCoachHistory([...review.legacyWorkouts,...review.workouts],activityDate(next.profile?.timeZone??'Asia/Shanghai'),next.profile?.timeZone??'Asia/Shanghai',next.profile?.locale==='en'?'en':'zh')});
   const input={ ...week(next.profile?.timeZone ?? 'Asia/Shanghai'), timeZone: next.profile?.timeZone ?? 'Asia/Shanghai', weeklyTarget: next.version?.weeklyTarget ?? 2, ...review, activities: next.activities, bodyWeights: await repository.db.bodyWeights.toArray() };
   setFacts(computeWeekFacts(input));
   const shift=(d:string,n:number)=>new Date(Date.parse(d+'T00:00:00Z')+n*86400000).toISOString().slice(0,10);
@@ -75,7 +84,7 @@ function useController() {
  const slots=getThemeSlots(appearance.theme);
  const name=(id:string)=>exercises.find(e=>e.id===id)?.name[locale]??id;
  const start=(templateId?:string,manualId?:string)=>run(async()=>{const record=await workflow.start(templateId,manualId);setWorkoutValues({});setFocusIndex(0);navigate(`/workout/${record.id}`);});
- return {coachOpen,setCoachOpen,coachRequest,coachRevision,coachTrigger,openCoach,completedWeeks,monthFacts,previousFacts,workoutValues,setWorkoutValues,focusIndex,setFocusIndex,data,facts,answers,setAnswers,step,setStep,candidate,setCandidate,busy,error,locale,t,slots,name,navigate,run,reload,start,appearance};
+ return {coachInitialSend,sendHomeCoach,reviewKind,setReviewKind,coachOpen,setCoachOpen,coachRequest,coachRevision,coachTrigger,openCoach,completedWeeks,monthFacts,previousFacts,workoutValues,setWorkoutValues,focusIndex,setFocusIndex,data,facts,answers,setAnswers,step,setStep,candidate,setCandidate,busy,error,locale,t,slots,name,navigate,run,reload,start,appearance};
 }
 const Context=createContext<ReturnType<typeof useController>|null>(null);
 export const useMainline=()=>{const value=useContext(Context);if(!value)throw new Error('Missing mainline provider');return value;};
