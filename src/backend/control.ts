@@ -13,7 +13,7 @@ export interface ControlConfig {
   mode: 'local-test' | 'external'; timeZone: string; k: number; budgetLimit: number; maximumRequestCost: number;
   requestBounds: OperationCounts; quotas: OperationCounts; maxInputBytes: number;
   maxConcurrent: number; adminSecret: string; digestSecret: string;
-  allowBoundedPending?: boolean; planningBudgetDisabled?: boolean;
+  allowBoundedPending?: boolean; planningBudgetDisabled?: boolean; allowUncertainPlanningPending?: boolean;
 }
 export const testConfig: ControlConfig = { mode: 'local-test', timeZone: 'UTC', k: 1, budgetLimit: 3500,
   maximumRequestCost: 1000, requestBounds: { understand: 100, generate: 300, summary: 300 }, quotas: { understand: 8, generate: 4, summary: 4 },
@@ -29,7 +29,8 @@ const usageKey = (subjectId: string, period: string) => `${subjectId}:${period}`
 export class ControlService {
   get applications() { return new TrialApplications(this.store, this.config.digestSecret, this.now); }
   constructor(private readonly store: ControlStore, private readonly config: ControlConfig,
-    private readonly supplier: MockSupplier | ExternalSupplier, private readonly now = Date.now) {
+    private readonly supplier: MockSupplier | ExternalSupplier, private readonly now = Date.now,
+    private readonly onCandidateFailure?: () => void) {
     new Intl.DateTimeFormat('en', { timeZone: config.timeZone });
     if (!((config.mode === 'local-test' && supplier.kind === 'local-mock') || (config.mode === 'external' && supplier.kind === 'external-transport')) || !config.adminSecret || !config.digestSecret ||
       ![config.k, config.budgetLimit, config.maximumRequestCost, config.maxConcurrent, config.maxInputBytes,
@@ -68,13 +69,14 @@ export class ControlService {
       this.audit(state, 'credential-retention');
     });
   }
-  private needsReconciliation(state: ControlState, period: string) {
+  private needsReconciliation(state: ControlState, period: string, forPlanning = false) {
     return state.recoveryRequired || this.hasAccountingAnomaly(state) || Object.values(state.requests).some(entry => (entry.status === 'pending' &&
-      !((this.budgetDisabled(entry.operation) && !entry.error) || this.config.allowBoundedPending && entry.verifiedBoundFen !== undefined && integer(entry.verifiedBoundFen) && entry.verifiedBoundFen <= entry.bound && !entry.error)) ||
+      !((forPlanning && this.config.allowUncertainPlanningPending === true && this.budgetDisabled('generate') && entry.operation === 'generate' && entry.error === 'SUPPLIER_UNCERTAIN') ||
+        (this.budgetDisabled(entry.operation) && !entry.error) || this.config.allowBoundedPending && entry.verifiedBoundFen !== undefined && integer(entry.verifiedBoundFen) && entry.verifiedBoundFen <= entry.bound && !entry.error)) ||
       (entry.period !== period && ['submitted', 'reserved'].includes(entry.status)));
   }
   private hasAccountingAnomaly(state: ControlState) {
-    if (!this.config.allowBoundedPending) return false;
+    if (!this.config.allowBoundedPending && !this.config.allowUncertainPlanningPending) return false;
     const expected: Record<string, number> = {}, settled: Record<string, number> = {};
     for (const entry of Object.values(state.requests)) {
       if (!integer(entry.bound) || entry.actualCost !== undefined && !integer(entry.actualCost)) return true;
@@ -199,6 +201,7 @@ export class ControlService {
       requestBounds: { ...this.config.requestBounds }, budgetAvailable: { understand: this.budgetDisabled('understand') || available(this.config.requestBounds.understand), generate: this.budgetDisabled('generate') || available(this.config.requestBounds.generate) },
       pending: Object.values(state.requests).filter(r => r.subjectId === subjectId && ['reserved', 'submitted', 'pending'].includes(r.status)).length,
       aiEnabled: state.aiEnabled && !state.recoveryRequired, reconciliationRequired: this.needsReconciliation(state, period),
+      planningReconciliationRequired: this.needsReconciliation(state, period, true),
       summaryAvailable: summaryConfigured && state.aiEnabled && !this.needsReconciliation(state, period) };
   }
   async adminReport(admin: string) {
@@ -216,7 +219,8 @@ export class ControlService {
         return { subjectId, period, used, limits: this.quotaLimits(state, subjectId, period), defaults: this.config.quotas };
       }), quotaRestorations: Object.entries(state.quotaRestorations ?? {}).map(([id, entry]) => ({ id, ...entry })),
       audit: state.audit.slice(-100), policy: { planningBudgetDisabled: this.config.planningBudgetDisabled === true, budgetLimit: this.config.budgetLimit, reservation: this.config.maximumRequestCost, timeZone: this.config.timeZone },
-      service: { mode: this.config.mode, provider: this.supplier.kind, reconciliationRequired: this.needsReconciliation(state, this.period()) } };
+      service: { mode: this.config.mode, provider: this.supplier.kind, reconciliationRequired: this.needsReconciliation(state, this.period()),
+        planningReconciliationRequired: this.needsReconciliation(state, this.period(), true) } };
   }
   async enableMock(admin: string, enabled: boolean) {
     if (this.config.mode !== 'local-test') throw new ControlError('MOCK_ONLY', 400);
@@ -279,7 +283,7 @@ export class ControlService {
         if (previous.inputDigest !== inputDigest) throw new ControlError('REQUEST_CONFLICT');
         throw new ControlError(['reserved', 'submitted', 'pending'].includes(previous.status) ? 'REQUEST_IN_PROGRESS' : 'RESULT_UNAVAILABLE');
       }
-      if (this.needsReconciliation(state, period)) throw new ControlError('RECONCILIATION_REQUIRED', 503);
+      if (this.needsReconciliation(state, period, request.operation === 'generate')) throw new ControlError('RECONCILIATION_REQUIRED', 503);
       if (!state.aiEnabled) throw new ControlError('AI_DISABLED', 503);
       if (request.operation === 'summary' && (!(this.config.quotas.summary ?? 0) || this.config.requestBounds.summary === undefined)) throw new ControlError('SUMMARY_DISABLED', 503);
       const bound = this.config.requestBounds[request.operation]!; if (!this.budgetDisabled(request.operation) && bound > this.config.maximumRequestCost) throw new ControlError('REQUEST_COST_BOUND', 400);
@@ -304,7 +308,7 @@ export class ControlService {
       if (reservation.status !== 'reserved') return false;
       try { this.qualification(state, sessionDigest); } catch { this.releaseUnsubmitted(state, key); return false; }
       const currentBound = this.config.allowBoundedPending ? this.supplier.costUpperBoundFen?.(request) : undefined;
-      if (reservation.cancelled || !state.aiEnabled || this.needsReconciliation(state, this.period()) ||
+      if (reservation.cancelled || !state.aiEnabled || this.needsReconciliation(state, this.period(), request.operation === 'generate') ||
           !this.budgetDisabled(request.operation) && this.config.allowBoundedPending && (currentBound === undefined || !integer(currentBound) || currentBound > reservation.bound)) { this.releaseUnsubmitted(state, key); return false; }
       // Keep the larger verified ceiling if provider configuration changed after admission.
       if (currentBound !== undefined) reservation.verifiedBoundFen = Math.max(reservation.verifiedBoundFen ?? currentBound, currentBound);
@@ -312,8 +316,10 @@ export class ControlService {
     });
     if (!submitted) throw new ControlError('NOT_SUBMITTED');
     let response: { result: unknown; actualCost?: number };
+    let supplierReturned = false;
     try {
       const supplied: unknown = await this.supplier.call(request);
+      supplierReturned = true;
       if (!supplied || typeof supplied !== 'object' || Array.isArray(supplied) || !Object.hasOwn(supplied, 'result')) throw new Error('invalid envelope');
       const envelope = supplied as { result: unknown; actualCost?: unknown };
       const hasCost = Object.hasOwn(envelope, 'actualCost');
@@ -324,7 +330,10 @@ export class ControlService {
       response = { result: hasCost ? envelope.result : validateCandidate(request, envelope.result),
         ...(hasCost ? { actualCost: actualCost as number } : {}) };
     }
-    catch { await this.pending(key); throw new ControlError('ACCOUNTING_PENDING', 503); }
+    catch {
+      if (supplierReturned) { try { this.onCandidateFailure?.(); } catch { /* Diagnostics cannot change accounting. */ } }
+      await this.pending(key); throw new ControlError('ACCOUNTING_PENDING', 503);
+    }
     if (response.actualCost === undefined) {
       // Candidate delivery does not prove a bill. Only excess above a verified ceiling can be released.
       // Observe cancellation and independent settlement in the same transaction.
