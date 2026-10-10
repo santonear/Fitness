@@ -20,8 +20,11 @@ export function MorphPanel({ open, onClose, triggerRef, title, closeLabel = '关
     let animation: Animation | undefined;
     let cancelled = false;
     const source = triggerRef.current;
+    const originalVisibility = source?.style.visibility ?? '';
+    const reveal = () => { if (source) source.style.visibility = originalVisibility; };
+    if (source && (open || panel.open)) source.style.visibility = 'hidden';
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const finish = () => { if (!cancelled) { panel.close(); if (source?.isConnected) source.focus({ preventScroll: true }); } };
+    const finish = () => { if (!cancelled) { panel.close(); reveal(); if (source?.isConnected) source.focus({ preventScroll: true }); } };
     if (open) {
       if (!panel.open) panel.showModal();
       const style = getComputedStyle(panel);
@@ -34,8 +37,24 @@ export function MorphPanel({ open, onClose, triggerRef, title, closeLabel = '关
       animation = panel.animate(frames, { duration: reduced ? 120 : 420, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'forwards' });
       animation.onfinish = finish;
     }
-    return () => { cancelled = true; animation?.cancel(); };
+    return () => { cancelled = true; animation?.cancel(); reveal(); };
   }, [open, triggerRef]);
+  useEffect(() => {
+    // WebKit can move focus to the document when the focused submit button becomes disabled.
+    // Capture Tab at document level so this case is contained as well as ordinary wraparound.
+    const containTab = (event: KeyboardEvent) => {
+      const panel = dialog.current;
+      if (event.key !== 'Tab' || !panel?.open) return;
+      const controls = Array.from(panel.querySelectorAll<HTMLElement>('button, a[href], input, select, textarea, [tabindex], [contenteditable="true"]'))
+        .filter(element => element.tabIndex >= 0 && !element.matches(':disabled') && !element.closest('[inert]') && element.getClientRects().length > 0 && getComputedStyle(element).visibility !== 'hidden');
+      event.preventDefault();
+      const index = controls.indexOf(document.activeElement as HTMLElement);
+      const next = index < 0 ? (event.shiftKey ? controls.length - 1 : 0) : (index + (event.shiftKey ? -1 : 1) + controls.length) % controls.length;
+      (controls[next] ?? panel).focus({ preventScroll: true });
+    };
+    document.addEventListener('keydown', containTab, true);
+    return () => document.removeEventListener('keydown', containTab, true);
+  }, []);
   useEffect(() => () => { if (dialog.current?.open) dialog.current.close(); if (triggerRef.current?.isConnected) triggerRef.current.focus({ preventScroll: true }); }, [triggerRef]);
   return <dialog ref={dialog} className="v8-morph" aria-labelledby={titleId} aria-modal="true"
     onCancel={event => { event.preventDefault(); onClose(); }}
@@ -46,3 +65,5 @@ export function MorphPanel({ open, onClose, triggerRef, title, closeLabel = '关
     </div>
   </dialog>;
 }
+
+
