@@ -6,6 +6,7 @@ import { exercises } from '../catalog/exercises';
 import { synchronizeTrainingMemo } from './training-memory';
 import { authorizeLegacyOperation } from './legacy-collisions';
 import { emptyGuidedState, guidedStateSchema } from '../domain/guided-contracts';
+import { assertLegacyPlanEditable } from '../persistence/v8-access';
 
 function invalid(message:string):never{throw new DomainError('INVALID',message);}
 function snapshot(id:string,order:number,instance:string=crypto.randomUUID()):ExerciseSnapshot{
@@ -28,6 +29,7 @@ export function createWorkoutService(repo:Repository) {
   if(input.scheduledWorkoutId || input.planVersionId){
     const row=input.scheduledWorkoutId?await db.scheduledWorkouts.get(input.scheduledWorkoutId):undefined;
     const version=await db.planVersions.get(row?.planVersionId??input.planVersionId!);
+    if (version) await assertLegacyPlanEditable(repo, version.planId);
     const state=await db.guidedStates.get('guided');
     const program=state?.programs.find(item=>version&&item.planIds.includes(version.planId));
     if(program&&program.status!=='active')throw new DomainError('CONFLICT','Plan is stopped; resume or start a new plan');

@@ -1,0 +1,24 @@
+.v8-onboarding { box-sizing: border-box; max-inline-size: var(--layout-desktop-main); margin-inline: auto; padding: var(--s5); color: var(--c-ink); font-size: var(--t3); line-height: var(--lh-body); overflow-wrap: anywhere; }
+.v8-onboarding header, .v8-onboarding footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--s3); }
+.v8-onboarding header { margin-block-end: var(--s7); }
+.v8-onboarding-conversation { display: grid; gap: var(--s5); }
+.v8-onboarding h1 { margin: 0; font-size: var(--t6); font-weight: var(--w-display); line-height: var(--lh-tight); }
+.v8-onboarding h2 { margin: 0; font-size: var(--t5); font-weight: var(--w-strong); }
+.v8-onboarding p { margin: 0; }
+.v8-onboarding-progress, .v8-onboarding-recap { color: var(--c-ink-muted); }
+.v8-onboarding textarea { box-sizing: border-box; inline-size: 100%; resize: vertical; padding: var(--s4); color: var(--c-ink); background: var(--c-surface); border: var(--bw) solid var(--c-line); border-radius: var(--r-control); font: inherit; }
+.v8-onboarding textarea:focus-visible, .v8-onboarding summary:focus-visible, .v8-onboarding input:focus-visible { outline: var(--bw) solid var(--c-focus); outline-offset: var(--s1); }
+.v8-onboarding fieldset { min-inline-size: 0; border: 0; margin: 0; padding: 0; }
+.v8-onboarding legend { margin-block-end: var(--s3); }
+.v8-onboarding-choices { display: flex; gap: var(--s2); flex-wrap: wrap; }
+.v8-onboarding-adult { display: flex; align-items: center; gap: var(--s3); min-block-size: var(--touch-min); cursor: pointer; }
+.v8-onboarding-adult input { inline-size: var(--s5); block-size: var(--s5); accent-color: var(--c-primary); }
+.v8-onboarding summary { box-sizing: border-box; min-block-size: var(--touch-min); padding: var(--s3); cursor: pointer; }
+.v8-onboarding dl { margin: var(--s3); }
+.v8-onboarding dt { color: var(--c-ink-muted); }
+.v8-onboarding dd { margin: 0 0 var(--s3); white-space: pre-wrap; }
+.v8-onboarding footer > button { flex: 1; }
+.v8-draft-template { display: grid; gap: var(--s3); }
+.v8-draft-exercise { border: var(--bw) solid var(--c-line); border-radius: var(--r-chip); background: var(--mat-surface); box-shadow: var(--el-1); }
+.v8-draft-exercise > div { padding: var(--s4); }
+.v8-onboarding li + li { margin-block-start: var(--s3); }

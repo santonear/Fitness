@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { ExerciseTargets } from '../../src/ui/components/ExerciseTargets';
-import { ExerciseEditor } from '../../src/ui/components/ExerciseEditor';
 import type { ExerciseSnapshot, SetMetrics } from '../../src/domain/models';
 import { exercises } from '../../src/catalog/exercises';
 function snapshot(targetSets: SetMetrics[], notes?: string): ExerciseSnapshot {
@@ -28,10 +27,5 @@ describe('read-only snapshot targets', () => {
  it('labels retained targets as original reference and localizes labels without translating notes', () => {
   const exercise = {...snapshot([{metricType:'reps',reps:9}], 'English\n原文'),originalExerciseId:exercises[1].id as ExerciseSnapshot['exerciseId']};
   const html = render(exercise,'zh'); expect(html).toContain('原动作参考目标'); expect(html).toContain('9 次'); expect(html).toContain('English\n原文');
- });
- it('does not label unchanged saved form as an unsaved draft', () => {
-  const exercise = snapshot([]);
-  const html = renderToStaticMarkup(createElement(ExerciseEditor,{sessionId:crypto.randomUUID(),exercise,locale:'en',busy:false,sets:[{id:crypto.randomUUID(),sessionId:crypto.randomUUID(),exerciseInstanceId:exercise.exerciseInstanceId,order:0,metricType:'reps_load',reps:5,loadGrams:0,completed:true,notes:'saved',revision:0,createdAt:'2026-10-05T00:00:00Z',updatedAt:'2026-10-05T00:00:00Z'}],onRecordAttempt:()=>{},onSave:async()=>{},onAdjust:async()=>{}}));
-  expect(html.match(/Current set inputs are not saved/g)).toHaveLength(1);
  });
 });

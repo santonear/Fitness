@@ -1,0 +1,487 @@
+[
+  {
+    "file": "admin-account-actions.spec.ts",
+    "action": "retain",
+    "reason": "current UI or actual IndexedDB / safety contract",
+    "originalDirectTestDeclarations": 2
+  },
+  {
+    "file": "admin-h.spec.ts",
+    "action": "retain",
+    "reason": "current UI or actual IndexedDB / safety contract",
+    "originalDirectTestDeclarations": 6
+  },
+  {
+    "file": "ai-control-status.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 3
+  },
+  {
+    "file": "ai-pending.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 1
+  },
+  {
+    "file": "ai-public-flow.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 2
+  },
+  {
+    "file": "analytics-dashboard.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 1
+  },
+  {
+    "file": "backup.spec.ts",
+    "action": "retain-service-cases",
+    "cases": 1,
+    "reason": "legacy presentation assertions replaced by V8 mainline/plan-review/coach regressions; non-UI contracts retained verbatim",
+    "replacement": "v8-backup-ui.spec.ts preserves actual download/File restore across origins and missing BroadcastChannel sibling reset",
+    "originalDirectTestDeclarations": 2
+  },
+  {
+    "file": "cal-backup.spec.ts",
+    "action": "retain-service-cases",
+    "cases": 2,
+    "reason": "legacy presentation assertions replaced by V8 mainline/plan-review/coach regressions; non-UI contracts retained verbatim",
+    "originalDirectTestDeclarations": 3
+  },
+  {
+    "file": "cal-calendar.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 1
+  },
+  {
+    "file": "cal-interactions.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 2
+  },
+  {
+    "file": "cal-migration.spec.ts",
+    "action": "retain",
+    "reason": "current UI or actual IndexedDB / safety contract",
+    "originalDirectTestDeclarations": 1
+  },
+  {
+    "file": "cal-plans.spec.ts",
+    "action": "retain",
+    "reason": "current UI or actual IndexedDB / safety contract",
+    "originalDirectTestDeclarations": 2
+  },
+  {
+    "file": "cal-public.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 1
+  },
+  {
+    "file": "cal-safety.spec.ts",
+    "action": "retain",
+    "reason": "current UI or actual IndexedDB / safety contract",
+    "originalDirectTestDeclarations": 2
+  },
+  {
+    "file": "cal-workouts.spec.ts",
+    "action": "retain",
+    "reason": "current UI or actual IndexedDB / safety contract",
+    "originalDirectTestDeclarations": 1
+  },
+  {
+    "file": "capacity-feedback.spec.ts",
+    "action": "migrate-current-ui",
+    "reason": "Preserve download, kept confirmation, stale replacement rejection, bilingual success after remount on real V8 settings",
+    "originalDirectTestDeclarations": 2
+  },
+  {
+    "file": "capacity.spec.ts",
+    "action": "retain",
+    "reason": "current UI or actual IndexedDB / safety contract",
+    "originalDirectTestDeclarations": 4
+  },
+  {
+    "file": "coach-access-recovery.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 2
+  },
+  {
+    "file": "coach-actions.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 2
+  },
+  {
+    "file": "coach-nudge-ui.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 1
+  },
+  {
+    "file": "coach-preferences.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 4
+  },
+  {
+    "file": "coach-reminders.spec.ts",
+    "action": "retain",
+    "reason": "current UI or actual IndexedDB / safety contract",
+    "originalDirectTestDeclarations": 3
+  },
+  {
+    "file": "coach-shell.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 2
+  },
+  {
+    "file": "coach-v71.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 2
+  },
+  {
+    "file": "dashboard.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 1
+  },
+  {
+    "file": "feedback.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 2
+  },
+  {
+    "file": "fidelity.spec.ts",
+    "action": "retain-service-cases",
+    "cases": 1,
+    "reason": "legacy presentation assertions replaced by V8 mainline/plan-review/coach regressions; non-UI contracts retained verbatim",
+    "originalDirectTestDeclarations": 4
+  },
+  {
+    "file": "guided-backup.spec.ts",
+    "action": "retain",
+    "reason": "current UI or actual IndexedDB / safety contract",
+    "originalDirectTestDeclarations": 1
+  },
+  {
+    "file": "guided-lifecycle.spec.ts",
+    "action": "retain",
+    "reason": "current UI or actual IndexedDB / safety contract",
+    "originalDirectTestDeclarations": 8
+  },
+  {
+    "file": "guided-live.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 5
+  },
+  {
+    "file": "guided-ui.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 2
+  },
+  {
+    "file": "local-flow.spec.ts",
+    "action": "retain-service-cases",
+    "cases": 2,
+    "reason": "legacy presentation assertions replaced by V8 mainline/plan-review/coach regressions; non-UI contracts retained verbatim",
+    "originalDirectTestDeclarations": 4
+  },
+  {
+    "file": "media-retry.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 2
+  },
+  {
+    "file": "media.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 4
+  },
+  {
+    "file": "next-context.spec.ts",
+    "action": "retain",
+    "reason": "current UI or actual IndexedDB / safety contract",
+    "originalDirectTestDeclarations": 2
+  },
+  {
+    "file": "onboarding-redesign.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 3
+  },
+  {
+    "file": "onboarding-v4-ai.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 2
+  },
+  {
+    "file": "onboarding-v4-storage.spec.ts",
+    "action": "retain-service-cases",
+    "cases": 2,
+    "reason": "legacy presentation assertions replaced by V8 mainline/plan-review/coach regressions; non-UI contracts retained verbatim",
+    "originalDirectTestDeclarations": 4
+  },
+  {
+    "file": "onboarding-v4-visual.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 1
+  },
+  {
+    "file": "onboarding-v4.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 2
+  },
+  {
+    "file": "onboarding-v5.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 5
+  },
+  {
+    "file": "onboarding-weekly.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 1
+  },
+  {
+    "file": "persistence.spec.ts",
+    "action": "retain-service-cases",
+    "cases": 2,
+    "reason": "legacy presentation assertions replaced by V8 mainline/plan-review/coach regressions; non-UI contracts retained verbatim",
+    "originalDirectTestDeclarations": 8
+  },
+  {
+    "file": "plan-delete.spec.ts",
+    "action": "retain-service-cases",
+    "cases": 1,
+    "reason": "legacy presentation assertions replaced by V8 mainline/plan-review/coach regressions; non-UI contracts retained verbatim",
+    "originalDirectTestDeclarations": 2
+  },
+  {
+    "file": "plans.spec.ts",
+    "action": "retain-service-cases",
+    "cases": 2,
+    "reason": "legacy presentation assertions replaced by V8 mainline/plan-review/coach regressions; non-UI contracts retained verbatim",
+    "originalDirectTestDeclarations": 4
+  },
+  {
+    "file": "progress.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 2
+  },
+  {
+    "file": "repdb-catalog.spec.ts",
+    "action": "retain-service-cases",
+    "cases": 1,
+    "reason": "legacy presentation assertions replaced by V8 mainline/plan-review/coach regressions; non-UI contracts retained verbatim",
+    "originalDirectTestDeclarations": 4
+  },
+  {
+    "file": "schedule-delete.spec.ts",
+    "action": "retain-service-cases",
+    "cases": 1,
+    "reason": "legacy presentation assertions replaced by V8 mainline/plan-review/coach regressions; non-UI contracts retained verbatim",
+    "originalDirectTestDeclarations": 2
+  },
+  {
+    "file": "shell.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 4
+  },
+  {
+    "file": "stage-summary-ai.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 4
+  },
+  {
+    "file": "stage-summary.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 3
+  },
+  {
+    "file": "timer.spec.ts",
+    "action": "retain-service-cases",
+    "cases": 1,
+    "reason": "legacy presentation assertions replaced by V8 mainline/plan-review/coach regressions; non-UI contracts retained verbatim",
+    "originalDirectTestDeclarations": 4
+  },
+  {
+    "file": "training-schedule.spec.ts",
+    "action": "retain",
+    "reason": "current UI or actual IndexedDB / safety contract",
+    "originalDirectTestDeclarations": 2
+  },
+  {
+    "file": "trial-access.spec.ts",
+    "action": "retain",
+    "reason": "current UI or actual IndexedDB / safety contract",
+    "originalDirectTestDeclarations": 10
+  },
+  {
+    "file": "v31-ai-body.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 3
+  },
+  {
+    "file": "v31-ai.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 10
+  },
+  {
+    "file": "v31-day-plan-safety.spec.ts",
+    "action": "retain",
+    "reason": "current UI or actual IndexedDB / safety contract",
+    "originalDirectTestDeclarations": 2
+  },
+  {
+    "file": "v31-plans-projection.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 4
+  },
+  {
+    "file": "v31-plans-visual.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 1
+  },
+  {
+    "file": "v31-plans.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 5
+  },
+  {
+    "file": "v31-progress-catalog.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 5
+  },
+  {
+    "file": "v31-shell.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 3
+  },
+  {
+    "file": "v31-transactions.spec.ts",
+    "action": "retain",
+    "reason": "current UI or actual IndexedDB / safety contract",
+    "originalDirectTestDeclarations": 1
+  },
+  {
+    "file": "v31-trial-status.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 4
+  },
+  {
+    "file": "v8-coach-panel.spec.ts",
+    "action": "retain",
+    "reason": "current UI or actual IndexedDB / safety contract",
+    "originalDirectTestDeclarations": 11
+  },
+  {
+    "file": "v8-common.spec.ts",
+    "action": "retain",
+    "reason": "current UI or actual IndexedDB / safety contract",
+    "originalDirectTestDeclarations": 1
+  },
+  {
+    "file": "v8-components.spec.ts",
+    "action": "retain",
+    "reason": "current UI or actual IndexedDB / safety contract",
+    "originalDirectTestDeclarations": 4
+  },
+  {
+    "file": "v8-database-migration.spec.ts",
+    "action": "retain",
+    "reason": "current UI or actual IndexedDB / safety contract",
+    "originalDirectTestDeclarations": 3
+  },
+  {
+    "file": "v8-e-onboarding.spec.ts",
+    "action": "retain",
+    "reason": "current UI or actual IndexedDB / safety contract",
+    "originalDirectTestDeclarations": 3
+  },
+  {
+    "file": "v8-fonts.spec.ts",
+    "action": "retain",
+    "reason": "current UI or actual IndexedDB / safety contract",
+    "originalDirectTestDeclarations": 1
+  },
+  {
+    "file": "v8-mainline.spec.ts",
+    "action": "retain",
+    "reason": "current UI or actual IndexedDB / safety contract",
+    "originalDirectTestDeclarations": 12
+  },
+  {
+    "file": "v8-plan-review.spec.ts",
+    "action": "retain",
+    "reason": "current UI or actual IndexedDB / safety contract",
+    "originalDirectTestDeclarations": 6
+  },
+  {
+    "file": "v8-signatures.spec.ts",
+    "action": "retain",
+    "reason": "current UI or actual IndexedDB / safety contract",
+    "originalDirectTestDeclarations": 2
+  },
+  {
+    "file": "vis.spec.ts",
+    "action": "retire-old-ui",
+    "reason": "obsolete calendar/guided/theme interaction; V8 UI covered by v8-mainline, v8-plan-review, v8-coach-panel and final matrix; application/domain tests retained",
+    "originalDirectTestDeclarations": 4
+  },
+  {
+    "file": "workout-backup.spec.ts",
+    "action": "retain",
+    "reason": "current UI or actual IndexedDB / safety contract",
+    "originalDirectTestDeclarations": 1
+  },
+  {
+    "file": "workouts.spec.ts",
+    "action": "retain-service-cases",
+    "cases": 1,
+    "reason": "legacy presentation assertions replaced by V8 mainline/plan-review/coach regressions; non-UI contracts retained verbatim",
+    "originalDirectTestDeclarations": 4
+  },
+  {
+    "file": "v8-backup-ui.spec.ts",
+    "action": "new-v8-regression"
+  },
+  {
+    "file": "v8-rest-vibration.spec.ts",
+    "action": "new-v8-regression"
+  },
+  {
+    "file": "v8-a11y.spec.ts",
+    "action": "new-v8-regression"
+  },
+  {
+    "file": "v8-final-matrix.spec.ts",
+    "action": "new-v8-regression"
+  }
+]

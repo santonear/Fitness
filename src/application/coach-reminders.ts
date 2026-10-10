@@ -1,5 +1,5 @@
 import { repository, type Repository } from '../persistence/repository';
-import { defaultCoachPreferences, eligibleReminder, quietAt, scheduledInstant, zonedMinute, type CoachLedger, type CoachPreferences, type ReminderContext, type ReminderRecord, type ReminderSource } from '../domain/coach-reminders';
+import { defaultCoachPreferences, eligibleReminder, quietAt, userReminderSources, zonedMinute, type CoachLedger, type CoachPreferences, type ReminderContext, type ReminderRecord, type ReminderSource } from '../domain/coach-reminders';
 
 export function createCoachReminderService(repo: Repository) {
   const db=repo.db;
@@ -15,24 +15,9 @@ export function createCoachReminderService(repo: Repository) {
     return {ledger,profile,metadata};
   }
   async function sources(now:number,ledger:CoachLedger):Promise<{result:ReminderSource[];training:boolean;onboarding:boolean}> {
-    const [plans,versions,tasks,sessions,guided]=await Promise.all([db.plans.toArray(),db.planVersions.toArray(),db.scheduledWorkouts.toArray(),db.sessions.toArray(),db.guidedStates.get('guided')]);
-    const result:ReminderSource[]=[];
-    for(const task of tasks){
-      const version=versions.find(v=>v.id===task.planVersionId),plan=plans.find(p=>p.id===version?.planId);
-      if(!version||!plan||plan.deletedAt||plan.status!=='active'||plan.currentVersionId!==version.id||task.hiddenAt||task.status!=='pending'||task.completedSessionId||!task.startTime)continue;
-      if(guided?.programs.some(p=>p.taskIds.includes(task.id)&&p.status!=='active'))continue;
-      if(sessions.some(s=>s.planVersionId===task.planVersionId&&s.plannedDayId===task.plannedDayId&&s.status==='in_progress'))continue;
-      const at=scheduledInstant(task.scheduledDate,task.startTime,version.scheduleTimeZone);if(at===null)continue;
-      if(zonedMinute(now,version.scheduleTimeZone).day!==task.scheduledDate)continue;
-      result.push({id:`workout:${task.id}:${task.planVersionId}:${plan.revision}:${task.revision}:${task.scheduledDate}:${task.startTime}`,kind:'workout',taskId:task.id,versionId:version.id,date:task.scheduledDate,startTime:task.startTime,timeZone:version.scheduleTimeZone,name:plan.name,from:at-90*60000,until:at-30*60000});
-    }
-    for(const session of sessions)if(session.status==='completed'&&session.completedAt){
-      const at=Date.parse(session.completedAt);if(at<ledger.initializedAt||at>now||now-at>3600000)continue;
-      result.push({id:`completion:${session.id}`,kind:'completion',sessionId:session.id,date:session.localDate,timeZone:session.timeZone,from:at,until:at+3600000});
-    }
-    const day=zonedMinute(now,ledger.preferences.timeZone).day;
-    result.push({id:`encourage:${day}`,kind:'encourage',date:day,timeZone:ledger.preferences.timeZone,from:now,until:now+60000});
-    return {result,training:sessions.some(s=>s.status==='in_progress'),onboarding:!guided?.onboarding?.completed&&!sessions.length};
+    const [sessions,workouts,state,guided]=await Promise.all([db.sessions.toArray(),db.v8Workouts.toArray(),db.v8State.get('v8'),db.guidedStates.get('guided')]);
+    const result=userReminderSources(now,ledger.preferences);
+    return {result,training:sessions.some(s=>s.status==='in_progress')||workouts.some(s=>s.status==='in_progress'),onboarding:!state?.coachProfile?.adultConfirmed&&!guided?.onboarding?.completed&&!sessions.length&&!workouts.length};
   }
   // Main DB transaction includes sources and device ledger: competing tabs cannot both claim.
   async function evaluate(context: Omit<ReminderContext,'generation'|'profileId'|'training'|'onboarding'>) {
@@ -53,7 +38,7 @@ export function createCoachReminderService(repo: Repository) {
       ledger.watermark=Math.max(context.now,ledger.watermark);await db.coachDevice.put(ledger);return {record,ledger,suppressed:snapshot.training||snapshot.onboarding||!ledger.preferences.enabled||ledger.preferences.dailyLimit===0||context.now<ledger.snoozeUntil||quietAt(context.now,ledger.preferences)};
     });
   }
-  async function preferences(value?:CoachPreferences){return db.transaction('rw',db.tables,async()=>{const {ledger}=await state(Date.now());if(value){if(![0,1,2].includes(value.dailyLimit)||![value.quietStart,value.quietEnd].every(t=>/^([01]\d|2[0-3]):[0-5]\d$/.test(t)))throw Error('INVALID_REMINDER_PREFERENCES');new Intl.DateTimeFormat('en',{timeZone:value.timeZone});ledger.preferences={...value,timeZone:ledger.preferences.timeZone};}await db.coachDevice.put(ledger);return ledger;});}
+  async function preferences(value?:CoachPreferences){return db.transaction('rw',db.tables,async()=>{const {ledger}=await state(Date.now());if(value){if(value.weekdays&&(!value.weekdays.every(d=>Number.isInteger(d)&&d>=1&&d<=7)||new Set(value.weekdays).size!==value.weekdays.length)||value.time&&!/^([01]\d|2[0-3]):[0-5]\d$/.test(value.time))throw Error('INVALID_REMINDER_PREFERENCES');if(![0,1,2].includes(value.dailyLimit)||![value.quietStart,value.quietEnd].every(t=>/^([01]\d|2[0-3]):[0-5]\d$/.test(t)))throw Error('INVALID_REMINDER_PREFERENCES');new Intl.DateTimeFormat('en',{timeZone:value.timeZone});ledger.preferences={...value,timeZone:ledger.preferences.timeZone};}await db.coachDevice.put(ledger);return ledger;});}
   async function act(id:string,action:'opened'|'dismissed'|'snoozed',now=Date.now()){return db.transaction('rw',db.tables,async()=>{const {ledger}=await state(now);const record=ledger.records.find(r=>r.id===id);if(record?.status==='shown')record.status=action;if(action==='snoozed')ledger.snoozeUntil=Math.max(ledger.snoozeUntil,now+4*3600000);await db.coachDevice.put(ledger);});}
   return {evaluate,preferences,act};
 }

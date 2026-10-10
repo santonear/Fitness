@@ -1,4 +1,4 @@
-import type { AiRequest } from './contracts';
+import type { TransportRequest as AiRequest } from './contracts';
 import type { ExternalSupplier } from './control';
 import { ControlError } from './store';
 

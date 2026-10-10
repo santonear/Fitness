@@ -84,7 +84,7 @@ export function BackupPanel({ restored = false }: { restored?: boolean }) {
       {preview && (
         <>
           <div hidden={step!==2}><h3>{zh?'替换前，先保管当前数据':'Keep your current data first'}</h3>
-          <p>{zh ? `将恢复 ${preview.envelope.data.plans.length} 个计划、${preview.envelope.data.sessions.length} 次训练。` : `Restore ${preview.envelope.data.plans.length} plans and ${preview.envelope.data.sessions.length} workouts.`}</p>
+          <p>{zh ? `将恢复 ${(preview.envelope.data.v8?.plans.length ?? preview.envelope.data.plans.length)} 个计划、${(preview.envelope.data.v8?.workouts.length ?? preview.envelope.data.sessions.length)} 次训练。` : `Restore ${(preview.envelope.data.v8?.plans.length ?? preview.envelope.data.plans.length)} plans and ${(preview.envelope.data.v8?.workouts.length ?? preview.envelope.data.sessions.length)} workouts.`}</p>
           <button disabled={busy} onClick={() => void run(async () => {
             setExported(false); setKept(false); setConfirmed(false);
             const receipt = await backupService.exportBackupWithReceipt();
@@ -95,7 +95,7 @@ export function BackupPanel({ restored = false }: { restored?: boolean }) {
           })}>{zh ? '替换前下载当前数据' : 'Download current data before replacement'}</button>
           <label><input type="checkbox" disabled={busy || !exported} checked={kept} onChange={event => setKept(event.target.checked)} />{zh ? '我已下载并保管当前备份' : 'I have downloaded and kept the current backup'}</label>
           <div className="v31-actions"><button disabled={busy} onClick={()=>setStep(1)}>{zh?'上一步':'Back'}</button><button disabled={busy||!exported||!kept} onClick={()=>setStep(3)}>{zh?'下一步：确认替换':'Next: confirm replacement'}</button></div></div>
-          <div hidden={step!==3}><h3>{zh?'核对替换范围':'Review the replacement'}</h3><p>{zh?`将替换为 ${preview.envelope.data.plans.length} 个计划、${preview.envelope.data.sessions.length} 次训练。AI 资格与服务端额度不受此恢复影响。`:`Replace with ${preview.envelope.data.plans.length} plans and ${preview.envelope.data.sessions.length} workouts. Server-side AI access and quota are unaffected.`}</p>
+          <div hidden={step!==3}><h3>{zh?'核对替换范围':'Review the replacement'}</h3><p>{zh?`将替换为 ${(preview.envelope.data.v8?.plans.length ?? preview.envelope.data.plans.length)} 个计划、${(preview.envelope.data.v8?.workouts.length ?? preview.envelope.data.sessions.length)} 次训练。AI 资格与服务端额度不受此恢复影响。`:`Replace with ${(preview.envelope.data.v8?.plans.length ?? preview.envelope.data.plans.length)} plans and ${(preview.envelope.data.v8?.workouts.length ?? preview.envelope.data.sessions.length)} workouts. Server-side AI access and quota are unaffected.`}</p>
           <label><input type="checkbox" disabled={busy||!exported} checked={kept} onChange={event=>setKept(event.target.checked)} />{zh?'我确认当前数据已另行完整保管':'I confirm my current data is safely kept separately'}</label>
           <label><input type="checkbox" disabled={busy} checked={confirmed} onChange={event => setConfirmed(event.target.checked)} />{zh ? '我确认替换全部本地数据' : 'I confirm replacing all local data'}</label>
           <button disabled={busy || !exported || !kept || !confirmed} onClick={() => void run(async () => {

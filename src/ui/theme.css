@@ -1,0 +1,9 @@
+/* Import this foundation once when the V8 route shell is connected. */
+@import '../themes/base/tokens.css';
+@import '../themes/qingci/tokens.css';
+@import '../themes/liubai/tokens.css';
+@import '../themes/jingshe/tokens.css';
+@import '../themes/zhuangse/tokens.css';
+@import '../themes/base/common.css';
+@import '../themes/base/slots.css';
+@import '../themes/qingci/slots/slots.css';

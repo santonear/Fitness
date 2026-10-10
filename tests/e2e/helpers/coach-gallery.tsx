@@ -1,3 +1,0 @@
-import {createRoot} from 'react-dom/client';
-import {CoachAvatar,type CoachVisualState} from '../../../src/ui/components/CoachAvatar';
-export function renderGallery(){const host=document.createElement('div');host.id='coach-gallery';host.style.cssText='position:fixed;inset:0;z-index:10000;background:#faf9f4;padding:24px;overflow:auto';document.body.append(host);createRoot(host).render(<>{['atlas','serene','orbit'].map(theme=><section className={'theme-'+theme} key={theme}><h2>{theme}</h2><div className="coach-root" style={{display:'flex',gap:24}}>{(['idle','thinking','replying','success'] as CoachVisualState[]).map(state=><figure key={state} style={{width:100,margin:0}}><CoachAvatar state={state}/><figcaption>{state}</figcaption></figure>)}</div></section>)}</>);}

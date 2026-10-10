@@ -1,0 +1,42 @@
+{
+  "beforeSource": {
+    "commit": "19a3d3dd1ca5144f82b867582d252f78f1b2b4fe",
+    "path": "../fitness-v8-completion/dist/assets"
+  },
+  "afterSource": {
+    "path": "dist/assets"
+  },
+  "method": "Concatenated build CSS; bytes sum; unique literal color/font-size/border-radius values; important occurrences",
+  "before": {
+    "files": [
+      "MainlineApp-Bc5tRdw2.css",
+      "index-0U0cIxe_.css"
+    ],
+    "sha256": "14bc2c64d28681f3363cedf1e65f982fb774284edf5b9a001dd2a868e187a189",
+    "bytes": 124764,
+    "colors": 245,
+    "fontSizes": 65,
+    "radii": 36,
+    "important": 20
+  },
+  "after": {
+    "files": [
+      "MainlineApp-DA5h9oAt.css",
+      "ManagementPage-DVRHEr3G.css",
+      "index-BsGsVUWK.css"
+    ],
+    "sha256": "f3e816ddcbbf242d5d635fc0c20074e06d9dcdffeba67d38978264217eed4728",
+    "bytes": 39706,
+    "colors": 74,
+    "fontSizes": 9,
+    "radii": 7,
+    "important": 2
+  },
+  "reduction": {
+    "bytes": 85058,
+    "colors": 171,
+    "fontSizes": 56,
+    "radii": 29,
+    "important": 18
+  }
+}

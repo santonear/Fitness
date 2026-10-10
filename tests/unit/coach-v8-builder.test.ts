@@ -1,0 +1,12 @@
+import {describe,it,expect} from 'vitest';
+import {buildCoachRequest,type CoachRequestInput} from '../../src/coach/request-builder';
+import {computeWeekFacts} from '../../src/application/review/compute';
+import {EXERCISE_IDS} from '../../src/catalog/exercises';
+const id='11111111-1111-4111-8111-111111111111',vid='22222222-2222-4222-8222-222222222222';
+const template={id:'A',name:'A',estimatedMinutes:20,items:[{exerciseId:EXERCISE_IDS.bodyweightSquat,equipment:'none',sets:2,target:{metricType:'reps',reps:8}}]};
+function snapshot(){return {metadata:{dataRevision:4,restoreGeneration:2},profile:{locale:'zh',timeZone:'Asia/Shanghai'},state:{coachProfile:{goalText:'习惯',weeklyTarget:2,sessionMinutes:20,scheduleOriginalText:'每次20分钟',place:'home',equipment:[],adultConfirmed:true,cautions:[],confirmedAt:'2026-10-10T00:00:00Z'}},plan:{id},version:{id:vid,planId:id,goalText:'习惯',weeklyTarget:2,sessionMinutes:20,scheduleOriginalText:'每次20分钟',templates:[template]},versions:[],workouts:[],activities:[]} as unknown as CoachRequestInput['data'];}
+describe('coach request builder',()=>{
+ it('accepts persisted profile but sends no confirmedAt or body by default',()=>{const r=buildCoachRequest({task:'ONBOARD_PLAN',data:snapshot()});expect(r?.task).toBe('ONBOARD_PLAN');expect(r).not.toHaveProperty('profile.confirmedAt');expect(r).not.toHaveProperty('body');});
+ it('picks only review wire fields from readonly computed facts',()=>{const facts=computeWeekFacts({from:'2026-10-05',to:'2026-10-11',timeZone:'Asia/Shanghai',weeklyTarget:2,workouts:[],activities:[],bodyWeights:[]});const r=buildCoachRequest({task:'PERIOD_REVIEW',data:snapshot(),facts});expect(r?.task).toBe('PERIOD_REVIEW');expect(r).not.toHaveProperty('facts.previousMovementCount');expect(r).toHaveProperty('facts.improvements',[]);});
+ it('uses confirmed next override and then active snapshot, never a different active version',()=>{const data=snapshot();data.state!.nextWorkoutOverride={planVersionId:vid,templateId:'A',template:{...data.version!.templates[0],name:'Short'},requestId:id};let r=buildCoachRequest({task:'ADJUST_TODAY',data});expect(r).toHaveProperty('template.name','Short');data.active={id,planVersionId:vid,templateId:'A',templateSnapshot:{...data.version!.templates[0],name:'Active'}} as typeof data.active;r=buildCoachRequest({task:'ADJUST_TODAY',data});expect(r).toHaveProperty('template.name','Active');data.active!.planVersionId=id;expect(buildCoachRequest({task:'ADJUST_TODAY',data})).toBeUndefined();});
+});

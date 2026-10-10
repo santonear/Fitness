@@ -1,3 +1,5 @@
+> 已被 UIUX20261008.md V8 取代，仅作历史记录。
+
 # Fitness UI/UX 设计原则与限制 — 新视觉总规范
 
 版本：2026-10-07 Visual System Revision

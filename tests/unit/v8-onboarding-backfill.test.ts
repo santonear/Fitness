@@ -1,0 +1,7 @@
+import { describe,it,expect } from 'vitest';
+import { backfillOnboarding } from '../../src/application/v8-onboarding-backfill';
+describe('old onboarding read projection',()=>{
+ it('preserves missing fields as unknown and does not infer adult consent',()=>{const v=backfillOnboarding({age:{status:'answered',value:40},safety:{status:'skipped'}},'zh');expect(v).toEqual({goalText:'',scheduleOriginalText:'',placeEquipmentText:'',adultConfirmed:false,cautions:[],safetyAnswered:false});});
+ it('uses only valid actual answers without modifying original facts',()=>{const source={goal:{status:'answered' as const,value:['增肌']},schedule:{status:'answered' as const,value:['19','40','3']},location:{status:'answered' as const,value:['家里']},equipment:{status:'answered' as const,value:['哑铃']},preferences:{status:'answered' as const,value:'喜欢安静'},safety:{status:'answered' as const,value:['膝盖','其他限制']}};const before=structuredClone(source);const v=backfillOnboarding(source,'zh');expect(v.goalText).toBe('增肌');expect(v.scheduleOriginalText).toBe('每周3次；每次40分钟；喜欢安静');expect(v.placeEquipmentText).toBe('家里、哑铃');expect(v.cautions).toEqual(['knee','other']);expect(source).toEqual(before);});
+ it('does not fill invalid duration or invent frequency',()=>{expect(backfillOnboarding({schedule:{status:'answered',value:['','20','']}},'en').scheduleOriginalText).toBe('');expect(backfillOnboarding({schedule:{status:'answered',value:['','30','']}},'en').scheduleOriginalText).toBe('30 minutes per session');});
+});
