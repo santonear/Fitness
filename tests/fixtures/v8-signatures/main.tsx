@@ -1,0 +1,8 @@
+import { useState } from 'react';
+import { createRoot } from 'react-dom/client';
+import { ThemeProvider, useTheme } from '../../../src/themes/ThemeProvider';
+import { getThemeSlots, themes } from '../../../src/themes/registry';
+import '../../../src/ui/theme.css';
+function Demo(){const {theme,change}=useTheme();const slots=getThemeSlots(theme);const [training,setTraining]=useState(false); const [action,setAction]=useState(''); return <main style={{maxWidth:560,margin:'auto',padding:'var(--s5)',background:'var(--c-bg)',color:'var(--c-ink)'}}><select aria-label="主题" value={theme} onChange={e=>change(e.target.value as typeof theme)}>{themes.map(t=><option key={t.id} value={t.id}>{t.name.zh}</option>)}</select><button onClick={()=>setTraining(!training)}>训练状态</button><output>{action}</output><slots.BrandMark label="芽芽"/><slots.WeekProgress complete={1} partial={1} target={3} label="本周已练1回"/><slots.FeatureCard context="next" motionReduced={false} trainingActive={training}><slots.StartHero name="A 全身力量" templateId="a" templateLabel="A" nextLabel="下一次" estimatedMinutes={35} startLabel="开始训练" onStart={()=>setAction('开始')}/></slots.FeatureCard><slots.Suggestions label="你也许想说" options={[{id:'a',label:'今天想轻松一点'},{id:'b',label:'换个动作'}]} onSelect={setAction}/><slots.AiLine>今天按自己的节奏来。</slots.AiLine><slots.SetValue label="修改本组" loadText="20 kg" targetText="8" onEdit={()=>setAction('修改')}/><slots.RestClock elapsedSeconds={125} label="已歇"/><div style={{display:'flex',gap:'var(--s4)'}}>{(['training','plan','review'] as const).map(kind=><slots.NavIcon key={kind} kind={kind} selected={kind==='training'} label={kind}/>)}</div></main>}
+createRoot(document.getElementById('root')!).render(<ThemeProvider><Demo/></ThemeProvider>);
+
