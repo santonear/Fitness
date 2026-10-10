@@ -98,6 +98,11 @@ export function validateBackupEnvelope(value: unknown): BackupEnvelope {
     const v8Versions = new Map(library.planVersions.map(version => [version.id, version]));
     for (const [label, rows] of Object.entries(library)) if (Array.isArray(rows)) distinct(rows.map(row => row.id), `V8 ${label}`);
     if (library.state.currentPlanId && !v8Plans.has(library.state.currentPlanId)) invalid('V8 current plan missing');
+    const override = library.state.nextWorkoutOverride;
+    if (override) {
+      const current = library.state.currentPlanId ? v8Plans.get(library.state.currentPlanId) : undefined;
+      if (current?.currentVersionId !== override.planVersionId || !v8Versions.get(override.planVersionId)?.templates.some(t => t.id === override.templateId)) invalid('V8 next workout override target missing');
+    }
     if (library.plans.some(plan => v8Versions.get(plan.currentVersionId)?.planId !== plan.id || plan.readOnly !== (plan.id !== library.state.currentPlanId))) invalid('V8 current version or read-only state invalid');
     for (const version of library.planVersions) {
       if (!v8Plans.has(version.planId)) invalid('V8 version parent missing');
@@ -108,6 +113,7 @@ export function validateBackupEnvelope(value: unknown): BackupEnvelope {
     for (const workout of library.workouts) {
       const version = workout.planVersionId ? v8Versions.get(workout.planVersionId) : undefined;
       if (workout.planVersionId && !version || workout.templateId && !version?.templates.some(template => template.id === workout.templateId)) invalid('V8 workout plan or template missing');
+      if (workout.templateSnapshot && (!version || workout.templateSnapshot.items.reduce((sum,item)=>sum+item.sets,0)!==workout.plannedSetCount || workout.templateSnapshot.items.some((item,index)=>workout.plannedExercises?.[index]?.exerciseId!==item.exerciseId || workout.plannedExercises?.[index]?.plannedSetCount!==item.sets))) invalid('V8 workout snapshot mismatch');
       validDate(workout.localDate);
     }
     library.activities.forEach(activity => validDate(activity.localDate));

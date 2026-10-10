@@ -12,7 +12,7 @@ export function WorkoutPage(){
  const items=active.plannedExercises??[],item=items[index]??items[0];if(!item)return null;
  const effectiveId=active.substitutions?.filter(s=>s.itemIndex===item.itemIndex).at(-1)?.toExerciseId??item.exerciseId;
  const exercise=exercises.find(e=>e.id===effectiveId)!;
- const template=data?.version?.templates.find(s=>s.id===active.templateId),planned=template?.items[item.itemIndex];
+ const template=active.templateSnapshot??data?.versions.find(v=>v.id===active.planVersionId)?.templates.find(s=>s.id===active.templateId),planned=template?.items[item.itemIndex];
  const matching=planned?.exerciseId===effectiveId?planned.target:undefined;
  const previous=active.sets.filter(s=>s.itemIndex===item.itemIndex&&s.exerciseId===effectiveId).at(-1);
  const timed=exercise.metricType.startsWith('duration');
