@@ -1,10 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import source from '../../docs/handoff-v8/02-design-tokens.json';
-import type { ThemeId } from '../../src/themes/contract';
+import type { BuiltinThemeId } from '../../src/themes/contract';
 import { sharedTokens, themeTokens, tokenBlock } from '../../src/themes/token-css';
 
-const themes = Object.keys(source.themes) as ThemeId[];
+const themes = Object.keys(source.themes) as BuiltinThemeId[];
 const generatedHeader = '/* Generated from 02-design-tokens.json; checked by v8-theme-tokens.test.ts. */\n';
 const read = (path: string) => readFileSync(new URL(`../../${path}`, import.meta.url), 'utf8').replaceAll('\r\n', '\n');
 

@@ -1,4 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import './exercise-detail.css';
+import { isFeatureEnabled, subscribeFeatureFlags } from '../../../application/feature-flags';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { searchExercises } from '../../../catalog/catalog-service';
 import { knownExerciseIds } from '../../../catalog/registry';
 import { EQUIPMENT, equipmentLabel } from '../../../catalog/taxonomy';
@@ -11,6 +13,7 @@ import en from '../../../i18n/features/plan/library.en.json';
 const key='fitness-exercise-favorites-v1';
 function read(){try{const v:unknown=JSON.parse(localStorage.getItem(key)??'[]');return Array.isArray(v)?v.filter((id):id is string=>typeof id==='string'&&knownExerciseIds.has(id)):[];}catch{return [];}}
 export function ExercisesPage(){
+ const panelEnabled=useSyncExternalStore(subscribeFeatureFlags,()=>isFeatureEnabled('exercisePanel'),()=>false);
  const c=useMainline(),t=c.locale==='zh'?zh:en;
  const [query,setQuery]=useState(''),[gear,setGear]=useState<typeof EQUIPMENT[number]>(),[favoriteOnly,setFavoriteOnly]=useState(false),[favorites,setFavorites]=useState(read),[limit,setLimit]=useState(24),[selected,setSelected]=useState<string>(),[error,setError]=useState('');
  useEffect(()=>{setLimit(24);},[query,gear,favoriteOnly]);
@@ -23,7 +26,7 @@ export function ExercisesPage(){
  <label><input type="checkbox" checked={favoriteOnly} onChange={e=>setFavoriteOnly(e.target.checked)}/>{t.favorites}</label><p>{t.favoriteNote}</p>{error&&<p role="alert">{error}</p>}
  {rows.slice(0,limit).map(e=><section key={e.id}><div className="v8-row"><Chip selected={open&&selected===e.id} onClick={event=>{triggerRef.current=event.currentTarget;setSelected(e.id);setOpen(true);}}>{e.name[c.locale]}</Chip><Chip selected={favorites.includes(e.id)} aria-label={`${t.favorite} ${e.name[c.locale]}`} onClick={()=>{const previous=read(),next=previous.includes(e.id)?previous.filter(id=>id!==e.id):[...previous,e.id];try{localStorage.setItem(key,JSON.stringify(next));setFavorites(next);setError('');}catch{setError(t.storageError);}}}>{t.favorite}</Chip></div>
  </section>)}
- <MorphPanel open={open&&!!detail} onClose={()=>setOpen(false)} triggerRef={triggerRef} title={detail?.name[c.locale]??''} closeLabel={c.t.close}>{detail&&<><ol>{detail.steps[c.locale].map((text,i)=><li key={i}>{text}</li>)}</ol>{detail.cautions[c.locale].length>0&&<><h3>{t.cautions}</h3><ul>{detail.cautions[c.locale].map((text,i)=><li key={i}>{text}</li>)}</ul></>}{open&&<ExerciseMedia key={detail.id} exerciseId={detail.id} exerciseName={detail.name[c.locale]} locale={c.locale}/>}</>}</MorphPanel>
+ <MorphPanel open={open&&!!detail} onClose={()=>setOpen(false)} triggerRef={triggerRef} title={detail?.name[c.locale]??''} closeLabel={c.t.close}>{detail&&<><ol>{detail.steps[c.locale].map((text,i)=><li key={i}>{text}</li>)}</ol>{detail.cautions[c.locale].length>0&&<><h3>{t.cautions}</h3><ul>{detail.cautions[c.locale].map((text,i)=><li key={i}>{text}</li>)}</ul></>}{open&&<div className={panelEnabled ? "v8-exercise-media" : undefined}><ExerciseMedia key={detail.id} exerciseId={detail.id} exerciseName={detail.name[c.locale]} locale={c.locale}/></div>}</>}</MorphPanel>
  {rows.length>limit&&<Button onClick={()=>setLimit(limit+24)}>{t.more}</Button>}</main>;
 }
 

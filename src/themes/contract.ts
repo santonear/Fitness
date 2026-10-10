@@ -2,7 +2,8 @@ import type { ComponentType, ReactNode } from 'react';
 import type tokens from '../../docs/handoff-v8/02-design-tokens.json';
 
 /** Wave 0 contract. No provider, theme rendering or preference mutation. */
-export type ThemeId = keyof typeof tokens.themes;
+export type BuiltinThemeId = keyof typeof tokens.themes;
+export type ThemeId = BuiltinThemeId | (string & {});
 export type TokenSource = typeof tokens;
 export interface BrandMarkProps { label: string }
 export interface WeekProgressProps { complete: number; partial: number; target: number; label: string }
@@ -30,6 +31,7 @@ export interface ThemeManifest {
   description: { zh: string; en: string };
   colorScheme: 'light' | 'dark';
   preview: string;
+  themeColor?: string;
   fonts: readonly string[];
   slots: Partial<ThemeSlots>;
 }

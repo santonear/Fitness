@@ -1,7 +1,7 @@
 /* Generated from 02-design-tokens.json; checked by v8-theme-tokens.test.ts. */
 :root[data-theme="liubai"] {
   --c-bg: #ECEEEA;
-  --c-bg-grad: #ECEEEA;
+  --c-bg-grad: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27180%27 height=%27180%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%27.8%27 numOctaves=%273%27 stitchTiles=%27stitch%27/%3E%3C/filter%3E%3Crect width=%27100%25%27 height=%27100%25%27 filter=%27url(%23n)%27 opacity=%27.035%27/%3E%3C/svg%3E"), #ECEEEA;
   --c-surface: #F4F5F2;
   --c-surface-2: #E3E6E1;
   --c-ink: #1C201E;
