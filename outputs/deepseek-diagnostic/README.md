@@ -21,3 +21,13 @@
 - 区分encode/network/http/decode/timeout/candidate；保持原ACCOUNTING_PENDING响应和预留处理，不自动重试、不释放费用。
 - 本地15项定向测试、213项后端测试通过（29项原有skip）；类型检查通过。
 - 只增加实时诊断，不开启通用遥测或健康数据采集；生产日志是否可追溯仍取决于当前监听，不声称已恢复原请求响应。
+
+## 经批准解除后续计划生成的全局阻塞（PR #51）
+
+- 代码确认：`needsReconciliation` 将任一有错误的 pending 请求视为全局暂停原因。这解释原失败之后所有人的重复失败，但不解释首次供应商失败。
+- 用户批准后新增默认关闭的 `allowUncertainPlanningPending`。只有同时关闭计划预算限制，才允许后续 generate 越过此前 generate 的 `SUPPLIER_UNCERTAIN`；原失败和未知费用完整保留。
+- 账本损坏、恢复状态、AI 总开关、无效资格和重复请求仍阻止调用；summary 不放宽。不修改生产账本、不替换密钥、不再次调用模型。
+- `reconciliationRequired` 保持原含义，新增可选 `planningReconciliationRequired`。资格和后台页面如实区分待核对与暂停；旧服务没有新字段时仍保守暂停。
+- Chromium/WebKit 的 390/1440 状态截图和两项浏览器用例通过：新字段 false 可开始计划；缺字段或 true 仍不可开始。属于模拟接口验收，不是真机或新的付费模型请求。
+
+- 最终本地验证：219 项后端测试通过，29 项原有跳过；类型检查与生产构建通过。

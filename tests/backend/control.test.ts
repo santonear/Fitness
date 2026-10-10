@@ -4,9 +4,10 @@ import { SqliteControlStore } from '../../src/backend/sqlite-store';
 import { digest, confirmationFor, goalConfirmationFor } from '../../src/backend/contracts';
 import { createHandler } from '../../src/backend/http';
 import { EXERCISE_IDS } from '../../src/catalog/exercise-ids';
-import { currentCoachEnvelope } from '../fixtures/current-coach-envelope';
+import { currentCoachEnvelope, currentCoachRefusal } from '../fixtures/current-coach-envelope';
 
 const stores: SqliteControlStore[] = [];
+async function newCoachRequest(){const r=await currentCoachEnvelope();r.requestId=crypto.randomUUID();r.coach.requestId=r.requestId;r.coach.sendConfirmation=await confirmationFor(r.coach);r.sendConfirmation=await confirmationFor(r);return r;}
 afterEach(() => stores.splice(0).forEach(store => store.close()));
 const input = () => ({ contractVersion: 1 as const, requestId: crypto.randomUUID(), operation: 'understand' as const,
   goalText: 'synthetic goal 私密目标', locale: 'en' as const, restoreGeneration: 2 });
@@ -21,6 +22,37 @@ async function setup(overrides = {}, supplier: (_value: unknown) => Promise<{ re
 }
 
 describe('BE local control', () => {
+  it('approved unlimited planning keeps uncertain records but admits a different request and subject',async()=>{
+    let first=true;const f=await setup({planningBudgetDisabled:true,allowUncertainPlanningPending:true},async(value:any)=>{if(first){first=false;throw Error('uncertain');}return {result:{...currentCoachRefusal,requestId:value.requestId}};});
+    await f.service.enableMock(f.admin,true);const failed=await newCoachRequest();
+    await expect(f.service.submit(f.session.token,failed)).rejects.toMatchObject({code:'ACCOUNTING_PENDING'});
+    const before=Object.values((await f.store.read()).requests)[0];
+    expect(await f.service.status(f.session.token)).toMatchObject({reconciliationRequired:true,planningReconciliationRequired:false});
+    await expect(f.service.submit(f.session.token,failed)).rejects.toMatchObject({code:'REQUEST_IN_PROGRESS'});
+    const other=await f.service.redeem((await f.service.issue(f.admin)).code);
+    await expect(f.service.submit(other.token,await newCoachRequest())).resolves.toMatchObject({accounting:'pending'});
+    expect(Object.values((await f.store.read()).requests)[0]).toEqual(before);expect(before).toMatchObject({status:'pending',error:'SUPPLIER_UNCERTAIN'});expect(before.actualCost).toBeUndefined();expect(f.calls()).toBe(2);
+  });
+  it.each([{planningBudgetDisabled:true},{planningBudgetDisabled:false,allowUncertainPlanningPending:true}])('does not relax the gate without both explicit settings: %j',async settings=>{
+    const f=await setup(settings,async()=>{throw Error('uncertain');});await f.service.enableMock(f.admin,true);
+    await expect(f.service.submit(f.session.token,await newCoachRequest())).rejects.toMatchObject({code:'ACCOUNTING_PENDING'});
+    await expect(f.service.submit(f.session.token,await newCoachRequest())).rejects.toMatchObject({code:'RECONCILIATION_REQUIRED'});expect(f.calls()).toBe(1);
+  });
+  it.each([true,false])('approved planning bypass never ignores corrupt accounting, recovery, disabled AI or revoked eligibility (bounded=%s)',async allowBoundedPending=>{
+    const f=await setup({planningBudgetDisabled:true,allowUncertainPlanningPending:true,allowBoundedPending},async()=>{throw Error('uncertain');});await f.service.enableMock(f.admin,true);
+    await expect(f.service.submit(f.session.token,await newCoachRequest())).rejects.toMatchObject({code:'ACCOUNTING_PENDING'});
+    await f.store.transact(s=>{s.budgets['2026-01'].reserved++;});await expect(f.service.submit(f.session.token,await newCoachRequest())).rejects.toMatchObject({code:'RECONCILIATION_REQUIRED'});
+    await f.store.transact(s=>{s.budgets['2026-01'].reserved--;});
+    await f.store.transact(s=>{s.recoveryRequired=true;});await expect(f.service.submit(f.session.token,await newCoachRequest())).rejects.toMatchObject({code:'RECONCILIATION_REQUIRED'});
+    await f.store.transact(s=>{s.recoveryRequired=false;s.aiEnabled=false;});await expect(f.service.submit(f.session.token,await newCoachRequest())).rejects.toMatchObject({code:'AI_DISABLED'});
+    await f.store.transact(s=>{s.aiEnabled=true;s.subjects[f.session.subjectId].revoked=true;});await expect(f.service.submit(f.session.token,await newCoachRequest())).rejects.toMatchObject({code:'QUALIFICATION_REQUIRED'});expect(f.calls()).toBe(1);
+  });
+  it('planning exception does not waive uncertain summary accounting',async()=>{
+    const f=await setup({planningBudgetDisabled:true,allowUncertainPlanningPending:true},async()=>{throw Error('uncertain');});await f.service.enableMock(f.admin,true);
+    await expect(f.service.submit(f.session.token,await newCoachRequest())).rejects.toMatchObject({code:'ACCOUNTING_PENDING'});
+    await f.store.transact(s=>{Object.values(s.requests)[0].operation='summary';});
+    await expect(f.service.submit(f.session.token,await newCoachRequest())).rejects.toMatchObject({code:'RECONCILIATION_REQUIRED'});expect(f.calls()).toBe(1);
+  });
   it('BE-T01 disables supplier by default, rejects invalid admin and qualification', async () => {
     const f = await setup();
     await expect(f.service.submit(f.session.token, await f.request())).rejects.toMatchObject({ code: 'AI_DISABLED' });

@@ -1,6 +1,23 @@
 import { completedPlanningProfile } from './planning-profile-fixture';
 import { expect, test } from '@playwright/test';
 
+test('planning admission can stay open while accounting remains pending, with conservative old-server fallback',async({page},info)=>{
+ await page.addInitScript(()=>localStorage.setItem('fitness.language','zh'));
+ let planningFlag:boolean|undefined=false;
+ await page.route('**/api/v1/**',route=>{
+  const path=new URL(route.request().url()).pathname;
+  if(path.endsWith('/access-status'))return route.fulfill({json:{qualification:'none',sessionValid:false}});
+  if(path.endsWith('/application-config'))return route.fulfill({json:{available:true,siteKey:'fixture'}});
+  if(path.endsWith('/status'))return route.fulfill({json:{expiresAt:Date.now()+86400000,used:{understand:0,generate:0},limits:{understand:8,generate:4},aiEnabled:true,pending:1,reconciliationRequired:true,...(planningFlag===undefined?{}:{planningReconciliationRequired:planningFlag})}});
+  return route.fulfill({status:503,json:{error:'UNEXPECTED'}});
+ });
+ await completedPlanningProfile(page);await page.goto('/trial');
+ const start=page.getByRole('button',{name:'开始制定训练计划',exact:true});await expect(start).toBeEnabled();
+ for(const width of [390,1440]){await page.setViewportSize({width,height:900});await page.screenshot({path:`outputs/deepseek-diagnostic/${info.project.name}-trial-${width}.png`,fullPage:true});}
+ planningFlag=undefined;await page.reload();await expect(start).toBeDisabled();
+ planningFlag=true;await page.reload();await expect(start).toBeDisabled();
+});
+
 for (const zh of [false, true]) test(`active trial enters planning and refreshes allowance without model calls (${zh ? 'zh' : 'en'})`, async ({ page }) => {
   await page.addInitScript(zh => localStorage.setItem('fitness.language', zh ? 'zh' : 'en'), zh);
   let writes = 0;
