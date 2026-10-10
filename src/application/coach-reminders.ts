@@ -15,9 +15,9 @@ export function createCoachReminderService(repo: Repository) {
     return {ledger,profile,metadata};
   }
   async function sources(now:number,ledger:CoachLedger):Promise<{result:ReminderSource[];training:boolean;onboarding:boolean}> {
-    const [sessions,workouts,state]=await Promise.all([db.sessions.toArray(),db.v8Workouts.toArray(),db.v8State.get('v8')]);
+    const [sessions,workouts,state,guided]=await Promise.all([db.sessions.toArray(),db.v8Workouts.toArray(),db.v8State.get('v8'),db.guidedStates.get('guided')]);
     const result=userReminderSources(now,ledger.preferences);
-    return {result,training:sessions.some(s=>s.status==='in_progress')||workouts.some(s=>s.status==='in_progress'),onboarding:!state?.coachProfile?.adultConfirmed&&!sessions.length&&!workouts.length};
+    return {result,training:sessions.some(s=>s.status==='in_progress')||workouts.some(s=>s.status==='in_progress'),onboarding:!state?.coachProfile?.adultConfirmed&&!guided?.onboarding?.completed&&!sessions.length&&!workouts.length};
   }
   // Main DB transaction includes sources and device ledger: competing tabs cannot both claim.
   async function evaluate(context: Omit<ReminderContext,'generation'|'profileId'|'training'|'onboarding'>) {
