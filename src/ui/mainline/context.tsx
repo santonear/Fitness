@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../themes/ThemeProvider';
 import { getThemeSlots } from '../../themes/registry';
 import { createV8Workflow, type LocalCandidate } from '../../application/v8-workflow';
+import { backfillOnboarding } from '../../application/v8-onboarding-backfill';
 import { profileService } from '../../application/profile';
 import { repository } from '../../persistence/repository';
 import { createV8DataService } from '../../persistence/v8-access';
@@ -44,8 +45,10 @@ function useController() {
  useEffect(()=>{let alive=true;void(async()=>{
   await profileService.initialize('zh');const next=await reload();if(!alive)return;
   draftKey.current=`fitness-v8-draft:${next.metadata.localProfileId}:${next.metadata.restoreGeneration??0}`;
+  const legacy=await repository.db.guidedStates.get('guided');
+  if(legacy?.onboarding?.answers)setAnswers(backfillOnboarding(legacy.onboarding.answers,next.profile?.locale==='en'?'en':'zh'));
   try{const saved=JSON.parse(localStorage.getItem(draftKey.current)??'null');if(saved?.answers && ['goalText','scheduleOriginalText','placeEquipmentText'].every(k=>typeof saved.answers[k]==='string') && typeof saved.answers.adultConfirmed==='boolean' && Array.isArray(saved.answers.cautions)){setAnswers(saved.answers);if([0,1,2,3].includes(saved.step))setStep(saved.step);}}catch{/* Preserve unknown raw draft. */}
-  setReady(true);const legacy=await repository.db.guidedStates.get('guided');
+  setReady(true);
   if(location.pathname==='/'&&!next.version&&!next.active&&!legacy?.onboarding?.completed&&await repository.db.sessions.count()===0)navigate('/onboarding',{replace:true});
  })().catch(()=>{if(alive)setError(t.loadError);});return()=>{alive=false;};},[]);
  useEffect(()=>{if(ready)try{localStorage.setItem(draftKey.current,JSON.stringify({answers,step}));}catch{setError(t.draftError);}},[answers,step,ready]);

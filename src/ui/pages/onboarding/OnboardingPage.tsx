@@ -10,6 +10,7 @@ import './onboarding.css';
 /** Uninterpreted answers. The integration layer resolves them before any model request. */
 export type OnboardingAnswers = Pick<CoachProfile, 'goalText' | 'scheduleOriginalText' | 'adultConfirmed' | 'cautions'> & {
   placeEquipmentText: string;
+  safetyAnswered?: boolean;
 };
 export interface OnboardingPageProps {
   locale: V8Locale; step: 0 | 1 | 2 | 3; answers: OnboardingAnswers;
@@ -40,8 +41,8 @@ export function OnboardingPage({ locale, step, answers, slots, mode, busy = fals
       </> : <>
         <label className="v8-onboarding-adult"><input type="checkbox" checked={answers.adultConfirmed} disabled={busy} onChange={event => onChange({ ...answers, adultConfirmed: event.target.checked })} />{t.adult}</label>
         <fieldset disabled={busy}><legend>{t.cautions}</legend><div className="v8-onboarding-choices">
-          <Chip selected={answers.cautions.length === 0} disabled={busy} onClick={() => onChange({ ...answers, cautions: [] })}>{t.parts.none}</Chip>
-          {(['knee', 'back', 'shoulder', 'wrist', 'other'] as const).map(part => <Chip key={part} selected={answers.cautions.includes(part)} disabled={busy} onClick={() => onChange({ ...answers, cautions: answers.cautions.includes(part) ? answers.cautions.filter(value => value !== part) : [...answers.cautions, part] })}>{t.parts[part]}</Chip>)}
+          <Chip selected={answers.safetyAnswered !== false && answers.cautions.length === 0} disabled={busy} onClick={() => onChange({ ...answers, cautions: [], safetyAnswered: true })}>{t.parts.none}</Chip>
+          {(['knee', 'back', 'shoulder', 'wrist', 'other'] as const).map(part => <Chip key={part} selected={answers.cautions.includes(part)} disabled={busy} onClick={() => onChange({ ...answers, safetyAnswered: true, cautions: answers.cautions.includes(part) ? answers.cautions.filter(value => value !== part) : [...answers.cautions, part] })}>{t.parts[part]}</Chip>)}
         </div></fieldset>
         {!answers.adultConfirmed && <p>{t.minor}</p>}
         {mode === 'ai' ? <details><summary>{t.consent}</summary><dl>{[answers.goalText, answers.scheduleOriginalText, answers.placeEquipmentText, answers.adultConfirmed ? t.adult : '—', answers.cautions.length ? answers.cautions.map(part => t.parts[part]).join(' / ') : t.parts.none].map((value, i) => <div key={t.fields[i]}><dt>{t.fields[i]}</dt><dd>{value}</dd></div>)}</dl></details> : <p>{t.basic}</p>}
@@ -49,7 +50,7 @@ export function OnboardingPage({ locale, step, answers, slots, mode, busy = fals
       {error && <p role="alert">{error}</p>}
       <footer>
         {step > 0 && <Button disabled={busy} onClick={() => onStep((step - 1) as 0 | 1 | 2)}>{t.back}</Button>}
-        {step < 3 ? <Button variant="primary" disabled={busy || !answers[key].trim()} onClick={() => onStep((step + 1) as 1 | 2 | 3)}>{t.next}</Button> : <Button variant="primary" disabled={busy || !complete || !answers.adultConfirmed} onClick={() => { if (complete && answers.adultConfirmed && !busy) onGenerate(answers); }}>{busy ? t.working : t.generate}</Button>}
+        {step < 3 ? <Button variant="primary" disabled={busy || !answers[key].trim()} onClick={() => onStep((step + 1) as 1 | 2 | 3)}>{t.next}</Button> : <Button variant="primary" disabled={busy || !complete || !answers.adultConfirmed || answers.safetyAnswered === false} onClick={() => { if (complete && answers.adultConfirmed && answers.safetyAnswered !== false && !busy) onGenerate(answers); }}>{busy ? t.working : t.generate}</Button>}
       </footer>
       {step === 3 && <Button disabled={busy} onClick={onManual}>{t.manual}</Button>}
     </section>
