@@ -13,7 +13,7 @@ export interface PlanPageProps {
   onExercises: () => void;
   /** Opens read-only details; any proposed edits require the host's separate confirmation flow. */
   onExercise: (version: PlanVersion, templateId: string, itemIndex: number) => void;
-  onDiscuss: (version: PlanVersion) => void;
+  onDiscuss?: (version: PlanVersion) => void;
 }
 
 export function itemTarget(item: PlannedItem, language: PlanLanguage): string {
@@ -39,6 +39,6 @@ export function PlanPage({ version, currentVersionId, language, exerciseName, on
         onClick={() => onExercise(version, template.id, index)}>{exerciseName(item.exerciseId)} · {itemTarget(item, language)}</Chip>)}</div>
     </section>)}
     <nav className="plan-actions" aria-label={t.title}><Button onClick={onVersions}>{t.history}</Button><Button onClick={onExercises}>{t.library}</Button></nav>
-    {current && <Button variant="primary" onClick={() => { if (version.id === currentVersionId) onDiscuss(version); }}>{t.chat}</Button>}
+    {current && onDiscuss && <Button variant="primary" onClick={() => { if (version.id === currentVersionId) onDiscuss(version); }}>{t.chat}</Button>}
   </section>;
 }

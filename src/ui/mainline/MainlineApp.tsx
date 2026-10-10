@@ -6,6 +6,9 @@ import { exercises } from '../../catalog/exercises';
 import { Button } from '../components/common';
 import { OnboardingPage } from '../pages/onboarding/OnboardingPage';
 import { PlanDraftPage } from '../pages/onboarding/PlanDraftPage';
+import { ExercisesPage } from '../pages/plan/ExercisesPage';
+import { PlanRoute } from '../pages/plan/PlanRoute';
+import { ActivityPage } from '../pages/training/ActivityPage';
 import { NextPage } from '../pages/training/NextPage';
 import { WorkoutPage } from '../pages/training/WorkoutPage';
 import { FinishPage } from '../pages/training/FinishPage';
@@ -24,7 +27,7 @@ function Shell(){const{data,t,slots,navigate,error}=useMainline(),location=useLo
  return <div className="v8-shell" data-training-active={location.pathname.startsWith('/workout/')&&!location.pathname.endsWith('/finish')}>
  {!immersive&&location.pathname!=='/'&&<header className="v8-shell-header"><slots.BrandMark label={t.brand}/></header>}
  {error&&!['/onboarding','/plan-draft'].includes(location.pathname)&&<p role="alert">{error}</p>}
- <Routes><Route path={path('onboarding')} element={<OnboardingRoute/>}/><Route path={path('draft')} element={<DraftRoute/>}/><Route path={path('next')} element={<NextPage/>}/><Route path={path('workout')} element={<WorkoutPage/>}/><Route path={path('finish')} element={<FinishPage/>}/><Route path="/manual" element={<ManualPage/>}/><Route path={path('review')} element={<ReviewPage/>}/><Route path={path('settings')} element={<SettingsPage/>}/><Route path={path('appearance')} element={<AppearancePage/>}/><Route path="*" element={<NextPage/>}/></Routes>
+ <Routes><Route path={path('exercises')} element={<ExercisesPage/>}/><Route path={path('plan')} element={<PlanRoute/>}/><Route path={path('versions')} element={<PlanRoute versions/>}/><Route path={path('activity')} element={<ActivityPage/>}/><Route path={path('onboarding')} element={<OnboardingRoute/>}/><Route path={path('draft')} element={<DraftRoute/>}/><Route path={path('next')} element={<NextPage/>}/><Route path={path('workout')} element={<WorkoutPage/>}/><Route path={path('finish')} element={<FinishPage/>}/><Route path="/manual" element={<ManualPage/>}/><Route path={path('review')} element={<ReviewPage/>}/><Route path={path('settings')} element={<SettingsPage/>}/><Route path={path('appearance')} element={<AppearancePage/>}/><Route path="*" element={<NextPage/>}/></Routes>
  {!immersive&&<nav aria-label={t.brand}>{(['next','plan','review'] as const).map((id,i)=><Button key={id} onClick={()=>navigate(path(id))}><slots.NavIcon kind={(['training','plan','review'] as const)[i]} selected={location.pathname===path(id)} label={([t.training,t.plan,t.review])[i]}/>{([t.training,t.plan,t.review])[i]}</Button>)}</nav>}
  </div>;
 }

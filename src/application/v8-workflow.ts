@@ -35,7 +35,7 @@ export function createV8Workflow(repo: Repository) {
       const plan = state?.currentPlanId ? await db.v8Plans.get(state.currentPlanId) : undefined;
       const version = plan ? await db.v8PlanVersions.get(plan.currentVersionId) : undefined;
       const workouts = await db.v8Workouts.toArray();
-      return { metadata, state, plan, version, workouts, profile: await db.profiles.toCollection().first(), active: workouts.find(row => row.status === 'in_progress') };
+      return { metadata, state, plan, version, workouts, versions: await db.v8PlanVersions.toArray(), activities: await db.v8Activities.toArray(), profile: await db.profiles.toCollection().first(), active: workouts.find(row => row.status === 'in_progress') };
     });
   }
   async function propose(profile: CoachProfile): Promise<LocalCandidate> {
