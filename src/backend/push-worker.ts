@@ -1,16 +1,22 @@
 import { capabilityHash, duePushDay, pushSchedule, pushSubscription, sendGenericPush } from './push-service';
 import type { PushSchedule } from './push-service';
+import { readFeatureFlags, type FeatureConfigEnv } from './feature-config';
 interface Statement { bind(...values: unknown[]): Statement; run(): Promise<{ meta: { changes: number } }>; all<T>(): Promise<{ results: T[] }>; first<T>(): Promise<T | null> }
 interface Database { prepare(sql: string): Statement }
-export interface PushEnv {
+export interface PushEnv extends FeatureConfigEnv {
   PUSH_DB: Database; PUSH_ENABLED?: string; APP_ORIGIN: string;
   VAPID_PRIVATE_JWK: string; VAPID_PUBLIC_KEY: string; VAPID_SUBJECT: string;
 }
 interface Stored { id: string; endpoint: string; schedule: string; last_day: string | null; retry_at: number | null; attempts: number }
 const json = (body: unknown, status = 200) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
+async function pushAllowed(env: PushEnv) {
+  if (env.PUSH_ENABLED !== 'true') return false;
+  const flags = await readFeatureFlags(env);
+  return flags.pwaOffline && flags.systemNotifications;
+}
 export async function pushFetch(request: Request, env: PushEnv): Promise<Response> {
   const url = new URL(request.url);
-  if (request.method === 'GET' && url.pathname === '/api/v1/push/config') return json({ enabled: env.PUSH_ENABLED === 'true', publicKey: env.PUSH_ENABLED === 'true' ? env.VAPID_PUBLIC_KEY : undefined });
+  if (request.method === 'GET' && url.pathname === '/api/v1/push/config') { const enabled = await pushAllowed(env); return json({ enabled, publicKey: enabled ? env.VAPID_PUBLIC_KEY : undefined }); }
   if (url.pathname !== '/api/v1/push/subscription') return json({ error: 'NOT_FOUND' }, 404);
   if (!['POST','DELETE'].includes(request.method)) return json({ error: 'METHOD_NOT_ALLOWED' }, 405);
   if (request.headers.get('Origin') !== env.APP_ORIGIN) return json({ error: 'ORIGIN_REQUIRED' }, 403);
@@ -19,7 +25,7 @@ export async function pushFetch(request: Request, env: PushEnv): Promise<Respons
   const id = await capabilityHash(token);
   // Deletion remains available while remotely disabled.
   if (request.method === 'DELETE') { await env.PUSH_DB.prepare('DELETE FROM push_subscriptions WHERE id = ?').bind(id).run(); return json({ deleted: true }); }
-  if (env.PUSH_ENABLED !== 'true') return json({ error: 'PUSH_DISABLED' }, 503);
+  if (!await pushAllowed(env)) return json({ error: 'PUSH_DISABLED' }, 503);
   if (!request.headers.get('Content-Type')?.startsWith('application/json')) return json({ error: 'JSON_REQUIRED' }, 415);
   // Stream limit applies even when Content-Length is absent or dishonest.
   let text = ''; const reader = request.body?.getReader();
@@ -34,13 +40,14 @@ export async function pushFetch(request: Request, env: PushEnv): Promise<Respons
   const existing = await env.PUSH_DB.prepare('SELECT id FROM push_subscriptions WHERE id = ?').bind(id).first();
   const count = await env.PUSH_DB.prepare('SELECT COUNT(*) AS count FROM push_subscriptions').first<{ count: number }>();
   if (!existing && (count?.count ?? 0) >= 100) return json({ error: 'PREVIEW_CAPACITY' }, 429);
+  if (!await pushAllowed(env)) return json({ error: 'PUSH_DISABLED' }, 503);
   try {
     await env.PUSH_DB.prepare('INSERT INTO push_subscriptions (id, endpoint, keys_json, schedule, updated_at, attempts) VALUES (?, ?, ?, ?, ?, 0) ON CONFLICT(id) DO UPDATE SET endpoint=excluded.endpoint, keys_json=excluded.keys_json, schedule=excluded.schedule, updated_at=excluded.updated_at, retry_at=NULL').bind(id, subscription.data.endpoint, JSON.stringify(subscription.data.keys), JSON.stringify(schedule.data), Date.now()).run();
   } catch { return json({ error: 'SUBSCRIPTION_CONFLICT' }, 409); }
   return json({ subscribed: true });
 }
 export async function dispatchPush(env: PushEnv, now = Date.now(), send = sendGenericPush): Promise<void> {
-  if (env.PUSH_ENABLED !== 'true') return;
+  if (!await pushAllowed(env)) return;
   const { results } = await env.PUSH_DB.prepare('SELECT id, endpoint, schedule, last_day, retry_at, attempts FROM push_subscriptions ORDER BY id LIMIT 100').all<Stored>();
   for (const row of results) {
     let schedule: PushSchedule; try { schedule = pushSchedule.parse(JSON.parse(row.schedule)); } catch { continue; }
@@ -54,6 +61,7 @@ export async function dispatchPush(env: PushEnv, now = Date.now(), send = sendGe
     if (!claim.meta.changes) continue;
     // Recheck presence after claim so a concurrent unsubscribe normally cancels dispatch.
     if (!await env.PUSH_DB.prepare('SELECT id FROM push_subscriptions WHERE id=?').bind(row.id).first()) continue;
+    if (!await pushAllowed(env)) return;
     let status: number; try { status = await send(row.endpoint, env.VAPID_PRIVATE_JWK, env.VAPID_PUBLIC_KEY, env.VAPID_SUBJECT, now); } catch { continue; }
     if (status === 404 || status === 410) await env.PUSH_DB.prepare('DELETE FROM push_subscriptions WHERE id=?').bind(row.id).run();
     else if (!retry && (status === 429 || status === 503)) await env.PUSH_DB.prepare('UPDATE push_subscriptions SET retry_at=? WHERE id=? AND last_day=? AND attempts=1').bind(now + 60000, row.id, day).run();

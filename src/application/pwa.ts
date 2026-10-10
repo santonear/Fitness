@@ -8,6 +8,8 @@ const supported = () => typeof window !== 'undefined' && window.isSecureContext 
 const optedIn = () => { try { return localStorage.getItem(OPT_IN) === 'true'; } catch { return false; } };
 export function systemNotificationsEnabled() { return optedIn(); }
 export function pwaRegistration() { return registration; }
+/** Revoke notification capability immediately without touching offline registration/cache. */
+export function suspendSystemNotifications() { flags = { ...flags, notificationsEnabled: false }; }
 export function notificationStatus(): NotificationStatus {
   if (!flags.offlineEnabled || !flags.notificationsEnabled) return 'disabled';
   const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);

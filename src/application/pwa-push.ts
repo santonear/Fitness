@@ -4,7 +4,18 @@ export interface BackgroundSchedule { weekdays: number[]; time: string; timeZone
 const CAPABILITY = 'fitness.push-capability';
 const ENABLED = 'fitness.background-push';
 let allowed = false;
-export function configureBackgroundPush(enabled: boolean) { allowed = enabled; }
+let epoch = 0;
+let pendingMutations = 0;
+let mutationQueue: Promise<unknown> = Promise.resolve();
+function serialize<T>(action: () => Promise<T>): Promise<T> {
+  pendingMutations++;
+  const result = mutationQueue.catch(() => {}).then(action);
+  mutationQueue = result.finally(() => { pendingMutations--; });
+  // A caller may handle result; the internal queue must not create an unhandled rejection.
+  void mutationQueue.catch(() => {});
+  return result;
+}
+export function configureBackgroundPush(enabled: boolean) { if (!enabled) epoch++; allowed = enabled; }
 export function backgroundPushEnabled() { try { return localStorage.getItem(ENABLED) === 'true'; } catch { return false; } }
 export async function backgroundPushConfig(): Promise<{ enabled: boolean; publicKey?: string }> {
   if (!allowed) return { enabled: false };
@@ -22,30 +33,49 @@ function deviceCapability() {
 }
 /** Config is fetched before the click, so subscribe is invoked during the gesture. */
 export async function enableBackgroundPush(schedule: BackgroundSchedule, publicKey: string): Promise<void> {
+  if (pendingMutations) throw Error('PUSH_BUSY');
   if (!allowed || notificationStatus() !== 'granted') throw Error('PUSH_PERMISSION_REQUIRED');
   const registration = pwaRegistration(); if (!registration?.active || !registration.pushManager) throw Error('PUSH_UNAVAILABLE');
   if (!/^[\w-]{87}$/.test(publicKey)) throw Error('PUSH_UNAVAILABLE');
   const capability = deviceCapability();
+  const operation = ++epoch;
   const key = Uint8Array.from(atob(publicKey.replaceAll('-','+').replaceAll('_','/') + '='), character => character.charCodeAt(0));
-  const subscription = await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key });
+  // Invoke during the click; persistence and all revocations are serialized below.
+  const subscribing = registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key });
+  return serialize(async () => {
+  const subscription = await subscribing;
   const serialized = subscription.toJSON();
   try {
-    if (!allowed) throw Error('PUSH_DISABLED');
+    if (!allowed || epoch !== operation) throw Error('PUSH_DISABLED');
     const response = await fetch('/api/v1/push/subscription', { method: 'POST', credentials: 'omit', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${capability}` }, body: JSON.stringify({ subscription: { endpoint: serialized.endpoint, keys: serialized.keys }, schedule: { weekdays: schedule.weekdays, time: schedule.time, timeZone: schedule.timeZone, quietStart: schedule.quietStart, quietEnd: schedule.quietEnd, dailyLimit: schedule.dailyLimit } }) });
     if (!response.ok) throw Error('PUSH_SAVE_FAILED');
+    if (!allowed || epoch !== operation) throw Error('PUSH_DISABLED');
     localStorage.setItem(ENABLED, 'true');
-  } catch (error) { await subscription.unsubscribe(); throw error; }
+  } catch (error) {
+    localStorage.removeItem(ENABLED);
+    await subscription.unsubscribe().catch(() => false);
+    // POST may already have committed. Always compensate, retaining capability on failure.
+    await deleteServerSubscription(capability);
+    throw error;
+  }
+  });
 }
 /** false means browser is unsubscribed but server deletion still needs retry. */
 export async function disableBackgroundPush(): Promise<boolean> {
+  epoch++;
+  return serialize(async () => {
   const registration = pwaRegistration();
   const subscription = await registration?.pushManager?.getSubscription();
   if (subscription && !await subscription.unsubscribe()) return false;
   localStorage.removeItem(ENABLED);
   const capability = localStorage.getItem(CAPABILITY); if (!capability) return true;
+  return deleteServerSubscription(capability);
+  });
+}
+async function deleteServerSubscription(capability: string): Promise<boolean> {
   try {
     const response = await fetch('/api/v1/push/subscription', { method: 'DELETE', credentials: 'omit', headers: { Authorization: `Bearer ${capability}` } });
     if (!response.ok) return false;
-    localStorage.removeItem(CAPABILITY); return true;
+    if (localStorage.getItem(CAPABILITY) === capability) localStorage.removeItem(CAPABILITY); return true;
   } catch { return false; }
 }

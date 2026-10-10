@@ -10,7 +10,7 @@ const token = 'a'.repeat(43);
 const endpoint = 'https://fcm.googleapis.com/send/test-device';
 function environment() {
   const db = new DatabaseSync(':memory:'); db.exec(readFileSync('tools/push-schema.sql','utf8'));
-  const env: PushEnv = { PUSH_ENABLED:'true', APP_ORIGIN:'https://fitness.test', VAPID_PRIVATE_JWK:'', VAPID_PUBLIC_KEY:'', VAPID_SUBJECT:'mailto:test@example.com', PUSH_DB: { prepare(sql) {
+  const env: PushEnv = { PUSH_ENABLED:'true', FITNESS_FEATURE_FLAGS:JSON.stringify({pwaOffline:true,systemNotifications:true}), APP_ORIGIN:'https://fitness.test', VAPID_PRIVATE_JWK:'', VAPID_PUBLIC_KEY:'', VAPID_SUBJECT:'mailto:test@example.com', PUSH_DB: { prepare(sql) {
     let args: any[] = []; const statement = db.prepare(sql);
     const adapter = { bind(...values: any[]) { args = values; return adapter; }, async run() { const result = statement.run(...args); return { meta: { changes: Number(result.changes) } }; }, async all<T>() { return { results: statement.all(...args) as T[] }; }, async first<T>() { return statement.get(...args) as T ?? null; } }; return adapter;
   } } };
@@ -20,6 +20,16 @@ function request(method = 'POST', body: unknown = { subscription: { endpoint, ke
   return new Request('https://fitness.test/api/v1/push/subscription', { method, headers: { Origin:origin, Authorization:`Bearer ${token}`, 'Content-Type':'application/json' }, body: method === 'POST' ? JSON.stringify(body) : undefined });
 }
 describe('preview push privacy and scheduling', () => {
+  it('central remote kill and KV failure stop cron and config for existing subscriptions', async () => {
+    const {env,db}=environment(); await pushFetch(request(),env); const send=vi.fn().mockResolvedValue(201);
+    env.FITNESS_FEATURE_CONFIG={get:async()=>JSON.stringify({pwaOffline:true,systemNotifications:false})};
+    await dispatchPush(env,now,send); expect(send).not.toHaveBeenCalled();
+    expect(await (await pushFetch(new Request('https://fitness.test/api/v1/push/config'),env)).json()).toEqual({enabled:false});
+    env.FITNESS_FEATURE_CONFIG={get:async()=>{throw Error('unavailable');}};
+    await dispatchPush(env,now,send); expect(send).not.toHaveBeenCalled();
+    expect((await pushFetch(request(),env)).status).toBe(503);
+    expect((await pushFetch(request('DELETE'),env)).status).toBe(200); db.close();
+  });
   it('accepts explicit schedule only and stores hashed capability, no health fields', async () => {
     const {env,db} = environment(); expect((await pushFetch(request(),env)).status).toBe(200);
     const row = db.prepare('SELECT * FROM push_subscriptions').get()!;

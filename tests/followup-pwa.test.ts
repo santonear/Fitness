@@ -17,6 +17,28 @@ function browser(permission = 'default') {
   return { register, requestPermission, showNotification, values };
 }
 describe('explicit local notification consent', () => {
+  it('suspension revokes foreground notifications immediately without re-registering offline shell', async () => {
+    const mocks=browser('granted');const pwa=await import('../src/application/pwa');
+    await pwa.configurePwa({offlineEnabled:true,notificationsEnabled:true});await pwa.requestSystemNotifications();
+    pwa.suspendSystemNotifications();expect(await pwa.showSystemReminder('one','zh')).toBe(false);expect(mocks.register).toHaveBeenCalledOnce();
+  });
+  it.each(['disable','remote-kill'])('compensates a pending POST when %s wins and never restores consent', async action => {
+    const mocks=browser('granted');const pwa=await import('../src/application/pwa');
+    await pwa.configurePwa({offlineEnabled:true,notificationsEnabled:true});
+    const subscription={toJSON:()=>({endpoint:'https://fcm.googleapis.com/test',keys:{p256dh:'B'.repeat(87),auth:'a'.repeat(22)}}),unsubscribe:vi.fn().mockResolvedValue(true)};
+    Object.assign(pwa.pwaRegistration()!,{pushManager:{subscribe:vi.fn().mockResolvedValue(subscription),getSubscription:vi.fn().mockResolvedValue(subscription)}});
+    let finishPost:(response:Response)=>void=()=>{};
+    const transport=vi.fn().mockImplementation((_url:string,options:RequestInit)=>options.method==='POST'?new Promise<Response>(resolve=>{finishPost=resolve;}):Promise.resolve(new Response(null,{status:200})));
+    vi.stubGlobal('fetch',transport);
+    const push=await import('../src/application/pwa-push');push.configureBackgroundPush(true);
+    const attempt=push.enableBackgroundPush({weekdays:[1],time:'09:00',timeZone:'UTC',quietStart:'22:00',quietEnd:'07:00',dailyLimit:1},'B'.repeat(87)).catch(error=>error);
+    await vi.waitFor(()=>expect(transport).toHaveBeenCalledOnce());
+    const revoked=action==='disable'?push.disableBackgroundPush():Promise.resolve(push.configureBackgroundPush(false));
+    finishPost(new Response(null,{status:200}));await attempt;await revoked;
+    expect(push.backgroundPushEnabled()).toBe(false);expect(subscription.unsubscribe).toHaveBeenCalled();
+    expect(transport.mock.calls.map(call=>call[1].method)).toEqual(['POST','DELETE']);
+    expect(mocks.values.has('fitness.push-capability')).toBe(false);
+  });
   it('defaults off and never asks permission or registers without flag', async () => {
     const mocks = browser(); const pwa = await import('../src/application/pwa');
     await pwa.configurePwa({ offlineEnabled: false, notificationsEnabled: false });
