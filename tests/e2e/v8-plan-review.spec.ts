@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { test, expect, type Page } from '@playwright/test';
 async function plan(page:Page){
  await page.goto('/');await page.getByLabel('你的回答').fill('保持力量');await page.getByRole('button',{name:'继续',exact:true}).click();
@@ -38,4 +39,22 @@ test('monthly facts remain visible and adopting a preview adds a version without
 });
 test('declining a suggestion suppresses it after reload for the same week',async({page})=>{
  await plan(page);await timeEvidence(page);await page.goto('/review');await page.getByRole('button',{name:'先不改',exact:true}).click();await page.reload();await expect(page.getByRole('button',{name:'就这样调整',exact:true})).toHaveCount(0);
+});
+
+test('legacy workout notes and metrics appear in both review periods without rewriting legacy tables',async({page})=>{
+ await plan(page);const fixture=JSON.parse(readFileSync(new URL('../fixtures/legacy-backups/v71-plans-weight.json',import.meta.url),'utf8')).data;
+ const before=await page.evaluate(async(data)=>{
+  const p='/src/persistence/db.ts',ap='/src/application/v8-activity.ts',db=(await import(/* @vite-ignore */ p)).database,{activityDate}=await import(/* @vite-ignore */ ap),date=activityDate('Asia/Shanghai');
+  const original=data.sessions.find((s:{status:string})=>s.status==='completed');const session={...original,startedAt:`${date}T02:00:00Z`,completedAt:`${date}T02:10:00Z`,localDate:date,notes:'旧训练原始备注'};
+  const sets=data.sets.filter((s:{sessionId:string;completed:boolean})=>s.sessionId===session.id&&s.completed).map((s:object)=>({...s,notes:'旧组原始备注'}));await db.sessions.put(session);await db.sets.bulkPut(sets);return {session,sets};
+ },fixture);
+ await page.goto('/review');await expect(page.getByText('旧训练原始备注',{exact:true})).toBeVisible();await expect(page.getByText(/旧组原始备注/).first()).toBeVisible();
+ await page.getByRole('button',{name:'本月回顾',exact:true}).click();await expect(page.getByText('旧训练原始备注',{exact:true})).toBeVisible();
+ const after=await page.evaluate(async(id)=>{const p='/src/persistence/db.ts',db=(await import(/* @vite-ignore */ p)).database;return {session:await db.sessions.get(id),sets:await db.sets.where('sessionId').equals(id).toArray()};},before.session.id);
+ expect(after.session).toEqual(before.session);expect(after.sets).toEqual(expect.arrayContaining(before.sets));
+});
+test('all retained plan versions remain readable and library filters retain attribution in English',async({page})=>{
+ await plan(page);await page.evaluate(async()=>{const p='/src/persistence/db.ts',db=(await import(/* @vite-ignore */ p)).database;const current=(await db.v8PlanVersions.toArray())[0];await db.v8PlanVersions.add({...current,id:crypto.randomUUID(),planId:crypto.randomUUID(),goalText:'Earlier retained plan',origin:'migrated',versionNumber:1});const profile=await db.profiles.toCollection().first();await db.profiles.put({...profile,locale:'en'});});
+ await page.goto('/plans/versions');const retained=page.locator('.plan-timeline li').filter({has:page.getByText('Earlier retained plan',{exact:true})});await retained.getByRole('button',{name:'View plan',exact:true}).click();await expect(page.getByText('Earlier retained plan',{exact:true})).toBeVisible();await expect(page.getByText(/Read only/)).toBeVisible();
+ await page.goto('/exercises');await expect(page.getByRole('link',{name:'RepDB',exact:true})).toBeVisible();await page.getByLabel('Search exercises').fill('Self-resisted Row');await page.getByLabel('Equipment',{exact:true}).selectOption('none');await expect(page.getByRole('button',{name:'Self-resisted Row',exact:true})).toBeVisible();await page.getByLabel('Equipment',{exact:true}).selectOption('dumbbell');await expect(page.getByRole('button',{name:'Self-resisted Row',exact:true})).toHaveCount(0);
 });
