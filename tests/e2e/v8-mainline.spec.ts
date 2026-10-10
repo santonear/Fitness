@@ -26,6 +26,7 @@ test('monthly review sends the visible month instead of the current week',async(
  let received:any;
  await page.route('**/api/v1/stages/summarize',async route=>{received=route.request().postDataJSON().coach;await route.fulfill({status:503,json:{error:'AI_DISABLED'}});});
  await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();
+ await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
  await page.goto('/review');await page.getByRole('button',{name:'本月回顾',exact:true}).click();
  await page.getByRole('button',{name:'和芽芽聊聊',exact:true}).click();
  await page.getByRole('textbox',{name:'跟芽芽说'}).fill('看看这个月');await page.getByRole('button',{name:'发送',exact:true}).click();
