@@ -87,5 +87,6 @@
  "setReminder": "Set reminders",
  "migrationPlans": "You had {count} plans. Your current plan is {name}; the others are in plan versions.",
  "understood": "Got it",
- "askCoach": "Talk to Yaya"
+ "askCoach": "Talk to Yaya",
+ "oldWorkout": "This workout uses an earlier plan. Finish and record it before adjusting the current plan."
 }

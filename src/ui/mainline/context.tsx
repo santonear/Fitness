@@ -7,6 +7,7 @@ import { backfillOnboarding } from '../../application/v8-onboarding-backfill';
 import { buildCoachRequest } from '../../coach/request-builder';
 import type { CoachRequest } from '../../coach/contracts';
 import type { CoachProfile } from '../../domain/v8/contracts';
+import i18n from '../../i18n';
 import { profileService } from '../../application/profile';
 import { repository } from '../../persistence/repository';
 import { createV8DataService } from '../../persistence/v8-access';
@@ -62,6 +63,7 @@ function useController() {
  async function run(action: () => Promise<void>) { if(lock.current)return; lock.current=true;setBusy(true);setError('');try{await action();await reload();}catch{setError(t.saveError);}finally{lock.current=false;setBusy(false);} }
  useEffect(()=>{let alive=true;void(async()=>{
   await profileService.initialize('zh');const next=await reload();if(!alive)return;
+  if(next.profile)await i18n.changeLanguage(next.profile.locale);if(!alive)return;
   draftKey.current=`fitness-v8-draft:${next.metadata.localProfileId}:${next.metadata.restoreGeneration??0}`;
   const legacy=await repository.db.guidedStates.get('guided');
   if(legacy?.onboarding?.answers)setAnswers(backfillOnboarding(legacy.onboarding.answers,next.profile?.locale==='en'?'en':'zh'));

@@ -1,3 +1,3 @@
 import {defineConfig} from '@playwright/test';
-export default defineConfig({testDir:'./tests/e2e',testMatch:'v8-coach-panel.spec.ts',workers:1,use:{baseURL:'http://127.0.0.1:5284',browserName:'chromium'},webServer:{command:'node node_modules/vite/bin/vite.js --configLoader runner --host 127.0.0.1 --port 5284 --strictPort',url:'http://127.0.0.1:5284',reuseExistingServer:true}});
-
+import base from './playwright.config';
+export default defineConfig({...base,testIgnore:[],workers:2,use:{...base.use,baseURL:'http://127.0.0.1:5189'},webServer:{command:'node node_modules/vite/bin/vite.js --configLoader runner --host 127.0.0.1 --port 5189 --strictPort',env:{VITE_GUIDED_DEMO:'0'},url:'http://127.0.0.1:5189',reuseExistingServer:false}});

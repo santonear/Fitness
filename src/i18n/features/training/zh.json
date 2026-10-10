@@ -87,5 +87,6 @@
  "setReminder": "设为提醒",
  "migrationPlans": "你以前有 {count} 份计划，当前用的是 {name}，其他的在计划版本里",
  "understood": "知道了",
- "askCoach": "和芽芽聊聊"
+ "askCoach": "和芽芽聊聊",
+ "oldWorkout": "这次训练沿用原计划，请结束并记下后再调整新计划。"
 }
