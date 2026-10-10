@@ -13,6 +13,10 @@ export function createReviewService(repo: Repository) {
   const {reasons:_reasons,...proposal}=suggestion.proposal;
   const version=v8PlanVersionSchema.parse({...proposal,id:crypto.randomUUID(),planId:plan.id,versionNumber:previous.versionNumber+1,createdAt:new Date().toISOString(),origin:'review_suggestion',changeSummary:[summary],basedOnVersionId:previous.id});
   await repo.db.v8PlanVersions.add(version);await repo.db.v8Plans.put({...plan,currentVersionId:version.id});
+  if(state && 'nextWorkoutOverride' in state){
+   const {nextWorkoutOverride:_override,...retained}=state;
+   await repo.db.v8State.put(retained);
+  }
   return version;
  },expectedRevision) };
 }

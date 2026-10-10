@@ -21,7 +21,7 @@ export interface WeekFacts extends ReviewFacts { previousMovementCount: number }
 export interface MonthFacts extends ReviewFacts { weeks: readonly { from: string; complete: number; partial: number }[] }
 export interface PlanProposal { goalText: string; weeklyTarget: number; scheduleOriginalText: string; sessionMinutes: number; templates: SessionTemplate[]; reasons: [string, string, string] }
 export interface ReviewSuggestion { id: string; rule: 'time' | 'discomfort' | 'progression' | 'frequency' | 'restart'; summary: string; basedOnVersionId: string; proposal: PlanProposal }
-export interface SuggestionInput { current: WeekFacts; previous: WeekFacts; workouts: readonly WorkoutRecord[]; plan: PlanVersion; dismissedIds: readonly string[] }
+export interface SuggestionInput { current: WeekFacts; previous: WeekFacts; workouts: readonly WorkoutRecord[]; plan: PlanVersion; dismissedIds: readonly string[]; profile?: CoachProfile; todayLocalDate?: string; completedWeeks?: readonly [WeekFacts, WeekFacts] }
 export type ComputeWeekFacts = (input: ReviewInput) => WeekFacts;
 export type ComputeMonthFacts = (input: ReviewInput) => MonthFacts;
 export type SuggestChange = (input: SuggestionInput) => ReviewSuggestion | null;
