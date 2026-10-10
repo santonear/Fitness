@@ -8,3 +8,8 @@ test('explicit send omits optional data, validates response, and keeps draft whe
  await page.keyboard.press('Escape');await page.getByRole('button',{name:'跟芽芽说',exact:true}).click();await expect(page.getByRole('textbox',{name:'跟芽芽说'})).toHaveValue('想在家练');await expect(page.getByText('想在哪里练？')).toBeVisible();
 });
 for(const width of [390,1440])test(`coach qingci ${width}`,async({page})=>{await page.setViewportSize({width,height:844});await page.goto('/tests/fixtures/v8-coach/index.html');await page.getByRole('button',{name:'跟芽芽说',exact:true}).click();await page.waitForTimeout(600);await page.screenshot({path:`outputs/v8-coach/qingci-${width}.png`});});
+test('qualification denial offers an actionable local plan without another request',async({page})=>{
+ let calls=0;await page.route('**/api/v1/plans/generate',async route=>{calls++;await route.fulfill({status:403,json:{error:'QUALIFICATION_REQUIRED'}});});
+ await page.goto('/tests/fixtures/v8-coach/index.html');await page.getByRole('button',{name:'跟芽芽说',exact:true}).click();await page.getByRole('textbox',{name:'跟芽芽说'}).fill('想在家练');await page.getByRole('button',{name:'发送',exact:true}).click();await page.getByRole('button',{name:'使用基础计划'}).click();await expect(page.getByText('基础计划入口已打开')).toBeVisible();expect(calls).toBe(1);
+});
+test('legacy profile without coach details still offers local planning',async({page})=>{await page.goto('/tests/fixtures/v8-coach/index.html?missing');await page.getByRole('button',{name:'跟芽芽说',exact:true}).click();await page.getByRole('button',{name:'使用基础计划'}).click();await expect(page.getByText('基础计划入口已打开')).toBeVisible();});

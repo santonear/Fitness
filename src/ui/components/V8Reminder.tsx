@@ -1,9 +1,11 @@
+import settingsZh from '../../i18n/features/settings/zh.json';
+import settingsEn from '../../i18n/features/settings/en.json';
 import { useEffect, useState } from 'react';
 import { coachReminderService } from '../../application/coach-reminders';
 import type { ReminderRecord } from '../../domain/coach-reminders';
 import { Button } from './common';
 export function V8Reminder({chatOpen,onStart,locale}:{chatOpen:boolean;onStart:()=>void;locale:'zh'|'en'}){
- const [record,setRecord]=useState<ReminderRecord>();const zh=locale==='zh';
+ const [record,setRecord]=useState<ReminderRecord>();const copy=locale==='zh'?settingsZh:settingsEn;
  useEffect(()=>{let alive=true,busy=false;
   async function check(){if(busy)return;busy=true;try{
    const visible=document.visibilityState==='visible'&&document.hasFocus();
@@ -16,5 +18,5 @@ export function V8Reminder({chatOpen,onStart,locale}:{chatOpen:boolean;onStart:(
  },[chatOpen]);
  async function act(action:'opened'|'snoozed'|'dismissed'){if(!record)return;await coachReminderService.act(record.id,action);setRecord(undefined);if(action==='opened')onStart();}
  if(!record||chatOpen)return null;
- return <aside aria-label={zh?'训练提醒':'Training reminder'}><p>{record.startTime} · {zh?'只是提醒，不代表那天必须练':'A reminder does not mean you have to train that day.'}</p><Button onClick={()=>void act('opened')}>{zh?'开始训练':'Start training'}</Button><Button onClick={()=>void act('snoozed')}>{zh?'4 小时后再说':'In 4 hours'}</Button><Button onClick={()=>void act('dismissed')}>{zh?'关闭本次':'Dismiss'}</Button><Button onClick={()=>void coachReminderService.preferences().then(v=>coachReminderService.preferences({...v.preferences,enabled:false})).then(()=>setRecord(undefined))}>{zh?'关闭全部提醒':'Turn off reminders'}</Button></aside>;
+ return <aside aria-label={copy.reminder0}><p>{record.startTime} · {copy.reminder1}</p><Button onClick={()=>void act('opened')}>{copy.reminder2}</Button><Button onClick={()=>void act('snoozed')}>{copy.reminder3}</Button><Button onClick={()=>void act('dismissed')}>{copy.reminder4}</Button><Button onClick={()=>void coachReminderService.preferences().then(v=>coachReminderService.preferences({...v.preferences,enabled:false})).then(()=>setRecord(undefined))}>{copy.reminder5}</Button></aside>;
 }
