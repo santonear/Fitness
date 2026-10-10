@@ -1,2 +1,3 @@
 import { createManifest } from '../manifest';
-export default createManifest('jingshe');
+import { jingsheSlots } from './slots';
+export default { ...createManifest('jingshe'), slots: jingsheSlots };
