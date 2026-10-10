@@ -1,5 +1,5 @@
 import { useState, type CSSProperties } from 'react';
-import { Button,Stat,Sheet,Chip } from '../../components/common';
+import { Button,Stat,Sheet,Chip,Toast } from '../../components/common';
 import { useMainline } from '../../mainline/context';
 import { recurringDiscomfort, suggestChange } from '../../../application/review/suggest';
 import { activityDate } from '../../../application/v8-activity';
@@ -28,7 +28,7 @@ export function ReviewPage(){
  <section><h2>{r.patterns}</h2>{(['weekday','weekend'] as const).flatMap(day=>(['morning','daytime','evening'] as const).map(band=>{const n=facts.incompleteTiming[day][band];return n.partial+n.notStarted>0?<p key={day+band}>{r[day]} · {r[band]}: {n.partial+n.notStarted}</p>:null;}))}</section>
  {!facts.hasBodyWeight&&<p>{r.noWeight}</p>}{/减脂|体重|weight|fat/i.test(data?.version?.goalText??'')&&<p>{r.diet}</p>}
  {discomfort.length>0&&<p>{discomfort.map(name).join(' / ')} · {r.discomfort}</p>}
- {saved&&<p role="status">{r.versionSaved}</p>}
+ <Toast message={saved?r.versionSaved:null} onDismiss={()=>setSaved(false)}/>
  {suggestion&&!preview&&<Sheet><h2>{r.suggestion}</h2><p>{r[suggestion.rule]}</p><div className="v8-row"><Button onClick={()=>setPreview({suggestion,revision:data!.metadata.dataRevision,generation:data!.metadata.restoreGeneration??0})}>{r.accept}</Button><Button onClick={()=>void c.run(async()=>{localStorage.setItem(key,JSON.stringify([...stored,suggestion.id]));setDismissed([...dismissed,suggestion.id]);})}>{r.dismiss}</Button></div></Sheet>}
  {preview&&<Sheet><h2>{r.preview}</h2><p>{r.weekTarget}: {preview.suggestion.proposal.weeklyTarget}</p>{preview.suggestion.proposal.templates.map(template=><section key={template.id}><h3>{template.name} · {template.estimatedMinutes}</h3>{template.items.map((i,index)=><p key={index}>{name(i.exerciseId)} · {itemTarget(i,c.locale)}</p>)}</section>)}<div className="v8-row"><Button variant="primary" disabled={c.busy} onClick={()=>void c.run(async()=>{await createReviewService(repository).adopt(preview.suggestion,preview.revision,preview.generation,r[preview.suggestion.rule]);setPreview(undefined);setSaved(true);})}>{r.accept}</Button><Button onClick={()=>setPreview(undefined)}>{r.cancel}</Button></div></Sheet>}
  <h2>{r.activity}</h2>{data?.activities.filter(a=>a.localDate>=facts.from&&a.localDate<=facts.to).map(a=><Sheet key={a.id}><p>{a.localDate} · {a.customName||activities.types[a.type]} · {a.minutes}</p>{a.note&&<p>{a.note}</p>}</Sheet>)}
