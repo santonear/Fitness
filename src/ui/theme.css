@@ -5,3 +5,5 @@
 @import '../themes/jingshe/tokens.css';
 @import '../themes/zhuangse/tokens.css';
 @import '../themes/base/common.css';
+@import '../themes/base/slots.css';
+@import '../themes/qingci/slots/slots.css';

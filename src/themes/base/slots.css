@@ -1,0 +1,21 @@
+.v8-brand, .v8-rest, .v8-week { display: flex; align-items: center; gap: var(--s2); color: var(--c-ink); }
+.v8-brand { font-family: var(--f-display); font-size: var(--t4); }
+.v8-week-dots { display: flex; gap: var(--s2); }
+.v8-week-dots i { inline-size: var(--s2); block-size: var(--s2); border-radius: 50%; border: var(--bw) solid var(--c-line); }
+.v8-week-dots i[data-state="complete"] { background: var(--c-done); border-color: var(--c-done); }
+.v8-week-dots i[data-state="partial"] { background: linear-gradient(90deg, var(--c-done) 50%, transparent 50%); border-color: var(--c-done); }
+.v8-start { display: grid; justify-items: center; gap: var(--s4); text-align: center; }
+.v8-start h2 { margin: 0; font: var(--w-display) var(--t6)/var(--lh-tight) var(--f-display); }
+.v8-minutes { font: var(--w-num) var(--t5)/var(--lh-tight) var(--f-num); }
+.v8-suggestions { border: 0; padding: 0; margin: 0; min-inline-size: 0; text-align: center; }
+.v8-suggestions legend { margin: auto; padding: var(--s2); color: var(--c-ink-muted); }
+.v8-suggestions > div { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--s2); }
+.v8-suggestions button { border-radius: var(--r-chip); }
+.v8-ai-line { text-align: center; font: var(--w-display) var(--t5)/var(--lh-reading) var(--f-display); }
+.v8-set-value { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--s3); inline-size: 100%; min-block-size: var(--touch-workout); padding: var(--s3); border: 0; border-radius: var(--r-control); background: transparent; color: var(--c-ink); font: var(--w-num) var(--t7)/var(--lh-tight) var(--f-num); }
+.v8-rest { justify-content: center; font: var(--w-body) var(--t3)/var(--lh-body) var(--f-body); }
+.v8-rest time { font-family: var(--f-num); font-variant-numeric: tabular-nums; }
+.v8-feature { position: relative; isolation: isolate; }
+.v8-nav-icon { display: block; inline-size: var(--touch-secondary); block-size: var(--touch-secondary); color: var(--c-primary); }
+.v8-nav-body { fill: var(--c-surface); stroke: var(--c-line); stroke-width: 1; }
+.v8-nav-icon[data-selected="true"] .v8-nav-body { stroke: var(--c-primary); stroke-width: 3; }
