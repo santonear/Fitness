@@ -1,0 +1,32 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "fitness-v8-followup-preview",
+  "main": "src/backend/fitness-worker.ts",
+  "compatibility_date": "2026-10-05",
+  "workers_dev": true,
+  "preview_urls": false,
+  "vars": {
+    "CONTROL_MODE": "disabled",
+    "FITNESS_FEATURE_FLAGS": "{\"themeDiscovery\":true,\"fontSubset\":true,\"exercisePanel\":true,\"pwaOffline\":true,\"nutrition\":true,\"activityImport\":true}"
+  },
+  "observability": {
+    "enabled": false
+  },
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": [
+      "/api/*",
+      "/api",
+      "/admin",
+      "/admin/*"
+    ]
+  },
+  "kv_namespaces": [
+    {
+      "binding": "FITNESS_FEATURE_CONFIG",
+      "id": "77b94b136bf546928e4435c79906db15"
+    }
+  ]
+}

@@ -1,3 +1,4 @@
+import { backgroundPushEnabled, disableBackgroundPush } from '../../../application/pwa-push';
 import settingsZh from '../../../i18n/features/settings/zh.json';
 import settingsEn from '../../../i18n/features/settings/en.json';
 import { useEffect, useState } from 'react';
@@ -17,6 +18,6 @@ export function ReminderSettings({locale}:{locale:'zh'|'en'}){
   <label>{copy.quietStart}<input type="time" value={value.quietStart} onChange={e=>change({quietStart:e.target.value})}/></label>
   <label>{copy.quietEnd}<input type="time" value={value.quietEnd} onChange={e=>change({quietEnd:e.target.value})}/></label>
   {quietConflict&&<p role="status">{copy.quietConflict}</p>}{value.dailyLimit===0&&<p role="status">{copy.zeroLimit}</p>}
-  <Button disabled={value.enabled&&(!value.time||!value.weekdays?.length)} onClick={()=>void coachReminderService.preferences(value).then(()=>{setMessage(copy.reminderSettings7);window.dispatchEvent(new Event('fitness:coach-preferences'));}).catch(()=>setMessage(copy.reminderSettings8))}>{copy.reminderSettings9}</Button></>}
+  <Button disabled={value.enabled&&(!value.time||!value.weekdays?.length)} onClick={()=>void (async()=>{if(backgroundPushEnabled()&&!await disableBackgroundPush())throw Error();await coachReminderService.preferences(value);})().then(()=>{setMessage(copy.reminderSettings7);window.dispatchEvent(new Event('fitness:coach-preferences'));}).catch(()=>setMessage(copy.reminderSettings8))}>{copy.reminderSettings9}</Button></>}
   <p role="status">{message}</p></section>;
 }

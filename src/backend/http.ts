@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { ControlService, ControlError } from './control';
+import { assertCurrentAiExecution } from './retired-ai';
 
 const cookieName = '__Host-fitness_trial';
 const json = (data: unknown, status = 200, headers: Record<string, string> = {}) => new Response(JSON.stringify(data), {
@@ -30,7 +31,7 @@ function cookie(token: string, expiresAt: number) {
   return `${cookieName}=${token}; Path=/; Secure; HttpOnly; SameSite=Strict; Expires=${new Date(expiresAt).toUTCString()}`;
 }
 /** Fetch adapter only. No static assets, network calls, telemetry, or browser training writes. */
-export function createHandler(service: ControlService, options: { origins: string[]; maxBodyBytes: number; supplierMode?: 'external-transport'; verifyApplication?: (proof: string) => Promise<boolean>; turnstileSiteKey?: string }) {
+export function createHandler(service: ControlService, options: { origins: string[]; maxBodyBytes: number; supplierMode?: 'external-transport'; nutritionEnabled?: boolean; verifyApplication?: (proof: string) => Promise<boolean>; turnstileSiteKey?: string }) {
   if (!options.origins.length || !Number.isSafeInteger(options.maxBodyBytes) || options.maxBodyBytes < 1 || options.origins.some(origin => {
     try { const url = new URL(origin); return url.protocol !== 'https:' || url.origin !== origin; } catch { return true; }
   })) throw new ControlError('INVALID_HTTP_CONFIG', 500);
@@ -53,6 +54,7 @@ export function createHandler(service: ControlService, options: { origins: strin
       }
       if (request.method !== 'POST') throw new ControlError('METHOD_NOT_ALLOWED', 405);
       const data = await body(request, options.maxBodyBytes);
+      if (!options.nutritionEnabled && data && typeof data === 'object' && 'coach' in data && data.coach && typeof data.coach === 'object' && 'nutrition' in data.coach) throw new ControlError('FEATURE_DISABLED',403);
       if (path === '/api/v1/trial/access-status') {
         const value = parse(z.strictObject({ receipt: z.string().regex(/^[a-f0-9]{64}$/).optional() }), data);
         let session: string | undefined; try { session = sessionToken(request); } catch { /* No authenticated session; only a verified receipt may identify a subject. */ }
@@ -123,6 +125,7 @@ export function createHandler(service: ControlService, options: { origins: strin
       const token = sessionToken(request);
       if (path.endsWith('/cancel')) { const { requestId } = parse(z.strictObject({ requestId: z.uuid() }), data); await service.cancel(token, requestId); return json({ status: 'cancelled', accounting: 'may-be-charged' }); }
       const operation = (data as { operation?: string } | null)?.operation;
+      assertCurrentAiExecution(data);
       if (operation !== (path.endsWith('/interpret') ? 'understand' : path.endsWith('/summarize') ? 'summary' : 'generate')) throw new ControlError('INVALID_INPUT', 400);
       return json(await service.submit(token, data));
     } catch (error) {

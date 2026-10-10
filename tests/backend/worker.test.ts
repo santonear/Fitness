@@ -112,7 +112,7 @@ it('credential retention removes expired access but never erases spent quota, re
   } finally { store.close(); }
 });
 
-it('external handler enables only supplier admin route and settles bad candidates without automatic refunds', async () => {
+it('external handler rejects retired candidates before supplier calls or reservations', async () => {
   const store = new SqliteControlStore(':memory:'); let calls = 0;
   const worker = createWorker({ codec, store: () => store, transport: async () => {
     calls++; return new Response(JSON.stringify({ result: { wrong: 'private output' }, actualCost: 20 }));
@@ -126,8 +126,8 @@ it('external handler enables only supplier admin route and settles bad candidate
     expect((await worker.fetch(request('admin/supplier', { enabled: true }), env())).status).toBe(200);
     const base = { operation: 'understand', contractVersion: 1, requestId: crypto.randomUUID(), goalText: 'synthetic', locale: 'en', restoreGeneration: 0 };
     const submitted = await worker.fetch(request('goals/interpret', { ...base, sendConfirmation: await confirmationFor(base) }, cookie), env());
-    expect(await submitted.json()).toEqual({ error: 'INVALID_CANDIDATE' }); expect(calls).toBe(1);
-    const state = await store.read(); expect(Object.values(state.budgets)[0]).toEqual({ spent: 20, reserved: 0 });
+    expect(await submitted.json()).toEqual({ error: 'AI_CONTRACT_RETIRED' }); expect(calls).toBe(0);
+    const state = await store.read(); expect(Object.values(state.budgets)).toEqual([]);
     expect(JSON.stringify(state)).not.toContain('private output');
   } finally { store.close(); }
 });

@@ -1,0 +1,12 @@
+{
+  "base": "https://fitness-v8-followup-preview.initdevl.workers.dev",
+  "version": "24f5c851-c548-442c-8f22-84ff5a204cbf",
+  "browser": "153.0.8010.12",
+  "synthetic": true,
+  "mainline": true,
+  "themes": 4,
+  "backupExport": true,
+  "v807Restore": true,
+  "modelCalls": 0,
+  "productionChanged": false
+}

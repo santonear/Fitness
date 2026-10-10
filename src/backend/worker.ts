@@ -5,13 +5,17 @@ import { createHandler } from './http';
 import { ControlError, type ControlStore } from './store';
 import { verifyApplicationProof } from './application-verification';
 import { assertOperatorSecret, createSupplierTransport, type ProviderCodec, type TransportConfig } from './supplier-transport';
+import { DailyUsageStore, withDailyUsage } from './daily-usage-store';
+import { readFeatureFlags, type FeatureConfigEnv } from './feature-config';
 
-export interface WorkerEnv {
+export interface WorkerEnv extends FeatureConfigEnv {
   TURNSTILE_SECRET_KEY?: string; TURNSTILE_SITE_KEY?: string;
   CONTROL_MODE?: string; CONTROL_ORIGINS?: string; CONTROL_POLICY?: string;
   CONTROL_ADMIN_SECRET?: string; CONTROL_DIGEST_SECRET?: string;
   SUPPLIER_API_KEY?: string; SUPPLIER_ENDPOINT?: string; SUPPLIER_ORIGIN?: string; SUPPLIER_PROVIDER?: string;
   CONTROL_DB?: D1Binding;
+  FITNESS_OPS_DB?: D1Binding;
+  FITNESS_DAILY_LIMITS?: string;
 }
 const count = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 const policy = z.strictObject({ timeZone: z.string().min(1), k: count.min(1).max(14), budgetLimit: count,
@@ -56,15 +60,22 @@ export function createWorker(dependencies: { store?: (env: WorkerEnv) => Control
       if (config.mode === 'control-only' && ['/api/v1/goals/interpret', '/api/v1/plans/generate', '/api/v1/stages/summarize', '/api/v1/admin/supplier', '/api/v1/admin/mock'].includes(path))
         return json({ error: 'AI_DISABLED' }, 503);
       if (config.mode === 'external' && (!dependencies.codec || dependencies.codec.providerId !== config.providerId)) throw new ControlError('PROVIDER_SELECTION_REQUIRED', 503);
-      const supplier = config.mode === 'external'
+      let supplier = config.mode === 'external'
         ? createSupplierTransport(config.transport, dependencies.codec!, dependencies.transport ?? fetch)
         : { kind: 'external-transport' as const, call: async () => { throw new ControlError('AI_DISABLED', 503); } };
+      if ((await readFeatureFlags(env)).aiOperations) {
+        if (!env.FITNESS_OPS_DB) throw new ControlError('DAILY_USAGE_FALLBACK',503);
+        const limits = z.strictObject({calls:count,costFen:count}).safeParse(JSON.parse(env.FITNESS_DAILY_LIMITS ?? 'null'));
+        if (!limits.success) throw new ControlError('DAILY_USAGE_FALLBACK',503);
+        supplier = withDailyUsage(supplier,new DailyUsageStore(env.FITNESS_OPS_DB),limits.data);
+      }
       const store = dependencies.store ? dependencies.store(env) : env.CONTROL_DB ? new D1ControlStore(env.CONTROL_DB) : null;
       if (!store) throw new ControlError('CONTROL_UNAVAILABLE', 503);
       if (config.mode === 'control-only' && path === '/api/v1/health' && request.method === 'GET')
         return json({ status: 'control-only', productionModelEnabled: false });
       const service = new ControlService(store, config.control, supplier);
       return createHandler(service, { origins: config.origins, maxBodyBytes: config.control.maxInputBytes,
+        nutritionEnabled: (await readFeatureFlags(env)).nutrition,
         ...(env.TURNSTILE_SECRET_KEY && env.TURNSTILE_SITE_KEY ? { turnstileSiteKey: env.TURNSTILE_SITE_KEY,
           verifyApplication: (proof: string) => verifyApplicationProof(proof, env.TURNSTILE_SECRET_KEY!, new URL(request.url).hostname) } : {}),
         supplierMode: 'external-transport' })(request);

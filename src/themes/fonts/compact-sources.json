@@ -1,0 +1,20 @@
+{
+  "notosanssc": {
+    "bytes": 868900,
+    "sha256": "9c15b86df0d58efef79faa4e136d4f0ece5b7c52f14d84336122c82b750bb8f1",
+    "sourceSha256": "c426c064971cd18c7213ed1e167f77997e780e469568f0dc8c5b312f8ac2f8c2",
+    "requiredGlyphs": 3662,
+    "missingGlyphs": [],
+    "appCjkGlyphs": 905,
+    "missingAppCjkGlyphs": []
+  },
+  "notoserifsc": {
+    "bytes": 175528,
+    "sha256": "f6e1669eeabb83eecadb177f81a170798828a68752a187a30ccd0cfdfd14602a",
+    "sourceSha256": "f2698b292b20844789f7d28ab19875ab9780ad9fcbe8eb439ce24f1bb0e6d9e4",
+    "requiredGlyphs": 1036,
+    "missingGlyphs": [],
+    "appCjkGlyphs": 905,
+    "missingAppCjkGlyphs": []
+  }
+}

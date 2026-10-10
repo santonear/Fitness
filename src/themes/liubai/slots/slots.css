@@ -24,3 +24,5 @@
 .v8-liubai-ridge { display: block; inline-size: 100%; block-size: var(--s5); fill: none; stroke: var(--c-ink); stroke-width: 1; }
 .v8-liubai-start h2 { writing-mode: horizontal-tb; grid-column: 1; grid-row: auto; }
 .v8-liubai-start .v8-next-label { writing-mode: vertical-rl; grid-column: 2; grid-row: 1 / 4; letter-spacing: var(--tr-display); font-family: var(--f-display); }
+
+.v8-liubai-feature .v8-feature { box-shadow: none; }

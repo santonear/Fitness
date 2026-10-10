@@ -1,6 +1,6 @@
 import { afterEach, expect, it } from 'vitest';
-import { guidedInputSnapshot, confirmGuidedSending } from '../../src/ai/guided-dialogue';
-import { guidedTransportEnvelope, sendGuidedDialogue } from '../../src/ai/guided-transport';
+import { guidedInputSnapshot } from '../../src/ai/guided-dialogue';
+import { guidedTransportEnvelope } from '../fixtures/legacy-guided-envelope';
 import { validateRequest, validateCandidate, confirmationFor } from '../../src/backend/contracts';
 import { createDeepSeekCodec } from '../../src/backend/deepseek';
 import { ControlService, testConfig } from '../../src/backend/control';
@@ -32,7 +32,7 @@ it('binds the new protocol to existing request identity, quota operation and exa
 it('rejects unconfirmed nested input before supplier encoding', async () => {
   const r = request(); r.scope.goal = 'changed';
   const envelope = await guidedTransportEnvelope(r);
-  await expect(createDeepSeekCodec({ maxOutputTokens: 2048 }).encode(envelope)).rejects.toMatchObject({ code: 'CONFIRMATION_REQUIRED' });
+  await expect(createDeepSeekCodec({ maxOutputTokens: 2048 }).encode(envelope)).rejects.toMatchObject({ code: 'AI_CONTRACT_RETIRED' });
 });
 
 it('server owns candidate identity and strictly rejects omitted dates, unknown exercises and invalid metrics', async () => {
@@ -49,14 +49,6 @@ it('returns structured refusal without fabricating a candidate and preserves req
   expect(validateCandidate(envelope, { kind: 'refused', reason: 'unrelated', message: '请回到健身目标。' })).toMatchObject({ purpose: 'refused', requestedPurpose: 'refine', reason: 'unrelated' });
 });
 
-it('prompt excludes request identity snapshots and only transmits the explicitly approved scope', async () => {
-  const r = request('understand');
-  const encoded = await createDeepSeekCodec({ maxOutputTokens: 2048 }).encode(await guidedTransportEnvelope(r)) as { messages: { content: string }[] };
-  const input = JSON.parse(encoded.messages[1].content);
-  expect(input.scope).toEqual(r.scope); expect(input.inputSnapshot).toBeUndefined(); expect(input.catalogue).toBeUndefined();
-  expect(encoded.messages[0].content).toContain('Never infer pregnancy');
-});
-
 it('uses existing admission and pending accounting with no plaintext dialogue in the ledger or duplicate supplier calls', async () => {
   const store = new SqliteControlStore(':memory:'); stores.push(store); let calls = 0;
   const service = new ControlService(store, testConfig, { kind: 'local-mock', call: async () => { calls++; return { result: candidate() }; } });
@@ -68,14 +60,4 @@ it('uses existing admission and pending accounting with no plaintext dialogue in
   await expect(service.submit(session.token, envelope)).rejects.toMatchObject({ code: 'REQUEST_IN_PROGRESS' });
   expect(calls).toBe(1); expect(JSON.stringify(await store.read())).not.toContain(envelope.goalText);
   expect(Object.values((await store.read()).requests)[0].coachContract).toMatchObject({promptVersion:'v7.1.0',schemaVersion:'guided-dialogue-v1',task:'generate-days'});
-});
-
-it('client validates server identity and performs one same-origin request without retries', async () => {
-  const r = request(); const envelope = await guidedTransportEnvelope(r); let calls = 0;
-  const fetcher = async (_url: unknown, options?: RequestInit) => { calls++; expect(options?.credentials).toBe('same-origin');
-    return new Response(JSON.stringify({ requestId: r.requestId, result: validateCandidate(envelope, candidate()), accounting: 'pending',
-      context: { restoreGeneration: 0, inputDigest: envelope.sendConfirmation } })); };
-  expect((await sendGuidedDialogue(r, confirmGuidedSending(r), new AbortController().signal, fetcher as typeof fetch)).response.purpose).toBe('program');
-  expect(calls).toBe(1);
-  await expect(sendGuidedDialogue(r, confirmGuidedSending(r), new AbortController().signal, (async () => new Response('{}')) as typeof fetch)).rejects.toThrow('CONTROL_UNAVAILABLE');
 });

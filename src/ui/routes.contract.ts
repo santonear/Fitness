@@ -1,5 +1,7 @@
 /** Declarative V8 route inventory. */
 export const v8Routes = [
+  { id: 'nutrition', path: '/settings/nutrition', page: 'settings/NutritionPage', namespace: 'settings', owner: 'followup' },
+  { id: 'activityImport', path: '/settings/import', page: 'settings/ActivityImportPage', namespace: 'settings', owner: 'followup' },
   { id: 'onboarding', path: '/onboarding', page: 'onboarding/OnboardingPage', namespace: 'onboarding', owner: 'E' },
   { id: 'draft', path: '/plan-draft', page: 'onboarding/PlanDraftPage', namespace: 'onboarding', owner: 'E' },
   { id: 'next', path: '/', page: 'training/NextPage', namespace: 'training', owner: 'E' },

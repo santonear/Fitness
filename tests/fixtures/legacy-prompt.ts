@@ -1,9 +1,9 @@
-import { selectAiExercises } from '../catalog/ai-catalog';
-import { EQUIPMENT } from '../catalog/taxonomy';
-import { exercises } from '../catalog/exercises';
-import { validateCandidate, validateRequest, type AiRequest } from './contracts';
-import { validateSummaryStage } from './summary-contract';
-import { evaluateCoachResponse } from './coach-evaluation';
+import { selectAiExercises } from '../../src/catalog/ai-catalog';
+import { EQUIPMENT } from '../../src/catalog/taxonomy';
+import { exercises } from '../../src/catalog/exercises';
+import { validateCandidate, validateRequest, type AiRequest } from '../../src/backend/contracts';
+import { validateSummaryStage } from '../../src/backend/summary-contract';
+import { evaluateCoachResponse } from './legacy-coach-evaluation';
 
 export const PROMPT_VERSION = 'date-candidate-v1';
 

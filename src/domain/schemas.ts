@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { nutritionRecordSchema, activityImportReceiptSchema } from './lifestyle';
 import { schedulingFields, validateScheduling, setTimingSchema } from './training-time';
 import { knownExerciseIds } from '../catalog/registry';
 import { EQUIPMENT } from '../catalog/taxonomy';
@@ -175,5 +176,7 @@ export const backupDataSchema = z.strictObject({
   mediaAssets: z.array(mediaAssetSchema).default([]),
   guidedStates: z.array(guidedStateSchema).optional(),
   v8: v8BackupSchema.optional(),
+  nutritionRecords: z.array(nutritionRecordSchema).optional(),
+  activityImportReceipts: z.array(activityImportReceiptSchema).optional(),
 });
 export const backupEnvelopeSchema = z.strictObject({ format: z.literal('fitness-local'), schemaVersion: positive, exportedAt: utcTimestampSchema, catalogVersion: positive, data: backupDataSchema });

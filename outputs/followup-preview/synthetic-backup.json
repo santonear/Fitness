@@ -1,0 +1,271 @@
+{
+  "format": "fitness-local",
+  "schemaVersion": 7,
+  "exportedAt": "2026-10-10T18:31:16.075Z",
+  "catalogVersion": 1,
+  "data": {
+    "metadata": {
+      "schemaVersion": 9,
+      "localProfileId": "f1fb9279-e444-4b35-9599-d3fd9b81f959",
+      "catalogVersion": 1,
+      "revision": 5,
+      "dataRevision": 5
+    },
+    "profiles": [
+      {
+        "id": "f1fb9279-e444-4b35-9599-d3fd9b81f959",
+        "createdAt": "2026-10-10T18:31:10.638Z",
+        "updatedAt": "2026-10-10T18:31:10.638Z",
+        "revision": 0,
+        "locale": "zh",
+        "timeZone": "Etc/GMT-8",
+        "units": "metric"
+      }
+    ],
+    "plans": [],
+    "planVersions": [],
+    "sessions": [],
+    "sets": [],
+    "scheduledWorkouts": [],
+    "bodyWeights": [],
+    "trainingMemo": {
+      "schemaVersion": 1,
+      "revision": 0,
+      "updatedAt": "2026-10-10T18:31:16.077Z",
+      "sourceRevision": 5,
+      "sessions": []
+    },
+    "aiMemoryNotes": [],
+    "timers": [],
+    "mediaAssets": [],
+    "guidedStates": [],
+    "v8": {
+      "state": {
+        "id": "v8",
+        "currentPlanId": "7a798fab-3931-4c25-947c-fbc7997ef345",
+        "migratedAt": "2026-10-10T18:31:10.638Z",
+        "legacyPlanIds": [],
+        "notice": {
+          "planCount": 0,
+          "acknowledged": true
+        },
+        "coachProfile": {
+          "goalText": "想有些力量，不再容易累",
+          "weeklyTarget": 2,
+          "sessionMinutes": 20,
+          "scheduleOriginalText": "每周2次，每次20分钟",
+          "place": "home",
+          "equipment": [
+            "在家，只有瑜伽垫"
+          ],
+          "adultConfirmed": true,
+          "cautions": [],
+          "confirmedAt": "2026-10-10T18:31:11.311Z"
+        }
+      },
+      "plans": [
+        {
+          "id": "7a798fab-3931-4c25-947c-fbc7997ef345",
+          "name": "想有些力量，不再容易累",
+          "currentVersionId": "7ee02b2a-a2e4-41e5-abed-5cd38d902a0e",
+          "readOnly": false
+        }
+      ],
+      "planVersions": [
+        {
+          "id": "7ee02b2a-a2e4-41e5-abed-5cd38d902a0e",
+          "planId": "7a798fab-3931-4c25-947c-fbc7997ef345",
+          "versionNumber": 1,
+          "goalText": "想有些力量，不再容易累",
+          "weeklyTarget": 2,
+          "scheduleOriginalText": "每周2次，每次20分钟",
+          "sessionMinutes": 20,
+          "templates": [
+            {
+              "id": "basic-0",
+              "name": "A",
+              "estimatedMinutes": 20,
+              "items": [
+                {
+                  "exerciseId": "d16325d9-fc00-4c41-88a1-000000000003",
+                  "equipment": "none",
+                  "sets": 2,
+                  "target": {
+                    "metricType": "reps",
+                    "reps": 8
+                  }
+                },
+                {
+                  "exerciseId": "aa2c5cf6-b759-5833-8e86-651e98fe8a28",
+                  "equipment": "none",
+                  "sets": 2,
+                  "target": {
+                    "metricType": "reps",
+                    "reps": 8
+                  }
+                },
+                {
+                  "exerciseId": "d16325d9-fc00-4c41-88a1-000000000005",
+                  "equipment": "none",
+                  "sets": 2,
+                  "target": {
+                    "metricType": "reps",
+                    "reps": 8
+                  }
+                },
+                {
+                  "exerciseId": "d655f4a4-f5f4-5cd4-8388-b1baed03a68a",
+                  "equipment": "none",
+                  "sets": 2,
+                  "target": {
+                    "metricType": "reps",
+                    "reps": 8
+                  }
+                }
+              ]
+            },
+            {
+              "id": "basic-1",
+              "name": "B",
+              "estimatedMinutes": 20,
+              "items": [
+                {
+                  "exerciseId": "87247362-0cd9-5122-8ab5-f876180163de",
+                  "equipment": "none",
+                  "sets": 2,
+                  "target": {
+                    "metricType": "reps",
+                    "reps": 8
+                  }
+                },
+                {
+                  "exerciseId": "aa2c5cf6-b759-5833-8e86-651e98fe8a28",
+                  "equipment": "none",
+                  "sets": 2,
+                  "target": {
+                    "metricType": "reps",
+                    "reps": 8
+                  }
+                },
+                {
+                  "exerciseId": "d16325d9-fc00-4c41-88a1-000000000005",
+                  "equipment": "none",
+                  "sets": 2,
+                  "target": {
+                    "metricType": "reps",
+                    "reps": 8
+                  }
+                },
+                {
+                  "exerciseId": "d16325d9-fc00-4c41-88a1-000000000004",
+                  "equipment": "none",
+                  "sets": 2,
+                  "target": {
+                    "metricType": "duration",
+                    "durationSeconds": 20
+                  }
+                }
+              ]
+            }
+          ],
+          "createdAt": "2026-10-10T18:31:11.391Z",
+          "origin": "onboard",
+          "changeSummary": []
+        }
+      ],
+      "workouts": [
+        {
+          "id": "1e24b32f-6b62-4251-bca7-6511ad464e78",
+          "planVersionId": "7ee02b2a-a2e4-41e5-abed-5cd38d902a0e",
+          "templateId": "basic-0",
+          "startedAt": "2026-10-10T18:31:11.459Z",
+          "endedAt": "2026-10-10T18:31:11.675Z",
+          "localDate": "2026-10-11",
+          "timeZone": "Etc/GMT-8",
+          "status": "partial",
+          "sets": [
+            {
+              "exerciseId": "d16325d9-fc00-4c41-88a1-000000000003",
+              "itemIndex": 0,
+              "setIndex": 0,
+              "reps": 8,
+              "completedAt": "2026-10-10T18:31:11.524Z"
+            }
+          ],
+          "plannedSetCount": 8,
+          "templateSnapshot": {
+            "id": "basic-0",
+            "name": "A",
+            "estimatedMinutes": 20,
+            "items": [
+              {
+                "exerciseId": "d16325d9-fc00-4c41-88a1-000000000003",
+                "equipment": "none",
+                "sets": 2,
+                "target": {
+                  "metricType": "reps",
+                  "reps": 8
+                }
+              },
+              {
+                "exerciseId": "aa2c5cf6-b759-5833-8e86-651e98fe8a28",
+                "equipment": "none",
+                "sets": 2,
+                "target": {
+                  "metricType": "reps",
+                  "reps": 8
+                }
+              },
+              {
+                "exerciseId": "d16325d9-fc00-4c41-88a1-000000000005",
+                "equipment": "none",
+                "sets": 2,
+                "target": {
+                  "metricType": "reps",
+                  "reps": 8
+                }
+              },
+              {
+                "exerciseId": "d655f4a4-f5f4-5cd4-8388-b1baed03a68a",
+                "equipment": "none",
+                "sets": 2,
+                "target": {
+                  "metricType": "reps",
+                  "reps": 8
+                }
+              }
+            ]
+          },
+          "feedback": {
+            "reasons": []
+          },
+          "plannedExercises": [
+            {
+              "exerciseId": "d16325d9-fc00-4c41-88a1-000000000003",
+              "itemIndex": 0,
+              "plannedSetCount": 2
+            },
+            {
+              "exerciseId": "aa2c5cf6-b759-5833-8e86-651e98fe8a28",
+              "itemIndex": 1,
+              "plannedSetCount": 2
+            },
+            {
+              "exerciseId": "d16325d9-fc00-4c41-88a1-000000000005",
+              "itemIndex": 2,
+              "plannedSetCount": 2
+            },
+            {
+              "exerciseId": "d655f4a4-f5f4-5cd4-8388-b1baed03a68a",
+              "itemIndex": 3,
+              "plannedSetCount": 2
+            }
+          ]
+        }
+      ],
+      "activities": []
+    },
+    "nutritionRecords": [],
+    "activityImportReceipts": []
+  }
+}

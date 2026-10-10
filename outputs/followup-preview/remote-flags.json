@@ -1,0 +1,14 @@
+{
+  "environment": "isolated-preview",
+  "workerVersion": "ec9c3c8d-6716-42c7-adb4-1ed7d88dddf0",
+  "kvNamespace": "77b94b136bf546928e4435c79906db15",
+  "noRedeployDuringToggle": true,
+  "observed": {
+    "status": 200,
+    "nutrition": false,
+    "pwaOffline": true,
+    "systemNotifications": false
+  },
+  "originalConfigurationWrittenBack": true,
+  "productionChanged": false
+}

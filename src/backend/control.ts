@@ -3,7 +3,7 @@ import { canonical, digest, validateCandidate, validateTransportRequest, type Tr
 import { ControlError, type ControlState, type ControlStore, type OperationCounts } from './store';
 import { buildAdminReport } from './admin-report';
 import { TrialApplications, applicationAdminView } from './trial-applications';
-import { guidedServiceLimits } from './guided-provider';
+import { guidedServiceLimits } from '../domain/guided-limits';
 import { COACH_PROMPT_VERSION, coachTask } from './coach-prompt-registry';
 import { CATALOG_VERSION } from '../catalog/exercises';
 export { ControlError } from './store';

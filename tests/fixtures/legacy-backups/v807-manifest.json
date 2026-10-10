@@ -1,0 +1,17 @@
+{
+  "sourceCommit": "492b9f7d762b319edd1e3e59350c9fb10b8ee6c3",
+  "sourceVersion": "V8.0.7",
+  "file": "v807-mainline.json",
+  "sha256": "f97d549d6fb71e2e04eb49903a222fa6768b8c5b739eac631c1ed07bca2e79d9",
+  "browser": "153.0.8010.12",
+  "generatedBy": "generate-v807.mjs",
+  "coverage": [
+    "onboarding",
+    "confirmed basic plan",
+    "partial workout",
+    "feedback note",
+    "UI JSON download"
+  ],
+  "synthetic": true,
+  "modelCalls": 0
+}

@@ -1,9 +1,9 @@
 import { expect, it } from 'vitest';
 import { exercises } from '../../src/catalog/exercises';
 import { selectAiExercises } from '../../src/catalog/ai-catalog';
-import { buildAiPrompt } from '../../src/backend/prompt';
+import { buildAiPrompt } from '../fixtures/legacy-prompt';
 import { validateCandidate, confirmationFor, goalConfirmationFor } from '../../src/backend/contracts';
-import { validateGuidedProviderOutput, guidedProviderPrompt } from '../../src/backend/guided-provider';
+import { validateGuidedProviderOutput } from '../../src/backend/legacy-guided-reader';
 import { guidedInputSnapshot } from '../../src/ai/guided-dialogue';
 import { promptRequest } from '../fixtures/prompt-cases';
 
@@ -31,6 +31,4 @@ it('guided generation includes the new controlled ID and retains the confirmatio
   const exercise = exercises.find(row => row.name.en === 'Arnold Press')!;
   const result = validateGuidedProviderOutput(request, { kind: 'program', name: 'Test', explanation: 'Synthetic candidate', days: [{ date: '2026-10-09', exercises: [{ exerciseId: exercise.id, order: 0, targetSets: [{ metricType: 'reps_load', reps: 8, loadGrams: 2000 }] }] }] });
   expect(result).toMatchObject({ purpose: 'program', requestId: request.requestId, inputSnapshot: request.inputSnapshot });
-  expect(JSON.stringify(guidedProviderPrompt(request))).toContain(exercise.id);
-  expect(JSON.stringify(guidedProviderPrompt(request))).not.toContain('exercise-media');
 });

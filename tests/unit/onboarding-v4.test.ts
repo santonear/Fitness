@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest';
 import { onboardingKeys, validV4Answer, v4Complete, durations, localAgeAccess, type Answer } from '../../src/domain/onboarding-v4';
 import { onboardingSchema } from '../../src/domain/guided-contracts';
-import { validateGuidedProviderInput } from '../../src/backend/guided-provider';
+import { validateGuidedProviderInput } from '../../src/backend/legacy-guided-reader';
 import type { GuidedDialogueRequest } from '../../src/domain/guided-ai-contracts';
 it('defines exactly twelve ordered questions and ten unique duration stops',()=>{
  expect(onboardingKeys).toEqual(['biologicalSex','age','heightCm','weightKg','waistCm','goal','experience','location','equipment','safety','schedule','preferences']);

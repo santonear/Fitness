@@ -7,9 +7,10 @@ import { localeSchema, uuidSchema, localDateSchema, timeZoneSchema, plannedExerc
 import { ControlError } from './store';
 import { summaryStageSchema, summaryResultSchema, validateSummaryStage } from './summary-contract';
 import { guidedDialogueRequestSchema } from '../domain/guided-ai-contracts';
-import { validateGuidedProviderInput, validateGuidedProviderOutput } from './guided-provider';
+import { validateGuidedProviderInput, validateGuidedProviderOutput } from './legacy-guided-reader';
 import { coachRequestSchema } from '../coach/contracts';
 import { adaptCoachResponse } from '../coach/response-adapter';
+import { coachWireVersions, readCoachResponseEnvelope } from '../coach/wire-versions';
 
 export async function digest(value: string, secret: string): Promise<string> {
   const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
@@ -29,7 +30,8 @@ const generate = z.strictObject({ ...base, operation: z.literal('generate'), con
   conditions: z.strictObject(conditionFields), history: history.optional(), dialogue: guidedDialogueRequestSchema.optional() });
 const { goalText: _summaryGoal, ...summaryBase } = base;
 const summary = z.strictObject({ ...summaryBase, operation: z.literal('summary'), stage: summaryStageSchema });
-const coachEnvelope = z.strictObject({ ...base, operation: z.enum(['generate','summary']), coach: coachRequestSchema });
+const coachEnvelope = z.strictObject({ ...base, operation: z.enum(['generate','summary']), coach: coachRequestSchema,
+  schemaVersion: z.enum(coachWireVersions).optional() });
 export const requestSchema = z.discriminatedUnion('operation', [understand, generate, summary]);
 export type CoachEnvelope = z.infer<typeof coachEnvelope>;
 export type TransportRequest = AiRequest | CoachEnvelope;
@@ -79,7 +81,7 @@ export function candidateJsonSchema(operation: AiRequest['operation']) {
 }
 export function validateCandidate(request: TransportRequest, result: unknown) {
   if ('coach' in request) {
-    try { return adaptCoachResponse(request.coach,result); } catch { throw new ControlError('INVALID_CANDIDATE',502); }
+    try { return request.schemaVersion ? readCoachResponseEnvelope(request.coach, {schemaVersion: request.schemaVersion, payload: result}) : adaptCoachResponse(request.coach,result); } catch { throw new ControlError('INVALID_CANDIDATE',502); }
   }
   if ('dialogue' in request && request.dialogue) return validateGuidedProviderOutput(request.dialogue, result);
   const parsed = (request.operation === 'understand' ? understandResult : request.operation === 'summary' ? summaryResultSchema : dayResult).safeParse(result);
