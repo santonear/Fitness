@@ -125,7 +125,7 @@ describe('V8 response boundary', () => {
   });
   it('versions V8 prompts independently and retains legacy prompts', () => {
     expect(coachPromptHeader('create')).toContain('@v7.1.0');
-    cases.forEach(({ request }) => expect(coachV8PromptHeader(request.task)).toContain('@v8.0.0'));
+    cases.forEach(({ request }) => expect(coachV8PromptHeader(request.task)).toContain('@v8.1.0'));
     expect(coachV8PromptHeader('ONBOARD_PLAN')).toContain('20 means 20');
     expect(coachV8PromptHeader('PERIOD_REVIEW')).toContain('not_started is excluded');
     expect(coachV8PromptHeader('PERIOD_REVIEW')).toContain('dataBoundary is a string array');
@@ -133,4 +133,3 @@ describe('V8 response boundary', () => {
     expect(coachV8PromptHeader('PERIOD_REVIEW')).toContain('incompleteTiming');
   });
 });
-
