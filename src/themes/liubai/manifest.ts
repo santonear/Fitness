@@ -1,2 +1,3 @@
 import { createManifest } from '../manifest';
-export default createManifest('liubai');
+import { liubaiSlots } from './slots';
+export default { ...createManifest('liubai'), slots: liubaiSlots };
