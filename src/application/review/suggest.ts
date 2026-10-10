@@ -44,7 +44,7 @@ export function suggestChange(input: SuggestionInput): ReviewSuggestion | null {
  }
  for (const id of new Set(plan.templates.flatMap(t=>t.items.map(i=>i.exerciseId)))) {
   if(discomfort.has(id))continue;
-  const relevant=rows.filter(w=>w.plannedExercises?.some(e=>e.exerciseId===id));
+  const relevant=rows.filter(w=>w.plannedExercises?.some(e=>e.exerciseId===id)||w.sets.some(s=>s.exerciseId===id)||w.substitutions?.some(s=>s.fromExerciseId===id));
   if(relevant.length>=3&&relevant.slice(0,3).every(w=>computeExerciseEvidence(w).easyCompletedExerciseIds.includes(id))) {
    let changed=false;
    for(const template of base.templates)for(const item of template.items)if(item.exerciseId===id) {
@@ -57,7 +57,10 @@ export function suggestChange(input: SuggestionInput): ReviewSuggestion | null {
  if(current.complete>=plan.weeklyTarget&&previous.complete>=plan.weeklyTarget&&plan.weeklyTarget<7)
   return candidate('frequency',{...base,weeklyTarget:plan.weeklyTarget+1});
  // A newly saved plan is not evidence of two weeks without training.
- if(plan.createdAt.slice(0,10)<previous.from&&current.complete===0&&previous.complete===0&&plan.weeklyTarget>2) {
+ const completed = input.completedWeeks;
+ if(completed && input.todayLocalDate && completed.every(w=>w.to<input.todayLocalDate! && w.complete===0) &&
+  new Date(Date.parse(completed[0].to+'T00:00:00Z')+86400000).toISOString().slice(0,10)===completed[1].from &&
+  plan.createdAt.slice(0,10)<completed[0].from && current.complete===0 && plan.weeklyTarget>2) {
   const source=plan.templates.find(t=>t.items.length>=3);
   if(source)return candidate('restart',{...base,weeklyTarget:2,templates:[{...structuredClone(source),id:'review-short',name:'20 min',estimatedMinutes:20,items:source.items.slice(0,3).map(i=>({...structuredClone(i),sets:2}))}]});
  }

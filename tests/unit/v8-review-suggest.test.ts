@@ -19,13 +19,20 @@ describe('review suggestions remain optional and evidence based',()=>{
  });
  it('never increases a seven day target',()=>expect(suggestChange({...input,plan:{...plan,weeklyTarget:7},current:{...facts,complete:7},previous:{...input.previous,complete:7}})).toBeNull());
  it('offers a short restart plan without altering the original templates',()=>{
-  const result=suggestChange(input)!;expect(result.rule).toBe('restart');expect(result.proposal.weeklyTarget).toBe(2);expect(result.proposal.templates[0].estimatedMinutes).toBe(20);expect(result.proposal.templates[0].items).toHaveLength(3);expect(plan.templates[0].estimatedMinutes).toBe(30);
+  const result=suggestChange({...input,todayLocalDate:'2026-10-12',completedWeeks:[input.previous,facts]})!;expect(result.rule).toBe('restart');expect(result.proposal.weeklyTarget).toBe(2);expect(result.proposal.templates[0].estimatedMinutes).toBe(20);expect(result.proposal.templates[0].items).toHaveLength(3);expect(plan.templates[0].estimatedMinutes).toBe(30);
+ });
+ it('does not lower frequency from an unfinished week or absent period evidence',()=>{
+  expect(suggestChange(input)).toBeNull();
+  expect(suggestChange({...input,todayLocalDate:'2026-10-10',completedWeeks:[input.previous,facts]})).toBeNull();
+  expect(suggestChange({...input,todayLocalDate:'2026-10-12',completedWeeks:[{...input.previous,complete:1},facts]})).toBeNull();
+  expect(suggestChange({...input,todayLocalDate:'2026-10-12',completedWeeks:[{...input.previous,partial:2,movementCount:3},facts]})?.rule).toBe('restart');
  });
  it('requires three consecutive complete exercise snapshots and ignores absent evidence',()=>{
   const rows:WorkoutRecord[]=Array.from({length:3},(_,i)=>({id:String(i),planVersionId:plan.id,startedAt:`2026-10-0${5+i}T12:00:00Z`,localDate:`2026-10-0${5+i}`,timeZone:'UTC',status:'partial',plannedSetCount:3,plannedExercises:[{exerciseId:'squat',itemIndex:0,plannedSetCount:1}],sets:[{exerciseId:'squat',itemIndex:0,setIndex:0,reps:10,completedAt:`2026-10-0${5+i}T12:01:00Z`}],feedback:{feel:'right',reasons:[]}}));
   const active={...input,current:{...facts,complete:1},workouts:rows};
   expect(suggestChange(active)?.rule).toBe('progression');
   expect(suggestChange({...active,workouts:rows.map(r=>({...r,plannedExercises:undefined}))})).toBeNull();
+  expect(suggestChange({...active,workouts:[...rows,{...rows[2],id:'unknown-snapshot',startedAt:'2026-10-08T12:00:00Z',localDate:'2026-10-08',plannedExercises:undefined}]})).toBeNull();
   rows[2].feedback={reasons:['discomfort'],discomfortExerciseIds:['squat']};expect(suggestChange(active)).toBeNull();
  });
 });

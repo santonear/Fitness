@@ -2,6 +2,7 @@ import { useState, type CSSProperties } from 'react';
 import { Button,Stat,Sheet,Chip } from '../../components/common';
 import { useMainline } from '../../mainline/context';
 import { recurringDiscomfort, suggestChange } from '../../../application/review/suggest';
+import { activityDate } from '../../../application/v8-activity';
 import { createReviewService } from '../../../application/v8-review';
 import { repository } from '../../../persistence/repository';
 import { itemTarget } from '../plan/PlanPage';
@@ -16,7 +17,7 @@ export function ReviewPage(){
  const facts=monthly?c.monthFacts:c.facts;
  const key=`fitness-v8-review-dismissed:${data?.metadata.localProfileId}:${data?.metadata.restoreGeneration??0}:${c.facts?.from}`;
  let stored:string[]=[];try{const value=JSON.parse(localStorage.getItem(key)??'[]');if(Array.isArray(value))stored=value.filter(v=>typeof v==='string');}catch{/* A storage error must not change a plan. */}
- const suggestionInput=data?.version&&c.facts&&c.previousFacts?{plan:data.version,current:c.facts,previous:c.previousFacts,workouts:data.workouts,dismissedIds:[...stored,...dismissed],profile:data.state?.coachProfile}:undefined;
+ const suggestionInput=data?.version&&c.facts&&c.previousFacts?{plan:data.version,current:c.facts,previous:c.previousFacts,workouts:data.workouts,dismissedIds:[...stored,...dismissed],profile:data.state?.coachProfile,todayLocalDate:activityDate(data.profile?.timeZone??'Asia/Shanghai'),completedWeeks:c.completedWeeks}:undefined;
  const suggestion=suggestionInput?suggestChange(suggestionInput):null;
  const discomfort=suggestionInput?recurringDiscomfort(suggestionInput):[];
  if(!facts)return null;

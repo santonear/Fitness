@@ -46,7 +46,7 @@ export function discomfortReplacement(exerciseId: string, profile: CoachProfile)
   const family=choices.find(c=>c.name.toLowerCase()===source?.name.en.toLowerCase())?.family;
   if(!family||profile.cautions.includes('other'))return undefined;
   const lowerImpact=['Clamshells','Wall Push Ups','Band Pull Apart','Dead Bug'];
-  return [0,1].flatMap(v=>basicItems(profile,v).items).find(item=>{
+  return choices.flatMap((_,v)=>basicItems(profile,v).items).find(item=>{
     const name=exercises.find(e=>e.id===item.exerciseId)?.name.en;
     return item.exerciseId!==exerciseId&&!!name&&lowerImpact.includes(name)&&choices.find(c=>c.name===name)?.family===family;
   });
