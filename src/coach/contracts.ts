@@ -24,7 +24,7 @@ const common = {
   locale: z.enum(['zh', 'en']), timeZone: timeZoneSchema, adultConfirmed: z.literal(true),
   messages: z.array(z.strictObject({ role: z.enum(['user', 'assistant']), content: z.string().max(1600) })).max(8),
   body: z.record(z.string(), z.json()).optional(), history: z.string().max(32000).optional(),
-  nutrition: z.array(z.strictObject({localDate:z.iso.date(),meal:z.string().min(1).max(1000),portion:z.string().max(200).optional(),calories:z.number().nonnegative().max(100000).optional()})).max(100).optional(),
+  nutrition: z.array(z.strictObject({localDate:z.iso.date(),meal:z.enum(['breakfast','lunch','dinner','snack']),portion:z.string().max(500).optional(),calories:z.number().int().nonnegative().max(10000).optional()})).max(100).optional(),
 };
 const timingCounts = z.strictObject({ partial: count, notStarted: count });
 const timeBands = z.strictObject({ morning: timingCounts, daytime: timingCounts, evening: timingCounts });

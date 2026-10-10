@@ -2,9 +2,10 @@ import { DatabaseSync } from 'node:sqlite';
 import { expect, it, vi } from 'vitest';
 import { DailyUsageStore, dailyUsageDDL, withDailyUsage } from '../../src/backend/daily-usage-store';
 import type { D1Binding, D1Statement } from '../../src/backend/d1-store';
+import { TelemetryStore, telemetryDDL } from '../../src/backend/telemetry-store';
 
 function memoryStore() {
-  const db = new DatabaseSync(':memory:'); db.exec(dailyUsageDDL);
+  const db = new DatabaseSync(':memory:'); db.exec(dailyUsageDDL); db.exec(telemetryDDL);
   const binding: D1Binding = {withSession:() => ({prepare(sql:string) {
     let values: (string|number)[] = [];
     const statement: D1Statement = {bind(...args:unknown[]) {values = args as (string|number)[];return statement;},
@@ -12,8 +13,19 @@ function memoryStore() {
       async run() {return {success:true,meta:{changes:Number(db.prepare(sql).run(...values).changes)}};}};
     return statement;
   }})};
-  return {store:new DailyUsageStore(binding),close:() => db.close()};
+  return {store:new DailyUsageStore(binding),telemetry:new TelemetryStore(binding),close:() => db.close()};
 }
+it('aggregates batched anonymous counts by UTC day and rejects extra sensitive data',async () => {
+  const {telemetry,close} = memoryStore();
+  try {
+    await telemetry.count('2026-10-11',{optedIn:true,event:'workout_completed',count:3},'counts');
+    await telemetry.count('2026-10-11',{optedIn:true,event:'workout_completed'},'counts');
+    expect((await telemetry.usage('2026-10-11')).counts.workout_completed).toBe(4);
+    await expect(telemetry.count('2026-10-11',{optedIn:true,event:'workout_completed',count:1001},'counts')).rejects.toThrow();
+    await expect(telemetry.count('2026-10-11',{optedIn:true,event:'workout_completed',userId:'private'},'counts')).rejects.toThrow();
+    await expect(telemetry.count('2026-10-11',{type:'network',page:'plan',version:'v8',browser:'safari',message:'private'},'errors')).rejects.toThrow();
+  } finally {close();}
+});
 it('atomically aggregates UTC calls, reservations and actual fees without overspending',async () => {
   const {store,close} = memoryStore();
   try {

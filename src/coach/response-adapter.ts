@@ -3,6 +3,7 @@ import { exercises } from '../catalog/exercises';
 import { checkCoachLanguage } from '../application/rules/coach-language';
 import { guidedServiceLimits as limits } from '../domain/guided-limits';
 import { coachRequestSchema, coachResponseSchema, type AdaptCoachResponse, type CoachRequest, type CoachResponse } from './contracts';
+import { reviewCountClaimsMatch } from './review-facts-validation';
 
 const responseTypes = {
   ONBOARD_PLAN: 'plan_proposal', ADJUST_TODAY: 'today_adjustment',
@@ -64,6 +65,9 @@ export const adaptCoachResponse: AdaptCoachResponse = (input, raw) => {
   requireCondition(response.restoreGeneration === request.restoreGeneration, 'restore generation');
   if (response.type === 'clarify' || response.type === 'refused') return response;
   requireCondition(response.type === responseTypes[request.task], 'task mismatch');
+  if (response.type === 'review_summary' && request.task === 'PERIOD_REVIEW') {
+    requireCondition([response.opening,response.encouragement,response.gap,...response.dataBoundary].every(text => reviewCountClaimsMatch(request.facts,text)),'review fact count mismatch');
+  }
   if ('target' in response) {
     requireCondition('target' in request, 'missing target');
     requireCondition(response.target.planId === request.target.planId &&

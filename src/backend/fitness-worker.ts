@@ -2,8 +2,8 @@ import { createDeepSeekWorker, type DeepSeekWorkerEnv } from './deepseek-worker'
 import { verifyAdministrator, type ManagementEnv } from './management-auth';
 import { readFeatureFlags, type FeatureConfigEnv } from './feature-config';
 import { monitoringError } from '../application/monitoring';
-import { z } from 'zod';
 import { DailyUsageStore } from './daily-usage-store';
+import { anonymousBatchSchema, TelemetryStore } from './telemetry-store';
 export interface FitnessWorkerEnv extends DeepSeekWorkerEnv, ManagementEnv, FeatureConfigEnv {
   ASSETS?: { fetch(request: Request): Promise<Response> };
   FITNESS_TELEMETRY?: { send(event: unknown): Promise<void> };
@@ -25,7 +25,7 @@ export function createFitnessWorker(control = createDeepSeekWorker(), authentica
       if (request.method !== 'POST' || new URL(request.url).protocol !== 'https:' || request.headers.get('origin') !== new URL(request.url).origin || request.headers.get('sec-fetch-site') === 'cross-site') return new Response(null, {status:403});
       const flags = await readFeatureFlags(env);
       const enabled = path.endsWith('/errors') ? flags.errorReports : flags.anonymousUsage;
-      if (!enabled || !env.FITNESS_TELEMETRY) return new Response(null, {status:204});
+      if (!enabled || !env.FITNESS_TELEMETRY && !env.FITNESS_OPS_DB) return new Response(null, {status:204});
       try {
         if (!request.headers.get('content-type')?.startsWith('application/json')) return new Response(null,{status:415});
         const reader = request.body?.getReader(); if (!reader) return new Response(null,{status:400});
@@ -34,15 +34,21 @@ export function createFitnessWorker(control = createDeepSeekWorker(), authentica
           if (bytes > 1024) { await reader.cancel(); return new Response(null,{status:413}); } text += decoder.decode(part.value,{stream:true});
         } text += decoder.decode(); } finally { reader.releaseLock(); }
         const raw: unknown = JSON.parse(text);
-        const count = z.strictObject({ optedIn:z.literal(true), event:z.enum(['plan_confirmed','workout_started','workout_completed','review_opened']) }).safeParse(raw);
-        const event = path.endsWith('/errors') ? monitoringError(raw,true) : count.success ? {event:count.data.event,count:1} : undefined;
+        const count = anonymousBatchSchema.safeParse(raw);
+        const event = path.endsWith('/errors') ? monitoringError(raw,true) : count.success ? {event:count.data.event,count:count.data.count} : undefined;
         if (!event) return new Response(null,{status:400});
-        await env.FITNESS_TELEMETRY.send(event);
+        if (env.FITNESS_OPS_DB) await new TelemetryStore(env.FITNESS_OPS_DB).count(new Date().toISOString().slice(0,10),raw,path.endsWith('/errors') ? 'errors' : 'counts');
+        else await env.FITNESS_TELEMETRY!.send(event);
         return new Response(null,{status:204});
       } catch { return new Response(null,{status:503}); }
     }
     if (path === '/admin' || path.startsWith('/admin/') || path.startsWith('/api/v1/management/')) {
       if (!await authenticate(request, env)) return new Response(JSON.stringify({ error: 'ADMIN_REQUIRED' }), { status: 403, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
+      if (path === '/api/v1/management/usage-counts' && request.method === 'GET') {
+        if (!(await readFeatureFlags(env)).anonymousUsage || !env.FITNESS_OPS_DB) return new Response(null,{status:404});
+        try { return new Response(JSON.stringify(await new TelemetryStore(env.FITNESS_OPS_DB).usage(new Date().toISOString().slice(0,10))),{headers:{'Content-Type':'application/json','Cache-Control':'no-store'}}); }
+        catch { return new Response(null,{status:503}); }
+      }
       if (path === '/api/v1/management/ops-usage' && request.method === 'GET') {
         if (!(await readFeatureFlags(env)).aiOperations || !env.FITNESS_OPS_DB) return new Response(null,{status:404});
         try { const usage = await new DailyUsageStore(env.FITNESS_OPS_DB).get(new Date().toISOString().slice(0,10));

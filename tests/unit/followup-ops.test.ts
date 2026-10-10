@@ -8,6 +8,7 @@ import { coachEvaluationFixture } from '../../src/backend/coach-evaluation-fixtu
 import { evaluateCoachV8Response } from '../../src/backend/coach-v8-evaluation';
 import { coachScope, coachMessageScope } from '../../src/coach/consent';
 import { validateCandidate, type CoachEnvelope } from '../../src/backend/contracts';
+import { adaptCoachResponse } from '../../src/coach/response-adapter';
 
 const id = '00000000-0000-4000-8000-000000000001';
 const request = coachRequestSchema.parse({ version:'fitness-coach-v8', requestId:id, conversationId:id,
@@ -15,8 +16,15 @@ const request = coachRequestSchema.parse({ version:'fitness-coach-v8', requestId
   task:'ONBOARD_PLAN',profile:{goalText:'habit',weeklyTarget:2,sessionMinutes:20,scheduleOriginalText:'20 minutes',place:'home',equipment:[],adultConfirmed:true,cautions:[]} });
 
 describe('follow-up operations boundaries', () => {
+  it.each(['Over the two weeks from 2026-09-21 to 2026-10-04, your records show 0 completed sessions and 0 partial sessions, with 4 entries recorded as not started.','完整完成的训练为0次，部分完成0次，未开始4次。'])('rejects missing records converted into not-started facts: %s', opening => {
+    const request = coachEvaluationFixture('notes-withheld','en');
+    if (request.task !== 'PERIOD_REVIEW') throw new Error('fixture');
+    const response = {requestId:request.requestId,restoreGeneration:0,mutationAllowed:false,type:'review_summary',target:request.target,opening,encouragement:'Recorded facts only.',gap:'4 records missing.',dataBoundary:['No weight data.']};
+    expect(() => adaptCoachResponse(request,response)).toThrow('review fact count mismatch');
+    expect(() => adaptCoachResponse(request,{...response,opening:'0 completed sessions, 0 partial sessions, 0 entries recorded as not started, 4 records missing.'})).not.toThrow();
+  });
   it('withholds nutrition by default including initial messages', () => {
-    const input = {...request,nutrition:[{localDate:'2026-10-11',meal:'synthetic lunch'}]};
+    const input = {...request,nutrition:[{localDate:'2026-10-11',meal:'lunch' as const,portion:'synthetic lunch'}]};
     expect(coachScope(input)).not.toHaveProperty('nutrition');
     expect(coachMessageScope(input,'hello')).not.toHaveProperty('nutrition');
     expect(coachScope(input,false,false,true).nutrition).toEqual(input.nutrition);
