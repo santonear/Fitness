@@ -1,5 +1,14 @@
 import type { SuggestionInput, ReviewSuggestion, PlanProposal } from './contracts';
 import { computeExerciseEvidence } from './evidence';
+import { discomfortReplacement } from '../rules/basic-items';
+
+export function recurringDiscomfort(input: SuggestionInput): string[] {
+ const rows=input.workouts.filter(w=>w.planVersionId===input.plan.id&&w.localDate>=input.previous.from&&w.localDate<=input.current.to&&!['in_progress','abandoned'].includes(w.status)).sort((a,b)=>b.startedAt.localeCompare(a.startedAt));
+ return [...new Set(rows.flatMap(w=>computeExerciseEvidence(w).discomfortExerciseIds))].filter(id=>{
+  const attempts=rows.filter(w=>w.sets.some(s=>s.exerciseId===id)||w.substitutions?.some(s=>s.fromExerciseId===id));
+  return attempts.length>=2&&attempts.slice(0,2).every(w=>computeExerciseEvidence(w).discomfortExerciseIds.includes(id));
+ });
+}
 
 /** Pure candidates only. No saved plans or facts are mutated here. */
 export function suggestChange(input: SuggestionInput): ReviewSuggestion | null {
@@ -17,13 +26,25 @@ export function suggestChange(input: SuggestionInput): ReviewSuggestion | null {
   .sort((a,b) => b.startedAt.localeCompare(a.startedAt));
  // Do not offer load increases while any relevant discomfort is unresolved.
  const discomfort = new Set(rows.flatMap(w => computeExerciseEvidence(w).discomfortExerciseIds));
+ const repeated=recurringDiscomfort(input);
+ if(repeated.length) {
+  if(!input.profile)return null;
+  for(const id of repeated){
+   const replacement=discomfortReplacement(id,input.profile);
+   if(!replacement)continue;
+   let changed=false;
+   for(const template of base.templates)template.items=template.items.map(item=>{if(item.exerciseId!==id)return item;changed=true;return structuredClone(replacement);});
+   if(changed)return candidate('discomfort',base,id);
+  }
+  return null;
+ }
  if (current.reasonCounts.time >= 2 && !plan.templates.some(t => t.id === 'review-short')) {
   const source=plan.templates.find(t => t.items.length >= 3);
   if(source) return candidate('time', { ...base, templates: [...base.templates, { ...structuredClone(source), id:'review-short', name:'20 min', estimatedMinutes:20, items:source.items.slice(0,3).map(i=>({...structuredClone(i),sets:2})) }] });
  }
  for (const id of new Set(plan.templates.flatMap(t=>t.items.map(i=>i.exerciseId)))) {
   if(discomfort.has(id))continue;
-  const relevant=rows.filter(w=>w.plannedExercises?.some(e=>e.exerciseId===id));
+  const relevant=rows.filter(w=>w.plannedExercises?.some(e=>e.exerciseId===id)||w.sets.some(s=>s.exerciseId===id)||w.substitutions?.some(s=>s.fromExerciseId===id));
   if(relevant.length>=3&&relevant.slice(0,3).every(w=>computeExerciseEvidence(w).easyCompletedExerciseIds.includes(id))) {
    let changed=false;
    for(const template of base.templates)for(const item of template.items)if(item.exerciseId===id) {
@@ -36,7 +57,10 @@ export function suggestChange(input: SuggestionInput): ReviewSuggestion | null {
  if(current.complete>=plan.weeklyTarget&&previous.complete>=plan.weeklyTarget&&plan.weeklyTarget<7)
   return candidate('frequency',{...base,weeklyTarget:plan.weeklyTarget+1});
  // A newly saved plan is not evidence of two weeks without training.
- if(plan.createdAt.slice(0,10)<previous.from&&current.complete===0&&previous.complete===0&&plan.weeklyTarget>2) {
+ const completed = input.completedWeeks;
+ if(completed && input.todayLocalDate && completed.every(w=>w.to<input.todayLocalDate! && w.complete===0) &&
+  new Date(Date.parse(completed[0].to+'T00:00:00Z')+86400000).toISOString().slice(0,10)===completed[1].from &&
+  plan.createdAt.slice(0,10)<completed[0].from && current.complete===0 && plan.weeklyTarget>2) {
   const source=plan.templates.find(t=>t.items.length>=3);
   if(source)return candidate('restart',{...base,weeklyTarget:2,templates:[{...structuredClone(source),id:'review-short',name:'20 min',estimatedMinutes:20,items:source.items.slice(0,3).map(i=>({...structuredClone(i),sets:2}))}]});
  }
