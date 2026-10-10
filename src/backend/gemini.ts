@@ -1,3 +1,5 @@
+import { coachV8ProviderPrompt } from './coach-v8-provider';
+import { validateTransportRequest } from './contracts';
 import { z } from 'zod';
 import { candidateJsonSchema } from './contracts';
 import { buildAiPrompt } from './prompt';
@@ -43,6 +45,7 @@ export function createGeminiCodec(options: { maxOutputTokens: number }): Provide
   return {
     providerId: 'gemini', credentialHeader: 'x-goog-api-key',
     async encode(request) {
+      if('coach' in request){await validateTransportRequest(request,14,65536);const messages=coachV8ProviderPrompt(request.coach);return {systemInstruction:{parts:[{text:messages[0].content}]},contents:[{role:'user',parts:[{text:messages[1].content}]}],generationConfig:{candidateCount:1,maxOutputTokens,responseMimeType:'application/json'}};}
       const prompt = await buildAiPrompt(request);
       return {
         systemInstruction: { parts: [{ text: prompt.messages[0].content }] },

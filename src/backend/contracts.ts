@@ -6,6 +6,8 @@ import { ControlError } from './store';
 import { summaryStageSchema, summaryResultSchema, validateSummaryStage } from './summary-contract';
 import { guidedDialogueRequestSchema } from '../domain/guided-ai-contracts';
 import { validateGuidedProviderInput, validateGuidedProviderOutput } from './guided-provider';
+import { coachRequestSchema } from '../coach/contracts';
+import { adaptCoachResponse } from '../coach/response-adapter';
 
 export function canonical(value: unknown): string {
   if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
@@ -41,7 +43,10 @@ const generate = z.strictObject({ ...base, operation: z.literal('generate'), con
   conditions: z.strictObject(conditionFields), history: history.optional(), dialogue: guidedDialogueRequestSchema.optional() });
 const { goalText: _summaryGoal, ...summaryBase } = base;
 const summary = z.strictObject({ ...summaryBase, operation: z.literal('summary'), stage: summaryStageSchema });
+const coachEnvelope = z.strictObject({ ...base, operation: z.enum(['generate','summary']), coach: coachRequestSchema });
 export const requestSchema = z.discriminatedUnion('operation', [understand, generate, summary]);
+export type CoachEnvelope = z.infer<typeof coachEnvelope>;
+export type TransportRequest = AiRequest | CoachEnvelope;
 export type AiRequest = z.infer<typeof requestSchema>;
 export type StageSummaryRequest = Extract<AiRequest, { operation: 'summary' }>;
 export async function validateRequest(value: unknown, k: number, maxBytes: number): Promise<AiRequest> {
@@ -69,6 +74,16 @@ export async function validateRequest(value: unknown, k: number, maxBytes: numbe
   if (request.operation === 'summary') validateSummaryStage(request.stage, request.restoreGeneration);
   return request;
 }
+export async function validateTransportRequest(value: unknown,k:number,maxBytes:number):Promise<TransportRequest>{
+ if(!value||typeof value!=='object'||!('coach' in value))return validateRequest(value,k,maxBytes);
+ const parsed=coachEnvelope.safeParse(value);if(!parsed.success)throw new ControlError('INVALID_INPUT',400);
+ const request=parsed.data,coach=request.coach;
+ if(coach.body && typeof coach.body.age==='number' && coach.body.age<18)throw new ControlError('INVALID_INPUT',400);
+ if(new TextEncoder().encode(canonical(request)).byteLength>maxBytes)throw new ControlError('RANGE_TOO_LARGE',413);
+ if(request.requestId!==coach.requestId||request.restoreGeneration!==coach.restoreGeneration||request.locale!==coach.locale||request.operation!==(coach.task==='PERIOD_REVIEW'?'summary':'generate'))throw new ControlError('INVALID_INPUT',400);
+ if(request.sendConfirmation!==await confirmationFor(request)||coach.sendConfirmation!==await confirmationFor(coach))throw new ControlError('CONFIRMATION_REQUIRED',400);
+ return request;
+}
 const understandResult = z.strictObject({ interpretedGoal: text });
 const dayResult = z.strictObject({ days: z.array(z.strictObject({ date: localDateSchema, exercises: z.array(plannedExerciseSchema).min(1).max(32) })).min(1) });
 /** Supplier schema is a hint; validateCandidate remains the authoritative business check. */
@@ -76,7 +91,10 @@ export function candidateJsonSchema(operation: AiRequest['operation']) {
   const { $schema: _schema, ...schema } = z.toJSONSchema(operation === 'understand' ? understandResult : operation === 'summary' ? summaryResultSchema : dayResult);
   return schema;
 }
-export function validateCandidate(request: AiRequest, result: unknown) {
+export function validateCandidate(request: TransportRequest, result: unknown) {
+  if ('coach' in request) {
+    try { return adaptCoachResponse(request.coach,result); } catch { throw new ControlError('INVALID_CANDIDATE',502); }
+  }
   if ('dialogue' in request && request.dialogue) return validateGuidedProviderOutput(request.dialogue, result);
   const parsed = (request.operation === 'understand' ? understandResult : request.operation === 'summary' ? summaryResultSchema : dayResult).safeParse(result);
   if (!parsed.success) throw new ControlError('INVALID_CANDIDATE', 502);

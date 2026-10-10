@@ -1,3 +1,5 @@
+import { coachV8ProviderPrompt } from './coach-v8-provider';
+import { validateTransportRequest } from './contracts';
 import { z } from 'zod';
 import { buildAiPrompt } from './prompt';
 import { exercises } from '../catalog/exercises';
@@ -25,6 +27,7 @@ export function createDeepSeekCodec(options: { maxOutputTokens: number; pricingV
       return Math.ceil((1_048_576 * 200 + options.maxOutputTokens * 800) / 1_000_000);
     },
     async encode(request) {
+      if('coach' in request){await validateTransportRequest(request,14,65536);return {model:'deepseek-flash',messages:coachV8ProviderPrompt(request.coach),thinking:{type:'disabled'},max_tokens:options.maxOutputTokens,response_format:{type:'json_object'},stream:false};}
       if ('dialogue' in request && request.dialogue) {
         await validateRequest(request, guidedServiceLimits.maxDays, guidedServiceLimits.maxInputBytes);
         return { model: 'deepseek-flash', messages: guidedProviderPrompt(request.dialogue), thinking: { type: 'disabled' },

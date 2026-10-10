@@ -61,3 +61,25 @@
   .v8-press, .v8-toggle-track, .v8-toggle-thumb { transition: none; }
   .v8-press:active:not(:disabled) { transform: none; }
 }
+.v8-morph {
+  position: fixed; margin: 0; box-sizing: border-box; left: calc((100vw - min(100vw - var(--s5), 456px)) / 2); top: calc((100dvh - min(78dvh, 620px)) / 2);
+  width: min(calc(100vw - var(--s5)), 456px); height: min(78dvh, 620px);
+  max-width: none; max-height: calc(100dvh - var(--s5)); padding: 0;
+  overflow: hidden; border: var(--bw) solid var(--c-line); border-radius: var(--r-panel);
+  background: var(--mat-surface); color: var(--c-ink); box-shadow: var(--mat-hl), var(--el-3);
+  font-family: var(--f-body); font-size: var(--t3); line-height: var(--lh-body);
+}
+.v8-morph::backdrop { background: var(--c-scrim); }
+.v8-morph-body { box-sizing: border-box; height: 100%; overflow: auto; padding: var(--s5); opacity: 0; transition: opacity var(--fade); }
+.v8-morph-body[data-open="true"] { opacity: 1; transition-delay: 200ms; }
+.v8-morph-header { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); margin-block-end: var(--s4); }
+.v8-morph-header h2 { margin: 0; font-family: var(--f-display); font-size: var(--t5); font-weight: var(--w-display); }
+.v8-toast { position: fixed; z-index: 100; inset-block-start: max(var(--s5), env(safe-area-inset-top)); inset-inline-start: 50%; transform: translateX(-50%); box-sizing: border-box; max-width: calc(100% - var(--s5)); width: max-content; padding: var(--s3) var(--s5); border: var(--bw) solid var(--c-line); border-radius: var(--r-chip); box-shadow: var(--el-2); background: var(--mat-surface); color: var(--c-ink); font-family: var(--f-body); font-size: var(--t3); overflow-wrap: anywhere; }
+.v8-composer { display: flex; align-items: center; gap: var(--s2); min-width: 0; }
+.v8-composer input { min-width: 0; flex: 1; box-sizing: border-box; min-height: var(--touch-min); padding: var(--s3) var(--s4); border: var(--bw) solid var(--c-line); border-radius: var(--r-chip); background: var(--mat-surface); color: var(--c-ink); font-family: var(--f-body); font-size: var(--t3); }
+.v8-composer input::placeholder { color: var(--c-ink-muted); }
+.v8-composer input:focus-visible { outline: var(--bw) solid var(--c-focus); outline-offset: var(--s1); }
+.v8-composer input:disabled { opacity: .5; cursor: not-allowed; }
+.v8-composer-label { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) { .v8-morph-body { transition: none; } }
+
