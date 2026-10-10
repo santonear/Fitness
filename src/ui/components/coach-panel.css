@@ -1,0 +1,5 @@
+.coach-visual { display: block; width: var(--s8); height: auto; object-fit: contain; }
+.coach-panel-content { display: grid; gap: var(--s4); min-width: 0; }
+.coach-panel-content .coach-visual { justify-self: center; }
+.coach-panel-content dl { overflow-wrap: anywhere; }
+.coach-panel-content dd { margin-inline-start: var(--s3); }

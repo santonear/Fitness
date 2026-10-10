@@ -4,7 +4,7 @@ delete process.env.NO_COLOR;
 export default defineConfig({
   testDir: './tests/e2e',
   // HTTP qualification tests require the production transport, not the local demo.
-  testIgnore: ['guided-live.spec.ts', 'ai-control-status.spec.ts', 'ai-pending.spec.ts', 'trial-access.spec.ts', 'v31-*.spec.ts', 'v8-mainline.spec.ts', 'v8-plan-review.spec.ts'],
+  testIgnore: ['guided-live.spec.ts', 'ai-control-status.spec.ts', 'ai-pending.spec.ts', 'trial-access.spec.ts', 'v31-*.spec.ts', 'v8-mainline.spec.ts', 'v8-plan-review.spec.ts', 'v8-coach-panel.spec.ts'],
   workers: 4,
   use: {
     baseURL: 'http://127.0.0.1:5173',

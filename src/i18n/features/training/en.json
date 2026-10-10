@@ -81,5 +81,13 @@
  "actions": "Exercises in this workout",
  "wakeUnavailable": "The browser has not allowed the screen to stay awake.",
  "basic": "Basic plan",
- "recordActivity": "Record another activity"
+ "recordActivity": "Record another activity",
+ "migrationDates": "Plans now fit when you have time. Previous scheduled dates can become reminders.",
+ "dismissMigration": "No thanks",
+ "setReminder": "Set reminders",
+ "migrationPlans": "You had {count} plans. Your current plan is {name}; the others are in plan versions.",
+ "understood": "Got it",
+ "askCoach": "Talk to Yaya",
+ "oldWorkout": "This workout uses an earlier plan. Finish and record it before adjusting the current plan.",
+ "meters": "Metres"
 }

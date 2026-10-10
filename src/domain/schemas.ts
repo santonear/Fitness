@@ -146,6 +146,7 @@ export const v8WorkoutSchema = z.strictObject({
   sets: z.array(z.strictObject({ exerciseId: exerciseIdSchema, itemIndex: nonnegative, setIndex: nonnegative, reps: positive.optional(), durationSeconds: positive.optional(),
     distanceMeters: nonnegative.optional(), loadGrams: nonnegative.nullable().optional(), completedAt: utcTimestampSchema, substitutedFrom: exerciseIdSchema.optional() })),
   plannedSetCount: nonnegative,
+  templateSnapshot: v8PlanVersionSchema.shape.templates.element.optional(),
   feedback: z.strictObject({ feel: v8Feel.optional(), reasons: z.array(v8Reason), note: z.string().optional(), discomfortExerciseIds: z.array(exerciseIdSchema).optional() }).optional(),
   plannedExercises: z.array(z.strictObject({ exerciseId: exerciseIdSchema, itemIndex: nonnegative, plannedSetCount: nonnegative })).optional(),
   substitutions: z.array(z.strictObject({ fromExerciseId: exerciseIdSchema, toExerciseId: exerciseIdSchema, itemIndex: nonnegative, reason: z.enum(['discomfort', 'other']), createdAt: utcTimestampSchema })).optional(),
@@ -163,6 +164,7 @@ export const v8StateSchema = z.strictObject({
   legacyPlanIds: z.array(uuidSchema),
   notice: z.strictObject({ planCount: nonnegative, currentPlanName: z.string().optional(), acknowledged: z.boolean() }),
   coachProfile: v8CoachProfileSchema.optional(),
+  nextWorkoutOverride: z.strictObject({ planVersionId: uuidSchema, templateId: z.string(), template: v8PlanVersionSchema.shape.templates.element, requestId: uuidSchema }).optional(),
 });
 export const v8BackupSchema = z.strictObject({ state: v8StateSchema, plans: z.array(v8PlanSchema), planVersions: z.array(v8PlanVersionSchema),
   workouts: z.array(v8WorkoutSchema), activities: z.array(v8ActivitySchema) });

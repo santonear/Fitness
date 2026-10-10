@@ -1,6 +1,64 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 
+test('coach uses explicit send and confirmation before changing a single workout',async({page})=>{
+ let calls=0;await page.route('**/api/v1/plans/generate',async route=>{calls++;const envelope=route.request().postDataJSON(),request=envelope.coach;
+  expect(request.body).toBeUndefined();expect(request.history).toBeUndefined();
+  await route.fulfill({json:{requestId:request.requestId,context:{restoreGeneration:request.restoreGeneration,inputDigest:envelope.sendConfirmation},accounting:'settled',result:{requestId:request.requestId,restoreGeneration:request.restoreGeneration,mutationAllowed:false,type:'today_adjustment',target:request.target,template:{...request.template,items:request.template.items.map((i:any)=>({...i,sets:1}))},summary:'本次每个动作一组'}}});
+ });
+ await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();await page.getByRole('button',{name:'和芽芽聊聊',exact:true}).click();expect(calls).toBe(0);
+ await page.getByRole('dialog').getByRole('textbox',{name:'跟芽芽说'}).fill('今天少一组');await page.getByRole('dialog').getByRole('button',{name:'发送',exact:true}).click();await expect(page.getByText('本次每个动作一组',{exact:true})).toBeVisible();
+ const before=await page.evaluate(async()=>{const p='/src/ui/mainline/context.tsx';return(await(await import(/* @vite-ignore */ p)).workflow.snapshot()).state.nextWorkoutOverride;});expect(before).toBeUndefined();
+ await page.getByRole('button',{name:'确认应用',exact:true}).click();await expect(page.getByText('已保存',{exact:true})).toBeVisible();await page.keyboard.press('Escape');
+ await page.getByRole('button',{name:'开始训练',exact:true}).first().click();await expect(page.getByText('第 1 组，共 1 组',{exact:true})).toBeVisible();expect(calls).toBe(1);
+});
+
+test('home composer opens coach and sends once with optional data excluded',async({page})=>{
+ let calls=0;await page.route('**/api/v1/plans/generate',async route=>{calls++;const request=route.request().postDataJSON().coach;expect(request.body).toBeUndefined();expect(request.history).toBeUndefined();expect(request.instruction).toBe('今天轻一点');await route.fulfill({status:503,json:{error:'AI_DISABLED'}});});
+ await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();
+ await page.getByRole('textbox',{name:'跟芽芽说'}).fill('今天轻一点');expect(calls).toBe(0);
+ await page.getByRole('button',{name:'发送',exact:true}).click();await expect.poll(()=>calls).toBe(1);
+ await expect(page.getByRole('dialog')).toBeVisible();await page.keyboard.press('Escape');
+ await page.getByRole('button',{name:'和芽芽聊聊',exact:true}).click();expect(calls).toBe(1);
+});
+
+test('monthly review sends the visible month instead of the current week',async({page})=>{
+ let received:any;
+ await page.route('**/api/v1/stages/summarize',async route=>{received=route.request().postDataJSON().coach;await route.fulfill({status:503,json:{error:'AI_DISABLED'}});});
+ await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();
+ await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
+ await page.goto('/review');await page.getByRole('button',{name:'本月回顾',exact:true}).click();
+ await page.getByRole('button',{name:'和芽芽聊聊',exact:true}).click();
+ await page.getByRole('textbox',{name:'跟芽芽说'}).fill('看看这个月');await page.getByRole('button',{name:'发送',exact:true}).click();
+ await expect.poll(()=>received?.kind).toBe('month');expect(received.facts.from).toMatch(/-01$/);
+ expect(received.body).toBeUndefined();expect(received.history).toBeUndefined();
+});
+
+test('a confirmed today adjustment changes only one workout and survives reload',async({page})=>{
+ await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();await expect(page.getByRole('heading',{name:'下一次'})).toBeVisible();
+ const result=await page.evaluate(async()=>{
+  const p='/src/ui/mainline/context.tsx',c='/src/coach/response-adapter.ts';const {workflow}=await import(/* @vite-ignore */ p);const {adaptCoachResponse}=await import(/* @vite-ignore */ c);
+  const s=await workflow.snapshot(),before=JSON.stringify(s.version),template=s.version.templates[0],requestId=crypto.randomUUID();
+  const target={planId:s.plan.id,versionId:s.version.id,revision:s.metadata.dataRevision};
+  const request={version:'fitness-coach-v8',requestId,conversationId:crypto.randomUUID(),restoreGeneration:s.metadata.restoreGeneration??0,inputSnapshot:'local revision',sendConfirmation:'test-confirmed',locale:'zh',timeZone:'Asia/Shanghai',adultConfirmed:true,messages:[],task:'ADJUST_TODAY',target,template,instruction:'今天少一组'};
+  const response=adaptCoachResponse(request,{requestId,restoreGeneration:request.restoreGeneration,mutationAllowed:false,type:'today_adjustment',target,template:{...template,items:template.items.map((i:any)=>({...i,sets:1}))},summary:'今天少一组'});
+  await workflow.applyCoachCandidate({request,response,expectedRevision:s.metadata.dataRevision});const staged=await workflow.snapshot();return {before,after:JSON.stringify(staged.version),staged:!!staged.state.nextWorkoutOverride};
+ });expect(result.before).toBe(result.after);expect(result.staged).toBe(true);
+ await page.reload();await page.getByRole('button',{name:'开始训练',exact:true}).first().click();await expect(page.getByText('第 1 组，共 1 组',{exact:true})).toBeVisible();
+ const saved=await page.evaluate(async()=>{const p='/src/ui/mainline/context.tsx';const s=await(await import(/* @vite-ignore */ p)).workflow.snapshot();return {override:s.state.nextWorkoutOverride,sets:s.active.templateSnapshot.items[0].sets,planSets:s.version.templates[0].items[0].sets};});expect(saved.override).toBeUndefined();expect(saved.sets).toBe(1);expect(saved.planSets).toBe(2);
+});
+
+test('backup restoration resets active editors in this tab and another tab',async({page,context})=>{
+ await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();await page.getByRole('button',{name:'开始训练',exact:true}).first().click();
+ const exported=await page.evaluate(async()=>{const p='/src/application/backup.ts';return (await(await import(/* @vite-ignore */ p)).backupService.exportBackup()).text();});
+ const other=await context.newPage();await other.goto(page.url());await expect(other.getByText('第 1 组，共 2 组',{exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'完成这一组',exact:true}).click();await expect(page.getByText('第 2 组，共 2 组',{exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'和芽芽聊聊',exact:true}).click();await expect(page.getByRole('dialog')).toBeVisible();
+ await page.evaluate(async text=>{const p='/src/application/backup.ts',service=(await import(/* @vite-ignore */ p)).backupService;await service.exportBackup();const input=await service.validateBackup(new File([text],'saved.json',{type:'application/json'}));await service.importBackup(input,{backupExported:true,replacementConfirmed:true,expectedRevision:input.expectedRevision});},exported);
+ await expect(page.getByRole('dialog')).not.toBeVisible();await expect(page.getByText('第 1 组，共 2 组',{exact:true})).toBeVisible();await expect(other.getByText('第 1 组，共 2 组',{exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'完成这一组',exact:true}).click();await expect(page.getByText('第 2 组，共 2 组',{exact:true})).toBeVisible();await other.close();
+});
+
 async function onboard(page: Page, caution?: string) {
   await page.goto('/'); await expect(page).toHaveURL(/onboarding/);
   await page.getByLabel('你的回答').fill('想有些力量，不再容易累'); await page.getByRole('button', { name: '继续', exact: true }).click();
@@ -36,6 +94,23 @@ test('real local mainline persists a confirmed plan, training and review with no
   expect(record.workouts[0].status).toBe('partial'); expect(record.workouts[0].sets).toHaveLength(1);
   expect(record.versions[0].sessionMinutes).toBe(20); expect(record.workouts[0].planVersionId).toBe(record.versions[0].id); expect(calls).toBe(0);
 });
+test('manual timed distance exercise preserves edited measurements after reload', async ({ page }) => {
+  await onboard(page); await page.getByRole('button', { name: '就用这份计划' }).click();
+  await page.getByRole('button', { name: '手动训练', exact: true }).click();
+  const id = await page.evaluate(async () => { const p = '/src/catalog/exercises.ts'; return (await import(/* @vite-ignore */ p)).exercises.find((e: { metricType: string }) => e.metricType === 'duration_distance').id; });
+  await page.getByRole('combobox', { name: '选择动作' }).selectOption(id);
+  await page.getByRole('button', { name: '开始训练', exact: true }).click();
+  await page.getByRole('button', { name: '修改数值' }).click();
+  await page.getByLabel('秒', { exact: true }).fill('120');
+  await page.getByLabel('米', { exact: true }).fill('250');
+  await page.getByRole('button', { name: '确定', exact: true }).click();
+  await page.getByRole('button', { name: '完成这一组' }).click();
+  await expect.poll(async()=>page.evaluate(async()=>{const p='/src/persistence/db.ts';return (await (await import(/* @vite-ignore */ p)).database.v8Workouts.toArray())[0]?.sets.length;})).toBe(1);
+  await page.reload();
+  const record = await page.evaluate(async () => { const p = '/src/persistence/db.ts'; return (await (await import(/* @vite-ignore */ p)).database.v8Workouts.toArray())[0]; });
+  expect(record.sets[0]).toMatchObject({ exerciseId: id, durationSeconds: 120, distanceMeters: 250 });
+});
+
 test('onboarding is resumable and adult confirmation is required for basic generation', async ({ page }) => {
   await page.goto('/'); await page.getByLabel('你的回答').fill('保持活动'); await page.getByRole('button', { name: '继续', exact: true }).click();
   await page.getByLabel('你的回答').fill('每周 3 次，每次 30 分钟'); await page.reload();
@@ -83,7 +158,7 @@ test('responsive navigation leaves all home actions clickable and activities per
  await page.getByRole('button',{name:'骑行',exact:true}).click();await page.getByLabel('时长（分钟）').fill('5');
  await expect(page.getByRole('button',{name:'减少 10 分钟'})).toBeDisabled();
  await page.getByRole('button',{name:'增加 10 分钟'}).click();await page.getByLabel('想补充一句（可不填）').fill('公园骑行');
- await page.getByRole('button',{name:'记下来',exact:true}).click();await expect(page.getByText('公园骑行',{exact:true})).toBeVisible();await page.reload();await expect(page.getByText('公园骑行',{exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'记下来',exact:true}).click();await expect(page).toHaveURL(/review/);await expect(page.getByText('公园骑行',{exact:true})).toBeVisible();await page.reload();await expect(page.getByText('公园骑行',{exact:true})).toBeVisible();
  const saved=await page.evaluate(async()=>{const p='/src/persistence/db.ts';const db=(await import(/* @vite-ignore */ p)).database;return {activities:await db.v8Activities.toArray(),workouts:await db.v8Workouts.count(),versions:await db.v8PlanVersions.count()};});
  expect(saved.activities).toHaveLength(1);expect(saved.activities[0]).toMatchObject({type:'cycle',minutes:15});expect(saved.workouts).toBe(0);expect(saved.versions).toBe(1);
  await page.goto('/plans');await expect(page.getByRole('heading',{name:'我的计划',exact:true})).toBeVisible();

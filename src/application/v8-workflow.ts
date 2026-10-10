@@ -2,7 +2,8 @@ import type { Repository } from '../persistence/repository';
 import { DomainError } from '../domain/errors';
 import { v8CoachProfileSchema, v8PlanVersionSchema, v8WorkoutSchema, setMetricsSchema } from '../domain/schemas';
 import type { CoachProfile, Feedback, SetFact } from '../domain/v8/contracts';
-import type { CoachResponse } from '../coach/contracts';
+import type { CoachResponse, CoachRequest } from '../coach/contracts';
+import { adaptCoachResponse } from '../coach/response-adapter';
 import { planProposalSchema } from '../coach/contracts';
 import { exercises } from '../catalog/exercises';
 import { estimateTrainingMinutes } from './rules/duration-estimate';
@@ -35,7 +36,9 @@ export function createV8Workflow(repo: Repository) {
       const plan = state?.currentPlanId ? await db.v8Plans.get(state.currentPlanId) : undefined;
       const version = plan ? await db.v8PlanVersions.get(plan.currentVersionId) : undefined;
       const workouts = await db.v8Workouts.toArray();
-      return { metadata, state, plan, version, workouts, versions: await db.v8PlanVersions.toArray(), activities: await db.v8Activities.toArray(), profile: await db.profiles.toCollection().first(), active: workouts.find(row => row.status === 'in_progress') };
+      const profile = await db.profiles.toCollection().first();
+      const hasFutureLegacyDates = !!state?.legacyPlanIds.length && (await db.scheduledWorkouts.toArray()).some(row => !row.hiddenAt && row.status === 'pending' && !row.completedSessionId && row.scheduledDate >= localDate(profile?.timeZone ?? 'Asia/Shanghai'));
+      return { metadata, state, plan, version, workouts, hasFutureLegacyDates, versions: await db.v8PlanVersions.toArray(), activities: await db.v8Activities.toArray(), profile, active: workouts.find(row => row.status === 'in_progress') };
     });
   }
   async function propose(profile: CoachProfile): Promise<LocalCandidate> {
@@ -61,7 +64,8 @@ export function createV8Workflow(repo: Repository) {
       await db.v8Plans.toCollection().modify({ readOnly: true });
       await db.v8Plans.add({ id: candidate.requestId, currentVersionId: id, readOnly: false, name: proposal.goalText });
       await db.v8PlanVersions.add(version);
-      await db.v8State.put({ ...state, currentPlanId: candidate.requestId, coachProfile: profile });
+      const { nextWorkoutOverride: _previousOverride, ...retained } = state;
+      await db.v8State.put({ ...retained, currentPlanId: candidate.requestId, coachProfile: profile });
       return version;
     }, candidate.expectedRevision);
   }
@@ -71,16 +75,19 @@ export function createV8Workflow(repo: Repository) {
       const state = await db.v8State.get('v8'), profile = await db.profiles.toCollection().first();
       const plan = state?.currentPlanId ? await db.v8Plans.get(state.currentPlanId) : undefined;
       const version = plan ? await db.v8PlanVersions.get(plan.currentVersionId) : undefined;
-      const template = version?.templates.find(item => item.id === templateId);
+      const override = state?.nextWorkoutOverride;
+      const template = override && override.planVersionId === version?.id && override.templateId === templateId ? override.template : version?.templates.find(item => item.id === templateId);
       if (templateId && (!template || plan?.readOnly)) return invalid('TEMPLATE_UNAVAILABLE');
       if (!profile) return invalid('PROFILE_REQUIRED');
       if (!template && !exercises.some(item => item.id === manualExerciseId)) return invalid('SELECT_EXERCISE');
       const items = template?.items ?? [{ exerciseId: manualExerciseId!, sets: 2 }];
       const record = v8WorkoutSchema.parse({ id: crypto.randomUUID(), ...(template ? { planVersionId: version!.id, templateId } : {}),
         startedAt: new Date().toISOString(), localDate: localDate(profile.timeZone), timeZone: profile.timeZone, status: 'in_progress', sets: [],
-        plannedSetCount: items.reduce((sum, item) => sum + item.sets, 0),
+        ...(template ? { templateSnapshot: template } : {}), plannedSetCount: items.reduce((sum, item) => sum + item.sets, 0),
         plannedExercises: items.map((item, itemIndex) => ({ exerciseId: item.exerciseId, itemIndex, plannedSetCount: item.sets })) });
-      await db.v8Workouts.add(record); return record;
+      await db.v8Workouts.add(record);
+      if (override && template === override.template && state) { const { nextWorkoutOverride: _used, ...rest } = state; await db.v8State.put(rest); }
+      return record;
     });
   }
   async function recordSet(workoutId: string, itemIndex: number, setIndex: number, values: Omit<SetFact, 'exerciseId' | 'itemIndex' | 'setIndex' | 'completedAt'>) {
@@ -121,5 +128,48 @@ export function createV8Workflow(repo: Repository) {
       await db.v8Workouts.put(v8WorkoutSchema.parse({ ...record, substitutions: [...record.substitutions ?? [], { fromExerciseId: previous, toExerciseId: exerciseId, itemIndex, reason, createdAt: new Date().toISOString() }] }));
     });
   }
-  return { snapshot, propose, adopt, start, recordSet, finish, substitute };
+  /** Explicit acceptance only. A response alone never writes any training data. */
+  async function applyCoachCandidate({ request, response: raw, expectedRevision }: { request: CoachRequest; response: CoachResponse; expectedRevision: number }) {
+    const response = adaptCoachResponse(request, raw);
+    if (request.task === 'ONBOARD_PLAN' && response.type === 'plan_proposal') {
+      return adopt({ ...response, expectedRevision, profile: { ...request.profile, confirmedAt: new Date().toISOString() } });
+    }
+    if (!('target' in response) || !('target' in request)) return invalid('NO_PLAN_CANDIDATE');
+    return repo.write(async () => {
+      const meta = await repo.readMetadata(), state = await db.v8State.get('v8');
+      const plan = await db.v8Plans.get(request.target.planId);
+      if (request.restoreGeneration !== (meta.restoreGeneration ?? 0) || request.target.revision !== expectedRevision ||
+          !state || !plan || plan.readOnly || state.currentPlanId !== plan.id || plan.currentVersionId !== request.target.versionId) throw new DomainError('CONFLICT', 'STALE_CANDIDATE');
+      const version = await db.v8PlanVersions.get(plan.currentVersionId);
+      if (!version) return invalid('PLAN_UNAVAILABLE');
+      if (response.type === 'today_adjustment' && request.task === 'ADJUST_TODAY') {
+        if (!version.templates.some(t => t.id === request.template.id)) return invalid('TEMPLATE_UNAVAILABLE');
+        if (request.workoutId) {
+          const workout = await db.v8Workouts.get(request.workoutId);
+          if (!workout || workout.status !== 'in_progress' || workout.planVersionId !== version.id || workout.templateId !== request.template.id) throw new DomainError('CONFLICT', 'TRAINING_CHANGED');
+          const before = workout.templateSnapshot ?? version.templates.find(t => t.id === workout.templateId)!;
+          // Do not reinterpret any completed set or substitution as a different planned movement.
+          const locked = new Set([...workout.sets.map(s => s.itemIndex), ...(workout.substitutions ?? []).map(s => s.itemIndex)]);
+          for (const index of locked) if (JSON.stringify(before.items[index]) !== JSON.stringify(response.template.items[index])) throw new DomainError('CONFLICT', 'COMPLETED_ITEM_READ_ONLY');
+          await db.v8Workouts.put(v8WorkoutSchema.parse({ ...workout, templateSnapshot: response.template,
+            plannedSetCount: response.template.items.reduce((sum, item) => sum + item.sets, 0),
+            plannedExercises: response.template.items.map((item, itemIndex) => ({ exerciseId: item.exerciseId, itemIndex, plannedSetCount: item.sets })) }));
+        } else {
+          if (await db.v8Workouts.where('status').equals('in_progress').count()) throw new DomainError('CONFLICT', 'TRAINING_CHANGED');
+          await db.v8State.put({ ...state, nextWorkoutOverride: { planVersionId: version.id, templateId: request.template.id, template: response.template, requestId: request.requestId } });
+        }
+        return response.template;
+      }
+      const proposal = response.type === 'change_proposal' ? response.proposal : response.type === 'review_summary' ? response.suggestion?.proposal : undefined;
+      if (!proposal) return invalid('NO_PLAN_CANDIDATE');
+      const { reasons: _reasons, ...content } = proposal;
+      const next = v8PlanVersionSchema.parse({ ...content, id: crypto.randomUUID(), planId: plan.id, versionNumber: version.versionNumber + 1,
+        createdAt: new Date().toISOString(), origin: response.type === 'review_summary' ? 'review_suggestion' : 'coach_change',
+        basedOnVersionId: version.id, changeSummary: response.type === 'change_proposal' ? response.changes : [response.type === 'review_summary' ? response.suggestion!.summary : ''] });
+      await db.v8PlanVersions.add(next); await db.v8Plans.put({ ...plan, currentVersionId: next.id });
+      const { nextWorkoutOverride: _stale, ...rest } = state; await db.v8State.put(rest);
+      return next;
+    }, expectedRevision);
+  }
+  return { snapshot, propose, adopt, start, recordSet, finish, substitute, applyCoachCandidate };
 }

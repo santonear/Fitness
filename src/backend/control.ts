@@ -1,4 +1,5 @@
-import { canonical, digest, validateCandidate, validateRequest, type AiRequest } from './contracts';
+import { COACH_V8_PROMPT_VERSION } from './coach-v8-version';
+import { canonical, digest, validateCandidate, validateTransportRequest, type TransportRequest as AiRequest } from './contracts';
 import { ControlError, type ControlState, type ControlStore, type OperationCounts } from './store';
 import { buildAdminReport } from './admin-report';
 import { TrialApplications, applicationAdminView } from './trial-applications';
@@ -267,7 +268,7 @@ export class ControlService {
   async submit(value: string, payload: unknown) {
     const sessionDigest = await digest(value, this.config.digestSecret);
     this.qualification(await this.store.read(), sessionDigest);
-    const request = await validateRequest(payload, this.config.k, this.config.maxInputBytes);
+    const request = await validateTransportRequest(payload, this.config.k, this.config.maxInputBytes);
     const verifiedBoundFen = this.config.allowBoundedPending ? this.supplier.costUpperBoundFen?.(request) : undefined;
     if (!this.budgetDisabled(request.operation) && this.config.allowBoundedPending && (verifiedBoundFen === undefined || !integer(verifiedBoundFen) || verifiedBoundFen > this.config.requestBounds[request.operation]!))
       throw new ControlError('COST_BOUND_UNVERIFIED', 503);
@@ -292,6 +293,7 @@ export class ControlService {
       state.requests[key] = { subjectId, requestId: request.requestId, inputDigest, operation: request.operation, period, bound, status: 'reserved', cancelled: false,
         ...('dialogue' in request && request.dialogue ? { coachContract: { promptVersion: COACH_PROMPT_VERSION,
           schemaVersion: request.dialogue.version, catalogVersion: CATALOG_VERSION, task: request.dialogue.coachTask ?? coachTask(request.dialogue.purpose) } } : {}),
+        ...('coach' in request ? {coachContract:{promptVersion:COACH_V8_PROMPT_VERSION,schemaVersion:request.coach.version,catalogVersion:CATALOG_VERSION,task:request.coach.task}} : {}),
         ...(verifiedBoundFen === undefined ? {} : { verifiedBoundFen }) };
       return key;
     });

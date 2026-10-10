@@ -81,5 +81,13 @@
  "actions": "本次动作",
  "wakeUnavailable": "浏览器暂未允许保持屏幕常亮。",
  "basic": "基础计划",
- "recordActivity": "记录其他活动"
+ "recordActivity": "记录其他活动",
+ "migrationDates": "计划改成了‘有空就练’，以前排的日期可以改成提醒",
+ "dismissMigration": "不用了",
+ "setReminder": "设为提醒",
+ "migrationPlans": "你以前有 {count} 份计划，当前用的是 {name}，其他的在计划版本里",
+ "understood": "知道了",
+ "askCoach": "和芽芽聊聊",
+ "oldWorkout": "这次训练沿用原计划，请结束并记下后再调整新计划。",
+ "meters": "米"
 }

@@ -27,6 +27,8 @@ export interface WorkoutRecord {
   localDate: string; timeZone: string; status: 'in_progress' | 'complete' | 'partial' | 'not_started' | 'abandoned';
   variant?: 'short'; sets: SetFact[]; plannedSetCount: number; feedback?: Feedback;
   plannedExercises?: PlannedExerciseFact[]; substitutions?: ExerciseSubstitution[];
+  /** Immutable targets of this workout; today-only adjustments never change the plan. */
+  templateSnapshot?: SessionTemplate;
   /** Append only after completion; all other completed facts remain immutable. */
   appendedNotes?: AppendedNote[];
 }
