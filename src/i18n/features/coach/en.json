@@ -60,7 +60,9 @@
     "month": "This month",
     "user": "Me",
     "assistant": "Yaya",
-    "none": "No equipment"
+    "none": "No equipment",
+    "zh": "中文",
+    "en": "English"
   },
   "detailLabels": {
     "goalText": "Goal",
@@ -121,7 +123,9 @@
     "not_today": "Not today",
     "previous": "Previous",
     "current": "Current",
-    "metric": "Metric"
+    "metric": "Metric",
+    "heightCm": "Height (cm)",
+    "weightGrams": "Weight (grams)"
   },
   "currentPlan": "Current plan",
   "defaultInstruction": "I would like to adjust this."

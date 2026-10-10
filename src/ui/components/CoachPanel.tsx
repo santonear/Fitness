@@ -25,9 +25,13 @@ function readable(value:unknown,copy:typeof zh,locale:'zh'|'en'):string{
  if(typeof value==='string')return exercises.find(e=>e.id===value)?.name[locale]??copy.values[value as keyof typeof copy.values]??value;
  return String(value);
 }
+export function CoachScopeDisclosure({request,locale}:{request:CoachRequest;locale:'zh'|'en'}){
+ const t=locale==='en'?en:zh,lang=locale==='en'?1:0;
+ return <details><summary>{t.scope}</summary><p>{t.consent}</p><p>{t.taskNames[request.task]}</p><dl>{Object.entries(request).filter(([key])=>['locale','timeZone','adultConfirmed','profile','body','history','messages','template','instruction','plan','kind','facts'].includes(key)).map(([key,value])=><div key={key}><dt>{t.fields[key as keyof typeof t.fields]}</dt><dd>{readable(value,t,lang?'en':'zh')}</dd></div>)}</dl><details><summary>{t.technical}</summary><dl>{coachScopeFields(request).map(field=><div key={field.key}><dt>{t.fields[field.key as keyof typeof t.fields]??field.key}</dt><dd>{field.value}</dd></div>)}</dl></details></details>;
+}
 /** Keep mounted when closed so drafts and reviewed candidates survive panel dismissal. */
 export function CoachPanel({open,onClose,request,expectedRevision,onApply,onResponse,triggerRef:externalTrigger,onLocalPlan,onLocalReview,locale,unavailableReason,initialSend}:CoachPanelProps){
- const [text,setText]=useState(''),[body,setBody]=useState(false),[history,setHistory]=useState(false),[state,setState]=useState<CoachVisualState>('idle'),[error,setError]=useState(''),[candidate,setCandidate]=useState<CoachApplication>();
+ const [text,setText]=useState(''),[bodyKeys,setBodyKeys]=useState<string[]>([]),[history,setHistory]=useState(false),[state,setState]=useState<CoachVisualState>('idle'),[error,setError]=useState(''),[candidate,setCandidate]=useState<CoachApplication>();
  const [requestId,setRequestId]=useState(()=>crypto.randomUUID());
  const [applying,setApplying]=useState(false),applyLock=useRef(false);
  const consumedInitialSends=useRef(new Set<string>());
@@ -35,10 +39,11 @@ export function CoachPanel({open,onClose,request,expectedRevision,onApply,onResp
  const t=(request?.locale??locale)==='en'?en:zh,lang=(request?.locale??locale)==='en'?1:0;
  const [noAccess,setNoAccess]=useState(false);
  const busy=state==='thinking';
- const preview=request?coachScope({...request,requestId,...('instruction' in request&&text.trim()?{instruction:text.trim()}:{}),messages:text.trim()?[...request.messages.slice(-7),{role:'user',content:text.trim()}]:request.messages},body,history):undefined;
+ const selectedBody=Object.fromEntries(Object.entries(request?.body??{}).filter(([key])=>bodyKeys.includes(key)));
+ const preview=request?coachScope({...request,body:Object.keys(selectedBody).length?selectedBody:undefined,requestId,...('instruction' in request&&text.trim()?{instruction:text.trim()}:{}),messages:text.trim()?[...request.messages.slice(-7),{role:'user',content:text.trim()}]:request.messages},bodyKeys.length>0,history):undefined;
  useEffect(()=>()=>{sequence.current++;controller.current?.abort();},[]);
- useEffect(()=>{sequence.current++;controller.current?.abort();sending.current=false;setState('idle');setCandidate(undefined);setBody(false);setHistory(false);},[request?.restoreGeneration,request?.conversationId]);
- useEffect(()=>{if(!open||!initialSend||applyLock.current||consumedInitialSends.current.has(initialSend.nonce))return;sequence.current++;controller.current?.abort();sending.current=false;consumedInitialSends.current.add(initialSend.nonce);setText(initialSend.message);setBody(false);setHistory(false);void send(coachMessageScope(initialSend.request,initialSend.message),initialSend.expectedRevision);},[open,initialSend?.nonce,applying]);
+ useEffect(()=>{sequence.current++;controller.current?.abort();sending.current=false;setState('idle');setCandidate(undefined);setBodyKeys([]);setHistory(false);},[request?.restoreGeneration,request?.conversationId]);
+ useEffect(()=>{if(!open||!initialSend||applyLock.current||consumedInitialSends.current.has(initialSend.nonce))return;sequence.current++;controller.current?.abort();sending.current=false;consumedInitialSends.current.add(initialSend.nonce);setText(initialSend.message);setBodyKeys([]);setHistory(false);void send(coachMessageScope(initialSend.request,initialSend.message),initialSend.expectedRevision);},[open,initialSend?.nonce,applying]);
  async function send(scope=preview,revision=expectedRevision){
   if(!scope||sending.current||applyLock.current)return;sending.current=true;const serial=++sequence.current;const abort=new AbortController();controller.current=abort;setError('');setNoAccess(false);setState('thinking');
   try{const approved=await approveCoachScope(scope);const result=await sendCoach(approved,abort.signal);if(serial!==sequence.current)return;
@@ -55,8 +60,8 @@ export function CoachPanel({open,onClose,request,expectedRevision,onApply,onResp
   {!request&&<p>{unavailableReason??t.unavailable}</p>}
   {(!request||noAccess)&&<>{onLocalPlan&&<Button onClick={onLocalPlan}>{t.localPlan}</Button>}{onLocalReview&&<Button onClick={onLocalReview}>{t.localReview}</Button>}</>}
   {candidate&&<section>{responseText(candidate.response).map((line,index)=><p key={index}>{line}</p>)}{templates.map(template=><section key={template.id}><h3>{template.name}</h3><p>{template.estimatedMinutes} {t.minutes}</p><ul>{template.items.map((item,index)=><li key={index}>{exercises.find(e=>e.id===item.exerciseId)?.name[lang?'en':'zh']??item.exerciseId} · {item.sets} {t.sets} · {targetText(item.target,lang?'en':'zh')}</li>)}</ul></section>)}{canApply&&state!=='success'&&<Button disabled={applying} onClick={()=>void apply()}>{t.apply}</Button>}</section>}
-  {preview&&<><label><input type="checkbox" checked={body} disabled={busy||!request?.body} onChange={e=>setBody(e.target.checked)}/>{t.body}</label><label><input type="checkbox" checked={history} disabled={busy||!request?.history} onChange={e=>setHistory(e.target.checked)}/>{t.history}</label>
-   <details><summary>{t.scope}</summary><p>{t.consent}</p><p>{t.taskNames[preview.task]}</p><dl>{Object.entries(preview).filter(([key])=>['profile','body','history','messages','template','instruction','plan','kind','facts'].includes(key)).map(([key,value])=><div key={key}><dt>{t.fields[key as keyof typeof t.fields]}</dt><dd>{readable(value,t,lang?'en':'zh')}</dd></div>)}</dl><details><summary>{t.technical}</summary><dl>{coachScopeFields(preview).map(field=><div key={field.key}><dt>{t.fields[field.key as keyof typeof t.fields]??field.key}</dt><dd>{field.value}</dd></div>)}</dl></details></details>
+  {preview&&<><>{request?.body&&Object.keys(request.body).length>0&&<fieldset disabled={busy||applying}><legend>{t.body}</legend>{Object.entries(request.body).map(([key,value])=><label key={key}><input type="checkbox" checked={bodyKeys.includes(key)} onChange={e=>setBodyKeys(keys=>e.target.checked?[...keys,key]:keys.filter(k=>k!==key))}/>{t.detailLabels[key as keyof typeof t.detailLabels]??key} · {readable(value,t,lang?'en':'zh')}</label>)}</fieldset>}{request?.history&&<label><input type="checkbox" checked={history} disabled={busy||applying} onChange={e=>setHistory(e.target.checked)}/>{t.history}</label>}</>
+   <CoachScopeDisclosure request={preview} locale={lang?'en':'zh'}/>
    <Composer value={text} onChange={setText} onSend={()=>void send()} label={t.input} sendLabel={t.send} busy={busy} disabled={busy||applying}/></>}
   {busy&&<Button onClick={()=>{sequence.current++;controller.current?.abort();sending.current=false;setState('idle');}}>{t.cancel}</Button>}{error&&<p role="alert">{error}</p>}
   </div></MorphPanel>;

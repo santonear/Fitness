@@ -60,7 +60,9 @@
     "month": "本月",
     "user": "我",
     "assistant": "芽芽",
-    "none": "无需器械"
+    "none": "无需器械",
+    "zh": "中文",
+    "en": "English"
   },
   "detailLabels": {
     "goalText": "目标",
@@ -121,7 +123,9 @@
     "not_today": "今天不练",
     "previous": "之前",
     "current": "现在",
-    "metric": "比较内容"
+    "metric": "比较内容",
+    "heightCm": "身高（厘米）",
+    "weightGrams": "体重（克）"
   },
   "currentPlan": "当前计划",
   "defaultInstruction": "想调整一下。"
