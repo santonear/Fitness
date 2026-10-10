@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 test('version 3 local library upgrades without rewriting old facts; old Dexie can reopen but is not compatible',async({page})=>{
   await page.goto('/');const result=await page.evaluate(async()=>{
-    const load=(path:string)=>import(/* @vite-ignore */ path);const {default:Dexie}=await load('/node_modules/.vite/deps/dexie.js');
+    const load=(path:string)=>import(/* @vite-ignore */ path);const {Dexie}=await load('/tests/e2e/helpers/cal-browser.ts');
     const {createDatabase}=await load('/src/persistence/db.ts');const {createRepository}=await load('/src/persistence/repository.ts');
     const {seedCalLibrary}=await load('/tests/e2e/helpers/cal-browser.ts');
     const fixture=createDatabase(`cal-migration-source-${crypto.randomUUID()}`);const repo=createRepository(fixture);const seeded=await seedCalLibrary(repo);const data=JSON.parse(seeded.oldJson).data;fixture.close();await fixture.delete();

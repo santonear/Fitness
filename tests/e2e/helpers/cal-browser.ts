@@ -1,3 +1,4 @@
+export { default as Dexie } from 'dexie';
 import { repository, createRepository, type Repository } from '../../../src/persistence/repository';
 import { createDatabase } from '../../../src/persistence/db';
 import { createProfileService } from '../../../src/application/profile';
