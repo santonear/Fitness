@@ -16,7 +16,7 @@ const slots: Pick<ThemeSlots, 'BrandMark' | 'AiLine' | 'Suggestions'> = {
 const candidate: OnboardingProposal = {
   type: 'plan_proposal', requestId: '00000000-0000-4000-8000-000000000001', restoreGeneration: 2, mutationAllowed: false,
   proposal: { goalText: '想有些力量，不再容易累', weeklyTarget: 2, scheduleOriginalText: '每周 2 次，每次 30 分钟', sessionMinutes: 30,
-    templates: ['全身 A', '全身 B'].map((name, i) => ({ id: String(i), name, estimatedMinutes: 30, items: [{ exerciseId: 'squat', equipment: '瑜伽垫', sets: 2, target: { metricType: 'reps', reps: 8 } }] })),
+    templates: ['全身 A', '全身 B'].map((name, i) => ({ id: String(i), name, estimatedMinutes: 30, items: [{ exerciseId: 'squat', equipment: 'dumbbell', sets: 2, target: { metricType: 'reps', reps: 8 } }] })),
     reasons: ['从熟悉动作开始。', '两次训练之间留出休息。', '每次约半小时，方便安排。'],
   },
 };
