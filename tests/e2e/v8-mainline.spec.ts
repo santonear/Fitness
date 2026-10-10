@@ -64,3 +64,48 @@ test('cautions produce a draft instead of redirecting to manual training',async(
  await expect(page.getByText('已按你选择的注意部位排除相关负担动作；这不是医疗适用性判断。')).toBeVisible();
  await page.getByRole('button',{name:'就用这份计划'}).click();await expect(page.getByRole('heading',{name:'下一次'})).toBeVisible();
 });
+
+test('responsive navigation leaves all home actions clickable and activities persist independently',async({page})=>{
+ await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();
+ for(const width of [320,390,959,960,1440]) {
+  await page.setViewportSize({width,height:844});
+  const nav=page.locator('.v8-shell > nav'); const rect=await nav.boundingBox();
+  if(width>=960){expect(rect!.x).toBe(0);expect(rect!.width).toBe(88);}else expect(rect!.width).toBeLessThanOrEqual(width);
+  for(const label of ['换一份','手动训练','记录其他活动']) {
+   const button=page.getByRole('button',{name:label,exact:true});await button.scrollIntoViewIfNeeded();
+   await button.click({trial:true});
+   const box=await button.boundingBox(),bar=await nav.boundingBox();
+   if(width<960)expect(box!.y+box!.height).toBeLessThanOrEqual(bar!.y);
+  }
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
+ }
+ await page.getByRole('button',{name:'记录其他活动',exact:true}).click();
+ await page.getByRole('button',{name:'骑行',exact:true}).click();await page.getByLabel('时长（分钟）').fill('5');
+ await expect(page.getByRole('button',{name:'减少 10 分钟'})).toBeDisabled();
+ await page.getByRole('button',{name:'增加 10 分钟'}).click();await page.getByLabel('想补充一句（可不填）').fill('公园骑行');
+ await page.getByRole('button',{name:'记下来',exact:true}).click();await expect(page.getByText('公园骑行',{exact:true})).toBeVisible();await page.reload();await expect(page.getByText('公园骑行',{exact:true})).toBeVisible();
+ const saved=await page.evaluate(async()=>{const p='/src/persistence/db.ts';const db=(await import(/* @vite-ignore */ p)).database;return {activities:await db.v8Activities.toArray(),workouts:await db.v8Workouts.count(),versions:await db.v8PlanVersions.count()};});
+ expect(saved.activities).toHaveLength(1);expect(saved.activities[0]).toMatchObject({type:'cycle',minutes:15});expect(saved.workouts).toBe(0);expect(saved.versions).toBe(1);
+ await page.goto('/plans');await expect(page.getByRole('heading',{name:'我的计划',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'查看以前的版本'}).click();await expect(page.getByRole('heading',{name:'计划版本',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'查看计划',exact:true}).click();await expect(page.getByRole('heading',{name:'我的计划',exact:true})).toBeVisible();
+});
+
+test('review adjustment is previewed then saved as a new version without rewriting facts',async({page})=>{
+ await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();
+ for(let i=0;i<2;i++){
+  await page.getByRole('button',{name:'开始训练',exact:true}).click();await page.getByRole('button',{name:'完成这一组'}).click();
+  await page.getByRole('button',{name:'暂停或结束'}).click();await page.getByRole('button',{name:'结束并记下',exact:true}).click();
+  await page.getByRole('button',{name:'时间不够',exact:true}).click();await page.getByRole('button',{name:'记下来',exact:true}).click();
+  await expect(page.getByRole('heading',{name:'本周回顾',exact:true})).toBeVisible();
+  if(i===0)await page.getByRole('button',{name:'下一次',exact:true}).click();
+ }
+ const before=await page.evaluate(async()=>{const p='/src/persistence/db.ts';const db=(await import(/* @vite-ignore */ p)).database;return {workouts:await db.v8Workouts.toArray(),versions:await db.v8PlanVersions.toArray()};});
+ await page.getByRole('button',{name:'就这样调整',exact:true}).click();await expect(page.getByRole('heading',{name:'核对调整后的计划'})).toBeVisible();
+ expect(await page.evaluate(async()=>{const p='/src/persistence/db.ts';return (await import(/* @vite-ignore */ p)).database.v8PlanVersions.count();})).toBe(1);
+ await page.getByRole('button',{name:'就这样调整',exact:true}).click();await expect(page.getByRole('status')).toHaveText('已保存为新的计划版本。');
+ const after=await page.evaluate(async()=>{const p='/src/persistence/db.ts';const db=(await import(/* @vite-ignore */ p)).database;return {workouts:await db.v8Workouts.toArray(),versions:await db.v8PlanVersions.toArray()};});
+ expect(after.workouts).toEqual(before.workouts);expect(after.versions).toHaveLength(2);expect(after.versions.find((v:{id:string})=>v.id===before.versions[0].id)).toEqual(before.versions[0]);
+ await page.getByRole('button',{name:'本月回顾',exact:true}).click();await expect(page.getByRole('heading',{name:'本月回顾',exact:true})).toBeVisible();
+ await page.goto('/plans/versions');await expect(page.getByRole('button',{name:'查看计划',exact:true})).toHaveCount(2);
+});

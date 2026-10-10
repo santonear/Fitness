@@ -35,3 +35,16 @@
 .v8-topline h1 { margin-block: var(--s3); font-size: var(--t5); }
 .v8-capsules > details { padding: var(--s2) var(--s3); flex: 1 1 40%; }
 .v8-capsules summary { min-height: var(--touch-min); }
+.v8-shell { box-sizing: border-box; overflow-wrap: anywhere; }
+.v8-shell main { min-width: 0; padding-bottom: calc(var(--touch-workout) + var(--s6) + env(safe-area-inset-bottom)); }
+.v8-shell .v8-row { display: flex; flex-wrap: wrap; gap: var(--s3); }
+.v8-month-chart { display: flex; gap: var(--s2); }
+.v8-month-chart > div { flex: 1; min-width: 0; text-align: center; font-size: var(--t2); }
+.v8-month-column { height: calc(var(--s8) * 3); display: flex; flex-direction: column-reverse; background: var(--c-surface); }
+.v8-month-complete { height: calc(var(--complete-ratio) * 100%); background: var(--c-primary); }
+.v8-month-partial { height: calc(var(--partial-ratio) * 100%); background: color-mix(in srgb, var(--c-primary) 40%, var(--c-surface)); }
+@media (min-width: 960px) {
+  .v8-shell { padding-left: calc(var(--layout-desktop-rail) + var(--s5)); }
+  .v8-shell > nav { top: 0; bottom: 0; left: 0; transform: none; width: var(--layout-desktop-rail); max-width: none; margin: 0; flex-direction: column; justify-content: center; padding: var(--s4) var(--s2); border-top: 0; border-right: var(--bw) solid var(--c-line); }
+  .v8-shell main { padding-bottom: var(--s6); }
+}

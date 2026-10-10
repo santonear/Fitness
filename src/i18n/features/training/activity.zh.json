@@ -1,0 +1,1 @@
+{"title":"记录一次活动","type":"活动类型","types":{"walk":"散步","run":"跑步","cycle":"骑行","swim":"游泳","yoga":"瑜伽","stairs":"爬楼","other":"其他"},"customName":"活动名称（可不填）","duration":"时长（分钟）","less":"减少 10 分钟","more":"增加 10 分钟","when":"活动时间","times":{"now":"刚刚","earlier":"今天早些时候","yesterday":"昨天","date":"选日期"},"date":"日期","hint":"计入回顾中的其他活动，不计入每周计划训练次数。"}

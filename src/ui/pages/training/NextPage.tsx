@@ -15,5 +15,6 @@ export function NextPage(){
  {selected?<><slots.FeatureCard context="next" motionReduced={false} trainingActive={false}><slots.StartHero {...selected} templateId={selected.id} startLabel={t.start} disabled={busy||!!data?.active} onStart={()=>void start(selected.id)}/><p className="v8-center">{lastSelected?.status==='partial'?t.partialReason:format(t.reason,{minutes:selected.estimatedMinutes})}</p></slots.FeatureCard>
  <p>{t.details}</p><div className="v8-capsules">{selected.items.map((item,index)=><details key={index}><summary>{name(item.exerciseId)} · {item.sets} {t.sets}</summary><p>{exercises.find(e=>e.id===item.exerciseId)?.steps[data?.profile?.locale??'zh'].join(' ')}</p></details>)}</div>
  <div className="v8-row"><Button disabled={templates.length<2} onClick={()=>setChoice(templates[(templates.indexOf(selected)+1)%templates.length].id)}>{t.switch}</Button><Button onClick={()=>navigate('/manual')}>{t.manual}</Button></div></>:<Button variant="primary" onClick={()=>navigate('/onboarding')}>{t.create}</Button>}
+ <Button onClick={()=>navigate('/activity')}>{t.recordActivity}</Button>
  </main>;
 }
