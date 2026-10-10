@@ -7,11 +7,17 @@ import { DailyUsageStore } from './daily-usage-store';
 export interface FitnessWorkerEnv extends DeepSeekWorkerEnv, ManagementEnv, FeatureConfigEnv {
   ASSETS?: { fetch(request: Request): Promise<Response> };
   FITNESS_TELEMETRY?: { send(event: unknown): Promise<void> };
+  PUSH?: { fetch(request: Request): Promise<Response> };
 }
 /** API routing is explicit: missing API configuration must never become the SPA HTML. */
 export function createFitnessWorker(control = createDeepSeekWorker(), authenticate = verifyAdministrator) {
   return { async fetch(request: Request, env: FitnessWorkerEnv): Promise<Response> {
     const path = new URL(request.url).pathname;
+    if (path.startsWith('/api/v1/push/')) {
+      if (!env.PUSH) return new Response(null, { status: 503 });
+      if (request.method !== 'DELETE' && !(await readFeatureFlags(env)).systemNotifications) return new Response(null, { status: 503 });
+      return env.PUSH.fetch(request);
+    }
     if (path === '/api/v1/features' && request.method === 'GET') return new Response(JSON.stringify({
       version: 1, flags: await readFeatureFlags(env), expiresAt: Date.now() + 60_000,
     }), { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
