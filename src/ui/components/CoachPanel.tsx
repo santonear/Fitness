@@ -8,10 +8,11 @@ import { sendCoach } from '../../coach/transport';
 import zh from '../../i18n/features/coach/zh.json';
 import en from '../../i18n/features/coach/en.json';
 import { exercises } from '../../catalog/exercises';
+import { targetText } from './ExerciseTargets';
 
 export type CoachApplication = { request: CoachRequest; response: CoachResponse; expectedRevision: number };
 export type CoachPanelProps = { open: boolean; onClose: () => void; request?: CoachRequest; expectedRevision: number;
-  triggerRef?: RefObject<HTMLElement|null>; onLocalPlan?:()=>void; onLocalReview?:()=>void; locale?:'zh'|'en'; onApply: (candidate: CoachApplication) => Promise<unknown>; onResponse?: (candidate: CoachApplication) => void };
+  triggerRef?: RefObject<HTMLElement|null>; onLocalPlan?:()=>void; onLocalReview?:()=>void; locale?:'zh'|'en'; unavailableReason?:string; onApply: (candidate: CoachApplication) => Promise<unknown>; onResponse?: (candidate: CoachApplication) => void };
 
 function responseText(response: CoachResponse): string[] {
  switch(response.type){case 'clarify':return [response.question];case 'refused':return [response.reason];case 'plan_proposal':return response.proposal.reasons;case 'change_proposal':return response.changes;case 'today_adjustment':return [response.summary];case 'review_summary':return [response.opening,response.encouragement,response.gap,...response.dataBoundary,...(response.suggestion?[response.suggestion.summary]:[])];}
@@ -24,7 +25,7 @@ function readable(value:unknown,copy:typeof zh,locale:'zh'|'en'):string{
  return String(value);
 }
 /** Keep mounted when closed so drafts and reviewed candidates survive panel dismissal. */
-export function CoachPanel({open,onClose,request,expectedRevision,onApply,onResponse,triggerRef:externalTrigger,onLocalPlan,onLocalReview,locale}:CoachPanelProps){
+export function CoachPanel({open,onClose,request,expectedRevision,onApply,onResponse,triggerRef:externalTrigger,onLocalPlan,onLocalReview,locale,unavailableReason}:CoachPanelProps){
  const [text,setText]=useState(''),[body,setBody]=useState(false),[history,setHistory]=useState(false),[state,setState]=useState<CoachVisualState>('idle'),[error,setError]=useState(''),[candidate,setCandidate]=useState<CoachApplication>();
  const [requestId,setRequestId]=useState(()=>crypto.randomUUID());
  const controller=useRef<AbortController|undefined>(undefined),sequence=useRef(0),triggerRef=useRef<HTMLButtonElement>(null),sending=useRef(false);
@@ -47,9 +48,9 @@ export function CoachPanel({open,onClose,request,expectedRevision,onApply,onResp
  return <MorphPanel open={open} onClose={onClose} triggerRef={externalTrigger??triggerRef} title={t.title} closeLabel={t.close}>
   <div className="coach-panel-content">
   <CoachVisual state={state}/><div aria-live="polite">{busy?t.thinking:state==='success'?t.saved:''}</div>
-  {!request&&<p>{t.unavailable}</p>}
+  {!request&&<p>{unavailableReason??t.unavailable}</p>}
   {(!request||noAccess)&&<>{onLocalPlan&&<Button onClick={onLocalPlan}>{t.localPlan}</Button>}{onLocalReview&&<Button onClick={onLocalReview}>{t.localReview}</Button>}</>}
-  {candidate&&<section>{responseText(candidate.response).map((line,index)=><p key={index}>{line}</p>)}{templates.map(template=><section key={template.id}><h3>{template.name}</h3><p>{template.estimatedMinutes} {t.minutes}</p><ul>{template.items.map((item,index)=><li key={index}>{exercises.find(e=>e.id===item.exerciseId)?.name[lang?'en':'zh']??item.exerciseId} · {item.sets} {t.sets}</li>)}</ul></section>)}{canApply&&state!=='success'&&<Button onClick={()=>void apply()}>{t.apply}</Button>}</section>}
+  {candidate&&<section>{responseText(candidate.response).map((line,index)=><p key={index}>{line}</p>)}{templates.map(template=><section key={template.id}><h3>{template.name}</h3><p>{template.estimatedMinutes} {t.minutes}</p><ul>{template.items.map((item,index)=><li key={index}>{exercises.find(e=>e.id===item.exerciseId)?.name[lang?'en':'zh']??item.exerciseId} · {item.sets} {t.sets} · {targetText(item.target,lang?'en':'zh')}</li>)}</ul></section>)}{canApply&&state!=='success'&&<Button onClick={()=>void apply()}>{t.apply}</Button>}</section>}
   {preview&&<><label><input type="checkbox" checked={body} disabled={busy||!request?.body} onChange={e=>setBody(e.target.checked)}/>{t.body}</label><label><input type="checkbox" checked={history} disabled={busy||!request?.history} onChange={e=>setHistory(e.target.checked)}/>{t.history}</label>
    <details><summary>{t.scope}</summary><p>{t.consent}</p><p>{t.taskNames[preview.task]}</p><dl>{Object.entries(preview).filter(([key])=>['profile','body','history','messages','template','instruction','plan','kind','facts'].includes(key)).map(([key,value])=><div key={key}><dt>{t.fields[key as keyof typeof t.fields]}</dt><dd>{readable(value,t,lang?'en':'zh')}</dd></div>)}</dl><details><summary>{t.technical}</summary><dl>{coachScopeFields(preview).map(field=><div key={field.key}><dt>{t.fields[field.key as keyof typeof t.fields]??field.key}</dt><dd>{field.value}</dd></div>)}</dl></details></details>
    <Composer value={text} onChange={setText} onSend={()=>void send()} label={t.input} sendLabel={t.send} busy={busy} disabled={busy}/></>}
