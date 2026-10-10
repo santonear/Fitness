@@ -1,0 +1,858 @@
+[
+  {
+    "page": "01-onboarding",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "controls": [
+      {
+        "tag": "TEXTAREA",
+        "text": "",
+        "width": 512,
+        "height": 102.5
+      },
+      {
+        "tag": "BUTTON",
+        "text": "想瘦下来，身体轻一点",
+        "width": 190,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "想有些力量，不再容易累",
+        "width": 205.609375,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "久坐，想让身体舒展开",
+        "width": 190,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "说不上来，想先动起来",
+        "width": 190,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "继续",
+        "width": 512,
+        "height": 56
+      }
+    ],
+    "animations": 0
+  },
+  {
+    "page": "02-draft",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "controls": [
+      {
+        "tag": "SUMMARY",
+        "text": "徒手深蹲 · 2 组",
+        "width": 510,
+        "height": 49.5
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "靠墙俯卧撑 · 2 组",
+        "width": 510,
+        "height": 49.5
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "自阻力划船 · 2 组",
+        "width": 510,
+        "height": 49.5
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "死虫式 · 2 组",
+        "width": 510,
+        "height": 49.5
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "臀桥 · 2 组",
+        "width": 510,
+        "height": 49.5
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "靠墙俯卧撑 · 2 组",
+        "width": 510,
+        "height": 49.5
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "自阻力划船 · 2 组",
+        "width": 510,
+        "height": 49.5
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "平板支撑 · 2 组",
+        "width": 510,
+        "height": 49.5
+      },
+      {
+        "tag": "BUTTON",
+        "text": "就用这份计划",
+        "width": 250,
+        "height": 56
+      },
+      {
+        "tag": "BUTTON",
+        "text": "想改改，和芽芽聊聊",
+        "width": 250,
+        "height": 48
+      }
+    ],
+    "animations": 0
+  },
+  {
+    "page": "03-next",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "text": "设置",
+        "width": 65.203125,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "A开始训练",
+        "width": 128,
+        "height": 128
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "徒手深蹲 · 2 组",
+        "width": 248,
+        "height": 44
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "靠墙俯卧撑 · 2 组",
+        "width": 248,
+        "height": 44
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "自阻力划船 · 2 组",
+        "width": 248,
+        "height": 44
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "死虫式 · 2 组",
+        "width": 248,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "换一份",
+        "width": 80.8125,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "手动训练",
+        "width": 96.40625,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "记录其他活动",
+        "width": 560,
+        "height": 48
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "将发送给芽芽",
+        "width": 560,
+        "height": 44
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "查看发送原文",
+        "width": 560,
+        "height": 44
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "width": 486.796875,
+        "height": 51.5
+      },
+      {
+        "tag": "BUTTON",
+        "text": "发送",
+        "width": 65.203125,
+        "height": 56
+      },
+      {
+        "tag": "BUTTON",
+        "text": "和芽芽聊聊",
+        "width": 560,
+        "height": 86.375
+      },
+      {
+        "tag": "BUTTON",
+        "text": "训练",
+        "width": 71,
+        "height": 83.1875
+      },
+      {
+        "tag": "BUTTON",
+        "text": "计划",
+        "width": 71,
+        "height": 83.1875
+      },
+      {
+        "tag": "BUTTON",
+        "text": "回顾",
+        "width": 71,
+        "height": 83.1875
+      }
+    ],
+    "animations": 0
+  },
+  {
+    "page": "04-capsule",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "text": "徒手深蹲 · 2 组 · 8 次",
+        "width": 200.4375,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "靠墙俯卧撑 · 2 组 · 8 次",
+        "width": 216.03125,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "自阻力划船 · 2 组 · 8 次",
+        "width": 216.03125,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "死虫式 · 2 组 · 8 次",
+        "width": 184.84375,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "臀桥 · 2 组 · 8 次",
+        "width": 169.234375,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "靠墙俯卧撑 · 2 组 · 8 次",
+        "width": 216.03125,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "自阻力划船 · 2 组 · 8 次",
+        "width": 216.03125,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "平板支撑 · 2 组 · 20 秒",
+        "width": 209.359375,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "查看以前的版本",
+        "width": 143.203125,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "动作库",
+        "width": 80.8125,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "×",
+        "width": 44,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "加载 YouTube 视频（连接第三方）",
+        "width": 255.84375,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "width": 98,
+        "height": 86.375
+      },
+      {
+        "tag": "BUTTON",
+        "text": "训练",
+        "width": 71,
+        "height": 83.1875
+      },
+      {
+        "tag": "BUTTON",
+        "text": "计划",
+        "width": 71,
+        "height": 83.1875
+      },
+      {
+        "tag": "BUTTON",
+        "text": "回顾",
+        "width": 71,
+        "height": 83.1875
+      }
+    ],
+    "animations": 0
+  },
+  {
+    "page": "08-plan",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "text": "徒手深蹲 · 2 组 · 8 次",
+        "width": 200.4375,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "靠墙俯卧撑 · 2 组 · 8 次",
+        "width": 216.03125,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "自阻力划船 · 2 组 · 8 次",
+        "width": 216.03125,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "死虫式 · 2 组 · 8 次",
+        "width": 184.84375,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "臀桥 · 2 组 · 8 次",
+        "width": 169.234375,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "靠墙俯卧撑 · 2 组 · 8 次",
+        "width": 216.03125,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "自阻力划船 · 2 组 · 8 次",
+        "width": 216.03125,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "平板支撑 · 2 组 · 20 秒",
+        "width": 209.359375,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "查看以前的版本",
+        "width": 143.203125,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "动作库",
+        "width": 80.8125,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "width": 98,
+        "height": 86.375
+      },
+      {
+        "tag": "BUTTON",
+        "text": "训练",
+        "width": 71,
+        "height": 83.1875
+      },
+      {
+        "tag": "BUTTON",
+        "text": "计划",
+        "width": 71,
+        "height": 83.1875
+      },
+      {
+        "tag": "BUTTON",
+        "text": "回顾",
+        "width": 71,
+        "height": 83.1875
+      }
+    ],
+    "animations": 0
+  },
+  {
+    "page": "05-training",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "text": "暂停或结束",
+        "width": 112,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "width": 78,
+        "height": 65.015625
+      },
+      {
+        "tag": "BUTTON",
+        "text": "自重×8 次",
+        "width": 560,
+        "height": 72
+      },
+      {
+        "tag": "BUTTON",
+        "text": "换动作",
+        "width": 80.8125,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "完成这一组",
+        "width": 560,
+        "height": 72
+      },
+      {
+        "tag": "BUTTON",
+        "text": "徒手深蹲",
+        "width": 96.40625,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "靠墙俯卧撑",
+        "width": 112,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "自阻力划船",
+        "width": 112,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "死虫式",
+        "width": 80.8125,
+        "height": 44
+      }
+    ],
+    "animations": 0
+  },
+  {
+    "page": "06-finish",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "text": "暂停或结束",
+        "width": 112,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "width": 78,
+        "height": 65.015625
+      },
+      {
+        "tag": "BUTTON",
+        "text": "自重×8 次",
+        "width": 560,
+        "height": 72
+      },
+      {
+        "tag": "BUTTON",
+        "text": "换动作",
+        "width": 80.8125,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "完成这一组",
+        "width": 560,
+        "height": 72
+      },
+      {
+        "tag": "BUTTON",
+        "text": "徒手深蹲",
+        "width": 96.40625,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "靠墙俯卧撑",
+        "width": 112,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "自阻力划船",
+        "width": 112,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "死虫式",
+        "width": 80.8125,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "继续训练",
+        "width": 510,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "结束并记下",
+        "width": 510,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "放弃这次（不计入回顾）",
+        "width": 510,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "关闭",
+        "width": 510,
+        "height": 48
+      }
+    ],
+    "animations": 0
+  },
+  {
+    "page": "07-activity",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "controls": [],
+    "animations": 0
+  },
+  {
+    "page": "09-week",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "text": "本周回顾",
+        "width": 96.40625,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "本月回顾",
+        "width": 96.40625,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "就这样调整",
+        "width": 112,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "先不改",
+        "width": 80.8125,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "下一次",
+        "width": 560,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "width": 98,
+        "height": 86.375
+      },
+      {
+        "tag": "BUTTON",
+        "text": "训练",
+        "width": 71,
+        "height": 83.1875
+      },
+      {
+        "tag": "BUTTON",
+        "text": "计划",
+        "width": 71,
+        "height": 83.1875
+      },
+      {
+        "tag": "BUTTON",
+        "text": "回顾",
+        "width": 71,
+        "height": 83.1875
+      }
+    ],
+    "animations": 0
+  },
+  {
+    "page": "10-month",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "text": "本周回顾",
+        "width": 96.40625,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "本月回顾",
+        "width": 96.40625,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "就这样调整",
+        "width": 112,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "先不改",
+        "width": 80.8125,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "下一次",
+        "width": 560,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "width": 98,
+        "height": 86.375
+      },
+      {
+        "tag": "BUTTON",
+        "text": "训练",
+        "width": 71,
+        "height": 83.1875
+      },
+      {
+        "tag": "BUTTON",
+        "text": "计划",
+        "width": 71,
+        "height": 83.1875
+      },
+      {
+        "tag": "BUTTON",
+        "text": "回顾",
+        "width": 71,
+        "height": 83.1875
+      }
+    ],
+    "animations": 0
+  },
+  {
+    "page": "11-appearance",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "controls": [],
+    "animations": 0
+  },
+  {
+    "page": "12-coach",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "text": "设置",
+        "width": 65.203125,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "B开始训练",
+        "width": 128,
+        "height": 128
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "臀桥 · 2 组",
+        "width": 248,
+        "height": 44
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "靠墙俯卧撑 · 2 组",
+        "width": 248,
+        "height": 44
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "自阻力划船 · 2 组",
+        "width": 248,
+        "height": 44
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "平板支撑 · 2 组",
+        "width": 248,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "换一份",
+        "width": 80.8125,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "手动训练",
+        "width": 96.40625,
+        "height": 48
+      },
+      {
+        "tag": "BUTTON",
+        "text": "记录其他活动",
+        "width": 560,
+        "height": 48
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "将发送给芽芽",
+        "width": 560,
+        "height": 44
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "查看发送原文",
+        "width": 560,
+        "height": 44
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "width": 486.796875,
+        "height": 51.5
+      },
+      {
+        "tag": "BUTTON",
+        "text": "发送",
+        "width": 65.203125,
+        "height": 56
+      },
+      {
+        "tag": "BUTTON",
+        "text": "和芽芽聊聊",
+        "width": 560,
+        "height": 86.375
+      },
+      {
+        "tag": "BUTTON",
+        "text": "×",
+        "width": 44,
+        "height": 44
+      },
+      {
+        "tag": "BUTTON",
+        "text": "确认应用",
+        "width": 96.40625,
+        "height": 48
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "width": 406,
+        "height": 44
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "将发送给芽芽",
+        "width": 406,
+        "height": 44
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "查看发送原文",
+        "width": 406,
+        "height": 44
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "width": 332.796875,
+        "height": 51.5
+      },
+      {
+        "tag": "BUTTON",
+        "text": "发送",
+        "width": 65.203125,
+        "height": 56
+      },
+      {
+        "tag": "BUTTON",
+        "text": "训练",
+        "width": 71,
+        "height": 83.1875
+      },
+      {
+        "tag": "BUTTON",
+        "text": "计划",
+        "width": 71,
+        "height": 83.1875
+      },
+      {
+        "tag": "BUTTON",
+        "text": "回顾",
+        "width": 71,
+        "height": 83.1875
+      }
+    ],
+    "animations": 0
+  }
+]

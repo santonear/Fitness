@@ -1,0 +1,37 @@
+{
+  "unit": {
+    "passed": 763,
+    "todo": 5,
+    "files": 97
+  },
+  "mainBrowser": {
+    "chromium": 111,
+    "webkitInitialPassed": 110,
+    "webkitOriginalTimeoutRestoredRerunPassed": 2,
+    "webkitSaveP95ms": 251,
+    "saveP95LimitMs": 300
+  },
+  "additionalBrowserChecks": {
+    "a11yBothEngines": 8,
+    "backupFeedbackAndCrossOriginBothEngines": 10,
+    "trialBothEngines": 34,
+    "mainlineChromium": 12,
+    "planReviewChromium": 6,
+    "coachChromium": 12,
+    "matrixGroups": 10
+  },
+  "finalCollection": {
+    "main": 238,
+    "flows": 64,
+    "matrix": 10
+  },
+  "typecheck": true,
+  "productionBuild": true,
+  "styleViolations": 0,
+  "clientPromptBoundary": true,
+  "notes": [
+    "Existing evidence reused where implementation and inputs are unchanged.",
+    "WebKit setup timeout restored to original 60s file budget (slow test 180s); 300ms performance threshold unchanged.",
+    "Coach endpoints mocked; no paid/live model calls."
+  ]
+}

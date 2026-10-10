@@ -1,3 +1,4 @@
+import { useRestVibration } from './useRestVibration';
 import { useState,useEffect } from 'react';
 import { Button,Chip } from '../../components/common';
 import { useMainline,workflow,format } from '../../mainline/context';
@@ -7,7 +8,7 @@ import { CoachVisual } from '../../components/CoachVisual';
 export function WorkoutPage(){
  const {data,t,locale,name,navigate,run,busy,slots,openCoach,focusIndex:index,setFocusIndex:setIndex,workoutValues:values,setWorkoutValues:setValues}=useMainline();const active=data?.active;
  const [panel,setPanel]=useState<'pause'|'edit'|'swap'>(),[replacement,setReplacement]=useState(''),[reason,setReason]=useState<'other'|'discomfort'>('other');
- const [rest,setRest]=useState(0);useTrainingWakeLock(!!active&&!panel);
+ const [rest,setRest]=useState(0);useTrainingWakeLock(!!active&&!panel);useRestVibration(active?.sets.at(-1)?.completedAt,!!active&&!panel);
  useEffect(()=>{const last=active?.sets.at(-1)?.completedAt;if(!last)return;const update=()=>setRest(Math.max(0,Math.floor((Date.now()-Date.parse(last))/1000)));update();const timer=window.setInterval(update,1000);return()=>clearInterval(timer);},[active?.sets.length]);
  if(!active)return <main><p>{t.noTraining}</p><Button onClick={()=>navigate('/')}>{t.next}</Button></main>;
  const items=active.plannedExercises??[],item=items[index]??items[0];if(!item)return null;

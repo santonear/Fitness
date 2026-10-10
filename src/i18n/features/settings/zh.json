@@ -40,5 +40,7 @@
   "quietEnd": "静默结束时间",
   "quietConflict": "这个提醒时间在静默时段内，静默期间不会显示提醒。可以调整提醒时间或静默时段。",
   "zeroLimit": "每日上限为0，不会显示提醒。",
-  "trial": "试用资格与邀请码"
+  "trial": "试用资格与邀请码",
+  "restVibration": "休息到 90 秒时轻震一下（仅此设备）",
+  "vibrationUnavailable": "此设备不支持轻震。"
 }

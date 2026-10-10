@@ -1,4 +1,4 @@
-/** Declarative route inventory; not mounted until integration. */
+/** Declarative V8 route inventory. */
 export const v8Routes = [
   { id: 'onboarding', path: '/onboarding', page: 'onboarding/OnboardingPage', namespace: 'onboarding', owner: 'E' },
   { id: 'draft', path: '/plan-draft', page: 'onboarding/PlanDraftPage', namespace: 'onboarding', owner: 'E' },

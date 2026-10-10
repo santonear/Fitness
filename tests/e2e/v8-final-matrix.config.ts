@@ -1,0 +1,2 @@
+import base from '../../playwright.config';
+export default {...base,testDir:'.',testMatch:'v8-final-matrix.spec.ts',testIgnore:[],workers:2,projects:[{name:'chromium',use:{browserName:'chromium' as const}}],webServer:{...base.webServer,command:'node node_modules/vite/bin/vite.js --configLoader runner --host 127.0.0.1 --port 5293 --strictPort',cwd:'../..',url:'http://127.0.0.1:5293'},use:{...base.use,baseURL:'http://127.0.0.1:5293'},outputDir:'../../.cache/matrix-results'};

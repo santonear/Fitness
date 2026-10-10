@@ -89,5 +89,6 @@
  "understood": "Got it",
  "askCoach": "Talk to Yaya",
  "oldWorkout": "This workout uses an earlier plan. Finish and record it before adjusting the current plan.",
- "meters": "Metres"
+ "meters": "Metres",
+  "restoreSucceeded": "Restore succeeded."
 }

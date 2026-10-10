@@ -71,7 +71,7 @@ function useController() {
  }
  async function run(action: () => Promise<void>) { if(lock.current)return; lock.current=true;setBusy(true);setError('');try{await action();await reload();}catch{setError(t.saveError);}finally{lock.current=false;setBusy(false);} }
  useEffect(()=>{let alive=true;void(async()=>{
-  await profileService.initialize('zh');const next=await reload();if(!alive)return;
+  let initialLocale:'zh'|'en'='zh';try{if(localStorage.getItem('fitness.language')==='en')initialLocale='en';}catch{/* Use the default when storage is unavailable. */}await profileService.initialize(initialLocale);const next=await reload();if(!alive)return;
   if(next.profile)await i18n.changeLanguage(next.profile.locale);if(!alive)return;
   draftKey.current=`fitness-v8-draft:${next.metadata.localProfileId}:${next.metadata.restoreGeneration??0}`;
   const legacy=await repository.db.guidedStates.get('guided');

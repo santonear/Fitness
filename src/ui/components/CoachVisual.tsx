@@ -1,4 +1,4 @@
-import type { CoachVisualState } from './CoachAvatar';
+export type CoachVisualState = 'idle' | 'thinking' | 'replying' | 'success';
 import './coach-panel.css';
 
 const images = { idle: 0, thinking: 1, replying: 2, success: 3 };

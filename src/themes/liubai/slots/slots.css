@@ -1,4 +1,4 @@
-.v8-liubai-brand { justify-content: center; inline-size: var(--s7); block-size: var(--s7); color: var(--c-surface); background: var(--c-signature); border-radius: var(--r-control); }
+.v8-liubai-brand { justify-content: center; min-inline-size: var(--s7); inline-size: max-content; block-size: var(--s7); padding-inline: var(--s2); white-space: nowrap; font-size: var(--t2); color: var(--c-surface); background: var(--c-signature); border-radius: var(--r-control); }
 .v8-liubai-week .v8-week-dots { border-block-end: var(--bw) solid var(--c-ink); padding-block-end: var(--s1); transform: skewY(-8deg); }
 .v8-liubai-week .v8-week-dots i[data-state="complete"] { background: var(--c-signature); border-color: var(--c-signature); }
 .v8-liubai-start { grid-template-columns: 1fr auto; text-align: start; justify-items: stretch; }

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { Button, Composer, MorphPanel } from './common';
 import { CoachVisual } from './CoachVisual';
-import type { CoachVisualState } from './CoachAvatar';
+import type { CoachVisualState } from './CoachVisual';
 import type { CoachRequest, CoachResponse } from '../../coach/contracts';
 import { approveCoachScope, coachScope, coachScopeFields, coachMessageScope } from '../../coach/consent';
 import { sendCoach } from '../../coach/transport';

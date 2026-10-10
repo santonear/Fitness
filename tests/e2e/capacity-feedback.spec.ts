@@ -5,8 +5,8 @@ for (const locale of ['en-US', 'zh-CN']) {
     test.use({ locale });
     test('download is not kept confirmation and a later write invalidates replacement', async ({ page }) => {
       const zh = locale === 'zh-CN';
-      await page.goto('/settings?tab=backup');
-      if (zh) await page.getByLabel('Language', { exact: true }).selectOption('zh');
+      await page.goto('/settings');await expect(page.getByRole('heading',{name:'设置',exact:true})).toBeVisible();await page.getByRole('combobox').selectOption(zh?'zh':'en');await page.getByRole('button',{name:zh?'备份恢复':'Backup and restore',exact:true}).click();
+
       await expect(page.getByRole('button', { name: zh ? '导出 JSON 备份' : 'Export JSON backup', exact: true })).toBeVisible();
       await expect(page.getByText(/16 MiB（16777216|16 MiB \(16777216/)).toBeVisible();
       const first = page.waitForEvent('download');
@@ -47,8 +47,8 @@ for (const locale of ['en-US', 'zh-CN']) {
 }
 for (const locale of ['en', 'zh']) test(`successful replacement leaves explicit ${locale} feedback after the generation remount`, async ({ page }) => {
   const zh = locale === 'zh';
-  await page.goto('/settings?tab=backup');
-  if (zh) await page.getByLabel('Language', { exact: true }).selectOption('zh');
+  await page.goto('/settings');await expect(page.getByRole('heading',{name:'设置',exact:true})).toBeVisible();await page.getByRole('combobox').selectOption(zh?'zh':'en');await page.getByRole('button',{name:zh?'备份恢复':'Backup and restore',exact:true}).click();
+
   const first = page.waitForEvent('download');
   await page.getByRole('button', { name: zh ? '导出 JSON 备份' : 'Export JSON backup', exact: true }).click();
   const file = await (await first).path(); if (!file) throw new Error('Missing download');

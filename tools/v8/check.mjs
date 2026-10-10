@@ -35,5 +35,5 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const actual = await scan();
   const added = actual.filter(x => !baseline.includes(x));
   if (added.length) { console.error(added.join('\n')); process.exitCode = 1; }
-  console.log(`V8 skeleton: ${added.length} new violations; ${actual.length} legacy rule/file pairs pending wave 3.`);
+  console.log(`V8 styles: ${added.length} new violations; ${actual.length} total rule/file pairs.`);
 }
