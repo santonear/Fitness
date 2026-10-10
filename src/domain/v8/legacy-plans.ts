@@ -5,6 +5,7 @@ import type { PlanVersion, SessionTemplate } from './contracts';
 import { legacyItemsToV8 } from './legacy-items';
 import { legacyPlanMinutes, legacyTemplateMinutes } from './legacy-duration';
 import { selectLegacyCurrentPlan } from './legacy-selection';
+import { dateWeeklyTarget, legacyPlanGroups } from './legacy-groups';
 
 interface LegacyPlansInput {
   plans: readonly Plan[];
@@ -65,7 +66,7 @@ export async function migrateLegacyPlans(
       id, planId: plan.id, versionNumber: original.versionNumber + 1,
       goalText: original.goalSnapshot.goal,
       // Period-plan days already contain every week; date-day plans contain exactly one day.
-      weeklyTarget: 'durationWeeks' in original ? original.daysPerWeek : 1,
+      weeklyTarget: 'durationWeeks' in original ? original.daysPerWeek : dateWeeklyTarget(source.scheduledWorkouts.filter(row => row.planVersionId === original.id).map(row => row.scheduledDate)),
       // Legacy plan versions have no plan-scoped original schedule text. A current global answer is not its provenance.
       scheduleOriginalText: '',
       sessionMinutes: legacyPlanMinutes(onboardingSlot, templates.map(template => template.estimatedMinutes)),
@@ -74,8 +75,20 @@ export async function migrateLegacyPlans(
     };
   }));
   const current = selectLegacyCurrentPlan(source.plans, source.planVersions, source.sessions);
+  const eligible = retainedPlans.map(plan => plan.model === 'date-day' && !source.scheduledWorkouts.some(row => row.planVersionId === plan.currentVersionId && !row.hiddenAt && row.status !== 'skipped') ? { ...plan, status: 'archived' as const } : plan);
+  const groups = legacyPlanGroups(eligible, source.planVersions, source.guidedStates ?? []);
+  const combined = groups.map(ids => {
+    const representative = ids.includes(current?.id ?? '') ? current!.id : ids[0];
+    const base = versions.find(v => v.planId === representative)!;
+    if (ids.length === 1) return base;
+    const members = versions.filter(v => ids.includes(v.planId));
+    const templates = members.flatMap(v => v.templates).map((t, index) => ({ ...t, name: templateName(index) }));
+    const sourceIds = new Set(source.planVersions.filter(v => ids.includes(v.planId) && retainedPlans.some(p => p.currentVersionId === v.id)).map(v => v.id));
+    return { ...base, templates, weeklyTarget: dateWeeklyTarget(source.scheduledWorkouts.filter(row => sourceIds.has(row.planVersionId)).map(row => row.scheduledDate)),
+      sessionMinutes: legacyPlanMinutes(onboardingSlot, templates.map(t => t.estimatedMinutes)), changeSummary: [...new Set(members.flatMap(v => v.changeSummary))] };
+  });
   return {
-    plans: retainedPlans.map((plan, index) => ({ id: plan.id, name: plan.name, currentVersionId: versions[index].id, readOnly: plan.id !== current?.id })),
-    versions, ...(current ? { currentPlanId: current.id } : {}),
+    plans: combined.map(version => ({ id: version.planId, name: retainedPlans.find(p => p.id === version.planId)!.name, currentVersionId: version.id, readOnly: version.planId !== current?.id })),
+    versions: combined, ...(current ? { currentPlanId: current.id } : {}),
   };
 }
