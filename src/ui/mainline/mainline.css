@@ -1,0 +1,19 @@
+.v8-shell { min-height: 100dvh; background: var(--c-bg-grad); color: var(--c-ink); font-family: var(--f-body); font-size: var(--t3); font-weight: var(--w-body); line-height: var(--lh-body); padding: var(--s5); }
+.v8-shell main, .v8-shell-header, .v8-shell > nav, .v8-shell > [role=alert] { max-width: var(--layout-desktop-main); margin-inline: auto; }
+.v8-shell-header { display: flex; justify-content: space-between; align-items: center; gap: var(--s4); padding-block: var(--s4); }
+.v8-shell h1, .v8-shell h2 { font-family: var(--f-display); font-weight: var(--w-display); }
+.v8-shell h1 { font-size: var(--t6); margin-block: var(--s5); }
+.v8-shell h2 { font-size: var(--t5); }
+.v8-shell main { display: grid; gap: var(--s4); padding-bottom: var(--s6); }
+.v8-shell label { display: grid; gap: var(--s2); }
+.v8-shell input:not([type=checkbox]):not([type=radio]), .v8-shell textarea, .v8-shell select { box-sizing: border-box; width: 100%; min-height: var(--touch-min); color: var(--c-ink); background: var(--c-surface); border: var(--bw) solid var(--c-line); border-radius: var(--r-control); padding: var(--s3); font: inherit; }
+.v8-shell textarea { border-radius: var(--r-panel); }
+.v8-shell fieldset { border: var(--bw) solid var(--c-line); border-radius: var(--r-panel); padding: var(--s4); display: grid; gap: var(--s3); }
+.v8-shell fieldset label { display: flex; align-items: center; min-height: var(--touch-min); }
+.v8-shell .v8-sheet { padding: var(--s5); }
+.v8-shell > nav { display: flex; justify-content: space-around; gap: var(--s3); }
+.v8-shell > nav button { display: grid; justify-items: center; }
+.v8-training-set { display: grid; grid-template-columns: 1fr 1fr; align-items: end; gap: var(--s3); margin-block: var(--s4); }
+.v8-facts { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s4); }
+.v8-shell[data-training-active=true] *, .v8-shell[data-training-active=true] *::before, .v8-shell[data-training-active=true] *::after { animation: none; }
+@media (prefers-reduced-motion: reduce) { .v8-shell *, .v8-shell *::before, .v8-shell *::after { animation: none; transition: none; } }

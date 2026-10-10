@@ -35,6 +35,7 @@ jobs:
           npx playwright test --list --config playwright.guided-live.config.ts > /dev/null
           npx playwright test --list --config playwright.trial.config.ts > /dev/null
           npx playwright test --list --config playwright.v31-all.config.ts > /dev/null
+          npx playwright test --list --config tests/e2e/v8-mainline.config.ts > /dev/null
 
   browser-main:
     needs: checks
@@ -73,6 +74,7 @@ jobs:
       - run: npx playwright test --config playwright.guided-live.config.ts
       - run: npx playwright test --config playwright.trial.config.ts
       - run: npx playwright test --config playwright.v31-all.config.ts
+      - run: npx playwright test --config tests/e2e/v8-mainline.config.ts
 
   # Preserve the existing required check name and fail closed if any group fails.
   verify:
