@@ -1,4 +1,5 @@
 import { featureNames } from '../../../domain/feature-flags';
+import {readFeatureFlags} from '../../feature-config';
 import { AdminError, requireAdminDb, type AdminContext } from '../core/contracts';
 import { promptTasks, registeredPromptVersions, sensitiveFeatures, type FlagRow, type ReleasesEnv, type ReleaseEnvironment } from './model';
 
@@ -6,16 +7,17 @@ export async function releaseOverview(context: AdminContext<ReleasesEnv>) {
   const db = requireAdminDb(context);
   const environment=context.env.ADMIN_ENVIRONMENT;
   if(!environment)throw new AdminError('RELEASE_ENVIRONMENT_UNAVAILABLE',503);
-  const [flags, history, prompts, releases, smoke] = await Promise.all([
+  const [flags, history, prompts, releases, smoke, effectiveFlags] = await Promise.all([
     db.prepare('SELECT name,environment,enabled,pending,changed_by,changed_at FROM admin_feature_flags WHERE environment=?').bind(environment).all<FlagRow>(),
     db.prepare('SELECT request_id,environment,kind,object_id,before_value,after_value,actor,created_at FROM admin_release_history WHERE environment=? ORDER BY created_at DESC LIMIT 100').bind(environment).all(),
     db.prepare('SELECT environment,task,version,changed_by,changed_at FROM admin_prompt_selection WHERE environment=?').bind(environment).all(),
     db.prepare('SELECT environment,current_id,previous_id,changed_at,operation_id FROM admin_release_state WHERE environment=?').bind(environment).all(),
     db.prepare('SELECT environment,release_id,check_id,status,checked_at FROM admin_release_smoke WHERE environment=?').bind(environment).all(),
+    readFeatureFlags(context.env),
   ]);
   return { features: featureNames.map(name => ({ name, sensitive: sensitiveFeatures.has(name), states: (['preview','production'] as const).map(environment => {
     const row = flags.results.find(item => item.name === name && item.environment === environment);
-    return {environment,enabled:row ? row.enabled === 1 : null,pending:row?.pending === 1,changedBy:row?.changed_by ?? null,changedAt:row?.changed_at ?? null};
+    return {environment,enabled:environment===context.env.ADMIN_ENVIRONMENT ? effectiveFlags[name] : null,pending:row?.pending === 1,changedBy:row?.changed_by ?? null,changedAt:row?.changed_at ?? null};
   }) })), environment, history:history.results, prompts:prompts.results, promptTasks, registeredPromptVersions, releases:releases.results, smoke:smoke.results };
 }
 export async function saveFlag(context:AdminContext<ReleasesEnv>, value:{name:string;environment:ReleaseEnvironment;enabled:boolean}, pending=false) {

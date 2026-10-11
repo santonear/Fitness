@@ -1,4 +1,5 @@
 export const featureCopy:Record<string,[string,string,string,string]>={
+  adminConsole:['新版后台','关闭后停止访问新版后台；需要通过受控维护重新开启。','Admin console','Turning this off closes the new console. Re-enabling requires controlled maintenance.'],
   planLifecycle:['计划整理','整理、删除与恢复本机计划。','Plan management','Organize, delete and restore local plans.'],
   themeDiscovery:['主题选择','展示可选主题。','Theme discovery','Show available themes.'],
   fontSubset:['字体优化','使用精简字体资源。','Font optimization','Use compact font assets.'],

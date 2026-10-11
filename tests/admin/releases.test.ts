@@ -8,6 +8,7 @@ import { readManagedFeatureFlags, readSelectedPromptVersion } from '../../src/ba
 import { releaseTodoSource } from '../../src/backend/admin/releases/todos';
 import { rollbackRelease } from '../../src/backend/admin/releases/deployment';
 import { createCloudflareReleaseAdapter } from '../../src/backend/admin/releases/cloudflare-adapter';
+import {readFeatureFlags} from '../../src/backend/feature-config';
 
 const connections:DatabaseSync[]=[];
 function fixture() {
@@ -23,6 +24,15 @@ const current={id:'release-current',deploymentId:'11111111-1111-4111-8111-111111
 const previous={...current,id:'release-previous',deploymentId:'22222222-2222-4222-8222-222222222222'};
 afterEach(()=>{for(const connection of connections.splice(0))connection.close();vi.unstubAllGlobals();});
 describe('persistent release controls',()=>{
+  it('shows configured console defaults and managed false overrides its enabled environment setting',async()=>{
+    const {context}=fixture();context.env.ADMIN_CONSOLE_ENABLED='true';
+    const overview=await handleReleases(new Request('https://example.test/api/v1/management/console/releases'),context);
+    expect((await overview!.json()).features.find((row:{name:string})=>row.name==='adminConsole').states[0].enabled).toBe(true);
+    context.fresh=false;await handleReleases(post('flags',{name:'adminConsole',environment:'preview',enabled:false}),context);
+    expect((await readFeatureFlags(context.env)).adminConsole).toBe(false);
+    const updated=await handleReleases(new Request('https://example.test/api/v1/management/console/releases'),context);
+    expect((await updated!.json()).features.find((row:{name:string})=>row.name==='adminConsole').states[0].enabled).toBe(false);
+  });
   it('isolates environments, persists explicit disable immediately and records actor/history',async()=>{
     const {context,sqlite}=fixture();
     await handleReleases(post('flags',{name:'exercisePanel',environment:'preview',enabled:true}),context);
