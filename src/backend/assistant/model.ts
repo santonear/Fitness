@@ -81,7 +81,9 @@ export function createAssistantProvider(options: { apiKey: string; baseUrl: stri
     if (!response.ok) throw new Error('PROVIDER_FAILED');
     return response;
   };
-  const usage = (raw?: { prompt_tokens?: number; completion_tokens?: number }): AssistantUsage => ({ inputTokens: Math.max(0, raw?.prompt_tokens ?? 0), outputTokens: Math.max(0, raw?.completion_tokens ?? 0) });
+  const usage = (raw?: { prompt_tokens?: number; completion_tokens?: number }): AssistantUsage | undefined =>
+    raw && Number.isSafeInteger(raw.prompt_tokens) && Number.isSafeInteger(raw.completion_tokens) && raw.prompt_tokens! >= 0 && raw.completion_tokens! >= 0
+      ? { inputTokens: raw.prompt_tokens!, outputTokens: raw.completion_tokens! } : undefined;
   return {
     async *streamText(messages, signal) {
       const response = await send(messages, true, signal);
