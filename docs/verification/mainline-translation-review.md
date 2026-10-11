@@ -49,3 +49,6 @@
 `node tools/catalog/build.mjs`：637 / 1126，固定哈希通过。
 `npx tsc --noEmit`：通过。
 `npx vitest run tests/catalog/exercise-guide.test.ts tests/domain/catalog.test.ts`：2 文件、39 项通过。覆盖 150 指导结构及真实 ID、中文回退、旧前缀、结果克隆、别名/容错、组合过滤、康复名单、注意部位不隐藏及旧调用签名。
+
+补充完整单元验证：`npx vitest run`：108 文件通过、2 文件跳过；846 项通过、29 跳过、5 todo。运行范围为动作分支，未包含其他三线尚未集成的改动。
+
