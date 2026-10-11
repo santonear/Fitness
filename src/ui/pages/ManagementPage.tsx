@@ -5,7 +5,7 @@ import { adminTokens } from '../admin/tokens';
 import '../admin/admin.css';
 import { AppIcon, StatusIcon } from '../components/AppIcon';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import {getFeatureLoadState,subscribeFeatureLoadState,refreshFeatureFlags} from '../../application/feature-flags';
+import {getFeatureLoadState,subscribeFeatureLoadState,refreshFeatureFlags,hasValidRemoteConfig} from '../../application/feature-flags';
 import { useTranslation } from 'react-i18next';
 import { trialApi } from '../components/TrialAccess';
 import { ManualInvites } from '../components/ManualInvites';
@@ -17,10 +17,10 @@ export function ManagementPage() {
   const {i18n}=useTranslation();const zh=i18n.resolvedLanguage!=='en';
   useEffect(()=>{void refreshFeatureFlags()},[]);
   if(new URLSearchParams(location.search).has('legacy'))return <LegacyManagementPage/>;
-  if(enabled)return <AdminShell/>;
-  if(state==='error')return <main className="admin-workspace"><section className="admin-card" role="alert"><h1>{zh?'暂时无法读取后台配置':'Admin configuration unavailable'}</h1><p>{zh?'请确认登录仍然有效，然后重试。':'Check that you are still signed in, then retry.'}</p><button onClick={()=>void refreshFeatureFlags()}>{zh?'重试':'Retry'}</button></section></main>;
-  if(state!=='ready')return <p role="status">{zh?'正在读取后台配置…':'Loading admin configuration…'}</p>;
-  return <LegacyManagementPage/>;
+  const notice=state==='error'?<section className="admin-card" role="alert"><h1>{zh?'暂时无法读取后台配置':'Admin configuration unavailable'}</h1><p>{zh?'请确认登录仍然有效，然后重试。':'Check that you are still signed in, then retry.'}</p><button onClick={()=>void refreshFeatureFlags()}>{zh?'重试':'Retry'}</button></section>:null;
+  if(enabled)return <>{notice}<AdminShell/></>;
+  if(!hasValidRemoteConfig())return notice??<p role="status">{zh?'正在读取后台配置…':'Loading admin configuration…'}</p>;
+  return <>{notice}<LegacyManagementPage/></>;
 }
 function LegacyManagementPage() {
   const { i18n } = useTranslation(); const zh = i18n.resolvedLanguage === 'zh';

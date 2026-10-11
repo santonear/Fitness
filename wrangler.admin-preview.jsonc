@@ -17,7 +17,7 @@
     "CONTROL_ORIGINS": "[\"https://fitness-admin-preview.initdevl.workers.dev\"]",
     "CONTROL_POLICY": "{\"timeZone\":\"Asia/Shanghai\",\"k\":14,\"budgetLimit\":3000,\"maximumRequestCost\":300,\"requestBounds\":{\"understand\":300,\"generate\":300},\"quotas\":{\"understand\":8,\"generate\":4},\"maxInputBytes\":65536,\"maxConcurrent\":2}",
     "FITNESS_FEATURE_FLAGS": "{\"adminConsole\":true}",
-    "ADMIN_RELEASE_REGISTRY": "[{\"environment\":\"preview\",\"dataVersion\":1,\"current\":{\"id\":\"admin-preview-review\",\"deploymentId\":\"b551d64e-9614-4daf-b18d-155a06877584\",\"publishedAt\":\"2026-10-11T15:53:29.949Z\",\"compatibleDataVersion\":1,\"smokeOrigin\":\"https://fitness-admin-preview.initdevl.workers.dev\"},\"previous\":{\"id\":\"admin-preview-before-review\",\"deploymentId\":\"b551d64e-9614-4daf-b18d-155a06877584\",\"publishedAt\":\"2026-10-11T15:28:49.260Z\",\"compatibleDataVersion\":1,\"smokeOrigin\":\"https://fitness-admin-preview.initdevl.workers.dev\"}}]"
+    "ADMIN_RELEASE_REGISTRY": "[{\"environment\":\"preview\",\"dataVersion\":1,\"current\":{\"id\":\"admin-preview-final-review\",\"deploymentId\":\"48640820-0dbc-428c-97e1-69607e5ec502\",\"publishedAt\":\"2026-10-11T16:26:13.522Z\",\"compatibleDataVersion\":1,\"smokeOrigin\":\"https://fitness-admin-preview.initdevl.workers.dev\"},\"previous\":{\"id\":\"admin-preview-review\",\"deploymentId\":\"48640820-0dbc-428c-97e1-69607e5ec502\",\"publishedAt\":\"2026-10-11T16:03:34.814Z\",\"compatibleDataVersion\":1,\"smokeOrigin\":\"https://fitness-admin-preview.initdevl.workers.dev\"}}]"
   },
   "d1_databases": [
     {
