@@ -60,7 +60,7 @@ function useController() {
   if(!coachRequest)return;
   const task=coachRequest.task==='ONBOARD_PLAN'?'MODIFY_PLAN':coachRequest.task;
   const currentFacts=reviewKind==='month'?monthFacts:facts;
-  setCoachRequest(buildCoachRequest({...optionalCoach,task,data:next,templateId:coachRequest.task==='ADJUST_TODAY'?coachRequest.template.id:undefined,facts:currentFacts?{...currentFacts,improvements:[...currentFacts.improvements]}:undefined,kind:reviewKind}));
+  setCoachRequest(buildCoachRequest({...optionalCoach,conversationId:coachRequest.conversationId,task,data:next,templateId:coachRequest.task==='ADJUST_TODAY'?coachRequest.template.id:undefined,facts:currentFacts?{...currentFacts,improvements:[...currentFacts.improvements]}:undefined,kind:reviewKind}));
   setCoachRevision(next.metadata.dataRevision);
  }
  const [workoutValues,setWorkoutValues]=useState<Record<string,number>>({}),[focusIndex,setFocusIndex]=useState(0);
