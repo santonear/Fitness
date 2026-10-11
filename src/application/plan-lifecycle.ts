@@ -13,7 +13,7 @@ export function createPlanLifecycle(repo:Repository, now:()=>number=Date.now) {
    const versionIds=new Set(versions.map(v=>v.id));
    if((await db.v8Workouts.toArray()).some(w=>w.status==='in_progress'&&w.planVersionId&&versionIds.has(w.planVersionId)))return conflict('PLAN_TRAINING_ACTIVE');
    const deletedAt=new Date(now()).toISOString(),deletedWasCurrent=state.currentPlanId===planId;
-   await db.v8Plans.put({...plan,readOnly:true,deletedAt,deletedWasCurrent});
+   await db.v8Plans.put({...plan,readOnly:true,deletedAt,deletedWasCurrent,...(deletedWasCurrent&&state.nextWorkoutOverride?{deletedNextWorkoutOverride:state.nextWorkoutOverride}:{})});
    if(deletedWasCurrent){const {currentPlanId:_current,nextWorkoutOverride:_override,...rest}=state;
     const target=versions.find(v=>v.id===plan.currentVersionId)?.weeklyTarget;
     await db.v8State.put({...rest,planDismissedAt:deletedAt,...(target?{reviewWeeklyTarget:target}:{})});}
@@ -27,9 +27,9 @@ export function createPlanLifecycle(repo:Repository, now:()=>number=Date.now) {
    const age=now()-Date.parse(plan.deletedAt);
    if(age<0||age>=(undo?PLAN_UNDO_MS:PLAN_RETENTION_MS))return conflict(undo?'PLAN_UNDO_EXPIRED':'PLAN_RECOVERY_EXPIRED');
    const makeCurrent=undo&&plan.deletedWasCurrent&&!state.currentPlanId;
-   const {deletedAt:_deleted,deletedWasCurrent:_current,...retained}=plan;
+   const {deletedAt:_deleted,deletedWasCurrent:_current,deletedNextWorkoutOverride:override,...retained}=plan;
    await db.v8Plans.put({...retained,readOnly:!makeCurrent});
-   if(makeCurrent){const {planDismissedAt:_dismissed,...rest}=state;await db.v8State.put({...rest,currentPlanId:plan.id});}
+   if(makeCurrent){const {planDismissedAt:_dismissed,...rest}=state;await db.v8State.put({...rest,currentPlanId:plan.id,...(override?{nextWorkoutOverride:override}:{})});}
    return {planId,restoredAsCurrent:!!makeCurrent};
   },expectedRevision);
  }

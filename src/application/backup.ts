@@ -102,7 +102,7 @@ export function validateBackupEnvelope(value: unknown): BackupEnvelope {
   } else if (data.nutritionRecords || data.activityImportReceipts) invalid('Lifestyle collections require version 7');
   if (data.v8) {
     const library = data.v8;
-    if(envelope.schemaVersion<9&&(library.planReferences!==undefined||library.plans.some(p=>p.deletedAt!==undefined||p.deletedWasCurrent!==undefined)||library.state.planDismissedAt!==undefined||library.state.reviewWeeklyTarget!==undefined))invalid('Plan lifecycle requires backup version 9');
+    if(envelope.schemaVersion<9&&(library.planReferences!==undefined||library.plans.some(p=>p.deletedAt!==undefined||p.deletedWasCurrent!==undefined||p.deletedNextWorkoutOverride!==undefined)||library.state.planDismissedAt!==undefined||library.state.reviewWeeklyTarget!==undefined))invalid('Plan lifecycle requires backup version 9');
     if(envelope.schemaVersion>=9&&!library.planReferences)invalid('Plan reference collection required');
     const v8Plans = new Map(library.plans.map(plan => [plan.id, plan]));
     const v8Versions = new Map(library.planVersions.map(version => [version.id, version]));
@@ -127,13 +127,13 @@ export function validateBackupEnvelope(value: unknown): BackupEnvelope {
       distinct((ref.legacyTemplates??[]).map(t=>t.id),'archived legacy templates');
       if(ref.templateIds.some(id=>!library.workouts.some(w=>w.planVersionId===ref.id&&w.templateId===id))||(ref.legacyTemplates??[]).some(t=>!ref.templateIds.includes(t.id)||!library.workouts.some(w=>w.planVersionId===ref.id&&w.templateId===t.id&&!w.templateSnapshot)))invalid('Unreferenced archived template');
     }
+    for(const plan of library.plans){const saved=plan.deletedNextWorkoutOverride;if(saved&&(!plan.deletedAt||!plan.deletedWasCurrent||saved.planVersionId!==plan.currentVersionId||v8Versions.get(saved.planVersionId)?.planId!==plan.id||!v8Versions.get(saved.planVersionId)?.templates.some(t=>t.id===saved.templateId)))invalid('Invalid deleted plan workout override');}
     if(library.plans.some(p=>p.deletedWasCurrent!==undefined&&!p.deletedAt))invalid('Invalid deleted plan marker');
     for (const workout of library.workouts) {
       const version = workout.planVersionId ? v8Versions.get(workout.planVersionId) : undefined;
       const reference=workout.planVersionId?references.get(workout.planVersionId):undefined;
       if (workout.planVersionId && !version && !reference || workout.templateId && !(version?.templates.some(template => template.id === workout.templateId)||reference?.templateIds.includes(workout.templateId))) invalid('V8 workout plan or template missing');
       if(workout.status==='in_progress'&&version&&v8Plans.get(version.planId)?.deletedAt)invalid('Active workout belongs to deleted plan');
-      if(workout.templateSnapshot&&workout.templateId&&workout.templateSnapshot.id!==workout.templateId)invalid('Workout snapshot template ID mismatch');
       if(reference&&(workout.status==='in_progress'||!workout.templateSnapshot&&!reference.legacyTemplates?.some(t=>t.id===workout.templateId)))invalid('Archived workout provenance incomplete');
       if (workout.templateSnapshot && (workout.planVersionId!==undefined&&!version&&!reference || workout.templateSnapshot.items.reduce((sum,item)=>sum+item.sets,0)!==workout.plannedSetCount || workout.templateSnapshot.items.some((item,index)=>workout.plannedExercises?.[index]?.exerciseId!==item.exerciseId || workout.plannedExercises?.[index]?.plannedSetCount!==item.sets))) invalid('V8 workout snapshot mismatch');
       validDate(workout.localDate);
