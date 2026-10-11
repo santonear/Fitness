@@ -25,5 +25,7 @@
   "activateTitle": "重新使用这份计划？",
   "activateHint": "当前计划会移到以前的计划中，训练记录保持不变。下一次训练将使用这份计划。",
   "activateConfirm": "确认使用",
-  "activateActive": "有正在进行的训练，请先结束训练再切换计划。"
+  "activateActive": "有正在进行的训练，请先结束训练再切换计划。",
+  "created": "创建于",
+  "createdUnknown": "创建日期未知"
 }

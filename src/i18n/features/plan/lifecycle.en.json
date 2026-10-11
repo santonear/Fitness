@@ -25,5 +25,7 @@
   "activateTitle": "Use this plan again?",
   "activateHint": "Your current plan will move to Previous plans. Workout records stay unchanged. Your next workout will use this plan.",
   "activateConfirm": "Confirm plan",
-  "activateActive": "Finish your current workout before switching plans."
+  "activateActive": "Finish your current workout before switching plans.",
+  "created": "Created",
+  "createdUnknown": "Creation date unknown"
 }
