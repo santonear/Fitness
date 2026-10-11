@@ -1,0 +1,9 @@
+import {describe,it,expect} from 'vitest';
+import {sendAssistant} from '../../src/assistant/client';
+import type {AssistantRequest,AssistantStreamEvent} from '../../src/assistant/contracts';
+const request={version:'fitness-assistant-v2',requestId:crypto.randomUUID(),conversationId:crypto.randomUUID(),locale:'zh',timeZone:'Asia/Shanghai',adultConfirmed:true,messages:[{role:'user',content:'你好'}]} satisfies AssistantRequest;
+describe('assistant streaming client',()=>{
+ it('delivers text before a pending attachment, across byte chunks',async()=>{const encoder=new TextEncoder(),events:AssistantStreamEvent[]=[];const frames='data: {"type":"text_delta","delta":"你好"}\r\n\r\ndata: {"type":"attachment_pending"}\n\ndata: {"type":"done","success":true,"usage":{"inputTokens":1,"outputTokens":2},"promptVersion":"test"}\n\n';const bytes=encoder.encode(frames);const fetcher=async()=>new Response(new ReadableStream({start(c){for(let i=0;i<bytes.length;i+=1)c.enqueue(bytes.slice(i,i+1));c.close();}}));await sendAssistant(request,new AbortController().signal,e=>events.push(e),fetcher as typeof fetch);expect(events.map(e=>e.type)).toEqual(['text_delta','attachment_pending','done']);expect(events[0]).toEqual({type:'text_delta',delta:'你好'});});
+ it('preserves reset time and never retries daily admission',async()=>{let calls=0;await expect(sendAssistant(request,new AbortController().signal,()=>{},(async()=>{calls++;return Response.json({error:'DAILY_MESSAGE_LIMIT',resetAt:'2026-10-13T00:00:00Z'},{status:429});}) as typeof fetch)).rejects.toMatchObject({message:'DAILY_MESSAGE_LIMIT',resetAt:'2026-10-13T00:00:00Z'});expect(calls).toBe(1);});
+ it('rejects a truncated stream even after text arrives',async()=>{await expect(sendAssistant(request,new AbortController().signal,()=>{},(async()=>new Response('data: {"type":"text_delta","delta":"partial"}\n\n')) as typeof fetch)).rejects.toThrow('NETWORK_ERROR');});
+});

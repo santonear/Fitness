@@ -1,3 +1,4 @@
+import {conversationSchema} from '../persistence/assistant-conversations';
 import {bodyDetailsSchema} from './body-profile';
 import { z } from 'zod';
 import { nutritionRecordSchema, activityImportReceiptSchema } from './lifestyle';
@@ -174,6 +175,7 @@ export const v8PlanReferenceSchema = z.strictObject({ id: uuidSchema, planId: uu
 export const v8BackupSchema = z.strictObject({ state: v8StateSchema, plans: z.array(v8PlanSchema), planVersions: z.array(v8PlanVersionSchema),
   workouts: z.array(v8WorkoutSchema), activities: z.array(v8ActivitySchema), planReferences: z.array(v8PlanReferenceSchema).optional() });
 export const backupDataSchema = z.strictObject({
+  assistantConversations:z.array(conversationSchema).max(30).optional(),
   exerciseFavorites: z.array(z.strictObject({id:z.string().min(1)})).optional(),
   metadata: metadataSchema, profiles: z.array(localProfileSchema), plans: z.array(planSchema), planVersions: z.array(planVersionSchema),
   sessions: z.array(workoutSessionSchema), sets: z.array(setRecordSchema), scheduledWorkouts: z.array(legacyBackupScheduleSchema),

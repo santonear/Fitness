@@ -1,3 +1,4 @@
+import {assistantBackupPreference,includeAssistantBackup} from '../../persistence/assistant-conversations';
 import { AppIcon, StatusIcon } from './AppIcon';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -19,6 +20,7 @@ function download(blob: Blob): void {
 export function BackupPanel({ restored = false }: { restored?: boolean }) {
   const { i18n } = useTranslation();
   const zh = i18n.resolvedLanguage === 'zh';
+  const [includeChats,setIncludeChats]=useState(includeAssistantBackup);
   const [preview, setPreview] = useState<ValidatedBackup>();
   const [exported, setExported] = useState(false);
   const [kept, setKept] = useState(false);
@@ -56,6 +58,7 @@ export function BackupPanel({ restored = false }: { restored?: boolean }) {
 
   return (
     <section className="v31-backup" aria-label={zh ? 'JSON 备份与恢复' : 'JSON backup and restore'}>
+      <label><input type="checkbox" checked={includeChats} onChange={event=>{try{localStorage.setItem(assistantBackupPreference,event.target.checked?'include':'exclude');setIncludeChats(event.target.checked);}catch{setError(zh?'无法保存设置。':'Could not save preference.');}}}/>{zh?'备份包含芽芽对话':'Include Yaya conversations in backups'}</label>
       <h2>{zh ? '备份与恢复' : 'Backup and restore'}</h2>
       <p>{zh ? '备份会保存你的计划、训练记录、体重、备注和动作收藏。请把下载的文件放在手机或电脑里妥善保管，清除浏览器数据后也能找回。' : 'A backup includes your plans, training records, weight observations, notes and favorite exercises. Keep the downloaded file on your phone or computer so you can recover your data if browser storage is cleared.'}</p>
       <p>{zh ? '恢复会用文件中的内容替换此浏览器现有的数据。我们会先检查文件，并请你备份当前数据、确认后再恢复。支持旧版备份，文件最大 16 MB；提醒设置留在当前设备上。' : 'Restoring replaces the data on this browser with the file’s contents. We check the file first and ask you to back up your current data and confirm before restoring. Older backups are supported, up to 16 MB. Reminder settings stay on this device.'}</p>

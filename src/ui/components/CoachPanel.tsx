@@ -1,3 +1,4 @@
+import {AssistantPanel} from './AssistantPanel';
 import { EQUIPMENT, equipmentLabel } from '../../catalog/taxonomy';
 import {templateLabel} from '../../i18n/features/plan/labels';
 import {useAccessStatus} from '../useAccessStatus';
@@ -49,7 +50,7 @@ export function CoachScopeDisclosure({request,locale}:{request:CoachRequest;loca
  return <details><summary>{t.scope}</summary><p>{t.consent}</p><p>{t.taskNames[request.task]}</p><dl>{Object.entries(request).filter(([key])=>['locale','timeZone','adultConfirmed','profile','body','history','nutrition','messages','template','instruction','plan','kind','facts'].includes(key)).map(([key,value])=><div key={key}><dt>{key==='nutrition'?lifestyleCopy[locale].nutrition:t.fields[key as keyof typeof t.fields]}</dt><dd>{key==='timeZone'?displayTimeZone(String(value),locale):key==='instruction'&&instructionRepeatsLatestMessage(request)?t.sameAsMessage:readable(value,t,lang?'en':'zh')}</dd></div>)}</dl><details><summary>{t.technical}</summary><dl>{coachScopeFields(request).map(field=><div key={field.key}><dt>{t.fields[field.key as keyof typeof t.fields]??field.key}</dt><dd>{field.value}</dd></div>)}</dl></details></details>;
 }
 /** Keep mounted when closed so drafts and reviewed candidates survive panel dismissal. */
-export function CoachPanel({beforeSend,open,onClose,request,expectedRevision,onApply,onResponse,triggerRef:externalTrigger,onLocalPlan,onLocalReview,locale,unavailableReason,initialSend,localOnly,applyLabel,successLabel,disableNutrition,localFallbackOnError,templateMinutes}:CoachPanelProps){
+function LegacyCoachPanel({beforeSend,open,onClose,request,expectedRevision,onApply,onResponse,triggerRef:externalTrigger,onLocalPlan,onLocalReview,locale,unavailableReason,initialSend,localOnly,applyLabel,successLabel,disableNutrition,localFallbackOnError,templateMinutes}:CoachPanelProps){
  const [text,setText]=useState(''),[bodyKeys,setBodyKeys]=useState<string[]>([]),[history,setHistory]=useState(false),[state,setState]=useState<CoachVisualState>('idle'),[error,setError]=useState(''),[candidate,setCandidate]=useState<CoachApplication>();
  const nutritionFeature=useFeature('nutrition'); const nutritionEnabled=nutritionFeature&&!disableNutrition; const [dietConsent,setDietConsent]=useState(false),[dietRows,setDietRows]=useState<CoachRequest['nutrition']>();
  useEffect(()=>{let alive=true;setDietConsent(false);setDietRows(undefined);if(open&&nutritionEnabled)void repository.db.nutritionRecords.orderBy('localDate').toArray().then(rows=>{if(alive)setDietRows(nutritionForCoach(rows,true));});return()=>{alive=false;};},[open,nutritionEnabled,request?.restoreGeneration,request?.conversationId]);
@@ -111,3 +112,5 @@ export function CoachPanel({beforeSend,open,onClose,request,expectedRevision,onA
   {access.status&&accessReason(access.status,request?.task)==='invalid'&&<p>{accessCopy[lang?'en':'zh'].invalid} · <a href="/trial">{accessCopy[lang?'en':'zh'].restore}</a></p>}{busy&&<Button onClick={()=>{sequence.current++;controller.current?.abort();sending.current=false;setState('idle');}}>{t.cancel}</Button>}{error&&(!localReply||error===t.stale)&&<p role="alert">{error}</p>}{localReply&&<p role="status">{accessCopy[lang?'en':'zh'].local}{localReason&&` · ${accessCopy[lang?'en':'zh'].reasons[localReason]}`}</p>}
   </div></MorphPanel>;
 }
+
+export function CoachPanel(props:CoachPanelProps){const enabled=useFeature('aiAssistantV2');return enabled?<AssistantPanel {...props}/>:<LegacyCoachPanel {...props}/>;}
