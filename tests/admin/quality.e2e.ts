@@ -33,6 +33,14 @@ test('errors and reports display real response data and empty states', async ({ 
   await page.goto('/tests/admin/quality-fixture.html?view=reports');
   await expect(page.getByText('暂无评测报告。')).toBeVisible();
 });
+test('quality report enums are translated while model and prompt identifiers remain intact', async ({page})=>{
+ await page.route('**/api/v1/management/console/quality/reports',route=>route.fulfill({json:{reports:[{id:'synthetic',time:1,promptVersion:'v8.1.0',model:'model-test-v1',durationMs:1,costMicros:0,scenarios:[{scenario:'tone',passed:true,violations:0},{scenario:'unknown_future',passed:false,violations:1}]}],blocks:[{day:'2026-10-11',category:'judgment',count:1},{day:'2026-10-11',category:'private_unknown',count:1}]}}));
+ await page.goto('/tests/admin/quality-fixture.html?view=reports');
+ await expect(page.locator('main')).toContainText('表达语气');await expect(page.locator('main')).toContainText('评判表达');await expect(page.locator('main')).toContainText('其他或尚未记录');
+ await expect(page.locator('main')).toContainText('v8.1.0 · model-test-v1');await expect(page.locator('main')).not.toContainText('private_unknown');
+ await page.goto('/tests/admin/quality-fixture.html?view=reports&language=en');
+ await expect(page.locator('main')).toContainText('Tone checks');await expect(page.locator('main')).toContainText('Judgmental wording');await expect(page.locator('main')).toContainText('Other / not recorded');
+});
 
 for (const language of ['zh', 'en']) test(`user and application enums use ${language} labels`, async ({ page }) => {
   await page.route('**/api/v1/management/console/**', async route => {
