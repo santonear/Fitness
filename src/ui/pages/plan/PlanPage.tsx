@@ -28,7 +28,7 @@ export function itemTarget(item: PlannedItem, language: PlanLanguage): string {
 }
 
 export function templateLabel(template: Pick<SessionTemplate, 'id' | 'name'>, language: PlanLanguage): string {
-  return template.id === 'review-short' && template.name === '20 min' ? planMessages[language].minutes(20) : template.name;
+  return template.id === 'review-short' && /^\d+ min$/.test(template.name) ? planMessages[language].minutes(Number(template.name.split(' ')[0])) : template.name;
 }
 
 export function PlanPage({ version, currentVersionId, language, exerciseName, onVersions, onExercises, onExercise, onDiscuss }: PlanPageProps) {

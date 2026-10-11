@@ -1,6 +1,14 @@
+import type { SessionTemplate } from '../../domain/v8/contracts';
 import type { SuggestionInput, ReviewSuggestion, PlanProposal } from './contracts';
 import { computeExerciseEvidence } from './evidence';
+import { estimatePlannedMinutes } from '../rules/duration-estimate';
 import { discomfortReplacement } from '../rules/basic-items';
+
+function shortTemplate(source:SessionTemplate):SessionTemplate {
+ const items=source.items.slice(0,3).map(item=>({...structuredClone(item),sets:2}));
+ const estimatedMinutes=estimatePlannedMinutes(items);
+ return {...structuredClone(source),id:'review-short',name:`${estimatedMinutes} min`,estimatedMinutes,items};
+}
 
 export function recurringDiscomfort(input: SuggestionInput): string[] {
  const rows=input.workouts.filter(w=>w.planVersionId===input.plan.id&&w.localDate>=input.previous.from&&w.localDate<=input.current.to&&!['in_progress','abandoned'].includes(w.status)).sort((a,b)=>b.startedAt.localeCompare(a.startedAt));
@@ -18,7 +26,15 @@ export function suggestChange(input: SuggestionInput): ReviewSuggestion | null {
   templates: structuredClone(plan.templates), reasons: ['', '', ''] };
  const candidate = (rule: ReviewSuggestion['rule'], proposal: PlanProposal, detail = ''): ReviewSuggestion | null => {
   const id = `${current.from}:${plan.id}:${rule}:${detail}`;
-  return input.dismissedIds.includes(id) ? null : { id, rule, summary: rule, basedOnVersionId: plan.id, proposal };
+  if(input.dismissedIds.includes(id))return null;
+  for(const template of proposal.templates){
+   const original=plan.templates.find(item=>item.id===template.id);
+   if(!original||JSON.stringify(original.items)!==JSON.stringify(template.items)){
+    template.estimatedMinutes=estimatePlannedMinutes(template.items);
+    if(template.id==='review-short'&&/^\d+ min$/.test(template.name))template.name=`${template.estimatedMinutes} min`;
+   }
+  }
+  return { id, rule, summary: rule, basedOnVersionId: plan.id, proposal };
  };
  // A dismissed suggestion does not fall through into another suggestion this week.
  if (input.dismissedIds.some(id => id.startsWith(`${current.from}:${plan.id}:`))) return null;
@@ -40,7 +56,7 @@ export function suggestChange(input: SuggestionInput): ReviewSuggestion | null {
  }
  if (current.reasonCounts.time >= 2 && !plan.templates.some(t => t.id === 'review-short')) {
   const source=plan.templates.find(t => t.items.length >= 3);
-  if(source) return candidate('time', { ...base, templates: [...base.templates, { ...structuredClone(source), id:'review-short', name:'20 min', estimatedMinutes:20, items:source.items.slice(0,3).map(i=>({...structuredClone(i),sets:2})) }] });
+  if(source) return candidate('time', { ...base, templates: [...base.templates, shortTemplate(source)] });
  }
  for (const id of new Set(plan.templates.flatMap(t=>t.items.map(i=>i.exerciseId)))) {
   if(discomfort.has(id))continue;
@@ -62,7 +78,7 @@ export function suggestChange(input: SuggestionInput): ReviewSuggestion | null {
   new Date(Date.parse(completed[0].to+'T00:00:00Z')+86400000).toISOString().slice(0,10)===completed[1].from &&
   plan.createdAt.slice(0,10)<completed[0].from && current.complete===0 && plan.weeklyTarget>2) {
   const source=plan.templates.find(t=>t.items.length>=3);
-  if(source)return candidate('restart',{...base,weeklyTarget:2,templates:[{...structuredClone(source),id:'review-short',name:'20 min',estimatedMinutes:20,items:source.items.slice(0,3).map(i=>({...structuredClone(i),sets:2}))}]});
+  if(source)return candidate('restart',{...base,weeklyTarget:2,templates:[shortTemplate(source)]});
  }
  return null;
 }
