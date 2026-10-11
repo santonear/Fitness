@@ -30,7 +30,8 @@ export function getExerciseGuide(id:string,locale:Locale):ExerciseGuide {
 export function getExerciseTags(id:string):ExerciseTags {
  const e=exercise(id),meta=catalogMetadata.get(id),slug=meta?.slug??'',body=exerciseBodyPart(id),muscles=meta?.primaryMuscles??[];
  const bodyParts=[body,...(body.includes('arms')?['arms']:[]),...(body.includes('legs')?['legs']:[]),...(muscles.some(m=>m.includes('glute'))?['glutes']:[])].filter(Boolean);
- const equipment:string[]=[e.equipment];if(/bench|incline-db|chest-supported|preacher/.test(slug)&&!equipment.includes('flat-bench'))equipment.push('flat-bench');
+ if(e.category==='cardio'&&!bodyParts.includes('cardio'))bodyParts.push('cardio');
+ const equipment:string[]=[e.equipment];if(e.equipment==='loop-band')equipment.push('resistance-band');if(/bench|incline-db|chest-supported|preacher/.test(slug)&&!equipment.includes('flat-bench'))equipment.push('flat-bench');
  const machine=equipment.some(eq=>!portable.has(eq)&&!['barbell','ez-bar','plates','pull-up-bar','dip-station','rings','suspension-trainer'].includes(eq));
  if(machine)equipment.push('gym-machine');
  const places:ExercisePlace[]=['gym'];if(equipment.every(eq=>portable.has(eq)))places.push('home');if(e.equipment==='none'||['pull-up-bar','dip-station','jump-rope'].includes(e.equipment))places.push('outdoor');
@@ -40,6 +41,9 @@ export function getExerciseTags(id:string):ExerciseTags {
  if(bodyParts.some(x=>['chest','shoulders','back','arms'].includes(x)))cautionAreas.push('shoulders','elbows','wrists');
  if(bodyParts.some(x=>['legs','glutes','cardio'].includes(x)))cautionAreas.push('knees','hips','ankles');
  if(['core','back','legs','full-body'].includes(body)||/deadlift|row|squat|press/.test(slug))cautionAreas.push('back');
+ // Support-contact tags describe mechanical loading, not medical suitability.
+ if(['plank','side-plank','side-plank-leg-lift','side-plank-leg-lift-hold'].includes(slug))cautionAreas.push('shoulders','elbows');
+ if(['high-plank','bear-plank-hold','bird-dog','bird-dog-hold','bear-crawl','mountain-climbers','plank-knee-tuck'].includes(slug))cautionAreas.push('shoulders','wrists');
  return {equipment,bodyParts,places,goals,cautionAreas:[...new Set(cautionAreas)]};
 }
 export function exerciseCautionAreas(id:string):string[]{return getExerciseTags(id).cautionAreas;}
