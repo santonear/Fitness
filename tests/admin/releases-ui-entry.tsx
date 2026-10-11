@@ -1,3 +1,4 @@
+import '../../src/i18n/index';
 import {createRoot} from 'react-dom/client';
 import {ReleasesPage} from '../../src/ui/admin/releases/ReleasesPage';
 import {PromptVersionsPage} from '../../src/ui/admin/releases/PromptVersionsPage';
