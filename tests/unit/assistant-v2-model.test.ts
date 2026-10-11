@@ -96,7 +96,7 @@ describe('assistant v2 model', () => {
     const model = createAssistantProvider({ apiKey: 'secret', baseUrl: 'https://example.test', fetch: mockFetch });
     const chunks = await gather(model.streamText([])); expect(chunks).toContainEqual({ delta: '你好' }); expect(chunks).toContainEqual({ usage: { inputTokens: 2, outputTokens: 1 } });
     const truncated = createAssistantProvider({ apiKey: '', baseUrl: 'https://example.test', fetch: async () => new Response('data: {"choices":[]}\n') });
-    await expect(gather(truncated.streamText([]))).rejects.toThrow('TRUNCATED_STREAM');
+    await expect(gather(truncated.streamText([]))).rejects.toThrow('INVALID_STREAM');
   });
   it('does not invent zero usage for incomplete provider reports',async () => {
     const model=createAssistantProvider({apiKey:'',baseUrl:'https://example.test',fetch:async (_url,init)=>{
@@ -106,7 +106,21 @@ describe('assistant v2 model', () => {
     expect((await gather(model.streamText([])))[0].usage).toBeUndefined();
     expect((await model.generateAttachment([])).usage).toBeUndefined();
   });
+  it.each([401,429,503])('reports HTTP %s safely without leaking provider body or mislabeling network',async status => {
+    const model=createAssistantProvider({apiKey:'private-key',baseUrl:'https://example.test',fetch:async()=>new Response('private-provider-body',{status})});
+    const events=await collect(request,model);
+    expect(events[0]).toEqual({type:'error',code:'MODEL_UNAVAILABLE'});
+    expect(events.at(-1)).toMatchObject({calls:[{stage:'text',result:'failed',failureCode:status>=500?'HTTP_5XX':`HTTP_${status}`}]});
+    expect(JSON.stringify(events)).not.toContain('private');
+  });
+  it('distinguishes network failure from malformed output',async () => {
+    const network=createAssistantProvider({apiKey:'',baseUrl:'https://example.test',fetch:async()=>{throw new TypeError('private host');}});
+    expect((await collect(request,network))[0]).toEqual({type:'error',code:'NETWORK_ERROR'});
+    const invalid=createAssistantProvider({apiKey:'',baseUrl:'https://example.test',fetch:async()=>new Response('data: not-json\n\n')});
+    expect((await collect(request,invalid)).at(-1)).toMatchObject({calls:[{failureCode:'INVALID_STREAM'}]});
+  });
 });
+
 
 
 
