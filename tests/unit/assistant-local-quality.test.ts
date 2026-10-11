@@ -32,4 +32,8 @@ describe('V2 local plan quality',()=>{
   expect(request).toEqual(before);
  });
  it('keeps an English local capability entry instead of claiming a service failure',()=>{const reply=localCoachReply('hello',undefined,undefined,'en');expect(reply.lines.join(' ')).toContain('Enable AI');expect(reply.lines.join(' ')).toContain('exercise technique')});
+ it.each(['在家，没有哑铃，没有弹力带','At home, no dumbbells, no resistance bands',"At home, I don't have dumbbells or resistance bands"])('does not invent denied equipment: %s',text=>{
+  const plan=basicProposal(localProfile({...answers,placeEquipmentText:text}))!;
+  expect(plan.templates.flatMap(template=>template.items).every(item=>item.equipment==='none')).toBe(true);
+ });
 });

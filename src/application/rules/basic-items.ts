@@ -20,8 +20,8 @@ const choices = [
 export function basicItems(profile: CoachProfile, variant: number): { items: PlannedItem[]; missing: string[] } {
   const text = profile.equipment.join(' ');
   const gear = new Set(['none']);
-  if (/哑铃|dumbbell/i.test(text)) gear.add('dumbbell');
-  if (/弹力带|resistance.band/i.test(text)) gear.add('resistance-band');
+  if (/哑铃|dumbbell/i.test(text) && !/(?:没有|无|没带|不用|不使用)\s*哑铃|(?:no|without|don't have|do not have)\s+(?:any\s+)?dumbbells?/i.test(text)) gear.add('dumbbell');
+  if (/弹力带|resistance.band/i.test(text) && !/(?:没有|无|没带|不用|不使用)\s*(?:哑铃[和或、]\s*)?弹力带|(?:no|without|don't have|do not have)\s+(?:any\s+)?(?:dumbbells?\s+or\s+)?resistance.bands?/i.test(text)) gear.add('resistance-band');
   const pool = choices.flatMap(choice => {
     const exercise = exercises.find(e => e.name.en.toLowerCase() === choice.name.toLowerCase());
     return exercise && gear.has(exercise.equipment) && !profile.cautions.includes('other') && !choice.avoid.some(area => profile.cautions.includes(area as Area)) ? [{ ...choice, exercise }] : [];
