@@ -62,7 +62,9 @@ export function startFeatureFlags(): () => void {
       if (document.visibilityState !== 'visible' || navigator.onLine === false || Date.now() - lastAttempt < 1000) return;
       lastAttempt = Date.now(); void refreshFeatureFlags();
     };
-    refresh();
+    // Startup always tries once, including hidden/offline tabs; failures retain cache.
+    lastAttempt = Date.now();
+    void refreshFeatureFlags();
     const timer = setInterval(refresh, 30_000);
     document.addEventListener('visibilitychange', refresh); window.addEventListener('online', refresh);
     stopPolling = () => { clearInterval(timer); document.removeEventListener('visibilitychange', refresh); window.removeEventListener('online', refresh); };

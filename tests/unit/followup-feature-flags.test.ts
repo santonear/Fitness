@@ -49,3 +49,9 @@ test('concurrent callers share a single pending network request',async()=>{
  const fetcher=vi.fn(()=>new Promise<Response>(resolve=>{finish=resolve;}));const a=f.refreshFeatureFlags(fetcher),b=f.refreshFeatureFlags(fetcher);
  expect(a).toBe(b);expect(fetcher).toHaveBeenCalledTimes(1);finish(response({planLifecycle:true}));await a;
 });
+test.each([true,false])('startup requests once even when hidden (online=%s), then pauses polling',async(onLine)=>{
+ vi.useFakeTimers();vi.stubGlobal('document',Object.assign(new EventTarget(),{visibilityState:'hidden'}));vi.stubGlobal('window',new EventTarget());vi.stubGlobal('navigator',{onLine});
+ const fetcher=vi.fn(async()=>response({planLifecycle:true}));vi.stubGlobal('fetch',fetcher);
+ const f=await import('../../src/application/feature-flags');const stop=f.startFeatureFlags(),stopAgain=f.startFeatureFlags();await vi.advanceTimersByTimeAsync(0);expect(fetcher).toHaveBeenCalledTimes(1);expect(f.isFeatureEnabled('planLifecycle')).toBe(true);
+ await vi.advanceTimersByTimeAsync(90000);expect(fetcher).toHaveBeenCalledTimes(1);stop();stopAgain();
+});

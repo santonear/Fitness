@@ -1,5 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 
+// Whole journeys perform several IndexedDB transactions and page reloads under CI WebKit.
+test.setTimeout(60000);
 let aiCalls=0;
 test.beforeEach(async({page})=>{aiCalls=0;await page.route('**/api/v1/features',route=>route.fulfill({json:{version:1,flags:{planLifecycle:true},expiresAt:Date.now()+60000}}));await page.route('**/api/v1/plans/generate',route=>{aiCalls++;return route.abort();});});
 test.afterEach(()=>expect(aiCalls).toBe(0));
