@@ -8,6 +8,7 @@ import { readManagedFeatureFlags, readSelectedPromptVersion } from '../../src/ba
 import { releaseTodoSource } from '../../src/backend/admin/releases/todos';
 import { rollbackRelease } from '../../src/backend/admin/releases/deployment';
 import { createCloudflareReleaseAdapter } from '../../src/backend/admin/releases/cloudflare-adapter';
+import {createPreviewSimulationAdapter} from '../../src/backend/admin/releases/preview-simulation-adapter';
 import {readFeatureFlags} from '../../src/backend/feature-config';
 
 const connections:DatabaseSync[]=[];
@@ -132,4 +133,21 @@ describe('private Cloudflare adapter',()=>{
     const response=await createCloudflareReleaseAdapter(transport).fetch(request,{RELEASE_CLOUDFLARE_TOKEN:'synthetic-token',RELEASE_CLOUDFLARE_ACCOUNT:'test-account',RELEASE_WORKERS:'{"preview":"fitness-preview"}'});
     expect(response.status).toBe(200);expect(transport).toHaveBeenCalledTimes(1);
   });
+});
+
+
+it('isolates preview simulation, persists replay receipt and never changes release state',async()=>{
+ const {context,sqlite,db}=fixture();sqlite.exec(readFileSync(new URL('../../migrations/admin/2_preview_simulation.sql',import.meta.url),'utf8'));
+ context.requestId='simulation-request-0001';context.env.ADMIN_RELEASE_REGISTRY=JSON.stringify([{environment:'preview',dataVersion:11,current,previous}]);
+ const adapter=createPreviewSimulationAdapter();const settings={ADMIN_ENVIRONMENT:'preview',ADMIN_SIMULATION_DB:db,ADMIN_RELEASE_REGISTRY:context.env.ADMIN_RELEASE_REGISTRY};
+ context.env.ADMIN_PREVIEW_SIMULATION={fetch:request=>adapter.fetch(request,settings)};
+ const command={environment:'preview',expectedCurrent:current.id,target:previous.id,confirmed:true};
+ context.fresh=false;await expect(handleReleases(post('simulate-rollback',command),context)).rejects.toMatchObject({code:'FRESH_ACCESS_REQUIRED'});context.fresh=true;
+ const first=await (await handleReleases(post('simulate-rollback',command),context))!.json();expect(first).toMatchObject({mode:'preview-simulation',actualDeploymentUnchanged:true,selectedDeploymentId:previous.deploymentId});
+ expect(await (await handleReleases(post('simulate-rollback',command),context))!.json()).toEqual(first);
+ expect(sqlite.prepare('SELECT * FROM admin_preview_simulation_receipts').all()).toHaveLength(1);
+ expect(sqlite.prepare('SELECT * FROM admin_release_state').all()).toHaveLength(0);
+ expect(sqlite.prepare('SELECT * FROM admin_release_history').all()).toHaveLength(0);
+ expect((await adapter.fetch(new Request('https://private/status'),{...settings,ADMIN_ENVIRONMENT:'production'})).status).toBe(503);
+ context.env.ADMIN_ENVIRONMENT='production';await expect(handleReleases(post('simulate-rollback',command),context)).rejects.toMatchObject({code:'PREVIEW_SIMULATION_UNAVAILABLE'});
 });

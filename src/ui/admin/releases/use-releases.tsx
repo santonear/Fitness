@@ -4,7 +4,7 @@ import {AdminDialog,AdminToast} from '../shared/components';
 import type {ReleaseCommand,ReleaseOverview} from './types';
 
 const storageKey='fitness-admin-release-operation';
-function restoreCommand():ReleaseCommand|null {try{const value=JSON.parse(sessionStorage.getItem(storageKey)??'null') as ReleaseCommand|null;return value&&['flags','prompts','rollback','smoke'].includes(value.path)&&typeof value.requestId==='string'&&typeof value.body==='object'?value:null;}catch{return null;}}
+function restoreCommand():ReleaseCommand|null {try{const value=JSON.parse(sessionStorage.getItem(storageKey)??'null') as ReleaseCommand|null;return value&&['flags','prompts','rollback','smoke','simulate-rollback'].includes(value.path)&&typeof value.requestId==='string'&&typeof value.body==='object'?value:null;}catch{return null;}}
 export function useReleases(zh:boolean) {
   const [data,setData]=useState<ReleaseOverview|null>(null);const [error,setError]=useState('');const [loading,setLoading]=useState(true);
   const [command,setCommand]=useState<ReleaseCommand|null>(restoreCommand);const [attempted,setAttempted]=useState(!!command);const action=useAdminAction();

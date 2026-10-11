@@ -3,14 +3,16 @@ import {z} from 'zod';
 import { flagChangeSchema,promptChangeSchema,rollbackSchema,sensitiveFeatures,type ReleasesEnv } from './model';
 import { releaseOverview,saveFlag,savePrompt } from './store';
 import { checkCurrentRelease,registeredReleases,rollbackRelease } from './deployment';
+import {readPreviewSimulation,simulateRollback} from './simulation';
 
 export async function handleReleases(request:Request,context:AdminContext<ReleasesEnv>):Promise<Response|undefined> {
   const path=new URL(request.url).pathname.replace('/api/v1/management/console/releases','');
   if(!new URL(request.url).pathname.startsWith('/api/v1/management/console/releases'))return undefined;
   if(!context.env.ADMIN_ENVIRONMENT)throw new AdminError('RELEASE_ENVIRONMENT_UNAVAILABLE',503);
-  if(request.method==='GET' && (path===''||path==='/'))return adminJson({...await releaseOverview(context),registered:registeredReleases(context.env).filter(item=>item.environment===context.env.ADMIN_ENVIRONMENT),adapterAvailable:!!context.env.ADMIN_RELEASE_ADAPTER});
+  if(request.method==='GET' && (path===''||path==='/'))return adminJson({...await releaseOverview(context),registered:registeredReleases(context.env).filter(item=>item.environment===context.env.ADMIN_ENVIRONMENT),adapterAvailable:!!context.env.ADMIN_RELEASE_ADAPTER,previewSimulation:await readPreviewSimulation(context.env)});
   if(request.method!=='POST')throw new AdminError('METHOD_NOT_ALLOWED',405);
   const raw:unknown=await request.json().catch(()=>null);
+  if(path==='/simulate-rollback') {const parsed=rollbackSchema.safeParse(raw);if(!parsed.success)throw new AdminError('INVALID_ROLLBACK');requireFreshContext(context);return adminJson(await simulateRollback(context,parsed.data));}
   if(path==='/smoke') {
     const parsed=z.object({environment:z.enum(['preview','production']),releaseId:z.string().regex(/^[\w.-]{1,80}$/)}).strict().safeParse(raw);
     if(!parsed.success)throw new AdminError('INVALID_SMOKE_CHECK');

@@ -18,4 +18,4 @@ export interface ReleaseRegistry { environment: ReleaseEnvironment; dataVersion:
 export interface FlagRow { name: FeatureName; environment: ReleaseEnvironment; enabled: number; pending: number; changed_by: string; changed_at: string }
 export interface ReleaseStatement { bind(...values: unknown[]): ReleaseStatement; first<T>(): Promise<T | null>; all<T>(): Promise<{ results: T[] }>; run(): Promise<{ success: boolean; meta?: { changes?: number } }> }
 export interface ReleaseDatabase { prepare(sql: string): ReleaseStatement; batch(statements: ReleaseStatement[]): Promise<unknown[]> }
-export interface ReleasesEnv extends AdminEnvironment { ADMIN_RELEASE_REGISTRY?: string; ADMIN_RELEASE_ADAPTER?: { fetch(request: Request): Promise<Response> } }
+export interface ReleasesEnv extends AdminEnvironment { ADMIN_RELEASE_REGISTRY?: string; ADMIN_RELEASE_ADAPTER?: { fetch(request: Request): Promise<Response> }; ADMIN_PREVIEW_SIMULATION?:{fetch(request:Request):Promise<Response>} }
