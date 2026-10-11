@@ -6,8 +6,8 @@ import guides from '../../src/catalog/generated/guides-zh.json';
 import {exercises,EXERCISE_IDS} from '../../src/catalog/exercises';
 const id=(slug:string)=>[...catalogMetadata.values()].find(e=>e.slug===slug)!.id;
 describe('shared exercise guidance',()=>{
- it('has 150 concrete Chinese guides with variant setup and actual catalogue IDs',()=>{
-  expect(Object.keys(guides)).toHaveLength(150);
+ it('has 160 concrete Chinese guides with variant setup and actual catalogue IDs',()=>{
+  expect(Object.keys(guides)).toHaveLength(160);
   for(const slug of Object.keys(guides)) {const guide=getExerciseGuide(id(slug),'zh');expect(guide.keyPoints.length).toBeGreaterThanOrEqual(2);expect(guide.keyPoints.length).toBeLessThanOrEqual(3);expect(guide.steps.length).toBeGreaterThanOrEqual(3);expect(guide.mistakes.length).toBeGreaterThan(0);expect(guide.cautions.length).toBeGreaterThan(0);expect(guide.media?.src).toMatch(/^\/exercise-media\/repdb\//);}
  });
  it('gives every catalogue entry a Chinese name and usable fallback without the old notice',()=>{for(const e of exercises){const g=getExerciseGuide(e.id,'zh');expect(g.name).toBeTruthy();expect(g.keyPoints.length).toBeGreaterThanOrEqual(2);expect(g.steps.join('')).not.toContain('详细说明为英文');}});
@@ -42,3 +42,9 @@ describe('candidate scope before suggestion ranking',()=>{
  it('does not let the first five excluded suggestions consume the candidate limit',()=>{const pool=searchExercises('curl');expect(pool.length).toBeGreaterThan(5);const allowedIds=[pool[pool.length-1].id];expect(suggestExercises('curl',{allowedIds}).map(e=>e.id)).toEqual(allowedIds);});
 });
 
+
+describe('movement-based caution cues and basic instruction coverage',()=>{
+ it('flags knee-demanding patterns but not glute bridges or unrelated movements',()=>{for(const slug of ['bodyweight-squat','squat','reverse-lunge','jump-squat','leg-press','leg-extension'])expect(getExerciseTags(id(slug)).cautionAreas).toContain('knees');for(const slug of ['glute-bridge','banded-glute-bridge','hip-thrust','clamshells','bodyweight-calf-raise','walking','dead-bug','bicep-curl'])expect(getExerciseTags(id(slug)).cautionAreas).not.toContain('knees');expect(getExerciseTags(EXERCISE_IDS.bodyweightSquat).cautionAreas).toContain('knees');});
+ it('does not attach shoulder and wrist cues solely for back or core muscle targets',()=>{expect(getExerciseTags(id('back-extension')).cautionAreas).not.toContain('wrists');expect(getExerciseTags(id('dead-bug')).cautionAreas).not.toContain('shoulders');expect(getExerciseTags(id('high-plank')).cautionAreas).toContain('wrists');expect(getExerciseTags(id('plank')).cautionAreas).not.toContain('wrists');expect(getExerciseTags(id('plank')).cautionAreas).toContain('shoulders');});
+ it('provides specific key points for all basic-plan candidate names and common machine movements',()=>{const names=['Bodyweight squat','Glute Bridge','Clamshells','Wall Push Ups','Dumbbell Floor Press','Band Pull Apart','Bent-Over Dumbbell Row','Self-resisted Row','Dead Bug','Plank','Bodyweight Calf Raise'];for(const name of names){const e=exercises.find(e=>e.name.en.toLowerCase()===name.toLowerCase())!;expect(e,name).toBeDefined();const g=getExerciseGuide(e.id,'zh');expect(g.keyPoints).toHaveLength(2);expect(g.keyPoints.join('')).not.toMatch(/对照动作图|舒适的小幅度熟悉/);}for(const slug of ['squat','front-squat','chest-press-machine','leg-extension','pull-up','assisted-pull-ups'])expect(getExerciseGuide(id(slug),'zh').steps).toHaveLength(3);});
+});
