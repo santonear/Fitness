@@ -1,0 +1,27 @@
+{
+ "$schema":"./node_modules/wrangler/config-schema.json",
+ "name":"fitness-admin-preview",
+ "main":"src/backend/fitness-worker.ts",
+ "compatibility_date":"2026-10-05",
+ "workers_dev":true,
+ "preview_urls":false,
+ "vars":{
+  "ADMIN_ENVIRONMENT":"preview",
+  "ADMIN_CONSOLE_ENABLED":"true",
+  "ADMIN_EMAIL":"xxgospel@hotmail.com",
+  "ADMIN_ACCESS_ISSUER":"https://tiny-firefly-ed38.cloudflareaccess.com",
+  "ADMIN_ACCESS_AUD":"PREVIEW_ACCESS_NOT_CONFIGURED",
+  "ADMIN_PUSH_ENABLED":"false",
+  "ADMIN_ERROR_COLLECTION_ENABLED":"false",
+  "CONTROL_MODE":"control-only",
+  "CONTROL_ORIGINS":"[\"https://fitness-admin-preview.initdevl.workers.dev\"]",
+  "CONTROL_POLICY":"{\"timeZone\":\"Asia/Shanghai\",\"k\":14,\"budgetLimit\":3000,\"maximumRequestCost\":300,\"requestBounds\":{\"understand\":300,\"generate\":300},\"quotas\":{\"understand\":8,\"generate\":4},\"maxInputBytes\":65536,\"maxConcurrent\":2}",
+  "FITNESS_FEATURE_FLAGS":"{\"adminConsole\":true}"
+ },
+ "d1_databases":[
+  {"binding":"ADMIN_DB","database_name":"fitness-admin-preview-20261011","database_id":"91e3eb6e-050e-4170-85f7-351819f959c2"},
+  {"binding":"CONTROL_DB","database_name":"fitness-admin-control-preview-20261011","database_id":"56ac8260-e90d-488e-882b-0062206e1a5d"}
+ ],
+ "observability":{"enabled":false},
+ "assets":{"directory":"./dist","binding":"ASSETS","not_found_handling":"single-page-application","run_worker_first":["/api/*","/api","/admin","/admin/*"]}
+}
