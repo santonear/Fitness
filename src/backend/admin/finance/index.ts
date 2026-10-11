@@ -20,7 +20,7 @@ async function handleFinanceInternal(request:Request,context:FinanceContext):Pro
   const route=url.pathname.slice(prefix.length+1), db=requireAdminDb(context), store=new FinanceStore(db);
   if(request.method==='GET') {
     if(route==='recent-costs')return adminJson(await recentCosts(db,context.now));
-    if(route==='config') {const s=await store.read();return adminJson({current:s.versions.at(-1)??{version:0,config:environmentDefaults(context.env)},history:s.versions,defaults:environmentDefaults(context.env)});}
+    if(route==='config') {const s=await store.read();return adminJson({current:s.versions.at(-1)??{version:0,config:environmentDefaults(context.env)},history:s.versions,dismissedBudgetMonths:s.dismissedBudgetMonths??[],defaults:environmentDefaults(context.env)});}
     if(route==='announcement')return adminJson({announcement:(await store.read()).announcement});
     if(['ledger','export','costs'].includes(route)) {
       const month=monthSchema.parse(url.searchParams.get('month')??new Date(context.now).toISOString().slice(0,7));
@@ -70,4 +70,5 @@ async function handleFinanceInternal(request:Request,context:FinanceContext):Pro
 export async function handleFinance(request:Request,context:FinanceContext):Promise<Response|undefined> {
   try { return await handleFinanceInternal(request,context); } catch(error) { if(error instanceof z.ZodError) throw new AdminError('INVALID_FINANCE_INPUT',400); throw error; }
 }
+
 
