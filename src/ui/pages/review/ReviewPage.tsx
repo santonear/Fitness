@@ -3,7 +3,7 @@ import { lifestyleCopy } from '../../../i18n/features/settings/lifestyle';
 import { useFeature } from '../../useFeature';
 import { useEffect, useState, type CSSProperties } from 'react';
 import { Button,Stat,Sheet,Chip,Toast } from '../../components/common';
-import { useMainline } from '../../mainline/context';
+import { useMainline,format } from '../../mainline/context';
 import { recurringDiscomfort, suggestChange } from '../../../application/review/suggest';
 import { activityDate } from '../../../application/v8-activity';
 import { createReviewService } from '../../../application/v8-review';
@@ -34,9 +34,13 @@ export function ReviewPage(){
  if(!facts)return null;
  return <main><div className="v8-row"><Chip selected={!monthly} onClick={()=>c.setReviewKind('week')}>{r.week}</Chip><Chip selected={monthly} onClick={()=>c.setReviewKind('month')}>{r.month}</Chip></div>
  <h1>{monthly?r.month:r.week}</h1><p>{facts.from} — {facts.to}</p>
- <div className="v8-facts"><Stat label={t.complete} value={facts.complete}/><Stat label={t.partial} value={facts.partial}/><Stat label={t.movement} value={facts.movementCount}/><Stat label={t.minutes} value={Math.round(facts.trainingSeconds/60)}/><Stat label={r.activityMinutes} value={facts.activityMinutes}/></div>
+ <c.slots.FeatureCard context="review" motionReduced={false} trainingActive={!!data?.active}>
+ <p>{format(monthly?r.monthOpening:r.weekOpening,{count:facts.movementCount})}</p><p>{r.encouragement}</p>
+ <p>{format(r.gap,{complete:facts.complete,partial:facts.partial,missing:facts.missingCount})}</p>
+ <p>{suggestion?r[suggestion.rule]:r.continuePlan}</p>
+ <div className="v8-facts"><Stat label={t.complete} value={facts.complete}/><Stat label={t.partial} value={facts.partial}/><Stat label={t.movement} value={facts.movementCount}/><Stat label={t.minutes} value={Math.round(facts.trainingSeconds/60)}/><Stat label={r.activityMinutes} value={facts.activityMinutes}/></div></c.slots.FeatureCard>
  {monthly&&c.monthFacts&&<section className="v8-month-chart" aria-label={r.month}>{c.monthFacts.weeks.map(w=><div key={w.from}><div className="v8-month-column" role="img" aria-label={`${w.from}: ${t.complete} ${w.complete}, ${t.partial} ${w.partial}`} style={{'--complete-ratio':w.complete/Math.max(7,...c.monthFacts!.weeks.map(x=>x.complete+x.partial)),'--partial-ratio':w.partial/Math.max(7,...c.monthFacts!.weeks.map(x=>x.complete+x.partial))} as CSSProperties}><span className="v8-month-complete"/><span className="v8-month-partial"/></div><p>{w.from.slice(5)}<br/>{w.complete} / {w.partial}</p></div>)}</section>}
- <section><h2>{r.patterns}</h2>{(['weekday','weekend'] as const).flatMap(day=>(['morning','daytime','evening'] as const).map(band=>{const n=facts.incompleteTiming[day][band];return n.partial+n.notStarted>0?<p key={day+band}>{r[day]} · {r[band]}: {n.partial+n.notStarted}</p>:null;}))}</section>
+ <section><h2>{r.patterns}</h2>{(['weekday','weekend'] as const).flatMap(day=>(['morning','daytime','evening'] as const).map(band=>{const n=facts.incompleteTiming[day][band];return n.partial+n.notStarted>0?<p key={day+band}>{format(r.pattern,{day:r[day],band:r[band],count:n.partial+n.notStarted})}</p>:null;}))}</section>
  {!facts.hasBodyWeight&&<p>{r.noWeight}</p>}{!dietDays&&/减脂|体重|weight|fat/i.test(data?.version?.goalText??'')&&<p>{r.diet}</p>}
  {discomfort.length>0&&<p>{discomfort.map(name).join(' / ')} · {r.discomfort}</p>}
  <Toast message={saved?r.versionSaved:null} onDismiss={()=>setSaved(false)}/>
