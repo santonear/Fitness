@@ -64,6 +64,13 @@ it('attachment failure retains text, records failed calls and leaves daily count
   expect(db.prepare('SELECT used,active_request FROM assistant_daily').get()).toMatchObject({used:0,active_request:null});
   expect(db.prepare("SELECT input_tokens,estimated_fen FROM assistant_usage WHERE stage='attachment'").get()).toMatchObject({input_tokens:null,estimated_fen:null});
 });
+it('persists a repaired attachment call and counts the successful conversation once',async () => {
+  const {db,env,request}=await setup();
+  const runner:Runner=async function*(){yield {...complete,result:'repaired',calls:[{stage:'text',result:'success',inputTokens:10,outputTokens:5},{stage:'attachment',result:'repaired',inputTokens:20,outputTokens:8}]};};
+  const response=await handleAssistant(request(),env,runner);await response.text();
+  expect(db.prepare("SELECT result FROM assistant_usage WHERE stage='attachment'").get()).toMatchObject({result:'repaired'});
+  expect(db.prepare('SELECT used FROM assistant_daily').get()).toMatchObject({used:1});
+});
 it('daily limit returns local resetAt before generation',async () => {
   const {db,env,request}=await setup(); const reset=Date.now()+60000;
   db.prepare('INSERT INTO assistant_daily(subject_id,day,time_zone,reset_at,used) VALUES(?,?,?,?,30)').run(subject,'2026-10-12','Asia/Shanghai',reset);

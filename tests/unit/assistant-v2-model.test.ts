@@ -31,6 +31,12 @@ describe('assistant v2 model', () => {
   it('retries invalid attachment successfully', async () => {
     const events = await collect({ ...request, context }, provider(['bad', { attachment }]));
     expect(events.at(-1)).toMatchObject({ success: true, result: 'repaired' });
+    expect(events.at(-1)).toMatchObject({calls:[{result:'success'},{result:'failed'},{stage:'attachment',result:'repaired'}]});
+  });
+  it('marks a mechanically repaired first attachment call in usage records',async () => {
+    const candidate=structuredClone(attachment);candidate.template.items[0].sets=200;
+    const events=await collect({...request,context},provider([{attachment:candidate}]));
+    expect(events.at(-1)).toMatchObject({success:true,result:'repaired',calls:[{result:'success'},{stage:'attachment',result:'repaired'}]});
   });
   it('repairs known exercise names and numeric bounds without changing target identities', () => {
     const candidate = structuredClone(attachment);

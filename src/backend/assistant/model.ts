@@ -70,7 +70,7 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
       const generated = await options.provider.generateAttachment(assistantPrompt(request, 'attachment', version, text, attempt ? 'ATTACHMENT_VALIDATION_FAILED: use exact schema, catalog, context identity and task' : undefined), options.signal);
       Object.assign(call, generated.usage);
       const checked = repairAssistantAttachment(generated.content, request);
-      call.result = 'success';
+      call.result = checked.repaired || attempt ? 'repaired' : 'success';
       if (checked.attachment) yield { type: 'attachment', attachment: checked.attachment };
       yield { type: 'done', success: true, usage: usage(), calls, promptVersion: version, result: checked.repaired || attempt ? 'repaired' : 'success' };
       return;

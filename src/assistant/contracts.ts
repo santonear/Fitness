@@ -33,7 +33,7 @@ export const assistantAttachmentSchema = z.union([coachResponseSchema, z.strictO
 export type AssistantRequest = z.infer<typeof assistantRequestSchema>;
 export type AssistantAttachment = z.infer<typeof assistantAttachmentSchema>;
 export type AssistantUsage = { inputTokens: number; outputTokens: number };
-export type AssistantCall = Partial<AssistantUsage> & { stage: 'text' | 'attachment'; result: 'success' | 'failed'; failureCode?: string };
+export type AssistantCall = Partial<AssistantUsage> & { stage: 'text' | 'attachment'; result: 'success' | 'repaired' | 'failed'; failureCode?: string };
 export type AssistantEvent =
   | { type: 'text_delta'; delta: string }
   | { type: 'attachment_pending' }
