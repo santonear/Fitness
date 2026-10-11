@@ -1,3 +1,4 @@
+import { ledgerMonth } from './month';
 import { z } from 'zod';
 import { D1ControlStore } from '../../d1-store';
 import { adminJson, AdminError, requireAdminDb, requireFreshContext, type AdminContext } from '../core/contracts';
@@ -11,7 +12,7 @@ export async function evaluateFinanceTodos(context:AdminContext) {
   if(!context.env.ADMIN_DB || !context.env.CONTROL_DB) return [];
   const state=await new FinanceStore(context.env.ADMIN_DB).read(), config=state.versions.at(-1)?.config??environmentDefaults(context.env);
   const control=await new D1ControlStore(context.env.CONTROL_DB).read();
-  const period=new Date(context.now).toISOString().slice(0,7),budget=control.budgets[period];
+  const period=ledgerMonth(context.now,context.env.CONTROL_POLICY),budget=control.budgets[period];
   return [...reconciliationTodos(control),...financeTodos(budget?.spent??0,budget?.reserved??0,config.monthlyBudgetFen,period).filter(t=>t.level!=='info'||!state.dismissedBudgetMonths?.includes(period))];
 }
 async function handleFinanceInternal(request:Request,context:FinanceContext):Promise<Response|undefined> {
@@ -23,7 +24,7 @@ async function handleFinanceInternal(request:Request,context:FinanceContext):Pro
     if(route==='config') {const s=await store.read();return adminJson({current:s.versions.at(-1)??{version:0,config:environmentDefaults(context.env)},history:s.versions,dismissedBudgetMonths:s.dismissedBudgetMonths??[],defaults:environmentDefaults(context.env)});}
     if(route==='announcement')return adminJson({announcement:(await store.read()).announcement});
     if(['ledger','export','costs'].includes(route)) {
-      const month=monthSchema.parse(url.searchParams.get('month')??new Date(context.now).toISOString().slice(0,7));
+      const month=monthSchema.parse(url.searchParams.get('month')??(route==='costs'?new Date(context.now).toISOString().slice(0,7):ledgerMonth(context.now,context.env.CONTROL_POLICY)));
       if(route==='costs')return adminJson({month,timeZone:'UTC',rows:await dailyCosts(db,month)});
       if(!context.env.CONTROL_DB)throw new AdminError('LEDGER_UNAVAILABLE',503);
       const ledger=ledgerProjection(await new D1ControlStore(context.env.CONTROL_DB).read(),month);
