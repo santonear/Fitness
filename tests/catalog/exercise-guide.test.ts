@@ -34,3 +34,11 @@ describe('complete filter taxonomy and caution order',()=>{
  it('puts a hand-supported exact match behind forearm matches when the user notes wrist discomfort',()=>{const ordinary=searchExercises('high plank'),cautious=searchExercises('plank',{cautionAreas:['wrist']});expect(ordinary[0].id).toBe(id('high-plank'));expect(cautious.findIndex(e=>e.id===id('plank'))).toBeLessThan(cautious.findIndex(e=>e.id===id('high-plank')));expect(cautious.map(e=>e.id).sort()).toEqual(searchExercises('plank').map(e=>e.id).sort());});
  it('exposes real Chinese zero-result suggestions, retaining filter and caution ordering',()=>{expect(searchExercises('俯误错')).toHaveLength(0);const suggested=suggestExercises('俯误错',{equipment:['none']});expect(suggested.map(e=>e.id)).toContain(id('push-up'));expect(suggested.every(e=>e.equipment==='none')).toBe(true);expect(suggestExercises('俯误错',{equipment:['barbell']})).toHaveLength(0);const rows=suggestExercises('平板错错',{cautionAreas:['wrist']});expect(rows.length).toBeGreaterThan(0);let seenWrist=false;for(const e of rows){const has=getExerciseTags(e.id).cautionAreas.includes('wrists');if(has)seenWrist=true;else expect(seenWrist).toBe(false);}});
 });
+
+describe('candidate scope before suggestion ranking',()=>{
+ it('finds a favourite near match even when an excluded exercise matches exactly',()=>{const allowedIds=[id('squat')];expect(searchExercises('哑铃深蹲',{allowedIds})).toHaveLength(0);expect(suggestExercises('哑铃深蹲',{allowedIds}).map(e=>e.id)).toEqual(allowedIds);});
+ it('treats an empty saved selection as empty rather than unrestricted',()=>{expect(searchExercises('',{allowedIds:[]})).toHaveLength(0);expect(suggestExercises('俯误错',{allowedIds:[]})).toHaveLength(0);expect(searchExercises('').length).toBeGreaterThan(0);});
+ it('intersects candidate IDs with equipment filters before offering matches',()=>{const allowedIds=[id('squat')];expect(suggestExercises('哑铃深蹲',{allowedIds,equipment:['dumbbell']})).toHaveLength(0);expect(suggestExercises('哑铃深蹲',{allowedIds,equipment:['barbell']}).map(e=>e.id)).toEqual(allowedIds);});
+ it('does not let the first five excluded suggestions consume the candidate limit',()=>{const pool=searchExercises('curl');expect(pool.length).toBeGreaterThan(5);const allowedIds=[pool[pool.length-1].id];expect(suggestExercises('curl',{allowedIds}).map(e=>e.id)).toEqual(allowedIds);});
+});
+
