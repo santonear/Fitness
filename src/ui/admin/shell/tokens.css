@@ -1,0 +1,2 @@
+.admin-workspace{--a-bg:#EEF1EF;--a-surface:#fff;--a-soft:#F2F5F1;--a-ink:#16201C;--a-muted:#4F5F58;--a-nav:#16201C;--a-nav-text:#DCE5E0;--a-primary:#3E6B5C;--a-link:#1F5F4A;--a-ok:#2F7A55;--a-warn:#9A6B12;--a-alert:#B3261E;--a-gold:#C7A867;--a-line:#CBD6CF;--a-radius:16px;--a-button-radius:10px;--a-font:'Noto Sans SC',sans-serif;--a-number:'Archivo',sans-serif;--a-body:14px;--a-heading:24px;--a-row:44px;--a-mobile-bg:linear-gradient(#E6EEE9,#DDE6E0);}
+@media(max-width:959px){.admin-workspace{--a-radius:24px;--a-button-radius:999px;--a-row:52px;}}

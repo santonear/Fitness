@@ -43,7 +43,8 @@ for (const zh of [false, true]) test(`manual invitation generation and revocatio
   await page.addInitScript(zh => localStorage.setItem('fitness.language', zh ? 'zh' : 'en'), zh);
   const code = 'a'.repeat(64), inviteId = 'b'.repeat(64), expiresAt = Date.now() + 604800000;
   let issued = false, generations = 0;
-  await page.route('**/api/v1/management/**', async route => {
+  await page.route('**/api/v1/{management/**,features}', async route => {
+    if (new URL(route.request().url()).pathname === '/api/v1/features') return route.fulfill({ json: { version: 1, flags: { adminConsole: false }, expiresAt: Date.now() + 60_000 } });
     if (route.request().url().endsWith('/invites/revoke')) {
       expect(route.request().postDataJSON()).toEqual({ inviteId }); issued = false;
       return route.fulfill({ json: { ok: true } });
@@ -77,7 +78,8 @@ test('quota restoration confirms defaults and retries the same operation after a
   await page.addInitScript(() => localStorage.setItem('fitness.language', 'en'));
   const subjectId = '982ab731-a782-49de-aec0-8c4f5b5bd406';
   const submissions: unknown[] = [];
-  await page.route('**/api/v1/management/**', async route => {
+  await page.route('**/api/v1/{management/**,features}', async route => {
+    if (new URL(route.request().url()).pathname === '/api/v1/features') return route.fulfill({ json: { version: 1, flags: { adminConsole: false }, expiresAt: Date.now() + 60_000 } });
     if (route.request().url().endsWith('/quota-restore')) {
       submissions.push(route.request().postDataJSON());
       return submissions.length === 1 ? route.fulfill({ status: 503, json: { error: 'CONTROL_UNAVAILABLE' } }) : route.fulfill({ json: { ok: true } });
@@ -103,7 +105,8 @@ test('cost inputs stay independent when two subjects use the same request ID', a
   const requestId = '7df87763-d1b4-40bd-a8dd-9a995793da13';
   const subjects = ['982ab731-a782-49de-aec0-8c4f5b5bd406', 'f1658adb-74bc-48ca-9806-e6459c494ce1'];
   let submitted: unknown;
-  await page.route('**/api/v1/management/**', async route => {
+  await page.route('**/api/v1/{management/**,features}', async route => {
+    if (new URL(route.request().url()).pathname === '/api/v1/features') return route.fulfill({ json: { version: 1, flags: { adminConsole: false }, expiresAt: Date.now() + 60_000 } });
     if (route.request().url().endsWith('/settle')) {
       submitted = route.request().postDataJSON(); return route.fulfill({ json: { ok: true } });
     }
@@ -176,7 +179,8 @@ for (const zh of [false, true]) {
 test('management shows real report values, review actions and responsive layout', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('fitness.language', 'en'));
   const application = { id: '7df87763-d1b4-40bd-a8dd-9a995793da13', name: 'Synthetic applicant', note: 'Try Fitness', kind: 'new', state: 'pending', createdAt: Date.now() };
-  await page.route('**/api/v1/management/**', async route => {
+  await page.route('**/api/v1/{management/**,features}', async route => {
+    if (new URL(route.request().url()).pathname === '/api/v1/features') return route.fulfill({ json: { version: 1, flags: { adminConsole: false }, expiresAt: Date.now() + 60_000 } });
     if (route.request().url().endsWith('application-review')) { expect(route.request().postDataJSON().decision).toBe('approve'); application.state = 'approved'; return route.fulfill({ json: application }); }
     return route.fulfill({ json: { report: { capturedAt: new Date().toISOString(), aiEnabled: false, recoveryRequired: false, budgets: [], subjects: [], requests: [], usages: [] }, applications: [application], audit: [], policy: { budgetLimit: 3000, reservation: 300, timeZone: 'Asia/Shanghai' }, service: { reconciliationRequired: false } } });
   });

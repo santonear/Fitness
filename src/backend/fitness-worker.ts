@@ -1,18 +1,27 @@
 import { createDeepSeekWorker, type DeepSeekWorkerEnv } from './deepseek-worker';
-import { verifyAdministrator, type ManagementEnv } from './management-auth';
+import { verifyAdministrator, requireFreshAccess, type ManagementEnv } from './management-auth';
 import { readFeatureFlags, readPublicFeatureFlags, type FeatureConfigEnv } from './feature-config';
 import { monitoringError } from '../application/monitoring';
 import { DailyUsageStore } from './daily-usage-store';
+import { adminBoundary, createAdminContext } from './admin/core/boundary';
+import { adminJson, type AdminEnvironment } from './admin/core/contracts';
+import { evaluateTodos } from './admin/core/todos';
+import { handleConsole, type ConsoleEnv } from './admin/core/console';
+import { runAdminSchedule } from './admin/core/schedule';
+import { resolveRuntimeEnv,activeAnnouncement } from './admin/finance';
+import { collectError } from './admin/quality';
 import { anonymousBatchSchema, TelemetryStore } from './telemetry-store';
-export interface FitnessWorkerEnv extends DeepSeekWorkerEnv, ManagementEnv, FeatureConfigEnv {
+export interface FitnessWorkerEnv extends DeepSeekWorkerEnv, ManagementEnv, FeatureConfigEnv, AdminEnvironment, ConsoleEnv {
   ASSETS?: { fetch(request: Request): Promise<Response> };
   FITNESS_TELEMETRY?: { send(event: unknown): Promise<void> };
   PUSH?: { fetch(request: Request): Promise<Response> };
 }
 /** API routing is explicit: missing API configuration must never become the SPA HTML. */
 export function createFitnessWorker(control = createDeepSeekWorker(), authenticate = verifyAdministrator) {
-  return { async fetch(request: Request, env: FitnessWorkerEnv): Promise<Response> {
+  return { async scheduled(_event:unknown,env:FitnessWorkerEnv){await runAdminSchedule(env)}, async fetch(request: Request, env: FitnessWorkerEnv): Promise<Response> {
     const path = new URL(request.url).pathname;
+    if(path==='/api/v1/announcement'&&request.method==='GET') {try{return adminJson({announcement:env.ADMIN_CONSOLE_ENABLED==='true'?await activeAnnouncement(env):null})}catch{return adminJson({announcement:null})}}
+    if(path==='/api/v1/telemetry/errors'&&env.ADMIN_CONSOLE_ENABLED==='true')return collectError(request,{...env,ADMIN_ERROR_COLLECTION_ENABLED:(await readFeatureFlags(env)).errorReports?env.ADMIN_ERROR_COLLECTION_ENABLED:'false'});
     if (path.startsWith('/api/v1/push/')) {
       if (!env.PUSH) return new Response(null, { status: 503 });
       if (request.method !== 'DELETE' && !(await readFeatureFlags(env)).systemNotifications) return new Response(null, { status: 503 });
@@ -47,6 +56,13 @@ export function createFitnessWorker(control = createDeepSeekWorker(), authentica
     }
     if (path === '/admin' || path.startsWith('/admin/') || path.startsWith('/api/v1/management/')) {
       if (!await authenticate(request, env)) return new Response(JSON.stringify({ error: 'ADMIN_REQUIRED' }), { status: 403, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
+      if(path.startsWith('/api/v1/management/console/')) {
+        if(env.ADMIN_CONSOLE_ENABLED!=='true'||!(await readFeatureFlags(env)).adminConsole)return adminJson({error:'NOT_FOUND'},404);
+        try {return await adminBoundary(request,createAdminContext(request,env),async(req,context)=>{
+          const forward=async(operation:string,data:unknown)=>{const url=new URL(request.url);url.pathname=`/api/v1/admin/${operation}`;return control.fetch(new Request(url,{method:'POST',headers:{'Content-Type':'application/json',origin:url.origin,authorization:`Bearer ${env.CONTROL_ADMIN_SECRET}`,'x-admin-operation-id':context.requestId,'x-admin-actor':context.actor},body:JSON.stringify(data)}),await resolveRuntimeEnv(env))};
+          return handleConsole(req,{...context,env},forward);
+        })}catch{return adminJson({error:'ADMIN_REQUIRED'},403)}
+      }
       if (path === '/api/v1/management/usage-counts' && request.method === 'GET') {
         if (!(await readFeatureFlags(env)).anonymousUsage || !env.FITNESS_OPS_DB) return new Response(null,{status:404});
         try { return new Response(JSON.stringify(await new TelemetryStore(env.FITNESS_OPS_DB).usage(new Date().toISOString().slice(0,10))),{headers:{'Content-Type':'application/json','Cache-Control':'no-store'}}); }
@@ -60,6 +76,7 @@ export function createFitnessWorker(control = createDeepSeekWorker(), authentica
       }
       if (path.startsWith('/api/v1/management/')) {
         const operation = path.slice('/api/v1/management/'.length);
+        if(env.ADMIN_CONSOLE_ENABLED==='true'&&['subject-delete','reissue','application-retention'].includes(operation)&&!requireFreshAccess(request))return adminJson({error:'FRESH_ACCESS_REQUIRED'},401);
         if (!['applications', 'application-review', 'application-activate', 'subject-delete', 'reissue', 'application-retention', 'invites', 'invites/revoke', 'revoke', 'settle', 'quota-restore'].includes(operation)) return new Response(null, { status: 404 });
         if (request.method !== 'POST' || request.headers.get('origin') !== new URL(request.url).origin || request.headers.get('sec-fetch-site') === 'cross-site') return new Response(null, { status: 403 });
         if (!env.CONTROL_ADMIN_SECRET) return new Response(null, { status: 503 });
@@ -68,7 +85,7 @@ export function createFitnessWorker(control = createDeepSeekWorker(), authentica
         return control.fetch(forwarded, env);
       }
     }
-    if (path === '/api' || path.startsWith('/api/')) return control.fetch(request, env);
+    if (path === '/api' || path.startsWith('/api/')) {try{return control.fetch(request,env.ADMIN_CONSOLE_ENABLED==='true'?await resolveRuntimeEnv(env):env)}catch{return adminJson({error:'CONTROL_UNAVAILABLE'},503)}}
     if (!env.ASSETS) return new Response('Application assets are unavailable', { status: 503 });
     return env.ASSETS.fetch(request);
   } };

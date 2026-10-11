@@ -1,0 +1,49 @@
+# 后台重构执行记录（唯一实施计划）
+
+基线 main 2607ea0；集成分支 codex/admin-integration。唯一规范 docs/uiux/UIUX20261008.md 第1部分13节。源交接文档与原型保留入库；后续规范只改唯一入口。
+
+## 文件所有权
+- ① 统筹：src/ui/admin/shell/**、src/ui/admin/users/**、src/ui/admin/todos/**、src/ui/admin/shared/**、src/backend/admin/core/**、src/backend/admin/users/**、management-auth.ts、fitness-worker.ts、ManagementPage.tsx；后台路由与导航；tests/admin/core*、users*；migrations/admin/1_*；docs。
+- ② 开关发布：src/backend/admin/releases/**、src/ui/admin/releases/**、tests/admin/releases*、migrations/admin/2_*；需要改 feature-config、提示词选择等共享入口时提供补丁说明给统筹。
+- ③ 费用配置：src/backend/admin/finance/**、src/ui/admin/finance/**、tests/admin/finance*、migrations/admin/3_*；运行配置进入业务准入及公告前台入口由统筹接线。
+- ④ 质量提醒：src/backend/admin/quality/**、src/ui/admin/quality/**、tests/admin/quality*、migrations/admin/4_*、public/admin-*；错误上报与业务统计共享入口由统筹接线。
+- 各线可新增自己目录的中英 copy.ts、route-entries.ts。不得直接修改全局路由、共享接口或其他线文件；共享变动由统筹合入。
+
+## 共享边界
+四条线分别在独立 worktree / branch；统筹承担①以满足运行时最多4个Agent的上限。①先交付外壳/令牌/对话框/提示条/服务端新鲜Access/重验前端/待办注册小PR，其余线先后端。
+共同管理入口 /api/v1/management/console/{users|releases|finance|quality}/...；外层验证Access身份、CSRF、freshness和幂等。各线导出 handleX(request, context): Promise<Response | undefined>，context包含 env、actor、now、fresh、requestId。契约初版由①提供。
+管理新表使用独立管理库（ADMIN_DB），不修改既有CONTROL_DB表；读取旧控制数据仅通过显式脱敏projection。预览独立资源，生产关闭adminConsole。操作必须真实持久化；缺后端/权限显示不可用，不模拟成功。
+统一 registerTodoSource({id,evaluate})；各线返回纯数据来源；汇总页不各自拼待办。
+
+## 顺序与验收
+1. 文档入库，唯一规范合并，原型浏览器检查。
+2. ①共享小PR；②③④并行后端。每线添加迁移、隐私/鉴权/幂等契约测试。
+3. 小PR CI全绿合入集成；所有线接前端。整合消费者并保留旧后台功能对照。
+4. 全套类型/单元/必要浏览器、隔离预览；390/320/1440/1024八页面截图、可访问性。
+5. 通知用户验收；禁止未批准合并main/生产部署。真实Access重验及推送必须与模拟证据分开。
+
+## 待审决定
+- 现行无限额计划准入保留；待核算待办仅在实际paused时说调用暂停，不能恢复已取消的全局阻塞。
+- 同日规范沿用V8.0.8，合并当日版本记录；不每天多升版本。
+- 回滚只允许预登记且数据兼容的上一版本；当前上一部署DB兼容情况必须校验，不能把旧客户端直接回退给DB11用户。
+- 默认不上传错误；本轮开发收集器，生产敏感开关需再授权。
+
+## 当前进度
+共享外壳 PR #53 已合入；能力集成 PR #54 承接全部复查修正。受保护入口、完整旧操作、枚举、金额与时间、预算待办及隔离回滚模拟已接入。独立预览使用专用数据库及 Access，生产未改。最新复查证据见 admin-legacy-parity.md；等待用户登录预览复查后再准备唯一 main 发布 PR。
+
+### 2026-10-12 第二轮预览复查
+- PR #54 已合入 codex/admin-integration；本轮继续在此集成，不修改 main 和生产。
+- 发布线：登录保护与真实故障分别报告，保护检查和内容验证区分，逐项展示原因。
+- 用户线：原编号额度恢复重试、资格到期与本月生成用量标签、剩余天数。
+- 费用线：确认只显示变更项、统一可读时区、隔离预览合成费用和预算提醒。
+- 统筹：共享接线、真实入口失败提示截图、针对性测试、预览部署与交付。
+- 合成费用只写独立预览库，保留既有数据和账本；不触发付费模型调用。
+
+## 已确认的验收安排（2026-10-11）
+- 用户确认先完成开发，真实手机添加主屏幕、订阅和收到测试推送的验收稍后进行；模拟及浏览器结果不替代真机结果。
+- 用户确认回滚先验证完整模拟流程，专用 Cloudflare 凭据和真实版本回滚验收保留待办。本轮不把本机登录凭据放入应用，也不执行生产回滚。
+
+### 2026-10-12 同轮补充复查
+- 已完成：排除登录拦截待办、实际预算比例及货币符号、城市时区排序与去重、作废资格隐藏天数、失败页后台样式。
+- 验证：相关单元 26 项、浏览器 8 项、类型检查及构建通过；浏览器为合成受保护环境，非真实设备登录。
+- 不重置预览合成用户、费用、关闭提醒状态，不触发模型；仅更新预览部署。

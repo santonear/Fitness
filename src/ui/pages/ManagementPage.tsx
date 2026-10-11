@@ -1,14 +1,29 @@
+import {useFeature} from '../useFeature';
 import { ApplicationsTable } from '../admin/ApplicationsTable';
+import { AdminShell } from '../admin/shell/AdminShell';
 import { adminTokens } from '../admin/tokens';
 import '../admin/admin.css';
 import { AppIcon, StatusIcon } from '../components/AppIcon';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import {getFeatureLoadState,subscribeFeatureLoadState,refreshFeatureFlags,hasValidRemoteConfig} from '../../application/feature-flags';
 import { useTranslation } from 'react-i18next';
 import { trialApi } from '../components/TrialAccess';
 import { ManualInvites } from '../components/ManualInvites';
 import type { ControlService } from '../../backend/control';
 type Data = Awaited<ReturnType<ControlService['managementReport']>>;
 export function ManagementPage() {
+  const enabled=useFeature('adminConsole');
+  const state=useSyncExternalStore(subscribeFeatureLoadState,getFeatureLoadState,()=> 'idle');
+  const {i18n}=useTranslation();const zh=i18n.resolvedLanguage!=='en';
+  useEffect(()=>{void refreshFeatureFlags()},[]);
+  if(new URLSearchParams(location.search).has('legacy'))return <LegacyManagementPage/>;
+  const frame=(content:React.ReactNode)=><div className={`admin-workspace admin-access-state${hasValidRemoteConfig()?' admin-access-inline':''}`}><main><header><strong>Fitness · {zh?'管理工作台':'Administration'}</strong></header>{content}</main></div>;
+  const notice=state==='error'?frame(<section className="admin-card" role="alert"><h1>{zh?'暂时无法读取后台配置':'Admin configuration unavailable'}</h1><p>{zh?'请确认登录仍然有效，然后重试。':'Check that you are still signed in, then retry.'}</p><button className="primary" onClick={()=>void refreshFeatureFlags()}>{zh?'重试':'Retry'}</button></section>):null;
+  if(enabled)return <>{notice}<AdminShell/></>;
+  if(!hasValidRemoteConfig())return notice??frame(<section className="admin-card" role="status">{zh?'正在读取后台配置…':'Loading admin configuration…'}</section>);
+  return <>{notice}<LegacyManagementPage/></>;
+}
+function LegacyManagementPage() {
   const { i18n } = useTranslation(); const zh = i18n.resolvedLanguage === 'zh';
   useEffect(() => {
     try { if (!localStorage.getItem('fitness.language')) void i18n.changeLanguage('zh'); }
@@ -74,3 +89,4 @@ export function ManagementPage() {
       {tab === 'budget' && <section><h2>{zh ? '费用核算' : 'Cost reconciliation'}</h2><p>{zh ? '预留不是实际费用。仅依据供应商账单核算；无法归属的费用继续保留。' : 'Reservations are not actual charges. Settle only against supplier billing evidence; retain unresolved amounts.'}</p>{data?.report.requests.map(r => <article key={`${r.subjectId}:${r.requestId}`} className="management-item"><strong>{r.requestId}</strong><p>{r.operation} · {r.period} · {r.status} · {money(r.boundFen)}</p>{r.status === 'pending' && <><label>{zh ? '已核对实际费用（分）' : 'Verified actual cost (fen)'}<input type="number" min="0" step="1" value={costs[`${r.subjectId}:${r.requestId}`] ?? ''} onChange={e => setCosts({ ...costs, [`${r.subjectId}:${r.requestId}`]: e.target.value })} /></label><button disabled={busy || !/^\d+$/.test(costs[`${r.subjectId}:${r.requestId}`] ?? '')} onClick={() => { if (confirm(zh ? '确认已核对账单并按此金额结算？' : 'Confirm the bill was verified and settle this amount?')) void run(() => trialApi('management/settle', { subjectId: r.subjectId, requestId: r.requestId, actualCost: Number(costs[`${r.subjectId}:${r.requestId}`]) })); }}>{zh ? '确认核算' : 'Confirm settlement'}</button></>}</article>)}</section>}
     </main></div>;
 }
+

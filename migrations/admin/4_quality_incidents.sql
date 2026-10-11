@@ -1,0 +1,2 @@
+CREATE TABLE IF NOT EXISTS admin_quality_incident_snapshot (id INTEGER PRIMARY KEY CHECK(id=1), at INTEGER NOT NULL, token TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS admin_quality_incidents (id TEXT PRIMARY KEY, category TEXT NOT NULL, count INTEGER NOT NULL, active INTEGER NOT NULL, generation INTEGER NOT NULL);

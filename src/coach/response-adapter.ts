@@ -1,6 +1,6 @@
 import { selectAiExercises } from '../catalog/ai-catalog';
 import { exercises } from '../catalog/exercises';
-import { checkCoachLanguage } from '../application/rules/coach-language';
+import { checkCoachLanguage, type CoachLanguageViolation } from '../application/rules/coach-language';
 import { guidedServiceLimits as limits } from '../domain/guided-limits';
 import { coachRequestSchema, coachResponseSchema, type AdaptCoachResponse, type CoachRequest, type CoachResponse } from './contracts';
 import { reviewCountClaimsMatch } from './review-facts-validation';
@@ -10,6 +10,9 @@ const responseTypes = {
   MODIFY_PLAN: 'change_proposal', PERIOD_REVIEW: 'review_summary',
 } as const;
 type Template = Extract<CoachResponse, { type: 'today_adjustment' }>['template'];
+export class CoachLanguageError extends Error {
+  constructor(public readonly categories: CoachLanguageViolation[]) { super('Invalid coach response: coach language'); }
+}
 
 function requireCondition(condition: boolean, message: string): asserts condition {
   if (!condition) throw new Error(`Invalid coach response: ${message}`);
@@ -60,7 +63,8 @@ export const adaptCoachResponse: AdaptCoachResponse = (input, raw) => {
     : response.type === 'change_proposal' ? [...response.changes, ...response.proposal.reasons]
     : response.type === 'today_adjustment' ? [response.summary]
     : response.type === 'clarify' ? [response.question] : [response.reason];
-  requireCondition(prose.every(text => checkCoachLanguage(text).length === 0), 'coach language');
+  const violations = [...new Set(prose.flatMap(checkCoachLanguage))];
+  if (violations.length) throw new CoachLanguageError(violations);
   requireCondition(response.requestId === request.requestId, 'request identity');
   requireCondition(response.restoreGeneration === request.restoreGeneration, 'restore generation');
   if (response.type === 'clarify' || response.type === 'refused') return response;

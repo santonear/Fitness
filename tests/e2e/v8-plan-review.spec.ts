@@ -1,5 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { test, expect, type Page } from '@playwright/test';
+// Sunday in UTC and Monday in Shanghai: keep the week-boundary regression deterministic.
+test.beforeEach(async({page})=>{await page.clock.setFixedTime(new Date('2026-10-11T20:00:00Z'));});
 async function plan(page:Page){
  await page.goto('/');await page.getByLabel('你的回答').fill('保持力量');await page.getByRole('button',{name:'继续',exact:true}).click();
  await page.getByLabel('你的回答').fill('每周3次，每次30分钟');await page.getByRole('button',{name:'继续',exact:true}).click();
@@ -49,8 +51,9 @@ test('library favorites are filtered before exact matches and suggestion limits'
 async function timeEvidence(page:Page){
  return page.evaluate(async()=>{
   const dp='/src/persistence/db.ts',ap='/src/application/v8-activity.ts';const db=(await import(/* @vite-ignore */ dp)).database;const {activityDate}=await import(/* @vite-ignore */ ap);
-  const version=(await db.v8PlanVersions.toArray())[0],date=activityDate('Asia/Shanghai');const item=version.templates[0].items[0];
-  const rows=[0,1].map(i=>({id:crypto.randomUUID(),planVersionId:version.id,templateId:version.templates[0].id,startedAt:`${date}T0${i+2}:00:00Z`,endedAt:`${date}T0${i+2}:10:00Z`,localDate:date,timeZone:'Asia/Shanghai',status:'partial',plannedSetCount:8,sets:[{exerciseId:item.exerciseId,itemIndex:0,setIndex:0,reps:8,completedAt:`${date}T0${i+2}:01:00Z`}],feedback:{reasons:['time']}}));
+  const profile=await db.profiles.toCollection().first();const timeZone=profile.timeZone;
+  const version=(await db.v8PlanVersions.toArray())[0],date=activityDate(timeZone);const item=version.templates[0].items[0];
+  const rows=[0,1].map(i=>({id:crypto.randomUUID(),planVersionId:version.id,templateId:version.templates[0].id,startedAt:new Date(Date.now()-(i+1)*20*60000).toISOString(),endedAt:new Date(Date.now()-((i+1)*20-10)*60000).toISOString(),localDate:date,timeZone,status:'partial',plannedSetCount:8,sets:[{exerciseId:item.exerciseId,itemIndex:0,setIndex:0,reps:8,completedAt:new Date(Date.now()-((i+1)*20-1)*60000).toISOString()}],feedback:{reasons:['time']}}));
   await db.v8Workouts.bulkAdd(rows);return {version,rows};
  });
 }
@@ -71,8 +74,8 @@ test('declining a suggestion suppresses it after reload for the same week',async
 test('legacy workout notes and metrics appear in both review periods without rewriting legacy tables',async({page})=>{
  await plan(page);const fixture=JSON.parse(readFileSync(new URL('../fixtures/legacy-backups/v71-plans-weight.json',import.meta.url),'utf8')).data;
  const before=await page.evaluate(async(data)=>{
-  const p='/src/persistence/db.ts',ap='/src/application/v8-activity.ts',db=(await import(/* @vite-ignore */ p)).database,{activityDate}=await import(/* @vite-ignore */ ap),date=activityDate('Asia/Shanghai');
-  const original=data.sessions.find((s:{status:string})=>s.status==='completed');const session={...original,startedAt:`${date}T02:00:00Z`,completedAt:`${date}T02:10:00Z`,localDate:date,notes:'旧训练原始备注'};
+  const p='/src/persistence/db.ts',ap='/src/application/v8-activity.ts',db=(await import(/* @vite-ignore */ p)).database,{activityDate}=await import(/* @vite-ignore */ ap),profile=await db.profiles.toCollection().first(),timeZone=profile.timeZone,date=activityDate(timeZone);
+  const original=data.sessions.find((s:{status:string})=>s.status==='completed');const session={...original,startedAt:new Date(Date.now()-20*60000).toISOString(),completedAt:new Date(Date.now()-10*60000).toISOString(),localDate:date,timeZone,notes:'旧训练原始备注'};
   const sets=data.sets.filter((s:{sessionId:string;completed:boolean})=>s.sessionId===session.id&&s.completed).map((s:object)=>({...s,notes:'旧组原始备注'}));await db.sessions.put(session);await db.sets.bulkPut(sets);return {session,sets};
  },fixture);
  await page.goto('/review');await expect(page.getByText('旧训练原始备注',{exact:true})).toBeVisible();await expect(page.getByText(/旧组原始备注/).first()).toBeVisible();

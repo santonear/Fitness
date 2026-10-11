@@ -14,6 +14,9 @@ export interface ControlConfig {
   requestBounds: OperationCounts; quotas: OperationCounts; maxInputBytes: number;
   maxConcurrent: number; adminSecret: string; digestSecret: string;
   allowBoundedPending?: boolean; planningBudgetDisabled?: boolean; allowUncertainPlanningPending?: boolean;
+  adminOperationId?: string;
+  retentionDays?: number;
+  coachPromptVersion?: string;
 }
 export const testConfig: ControlConfig = { mode: 'local-test', timeZone: 'UTC', k: 1, budgetLimit: 3500,
   maximumRequestCost: 1000, requestBounds: { understand: 100, generate: 300, summary: 300 }, quotas: { understand: 8, generate: 4, summary: 4 },
@@ -27,10 +30,10 @@ const requestKey = (subjectId: string, requestId: string) => `${subjectId}:${req
 const usageKey = (subjectId: string, period: string) => `${subjectId}:${period}`;
 
 export class ControlService {
-  get applications() { return new TrialApplications(this.store, this.config.digestSecret, this.now); }
+  get applications() { return new TrialApplications(this.store, this.config.digestSecret, this.now,this.config.retentionDays); }
   constructor(private readonly store: ControlStore, private readonly config: ControlConfig,
     private readonly supplier: MockSupplier | ExternalSupplier, private readonly now = Date.now,
-    private readonly onCandidateFailure?: () => void) {
+    private readonly onCandidateFailure?: (error?:unknown) => void) {
     new Intl.DateTimeFormat('en', { timeZone: config.timeZone });
     if (!((config.mode === 'local-test' && supplier.kind === 'local-mock') || (config.mode === 'external' && supplier.kind === 'external-transport')) || !config.adminSecret || !config.digestSecret ||
       ![config.k, config.budgetLimit, config.maximumRequestCost, config.maxConcurrent, config.maxInputBytes,
@@ -92,10 +95,10 @@ export class ControlService {
       Object.entries(state.budgets).some(([period, budget]) => !integer(budget.spent) || !integer(budget.reserved) || budget.reserved !== (expected[period] ?? 0));
   }
   async issue(admin: string) {
-    await this.admin(admin); const code = token(), codeDigest = await digest(code, this.config.digestSecret);
+    await this.admin(admin); const code = this.config.adminOperationId ? await digest(`admin-invite:${this.config.adminOperationId}`,this.config.digestSecret) : token(), codeDigest = await digest(code, this.config.digestSecret);
     const expiresAt = this.now() + 7 * DAY;
-    await this.store.transact(state => { state.invites[codeDigest] = { expiresAt, redeemed: false }; this.audit(state, 'invite-issued'); });
-    return { code, inviteId: codeDigest, expiresAt };
+    const savedExpiry=await this.store.transact(state => { state.invites[codeDigest] = { expiresAt, redeemed: false }; this.audit(state, 'invite-issued'); return expiresAt; });
+    return { code, inviteId: codeDigest, expiresAt:savedExpiry };
   }
   async revokeInvite(admin: string, inviteId: string) {
     await this.admin(admin); await this.store.transact(state => {
@@ -156,7 +159,7 @@ export class ControlService {
     });
   }
   async reissue(admin: string, subjectId: string) {
-    await this.admin(admin); const code = token(), codeDigest = await digest(code, this.config.digestSecret);
+    await this.admin(admin); const code = this.config.adminOperationId ? await digest(`admin-reissue:${this.config.adminOperationId}`,this.config.digestSecret) : token(), codeDigest = await digest(code, this.config.digestSecret);
     const expiresAt = await this.store.transact(state => {
       const subject = state.subjects[subjectId]; if (!subject || subject.deletedAt !== undefined || subject.expiresAt <= this.now()) throw new ControlError('SUBJECT_EXPIRED', 401);
       for (const session of Object.values(state.sessions)) if (session.subjectId === subjectId) session.revoked = true;
@@ -294,10 +297,10 @@ export class ControlService {
       if (!this.budgetDisabled(request.operation) && budget.spent + budget.reserved + carriedReservations + bound > this.config.budgetLimit) throw new ControlError('GLOBAL_BUDGET_EXHAUSTED', 429);
       if (Object.values(state.requests).filter(r => ['reserved', 'submitted'].includes(r.status)).length >= this.config.maxConcurrent) throw new ControlError('CONCURRENCY_LIMIT', 429);
       used[request.operation] = (used[request.operation] ?? 0) + 1; budget.reserved += bound; state.usages[usageKey(subjectId, period)] = used; state.budgets[period] = budget;
-      state.requests[key] = { subjectId, requestId: request.requestId, inputDigest, operation: request.operation, period, bound, status: 'reserved', cancelled: false,
+      state.requests[key] = { subjectId, requestId: request.requestId, inputDigest, operation: request.operation, period, bound, status: 'reserved', cancelled: false, createdAt:this.now(),
         ...('dialogue' in request && request.dialogue ? { coachContract: { promptVersion: COACH_PROMPT_VERSION,
           schemaVersion: request.dialogue.version, catalogVersion: CATALOG_VERSION, task: request.dialogue.coachTask ?? coachTask(request.dialogue.purpose) } } : {}),
-        ...('coach' in request ? {coachContract:{promptVersion:COACH_V8_PROMPT_VERSION,schemaVersion:request.coach.version,catalogVersion:CATALOG_VERSION,task:request.coach.task}} : {}),
+        ...('coach' in request ? {coachContract:{promptVersion:this.config.coachPromptVersion??COACH_V8_PROMPT_VERSION,schemaVersion:request.coach.version,catalogVersion:CATALOG_VERSION,task:request.coach.task}} : {}),
         ...(verifiedBoundFen === undefined ? {} : { verifiedBoundFen }) };
       return key;
     });
@@ -330,8 +333,8 @@ export class ControlService {
       response = { result: hasCost ? envelope.result : validateCandidate(request, envelope.result),
         ...(hasCost ? { actualCost: actualCost as number } : {}) };
     }
-    catch {
-      if (supplierReturned) { try { this.onCandidateFailure?.(); } catch { /* Diagnostics cannot change accounting. */ } }
+    catch (error) {
+      if (supplierReturned) { try { this.onCandidateFailure?.(error); } catch { /* Diagnostics cannot change accounting. */ } }
       await this.pending(key); throw new ControlError('ACCOUNTING_PENDING', 503);
     }
     if (response.actualCost === undefined) {
