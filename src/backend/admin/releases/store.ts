@@ -20,19 +20,25 @@ export async function releaseOverview(context: AdminContext<ReleasesEnv>) {
 }
 export async function saveFlag(context:AdminContext<ReleasesEnv>, value:{name:string;environment:ReleaseEnvironment;enabled:boolean}, pending=false) {
   const db=requireAdminDb(context); const time=new Date(context.now).toISOString();
-  const old=await db.prepare('SELECT enabled FROM admin_feature_flags WHERE environment=? AND name=?').bind(value.environment,value.name).first<{enabled:number}>();
-  const enabled=pending ? old?.enabled ?? 0 : Number(value.enabled);
+  const enabled=pending ? 0 : Number(value.enabled);const kind=pending?'flag_pending':'flag';const after=pending?'pending':String(enabled);
+  if(await alreadyCommitted(context,value.environment,kind,value.name,after))return;
   await db.batch([
+    db.prepare('INSERT INTO admin_release_history(request_id,environment,kind,object_id,before_value,after_value,actor,created_at) VALUES(?,?,?,?,(SELECT CAST(enabled AS TEXT) FROM admin_feature_flags WHERE environment=? AND name=?),?,?,?)').bind(context.requestId,value.environment,kind,value.name,value.environment,value.name,after,context.actor,time),
     db.prepare('INSERT INTO admin_feature_flags(environment,name,enabled,pending,changed_by,changed_at) VALUES(?,?,?,?,?,?) ON CONFLICT(environment,name) DO UPDATE SET enabled=CASE WHEN excluded.pending=1 THEN admin_feature_flags.enabled ELSE excluded.enabled END,pending=excluded.pending,changed_by=excluded.changed_by,changed_at=excluded.changed_at').bind(value.environment,value.name,enabled,Number(pending),context.actor,time),
-    db.prepare('INSERT INTO admin_release_history(request_id,environment,kind,object_id,before_value,after_value,actor,created_at) VALUES(?,?,?,?,?,?,?,?)').bind(context.requestId,value.environment,pending?'flag_pending':'flag',value.name,old ? String(old.enabled):null,pending?'pending':String(enabled),context.actor,time),
   ]);
 }
 export async function savePrompt(context:AdminContext<ReleasesEnv>, value:{task:string;environment:ReleaseEnvironment;version:string}) {
   if (!registeredPromptVersions.includes(value.version as typeof registeredPromptVersions[number])) throw new AdminError('UNREGISTERED_PROMPT');
   const db=requireAdminDb(context); const time=new Date(context.now).toISOString();
-  const old=await db.prepare('SELECT version FROM admin_prompt_selection WHERE environment=? AND task=?').bind(value.environment,value.task).first<{version:string}>();
+  if(await alreadyCommitted(context,value.environment,'prompt',value.task,value.version))return;
   await db.batch([
+    db.prepare('INSERT INTO admin_release_history(request_id,environment,kind,object_id,before_value,after_value,actor,created_at) VALUES(?,?,?,?,COALESCE((SELECT version FROM admin_prompt_selection WHERE environment=? AND task=?),?),?,?,?)').bind(context.requestId,value.environment,'prompt',value.task,value.environment,value.task,registeredPromptVersions[0],value.version,context.actor,time),
     db.prepare('INSERT INTO admin_prompt_selection(environment,task,version,changed_by,changed_at) VALUES(?,?,?,?,?) ON CONFLICT(environment,task) DO UPDATE SET version=excluded.version,changed_by=excluded.changed_by,changed_at=excluded.changed_at').bind(value.environment,value.task,value.version,context.actor,time),
-    db.prepare('INSERT INTO admin_release_history(request_id,environment,kind,object_id,before_value,after_value,actor,created_at) VALUES(?,?,?,?,?,?,?,?)').bind(context.requestId,value.environment,'prompt',value.task,old?.version ?? registeredPromptVersions[0],value.version,context.actor,time),
   ]);
+}
+async function alreadyCommitted(context:AdminContext<ReleasesEnv>,environment:string,kind:string,object:string,after:string) {
+  const row=await requireAdminDb(context).prepare('SELECT environment,kind,object_id,after_value,actor FROM admin_release_history WHERE request_id=?').bind(context.requestId).first<{environment:string;kind:string;object_id:string;after_value:string;actor:string}>();
+  if(!row)return false;
+  if(row.environment!==environment||row.kind!==kind||row.object_id!==object||row.after_value!==after||row.actor!==context.actor)throw new AdminError('REQUEST_ID_CONFLICT',409);
+  return true;
 }

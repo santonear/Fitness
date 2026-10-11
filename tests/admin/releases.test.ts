@@ -56,6 +56,17 @@ describe('persistent release controls',()=>{
     await expect(handleReleases(post('flags',{name:'exercisePanel',environment:'preview',enabled:false}),context)).rejects.toThrow();
     expect(await readManagedFeatureFlags(context.env)).toEqual({exercisePanel:true});
   });
+  it('retries a committed flag or prompt after audit callback failure without duplicate history',async()=>{
+    const {context,sqlite}=fixture();context.audit=vi.fn().mockRejectedValueOnce(new Error('audit unavailable')).mockResolvedValue(undefined);
+    const command=()=>post('flags',{name:'exercisePanel',environment:'preview',enabled:true});
+    await expect(handleReleases(command(),context)).rejects.toThrow('audit unavailable');
+    expect((await handleReleases(command(),context))?.status).toBe(200);
+    expect(sqlite.prepare('SELECT * FROM admin_release_history').all()).toHaveLength(1);
+    context.requestId='request-00002';context.audit=vi.fn().mockRejectedValueOnce(new Error('audit unavailable')).mockResolvedValue(undefined);
+    const prompt=()=>post('prompts',{task:'ONBOARD_PLAN',environment:'preview',version:'v8.0.0',confirmed:true});
+    await expect(handleReleases(prompt(),context)).rejects.toThrow('audit unavailable');expect((await handleReleases(prompt(),context))?.status).toBe(200);
+    expect(sqlite.prepare('SELECT * FROM admin_release_history').all()).toHaveLength(2);
+  });
   it('refuses foreign-environment writes and masks foreign-environment state',async()=>{
     const {context,sqlite}=fixture();
     sqlite.prepare('INSERT INTO admin_feature_flags VALUES(?,?,?,?,?,?)').run('production','nutrition',1,0,'operator','2026-10-11');
