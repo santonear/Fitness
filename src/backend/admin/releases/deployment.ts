@@ -5,7 +5,7 @@ import { smokeChecks, type ReleasesEnv, type ReleaseEnvironment, type ReleaseReg
 const release = z.object({id:z.string().regex(/^[\w.-]{1,80}$/),deploymentId:z.string().uuid(),publishedAt:z.string().datetime(),compatibleDataVersion:z.number().int().nonnegative(),smokeOrigin:z.string().url().refine(value=>new URL(value).protocol==='https:' && new URL(value).origin===value)}).strict();
 const registry = z.array(z.object({environment:z.enum(['preview','production']),dataVersion:z.number().int().nonnegative(),current:release,previous:release.optional()}).strict());
 export function registeredReleases(env:ReleasesEnv) {
-  try {const parsed=registry.parse(JSON.parse(env.ADMIN_RELEASE_REGISTRY ?? '[]'));if(new Set(parsed.map(item=>item.environment)).size!==parsed.length)throw new Error();return parsed;}
+  try {const parsed=registry.parse(JSON.parse(env.ADMIN_RELEASE_REGISTRY ?? '[]'));if(new Set(parsed.map(item=>item.environment)).size!==parsed.length)throw new Error();if(env.ADMIN_ENVIRONMENT==='preview'&&env.CF_VERSION_METADATA){const actual=z.string().uuid().parse(env.CF_VERSION_METADATA.id);for(const item of parsed)if(item.environment==='preview')item.current.deploymentId=actual;}return parsed;}
   catch {throw new AdminError('RELEASE_REGISTRY_UNAVAILABLE',503);}
 }
 export async function checkCurrentRelease(context:AdminContext<ReleasesEnv>,environment:ReleaseEnvironment,releaseId:string) {

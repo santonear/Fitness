@@ -6,7 +6,7 @@ import type { ReleasesEnv } from '../../src/backend/admin/releases/model';
 import { handleReleases } from '../../src/backend/admin/releases';
 import { readManagedFeatureFlags, readSelectedPromptVersion } from '../../src/backend/admin/releases/runtime';
 import { releaseTodoSource } from '../../src/backend/admin/releases/todos';
-import { rollbackRelease } from '../../src/backend/admin/releases/deployment';
+import { rollbackRelease,registeredReleases,runReleaseSmoke } from '../../src/backend/admin/releases/deployment';
 import { createCloudflareReleaseAdapter } from '../../src/backend/admin/releases/cloudflare-adapter';
 import {createPreviewSimulationAdapter} from '../../src/backend/admin/releases/preview-simulation-adapter';
 import {readFeatureFlags} from '../../src/backend/feature-config';
@@ -150,4 +150,12 @@ it('isolates preview simulation, persists replay receipt and never changes relea
  expect(sqlite.prepare('SELECT * FROM admin_release_history').all()).toHaveLength(0);
  expect((await adapter.fetch(new Request('https://private/status'),{...settings,ADMIN_ENVIRONMENT:'production'})).status).toBe(503);
  context.env.ADMIN_ENVIRONMENT='production';await expect(handleReleases(post('simulate-rollback',command),context)).rejects.toMatchObject({code:'PREVIEW_SIMULATION_UNAVAILABLE'});
+});
+
+
+it('uses runtime metadata for preview current only and treats login redirects as failed content checks',async()=>{
+ const {context}=fixture();context.env.ADMIN_RELEASE_REGISTRY=JSON.stringify([{environment:'preview',dataVersion:11,current,previous},{environment:'production',dataVersion:11,current,previous}]);context.env.CF_VERSION_METADATA={id:'33333333-3333-4333-8333-333333333333'};
+ const entries=registeredReleases(context.env);expect(entries[0].current.deploymentId).toBe(context.env.CF_VERSION_METADATA.id);expect(entries[0].previous!.deploymentId).toBe(previous.deploymentId);expect(entries[1].current.deploymentId).toBe(current.deploymentId);
+ context.env.ADMIN_ENVIRONMENT='production';expect(registeredReleases(context.env)[0].current.deploymentId).toBe(current.deploymentId);
+ const checks=await runReleaseSmoke(context,'preview',current,async()=>new Response(null,{status:302,headers:{Location:'https://login.example.test'}}));expect(checks.map(c=>[c.check,c.status])).toEqual([['application','failed'],['features','failed'],['managementAccess','passed']]);
 });
