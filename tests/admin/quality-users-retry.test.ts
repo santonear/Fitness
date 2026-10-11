@@ -20,3 +20,11 @@ it('shows zero current use with configured total and never derives current total
  const now=Date.parse('2026-10-31T16:30:00Z'),state=initialState();state.subjects[id]={expiresAt:now-1,revoked:false};state.usages[id+':2026-10']={understand:0,generate:99};
  expect(userProjection(state,now,'production',JSON.stringify({timeZone:'Asia/Shanghai',quotas:{generate:8}}))[0]).toMatchObject({remainingDays:0,currentQuota:{period:'2026-11',used:0,total:8}});
 });
+
+it('labels dynamically identified finance samples only in preview with matching audit evidence',()=>{
+ const state=initialState(),financeId=crypto.randomUUID(),otherId=crypto.randomUUID();
+ state.subjects[financeId]={expiresAt:100,revoked:true};state.subjects[otherId]={expiresAt:100,revoked:true};
+ state.audit.push({at:1,event:'preview-synthetic-finance',subjectId:financeId});
+ expect(userProjection(state,1,'preview').map(u=>u.previewLabel)).toEqual(['finance',undefined]);
+ for(const environment of ['production',undefined])expect(userProjection(state,1,environment).every(u=>u.previewLabel===undefined)).toBe(true);
+});
