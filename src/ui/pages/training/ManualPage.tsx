@@ -128,7 +128,7 @@ export function ManualPage() {
           <span className="manual-card-copy"><strong>{exercise.name[locale]}</strong><span>{equipmentLabel(exercise.equipment, locale)} · {BODY_PARTS[body]?.[locale === 'zh' ? 0 : 1] ?? label(body)}</span></span><span className="manual-check" aria-hidden="true">{selected.includes(exercise.id) ? '✓' : '+'}</span>
         </button>
         {caution && <p className="manual-caution">{copy.caution}</p>}
-        <Button onClick={() => { guideTrigger.current = document.activeElement as HTMLElement; setGuideId(exercise.id); }}>{copy.details}</Button>
+        <Button onClick={event => { guideTrigger.current = event.currentTarget; setGuideId(exercise.id); }}>{copy.details}</Button>
       </article>;
     })}</div>
     {results.length > limit && <Button onClick={() => setLimit(value => value + 36)}>{copy.more}</Button>}

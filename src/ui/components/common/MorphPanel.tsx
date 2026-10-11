@@ -15,12 +15,14 @@ const frame = (element: HTMLElement): Keyframe => {
 export function MorphPanel({ open, onClose, triggerRef, title, closeLabel = '关闭', children, placement = 'center' }: MorphPanelProps) {
   const dialog = useRef<HTMLDialogElement>(null);
   const titleId = useId();
+  const opener = useRef<HTMLElement | null>(null);
   useEffect(() => {
     const panel = dialog.current;
     if (!panel) return;
     let animation: Animation | undefined;
     let cancelled = false;
-    const source = triggerRef.current;
+    if (open && !panel.open) opener.current = triggerRef.current;
+    const source = opener.current;
     const originalVisibility = source?.style.visibility ?? '';
     const reveal = () => { if (source) source.style.visibility = originalVisibility; };
     if (source && (open || panel.open)) source.style.visibility = 'hidden';
@@ -56,7 +58,7 @@ export function MorphPanel({ open, onClose, triggerRef, title, closeLabel = '关
     document.addEventListener('keydown', containTab, true);
     return () => document.removeEventListener('keydown', containTab, true);
   }, []);
-  useEffect(() => () => { if (dialog.current?.open) dialog.current.close(); if (triggerRef.current?.isConnected) triggerRef.current.focus({ preventScroll: true }); }, [triggerRef]);
+  useEffect(() => { const panel = dialog.current; return () => { if (panel?.open) panel.close(); if (opener.current?.isConnected) opener.current.focus({ preventScroll: true }); }; }, []);
   return <dialog ref={dialog} role="dialog" className="v8-morph" data-placement={placement} aria-labelledby={titleId} aria-modal="true"
     onCancel={event => { event.preventDefault(); onClose(); }}
     onClick={event => { if (event.target === event.currentTarget) { const r = event.currentTarget.getBoundingClientRect(); if (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom) onClose(); } }}>
