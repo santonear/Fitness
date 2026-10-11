@@ -1,3 +1,4 @@
+import {resolveRuntimeEnv} from '../finance/runtime';
 import {z} from 'zod';
 import {D1ControlStore} from '../../d1-store';
 import {AdminError,adminJson,requireFreshContext,requireAdminDb,type AdminContext,type AdminDatabase} from '../core/contracts';
@@ -6,7 +7,22 @@ export interface UsersContext extends AdminContext {forward:(operation:string,da
 const short=(id:string)=>id.slice(0,12);
 export async function readUserState(c:AdminContext){if(!c.env.CONTROL_DB)throw new AdminError('CONTROL_UNAVAILABLE',503);return new D1ControlStore(c.env.CONTROL_DB).read()}
 const previewUsers:Record<string,string>={'91000000-0001-4000-8000-000000000001':'normal','92000000-0002-4000-8000-000000000002':'expiring','93000000-0003-4000-8000-000000000003':'quota-unknown'};
-export function userProjection(state:ControlState,now:number,environment?:string){return Object.entries(state.subjects).filter(([,v])=>!v.deletedAt).map(([id,s])=>({id:short(id),...(environment==='preview'&&Object.hasOwn(previewUsers,id)?{previewLabel:previewUsers[id]}:{}),expiresAt:s.expiresAt,revoked:s.revoked,expired:s.expiresAt<=now,usage:Object.entries(state.usages).filter(([key])=>key.startsWith(id+':')).map(([key,u])=>({period:key.slice(id.length+1),understand:u.understand,generate:u.generate,summary:u.summary??0}))}))}
+export function userProjection(state:ControlState,now:number,environment?:string,policy='{}'){return Object.entries(state.subjects).filter(([,v])=>!v.deletedAt).map(([id,s])=>({id:short(id),...(environment==='preview'&&Object.hasOwn(previewUsers,id)?{previewLabel:previewUsers[id]}:{}),expiresAt:s.expiresAt,remainingDays:Math.max(0,Math.ceil((s.expiresAt-now)/86400000)),currentQuota:currentQuota(state,id,now,policy),revoked:s.revoked,expired:s.expiresAt<=now,usage:Object.entries(state.usages).filter(([key])=>key.startsWith(id+':')).map(([key,u])=>({period:key.slice(id.length+1),understand:u.understand,generate:u.generate,summary:u.summary??0}))}))}
+function currentQuota(state:ControlState,id:string,now:number,policy:string){
+ const config=JSON.parse(policy),parts=new Intl.DateTimeFormat('en',{timeZone:config.timeZone??'Asia/Shanghai',year:'numeric',month:'2-digit'}).formatToParts(now);
+ const period=`${parts.find(p=>p.type==='year')!.value}-${parts.find(p=>p.type==='month')!.value}`,used=state.usages[`${id}:${period}`]?.generate??0;
+ const credit=Math.max(0,...Object.values(state.quotaRestorations??{}).filter(r=>r.subjectId===id&&r.period===period).map(r=>r.credits.generate));
+ return {period,used,total:(config.quotas?.generate??3)+Math.min(used,credit)};
+}
+const previewRetryId='94000000-0004-4000-8000-000000000004';
+async function quotaRetry(state:ControlState,id:string,c:AdminContext){
+ if(c.env.ADMIN_ENVIRONMENT!=='preview'||id!=='93000000-0003-4000-8000-000000000003')return;
+ const receipt=state.quotaRestorations?.[previewRetryId];
+ if(receipt?.subjectId!==id||!state.audit.some(a=>a.subjectId===id&&a.event===`quota-restore-unknown:${previewRetryId}`))return;
+ const confirmed=await c.env.ADMIN_DB!.prepare("SELECT id FROM admin_audit WHERE action='quota-retry-confirmed' AND object_id=? LIMIT 1").bind(previewRetryId).first();
+ if(confirmed)return;
+ return {requestId:previewRetryId,body:{action:'quota',id:short(id),reason:receipt.reason},synthetic:true};
+}
 function resolve(id:string,keys:string[]){if(!/^[a-f0-9-]{8,64}$/i.test(id))throw new AdminError('INVALID_OBJECT_ID');const found=keys.filter(k=>k.startsWith(id));if(found.length!==1)throw new AdminError('OBJECT_NOT_FOUND',404);return found[0]}
 export const usersTodoSource={id:'users',evaluate:async(c:AdminContext)=>{const state=await readUserState(c);const pending=Object.values(state.applications??{}).filter(a=>a.state==='pending');return pending.length?[{id:'applications-pending',level:'info' as const,title:'新申请',text:`${pending.length} 份申请等待审核`,actions:[{label:'逐个审核',href:'/admin/applications'}]}]:[]}};
 export async function pendingOver48h(c:AdminContext){const state=await readUserState(c);return Object.values(state.applications??{}).filter(a=>a.state==='pending'&&c.now-a.createdAt>48*3600000).length}
@@ -39,10 +55,11 @@ export async function handleUsers(request:Request,c:UsersContext):Promise<Respon
  if(part==='audit/export')return exportAudit(db,c);
  if(part==='audit'){const items=(await db.prepare('SELECT actor,at,object_id,action,result FROM admin_audit ORDER BY at DESC LIMIT 2000').all()).results;return adminJson({items})}
  const state=await readUserState(c);
+ if(['users/list','users/detail'].includes(part)&&c.env.ADMIN_CONSOLE_ENABLED==='true')c={...c,env:await resolveRuntimeEnv(c.env)};
  if(part==='users/status')return adminJson({aiEnabled:state.aiEnabled,recoveryRequired:state.recoveryRequired});
  if(part==='applications')return adminJson({items:Object.values(state.applications??{}).map(a=>({id:short(a.id),name:a.name,note:a.note,kind:a.kind,state:a.state,createdAt:a.createdAt,directlyActivated:a.directlyActivated??false}))});
- if(part==='users/list'){const q=(url.searchParams.get('q')??'').trim().toLowerCase();let items=userProjection(state,c.now,c.env.ADMIN_ENVIRONMENT);if(q)items=items.filter(s=>s.id.includes(q)||Object.values(state.applications??{}).some(a=>a.subjectId?.startsWith(s.id)&&a.name.toLowerCase().includes(q)));return adminJson({items,invites:Object.entries(state.invites).filter(([,i])=>!i.redeemed&&i.expiresAt>c.now).map(([id,i])=>({id:short(id),expiresAt:i.expiresAt}))})}
- if(part==='users/detail'){const id=resolve(url.searchParams.get('id')??'',Object.keys(state.subjects));const records=Object.values(state.requests).filter(r=>r.subjectId===id&&(r.createdAt===undefined||r.createdAt>=c.now-30*86400000)).map(r=>({id:short(r.requestId),operation:r.operation,status:r.status,costFen:r.actualCost??null,period:r.period,at:r.createdAt??null}));return adminJson({user:userProjection(state,c.now,c.env.ADMIN_ENVIRONMENT).find(s=>s.id===short(id)),requests:records,history:state.audit.filter(a=>a.subjectId===id).map(a=>({at:a.at,event:a.event.split(':')[0]})),timingAvailable:false})}
+ if(part==='users/list'){const q=(url.searchParams.get('q')??'').trim().toLowerCase();let items=userProjection(state,c.now,c.env.ADMIN_ENVIRONMENT,c.env.CONTROL_POLICY);if(q)items=items.filter(s=>s.id.includes(q)||Object.values(state.applications??{}).some(a=>a.subjectId?.startsWith(s.id)&&a.name.toLowerCase().includes(q)));return adminJson({items,invites:Object.entries(state.invites).filter(([,i])=>!i.redeemed&&i.expiresAt>c.now).map(([id,i])=>({id:short(id),expiresAt:i.expiresAt}))})}
+ if(part==='users/detail'){const id=resolve(url.searchParams.get('id')??'',Object.keys(state.subjects));const records=Object.values(state.requests).filter(r=>r.subjectId===id&&(r.createdAt===undefined||r.createdAt>=c.now-30*86400000)).map(r=>({id:short(r.requestId),operation:r.operation,status:r.status,costFen:r.actualCost??null,period:r.period,at:r.createdAt??null}));return adminJson({user:userProjection(state,c.now,c.env.ADMIN_ENVIRONMENT,c.env.CONTROL_POLICY).find(s=>s.id===short(id)),retryQuota:await quotaRetry(state,id,c),requests:records,history:state.audit.filter(a=>a.subjectId===id).map(a=>({at:a.at,event:a.event.split(':')[0]})),timingAvailable:false})}
  }
  const raw=await request.json();
  if(part==='templates'){const v=z.strictObject({id:z.uuid(),kind:z.enum(['approve','reject']),text:z.string().trim().min(1).max(200),remove:z.boolean().optional()}).parse(raw);await db.prepare(v.remove?'DELETE FROM admin_review_templates WHERE id=?':'INSERT INTO admin_review_templates(id,kind,text,updated_at) VALUES(?,?,?,?) ON CONFLICT(id) DO UPDATE SET kind=excluded.kind,text=excluded.text,updated_at=excluded.updated_at').bind(...(v.remove?[v.id]:[v.id,v.kind,v.text,c.now])).run();await c.audit('template-update',v.id,'success');return adminJson({ok:true})}
@@ -52,8 +69,8 @@ export async function handleUsers(request:Request,c:UsersContext):Promise<Respon
  else if(v.action==='invite-revoke'){op='invites/revoke';data={inviteId:resolve(v.id??'',Object.keys(state.invites))}}
  else if(v.action==='cleanup'){op='application-retention';data={}}
  else if(v.action==='ai'){if(v.enabled===true)requireFreshContext(c);op='supplier';data={enabled:v.enabled===true}}
- else {const id=resolve(v.id??'',Object.keys(state.subjects));op=({delete:'subject-delete',reissue:'reissue',quota:'quota-restore',revoke:'revoke'} as Record<string,string>)[v.action];const policy=JSON.parse(c.env.CONTROL_POLICY??'{}');const parts=new Intl.DateTimeFormat('en-CA',{timeZone:policy.timeZone??'Asia/Shanghai',year:'numeric',month:'2-digit'}).formatToParts(c.now);const period=`${parts.find(p=>p.type==='year')?.value}-${parts.find(p=>p.type==='month')?.value}`;data=v.action==='quota'?{id:c.requestId,subjectId:id,period,reason:v.reason?.trim()||'管理员恢复额度'}:{subjectId:id}}
- const response=await c.forward(op,data);await c.audit(v.action,v.id??'system',response.ok?'success':'unknown');if(!response.ok)return response;const result=await response.json() as Record<string,unknown>;return adminJson({ok:true,...(typeof result.code==='string'?{code:result.code,expiresAt:result.expiresAt}:{} )})}
+ else {const id=resolve(v.id??'',Object.keys(state.subjects));op=({delete:'subject-delete',reissue:'reissue',quota:'quota-restore',revoke:'revoke'} as Record<string,string>)[v.action];const policy=JSON.parse(c.env.CONTROL_POLICY??'{}');const parts=new Intl.DateTimeFormat('en-CA',{timeZone:policy.timeZone??'Asia/Shanghai',year:'numeric',month:'2-digit'}).formatToParts(c.now);const period=`${parts.find(p=>p.type==='year')?.value}-${parts.find(p=>p.type==='month')?.value}`;data=v.action==='quota'?{id:c.requestId,subjectId:id,period:state.quotaRestorations?.[c.requestId]?.period??period,reason:v.reason?.trim()||'管理员恢复额度'}:{subjectId:id}}
+ const response=await c.forward(op,data);await c.audit(v.action,v.id??'system',response.ok?'success':'unknown');if(!response.ok)return response;if(v.action==='quota'&&c.requestId===previewRetryId&&c.env.ADMIN_ENVIRONMENT==='preview')await c.audit('quota-retry-confirmed',c.requestId,'success');const result=await response.json() as Record<string,unknown>;return adminJson({ok:true,...(typeof result.code==='string'?{code:result.code,expiresAt:result.expiresAt}:{} )})}
  return undefined;
 }
 

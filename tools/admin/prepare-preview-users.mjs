@@ -17,6 +17,11 @@ for (const [index, label, days] of [[1,'正常',30],[2,'即将到期',1],[3,'额
   // Existing fixtures and administrator changes are retained on repeat execution.
   statements.push(`UPDATE control_ledger SET state=json_insert(json_insert(state, '$.subjects."${id}"', json(${quote(subject)}), '$.applications."${application}"', json(${quote(app)}), '$.usages."${id}:${month}"', json(${quote({understand:0,generate:index===3?2:1,summary:0})})), '$.audit[#]', json(${quote(event)})), revision=revision+1 WHERE id=1 AND json_type(state, '$.subjects."${id}"') IS NULL;`);
 }
+// Synthetic lost response: a committed restoration exists before the retry is offered.
+const retryId='94000000-0004-4000-8000-000000000004', subjectId='93000000-0003-4000-8000-000000000003';
+const receipt={subjectId,period:month,reason:'预览合成：额度恢复响应丢失',at:now,credits:{understand:0,generate:2}};
+const unknown={at:now,event:`quota-restore-unknown:${retryId}`,subjectId};
+statements.push(`UPDATE control_ledger SET state=json_insert(json_insert(state, '$.quotaRestorations', json('{}')), '$.quotaRestorations."${retryId}"', json(${quote(receipt)}), '$.audit[#]', json(${quote(unknown)})), revision=revision+1 WHERE id=1 AND json_type(state, '$.subjects."${subjectId}"') IS NOT NULL AND json_type(state, '$.quotaRestorations."${retryId}"') IS NULL;`);
 mkdirSync('.cache', {recursive:true});
 writeFileSync('.cache/admin-preview-users.sql', statements.join('\n')+'\n');
 console.log('Prepared three additive synthetic fixtures for the isolated preview database.');
