@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fitness 后台 · 交互原型</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@500&family=Archivo:wght@500;700&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF1EF;--bg-m:radial-gradient(120% 40% at 50% 0%,#E6EEE9 0%,#DDE6E0 60%);
+  --surface:#FFFFFF;--surface-2:#F2F5F1;--line:#C8D5CD;--line-2:#E3EAE6;
+  --ink:#16201C;--muted:#4F5F58;--nav:#16201C;--nav-ink:#DCE5E0;--nav-muted:#9DB0A8;--nav-active:#26332E;
+  --primary:#3E6B5C;--primary-ink:#F2F5F1;--link:#1F5F4A;
+  --ok:#2F7A55;--warn:#9A6B12;--warn-ink:#7A5410;--alert:#B3261E;--alert-bg:#F7E9E6;--alert-line:#E2B7AF;--alert-ink:#8E2A1E;
+  --gold:#C7A867;--celadon:#8FB3A5;
+  --f-body:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;--f-display:"Noto Serif SC","Songti SC",serif;
+  --f-num:"Archivo","Noto Sans SC",sans-serif;--f-money:"Cormorant Garamond","Noto Serif SC",serif;
+  --press:cubic-bezier(.18,1.36,.3,1);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:14px/1.6 var(--f-body)}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--link)}a:hover{color:#123D30}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.money{font-family:var(--f-money);font-variant-numeric:lining-nums tabular-nums}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+:focus-visible{outline:2px solid var(--link);outline-offset:2px}
+.press{transition:transform .42s var(--press),box-shadow .42s var(--press)}
+.press:active:not(:disabled){transform:scale(.96)}
+@media (prefers-reduced-motion:reduce){.press{transition:none}.press:active:not(:disabled){transform:none}}
+
+/* 原型工具栏（不属于产品界面） */
+.proto{position:sticky;top:0;z-index:50;display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:6px 12px;background:#0E1412;color:#C9D6D0;font-size:12px}
+.proto button{min-height:28px;padding:0 10px;border-radius:6px;border:1px solid #3A4842;background:#1D2724;color:#E8EEEA;cursor:pointer}
+
+/* 外壳 */
+.shell{display:flex;min-height:calc(100vh - 40px)}
+.rail{display:none}
+.main{flex:1;min-width:0;padding:20px 16px 96px}
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:20;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:8px 8px calc(10px + env(safe-area-inset-bottom));background:#E6EDE8;border-top:1px solid var(--line)}
+.tabbar button{min-height:52px;border:0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);cursor:pointer;border-radius:12px}
+.tabbar button[aria-current=page]{color:var(--ink);font-weight:700}
+.tabbar small{font-size:11px;font-weight:400}
+.tabbar .hot{color:var(--alert-ink)}
+@media (max-width:959px){body{background:#DDE6E0}.main{background:var(--bg-m)}}
+@media (min-width:960px){
+  .shell{min-height:calc(100vh - 40px)}
+  .rail{display:flex;flex-direction:column;gap:20px;flex:0 0 232px;background:var(--nav);color:var(--nav-ink);padding:22px 14px;position:sticky;top:40px;height:calc(100vh - 40px);overflow:auto}
+  .tabbar{display:none}
+  .main{padding:28px 32px 48px}
+}
+.brand{display:flex;align-items:center;gap:10px;padding:0 8px}
+.brand b{color:#fff;display:block}.brand small{color:var(--nav-muted)}
+.rail nav{display:flex;flex-direction:column;gap:2px}
+.rail nav button{display:flex;justify-content:space-between;align-items:center;min-height:44px;padding:0 12px;border-radius:10px;border:0;background:none;color:var(--nav-ink);text-align:left;cursor:pointer}
+.rail nav button[aria-current=page]{background:var(--nav-active);color:#fff}
+.rail nav button:hover{background:#1F2A26}
+.badge{border-radius:999px;padding:0 8px;font-size:12px;line-height:20px}
+.badge.alert{background:var(--alert);color:#fff}.badge.gold{color:var(--gold)}.badge.muted{color:var(--nav-muted)}
+.rail .foot{margin-top:auto;padding:0 8px;font-size:12px;color:var(--nav-muted)}
+
+/* 通用 */
+.page{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+.head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px}
+h1{margin:0;font-size:24px;font-weight:700;line-height:1.3}
+@media (max-width:959px){h1{font-family:var(--f-display);font-weight:500;font-size:26px;letter-spacing:.04em}}
+h2{margin:0;font-size:17px}
+h3{margin:0;font-size:15px}
+.sub{margin:2px 0 0;color:var(--muted);font-size:13px}
+.card{background:var(--surface);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+@media (max-width:959px){.card{background:var(--surface-2);border:1px solid var(--line);border-radius:24px;padding:18px}}
+.card.hero{background:linear-gradient(180deg,#fff 0%,#F2F5F1 100%);box-shadow:0 18px 40px -22px rgba(30,60,48,.45);border:0}
+@media (min-width:960px){.card.hero{border-radius:16px}}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.cols{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
+.cols>*{flex:1 1 320px}
+.cols>.wide{flex:3 1 520px}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.btn{min-height:44px;padding:0 16px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}
+.btn.primary{background:var(--primary);border-color:var(--primary);color:var(--primary-ink);font-weight:500}
+.btn.dark{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn.danger{border-color:var(--alert);color:var(--alert)}
+.btn.link{border-color:transparent;background:none;color:var(--link);padding:0 8px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+@media (max-width:959px){.btn{border-radius:999px;min-height:48px}.btn.big{min-height:56px;font-size:16px;width:100%}}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border-radius:999px;font-size:12px;border:1px solid var(--line);background:var(--surface-2)}
+.pill.alert{background:var(--alert-bg);border-color:var(--alert-line);color:var(--alert-ink)}
+.pill.warn{background:#FBF3E2;border-color:#E8D3A6;color:var(--warn-ink)}
+.pill.ok{background:#E7F2EC;border-color:#BBD8C7;color:#1F5F3D}
+.dot{width:10px;height:10px;border-radius:50%;flex:0 0 10px}
+.dot.alert{background:var(--alert)}.dot.warn{background:var(--warn)}.dot.ok{background:var(--ok)}.dot.info{background:var(--celadon)}
+label.field{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)}
+.input,select.input,textarea.input{min-height:44px;border:1px solid var(--line);border-radius:10px;padding:0 12px;background:#fff;color:var(--ink);font-size:14px}
+textarea.input{padding:10px 12px;min-height:80px;resize:vertical}
+.tablebox{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:12px 8px;text-align:left;vertical-align:top;border-top:1px solid var(--line-2)}
+thead th{border-top:0;color:var(--muted);font-size:13px;font-weight:500;padding-top:4px}
+tbody th{font-weight:500}
+
+/* 状态五格 */
+.status{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.status>div{background:#fff;border-radius:14px;padding:14px 16px;border-top:4px solid var(--ok)}
+.status .k{font-size:13px;color:var(--muted)}.status .v{font-size:20px;font-weight:700}.status .h{font-size:12px;color:var(--muted)}
+.status>.alert{border-top-color:var(--alert)}.status .alert .v{color:var(--alert)}
+.status>.warn{border-top-color:var(--warn)}.status .warn .v{color:var(--warn-ink)}
+@media (max-width:959px){.status{display:none}}
+.pills-m{display:none;flex-wrap:wrap;gap:8px}
+@media (max-width:959px){.pills-m{display:flex}}
+
+/* 待办 */
+.todo-list{display:flex;flex-direction:column}
+.todo{display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:14px 0;border-top:1px solid var(--line-2)}
+.todo:first-child{border-top:0}
+.todo .t{flex:1 1 260px;min-width:0}
+.todo .t b{display:block}
+.todo-cards{display:none;flex-direction:column;gap:14px}
+@media (max-width:959px){.todo-list{display:none}.todo-cards{display:flex}}
+.todo-cards .card .acts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.todo-cards .card .acts.one{grid-template-columns:1fr}
+
+/* 图表 */
+.bars{display:flex;align-items:flex-end;gap:10px;height:150px;border-bottom:1px solid var(--line)}
+.bar{flex:1;display:flex;flex-direction:column-reverse;border-radius:6px 6px 0 0;overflow:hidden;min-width:0}
+.bar span{display:block}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.meter{display:flex;height:12px;border-radius:999px;overflow:hidden;background:var(--line)}
+.c1{background:#1F5F4A}.c2{background:#8FB3A5}.c3{background:#C7A867}.c4{background:#4F5F58}
+
+/* 流水 */
+.flow{list-style:none;margin:0;padding:0}
+.flow li{display:flex;gap:16px;padding:12px 0;border-top:1px solid var(--line-2)}
+.flow li:first-child{border-top:0}
+.flow .when{flex:0 0 92px;color:var(--muted)}
+.user-layout{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
+.user-layout .list{flex:1 1 240px;max-width:300px}
+.user-layout .detail{flex:999 1 420px;min-width:0}
+.user-layout .ops{flex:1 1 280px;max-width:340px}
+@media (max-width:959px){.user-layout .list,.user-layout .ops{max-width:none}}
+.ulist{display:flex;flex-direction:column;gap:2px}
+.ulist button{text-align:left;min-height:56px;padding:8px 12px;border-radius:10px;border:0;background:none;cursor:pointer;display:flex;flex-direction:column}
+.ulist button[aria-current=true]{background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line)}
+.opcard{border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px;background:#fff}
+.opcard.danger{border-color:var(--alert-line)}
+.opcard.danger b{color:var(--alert-ink)}
+
+/* 开关 */
+.switch{position:relative;width:52px;height:32px;border-radius:999px;border:0;background:#B9C6BF;cursor:pointer;flex:0 0 52px}
+.switch::after{content:"";position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .25s}
+.switch[aria-checked=true]{background:var(--primary)}
+.switch[aria-checked=true]::after{transform:translateX(20px)}
+.switch:disabled{opacity:.45;cursor:not-allowed}
+
+/* 更多（手机） */
+.more{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.more button{min-height:88px;border-radius:20px;border:1px solid var(--line);background:var(--surface-2);text-align:left;padding:14px;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between}
+
+/* 对话框与提示 */
+.scrim{position:fixed;inset:0;z-index:60;background:rgba(22,32,28,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+.scrim[hidden]{display:none}
+.dialog{width:min(480px,100%);background:#fff;border-radius:20px;padding:22px;display:flex;flex-direction:column;gap:14px;max-height:90vh;overflow:auto}
+.dialog ul{margin:0;padding-left:18px;color:var(--muted)}
+.dialog .acts{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+@media (max-width:959px){.scrim{align-items:flex-end;padding:0}.dialog{border-radius:24px 24px 0 0;padding-bottom:calc(22px + env(safe-area-inset-bottom))}.dialog .acts{display:grid;grid-template-columns:1fr 1fr}}
+.toast{position:fixed;left:50%;bottom:24px;z-index:70;transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:999px;padding:10px 18px;font-size:14px;box-shadow:0 10px 30px -10px rgba(0,0,0,.4);max-width:calc(100% - 32px)}
+@media (max-width:959px){.toast{bottom:96px}}
+.toast[hidden]{display:none}
+.banner{border-radius:12px;padding:10px 14px;background:#FBF3E2;border:1px solid #E8D3A6;color:var(--warn-ink);font-size:13px}
+.diff{display:grid;grid-template-columns:auto 1fr 1fr;gap:4px 12px;font-size:13px}
+.diff .h{color:var(--muted)}
+.diff del{color:var(--alert-ink)}.diff ins{color:#1F5F3D;text-decoration:none;font-weight:500}
+</style>
+</head>
+<body>
+<div class="proto" role="region" aria-label="原型工具栏（不属于产品界面）">
+  <span>原型工具栏 · 示例数据 · 不连接后端</span>
+  <button type="button" id="pReset">恢复示例数据</button>
+  <button type="button" id="pStale">模拟登录已超过 5 分钟</button>
+  <span id="pWidth"></span>
+</div>
+<div class="shell">
+  <aside class="rail" aria-label="后台导航">
+    <div class="brand"><svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="12" fill="none" stroke="#8FB3A5" stroke-width="2"/><path d="M8 15c3 0 4-5 6-5s3 5 6 5" fill="none" stroke="#C7A867" stroke-width="2" stroke-linecap="round"/></svg><div><b>Fitness 后台</b><small>值班台</small></div></div>
+    <nav id="railNav"></nav>
+    <p class="foot">训练数据只在用户设备上，后台看不到也不保存。</p>
+  </aside>
+  <main class="main" id="main" tabindex="-1"></main>
+</div>
+<nav class="tabbar" id="tabbar" aria-label="后台导航"></nav>
+<div class="scrim" id="scrim" hidden><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlgTitle" id="dialog"></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+'use strict';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const yuan=f=>'¥'+(f/100).toFixed(2);
+const NOW=Date.parse('2026-10-11T09:12:00+08:00');
+const H=3600e3,D=24*H;
+const fmt=t=>{const d=new Date(t);const p=n=>String(n).padStart(2,'0');return `${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`};
+const TASKS=[['onboard','生成计划','c1'],['adjust','今日调整','c2'],['modify','修改计划','c3'],['review','回顾','c4']];
+
+function seed(){return{
+  view:'todo',userId:'a1f3c09e',stepUpAt:NOW,
+  aiEnabled:true,ledgerMismatch:2,smokeFailed:false,errorSpike:false,
+  apps:[
+    {id:'7c2e41aa',name:'[申请人 A]',kind:'new',state:'pending',at:NOW-59*H,note:'[申请人填写的说明]'},
+    {id:'b81d0f2c',name:'[申请人 B]',kind:'renew',state:'pending',at:NOW-25*H,note:'[申请人填写的说明]'},
+    {id:'3fa9d1e7',name:'[申请人 C]',kind:'new',state:'pending',at:NOW-3*H,note:'[申请人填写的说明]'},
+    {id:'90c1aa02',name:'[申请人 D]',kind:'new',state:'approved',at:NOW-6*D,note:''}],
+  users:[
+    {id:'a1f3c09e',status:'ok',exp:NOW+18*D,used:3,limit:4,unknown:true,flow:[
+      [NOW-20*60e3,'额度恢复：结果未知','请求超时，服务端可能已执行。重试会复用同一个请求编号，不会重复恢复。','alert'],
+      [NOW-14*H,'计划生成 1 次','预留 ¥0.30，待按供应商账单核算'],
+      [NOW-3*D,'周回顾 1 次','已核算 ¥0.12'],
+      [NOW-12*D,'激活码兑换，资格生效 30 天','来自申请 90c1·aa02，由你批准']]},
+    {id:'5d90e2b1',status:'ok',exp:NOW+26*D,used:1,limit:4,flow:[[NOW-2*D,'今日调整 1 次','已核算 ¥0.05'],[NOW-4*D,'激活码兑换，资格生效 30 天','邀请码']]},
+    {id:'0c479a3d',status:'ok',exp:NOW+3*D,used:4,limit:4,flow:[[NOW-1*D,'计划生成被额度拦截','本月 4 次已用完'],[NOW-27*D,'激活码兑换','邀请码']]},
+    {id:'e6b214f0',status:'expired',exp:NOW-5*D,used:0,limit:4,flow:[[NOW-5*D,'资格到期',''],[NOW-35*D,'激活码兑换','邀请码']]}],
+  lookup:{
+    a1f3c09e:[[NOW-20*60e3,'额度恢复','超时',0],[NOW-14*H,'生成计划','成功',30],[NOW-14.2*H,'生成计划','供应商错误',0],[NOW-3*D,'回顾','成功',12]],
+    '0c479a3d':[[NOW-1*D,'生成计划','被额度拦截',0],[NOW-2*D,'今日调整','成功',5]]},
+  budget:{limit:3500,spent:1660,reserved:600},
+  ledger:[
+    {id:'r-0921',date:'09-21',task:'生成计划',amt:300,state:'mismatch'},
+    {id:'r-0926',date:'09-26',task:'回顾',amt:120,state:'mismatch'},
+    {id:'r-1010',date:'10-10',task:'生成计划',amt:30,state:'reserved'},
+    {id:'r-1008',date:'10-08',task:'回顾',amt:12,state:'settled'},
+    {id:'r-1007',date:'10-07',task:'今日调整',amt:5,state:'settled'}],
+  cost7:[[30,8,0,6],[52,10,4,8],[40,9,0,10],[110,12,8,12],[58,10,0,6],[24,6,0,0],[16,4,0,2]],
+  downgrades:0,toneBlocks:1,
+  evals:[
+    {at:NOW-1*D,prompt:'ONBOARD v8.1 / REVIEW v8.1',model:'[模型名称]',pass:11,total:12,tone:1,ms:4200,cost:86,fail:'连续两周没练：回复出现"你应该"'},
+    {at:NOW-4*D,prompt:'ONBOARD v8.0 / REVIEW v8.0',model:'[模型名称]',pass:10,total:12,tone:2,ms:4800,cost:91,fail:'膝盖不适：替代动作仍含深蹲'}],
+  prompts:[
+    {task:'生成计划',cur:'v8.1',all:['v8.0','v8.1']},{task:'今日调整',cur:'v8.0',all:['v8.0']},
+    {task:'修改计划',cur:'v8.0',all:['v8.0']},{task:'回顾',cur:'v8.1',all:['v8.0','v8.1']}],
+  flags:[
+    {key:'diet',name:'饮食记录',desc:'用户在本地记录餐次和大致份量；默认不发送给芽芽。',sensitive:true,preview:true,prod:false,by:'Codex',at:NOW-5*H},
+    {key:'pwa-push',name:'系统提醒推送',desc:'只推送用户自己设置的提醒，需要用户授权。',sensitive:true,preview:true,prod:false,by:'Codex',at:NOW-9*H},
+    {key:'font-subset',name:'字体按需加载',desc:'减小首次打开的下载量。',sensitive:false,preview:true,prod:true,by:'你',at:NOW-2*D},
+    {key:'exercise-media',name:'动作示意图新尺寸',desc:'胶囊详情面板中的动作图按新规范展示。',sensitive:false,preview:true,prod:false,by:'Codex',at:NOW-1*D}],
+  release:{cur:'v8.0.9',curAt:NOW-1*D,prev:'v8.0.8',prevAt:NOW-3*D,smoke:[['主线：初见到回顾',true],['四套主题',true],['备份与恢复',true],['旧数据迁移',true],['后台权限',true]]},
+  errors:[
+    {type:'网络超时（芽芽请求）',n:2,first:NOW-20*H,last:NOW-2*H,ver:'v8.0.9',browsers:'Safari 1 · Chrome 1',trend:[0,0,1,0,0,1,0]},
+    {type:'字体加载失败',n:1,first:NOW-3*D,last:NOW-3*D,ver:'v8.0.8',browsers:'Chrome 1',trend:[1,0,0,0,0,0,0]}],
+  config:{quota:4,limit:35,reserve:0.30,concurrency:2,retention:30},
+  configHist:[{v:3,at:NOW-6*D,by:'你',chg:'月预算上限 ¥30.00 → ¥35.00'},{v:2,at:NOW-20*D,by:'你',chg:'计划生成默认次数 3 → 4'},{v:1,at:NOW-40*D,by:'初始',chg:'由环境配置导入'}],
+  notes:{approve:['欢迎试用，有问题可以随时反馈。'],reject:['信息不完整，请补充后重新申请。','当前名额已满，下次开放时会通知你。']},
+  announce:null,
+  notify:{ledger:true,smoke:true,budget100:true,budget80:true,errors:true,apps:true,quietFrom:'22:00',quietTo:'08:00',installed:false},
+  audit:[[NOW-20*60e3,'额度恢复请求（结果未知）','a1f3·c09e'],[NOW-6*D,'修改运行配置 v3','月预算上限'],[NOW-6*D,'批准申请','90c1·aa02']],
+  appNotes:{}
+};}
+let S=seed();
+const sid=id=>id.slice(0,4)+'·'+id.slice(4,8);
+
+/* ---------- 待办（单一数据源） ---------- */
+function todos(){
+  const T=[],b=S.budget,pct=Math.round((b.spent+b.reserved)/b.limit*100);
+  if(S.ledgerMismatch)T.push({lv:'alert',title:'账本需要核对',text:`9 月有 ${S.ledgerMismatch} 笔预留没对上供应商账单。核对完成前，所有新的 AI 调用都会暂停。`,acts:[['逐笔核对','go:ledger','primary']]});
+  if(S.smokeFailed)T.push({lv:'alert',title:'生产冒烟测试未通过',text:'v8.0.9 的"备份与恢复"检查没有通过。可以回滚到 v8.0.8。',acts:[['查看发布','go:flags','primary']]});
+  if(pct>=100)T.push({lv:'alert',title:'本月预算已用完',text:'新的 AI 请求已改用本地规则。',acts:[['查看费用','go:coach','primary']]});
+  else if(pct>=80)T.push({lv:'warn',title:`本月预算已用 ${pct}%`,text:'含待核算预留。用完后新的 AI 请求会改用本地规则。',acts:[['查看费用','go:coach','primary']]});
+  S.users.filter(u=>u.unknown).forEach(u=>T.push({lv:'warn',title:'一次额度恢复结果未知',text:`用户 ${sid(u.id)} 的请求超时，服务端可能已执行。重试会复用同一个请求编号，不会重复恢复。`,acts:[['看流水','user:'+u.id,''],['重试同一次','retry:'+u.id,'primary']]}));
+  S.flags.filter(f=>f.sensitive&&f.preview&&!f.prod).forEach(f=>T.push({lv:'warn',title:`「${f.name}」等你确认开启`,text:'预览环境已通过。涉及健康数据或外发，生产开启需要你确认。',acts:[['查看并确认','go:flags','']]}));
+  const pend=S.apps.filter(a=>a.state==='pending');
+  if(pend.length){const old=Math.max(...pend.map(a=>NOW-a.at));T.push({lv:old>48*H?'warn':'info',title:`${pend.length} 份试用申请等待审核`,text:old>48*H?`最早一份已等 ${Math.floor(old/D)} 天。`:'都是 48 小时内提交的。',acts:[['逐个审核','go:apps','']]});}
+  return T;
+}
+const ORDER={alert:0,warn:1,info:2};
+
+/* ---------- 导航 ---------- */
+const NAV=[['todo','待办'],['apps','申请'],['users','用户'],['ledger','账本'],['coach','芽芽'],['flags','开关与发布'],['errors','错误'],['settings','设置'],['audit','操作记录']];
+function drawNav(){
+  const t=todos(),pend=S.apps.filter(a=>a.state==='pending').length;
+  const badge={todo:t.length?`<span class="badge ${t.some(x=>x.lv==='alert')?'alert':'gold'} num">${t.length}</span>`:'',apps:pend?`<span class="badge gold num">${pend}</span>`:'',users:`<span class="badge muted num">${S.users.length}</span>`};
+  $('#railNav').innerHTML=NAV.map(([k,l])=>`<button type="button" data-go="${k}" ${cur(k)?'aria-current="page"':''}>${l}${badge[k]||''}</button>`).join('');
+  const tabs=[['todo','待办',t.length?`${t.length} 件`:'清空了'],['users','用户',`${S.users.length} 人`],['ledger','账本','本月'],['more','更多','']];
+  $('#tabbar').innerHTML=tabs.map(([k,l,s])=>`<button type="button" data-go="${k}" ${cur(k)||(k==='more'&&!['todo','users','user','ledger'].includes(S.view))?'aria-current="page"':''}>${l}<small class="${k==='todo'&&t.some(x=>x.lv==='alert')?'hot':''}">${s}</small></button>`).join('');
+}
+const cur=k=>S.view===k||(k==='users'&&S.view==='user');
+
+/* ---------- 页面 ---------- */
+function vTodo(){
+  const t=todos().sort((a,b)=>ORDER[a.lv]-ORDER[b.lv]),b=S.budget;
+  const err24=S.errors.reduce((n,e)=>n+(NOW-e.last<D?e.n:0),0);
+  const actBtn=(a,cls='')=>`<button type="button" class="btn press ${a[2]==='primary'?'primary':''} ${cls}" data-act="${a[1]}">${a[0]}</button>`;
+  return `<div class="page">
+  <div class="head"><div><h1>${t.length?`今天需要你处理 ${t.length} 件事`:'今天没有要处理的事'}</h1><p class="sub">最后读取 <span class="num">${fmt(NOW)}</span> · Asia/Shanghai · 此页不发起模型调用</p></div>
+    <div class="row"><button type="button" class="btn press" data-act="refresh">刷新</button></div></div>
+  <div class="pills-m"><span class="pill ${S.aiEnabled?'ok':''}">AI ${S.aiEnabled?'开启':'关闭'}</span>${S.ledgerMismatch?'<span class="pill alert">账本需核对</span>':'<span class="pill ok">账本正常</span>'}<span class="pill">24 小时错误 ${err24}</span></div>
+  <section class="status" aria-label="系统状态">
+    <div class="${S.aiEnabled?'':'warn'}"><div class="k">AI 开关</div><div class="v">${S.aiEnabled?'开启':'关闭'}</div><div class="h">开关不代表模型可用</div></div>
+    <div class="${S.ledgerMismatch?'alert':''}"><div class="k">账本</div><div class="v">${S.ledgerMismatch?'需要核对':'正常'}</div><div class="h">${S.ledgerMismatch?'新调用已暂停':'已全部对上'}</div></div>
+    <div><div class="k">本月剩余预算</div><div class="v num">${yuan(Math.max(0,b.limit-b.spent-b.reserved))}</div><div class="h">上限 ${yuan(b.limit)}</div></div>
+    <div class="warn"><div class="k">待核算预留</div><div class="v num">${yuan(b.reserved)}</div><div class="h">预留不是实际费用</div></div>
+    <div class="${S.errorSpike?'alert':''}"><div class="k">24 小时错误</div><div class="v num">${err24}</div><div class="h">${S.errorSpike?'出现突增':'没有突增'}</div></div>
+  </section>
+  <div class="cols">
+    <section class="card wide desk-only" aria-labelledby="tq"><h2 id="tq">待办，按紧急程度排序</h2>
+      ${t.length?`<div class="todo-list">${t.map(x=>`<div class="todo"><span class="dot ${x.lv}" aria-hidden="true"></span><div class="t"><b>${esc(x.title)}</b><span class="small muted">${esc(x.text)}</span></div><div class="row">${x.acts.map(a=>actBtn(a,a[2]==='primary'&&x.lv==='alert'?'dark':'')).join('')}</div></div>`).join('')}</div>`:'<p class="muted">都处理完了。新的事情出现时会推送提醒你。</p>'}
+    </section>
+    ${costCard(true)}
+  </div>
+  <div class="todo-cards">${t.map((x,i)=>`<section class="card ${i===0?'hero':''}" aria-label="${esc(x.title)}"><div class="row" style="gap:8px"><span class="dot ${x.lv}" aria-hidden="true"></span><h2>${esc(x.title)}</h2></div><p class="small muted" style="margin:0">${esc(x.text)}</p><div class="acts ${x.acts.length===1?'one':''}">${x.acts.map(a=>actBtn(a,x.acts.length===1&&i===0?'big':'')).join('')}</div></section>`).join('')||'<section class="card"><h2>都处理完了</h2><p class="small muted" style="margin:0">新的事情出现时会推送提醒你。</p></section>'}
+    ${budgetCard()}</div>
+  <section class="card desk-only" aria-labelledby="pa"><div class="head"><h2 id="pa">待审核申请</h2><button type="button" class="btn link" data-go="apps">查看全部申请</button></div>${appsTable(S.apps.filter(a=>a.state==='pending'))}</section>
+  </div>`;
+}
+function costCard(compact){
+  const max=Math.max(...S.cost7.map(d=>d.reduce((a,b)=>a+b,0)));
+  const days=['周六','日','一','二','三','四','五'];
+  const week=S.cost7.flat().reduce((a,b)=>a+b,0);
+  return `<section class="card ${compact?'desk-only':''}" aria-labelledby="cc"><h2 id="cc">近 7 天 AI 费用</h2>
+  <div class="bars" role="img" aria-label="近 7 天每日费用，按任务分段，最高为周二 ${yuan(max)}">${S.cost7.map(d=>`<div class="bar" style="height:${Math.round(d.reduce((a,b)=>a+b,0)/max*100)}%">${d.map((v,i)=>v?`<span class="${TASKS[i][2]}" style="flex:${v}"></span>`:'').join('')}</div>`).join('')}</div>
+  <div class="num small muted" style="display:flex;justify-content:space-between">${days.map(d=>`<span>${d}</span>`).join('')}</div>
+  <div class="legend">${TASKS.map(t=>`<span><i class="${t[2]}"></i>${t[1]}</span>`).join('')}</div>
+  <div class="grid2"><div><div class="small muted">本周费用</div><div class="num" style="font-size:20px;font-weight:700">${yuan(week)}</div></div><div><div class="small muted">降级为本地规则</div><div class="num" style="font-size:20px;font-weight:700">${S.downgrades} 次</div></div></div></section>`;
+}
+function budgetCard(){const b=S.budget,p1=Math.round(b.spent/b.limit*100),p2=Math.round(b.reserved/b.limit*100);
+  return `<section class="card" aria-labelledby="bc"><h2 id="bc" class="small muted" style="font-weight:500">本月预算</h2>
+  <div class="row" style="align-items:baseline;gap:8px"><span class="money" style="font-size:40px;line-height:1">${yuan(b.spent)}</span><span class="muted">已核算，上限 ${yuan(b.limit)}</span></div>
+  <div class="meter" role="img" aria-label="已核算 ${p1}%，另有 ${p2}% 为待核算预留"><div class="c1" style="width:${p1}%"></div><div class="c3" style="width:${p2}%"></div></div>
+  <div class="legend"><span><i class="c1"></i>已核算</span><span><i class="c3"></i>待核算预留 ${yuan(b.reserved)}</span></div></section>`;}
+
+function appsTable(list){
+  if(!list.length)return '<p class="muted">暂无待审核申请。</p>';
+  const opts=(k)=>S.notes[k].map(n=>`<option>${esc(n)}</option>`).join('');
+  return `<div class="tablebox"><table style="min-width:820px"><thead><tr><th scope="col">申请人</th><th scope="col">类型</th><th scope="col">提交时间</th><th scope="col">申请说明</th><th scope="col">审核备注</th><th scope="col">操作</th></tr></thead><tbody>
+  ${list.map(a=>`<tr><th scope="row">${esc(a.name)}<br><button type="button" class="btn link num" style="min-height:32px;padding:0" data-act="copy:${a.id}" aria-label="复制完整编号 ${sid(a.id)}">${sid(a.id)}</button></th><td>${a.kind==='new'?'新申请':'续期'}</td><td class="num">${fmt(a.at)}${NOW-a.at>48*H?'<br><span class="pill warn">已超过 48 小时</span>':''}</td><td class="small">${esc(a.note)}</td>
+  <td>${a.state==='pending'?`<label class="field">备注（拒绝时必填）<input class="input" data-note="${a.id}" value="${esc(S.appNotes[a.id]||'')}" maxlength="200"></label><label class="field" style="margin-top:6px">常用语<select class="input" data-pick="${a.id}"><option value="">选择后填入</option><optgroup label="批准">${opts('approve')}</optgroup><optgroup label="拒绝">${opts('reject')}</optgroup></select></label>`:esc(a.reason||'—')}</td>
+  <td>${a.state==='pending'?`<div class="row" style="gap:8px"><button type="button" class="btn primary press" data-act="approve:${a.id}">批准</button><button type="button" class="btn press" data-act="reject:${a.id}">拒绝</button></div>${a.kind==='new'?`<button type="button" class="btn link small" data-act="direct:${a.id}">免邀请码开通</button>`:''}`:`<span class="pill ${a.state==='approved'?'ok':''}">${a.state==='approved'?'已批准':'已拒绝'}</span>`}</td></tr>`).join('')}</tbody></table></div>`;
+}
+function appCardsMobile(list){
+  return list.map((a,i)=>`<section class="card ${i===0?'hero':''}"><div class="head"><h2>${esc(a.name)}</h2><span class="small muted">${a.kind==='new'?'新申请':'续期'} · 等了 ${Math.max(1,Math.round((NOW-a.at)/H))} 小时</span></div>
+  <p style="margin:0;padding:12px;background:#fff;border-radius:14px" class="small">${esc(a.note)}</p>
+  <label class="field">备注（拒绝时必填）<input class="input" data-note="${a.id}" value="${esc(S.appNotes[a.id]||'')}" maxlength="200"></label>
+  <label class="field">常用语<select class="input" data-pick="${a.id}"><option value="">选择后填入</option>${[...S.notes.approve,...S.notes.reject].map(n=>`<option>${esc(n)}</option>`).join('')}</select></label>
+  <div class="grid2"><button type="button" class="btn press" data-act="reject:${a.id}">拒绝</button><button type="button" class="btn primary press" data-act="approve:${a.id}">批准</button></div>
+  ${a.kind==='new'?`<button type="button" class="btn link" data-act="direct:${a.id}">免邀请码开通</button>`:''}</section>`).join('');
+}
+function vApps(){
+  const pend=S.apps.filter(a=>a.state==='pending'),done=S.apps.filter(a=>a.state!=='pending');
+  return `<div class="page"><div class="head"><div><h1>申请审核</h1><p class="sub">拒绝时必须写原因；批准后用户会收到激活码。</p></div><button type="button" class="btn press" data-act="cleanup">清理过期申请</button></div>
+  <div class="m-only" style="display:flex;flex-direction:column;gap:14px">${pend.length?appCardsMobile(pend):'<section class="card"><p class="muted" style="margin:0">暂无待审核申请。</p></section>'}</div>
+  <section class="card desk-only"><h2>待审核 <span class="num">${pend.length}</span></h2>${appsTable(pend)}</section>
+  <section class="card"><h2>已处理</h2>${done.map(a=>`<div class="row" style="justify-content:space-between;border-top:1px solid var(--line-2);padding-top:10px"><span>${esc(a.name)} <span class="num muted">${sid(a.id)}</span></span><span class="pill ${a.state==='approved'?'ok':''}">${a.state==='approved'?'已批准':'已拒绝'}</span></div>`).join('')}</section></div>`;
+}
+function userList(){return `<div class="ulist">${S.users.map(u=>`<button type="button" data-act="user:${u.id}" ${S.view==='user'&&S.userId===u.id?'aria-current="true"':''}><span class="num" style="font-size:16px">${sid(u.id)}</span><span class="small" style="color:${u.unknown?'var(--warn-ink)':u.status==='expired'?'var(--muted)':'var(--muted)'}">${u.status==='expired'?'已过期':u.unknown?'额度恢复待确认 · ':'正常 · '}${u.status==='expired'?'':`剩 ${Math.ceil((u.exp-NOW)/D)} 天`}</span></button>`).join('')}</div>`}
+function vUsers(){
+  return `<div class="page"><div class="head"><div><h1>用户与资格</h1><p class="sub">只显示资格、用量和费用，不含任何训练内容。</p></div><button type="button" class="btn primary press" data-act="invite">发放邀请码</button></div>
+  <div class="cols"><section class="card"><label class="field">按短 ID 查找<input class="input" type="search" id="uq" placeholder="例如 a1f3"></label>${userList()}</section>
+  <section class="card"><h2>用户求助排查</h2><p class="small muted" style="margin:0">输入短 ID，查看最近 30 天的请求状态。不显示请求和回复的内容。</p><div class="row"><label class="field" style="flex:1 1 160px">短 ID<input class="input" id="lq" value="a1f3c09e"></label><button type="button" class="btn press" data-act="lookup" style="align-self:flex-end">查询</button></div><div id="lr"></div></section>
+  <section class="card"><h2>未兑换的邀请码</h2><p class="small muted" style="margin:0">共 <span class="num">1</span> 个，<span class="num">10-17</span> 到期。</p><button type="button" class="btn danger press" data-act="revokeInvite">作废</button></section></div></div>`;
+}
+function vUser(){
+  const u=S.users.find(x=>x.id===S.userId);
+  const ops=`<div class="opcard"><b>重试同一次额度恢复</b><span class="small muted">把本月剩余次数恢复为默认 ${S.config.quota} 次。不延长资格，不改变费用和月预算。</span><button type="button" class="btn primary press" data-act="retry:${u.id}" ${u.unknown?'':'disabled'}>重试</button>${u.unknown?'':'<span class="small muted">当前没有结果未知的恢复。</span>'}</div>
+  <div class="opcard"><b>恢复额度</b><label class="field">恢复原因（必填）<input class="input" id="qr" maxlength="200"></label><button type="button" class="btn press" data-act="restore:${u.id}" ${u.status==='expired'||u.unknown?'disabled':''}>恢复为 ${S.config.quota} 次</button></div>
+  <div class="opcard"><b>重新生成激活码</b><span class="small muted">旧码和登录会话立即失效；有效期和已用次数保留。新码 7 天内兑换。</span><button type="button" class="btn press" data-act="reissue:${u.id}" ${u.status==='expired'?'disabled':''}>生成新码</button></div>
+  <div class="opcard danger"><b>删除账号</b><span class="small muted">资格、会话和激活码立即失效。保留费用、用量和流水；用户设备上的训练数据不受影响。</span><button type="button" class="btn danger press" data-act="delete:${u.id}">删除</button></div>`;
+  return `<div class="page"><div class="row"><button type="button" class="btn link" data-go="users">← 用户列表</button></div>
+  <div class="user-layout"><section class="card list desk-only">${userList()}</section>
+  <section class="card detail"><h1>用户 <span class="money" style="font-size:30px">${sid(u.id)}</span></h1><p class="sub">${u.status==='expired'?'资格已过期':`资格到期 <span class="num">${fmt(u.exp).slice(0,5)}</span>`} · 本月计划生成剩余 <span class="num">${Math.max(0,u.limit-u.used)} / ${u.limit}</span> 次</p>
+  <div class="m-only" style="flex-direction:column;gap:10px">${ops}</div>
+  <h2 style="margin-top:4px">流水</h2><ol class="flow">${u.flow.map(f=>`<li><span class="when num">${fmt(f[0])}</span><div><div style="${f[3]==='alert'?'color:var(--alert-ink);font-weight:500':''}">${esc(f[1])}</div>${f[2]?`<div class="small muted">${esc(f[2])}</div>`:''}</div></li>`).join('')}</ol></section>
+  <section class="card ops desk-only"><h2>操作</h2>${ops}</section></div></div>`;
+}
+function vLedger(){
+  const b=S.budget;const st={mismatch:['没对上','alert'],reserved:['待核算','warn'],settled:['已核算','ok'],unassigned:['未归属','']};
+  return `<div class="page"><div class="head"><div><h1>账本</h1><p class="sub">预留不是实际费用。只按供应商账单核算；无法归属的费用继续保留。</p></div><div class="row"><button type="button" class="btn press" data-act="export:ledger">导出本月 CSV</button></div></div>
+  ${S.ledgerMismatch?`<div class="banner">还有 <span class="num">${S.ledgerMismatch}</span> 笔没对上。核对完成前，新的 AI 调用保持暂停。</div>`:''}
+  <div class="cols">${budgetCard()}<section class="card"><h2>本月</h2><div class="grid2"><div><div class="small muted">已核算</div><div class="num" style="font-size:20px;font-weight:700">${yuan(b.spent)}</div></div><div><div class="small muted">待核算预留</div><div class="num" style="font-size:20px;font-weight:700;color:var(--warn-ink)">${yuan(b.reserved)}</div></div><div><div class="small muted">剩余</div><div class="num" style="font-size:20px;font-weight:700">${yuan(Math.max(0,b.limit-b.spent-b.reserved))}</div></div><div><div class="small muted">上限</div><div class="num" style="font-size:20px;font-weight:700">${yuan(b.limit)}</div></div></div></section></div>
+  <section class="card"><h2>逐笔核对</h2><div class="tablebox"><table style="min-width:640px"><thead><tr><th scope="col">日期</th><th scope="col">任务</th><th scope="col">预留金额</th><th scope="col">状态</th><th scope="col">按账单处理</th></tr></thead><tbody>
+  ${S.ledger.map(r=>`<tr><td class="num">${r.date}</td><td>${r.task}</td><td class="num">${yuan(r.amt)}</td><td><span class="pill ${st[r.state][1]}">${st[r.state][0]}</span></td><td>${r.state==='mismatch'||r.state==='reserved'?`<div class="row" style="gap:8px"><button type="button" class="btn primary press" data-act="settle:${r.id}">按账单金额核算</button><button type="button" class="btn press" data-act="unassign:${r.id}">标为未归属</button></div>`:'—'}</td></tr>`).join('')}</tbody></table></div></section></div>`;
+}
+function vCoach(){
+  return `<div class="page"><div class="head"><div><h1>芽芽</h1><p class="sub">费用、质量和提示词版本。评测只使用合成数据；生产中不保存用户内容或模型原文。</p></div></div>
+  <div class="cols">${costCard(false).replace('desk-only','')}
+  <section class="card"><h2>本月按任务</h2>${TASKS.map((t,i)=>{const v=S.cost7.reduce((n,d)=>n+d[i],0)*4;return `<div class="row" style="justify-content:space-between;border-top:1px solid var(--line-2);padding-top:8px"><span><i class="${t[2]}" style="display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px"></i>${t[1]}</span><span class="num">${yuan(v)}</span></div>`}).join('')}
+  <div class="grid2" style="margin-top:6px"><div><div class="small muted">降级为本地规则</div><div class="num" style="font-size:18px;font-weight:700">${S.downgrades} 次</div></div><div><div class="small muted">话术检查拦截</div><div class="num" style="font-size:18px;font-weight:700">${S.toneBlocks} 次</div></div></div></section></div>
+  <section class="card"><h2>评测报告</h2><div class="tablebox"><table style="min-width:720px"><thead><tr><th scope="col">时间</th><th scope="col">提示词</th><th scope="col">通过</th><th scope="col">话术违规</th><th scope="col">耗时 / 费用</th><th scope="col">未通过的场景</th></tr></thead><tbody>
+  ${S.evals.map(e=>`<tr><td class="num">${fmt(e.at)}</td><td class="small">${esc(e.prompt)}<br><span class="muted">${esc(e.model)}</span></td><td class="num">${e.pass} / ${e.total}</td><td class="num">${e.tone}</td><td class="num">${(e.ms/1000).toFixed(1)}s · ${yuan(e.cost)}</td><td class="small">${esc(e.fail)}</td></tr>`).join('')}</tbody></table></div></section>
+  <section class="card"><h2>提示词版本</h2><p class="small muted" style="margin:0">切换或回退需要重新验证身份。只能选择已在后端登记的版本。</p>
+  ${S.prompts.map((p,i)=>`<div class="row" style="justify-content:space-between;border-top:1px solid var(--line-2);padding-top:10px"><span>${p.task}</span><div class="row" style="gap:8px"><label class="field" style="flex-direction:row;align-items:center;gap:8px"><span class="vh">${p.task}使用的版本</span><select class="input" data-prompt="${i}">${p.all.map(v=>`<option ${v===p.cur?'selected':''}>${v}</option>`).join('')}</select></label><span class="pill ok">生产：${p.cur}</span></div></div>`).join('')}</section></div>`;
+}
+function vFlags(){
+  const r=S.release;
+  return `<div class="page"><div class="head"><div><h1>开关与发布</h1><p class="sub">任何开关都能一键关闭，1 分钟内生效，不需要重新发布。</p></div></div>
+  <section class="card"><h2>功能开关</h2>
+  ${S.flags.map((f,i)=>`<div style="border-top:1px solid var(--line-2);padding-top:12px;display:flex;flex-wrap:wrap;gap:12px;align-items:center"><div style="flex:1 1 260px;min-width:0"><div class="row" style="gap:8px"><b>${f.name}</b>${f.sensitive?'<span class="pill warn">敏感</span>':''}</div><div class="small muted">${esc(f.desc)}</div><div class="small muted">最后修改：${f.by} · <span class="num">${fmt(f.at)}</span></div></div>
+  <div class="row" style="gap:16px"><div class="row" style="gap:8px"><span class="small muted" id="fp${i}">预览</span><button type="button" class="switch" role="switch" aria-labelledby="fp${i}" aria-checked="${f.preview}" data-act="flag:${i}:preview"></button></div><div class="row" style="gap:8px"><span class="small muted" id="fg${i}">生产</span><button type="button" class="switch" role="switch" aria-labelledby="fg${i}" aria-checked="${f.prod}" data-act="flag:${i}:prod" ${!f.preview&&!f.prod?'disabled':''}></button></div></div></div>`).join('')}</section>
+  <section class="card"><h2>发布与回滚</h2><div class="grid2"><div><div class="small muted">当前生产版本</div><div class="num" style="font-size:20px;font-weight:700">${r.cur}</div><div class="small muted num">${fmt(r.curAt)}</div></div><div><div class="small muted">上一版本</div><div class="num" style="font-size:20px;font-weight:700">${r.prev}</div><div class="small muted num">${fmt(r.prevAt)}</div></div></div>
+  <h3>冒烟测试</h3>${r.smoke.map(s=>`<div class="row" style="gap:8px"><span class="dot ${s[1]?'ok':'alert'}" aria-hidden="true"></span>${s[0]}<span class="small ${s[1]?'muted':''}" style="${s[1]?'':'color:var(--alert-ink)'}">${s[1]?'通过':'未通过'}</span></div>`).join('')}
+  <div class="row"><button type="button" class="btn danger press" data-act="rollback">回滚到 ${r.prev}</button><span class="small muted">只切换代码版本，不回退数据；回滚后自动重跑冒烟测试。</span></div></section></div>`;
+}
+function vErrors(){
+  return `<div class="page"><div class="head"><div><h1>错误监控</h1><p class="sub">只记录错误类型、页面、版本和浏览器大类。不含用户输入、健康数据、IP 或任何可识别用户的信息。</p></div></div>
+  ${S.errorSpike?'<div class="banner">过去 1 小时"网络超时"超过平时 3 倍，已推送提醒你。</div>':''}
+  <section class="card"><div class="tablebox"><table style="min-width:680px"><thead><tr><th scope="col">错误类型</th><th scope="col">次数</th><th scope="col">首次 / 最近</th><th scope="col">版本</th><th scope="col">浏览器</th><th scope="col">近 7 天</th></tr></thead><tbody>
+  ${S.errors.map(e=>`<tr><th scope="row">${e.type}</th><td class="num">${e.n}</td><td class="num small">${fmt(e.first)}<br>${fmt(e.last)}</td><td class="num">${e.ver}</td><td class="small">${e.browsers}</td><td><div role="img" aria-label="近 7 天每日次数 ${e.trend.join('、')}" style="display:flex;gap:3px;align-items:flex-end;height:24px">${e.trend.map(v=>`<span style="width:8px;height:${4+v*16}px;background:${v?'var(--warn)':'var(--line)'};border-radius:2px"></span>`).join('')}</div></td></tr>`).join('')}</tbody></table></div></section></div>`;
+}
+function vSettings(){
+  const c=S.config,n=S.notify,a=S.announce;
+  const cfg=[['quota','每月计划生成默认次数','次',1,20,1],['limit','月预算上限','元',1,500,1],['reserve','单次请求预留','元',0.05,5,0.05],['concurrency','并发上限','个',1,10,1],['retention','申请保留天数','天',7,365,1]];
+  const tog=(k,l,lock)=>`<div class="row" style="justify-content:space-between;border-top:1px solid var(--line-2);padding-top:10px"><span id="n-${k}">${l}${lock?' <span class="small muted">（紧急，不能关闭）</span>':''}</span><button type="button" class="switch" role="switch" aria-labelledby="n-${k}" aria-checked="${n[k]}" data-act="notify:${k}" ${lock?'disabled':''}></button></div>`;
+  return `<div class="page"><div class="head"><div><h1>设置</h1></div></div>
+  <div class="cols">
+  <section class="card"><h2>运行配置</h2><p class="small muted" style="margin:0">修改只影响之后的请求，不改写已有用量和费用。保存前需要重新验证身份。</p>
+  ${cfg.map(([k,l,u,mi,ma,st])=>`<label class="field">${l}（${mi}–${ma} ${u}）<input class="input num" type="number" min="${mi}" max="${ma}" step="${st}" data-cfg="${k}" value="${c[k]}"></label>`).join('')}
+  <button type="button" class="btn primary press" data-act="saveCfg">检查改动并保存</button>
+  <h3>修改历史</h3>${S.configHist.map(h=>`<div class="row" style="justify-content:space-between;border-top:1px solid var(--line-2);padding-top:8px"><span class="small"><span class="num">v${h.v}</span> · ${esc(h.chg)}<br><span class="muted num">${fmt(h.at)} · ${h.by}</span></span>${h.v<S.configHist[0].v?`<button type="button" class="btn press" data-act="cfgRestore:${h.v}">恢复到此版本</button>`:'<span class="pill ok">当前</span>'}</div>`).join('')}</section>
+  <section class="card"><h2>提醒我</h2><p class="small muted" style="margin:0">推送到你的手机。iOS 需要先把后台添加到主屏幕。提醒内容只写事件和数量，不含用户信息。</p>
+  ${tog('ledger','账本需要核对',true)}${tog('smoke','冒烟测试未通过',true)}${tog('budget100','预算用到 100%',true)}${tog('budget80','预算用到 80%')}${tog('errors','错误突增')}${tog('apps','申请等待超过 48 小时（每天最多一次）')}
+  <div class="grid2"><label class="field">静默开始<input class="input num" type="time" value="${n.quietFrom}" data-quiet="quietFrom"></label><label class="field">静默结束<input class="input num" type="time" value="${n.quietTo}" data-quiet="quietTo"></label></div><span class="small muted">紧急类不受静默时段限制。</span>
+  <button type="button" class="btn press" data-act="testPush">发送测试提醒</button></section>
+  <section class="card"><h2>维护公告</h2>${a?`<div class="banner">${esc(a.text)}<br><span class="num">${fmt(a.from)} 至 ${fmt(a.to)}</span></div><button type="button" class="btn danger press" data-act="unannounce">撤下公告</button>`:`<p class="small muted" style="margin:0">在应用顶部显示一行说明，用户可以关闭；训练中不显示。同时只能有一条，最长 7 天。</p>
+  <label class="field">公告内容<textarea class="input" id="an" maxlength="80">芽芽暂时休息，训练和记录不受影响。</textarea></label><label class="field">持续天数（1–7）<input class="input num" type="number" min="1" max="7" value="1" id="ad"></label><button type="button" class="btn primary press" data-act="announce">发布公告</button>`}</section>
+  <section class="card"><h2>常用审核备注</h2>${['approve','reject'].map(k=>`<h3>${k==='approve'?'批准':'拒绝'}</h3>${S.notes[k].map((t,i)=>`<div class="row" style="justify-content:space-between"><span class="small">${esc(t)}</span><button type="button" class="btn link" data-act="delNote:${k}:${i}" aria-label="删除这条常用语">删除</button></div>`).join('')}`).join('')}
+  <div class="row"><label class="field" style="flex:1 1 200px">新增一条<input class="input" id="nn" maxlength="100"></label><label class="field">类别<select class="input" id="nk"><option value="approve">批准</option><option value="reject">拒绝</option></select></label><button type="button" class="btn press" data-act="addNote" style="align-self:flex-end">添加</button></div></section>
+  </div></div>`;
+}
+function vAudit(){
+  return `<div class="page"><div class="head"><div><h1>操作记录</h1><p class="sub">每个管理操作都会记录：时间、操作、对象和结果。</p></div><button type="button" class="btn press" data-act="export:audit">导出 CSV</button></div>
+  <section class="card"><ol class="flow">${S.audit.map(a=>`<li><span class="when num">${fmt(a[0])}</span><div>${esc(a[1])}${a[2]?` <span class="muted small">${esc(a[2])}</span>`:''}</div></li>`).join('')}</ol></section></div>`;
+}
+function vMore(){
+  const items=[['apps','申请',`${S.apps.filter(a=>a.state==='pending').length} 份待审`],['coach','芽芽','费用 · 评测 · 提示词'],['flags','开关与发布',S.release.cur],['errors','错误',`${S.errors.length} 类`],['settings','设置','配置 · 提醒 · 公告'],['audit','操作记录','']];
+  return `<div class="page"><h1>更多</h1><div class="more">${items.map(i=>`<button type="button" class="press" data-go="${i[0]}"><b>${i[1]}</b><span class="small muted">${i[2]}</span></button>`).join('')}</div></div>`;
+}
+
+/* ---------- 渲染 ---------- */
+const VIEWS={todo:vTodo,apps:vApps,users:vUsers,user:vUser,ledger:vLedger,coach:vCoach,flags:vFlags,errors:vErrors,settings:vSettings,audit:vAudit,more:vMore};
+function render(){drawNav();$('#main').innerHTML=VIEWS[S.view]();applyResponsive();}
+function applyResponsive(){const desk=innerWidth>=960;document.querySelectorAll('.desk-only').forEach(e=>e.style.display=desk?'':'none');document.querySelectorAll('.m-only').forEach(e=>e.style.display=desk?'none':'flex');$('#pWidth').textContent=`当前宽度 ${innerWidth}px · ${desk?'值班台布局':'口袋布局'}`;}
+addEventListener('resize',applyResponsive);
+function go(v){if(v==='more'&&innerWidth>=960)v='todo';S.view=v;render();$('#main').focus({preventScroll:true});scrollTo(0,0)}
+
+/* ---------- 对话框、二次验证、提示 ---------- */
+let lastFocus=null;
+function dialog({title,body,consequences,confirm,danger,onConfirm,cancel='取消'}){
+  lastFocus=document.activeElement;
+  $('#dialog').innerHTML=`<h2 id="dlgTitle">${title}</h2>${body?`<div class="small">${body}</div>`:''}${consequences?`<ul class="small">${consequences.map(c=>`<li>${c}</li>`).join('')}</ul>`:''}<div class="acts"><button type="button" class="btn press" data-dlg="cancel">${cancel}</button>${confirm?`<button type="button" class="btn press ${danger?'danger':'primary'}" data-dlg="ok">${confirm}</button>`:''}</div>`;
+  $('#scrim').hidden=false;$('#dialog').querySelector('[data-dlg=cancel]').focus();
+  $('#dialog').onclick=e=>{const b=e.target.closest('[data-dlg]');if(!b)return;closeDlg();if(b.dataset.dlg==='ok')onConfirm&&onConfirm();};
+}
+function closeDlg(){$('#scrim').hidden=true;lastFocus&&lastFocus.focus&&lastFocus.focus();}
+$('#scrim').addEventListener('click',e=>{if(e.target.id==='scrim')closeDlg()});
+addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#scrim').hidden)closeDlg()});
+function stepUp(fn){
+  if(Date.now()-S.stepUpAt<5*60e3)return fn();
+  dialog({title:'需要重新验证身份',body:'这是一项危险操作。你的登录已超过 5 分钟，请先重新验证，再继续。取消则不做任何改动。',confirm:'重新验证（演示）',onConfirm:()=>{S.stepUpAt=Date.now();toast('已重新验证');setTimeout(fn,150)}});
+}
+let tt;function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,2600)}
+function audit(what,obj=''){S.audit.unshift([Date.now(),what,obj])}
+function download(name,rows){const csv='﻿'+rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
+
+/* ---------- 交互 ---------- */
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-go]');if(g){go(g.dataset.go);return}
+  const b=e.target.closest('[data-act]');if(!b||b.disabled)return;
+  const [act,a1,a2]=b.dataset.act.split(':');
+  const A={
+    refresh:()=>toast('已刷新'),
+    go:()=>go(a1),
+    user:()=>{S.userId=a1;go('user')},
+    copy:()=>{navigator.clipboard?.writeText(a1).then(()=>toast('已复制完整编号'),()=>toast('复制失败，请手动选择'))},
+    approve:()=>{const ap=S.apps.find(x=>x.id===a1);ap.state='approved';ap.reason=S.appNotes[a1]||'';audit('批准申请',sid(a1));toast('已批准，激活码已发送给申请人');render()},
+    reject:()=>{const r=(S.appNotes[a1]||'').trim();if(!r){toast('拒绝时请先写原因');document.querySelector(`[data-note="${a1}"]`)?.focus();return}const ap=S.apps.find(x=>x.id===a1);ap.state='rejected';ap.reason=r;audit('拒绝申请',sid(a1));toast('已拒绝');render()},
+    direct:()=>dialog({title:'免邀请码开通？',consequences:['直接为申请人开通 30 天试用资格','不需要申请人兑换邀请码','仍受额度和月预算限制'],confirm:'确认开通',onConfirm:()=>{const ap=S.apps.find(x=>x.id===a1);ap.state='approved';audit('免邀请码开通',sid(a1));toast('已开通');render()}}),
+    cleanup:()=>stepUp(()=>dialog({title:'清理过期申请？',consequences:['删除超过保留期（'+S.config.retention+' 天）的已处理申请','不影响用户资格、用量和操作记录'],confirm:'清理',danger:true,onConfirm:()=>{audit('清理过期申请','0 条');toast('没有超过保留期的申请')}})),
+    retry:()=>{const u=S.users.find(x=>x.id===a1);u.unknown=false;u.used=0;u.flow.unshift([Date.now(),'额度恢复：已确认完成','复用原请求编号重试，服务端确认只执行了一次']);audit('重试同一次额度恢复（已完成）',sid(a1));toast('已确认恢复完成，没有重复执行');render()},
+    restore:()=>{const r=$('#qr').value.trim();if(!r){toast('请先写恢复原因');$('#qr').focus();return}dialog({title:'恢复本月额度？',consequences:[`剩余次数恢复为 ${S.config.quota} 次，仅本月有效`,'不延长资格，不改变费用和月预算','保留历史用量'],confirm:'恢复',onConfirm:()=>{const u=S.users.find(x=>x.id===a1);u.used=0;u.flow.unshift([Date.now(),'额度恢复','原因：'+r]);audit('恢复额度',sid(a1));toast('已恢复');render()}})},
+    reissue:()=>stepUp(()=>dialog({title:'重新生成激活码？',consequences:['旧激活码和所有登录会话立即失效','有效期和已用次数保留','新码 7 天内兑换，且不超过原有效期'],confirm:'生成新码',danger:true,onConfirm:()=>{const u=S.users.find(x=>x.id===a1);u.flow.unshift([Date.now(),'重新生成激活码','旧码与会话已失效']);audit('重新生成激活码',sid(a1));dialog({title:'新激活码',body:'只在这里显示一次，离开后无法再查看。<p class="num" style="font-size:22px;letter-spacing:.1em;margin:8px 0">[激活码]</p>',cancel:'我已记下'});render()}})),
+    delete:()=>stepUp(()=>dialog({title:'删除这个账号？',consequences:['资格、登录会话和激活码立即失效，并从用户列表移除','保留费用、用量和操作记录','用户设备上的训练数据不受影响'],confirm:'删除账号',danger:true,onConfirm:()=>{S.users=S.users.filter(x=>x.id!==a1);audit('删除账号',sid(a1));toast('账号已删除');go('users')}})),
+    invite:()=>dialog({title:'发放邀请码？',consequences:['生成一个 7 天内有效的邀请码','兑换后获得 30 天试用资格'],confirm:'生成',onConfirm:()=>{audit('发放邀请码');dialog({title:'邀请码',body:'只在这里显示一次。<p class="num" style="font-size:22px;letter-spacing:.1em;margin:8px 0">[邀请码]</p>',cancel:'我已记下'})}}),
+    revokeInvite:()=>dialog({title:'作废这个邀请码？',consequences:['作废后无法兑换','已兑换的用户不受影响'],confirm:'作废',danger:true,onConfirm:()=>{audit('作废邀请码');toast('已作废')}}),
+    lookup:()=>{const q=$('#lq').value.trim().replace('·','');const k=Object.keys(S.lookup).find(x=>x.startsWith(q.slice(0,4)));const r=k&&S.lookup[k];
+      const next={'超时':'结果未知时请到用户详情"重试同一次"','被额度拦截':'可以在用户详情恢复额度','供应商错误':'通常是暂时性问题，可让用户稍后重试'};
+      $('#lr').innerHTML=r?`<ol class="flow">${r.map(x=>`<li><span class="when num">${fmt(x[0])}</span><div>${x[1]} · <b>${x[2]}</b>${x[3]?` · <span class="num">${yuan(x[3])}</span>`:''}${next[x[2]]?`<div class="small muted">${next[x[2]]}</div>`:''}</div></li>`).join('')}</ol>`:'<p class="small muted">没有找到这个短 ID 最近 30 天的请求。</p>'},
+    export:()=>{if(a1==='ledger'){download('fitness-ledger-2026-10.csv',[['日期','任务','预留(元)','状态'],...S.ledger.map(r=>[r.date,r.task,(r.amt/100).toFixed(2),r.state])]);audit('导出账本 CSV','2026-10')}else{download('fitness-audit.csv',[['时间','操作','对象'],...S.audit.map(a=>[fmt(a[0]),a[1],a[2]])]);audit('导出操作记录 CSV')}toast('已导出 CSV')},
+    settle:()=>{const r=S.ledger.find(x=>x.id===a1);dialog({title:'按供应商账单核算这一笔？',body:`<label class="field">账单金额（元）<input class="input num" id="bill" type="number" step="0.01" value="${(r.amt/100).toFixed(2)}"></label>`,consequences:['以账单金额记为实际费用','释放这笔预留'],confirm:'核算',onConfirm:()=>{const v=Math.round(parseFloat($('#bill')?.value||r.amt/100)*100)||r.amt;if(r.state==='mismatch')S.ledgerMismatch--;r.state='settled';S.budget.reserved=Math.max(0,S.budget.reserved-r.amt);S.budget.spent+=v;audit('按账单核算',r.id);toast(S.ledgerMismatch?'已核算':'全部对上了，AI 调用已恢复');render()}})},
+    unassign:()=>{const r=S.ledger.find(x=>x.id===a1);if(r.state==='mismatch')S.ledgerMismatch--;r.state='unassigned';audit('标为未归属',r.id);toast('已标为未归属，继续保留');render()},
+    flag:()=>{const f=S.flags[+a1],env=a2;const on=!f[env];
+      const apply=()=>{f[env]=on;if(env==='preview'&&!on)f.prod=false;f.by='你';f.at=Date.now();audit(`${on?'开启':'关闭'}开关「${f.name}」（${env==='prod'?'生产':'预览'}）`);toast(on?'已开启，1 分钟内生效':'已关闭，1 分钟内生效');render()};
+      if(!on)return apply();
+      if(env==='prod'&&f.sensitive)return stepUp(()=>dialog({title:`在生产环境开启「${f.name}」？`,body:esc(f.desc),consequences:['所有用户都会看到这项功能','涉及健康数据或外发：只存在用户设备，默认不发送给芽芽','出现问题可以随时一键关闭'],confirm:'开启',onConfirm:apply}));
+      apply()},
+    rollback:()=>stepUp(()=>dialog({title:`回滚到 ${S.release.prev}？`,consequences:['生产切换到上一版本的代码','不回退数据库结构，用户数据不受影响','回滚后自动重跑冒烟测试，结果会出现在待办'],confirm:'回滚',danger:true,onConfirm:()=>{const r=S.release;[r.cur,r.prev]=[r.prev,r.cur];[r.curAt,r.prevAt]=[Date.now(),r.curAt];audit('回滚到 '+r.cur);toast('已回滚，冒烟测试全部通过');render()}})),
+    saveCfg:()=>{const nv={};let bad=[];document.querySelectorAll('[data-cfg]').forEach(i=>{const v=parseFloat(i.value);if(!(v>=+i.min&&v<=+i.max))bad.push(i.closest('label').firstChild.textContent);nv[i.dataset.cfg]=v});
+      if(bad.length){toast('超出合法范围：'+bad[0]);return}
+      const L={quota:['每月计划生成默认次数','次'],limit:['月预算上限','元'],reserve:['单次请求预留','元'],concurrency:['并发上限','个'],retention:['申请保留天数','天']};
+      const ch=Object.keys(nv).filter(k=>nv[k]!==S.config[k]);if(!ch.length){toast('没有改动');return}
+      stepUp(()=>dialog({title:'保存运行配置？',body:`<div class="diff"><span class="h">项目</span><span class="h">改前</span><span class="h">改后</span>${ch.map(k=>`<span>${L[k][0]}</span><del class="num">${S.config[k]} ${L[k][1]}</del><ins class="num">${nv[k]} ${L[k][1]}</ins>`).join('')}</div>`,consequences:['只影响之后的请求','不改写已有用量和费用','可以在修改历史中恢复'],confirm:'保存',onConfirm:()=>{const v=S.configHist[0].v+1;S.configHist.unshift({v,at:Date.now(),by:'你',chg:ch.map(k=>`${L[k][0]} ${S.config[k]} → ${nv[k]}`).join('；')});Object.assign(S.config,nv);if(ch.includes('limit'))S.budget.limit=Math.round(nv.limit*100);audit('修改运行配置 v'+v);toast('已保存为 v'+v);render()}}))},
+    cfgRestore:()=>stepUp(()=>dialog({title:`恢复到配置 v${a1}？`,consequences:['生成一个新版本，内容与 v'+a1+' 相同','只影响之后的请求'],confirm:'恢复',onConfirm:()=>{const v=S.configHist[0].v+1;S.configHist.unshift({v,at:Date.now(),by:'你',chg:'恢复为 v'+a1+' 的内容'});audit('恢复运行配置到 v'+a1);toast('已恢复，当前为 v'+v);render()}})),
+    notify:()=>{S.notify[a1]=!S.notify[a1];render()},
+    testPush:()=>toast(S.notify.installed?'测试提醒已发送':'测试提醒已发送。如果没收到，请先把后台添加到主屏幕'),
+    announce:()=>{const t=$('#an').value.trim(),d=Math.min(7,Math.max(1,+$('#ad').value||1));if(!t){toast('请填写公告内容');return}if(/你应该|你必须|失败|[!！]/.test(t)){toast('公告文字没有通过话术检查，请换一种说法');return}
+      dialog({title:'发布维护公告？',body:`<div class="banner">${esc(t)}</div>`,consequences:[`显示 ${d} 天，到期自动撤下`,'用户可以关闭；训练中不显示'],confirm:'发布',onConfirm:()=>{S.announce={text:t,from:Date.now(),to:Date.now()+d*D};audit('发布维护公告');toast('公告已发布');render()}})},
+    unannounce:()=>{S.announce=null;audit('撤下维护公告');toast('公告已撤下');render()},
+    addNote:()=>{const t=$('#nn').value.trim();if(!t)return;S.notes[$('#nk').value].push(t);toast('已添加');render()},
+    delNote:()=>{S.notes[a1].splice(+a2,1);render()}
+  };
+  A[act]&&A[act]();
+});
+document.addEventListener('input',e=>{const n=e.target.dataset.note;if(n)S.appNotes[n]=e.target.value;const q=e.target.dataset.quiet;if(q)S.notify[q]=e.target.value;
+  if(e.target.id==='uq'){const v=e.target.value.trim().replace('·','');document.querySelectorAll('.ulist button').forEach(b=>b.hidden=!b.dataset.act.slice(5).startsWith(v))}});
+document.addEventListener('change',e=>{const p=e.target.dataset.pick;if(p&&e.target.value){S.appNotes[p]=e.target.value;const inp=document.querySelector(`[data-note="${p}"]`);if(inp)inp.value=e.target.value;e.target.value=''}
+  const pi=e.target.dataset.prompt;if(pi!==undefined){const p=S.prompts[+pi],v=e.target.value;if(v===p.cur)return;e.target.value=p.cur;stepUp(()=>dialog({title:`${p.task}切换到 ${v}？`,consequences:['之后的请求使用该版本','可以随时切回','评测报告会标注所用版本'],confirm:'切换',onConfirm:()=>{p.cur=v;audit(`${p.task}提示词切换到 ${v}`);toast('已切换');render()}}))}});
+$('#pReset').onclick=()=>{S=seed();render();toast('已恢复示例数据')};
+$('#pStale').onclick=()=>{S.stepUpAt=0;toast('已模拟：下一次危险操作会要求重新验证')};
+render();
+</script>
+</body>
+</html>
