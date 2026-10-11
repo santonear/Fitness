@@ -4,7 +4,8 @@ const subjectId = '22222222-2222-4222-8222-222222222222';
 test('administrator confirms activation, per-user code and deletion; cancelling is read-only', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('fitness.language', 'en'));
   let activated = false, deleted = false; const mutations: string[] = [];
-  await page.route('**/api/v1/management/**', route => {
+  await page.route('**/api/v1/{management/**,features}', route => {
+    if (new URL(route.request().url()).pathname === '/api/v1/features') return route.fulfill({ json: { version: 1, flags: { adminConsole: false }, expiresAt: Date.now() + 60_000 } });
     const op = new URL(route.request().url()).pathname.split('/').pop()!;
     if (op !== 'applications') mutations.push(op);
     if (op === 'application-activate') { expect(route.request().postDataJSON()).toEqual({ id }); activated = true; }
