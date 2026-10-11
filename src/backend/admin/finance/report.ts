@@ -12,6 +12,16 @@ export async function recordFinanceEvent(db: AdminDatabase, input: z.infer<typeo
 export async function dailyCosts(db:AdminDatabase, month:string) {
   return (await db.prepare('SELECT day,task,COUNT(*) AS calls,SUM(CASE WHEN status=\'settled\' THEN cost_fen ELSE 0 END) AS settledFen,SUM(CASE WHEN status=\'pending\' THEN reserved_fen ELSE 0 END) AS pendingFen,SUM(CASE WHEN status=\'fallback\' THEN 1 ELSE 0 END) AS fallbacks,MIN(CASE WHEN status=\'fallback\' THEN at END) AS firstAt,MAX(CASE WHEN status=\'fallback\' THEN at END) AS lastAt FROM admin_finance_events WHERE day LIKE ? GROUP BY day,task ORDER BY day,task').bind(`${month}-%`).all()).results;
 }
+export async function recentCosts(db:AdminDatabase, now:number) {
+  const end=new Date(now).toISOString().slice(0,10),start=new Date(now-6*86400000).toISOString().slice(0,10);
+  const rows=(await db.prepare('SELECT day,SUM(CASE WHEN status=\'settled\' THEN cost_fen ELSE 0 END) AS settledFen,SUM(CASE WHEN status=\'pending\' THEN reserved_fen ELSE 0 END) AS pendingFen,SUM(CASE WHEN status=\'fallback\' THEN 1 ELSE 0 END) AS fallbacks,COUNT(*) AS calls FROM admin_finance_events WHERE day>=? AND day<=? GROUP BY day ORDER BY day').bind(start,end).all<{day:string;settledFen:number;pendingFen:number;fallbacks:number;calls:number}>()).results;
+  return {start,end,timeZone:'UTC',rows,historicalDailyCoverage:'unavailable' as const};
+}
+/** No paused claim can be inferred from pending rows: approved planning may continue. */
+export function reconciliationTodos(state:ControlState):AdminTodo[] {
+  const pending=Object.values(state.requests).filter(r=>r.status==='pending').length;
+  return pending||state.recoveryRequired?[{id:'finance-ledger-reconciliation',level:'alert',title:'账本需要核对',text:pending?`有 ${pending} 笔调用等待按供应商账单核算。调用是否可用以当前准入状态为准。`:'账本标记为需要核对。请检查供应商账单和现有费用记录。',actions:[{label:'逐笔核对',href:'/admin/ledger'}]}]:[];
+}
 export function ledgerProjection(state:ControlState, month:string) {
   const entries=Object.values(state.requests).filter(r=>r.period===month);
   return { month, settledFen:state.budgets[month]?.spent??0, pendingFen:state.budgets[month]?.reserved??0,

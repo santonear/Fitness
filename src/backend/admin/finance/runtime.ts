@@ -4,7 +4,7 @@ import type { AdminDatabase } from '../core/contracts';
 import { AdminError } from '../core/contracts';
 
 const integer = (min: number, max: number) => z.number().int().min(min).max(max);
-export const runtimeSchema = z.strictObject({ quotaUnderstand: integer(0, 10000), quotaGenerate: integer(0, 10000), quotaSummary: integer(0, 10000), monthlyBudgetFen: integer(1, 100000000), reservationFen: integer(1, 1000000), maxConcurrent: integer(1, 100), retentionDays: integer(1, 365) }).refine(v => v.reservationFen <= v.monthlyBudgetFen);
+export const runtimeSchema = z.strictObject({ quotaUnderstand: integer(0, 10000), quotaGenerate: integer(0, 10000), quotaSummary: integer(0, 10000).optional(), monthlyBudgetFen: integer(1, 100000000), reservationFen: integer(1, 1000000), maxConcurrent: integer(1, 100), retentionDays: integer(1, 365) }).refine(v => v.reservationFen <= v.monthlyBudgetFen);
 export type RuntimeConfig = z.infer<typeof runtimeSchema>;
 export interface FinanceEnv { ADMIN_DB?: AdminDatabase; CONTROL_POLICY?: string; APPLICATION_RETENTION_DAYS?: string }
 export interface ConfigVersion { version: number; config: RuntimeConfig; actor: string; at: number; requestId: string }
@@ -13,7 +13,7 @@ export interface FinanceState { versions: ConfigVersion[]; announcement: Announc
 export const initialFinance = (): FinanceState => ({ versions: [], announcement: null, receipts: {} });
 export function environmentDefaults(env: FinanceEnv): RuntimeConfig {
   const p = JSON.parse(env.CONTROL_POLICY ?? '{}');
-  return runtimeSchema.parse({ quotaUnderstand: p.quotas?.understand ?? 3, quotaGenerate: p.quotas?.generate ?? 3, quotaSummary: p.quotas?.summary ?? 3, monthlyBudgetFen: p.budgetLimit ?? 3000, reservationFen: p.maximumRequestCost ?? 300, maxConcurrent: p.maxConcurrent ?? 1, retentionDays: Number(env.APPLICATION_RETENTION_DAYS ?? 30) });
+  return runtimeSchema.parse({ quotaUnderstand: p.quotas?.understand ?? 3, quotaGenerate: p.quotas?.generate ?? 3, ...(p.quotas?.summary === undefined ? {} : {quotaSummary:p.quotas.summary}), monthlyBudgetFen: p.budgetLimit ?? 3000, reservationFen: p.maximumRequestCost ?? 300, maxConcurrent: p.maxConcurrent ?? 1, retentionDays: Number(env.APPLICATION_RETENTION_DAYS ?? 30) });
 }
 export class FinanceStore {
   constructor(private db: AdminDatabase) {}
@@ -51,7 +51,8 @@ export async function resolveRuntimeEnv<T extends FinanceEnv>(env: T): Promise<T
   const state = await new FinanceStore(env.ADMIN_DB).read(), current = state.versions.at(-1);
   if (!current) return env;
   const c = runtimeSchema.parse(current.config), p = JSON.parse(env.CONTROL_POLICY ?? '{}');
-  return { ...env, APPLICATION_RETENTION_DAYS: String(c.retentionDays), CONTROL_POLICY: JSON.stringify({ ...p, quotas: { ...p.quotas, understand:c.quotaUnderstand, generate:c.quotaGenerate, summary:c.quotaSummary }, budgetLimit:c.monthlyBudgetFen, maximumRequestCost:c.reservationFen, requestBounds:Object.fromEntries(Object.keys(p.requestBounds ?? {understand:0,generate:0,summary:0}).map(k => [k,c.reservationFen])), maxConcurrent:c.maxConcurrent }) };
+  return { ...env, APPLICATION_RETENTION_DAYS: String(c.retentionDays), CONTROL_POLICY: JSON.stringify({ ...p, quotas: { ...p.quotas, understand:c.quotaUnderstand, generate:c.quotaGenerate, ...(c.quotaSummary === undefined ? {} : {summary:c.quotaSummary}) }, budgetLimit:c.monthlyBudgetFen, maximumRequestCost:c.reservationFen, requestBounds:Object.fromEntries(Object.keys(p.requestBounds ?? {understand:0,generate:0}).map(k => [k,c.reservationFen])), maxConcurrent:c.maxConcurrent }) };
 }
+
 
 

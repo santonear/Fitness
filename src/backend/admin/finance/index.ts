@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { D1ControlStore } from '../../d1-store';
 import { adminJson, AdminError, requireAdminDb, requireFreshContext, type AdminContext } from '../core/contracts';
 import { FinanceStore, environmentDefaults, runtimeSchema, validateAnnouncement, type FinanceEnv } from './runtime';
-import { dailyCosts, financeTodos, ledgerCsv, ledgerProjection } from './report';
+import { dailyCosts, financeTodos, ledgerCsv, ledgerProjection, reconciliationTodos, recentCosts } from './report';
 export * from './runtime';
 export * from './report';
 export type FinanceContext = AdminContext & { env: AdminContext['env'] & FinanceEnv; settle?: (subjectId:string, requestId:string, actualCost:number)=>Promise<void> };
@@ -12,13 +12,14 @@ export async function evaluateFinanceTodos(context:AdminContext) {
   const state=await new FinanceStore(context.env.ADMIN_DB).read(), config=state.versions.at(-1)?.config??environmentDefaults(context.env);
   const control=await new D1ControlStore(context.env.CONTROL_DB).read();
   const period=new Date(context.now).toISOString().slice(0,7),budget=control.budgets[period];
-  return financeTodos(budget?.spent??0,budget?.reserved??0,config.monthlyBudgetFen,period).filter(t=>t.level!=='info'||!state.dismissedBudgetMonths?.includes(period));
+  return [...reconciliationTodos(control),...financeTodos(budget?.spent??0,budget?.reserved??0,config.monthlyBudgetFen,period).filter(t=>t.level!=='info'||!state.dismissedBudgetMonths?.includes(period))];
 }
 async function handleFinanceInternal(request:Request,context:FinanceContext):Promise<Response|undefined> {
   const url=new URL(request.url), prefix='/api/v1/management/console/finance';
   if(!url.pathname.startsWith(prefix+'/'))return undefined;
   const route=url.pathname.slice(prefix.length+1), db=requireAdminDb(context), store=new FinanceStore(db);
   if(request.method==='GET') {
+    if(route==='recent-costs')return adminJson(await recentCosts(db,context.now));
     if(route==='config') {const s=await store.read();return adminJson({current:s.versions.at(-1)??{version:0,config:environmentDefaults(context.env)},history:s.versions,defaults:environmentDefaults(context.env)});}
     if(route==='announcement')return adminJson({announcement:(await store.read()).announcement});
     if(['ledger','export','costs'].includes(route)) {

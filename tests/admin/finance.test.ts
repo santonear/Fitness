@@ -2,7 +2,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { readFileSync } from 'node:fs';
 import { afterEach,expect,it } from 'vitest';
 import type { AdminDatabase,AdminStatement } from '../../src/backend/admin/core/contracts';
-import { FinanceStore, handleFinance, resolveRuntimeEnv, activeAnnouncement, recordFinanceEvent, dailyCosts, ledgerProjection, ledgerCsv, financeTodos } from '../../src/backend/admin/finance';
+import { FinanceStore, handleFinance, resolveRuntimeEnv, activeAnnouncement, recordFinanceEvent, dailyCosts, ledgerProjection, ledgerCsv, financeTodos, environmentDefaults, reconciliationTodos, recentCosts } from '../../src/backend/admin/finance';
 import { initialState } from '../../src/backend/store';
 const databases:DatabaseSync[]=[];
 afterEach(()=>databases.splice(0).forEach(d=>d.close()));
@@ -52,4 +52,27 @@ it('ledger explicitly projects short identifiers without content; CSV BOM and bu
  const s=initialState();s.budgets['2026-10']={spent:15,reserved:300};s.requests.x={subjectId:'12345678-secret',requestId:'abcdefgh-secret',inputDigest:'PRIVATE',operation:'generate',period:'2026-10',bound:300,status:'pending',cancelled:false,coachContract:{task:'PRIVATE',promptVersion:'x',schemaVersion:'x',catalogVersion:1}};
  const p=ledgerProjection(s,'2026-10');expect(JSON.stringify(p)).not.toMatch(/PRIVATE|secret|inputDigest/);expect(p.unattributedFen).toBe(15);expect(ledgerCsv(p).startsWith('\uFEFF')).toBe(true);
  expect(financeTodos(40,10,100,'2026-10')[0].level).toBe('info');expect(financeTodos(80,0,100,'2026-10')[0].level).toBe('warn');expect(financeTodos(100,0,100,'2026-10')[0].level).toBe('alert');
+});
+it('unconfigured summary capability remains absent after unrelated edits and default restore',async()=>{
+ const {env,context,post}=setup();const defaults=environmentDefaults(env);expect(defaults.quotaSummary).toBeUndefined();
+ await handleFinance(post('config',{expectedVersion:0,config:{...defaults,maxConcurrent:2}}),context);
+ let p=JSON.parse((await resolveRuntimeEnv(env)).CONTROL_POLICY!);expect(p.quotas.summary).toBeUndefined();expect(p.requestBounds.summary).toBeUndefined();
+ await handleFinance(post('config',{expectedVersion:1,config}),{...context,requestId:'summary-explicit'});p=JSON.parse((await resolveRuntimeEnv(env)).CONTROL_POLICY!);expect(p.quotas.summary).toBe(3);
+ await handleFinance(post('config',{expectedVersion:2,restoreVersion:0}),{...context,requestId:'restore-defaults'});p=JSON.parse((await resolveRuntimeEnv(env)).CONTROL_POLICY!);expect(p.quotas.summary).toBeUndefined();
+});
+it('reconciliation todo reports pending count without inventing a pause or historical dates',()=>{
+ const state=initialState();state.requests.x={subjectId:'private',requestId:'private',inputDigest:'private',operation:'generate',period:'2026-09',bound:100,status:'pending',cancelled:false};
+ const todo=reconciliationTodos(state);expect(todo).toHaveLength(1);expect(todo[0].text).toContain('1 笔');expect(JSON.stringify(todo)).not.toMatch(/private|暂停/);
+ state.requests.x.status='settled';state.requests.x.actualCost=10;expect(reconciliationTodos(state)).toEqual([]);
+ state.recoveryRequired=true;expect(reconciliationTodos(state)).toHaveLength(1);
+});
+it('recent costs span month boundaries and exclude old events without fabricating zero days',async()=>{
+ const {db}=setup();const event={task:'review' as const,status:'settled' as const,costFen:10,reservedFen:0,at:1};
+ await recordFinanceEvent(db,{...event,eventKey:'a'.repeat(64),day:'2026-09-30'});await recordFinanceEvent(db,{...event,eventKey:'b'.repeat(64),day:'2026-10-02'});await recordFinanceEvent(db,{...event,eventKey:'c'.repeat(64),day:'2026-09-20'});
+ const data=await recentCosts(db,Date.UTC(2026,9,3));expect(data.start).toBe('2026-09-27');expect(data.rows.map(r=>r.day)).toEqual(['2026-09-30','2026-10-02']);expect(data.historicalDailyCoverage).toBe('unavailable');
+});
+it('audit outage then same-request retry does not append a second configuration version',async()=>{
+ const {db,context,post}=setup(),request=()=>post('config',{expectedVersion:0,config});
+ await expect(handleFinance(request(),{...context,audit:async()=>{throw new Error('audit outage')}})).rejects.toThrow('audit outage');
+ await handleFinance(request(),context);expect((await new FinanceStore(db).read()).versions).toHaveLength(1);
 });
