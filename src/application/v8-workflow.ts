@@ -1,3 +1,4 @@
+import { createPlanLifecycle, PLAN_RETENTION_MS } from './plan-lifecycle';
 import type { Repository } from '../persistence/repository';
 import { DomainError } from '../domain/errors';
 import { v8CoachProfileSchema, v8PlanVersionSchema, v8WorkoutSchema, setMetricsSchema } from '../domain/schemas';
@@ -33,15 +34,19 @@ function localDate(timeZone: string) {
 }
 export function createV8Workflow(repo: Repository) {
   const db = repo.db;
+  const lifecycle = createPlanLifecycle(repo);
   async function snapshot() {
     return db.transaction('r', db.tables, async () => {
       const metadata = await repo.readMetadata(), state = await db.v8State.get('v8');
-      const plan = state?.currentPlanId ? await db.v8Plans.get(state.currentPlanId) : undefined;
-      const version = plan ? await db.v8PlanVersions.get(plan.currentVersionId) : undefined;
+      const allPlans = await db.v8Plans.toArray();
+      const plans = allPlans.filter(p=>!p.deletedAt), deletedPlans=allPlans.filter(p=>p.deletedAt&&Date.now()-Date.parse(p.deletedAt)<PLAN_RETENTION_MS);
+      const plan = plans.find(p=>p.id===state?.currentPlanId);
+      const historyVersions = await db.v8PlanVersions.toArray();
+      const version = plan ? historyVersions.find(v=>v.id===plan.currentVersionId) : undefined;
       const workouts = await db.v8Workouts.toArray();
       const profile = await db.profiles.toCollection().first();
       const hasFutureLegacyDates = !!state?.legacyPlanIds.length && (await db.scheduledWorkouts.toArray()).some(row => !row.hiddenAt && row.status === 'pending' && !row.completedSessionId && row.scheduledDate >= localDate(profile?.timeZone ?? 'Asia/Shanghai'));
-      return { metadata, state, plan, version, workouts, hasFutureLegacyDates, versions: await db.v8PlanVersions.toArray(), activities: await db.v8Activities.toArray(), profile, active: workouts.find(row => row.status === 'in_progress') };
+      return { metadata, state, plan, version, plans, deletedPlans, planReferences: await db.v8PlanReferences.toArray(), workouts, hasFutureLegacyDates, historyVersions, versions: historyVersions.filter(v=>plans.some(p=>p.id===v.planId)), activities: await db.v8Activities.toArray(), profile, active: workouts.find(row => row.status === 'in_progress') };
     });
   }
   async function propose(profile: CoachProfile): Promise<LocalCandidate> {
@@ -82,7 +87,7 @@ export function createV8Workflow(repo: Repository) {
       const version = plan ? await db.v8PlanVersions.get(plan.currentVersionId) : undefined;
       const override = state?.nextWorkoutOverride;
       const template = override && override.planVersionId === version?.id && override.templateId === templateId ? override.template : version?.templates.find(item => item.id === templateId);
-      if (templateId && (!template || plan?.readOnly)) return invalid('TEMPLATE_UNAVAILABLE');
+      if (templateId && (!template || plan?.readOnly || plan?.deletedAt)) return invalid('TEMPLATE_UNAVAILABLE');
       if (!profile) return invalid('PROFILE_REQUIRED');
       const manualTemplate = manualSelection ? v8PlanVersionSchema.shape.templates.element.parse(manualSelection.template) : undefined;
       if (manualTemplate && (manualSelection?.adultConfirmed !== true || state?.coachProfile?.adultConfirmed === false)) return invalid('ADULT_CONFIRMATION_REQUIRED');
@@ -148,7 +153,7 @@ export function createV8Workflow(repo: Repository) {
       const meta = await repo.readMetadata(), state = await db.v8State.get('v8');
       const plan = await db.v8Plans.get(request.target.planId);
       if (request.restoreGeneration !== (meta.restoreGeneration ?? 0) || request.target.revision !== expectedRevision ||
-          !state || !plan || plan.readOnly || state.currentPlanId !== plan.id || plan.currentVersionId !== request.target.versionId) throw new DomainError('CONFLICT', 'STALE_CANDIDATE');
+          !state || !plan || plan.deletedAt || plan.readOnly || state.currentPlanId !== plan.id || plan.currentVersionId !== request.target.versionId) throw new DomainError('CONFLICT', 'STALE_CANDIDATE');
       const version = await db.v8PlanVersions.get(plan.currentVersionId);
       if (!version) return invalid('PLAN_UNAVAILABLE');
       if (response.type === 'today_adjustment' && request.task === 'ADJUST_TODAY') {
@@ -180,5 +185,6 @@ export function createV8Workflow(repo: Repository) {
       return next;
     }, expectedRevision);
   }
-  return { snapshot, propose, adopt, start, recordSet, finish, substitute, applyCoachCandidate };
+  return { ...lifecycle, snapshot, propose, adopt, start, recordSet, finish, substitute, applyCoachCandidate };
 }
+

@@ -79,8 +79,8 @@ function validateSession(session: WorkoutSession, sets: SetRecord[], versions: M
 }
 
 export function validateBackupEnvelope(value: unknown): BackupEnvelope {
-  if (typeof value === 'object' && value !== null && 'schemaVersion' in value && ![2,3,4,5,6,7,8].includes(value.schemaVersion as number)) {
-    throw new DomainError('BACKUP_VERSION_UNSUPPORTED', 'Unsupported JSON backup version; versions 2 through 8 are supported');
+  if (typeof value === 'object' && value !== null && 'schemaVersion' in value && ![2,3,4,5,6,7,8,9].includes(value.schemaVersion as number)) {
+    throw new DomainError('BACKUP_VERSION_UNSUPPORTED', 'Unsupported JSON backup version; versions 2 through 9 are supported');
   }
   const parsed = backupEnvelopeSchema.safeParse(value);
   if (!parsed.success) throw new DomainError('BACKUP_INVALID', `Invalid backup: ${parsed.error.message}`);
@@ -102,10 +102,12 @@ export function validateBackupEnvelope(value: unknown): BackupEnvelope {
   } else if (data.nutritionRecords || data.activityImportReceipts) invalid('Lifestyle collections require version 7');
   if (data.v8) {
     const library = data.v8;
+    if(envelope.schemaVersion<9&&(library.planReferences!==undefined||library.plans.some(p=>p.deletedAt!==undefined||p.deletedWasCurrent!==undefined)||library.state.planDismissedAt!==undefined||library.state.reviewWeeklyTarget!==undefined))invalid('Plan lifecycle requires backup version 9');
+    if(envelope.schemaVersion>=9&&!library.planReferences)invalid('Plan reference collection required');
     const v8Plans = new Map(library.plans.map(plan => [plan.id, plan]));
     const v8Versions = new Map(library.planVersions.map(version => [version.id, version]));
     for (const [label, rows] of Object.entries(library)) if (Array.isArray(rows)) distinct(rows.map(row => row.id), `V8 ${label}`);
-    if (library.state.currentPlanId && !v8Plans.has(library.state.currentPlanId)) invalid('V8 current plan missing');
+    if (library.state.currentPlanId && (!v8Plans.has(library.state.currentPlanId)||v8Plans.get(library.state.currentPlanId)?.deletedAt)) invalid('V8 current plan missing');
     const override = library.state.nextWorkoutOverride;
     if (override) {
       const current = library.state.currentPlanId ? v8Plans.get(library.state.currentPlanId) : undefined;
@@ -118,10 +120,22 @@ export function validateBackupEnvelope(value: unknown): BackupEnvelope {
       if (version.origin === 'migrated' && !data.planVersions.some(original => original.id === version.basedOnVersionId && original.planId === version.planId)) invalid('V8 migration source missing');
     }
     distinct(library.planVersions.map(version => `${version.planId}:${version.versionNumber}`), 'V8 version number');
+    const references=new Map((library.planReferences??[]).map(r=>[r.id,r]));
+    for(const ref of references.values()){
+      if(v8Versions.has(ref.id)||v8Plans.has(ref.planId)||!library.workouts.some(w=>w.planVersionId===ref.id))invalid('Invalid archived plan reference');
+      distinct(ref.templateIds,'archived template IDs');
+      distinct((ref.legacyTemplates??[]).map(t=>t.id),'archived legacy templates');
+      if(ref.templateIds.some(id=>!library.workouts.some(w=>w.planVersionId===ref.id&&w.templateId===id))||(ref.legacyTemplates??[]).some(t=>!ref.templateIds.includes(t.id)||!library.workouts.some(w=>w.planVersionId===ref.id&&w.templateId===t.id&&!w.templateSnapshot)))invalid('Unreferenced archived template');
+    }
+    if(library.plans.some(p=>p.deletedWasCurrent!==undefined&&!p.deletedAt))invalid('Invalid deleted plan marker');
     for (const workout of library.workouts) {
       const version = workout.planVersionId ? v8Versions.get(workout.planVersionId) : undefined;
-      if (workout.planVersionId && !version || workout.templateId && !version?.templates.some(template => template.id === workout.templateId)) invalid('V8 workout plan or template missing');
-      if (workout.templateSnapshot && (!version || workout.templateSnapshot.items.reduce((sum,item)=>sum+item.sets,0)!==workout.plannedSetCount || workout.templateSnapshot.items.some((item,index)=>workout.plannedExercises?.[index]?.exerciseId!==item.exerciseId || workout.plannedExercises?.[index]?.plannedSetCount!==item.sets))) invalid('V8 workout snapshot mismatch');
+      const reference=workout.planVersionId?references.get(workout.planVersionId):undefined;
+      if (workout.planVersionId && !version && !reference || workout.templateId && !(version?.templates.some(template => template.id === workout.templateId)||reference?.templateIds.includes(workout.templateId))) invalid('V8 workout plan or template missing');
+      if(workout.status==='in_progress'&&version&&v8Plans.get(version.planId)?.deletedAt)invalid('Active workout belongs to deleted plan');
+      if(workout.templateSnapshot&&workout.templateId&&workout.templateSnapshot.id!==workout.templateId)invalid('Workout snapshot template ID mismatch');
+      if(reference&&(workout.status==='in_progress'||!workout.templateSnapshot&&!reference.legacyTemplates?.some(t=>t.id===workout.templateId)))invalid('Archived workout provenance incomplete');
+      if (workout.templateSnapshot && (workout.planVersionId!==undefined&&!version&&!reference || workout.templateSnapshot.items.reduce((sum,item)=>sum+item.sets,0)!==workout.plannedSetCount || workout.templateSnapshot.items.some((item,index)=>workout.plannedExercises?.[index]?.exerciseId!==item.exerciseId || workout.plannedExercises?.[index]?.plannedSetCount!==item.sets))) invalid('V8 workout snapshot mismatch');
       validDate(workout.localDate);
     }
     library.activities.forEach(activity => validDate(activity.localDate));
@@ -302,7 +316,7 @@ export function createBackupService(repo: Repository) {
       const versions = await repo.db.planVersions.toArray();
       const previousMemo = await repo.db.trainingMemo.get(1);
       return validateBackupEnvelope({
-        format: 'fitness-local', schemaVersion: 8, catalogVersion: 1, exportedAt: new Date().toISOString(),
+        format: 'fitness-local', schemaVersion: 9, catalogVersion: 1, exportedAt: new Date().toISOString(),
         data: {
           metadata, profiles: await repo.db.profiles.toArray(), plans: await repo.db.plans.toArray(), planVersions: versions,
           sessions, sets, scheduledWorkouts: await repo.db.scheduledWorkouts.toArray(), bodyWeights: await repo.db.bodyWeights.toArray(),
@@ -310,7 +324,7 @@ export function createBackupService(repo: Repository) {
           guidedStates: await repo.db.guidedStates.toArray(),
           nutritionRecords: await repo.db.nutritionRecords.toArray(), activityImportReceipts: await repo.db.activityImportReceipts.toArray(),
           v8: { state: await repo.db.v8State.get('v8'), plans: await repo.db.v8Plans.toArray(), planVersions: await repo.db.v8PlanVersions.toArray(),
-            workouts: await repo.db.v8Workouts.toArray(), activities: await repo.db.v8Activities.toArray() },
+            workouts: await repo.db.v8Workouts.toArray(), activities: await repo.db.v8Activities.toArray(), planReferences: await repo.db.v8PlanReferences.toArray() },
           trainingMemo: {
             schemaVersion: 1, revision: previousMemo?.revision ?? 0, sourceRevision: metadata.dataRevision, updatedAt: new Date().toISOString(),
             sessions: sessions.map(session => ({ session, sets: sets.filter(set => set.sessionId === session.id).sort((a, b) => a.order - b.order),
@@ -354,7 +368,7 @@ export function createBackupService(repo: Repository) {
       // Device reminder preferences and suppression ledger are not portable training facts.
       for (const table of repo.db.tables) if (table.name !== 'coachDevice') await table.clear();
       const data = envelope.data;
-      await repo.db.metadata.put({ ...data.metadata, schemaVersion: 10, revision: before.revision, dataRevision: before.dataRevision, restoreGeneration: committedGeneration, importedAt: new Date().toISOString() });
+      await repo.db.metadata.put({ ...data.metadata, schemaVersion: 11, revision: before.revision, dataRevision: before.dataRevision, restoreGeneration: committedGeneration, importedAt: new Date().toISOString() });
       await repo.db.profiles.bulkAdd(data.profiles);
       await repo.db.plans.bulkAdd(data.plans);
       await repo.db.planVersions.bulkAdd(data.planVersions);

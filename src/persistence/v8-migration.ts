@@ -20,6 +20,7 @@ export async function prepareV8Migration(source: LegacyInput, migratedAt: string
 }
 
 export async function writeV8Library(transaction: Transaction, library: V8Library): Promise<void> {
+  if (library.planReferences?.length) await transaction.table('v8PlanReferences').bulkAdd(library.planReferences);
   await transaction.table('v8Plans').bulkAdd(library.plans);
   await transaction.table('v8PlanVersions').bulkAdd(library.planVersions);
   await transaction.table('v8Workouts').bulkAdd(library.workouts);
