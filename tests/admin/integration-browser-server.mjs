@@ -16,6 +16,10 @@ const control=new DatabaseSync(':memory:');
 const {publicKey,privateKey}=await generateKeyPair('RS256');
 let worker,auth,initialState;
 let dropNextUserResponse=false;
+const currentDeployment='30000000-0000-4000-8000-000000000003';
+const previousDeployment='40000000-0000-4000-8000-000000000004';
+let syntheticDeployment=currentDeployment;
+let smokeFailure=false;
 
 function binding(connection){
   const prepare=(sql,values=[])=>({
@@ -36,10 +40,19 @@ const env={ADMIN_DB:binding(admin),CONTROL_DB:binding(control),ADMIN_ENVIRONMENT
   CONTROL_ORIGINS:JSON.stringify([workerOrigin]),CONTROL_POLICY:JSON.stringify({timeZone:'UTC',k:1,budgetLimit:3500,maximumRequestCost:1000,requestBounds:{understand:100,generate:300,summary:300},quotas:{understand:8,generate:4,summary:4},maxInputBytes:65536,maxConcurrent:4}),
   FITNESS_FEATURE_FLAGS:'{}',ADMIN_ERROR_COLLECTION_ENABLED:'false',
   ADMIN_RELEASE_REGISTRY:JSON.stringify([{environment:'preview',dataVersion:11,current:{id:'synthetic-current',deploymentId:'30000000-0000-4000-8000-000000000003',publishedAt:new Date().toISOString(),compatibleDataVersion:11,smokeOrigin:'https://preview.invalid'},previous:{id:'synthetic-previous',deploymentId:'40000000-0000-4000-8000-000000000004',publishedAt:new Date(Date.now()-86400000).toISOString(),compatibleDataVersion:11,smokeOrigin:'https://preview.invalid'}}]),
+  ASSETS:{fetch:async()=>new Response(html,{headers:{'Content-Type':'text/html','x-synthetic-release':syntheticDeployment}})},
+  ADMIN_RELEASE_ADAPTER:{fetch:async request=>{
+    const command=await request.json();const requestId=request.headers.get('Idempotency-Key');
+    if(command.environment!=='preview'||command.targetDeployment!==previousDeployment||command.expectedDeployment!==currentDeployment||!requestId)return Response.json({error:'UNREGISTERED_TEST_DEPLOYMENT'},{status:409});
+    if(![currentDeployment,previousDeployment].includes(syntheticDeployment))return Response.json({error:'TEST_DEPLOYMENT_CHANGED'},{status:409});
+    syntheticDeployment=previousDeployment;
+    return Response.json({deploymentId:syntheticDeployment,requestId});
+  }},
 };
 const migrations=(await readdir(new URL('../../migrations/admin/',import.meta.url))).filter(name=>name.endsWith('.sql')).sort();
 async function reset(){
   dropNextUserResponse=false;
+  syntheticDeployment=currentDeployment;smokeFailure=false;
   for(const db of [admin,control]){for(const {name} of db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").all())db.exec(`DROP TABLE "${name.replaceAll('"','""')}"`);}
   for(const name of migrations)admin.exec(await readFile(new URL(`../../migrations/admin/${name}`,import.meta.url),'utf8'));
   control.exec('CREATE TABLE control_ledger(id INTEGER PRIMARY KEY CHECK(id=1),revision INTEGER NOT NULL,state TEXT NOT NULL CHECK(json_valid(state)))');
@@ -63,6 +76,7 @@ const server=await createServer({configFile:false,server:{host:'127.0.0.1',port,
       if(path==='/__test/ready')return send(response,200,{ready:Boolean(worker),migrations});
       if(path==='/__test/reset'&&request.method==='POST'){await bodyOf(request);await reset();return send(response,200,{reset:true});}
       if(path==='/__test/drop-next-user-response'&&request.method==='POST'){await bodyOf(request);dropNextUserResponse=true;return send(response,200,{armed:true});}
+      if(path==='/__test/smoke-mode'&&request.method==='POST'){const data=JSON.parse((await bodyOf(request)).toString());smokeFailure=data.fail===true;return send(response,200,{fail:smokeFailure});}
       if(path==='/__test/session'&&request.method==='POST'){
         const {mode='fresh'}=JSON.parse((await bodyOf(request)).toString()||'{}');
         if(!['fresh','stale','invalid','none'].includes(mode))return send(response,400,{error:'INVALID_TEST_MODE'});
@@ -72,7 +86,7 @@ const server=await createServer({configFile:false,server:{host:'127.0.0.1',port,
       }
       if(path==='/__test/evidence'){
         const row=control.prepare('SELECT revision,state FROM control_ledger WHERE id=1').get();const state=JSON.parse(row.state);
-        return send(response,200,{revision:row.revision,applicationState:state.applications[applicationId].state,approvalEvents:state.audit.filter(item=>item.event===`application-approve:${applicationId}`).length,invites:Object.keys(state.invites).length,audit:admin.prepare('SELECT actor,action,result,object_id FROM admin_audit').all(),migrations});
+        return send(response,200,{revision:row.revision,applicationState:state.applications[applicationId].state,approvalEvents:state.audit.filter(item=>item.event===`application-approve:${applicationId}`).length,syntheticDeployment,invites:Object.keys(state.invites).length,audit:admin.prepare('SELECT actor,action,result,object_id FROM admin_audit').all(),migrations});
       }
       if(path.startsWith('/api/')){
         const headers=new Headers();for(const [key,value] of Object.entries(request.headers)){if(value!==undefined)headers.set(key,Array.isArray(value)?value.join(','):value);}
@@ -97,6 +111,13 @@ auth=await server.ssrLoadModule('/src/backend/management-auth.ts');
 const {createFitnessWorker}=await server.ssrLoadModule('/src/backend/fitness-worker.ts');
 const {createDeepSeekWorker}=await server.ssrLoadModule('/src/backend/deepseek-worker.ts');
 worker=createFitnessWorker(createDeepSeekWorker({transport:async()=>{throw new Error('MODEL_TRANSPORT_FORBIDDEN_IN_ADMIN_TEST');}}),(request,settings)=>auth.verifyAdministrator(request,settings,async()=>publicKey));
+// Smoke probes use the actual local worker and local asset binding, never the internet.
+globalThis.fetch=async(input,init)=>{
+  const request=input instanceof Request?input:new Request(input,init);const url=new URL(request.url);
+  if(url.origin!=='https://preview.invalid')throw new Error('EXTERNAL_NETWORK_FORBIDDEN_IN_ADMIN_TEST');
+  if(smokeFailure&&url.pathname==='/api/v1/features')return new Response(null,{status:503});
+  return worker.fetch(new Request(workerOrigin+url.pathname+url.search,request),env);
+};
 await reset();await server.listen();
 console.log(`Real admin integration listening on ${origin}; SQLite + signed test Access, ${migrations.length} migrations.`);
 async function shutdown(){await server.close();admin.close();control.close();process.exit(0);}
