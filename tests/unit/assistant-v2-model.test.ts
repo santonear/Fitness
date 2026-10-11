@@ -1,0 +1,78 @@
+import { describe, expect, it } from 'vitest';
+import { assistantRequestSchema, sanitizeAssistantRequest, type AssistantRequest } from '../../src/assistant/contracts';
+import { runAssistantModel, createAssistantProvider, type AssistantProvider } from '../../src/backend/assistant/model';
+import { assistantPrompt } from '../../src/backend/assistant/prompts';
+import { repairAssistantAttachment } from '../../src/backend/assistant/repair';
+import { EXERCISE_IDS, exercises } from '../../src/catalog/exercises';
+import { coachV8Exercises } from '../../src/coach/response-adapter';
+
+const id = '11111111-1111-4111-8111-111111111111';
+const request: AssistantRequest = { version: 'fitness-assistant-v2', requestId: id, conversationId: id, locale: 'zh', timeZone: 'Asia/Shanghai', adultConfirmed: true, messages: [{ role: 'user', content: 'Hello' }] };
+const context = { version: 'fitness-coach-v8' as const, requestId: id, conversationId: id, restoreGeneration: 0, inputSnapshot: 'PRIVATE_SNAPSHOT', sendConfirmation: 'PRIVATE_CONFIRMATION', locale: 'zh' as const, timeZone: 'Asia/Shanghai', adultConfirmed: true as const, messages: [], task: 'ADJUST_TODAY' as const, target: { planId: id, versionId: id, revision: 0 }, instruction: 'shorter', template: { id: 'A', name: 'A', estimatedMinutes: 20, items: [{ exerciseId: EXERCISE_IDS.bodyweightSquat, equipment: 'none', sets: 2, target: { metricType: 'reps' as const, reps: 8 } }] } };
+const attachment = { type: 'today_adjustment', requestId: id, restoreGeneration: 0, mutationAllowed: false, target: context.target, template: context.template, summary: 'A shorter session.' };
+const usage = { inputTokens: 10, outputTokens: 3 };
+function provider(outputs: unknown[] = [{ attachment: null }]): AssistantProvider {
+  return { async *streamText() { yield { delta: 'Hello ' }; yield { delta: 'there', usage }; }, async generateAttachment() { const content = outputs.shift(); if (content instanceof Error) throw content; return { content, usage }; } };
+}
+async function gather<T>(source: AsyncIterable<T>): Promise<T[]> { const result: T[] = []; for await (const value of source) result.push(value); return result; }
+async function collect(input = request, model = provider()) { return gather(runAssistantModel(input, { provider: model })); }
+describe('assistant v2 model', () => {
+  it('streams text before optional attachment and accounts calls', async () => {
+    const events = await collect({ ...request, context }, provider([{ attachment }]));
+    expect(events.map(e => e.type)).toEqual(['text_delta', 'text_delta', 'attachment_pending', 'attachment', 'done']);
+    expect(events.at(-1)).toMatchObject({ success: true, usage: { inputTokens: 20, outputTokens: 6 }, calls: [{ stage: 'text' }, { stage: 'attachment' }] });
+  });
+  it('retains text, retries once, does not consume successful daily message on attachment failure', async () => {
+    const events = await collect(request, provider(['bad json', 'still bad']));
+    expect(events[0]).toMatchObject({ delta: 'Hello ' });
+    expect(events.at(-2)?.type).toBe('attachment_failed');
+    expect(events.at(-1)).toMatchObject({ success: false, result: 'attachment_failed', calls: [{ result: 'success' }, { result: 'failed' }, { result: 'failed' }] });
+  });
+  it('retries invalid attachment successfully', async () => {
+    const events = await collect({ ...request, context }, provider(['bad', { attachment }]));
+    expect(events.at(-1)).toMatchObject({ success: true, result: 'repaired' });
+  });
+  it('repairs known exercise names and numeric bounds without changing target identities', () => {
+    const candidate = structuredClone(attachment);
+    const catalog = coachV8Exercises(context);
+    const unique = catalog.find(e => e.metricType === 'reps' && catalog.filter(other => Object.values(other.name).some(n => n.toLowerCase() === e.name.en.toLowerCase())).length === 1)!;
+    (candidate.template.items[0] as { exerciseId: string }).exerciseId = unique.name.en;
+    candidate.template.items[0].sets = 200;
+    const result = repairAssistantAttachment(candidate, { ...request, context });
+    expect(result.repaired).toBe(true);
+    expect(result.attachment).toMatchObject({ template: { items: [{ exerciseId: unique.id, sets: 10 }] } });
+    expect(() => repairAssistantAttachment({ ...attachment, requestId: '22222222-2222-4222-8222-222222222222' }, { ...request, context })).toThrow();
+    expect(() => repairAssistantAttachment({ ...attachment, mutationAllowed: true }, { ...request, context })).toThrow();
+  });
+  it.each(['我今年17岁，给我计划', 'I am 16 years old, make a plan'])('blocks minor attachments despite checked adult flag: %s', async content => {
+    const events = await collect({ ...request, context, messages: [{ role: 'user', content }] });
+    expect(events.some(e => e.type === 'attachment_pending')).toBe(false);
+  });
+  it('strips withheld data and never prompts local opaque snapshots', () => {
+    const clean = sanitizeAssistantRequest({ ...request, context: { ...context, body: { age: 30 }, history: 'PRIVATE_HISTORY', nutrition: [] } });
+    expect(clean.locale).toBe('en'); expect(clean.context?.body).toBeUndefined(); expect(clean.context?.history).toBeUndefined();
+    const prompt = JSON.stringify(assistantPrompt(clean, 'text'));
+    expect(prompt).not.toContain('PRIVATE_');
+    expect(sanitizeAssistantRequest({ ...request, context: { ...context, body: { age: 30 } }, consent: { body: true, history: false } }).context?.body).toEqual({ age: 30 });
+  });
+  it('limits context and enforces user last message', () => {
+    expect(assistantRequestSchema.safeParse({ ...request, messages: Array(21).fill(request.messages[0]) }).success).toBe(false);
+    expect(assistantRequestSchema.safeParse({ ...request, messages: [{ role: 'assistant', content: 'x' }] }).success).toBe(false);
+  });
+  it('text generation failure stops second stage', async () => {
+    const model = provider(); model.streamText = async function* () { throw new Error('private provider error'); };
+    const events = await collect(request, model);
+    expect(events.map(e => e.type)).toEqual(['error', 'done']); expect(JSON.stringify(events)).not.toContain('private provider');
+  });
+  it('parses split unicode SSE and rejects truncated streams', async () => {
+    const encoded = new TextEncoder().encode('data: {"choices":[{"delta":{"content":"你好"}}]}\r\n\r\ndata: {"usage":{"prompt_tokens":2,"completion_tokens":1}}\n\ndata: [DONE]\n\n');
+    const mockFetch: typeof fetch = async () => new Response(new ReadableStream({ start(c) { for (const byte of encoded) c.enqueue(Uint8Array.of(byte)); c.close(); } }));
+    const model = createAssistantProvider({ apiKey: 'secret', baseUrl: 'https://example.test', fetch: mockFetch });
+    const chunks = await gather(model.streamText([])); expect(chunks).toContainEqual({ delta: '你好' }); expect(chunks).toContainEqual({ usage: { inputTokens: 2, outputTokens: 1 } });
+    const truncated = createAssistantProvider({ apiKey: '', baseUrl: 'https://example.test', fetch: async () => new Response('data: {"choices":[]}\n') });
+    await expect(gather(truncated.streamText([]))).rejects.toThrow('TRUNCATED_STREAM');
+  });
+});
+
+
+
