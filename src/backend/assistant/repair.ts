@@ -32,6 +32,11 @@ export function repairAssistantAttachment(raw: unknown, request: AssistantReques
   if (parsed.type === 'clarify' || parsed.type === 'refused') throw new Error('CONVERSATION_ONLY');
   if (parsed.type !== 'exercise_info') {
     if (!request.adultConfirmed || !request.context) throw new Error('PLAN_NOT_ELIGIBLE');
+    if(parsed.type === 'today_adjustment' && request.context.task === 'ADJUST_TODAY' && request.currentWorkout) {
+      for(const index of new Set(request.currentWorkout.completedSets.map(set => set.itemIndex))) {
+        if(JSON.stringify(parsed.template.items[index]) !== JSON.stringify(request.context.template.items[index])) throw new Error('COMPLETED_ITEM_CHANGED');
+      }
+    }
     return { attachment: adaptCoachResponse(request.context, parsed), repaired };
   }
   return { attachment: parsed, repaired };

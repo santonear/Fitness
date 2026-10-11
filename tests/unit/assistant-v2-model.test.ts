@@ -55,6 +55,23 @@ describe('assistant v2 model', () => {
     expect(prompt).not.toContain('PRIVATE_');
     expect(sanitizeAssistantRequest({ ...request, context: { ...context, body: { age: 30 } }, consent: { body: true, history: false } }).context?.body).toEqual({ age: 30 });
   });
+  it('sends only bounded current-workout facts independently of optional history consent', () => {
+    const currentWorkout={completedSets:[{itemIndex:0,setIndex:0,exerciseId:EXERCISE_IDS.bodyweightSquat,reps:8}],remainingSets:1};
+    const input={...request,context:{...context,workoutId:id,history:'PRIVATE_HISTORY'},consent:{body:false,history:false},currentWorkout};
+    const clean=sanitizeAssistantRequest(input);
+    expect(clean.currentWorkout).toEqual(currentWorkout); expect(clean.context?.history).toBeUndefined();
+    const payload=JSON.parse(assistantPrompt(clean,'text').at(-1)!.content);
+    expect(payload.currentWorkout).toEqual(currentWorkout); expect(JSON.stringify(payload)).not.toContain('PRIVATE_');
+    expect(assistantRequestSchema.safeParse({...input,currentWorkout:{...currentWorkout,notes:'not permitted'}}).success).toBe(false);
+    expect(assistantRequestSchema.safeParse({...input,context}).success).toBe(false);
+    expect(assistantRequestSchema.safeParse({...input,currentWorkout:{...currentWorkout,completedSets:[...currentWorkout.completedSets,...currentWorkout.completedSets]}}).success).toBe(false);
+    expect(assistantRequestSchema.safeParse({...input,currentWorkout:{...currentWorkout,completedSets:[{...currentWorkout.completedSets[0],itemIndex:3}]}}).success).toBe(false);
+    // A completed fact can record an actual substitution for the planned exercise.
+    expect(assistantRequestSchema.safeParse({...input,currentWorkout:{...currentWorkout,completedSets:[{itemIndex:0,setIndex:0,exerciseId:EXERCISE_IDS.walking,durationSeconds:60}]}}).success).toBe(true);
+    expect(repairAssistantAttachment({...attachment,workoutId:id},clean).attachment?.type).toBe('today_adjustment');
+    const altered=structuredClone(attachment);altered.template.items[0].sets=3;
+    expect(()=>repairAssistantAttachment({...altered,workoutId:id},clean)).toThrow('COMPLETED_ITEM_CHANGED');
+  });
   it('limits context and enforces user last message', () => {
     expect(assistantRequestSchema.safeParse({ ...request, messages: Array(21).fill(request.messages[0]) }).success).toBe(false);
     expect(assistantRequestSchema.safeParse({ ...request, messages: [{ role: 'assistant', content: 'x' }] }).success).toBe(false);

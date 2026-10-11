@@ -9,7 +9,24 @@ export const assistantRequestSchema = z.strictObject({
   messages: z.array(z.strictObject({ role: z.enum(['user', 'assistant']), content: z.string().min(1).max(4000) })).min(1).max(20),
   context: coachRequestSchema.optional(),
   consent: z.strictObject({ body: z.boolean(), history: z.boolean() }).optional(),
-}).refine(value => value.messages.at(-1)?.role === 'user', 'Latest message must be from user');
+  currentWorkout: z.strictObject({
+    completedSets: z.array(z.strictObject({
+      itemIndex: z.number().int().min(0).max(999), setIndex: z.number().int().min(0).max(999), exerciseId: exerciseIdSchema,
+      reps: z.number().int().positive().max(10000).optional(), loadGrams: z.number().int().nonnegative().max(1000000).optional(),
+      durationSeconds: z.number().int().positive().max(86400).optional(), distanceMeters: z.number().int().nonnegative().max(1000000).optional(),
+    })).max(500), remainingSets: z.number().int().nonnegative().max(1000),
+  }).optional(),
+}).refine(value => value.messages.at(-1)?.role === 'user', 'Latest message must be from user')
+  .superRefine((value,ctx) => {
+    if(!value.currentWorkout) return;
+    if(value.context?.task !== 'ADJUST_TODAY' || !value.context.workoutId) { ctx.addIssue({code:'custom',path:['currentWorkout'],message:'Current workout requires matching active adjustment context'}); return; }
+    const seen = new Set<string>();
+    for(const set of value.currentWorkout.completedSets) {
+      const item = value.context.template.items[set.itemIndex], key = `${set.itemIndex}:${set.setIndex}`;
+      if(!item || set.setIndex >= item.sets || seen.has(key)) ctx.addIssue({code:'custom',path:['currentWorkout','completedSets'],message:'Completed sets must match distinct current template sets'});
+      seen.add(key);
+    }
+  });
 export const assistantAttachmentSchema = z.union([coachResponseSchema, z.strictObject({
   type: z.literal('exercise_info'), exerciseId: exerciseIdSchema, summary: z.string().min(1).max(8000), mutationAllowed: z.literal(false),
 })]);
@@ -70,3 +87,5 @@ export function sanitizeAssistantRequest(input: unknown): AssistantRequest {
   }
   return request;
 }
+
+
