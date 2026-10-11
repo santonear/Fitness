@@ -79,8 +79,8 @@ function validateSession(session: WorkoutSession, sets: SetRecord[], versions: M
 }
 
 export function validateBackupEnvelope(value: unknown): BackupEnvelope {
-  if (typeof value === 'object' && value !== null && 'schemaVersion' in value && ![2,3,4,5,6,7].includes(value.schemaVersion as number)) {
-    throw new DomainError('BACKUP_VERSION_UNSUPPORTED', 'Unsupported JSON backup version; versions 2 through 7 are supported');
+  if (typeof value === 'object' && value !== null && 'schemaVersion' in value && ![2,3,4,5,6,7,8].includes(value.schemaVersion as number)) {
+    throw new DomainError('BACKUP_VERSION_UNSUPPORTED', 'Unsupported JSON backup version; versions 2 through 8 are supported');
   }
   const parsed = backupEnvelopeSchema.safeParse(value);
   if (!parsed.success) throw new DomainError('BACKUP_INVALID', `Invalid backup: ${parsed.error.message}`);
@@ -302,7 +302,7 @@ export function createBackupService(repo: Repository) {
       const versions = await repo.db.planVersions.toArray();
       const previousMemo = await repo.db.trainingMemo.get(1);
       return validateBackupEnvelope({
-        format: 'fitness-local', schemaVersion: 7, catalogVersion: 1, exportedAt: new Date().toISOString(),
+        format: 'fitness-local', schemaVersion: 8, catalogVersion: 1, exportedAt: new Date().toISOString(),
         data: {
           metadata, profiles: await repo.db.profiles.toArray(), plans: await repo.db.plans.toArray(), planVersions: versions,
           sessions, sets, scheduledWorkouts: await repo.db.scheduledWorkouts.toArray(), bodyWeights: await repo.db.bodyWeights.toArray(),
@@ -354,7 +354,7 @@ export function createBackupService(repo: Repository) {
       // Device reminder preferences and suppression ledger are not portable training facts.
       for (const table of repo.db.tables) if (table.name !== 'coachDevice') await table.clear();
       const data = envelope.data;
-      await repo.db.metadata.put({ ...data.metadata, schemaVersion: 9, revision: before.revision, dataRevision: before.dataRevision, restoreGeneration: committedGeneration, importedAt: new Date().toISOString() });
+      await repo.db.metadata.put({ ...data.metadata, schemaVersion: 10, revision: before.revision, dataRevision: before.dataRevision, restoreGeneration: committedGeneration, importedAt: new Date().toISOString() });
       await repo.db.profiles.bulkAdd(data.profiles);
       await repo.db.plans.bulkAdd(data.plans);
       await repo.db.planVersions.bulkAdd(data.planVersions);

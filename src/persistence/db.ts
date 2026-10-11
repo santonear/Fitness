@@ -73,6 +73,10 @@ export class FitnessDatabase extends Dexie {
       // Additive only: every existing fact remains byte-for-byte unchanged.
       await transaction.table('metadata').toCollection().modify((row: Metadata) => { row.schemaVersion = 9; });
     });
+    this.version(10).stores({}).upgrade(async transaction => {
+      // New versions may record their source. Never infer or rewrite old plan facts.
+      await transaction.table('metadata').toCollection().modify((row: Metadata) => { row.schemaVersion = 10; });
+    });
   }
 }
 export function createDatabase(name: string): FitnessDatabase { return new FitnessDatabase(name); }

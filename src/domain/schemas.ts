@@ -137,7 +137,7 @@ export const v8PlanVersionSchema = z.strictObject({
   templates: z.array(z.strictObject({ id: z.string().min(1), name: z.string().min(1), estimatedMinutes: v8Minutes,
     items: z.array(z.strictObject({ exerciseId: exerciseIdSchema, equipment: z.string(), sets: positive, target: setMetricsSchema })).min(1),
   })).min(1), createdAt: utcTimestampSchema, origin: z.enum(['onboard', 'coach_change', 'review_suggestion', 'manual', 'migrated']),
-  changeSummary: z.array(z.string()), basedOnVersionId: uuidSchema.optional(),
+  changeSummary: z.array(z.string()), basedOnVersionId: uuidSchema.optional(), source: z.enum(['local', 'ai']).optional(),
 });
 const v8Feel = z.enum(['easy', 'right', 'tired', 'very_tired']);
 const v8Reason = z.enum(['time', 'fatigue', 'discomfort', 'equipment_busy', 'not_today', 'other']);

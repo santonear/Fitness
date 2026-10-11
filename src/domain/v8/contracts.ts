@@ -20,6 +20,8 @@ export interface PlanVersion {
   scheduleOriginalText: string; sessionMinutes: number; templates: SessionTemplate[];
   createdAt: string; origin: 'onboard' | 'coach_change' | 'review_suggestion' | 'manual' | 'migrated';
   changeSummary: string[]; basedOnVersionId?: string;
+  /** Explicit creation source; absent on older versions means unknown. */
+  source?: 'local' | 'ai';
 }
 export interface SetFact { exerciseId: string; itemIndex: number; setIndex: number; reps?: number; durationSeconds?: number; distanceMeters?: number; loadGrams?: number | null; completedAt: string; substitutedFrom?: string }
 export interface WorkoutRecord {
