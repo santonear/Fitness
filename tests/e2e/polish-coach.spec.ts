@@ -62,3 +62,15 @@ test('week and month reviews without a current plan retain facts and offer manua
  for(const kind of ['本周回顾','本月回顾']){await page.getByRole('button',{name:kind,exact:true}).click();await expect(page.locator('.v8-facts dd')).toHaveText(before);await expect(page.getByText(/还差.*次|按现在的计划继续/)).toHaveCount(0);await expect(page.getByText('完成了 0 次，部分完成 1 次。',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'手动训练',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'重新制定计划',exact:true})).toBeVisible();}
  await page.getByRole('button',{name:'手动训练',exact:true}).click();await expect(page).toHaveURL(/\/manual$/);await page.goto('/review');await page.getByRole('button',{name:'重新制定计划',exact:true}).click();await expect(page).toHaveURL(/\/onboarding$/);
 });
+
+test('coach consent shows a repeated instruction once and a readable time zone while retaining raw fields',async({page})=>{
+ await page.goto('/tests/fixtures/v8-coach/index.html?local-adjust');await page.getByRole('button',{name:'跟芽芽说',exact:true}).click();
+ await page.getByRole('textbox',{name:'跟芽芽说'}).fill('今天时间不够');
+ const panel=page.getByRole('dialog');await panel.getByText('将发送给芽芽',{exact:true}).click();
+ await expect(panel.locator('dd:visible').filter({hasText:'今天时间不够'})).toHaveCount(1);
+ await expect(panel.getByText('同本次对话中的最新一条用户消息。',{exact:true})).toBeVisible();
+ await expect(panel.getByText('东八区（UTC+8）',{exact:true})).toBeVisible();
+ await panel.getByText('查看发送原文',{exact:true}).click();
+ await expect(panel.getByText('Asia/Shanghai',{exact:true})).toBeVisible();
+ await expect(panel.locator('dd:visible').filter({hasText:'今天时间不够'})).toHaveCount(3);
+});

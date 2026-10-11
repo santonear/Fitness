@@ -10,6 +10,7 @@ import type { SessionTemplate } from '../../domain/v8/contracts';
 import type { CoachRequest, CoachResponse } from '../../coach/contracts';
 import { approveCoachScope, coachScope, coachScopeFields, coachMessageScope } from '../../coach/consent';
 import { localCoachReply, type LocalReply } from '../../coach/local-fallback';
+import { displayTimeZone, instructionRepeatsLatestMessage } from '../../coach/disclosure-format';
 import { sendCoach } from '../../coach/transport';
 import zh from '../../i18n/features/coach/zh.json';
 import en from '../../i18n/features/coach/en.json';
@@ -40,7 +41,7 @@ function readable(value:unknown,copy:typeof zh,locale:'zh'|'en'):string{
 }
 export function CoachScopeDisclosure({request,locale}:{request:CoachRequest;locale:'zh'|'en'}){
  const t=locale==='en'?en:zh,lang=locale==='en'?1:0;
- return <details><summary>{t.scope}</summary><p>{t.consent}</p><p>{t.taskNames[request.task]}</p><dl>{Object.entries(request).filter(([key])=>['locale','timeZone','adultConfirmed','profile','body','history','nutrition','messages','template','instruction','plan','kind','facts'].includes(key)).map(([key,value])=><div key={key}><dt>{key==='nutrition'?lifestyleCopy[locale].nutrition:t.fields[key as keyof typeof t.fields]}</dt><dd>{readable(value,t,lang?'en':'zh')}</dd></div>)}</dl><details><summary>{t.technical}</summary><dl>{coachScopeFields(request).map(field=><div key={field.key}><dt>{t.fields[field.key as keyof typeof t.fields]??field.key}</dt><dd>{field.value}</dd></div>)}</dl></details></details>;
+ return <details><summary>{t.scope}</summary><p>{t.consent}</p><p>{t.taskNames[request.task]}</p><dl>{Object.entries(request).filter(([key])=>['locale','timeZone','adultConfirmed','profile','body','history','nutrition','messages','template','instruction','plan','kind','facts'].includes(key)).map(([key,value])=><div key={key}><dt>{key==='nutrition'?lifestyleCopy[locale].nutrition:t.fields[key as keyof typeof t.fields]}</dt><dd>{key==='timeZone'?displayTimeZone(String(value),locale):key==='instruction'&&instructionRepeatsLatestMessage(request)?t.sameAsMessage:readable(value,t,lang?'en':'zh')}</dd></div>)}</dl><details><summary>{t.technical}</summary><dl>{coachScopeFields(request).map(field=><div key={field.key}><dt>{t.fields[field.key as keyof typeof t.fields]??field.key}</dt><dd>{field.value}</dd></div>)}</dl></details></details>;
 }
 /** Keep mounted when closed so drafts and reviewed candidates survive panel dismissal. */
 export function CoachPanel({open,onClose,request,expectedRevision,onApply,onResponse,triggerRef:externalTrigger,onLocalPlan,onLocalReview,locale,unavailableReason,initialSend,localOnly,applyLabel,successLabel,disableNutrition,localFallbackOnError,templateMinutes}:CoachPanelProps){
