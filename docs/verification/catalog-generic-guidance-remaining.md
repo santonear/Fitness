@@ -1,21 +1,16 @@
 # 仍使用通用中文要点的动作清单
 
-2026-10-11；固定RepDB 637项中具体中文指导160项，剩余477项如下。此清单只统计供应商动作；本地历史哑铃高脚杯深蹲、徒手深蹲、自阻力划船另有具体说明。基础计划全部11个候选已覆盖具体要点；新增蚌式开合、弹力带拉开及8项常用/低强度动作。
+2026-10-11；固定RepDB 637项中具体中文指导171项，剩余466项如下。本地历史哑铃高脚杯深蹲、徒手深蹲、自阻力划船另有具体说明。基础计划11个候选均已覆盖；本次补健腹轮、阿诺德推举、辅助臂屈伸、背伸、弹力带辅助引体及常见夹胸/背伸/弯举/卷腹机器，已有腿伸展/腿弯举/肩推/划船不重复计数。
 
-剩余条目的中文名称和合法图片可用，但其回退要点仍是通用说明，不能称完整翻译或已审校。下面完整列出ID、slug、中英文名，未隐去高级或低频动作。注意部位标签仅是运动模式/支撑接触提示，不是医学适用性判断。
+剩余条目的中文名称和合法图片可用，但回退要点仍是通用说明，不能称完整翻译或已审校。以下是完整ID、slug、中英文名。注意部位仅说明运动模式/支撑接触，不是医学适用性判断。
 
 | ID | slug | 中文名 | English name |
 |---|---|---|---|
-| 52265efb-280d-58f1-8a5f-224215de4178 | ab-wheel-rollout | 健腹轮前滚 | Ab Wheel Rollout |
 | 25fa9c7a-11a3-58b0-858e-92a7f3ebb1f3 | archer-pull-ups | 弓箭手式引体向上 | Archer Pull Ups |
 | 775b7331-0fb6-5037-8fa8-8e9fd13f450a | archer-push-ups | 弓箭手式俯卧撑 | Archer Push Ups |
-| d224cd16-e59e-59b0-8787-4eeac062470d | arnold-press | 阿诺德推举 | Arnold Press |
-| a11855b7-ddcb-5a89-84ae-ac7848faa544 | assisted-dips | 辅助臂屈伸 | Machine Assisted Dips |
-| ec59c268-c76b-59bb-8a4d-4b0ef1b3aa48 | back-extension | 背部伸展 | Back Extension |
 | f6f4e27e-8dc3-5028-87ed-381e4a7abe07 | back-lever | 后水平 | Back Lever |
 | d87b3e42-5d1f-50c8-8d74-8514f37f6ced | ball-leg-curl | 健身球腿弯举 | Stability Ball Leg Curl |
 | f7828cc8-4645-5db7-8c56-7731d0f5360d | ball-pike | 球上屈体 | Ball Pike |
-| 5a7e5a4b-9cc6-5053-8b3d-2237bb592d2b | band-assisted-pull-ups | 弹力带辅助引体向上 | Band Assisted Pull Ups |
 | 6e0eb6c0-ce8b-5316-8888-fa2fd8d92773 | banded-adductor-stretch | 弹力带内收肌拉伸 | Banded Adductor Stretch |
 | e5dac453-094e-5e0b-8097-3e96f20de7df | banded-ankle-stretch | 弹力带踝关节拉伸 | Banded Ankle Stretch |
 | b40669ff-650a-57bf-86a2-af05c98d9c9c | banded-calf-stretch | 弹力带小腿拉伸 | Banded Calf Stretch |
@@ -276,12 +271,7 @@
 | 408b1f8e-1ea3-5346-8393-56d8a9f26cdd | low-lunge-to-half-split | 低弓步接半劈叉 | Low Lunge to Half Split |
 | 57c08160-7e96-5191-8c87-6597a1475215 | lying-leg-raise | 卧姿腿抬举 | Lying Leg Raise |
 | 98ea95e1-c8e6-5f97-8ccc-76605c6a2ca5 | lying-tricep-extension | 仰卧臂屈伸 | Lying Tricep Extension |
-| 3e5b533b-1a1d-50a3-84d1-ed2f0d6707d9 | machine-back-extension | 器械背部伸展 | Machine Back Extension |
-| f93eca68-fd98-5652-8ebb-d2d4b009a2c0 | machine-bicep-curl | 器械肱二头肌弯举 | Machine Bicep Curl |
 | a46a6b13-4190-5c4e-87f1-bb7d2a79441d | machine-calf-raise | 器械提踵 | Machine Calf Raise |
-| 9683a660-e38b-5da7-861d-2c504da7e701 | machine-chest-fly | 器械胸部飞鸟 | Machine Chest Fly |
-| f173d94c-f2c1-571f-8e93-39ac02fafa23 | machine-preacher-curl | 器械牧师凳弯举 | Machine Preacher Curl |
-| 08e81e8b-3f4c-55bc-8cfa-e6eeb68d2331 | machine-seated-crunch | 器械坐姿卷腹 | Machine Seated Crunch |
 | bf6ae062-a364-5c63-8cdd-08f11bc156ca | medicine-ball-slam | 药球球上砸地 | Medicine Ball Slam |
 | c95d05eb-d0e8-5557-84cf-0b1fc11e3e48 | mountain-climbers | 登山跑 | Mountain Climbers |
 | 82c3e769-5522-5785-8b0d-7da4704982fd | mountain-pose | 山式 | Mountain Pose |
@@ -315,7 +305,6 @@
 | d67ef535-c59b-59d6-85da-092692e7c104 | paused-bench-press | 停顿卧推 | Paused Bench Press |
 | 3ceff350-8c28-5643-888b-cdc7bd2b8a95 | paused-incline-bench-press | 停顿上斜卧推 | Paused Incline Bench Press |
 | 04db02b4-711b-5570-8ed4-d1880bf62bf9 | paused-ohp | 停顿站姿杠铃推举 | Paused Overhead Press |
-| 5b56ce3f-1a36-5155-82ae-fe56f80a56f3 | pec-deck | 蝴蝶机夹胸 | Pec Deck |
 | e10c0af9-f21c-51cf-8537-99b4d26ff0b3 | pendlay-row | 潘德雷式划船 | Pendlay Row |
 | 5648c608-cb00-5d3f-8dd8-56f89ade5d91 | pigeon-stretch | 鸽子式拉伸 | Pigeon Stretch |
 | 0ec3a857-ec3f-5163-8bf8-c99042553977 | pike-push-ups | 屈体俯卧撑 | Pike Push Ups |

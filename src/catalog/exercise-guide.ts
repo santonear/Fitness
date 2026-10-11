@@ -42,9 +42,13 @@ export function getExerciseTags(id:string):ExerciseTags {
  const movement=slug||(id===EXERCISE_IDS.bodyweightSquat?'bodyweight-squat':id===EXERCISE_IDS.gobletSquat?'goblet-squat':id===EXERCISE_IDS.selfResistedRow?'self-resisted-row':'');
  if(/squat|lunge|jump|burpee|step-ups|leg-press|leg-extension|nordic|sissy/.test(movement))cautionAreas.push('knees');
  if(/deadlift|good-morning|bent-over|barbell-row|t-bar-row|back-extension|sit-up|crunch|russian-twist/.test(movement))cautionAreas.push('back');
- if(/press|push-up|pull-up|chin-up|pulldown|row|fly|lateral-raise|front-raise|pull-apart|dips|overhead/.test(movement))cautionAreas.push('shoulders');
- if(/curl|tricep|triceps|pull-up|chin-up|dips/.test(movement))cautionAreas.push('elbows');
- if(/deadlift|barbell|dumbbell|kettlebell|(^|-)db-|curl|row|pull-up|chin-up|pulldown|pull-apart|press|dips/.test(movement))cautionAreas.push('wrists');
+ const upperPress=/press|ohp/.test(movement)&&!/leg-press|calf|hip|glute/.test(movement);
+ const armCurl=/curl/.test(movement)&&!/leg-curl|hamstring|nordic|jefferson|banded-standing-curl/.test(movement);
+ const upperPull=/row|pull-up|chin-up|pulldown|pull-apart/.test(movement);
+ if(upperPress||upperPull||/push-up|fly|lateral-raise|front-raise|dips|overhead|arnold|pec-deck|ab-wheel/.test(movement))cautionAreas.push('shoulders');
+ if(armCurl||/tricep|triceps|pull-up|chin-up|dips/.test(movement))cautionAreas.push('elbows');
+ // External load alone does not imply wrist loading: a bar resting on the hips is not a hand-supported lift.
+ if(upperPress||armCurl||upperPull||/deadlift|dips|ab-wheel/.test(movement))cautionAreas.push('wrists');
  const forearmSupport=['plank','side-plank','side-plank-leg-lift','side-plank-leg-lift-hold'];
  const palmSupport=['high-plank','bear-plank-hold','bird-dog','bird-dog-hold','bear-crawl','mountain-climbers','plank-knee-tuck','cat-cow','self-resisted-row'];
  if(forearmSupport.includes(movement))cautionAreas.push('shoulders','elbows');
