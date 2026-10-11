@@ -49,8 +49,8 @@ export function createV8Workflow(repo: Repository) {
       return { metadata, state, plan, version, plans, deletedPlans, planReferences: await db.v8PlanReferences.toArray(), workouts, hasFutureLegacyDates, historyVersions, versions: historyVersions.filter(v=>plans.some(p=>p.id===v.planId)), activities: await db.v8Activities.toArray(), profile, active: workouts.find(row => row.status === 'in_progress') };
     });
   }
-  async function propose(profile: CoachProfile): Promise<LocalCandidate> {
-    const local = await db.profiles.toCollection().first(),locale=local?.locale;
+  async function propose(profile: CoachProfile, localeOverride?: 'zh' | 'en'): Promise<LocalCandidate> {
+    const local = await db.profiles.toCollection().first(),locale=localeOverride??local?.locale;
     if(local?.bodyDetails?.values.age!==undefined&&local.bodyDetails.values.age<18)return invalid('ADULT_CONFIRMATION_REQUIRED');
     const proposal = basicProposal(profile, locale);
     if (!proposal) return invalid('BASIC_PLAN_UNAVAILABLE');
