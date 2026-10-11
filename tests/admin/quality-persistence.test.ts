@@ -43,6 +43,25 @@ describe('quality SQLite persistence and retry', () => {
     await recordBlockedCategory(db, 'pressure', now); await recordBlockedCategory(db, 'pressure', now);
     expect(await db.prepare('SELECT count FROM admin_quality_blocks').first()).toMatchObject({ count: 2 });
   });
+  it('persists all actual coach rule categories while retaining legacy category compatibility', async () => {
+    const categories = ['judgment', 'command', 'minimizing', 'exaggeration', 'exclamation', 'emoji', 'blame', 'body-shaming', 'medical-claim', 'pressure', 'unsafe-advice', 'other'];
+    for (const category of categories) await recordBlockedCategory(db, category, now);
+    const rows = (await db.prepare('SELECT category,count FROM admin_quality_blocks ORDER BY category').all<{ category: string; count: number }>()).results;
+    expect(rows.map(row => row.category)).toEqual([...categories].sort());
+    expect(rows.every(row => row.count === 1)).toBe(true);
+    await expect(recordBlockedCategory(db, 'private user note', now)).rejects.toThrow();
+  });
+  it('imports synthetic reports through the management endpoint and lists the persisted report', async () => {
+    const report = { id: crypto.randomUUID(), synthetic: true, time: now, promptVersion: 'v8.1.0', model: 'synthetic', scenarios: [{ scenario: 'tone', passed: true, violations: 0 }], durationMs: 10, costMicros: 0 };
+    const context = { env: { ADMIN_DB: db }, now, fresh: true, actor: 'admin', requestId: crypto.randomUUID(), audit: vi.fn(async () => {}) };
+    const url = 'https://test/api/v1/management/console/quality/reports';
+    expect((await handleQuality(new Request(url, { method: 'POST', body: JSON.stringify(report) }), context))?.status).toBe(200);
+    const response = await handleQuality(new Request(url), context);
+    expect(await response?.json()).toEqual({ reports: [report], blocks: [] });
+    expect(context.audit).toHaveBeenCalledWith('quality.report.save', 'synthetic', 'success');
+    expect((await handleQuality(new Request(url, { method: 'POST', body: JSON.stringify({ ...report, output: 'private original model response' }) }), context))?.status).toBe(400);
+    expect((await db.prepare('SELECT id FROM admin_quality_evaluations').all()).results).toHaveLength(1);
+  });
   it('deduplicates daily applications and retries transient delivery without duplicate successful sends', async () => {
     await subscribe();
     await evaluateQualityNotifications(env(), now, 3); await evaluateQualityNotifications(env(), now + 1000, 4);

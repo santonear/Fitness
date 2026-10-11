@@ -12,7 +12,7 @@ export const errorEvent = z.object({
   os: z.enum(['Windows', 'macOS', 'iOS', 'Android', 'Linux', 'Other']),
   time: z.number().int().nonnegative(),
 }).strict();
-export const blockCategory = z.enum(['blame', 'body-shaming', 'medical-claim', 'pressure', 'unsafe-advice', 'other']);
+export const blockCategory = z.enum(['judgment', 'command', 'minimizing', 'exaggeration', 'exclamation', 'emoji', 'blame', 'body-shaming', 'medical-claim', 'pressure', 'unsafe-advice', 'other']);
 export const evaluationReport = z.object({
   id: z.string().uuid(), synthetic: z.literal(true), time: z.number().int().nonnegative(),
   promptVersion: z.string().regex(/^[a-zA-Z0-9._-]{1,64}$/), model: z.string().regex(/^[a-zA-Z0-9._:/-]{1,80}$/),
