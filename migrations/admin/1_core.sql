@@ -1,0 +1,3 @@
+CREATE TABLE IF NOT EXISTS admin_audit (id TEXT PRIMARY KEY, actor TEXT NOT NULL, at INTEGER NOT NULL, object_id TEXT NOT NULL, action TEXT NOT NULL, result TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS admin_operations (id TEXT PRIMARY KEY, actor TEXT NOT NULL, fingerprint TEXT NOT NULL, status TEXT NOT NULL, response TEXT, created_at INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS admin_review_templates (id TEXT PRIMARY KEY, kind TEXT NOT NULL, text TEXT NOT NULL, updated_at INTEGER NOT NULL);

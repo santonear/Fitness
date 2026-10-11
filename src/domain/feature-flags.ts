@@ -1,4 +1,4 @@
-export const featureNames = ['planLifecycle', 'themeDiscovery', 'fontSubset', 'exercisePanel', 'pwaOffline', 'systemNotifications', 'aiOperations', 'errorReports', 'anonymousUsage', 'nutrition', 'activityImport'] as const;
+export const featureNames = ['adminConsole', 'planLifecycle', 'themeDiscovery', 'fontSubset', 'exercisePanel', 'pwaOffline', 'systemNotifications', 'aiOperations', 'errorReports', 'anonymousUsage', 'nutrition', 'activityImport'] as const;
 export type FeatureName = typeof featureNames[number];
 export type FeatureFlags = Record<FeatureName, boolean>;
 export const disabledFeatures = (): FeatureFlags => Object.fromEntries(featureNames.map(name => [name, false])) as FeatureFlags;

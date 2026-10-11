@@ -1,4 +1,6 @@
+import {useFeature} from '../useFeature';
 import { ApplicationsTable } from '../admin/ApplicationsTable';
+import { AdminShell } from '../admin/shell/AdminShell';
 import { adminTokens } from '../admin/tokens';
 import '../admin/admin.css';
 import { AppIcon, StatusIcon } from '../components/AppIcon';
@@ -9,6 +11,10 @@ import { ManualInvites } from '../components/ManualInvites';
 import type { ControlService } from '../../backend/control';
 type Data = Awaited<ReturnType<ControlService['managementReport']>>;
 export function ManagementPage() {
+  const enabled=useFeature('adminConsole');
+  return enabled&&!new URLSearchParams(location.search).has('legacy')?<AdminShell/>:<LegacyManagementPage/>;
+}
+function LegacyManagementPage() {
   const { i18n } = useTranslation(); const zh = i18n.resolvedLanguage === 'zh';
   useEffect(() => {
     try { if (!localStorage.getItem('fitness.language')) void i18n.changeLanguage('zh'); }
