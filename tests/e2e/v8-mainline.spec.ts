@@ -73,7 +73,8 @@ async function onboard(page: Page, caution?: string) {
   await expect(page.getByRole('heading', { name: '你的第一版计划' })).toBeVisible();
 }
 test('real local mainline persists a confirmed plan, training and review with no model requests', async ({ page }) => {
-  let calls = 0; page.on('request', request => { if (request.url().includes('/api/') && new URL(request.url()).pathname !== '/api/v1/features') calls++; });
+  const apiRequests: {url:string;method:string;body:string|null;headers:Record<string,string>}[] = [];
+  page.on('request', request => { if (new URL(request.url()).pathname.startsWith('/api/')) apiRequests.push({url:request.url(),method:request.method(),body:request.postData(),headers:request.headers()}); });
   await onboard(page);
   expect(await page.evaluate(async () => { const p = '/src/persistence/db.ts'; return (await import(/* @vite-ignore */ p)).database.v8Plans.count(); })).toBe(0);
   await page.getByRole('button', { name: '就用这份计划' }).click();
@@ -96,7 +97,21 @@ test('real local mainline persists a confirmed plan, training and review with no
   await expect(page.getByRole('heading', { name: '本周回顾' })).toBeVisible();
   await expect(page.getByText('今天先记一组', { exact: true })).toBeVisible();  const record = await page.evaluate(async () => { const p = '/src/persistence/db.ts'; const db = (await import(/* @vite-ignore */ p)).database; return { workouts: await db.v8Workouts.toArray(), versions: await db.v8PlanVersions.toArray() }; });
   expect(record.workouts[0].status).toBe('partial'); expect(record.workouts[0].sets).toHaveLength(1);
-  expect(record.versions[0].sessionMinutes).toBe(20); expect(record.workouts[0].planVersionId).toBe(record.versions[0].id); expect(calls).toBe(0);
+  expect(record.versions[0].sessionMinutes).toBe(20); expect(record.workouts[0].planVersionId).toBe(record.versions[0].id);
+  // Public settings reads are not model calls. Keep the exception exact and inspect their payload surface.
+  const publicPaths = new Set(['/api/v1/features', '/api/v1/announcement']);
+  const origin = new URL(page.url()).origin;
+  const violations = apiRequests.filter(request => new URL(request.url).origin !== origin || !publicPaths.has(new URL(request.url).pathname));
+  expect(violations, 'All other API traffic remains forbidden in this local-only flow').toEqual([]);
+  expect(apiRequests.some(request => new URL(request.url).pathname === '/api/v1/announcement')).toBe(true);
+  for (const request of apiRequests) {
+    expect(request.method, request.url).toBe('GET');
+    expect(request.body, request.url).toBeNull();
+    expect(new URL(request.url).search, 'Public reads must not carry personal query parameters').toBe('');
+    expect(Object.keys(request.headers).filter(key => /goal|health|weight|diet|chat|note|history|instruction|training|workout|exercise|plan/i.test(key)), 'No custom sensitive-data headers').toEqual([]);
+    const outgoing = JSON.stringify(request);
+    for (const privateText of ['想有些力量，不再容易累', '每周 2 次，每次 20 分钟', '在家，只有瑜伽垫', '今天先记一组']) expect(outgoing).not.toContain(privateText);
+  }
 });
 test('manual timed distance exercise preserves edited measurements after reload', async ({ page }) => {
   await onboard(page); await page.getByRole('button', { name: '就用这份计划' }).click();
