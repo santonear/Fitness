@@ -1,4 +1,5 @@
 import { ApplicationsTable } from '../admin/ApplicationsTable';
+import { AdminShell } from '../admin/shell/AdminShell';
 import { adminTokens } from '../admin/tokens';
 import '../admin/admin.css';
 import { AppIcon, StatusIcon } from '../components/AppIcon';
@@ -9,6 +10,11 @@ import { ManualInvites } from '../components/ManualInvites';
 import type { ControlService } from '../../backend/control';
 type Data = Awaited<ReturnType<ControlService['managementReport']>>;
 export function ManagementPage() {
+  const [enabled,setEnabled]=useState(false);
+  useEffect(()=>{let active=true;if(new URLSearchParams(location.search).has('legacy'))return;fetch('/api/v1/management/console/session',{credentials:'same-origin'}).then(r=>r.ok?r.json():null).then(v=>{if(active)setEnabled(v?.enabled===true)}).catch(()=>{});return()=>{active=false}},[]);
+  return enabled?<AdminShell/>:<LegacyManagementPage/>;
+}
+function LegacyManagementPage() {
   const { i18n } = useTranslation(); const zh = i18n.resolvedLanguage === 'zh';
   useEffect(() => {
     try { if (!localStorage.getItem('fitness.language')) void i18n.changeLanguage('zh'); }

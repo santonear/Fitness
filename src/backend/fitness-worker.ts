@@ -3,8 +3,11 @@ import { verifyAdministrator, type ManagementEnv } from './management-auth';
 import { readFeatureFlags, readPublicFeatureFlags, type FeatureConfigEnv } from './feature-config';
 import { monitoringError } from '../application/monitoring';
 import { DailyUsageStore } from './daily-usage-store';
+import { adminBoundary, createAdminContext } from './admin/core/boundary';
+import { adminJson, type AdminEnvironment } from './admin/core/contracts';
+import { evaluateTodos } from './admin/core/todos';
 import { anonymousBatchSchema, TelemetryStore } from './telemetry-store';
-export interface FitnessWorkerEnv extends DeepSeekWorkerEnv, ManagementEnv, FeatureConfigEnv {
+export interface FitnessWorkerEnv extends DeepSeekWorkerEnv, ManagementEnv, FeatureConfigEnv, AdminEnvironment {
   ASSETS?: { fetch(request: Request): Promise<Response> };
   FITNESS_TELEMETRY?: { send(event: unknown): Promise<void> };
   PUSH?: { fetch(request: Request): Promise<Response> };
@@ -47,6 +50,13 @@ export function createFitnessWorker(control = createDeepSeekWorker(), authentica
     }
     if (path === '/admin' || path.startsWith('/admin/') || path.startsWith('/api/v1/management/')) {
       if (!await authenticate(request, env)) return new Response(JSON.stringify({ error: 'ADMIN_REQUIRED' }), { status: 403, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
+      if(path.startsWith('/api/v1/management/console/')) {
+        if(env.ADMIN_CONSOLE_ENABLED!=='true')return adminJson({error:'NOT_FOUND'},404);
+        try {return await adminBoundary(request,createAdminContext(request,env),async(req,context)=>{
+          if(new URL(req.url).pathname.endsWith('/todos')&&req.method==='GET')return adminJson({items:await evaluateTodos(context)});
+          return undefined;
+        })}catch{return adminJson({error:'ADMIN_REQUIRED'},403)}
+      }
       if (path === '/api/v1/management/usage-counts' && request.method === 'GET') {
         if (!(await readFeatureFlags(env)).anonymousUsage || !env.FITNESS_OPS_DB) return new Response(null,{status:404});
         try { return new Response(JSON.stringify(await new TelemetryStore(env.FITNESS_OPS_DB).usage(new Date().toISOString().slice(0,10))),{headers:{'Content-Type':'application/json','Cache-Control':'no-store'}}); }
