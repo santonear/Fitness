@@ -1,5 +1,5 @@
 import { exerciseVisual, exerciseVisualMetadata } from '../../catalog/exercise-visual';
-import { RepDBMedia } from './RepDBMedia';
+import { CatalogImage, RepDBMedia } from './RepDBMedia';
 import { AppIcon } from './AppIcon';
 import { useState } from 'react';
 import { getExerciseMedia, youtubeEmbedUrl } from '../../catalog/media';
@@ -12,7 +12,7 @@ export function ExerciseMedia({ exerciseId, exerciseName, locale }: { exerciseId
  const zh = locale === 'zh';
  const repdb = exerciseVisualMetadata(exerciseId);
  const visual = exerciseVisual(exerciseId);
- if (!media) return repdb ? <RepDBMedia exerciseId={exerciseId} exerciseName={exerciseName} locale={locale} /> : visual ? <><img src={visual.src} alt={exerciseName} width="280" height="280"/><p className="muted">{zh ? 'Fitness 原创示意图' : visual.attribution}</p></> : null;
+ if (!media) return repdb ? <RepDBMedia exerciseId={exerciseId} exerciseName={exerciseName} locale={locale} /> : visual ? <><CatalogImage src={visual.src} alt={exerciseName} locale={locale}/><p className="muted">{zh ? 'Fitness 原创示意图' : visual.attribution}</p></> : null;
  const url = media.videoId && youtubeEmbedUrl(media.videoId);
  return <section style={{ overflowWrap: 'anywhere' }} aria-label={zh ? `${exerciseName} 媒体参考` : `${exerciseName} media reference`}>
   {repdb ? <RepDBMedia exerciseId={exerciseId} exerciseName={exerciseName} locale={locale}/> : !imageFailed && visual && <img src={visual.src} alt={exerciseName} width="280" height="280" style={{ maxWidth: '100%', height: 'auto' }} onError={() => setImageFailed(true)} />}
