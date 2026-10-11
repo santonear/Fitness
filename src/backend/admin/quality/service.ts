@@ -5,9 +5,18 @@ const HOUR = 3600000;
 export async function collectError(request: Request, env: QualityEnv, now = Date.now()): Promise<Response> {
   if (env.ADMIN_ERROR_COLLECTION_ENABLED !== 'true' || !env.ADMIN_DB) return adminJson({ error: 'ERROR_COLLECTION_DISABLED' }, 503);
   if (request.method !== 'POST') return adminJson({ error: 'METHOD_NOT_ALLOWED' }, 405);
+  const origin = request.headers.get('Origin');
+  if ((origin && origin !== new URL(request.url).origin) || request.headers.get('Sec-Fetch-Site') === 'cross-site') return adminJson({ error: 'ORIGIN_REJECTED' }, 403);
+  if (!request.headers.get('Content-Type')?.toLowerCase().startsWith('application/json')) return adminJson({ error: 'INVALID_CONTENT_TYPE' }, 415);
   if (Number(request.headers.get('Content-Length')) > 2048) return adminJson({ error: 'INVALID_EVENT' }, 400);
-  const raw = await request.text();
-  if (raw.length > 2048) return adminJson({ error: 'INVALID_EVENT' }, 400);
+  const reader = request.body?.getReader();
+  if (!reader) return adminJson({ error: 'INVALID_EVENT' }, 400);
+  const chunks: Uint8Array[] = []; let length = 0;
+  try {
+    while (true) { const next = await reader.read(); if (next.done) break; length += next.value.byteLength; if (length > 2048) { await reader.cancel(); return adminJson({ error: 'INVALID_EVENT' }, 400); } chunks.push(next.value); }
+  } catch { return adminJson({ error: 'INVALID_EVENT' }, 400); }
+  const combined = new Uint8Array(length); let offset = 0; for (const chunk of chunks) { combined.set(chunk, offset); offset += chunk.length; }
+  const raw = new TextDecoder().decode(combined);
   let parsed; try { parsed = errorEvent.safeParse(JSON.parse(raw)); } catch { return adminJson({ error: 'INVALID_EVENT' }, 400); }
   if (!parsed.success || Math.abs(parsed.data.time - now) > 300000) return adminJson({ error: 'INVALID_EVENT' }, 400);
   const { type, route, version, browser, os, time } = parsed.data;

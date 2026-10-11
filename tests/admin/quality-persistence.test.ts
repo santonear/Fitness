@@ -31,9 +31,9 @@ describe('quality SQLite persistence and retry', () => {
   async function subscribe() { await db.prepare('INSERT INTO admin_quality_subscriptions(id,endpoint,created_at) VALUES(?,?,?)').bind('s1', 'https://fcm.googleapis.com/test', now).run(); }
   it('persists exact error metadata and groups rolling same-hour spikes', async () => {
     const event = { type: 'storage', route: '/workout', version: '1.0.0', browser: 'Safari', os: 'iOS', time: now };
-    for (let i = 0; i < 10; i++) expect((await collectError(new Request('https://test', { method: 'POST', body: JSON.stringify(event) }), { ADMIN_DB: db, ADMIN_ERROR_COLLECTION_ENABLED: 'true' }, now)).status).toBe(202);
+    for (let i = 0; i < 10; i++) expect((await collectError(new Request('https://test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(event) }), { ADMIN_DB: db, ADMIN_ERROR_COLLECTION_ENABLED: 'true' }, now)).status).toBe(202);
     expect((await errorSummary(db, now))[0]).toMatchObject({ count: 10, currentHour: 10, spike: true, browsers: { Safari: 10 } });
-    expect((await collectError(new Request('https://test', { method: 'POST', body: JSON.stringify({ ...event, ip: 'private' }) }), { ADMIN_DB: db, ADMIN_ERROR_COLLECTION_ENABLED: 'true' }, now)).status).toBe(400);
+    expect((await collectError(new Request('https://test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...event, ip: 'private' }) }), { ADMIN_DB: db, ADMIN_ERROR_COLLECTION_ENABLED: 'true' }, now)).status).toBe(400);
     expect((await errorSummary(db, now))[0].count).toBe(10);
   });
   it('deduplicates synthetic reports and detects conflicting same IDs', async () => {
@@ -66,8 +66,43 @@ describe('quality SQLite persistence and retry', () => {
     expect((await db.prepare('SELECT id FROM admin_quality_subscriptions').all()).results).toHaveLength(0);
   });
   it('reports missing push secrets as unavailable rather than success', async () => {
-    const response = await handleQuality(new Request('https://test/api/v1/management/console/quality/notifications/test', { method: 'POST', body: '{}' }), { env: { ADMIN_DB: db }, now, fresh: true, actor: 'admin', requestId: 'r1', audit: async () => {} });
+    const response = await handleQuality(new Request('https://test/api/v1/management/console/quality/notifications/test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }), { env: { ADMIN_DB: db }, now, fresh: true, actor: 'admin', requestId: 'r1', audit: async () => {} });
     expect(response?.status).toBe(503);
     expect(await response?.json()).toEqual({ error: 'PUSH_UNAVAILABLE' });
+  });
+  it('cancels resolved reminders before leaving quiet hours', async () => {
+    await subscribe();
+    await evaluateQualityNotifications(env(), now, 3);
+    await evaluateQualityNotifications(env(), now + 1000, 0);
+    const send = vi.fn().mockResolvedValue(201);
+    await dispatchAdminPush(env(), now + 2000, send);
+    expect(send).not.toHaveBeenCalled();
+  });
+  it('caps delayed and current-day application events at one per day per device', async () => {
+    await subscribe();
+    await enqueueNotification(db, 'applications', 3, 'old-day', now - 86400000);
+    await enqueueNotification(db, 'applications', 4, 'today', now);
+    const send = vi.fn().mockResolvedValue(201);
+    await dispatchAdminPush(env(), now, send);
+    expect(send).toHaveBeenCalledTimes(1);
+  });
+  it('rejects cross-origin and streamed oversize error bodies without persistence', async () => {
+    const options = { ADMIN_DB: db, ADMIN_ERROR_COLLECTION_ENABLED: 'true' };
+    expect((await collectError(new Request('https://test/errors', { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: 'https://evil.example' }, body: '{}' }), options, now)).status).toBe(403);
+    let cancelled = false;
+    const stream = new ReadableStream({ start(controller) { controller.enqueue(new Uint8Array(2049)); }, cancel() { cancelled = true; } });
+    const request = new Request('https://test/errors', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: stream, duplex: 'half' } as RequestInit);
+    expect((await collectError(request, options, now)).status).toBe(400);
+    expect(cancelled).toBe(true);
+    expect((await db.prepare('SELECT * FROM admin_quality_errors').all()).results).toHaveLength(0);
+  });
+  it('removes a subscription and pending deliveries, idempotently', async () => {
+    const id = 'a'.repeat(64);
+    await db.prepare('INSERT INTO admin_quality_subscriptions(id,endpoint,created_at) VALUES(?,?,?)').bind(id, 'https://fcm.googleapis.com/test', now).run();
+    await enqueueNotification(db, 'test', 1, 'remove', now);
+    const context = { env: { ADMIN_DB: db }, now, fresh: true, actor: 'admin', requestId: 'r1', audit: async () => {} };
+    for (let i = 0; i < 2; i++) expect((await handleQuality(new Request('https://test/api/v1/management/console/quality/notifications/unsubscribe', { method: 'POST', body: JSON.stringify({ id }) }), context))?.status).toBe(200);
+    expect((await db.prepare('SELECT * FROM admin_quality_subscriptions').all()).results).toHaveLength(0);
+    expect(await db.prepare('SELECT state FROM admin_quality_deliveries').first()).toMatchObject({ state: 'cancelled' });
   });
 });

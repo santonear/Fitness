@@ -20,10 +20,12 @@ export async function enqueueNotification(db: QualityDatabase, category: Categor
 /** Call from a scheduled handler; projection contains only an aggregate count. */
 export async function evaluateQualityNotifications(env: QualityEnv, now: number, pendingOver48h: number) {
   if (!env.ADMIN_DB) return;
-  for (const group of (await errorSummary(env.ADMIN_DB, now)).filter(row => row.spike)) await enqueueNotification(env.ADMIN_DB, 'errors', group.currentHour, `${group.type}:${Math.floor(now / 3600000)}`, now);
+  const active: string[] = [];
+  for (const group of (await errorSummary(env.ADMIN_DB, now)).filter(row => row.spike)) active.push(await enqueueNotification(env.ADMIN_DB, 'errors', group.currentHour, `${group.type}:${Math.floor(now / 3600000)}`, now));
   const settings = await readSettings(env.ADMIN_DB);
   const day = new Intl.DateTimeFormat('en-CA', { timeZone: settings.timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
-  if (pendingOver48h > 0) await enqueueNotification(env.ADMIN_DB, 'applications', pendingOver48h, day, now);
+  if (pendingOver48h > 0) active.push(await enqueueNotification(env.ADMIN_DB, 'applications', pendingOver48h, day, now));
+  await env.ADMIN_DB.prepare(`UPDATE admin_quality_deliveries SET state='cancelled' WHERE state='pending' AND notification_id IN (SELECT id FROM admin_quality_notifications WHERE category IN ('errors','applications'))${active.length ? ` AND notification_id NOT IN (${active.map(() => '?').join(',')})` : ''}`).bind(...active).run();
 }
 export async function dispatchAdminPush(env: QualityEnv, now = Date.now(), send = sendAdminPush) {
   if (!env.ADMIN_DB || !pushAvailable(env)) return { available: false, sent: 0, pending: 0 };

@@ -1,4 +1,5 @@
 import { pushSubscription, capabilityHash } from '../../push-service';
+import { z } from 'zod';
 import { adminJson, requireAdminDb, type AdminContext, type TodoSource } from '../core/contracts';
 import { notificationSettings, type QualityEnv } from './contracts';
 import { errorSummary, qualityTodos, saveEvaluation } from './service';
@@ -50,6 +51,16 @@ export async function handleQuality(request: Request, context: AdminContext<Qual
     const result = await dispatchAdminPush(context.env, context.now);
     await context.audit('quality.notifications.test', 'admin', result.sent ? 'accepted-by-push-service' : 'pending');
     return adminJson({ ...result, delivery: result.sent ? 'accepted-by-push-service' : 'pending' }, result.sent ? 200 : 202);
+  }
+  if (path === '/notifications/unsubscribe') {
+    const parsed = z.object({ id: z.string().regex(/^[a-f0-9]{64}$/) }).strict().safeParse(body);
+    if (!parsed.success) return adminJson({ error: 'INVALID_SUBSCRIPTION' }, 400);
+    await db.batch([
+      db.prepare("UPDATE admin_quality_deliveries SET state='cancelled' WHERE subscription_id=? AND state='pending'").bind(parsed.data.id),
+      db.prepare('DELETE FROM admin_quality_subscriptions WHERE id=?').bind(parsed.data.id),
+    ]);
+    await context.audit('quality.notifications.unsubscribe', parsed.data.id.slice(0, 8), 'success');
+    return adminJson({ removed: true });
   }
   return undefined;
 }
