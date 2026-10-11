@@ -43,7 +43,8 @@ export function scoreAssistantV2(scenario: typeof assistantV2Scenarios[number], 
   if (scenario.required && !new RegExp(scenario.required, 'i').test(text)) failures.push('missing-required-guidance');
   if (scenario.forbidden && new RegExp(scenario.forbidden, 'i').test(text)) failures.push('forbidden-claim');
   if (attachments.some(e => e.attachment.mutationAllowed !== false)) failures.push('mutation-permission');
-  if (events.at(-1)?.type !== 'done' || events.some(e => e.type === 'error' || e.type === 'attachment_failed')) failures.push('generation-failed');
+  const final = events.at(-1);
+  if (final?.type !== 'done' || !final.success || events.some(e => e.type === 'error' || e.type === 'attachment_failed')) failures.push('generation-failed');
   if (scenario.locale === 'zh' && !/[\u3400-\u9fff]/u.test(text)) failures.push('wrong-language');
   if (scenario.locale === 'en' && !/[a-z]/i.test(text)) failures.push('wrong-language');
   return { scenarioId: scenario.scenarioId, automatedPass: failures.length === 0, failures, humanReviewRequired: ['factual-grounding','latest-preference','one-clarification','medical-safety'] };
