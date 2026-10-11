@@ -57,7 +57,7 @@ export function createFitnessWorker(control = createDeepSeekWorker(), authentica
     if (path === '/admin' || path.startsWith('/admin/') || path.startsWith('/api/v1/management/')) {
       if (!await authenticate(request, env)) return new Response(JSON.stringify({ error: 'ADMIN_REQUIRED' }), { status: 403, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
       if(path.startsWith('/api/v1/management/console/')) {
-        if(env.ADMIN_CONSOLE_ENABLED!=='true')return adminJson({error:'NOT_FOUND'},404);
+        if(env.ADMIN_CONSOLE_ENABLED!=='true'||!(await readFeatureFlags(env)).adminConsole)return adminJson({error:'NOT_FOUND'},404);
         try {return await adminBoundary(request,createAdminContext(request,env),async(req,context)=>{
           const forward=async(operation:string,data:unknown)=>{const url=new URL(request.url);url.pathname=`/api/v1/admin/${operation}`;return control.fetch(new Request(url,{method:'POST',headers:{'Content-Type':'application/json',origin:url.origin,authorization:`Bearer ${env.CONTROL_ADMIN_SECRET}`,'x-admin-operation-id':context.requestId,'x-admin-actor':context.actor},body:JSON.stringify(data)}),await resolveRuntimeEnv(env))};
           return handleConsole(req,{...context,env},forward);

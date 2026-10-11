@@ -22,5 +22,5 @@ export async function readPublicFeatureFlags(env: FeatureConfigEnv): Promise<Par
     if (typeof setting !== 'boolean') throw new Error('FEATURE_CONFIG_UNAVAILABLE');
     result[name] = setting;
   }
-  return {...result,...await readManagedFeatureFlags(env)};
+  return {...result,...(env.ADMIN_CONSOLE_ENABLED!==undefined?{adminConsole:env.ADMIN_CONSOLE_ENABLED==='true'}:{}),...await readManagedFeatureFlags(env)};
 }

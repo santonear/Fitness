@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { EXERCISE_IDS, exercises } from '../../src/catalog/exercises';
-import { adaptCoachResponse, coachV8Exercises } from '../../src/coach/response-adapter';
+import { adaptCoachResponse, coachV8Exercises, CoachLanguageError } from '../../src/coach/response-adapter';
 import type { CoachRequest } from '../../src/coach/contracts';
 import { coachV8PromptHeader } from '../../src/backend/coach-v8-prompt-registry';
 import { basicProposal } from '../../src/application/v8-workflow';
@@ -25,6 +25,10 @@ const cases: { request: CoachRequest; response: Record<string, unknown> }[] = [
 ];
 
 describe('V8 response boundary', () => {
+  it('exposes only rule categories in a blocked-prose error',()=>{
+    try { adaptCoachResponse(onboard,{...cases[0].response,proposal:{...proposal,reasons:['你必须继续！','a','b']}});throw new Error('expected rejection'); }
+    catch(error){expect(error).toBeInstanceOf(CoachLanguageError);expect((error as CoachLanguageError).categories).toEqual(['command','exclamation']);expect(JSON.stringify(error)).not.toContain('继续');}
+  });
   it('keeps all existing basic-plan exercises inside the 64-item adjustment vocabulary',()=>{
     const basic=basicProposal({...profile,equipment:['瑜伽垫'],confirmedAt:'2026-10-10T00:00:00Z'})!;
     const current=basic.templates[0];
@@ -131,3 +135,4 @@ describe('V8 response boundary', () => {
     expect(coachV8PromptHeader('PERIOD_REVIEW')).toContain('incompleteTiming');
   });
 });
+

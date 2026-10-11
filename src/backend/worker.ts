@@ -1,4 +1,5 @@
-import {syncFinanceMetadata} from './admin/core/instrumentation';
+import {CoachLanguageError} from '../coach/response-adapter';
+import {syncFinanceMetadata,trackFinanceChanges} from './admin/core/instrumentation';
 import {recordBlockedCategory} from './admin/quality';
 import { z } from 'zod';
 import { ControlService, type ControlConfig } from './control';
@@ -88,17 +89,20 @@ export function createWorker(dependencies: { store?: (env: WorkerEnv) => Control
       if (config.mode === 'control-only' && path === '/api/v1/health' && request.method === 'GET')
         return json({ status: 'control-only', productionModelEnabled: false });
       config.control.coachPromptVersion=env.FITNESS_COACH_PROMPT_RELEASE;
+      const tracked=trackFinanceChanges(store);store=tracked.store;
       const reports:Promise<unknown>[]=[];
-      const service = new ControlService(store, config.control, supplier, Date.now, error => {diagnostic({stage:'candidate'});if(env.ADMIN_CONSOLE_ENABLED==='true'&&env.ADMIN_DB&&error instanceof Error&&error.message==='Invalid coach response: coach language')reports.push(recordBlockedCategory(env.ADMIN_DB,'other').catch(()=>{}))});
+      const service = new ControlService(store, config.control, supplier, Date.now, error => {diagnostic({stage:'candidate'});if(env.ADMIN_CONSOLE_ENABLED==='true'&&env.ADMIN_DB&&error instanceof CoachLanguageError)for(const category of error.categories)reports.push(recordBlockedCategory(env.ADMIN_DB,category).catch(()=>{}))});
       if(env.APPLICATION_RETENTION_DAYS!==undefined)config.control.retentionDays=Number(env.APPLICATION_RETENTION_DAYS);
       const response=await createHandler(service, { origins: config.origins, maxBodyBytes: config.control.maxInputBytes,
         nutritionEnabled: (await readFeatureFlags(env)).nutrition,
         ...(env.TURNSTILE_SECRET_KEY && env.TURNSTILE_SITE_KEY ? { turnstileSiteKey: env.TURNSTILE_SITE_KEY,
           verifyApplication: (proof: string) => verifyApplicationProof(proof, env.TURNSTILE_SECRET_KEY!, new URL(request.url).hostname) } : {}),
         supplierMode: 'external-transport' })(request);
-      if(env.ADMIN_CONSOLE_ENABLED==='true'&&env.ADMIN_DB)await syncFinanceMetadata(store,env.ADMIN_DB).catch(()=>{});
+      if(env.ADMIN_CONSOLE_ENABLED==='true'&&env.ADMIN_DB)await syncFinanceMetadata(store,env.ADMIN_DB,tracked.changed).catch(()=>{});
       await Promise.all(reports);return response;
     } catch (error) { return error instanceof ControlError ? json({ error: error.code }, error.status) : json({ error: 'CONTROL_UNAVAILABLE' }, 503); }
   } };
 }
 export default createWorker();
+
+
