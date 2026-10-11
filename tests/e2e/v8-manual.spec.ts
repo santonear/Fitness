@@ -77,3 +77,32 @@ test('confirmed onboarding filters are editable and local selection uses them', 
   expect(workout.plannedSetCount).toBe(plannedSets);
   expect(workout.templateSnapshot.items[0]).toMatchObject({ sets: 3, target: { reps: 12 } });
 });
+
+for (const scope of ['valid', 'stale-version', 'stale-template'] as const) test(`manual plan shortcut resolves ${scope} one-session override consistently`, async ({ page }) => {
+  await page.goto('/manual');
+  await expect(page.getByRole('heading', { name: '手动训练', exact: true })).toBeVisible();
+  const expected = await page.evaluate(async scope => {
+    const load = (path: string) => import(/* @vite-ignore */ path);
+    const { workflow } = await load('/src/ui/mainline/context.tsx');
+    const { repository } = await load('/src/persistence/repository.ts');
+    const { estimatePlannedMinutes } = await load('/src/application/rules/duration-estimate.ts');
+    const candidate = await workflow.propose({ goalText: '体能', scheduleOriginalText: '每周2次，每次30分钟', weeklyTarget: 2, sessionMinutes: 30, place: 'home', equipment: ['none'], adultConfirmed: true, cautions: [], confirmedAt: new Date().toISOString() });
+    await workflow.adopt(candidate);
+    const { version, state } = await workflow.snapshot(); const original = version.templates[0];
+    const adjusted = { ...original, name: '今天调整的训练单', items: [{ ...original.items[0], sets: 1, target: { metricType: 'reps', reps: 6 } }] };
+    await repository.write(async () => repository.db.v8State.put({ ...state, nextWorkoutOverride: { planVersionId: scope === 'stale-version' ? crypto.randomUUID() : version.id, templateId: scope === 'stale-template' ? 'unavailable-template' : original.id, template: adjusted, requestId: crypto.randomUUID() } }));
+    const effective = scope === 'valid' ? adjusted : original;
+    return { name: effective.name, ids: effective.items.map((item: { exerciseId: string }) => item.exerciseId), minutes: estimatePlannedMinutes(effective.items), items: effective.items };
+  }, scope);
+  await page.reload();
+  await page.getByRole('button', { name: '按计划来一份', exact: true }).click();
+  await page.getByRole('button', { name: expected.name, exact: true }).click();
+  await expect(page.locator('.manual-start')).toContainText(`已选 ${new Set(expected.ids).size} 个动作`);
+  await expect(page.locator('.manual-start')).toContainText(`约 ${expected.minutes} 分钟`);
+  await expect(page.locator('section.manual-chips button')).toHaveCount(new Set(expected.ids).size);
+  await page.getByRole('button', { name: '开始', exact: true }).click();
+  await expect(page).toHaveURL(/\/workout\//);
+  const actual = await page.evaluate(async () => { const path = '/src/ui/mainline/context.tsx'; return (await (await import(/* @vite-ignore */ path)).workflow.snapshot()).active; });
+  expect(actual.templateSnapshot.items).toEqual(expected.items);
+  expect(actual.templateSnapshot.name).toBe(expected.name);
+});

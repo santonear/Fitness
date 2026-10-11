@@ -19,6 +19,8 @@ export function ManualPage() {
   const { locale, data, answers, startManual, start, busy } = useMainline();
   const copy = locale === 'zh' ? zh : en;
   const saved = data?.state?.coachProfile;
+  const override = data?.state?.nextWorkoutOverride;
+  const templates = data?.version?.templates.map(item => override && override.planVersionId === data.version?.id && override.templateId === item.id ? { ...override.template, id: item.id } : item) ?? [];
   const source = saved ? [saved.place, ...saved.equipment].join(' ') : answers.placeEquipmentText;
   const initial = initialFilters(source);
   const filtersEdited = useRef(false);
@@ -55,7 +57,7 @@ export function ManualPage() {
     const items = basicItems({ ...profile, equipment: selectedEquipment.length ? selectedEquipment : profile.equipment, cautions }, 0).items.filter(item => pool.has(item.exerciseId));
     if (items.length) choose(items.map(item => item.exerciseId), copy.local); else setNotice(copy.helpEmpty);
   }
-  const template = data?.version?.templates.find(item => item.id === templateId);
+  const template = templates.find(item => item.id === templateId);
   const minutes = selected.length ? estimatePlannedMinutes(template?.items ?? manualTrainingItems(selected)) : 0;
   return <main className="manual-page">
     <header><h1>{copy.title}</h1><p>{copy.intro}</p></header>
@@ -65,7 +67,7 @@ export function ManualPage() {
       <Button onClick={localSelection}>{copy.help}</Button>
       <Button onClick={() => { const recent = recentExerciseIds(data?.workouts ?? []); if (recent.length) choose(recent); else setNotice(copy.noRecent); }}>{copy.recent}</Button>
     </div>
-    {showPlans && <section className="manual-plans" aria-label={copy.choosePlan}><h2>{copy.choosePlan}</h2>{data?.version?.templates.map(template => <Button key={template.id} onClick={() => { choose(template.items.map(item => item.exerciseId), copy.planTargets); setTemplateId(template.id); setShowPlans(false); }}>{template.name}</Button>)}<Button onClick={() => setShowPlans(false)}>{copy.close}</Button></section>}
+    {showPlans && <section className="manual-plans" aria-label={copy.choosePlan}><h2>{copy.choosePlan}</h2>{templates.map(template => <Button key={template.id} onClick={() => { choose(template.items.map(item => item.exerciseId), copy.planTargets); setTemplateId(template.id); setShowPlans(false); }}>{template.name}</Button>)}<Button onClick={() => setShowPlans(false)}>{copy.close}</Button></section>}
     <p role="status" className="manual-notice">{notice}</p>
     {selected.length > 0 && <section aria-label={format(copy.selected, { count: selected.length })} className="manual-chips">{selected.map(id => <button type="button" key={id} aria-pressed="true" onClick={() => toggleExercise(id)}>{exercises.find(exercise => exercise.id === id)!.name[locale]} ×</button>)}</section>}
     <details className="manual-filters" open><summary>{copy.filters}</summary>
