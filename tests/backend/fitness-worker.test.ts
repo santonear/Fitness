@@ -17,3 +17,10 @@ it('delegates local UI routes without injecting control credentials and handles 
   expect(await response.text()).toBe('/progress'); expect(assets).toHaveBeenCalledTimes(1);
   expect((await createFitnessWorker().fetch(new Request('https://preview.test/'), {})).status).toBe(503);
 });
+it('config read failures are 503, never successful all-off responses; explicit false still works',async()=>{
+ const worker=createFitnessWorker(),request=new Request('https://preview.test/api/v1/features');
+ for(const get of [async()=>{throw Error('KV offline');},async()=>null,async()=>'{broken',async()=>JSON.stringify({planLifecycle:'false'})]){
+  const response=await worker.fetch(request,{FITNESS_FEATURE_CONFIG:{get}});expect(response.status).toBe(503);expect(await response.text()).toBe('');
+ }
+ const response=await worker.fetch(request,{FITNESS_FEATURE_FLAGS:JSON.stringify({planLifecycle:false})});expect(response.status).toBe(200);expect((await response.json()).flags.planLifecycle).toBe(false);
+});

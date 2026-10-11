@@ -206,3 +206,6 @@ RepDB官方证据：[数据许可证](https://github.com/RepDB/exercise-dataset/
 | 关闭浏览器跨越30天 | 开关有效且下次打开/读取时清理；关闭开关不清理 | 本地应用关闭时没有后台数据库任务 | context、feature-flags |
 
 新增planLifecycle开关在隔离预览开启；生产仍等待用户复查发布确认。
+
+
+本轮已确认要求：缓存最后成功开关，明确false才关闭；配置读取故障返回503。保守细节：在训期间不切换当前计划；前台事件1秒内去重，持续轮询每30秒。涉及 feature-flags.ts、feature-config.ts、PlanRoute.tsx、plan-lifecycle.ts。理由：保持离线可用和训练上下文一致，不修改历史事实。

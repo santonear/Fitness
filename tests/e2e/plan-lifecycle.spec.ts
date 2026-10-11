@@ -85,3 +85,21 @@ test('unfavoriting removes the exercise from favorites and remains removed after
  await page.reload();await page.getByLabel('只看已收藏').check();await expect(page.getByRole('button',{name:'自阻力划船',exact:true})).toHaveCount(0);
  await page.getByLabel('只看已收藏').uncheck();await page.getByRole('searchbox').fill('自阻力划船');await expect(page.getByRole('button',{name:'收藏 自阻力划船',exact:true})).toHaveAttribute('aria-pressed','false');
 });
+
+test('cached deletion and recovery entries remain offline and after 90 seconds in background',async({page,context})=>{
+ await createPlan(page);await page.goto('/plans');await page.clock.install();
+ await expect(page.getByRole('button',{name:'不再使用这份计划',exact:true})).toBeVisible();
+ await context.setOffline(true);
+ await page.evaluate(()=>{Object.defineProperty(document,'visibilityState',{configurable:true,get:()=> 'hidden'});document.dispatchEvent(new Event('visibilitychange'));});
+ await page.clock.fastForward(90000);
+ await expect(page.getByRole('button',{name:'不再使用这份计划',exact:true})).toBeVisible();
+ await page.evaluate(()=>{Object.defineProperty(document,'visibilityState',{configurable:true,get:()=> 'visible'});document.dispatchEvent(new Event('visibilitychange'));});
+ await page.getByRole('button',{name:'不再使用这份计划',exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:'确认删除',exact:true}).click();
+ await expect(page.getByText('已删除计划',{exact:true})).toBeVisible();
+ await page.evaluate(()=>{history.pushState(null,'','/settings');window.dispatchEvent(new PopStateEvent('popstate'));});
+ await page.getByRole('button',{name:'已删除的计划',exact:true}).click();await expect(page.getByRole('button',{name:'恢复',exact:true})).toBeVisible();
+ await page.clock.fastForward(90000);await expect(page.getByRole('button',{name:'恢复',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'恢复',exact:true}).click();await expect.poll(async()=>(await records(page)).plans[0].deletedAt).toBeUndefined();
+ await context.setOffline(false);await page.unroute('**/api/v1/features');await page.route('**/api/v1/features',route=>route.abort());
+ await page.reload();await expect(page.getByRole('button',{name:'已删除的计划',exact:true})).toBeVisible();
+});
