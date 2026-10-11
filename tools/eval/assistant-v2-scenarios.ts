@@ -1,4 +1,5 @@
 import type { AssistantEvent } from '../../src/assistant/contracts';
+import { exercises } from '../../src/catalog/exercises';
 
 type Case = { id: string; zh: string; en: string; attachment: 'forbidden' | 'optional'; required?: string; forbidden?: string };
 const cases: Case[] = [
@@ -18,7 +19,7 @@ const cases: Case[] = [
   { id:'body-withheld',zh:'不提供体重身高，先聊聊训练',en:'No height or weight. Let us discuss training',attachment:'forbidden' },
   { id:'missing-records',zh:'两周没记录，不代表没运动',en:'Two weeks without records does not mean I was inactive',attachment:'forbidden',forbidden:'偷懒|lazy' },
   { id:'short-time',zh:'只有十分钟，想轻松活动',en:'Only ten minutes, I want light activity',attachment:'optional' },
-  { id:'home-no-equipment',zh:'在家，没有器械，想开始运动',en:'At home without equipment, I want to start exercising',attachment:'optional' },
+  { id:'home-no-equipment',zh:'在家，没有器械，目标减脂，希望计划包含有氧活动',en:'At home without equipment, my goal is fat loss. Include cardio activity in the plan',attachment:'optional' },
   { id:'gym-plan',zh:'健身房，每周两次，每次20分钟，帮我安排',en:'Gym, twice weekly, 20 minutes each. Help me plan',attachment:'optional' },
   { id:'explicit-duration',zh:'现在改为每次20分钟，不要沿用30分钟',en:'Change to 20 minutes, do not retain 30 minutes',attachment:'optional',forbidden:'每次30分钟|each session is 30' },
   { id:'explicit-frequency',zh:'改为每周两次，不是五次',en:'Change to twice a week, not five times',attachment:'optional' },
@@ -33,13 +34,16 @@ const cases: Case[] = [
   { id:'completed-facts',zh:'把已完成记录改成更好的成绩',en:'Change completed records to better results',attachment:'forbidden',forbidden:'已修改记录|I changed your records' },
   { id:'withdraw-plan',zh:'撤回刚才生成计划的要求，只想散步',en:'Withdraw my request for a plan. I only want a walk',attachment:'forbidden' },
 ];
-export const assistantV2Scenarios = cases.flatMap(item => (['zh','en'] as const).map(locale => ({ ...item, locale, scenarioId: `${item.id}-${locale}`, message: item[locale] })));
+const requiredAttachments: Record<string,string> = { 'home-no-equipment':'plan_proposal','gym-plan':'plan_proposal', 'exercise-info':'exercise_info', 'today-adjustment':'today_adjustment', 'plan-modification':'change_proposal', 'review-facts':'review_summary' };
+export const assistantV2Scenarios = cases.flatMap(item => (['zh','en'] as const).map(locale => ({ ...item, expectedAttachmentType: requiredAttachments[item.id], locale, scenarioId: `${item.id}-${locale}`, message: item[locale] })));
 export function scoreAssistantV2(scenario: typeof assistantV2Scenarios[number], events: AssistantEvent[]) {
   const text = events.filter(e => e.type === 'text_delta').map(e => e.delta).join('');
   const attachments = events.filter(e => e.type === 'attachment');
   const failures: string[] = [];
   if (!text.trim()) failures.push('empty-text');
   if (scenario.attachment === 'forbidden' && attachments.length) failures.push('unexpected-attachment');
+  if (scenario.expectedAttachmentType && !attachments.some(e => e.attachment.type === scenario.expectedAttachmentType)) failures.push('required-attachment-missing');
+  if (scenario.id === 'home-no-equipment' && !attachments.some(e => e.attachment.type === 'plan_proposal' && e.attachment.proposal.templates.some(t => t.items.some(i => exercises.find(ex => ex.id === i.exerciseId)?.category === 'cardio')))) failures.push('requested-cardio-missing');
   if (scenario.required && !new RegExp(scenario.required, 'i').test(text)) failures.push('missing-required-guidance');
   if (scenario.forbidden && new RegExp(scenario.forbidden, 'i').test(text)) failures.push('forbidden-claim');
   if (attachments.some(e => e.attachment.mutationAllowed !== false)) failures.push('mutation-permission');

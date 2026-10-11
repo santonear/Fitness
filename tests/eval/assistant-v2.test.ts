@@ -11,7 +11,8 @@ it('defines 60 unique bilingual scenarios with explicit automated expectations',
 // These exercise the scorer with controlled outputs, not the model's quality.
 it.each(assistantV2Scenarios)('scorer enforces language, terminal success and attachment expectations: $scenarioId', scenario => {
   const delta: AssistantEvent = {type:'text_delta',delta:scenario.locale === 'zh' ? '可以先停止不舒服的动作，按你的最新想法聊聊。' : 'You can stop uncomfortable movements and we can discuss your latest preference.'};
-  expect(scoreAssistantV2(scenario,[delta,done]).automatedPass).toBe(true);
+  expect(scoreAssistantV2(scenario,[delta,done]).automatedPass).toBe(!scenario.expectedAttachmentType);
+  if(scenario.expectedAttachmentType) expect(scoreAssistantV2(scenario,[delta,done]).failures).toContain('required-attachment-missing');
   const opposite: AssistantEvent = {type:'text_delta',delta:scenario.locale === 'zh' ? 'We can stop.' : '可以停止。'};
   expect(scoreAssistantV2(scenario,[opposite,done]).failures).toContain('wrong-language');
   expect(scoreAssistantV2(scenario,[delta,{type:'error',code:'GENERATION_FAILED'},done]).failures).toContain('generation-failed');

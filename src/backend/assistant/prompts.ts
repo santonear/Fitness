@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { assistantAttachmentSchema, type AssistantRequest } from '../../assistant/contracts';
 import { coachV8Exercises } from '../../coach/response-adapter';
+import { selectAiExercises } from '../../catalog/ai-catalog';
 
 export const ASSISTANT_PROMPT_VERSION = 'assistant-v2.1.0';
 export const assistantPromptRegistry = Object.freeze({
@@ -17,5 +18,5 @@ export function assistantPrompt(request: AssistantRequest, stage: 'text' | 'atta
   const context = request.context ? Object.fromEntries(Object.entries(request.context).filter(([key]) => !['inputSnapshot', 'sendConfirmation', 'messages'].includes(key))) : null;
   return [{ role: 'system', content: `${version}\n${safety}\n${instruction}\nLanguage:${request.locale}; adultConfirmed:${request.adultConfirmed}.` },
     ...request.messages,
-    { role: 'user', content: JSON.stringify({ context, catalog: request.context ? coachV8Exercises(request.context).map(e => ({ id: e.id, name: e.name, equipment: e.equipment, metricType: e.metricType })) : [], ...(stage === 'attachment' ? { conversationalAnswer: text } : {}) }) }];
+    { role: 'user', content: JSON.stringify({ context, catalog: (request.context ? coachV8Exercises(request.context) : selectAiExercises(request.messages.at(-1)!.content)).map(e => ({ id: e.id, name: e.name, equipment: e.equipment, metricType: e.metricType })), ...(stage === 'attachment' ? { conversationalAnswer: text } : {}) }) }];
 }

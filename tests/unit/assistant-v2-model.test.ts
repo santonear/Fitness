@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { assistantRequestSchema, sanitizeAssistantRequest, type AssistantRequest } from '../../src/assistant/contracts';
+import { assistantRequestSchema, sanitizeAssistantRequest, applyAssistantPreferences, type AssistantRequest } from '../../src/assistant/contracts';
 import { runAssistantModel, createAssistantProvider, type AssistantProvider } from '../../src/backend/assistant/model';
 import { assistantPrompt } from '../../src/backend/assistant/prompts';
 import { repairAssistantAttachment } from '../../src/backend/assistant/repair';
 import { EXERCISE_IDS, exercises } from '../../src/catalog/exercises';
-import { coachV8Exercises } from '../../src/coach/response-adapter';
+import { coachV8Exercises, adaptCoachResponse } from '../../src/coach/response-adapter';
 
 const id = '11111111-1111-4111-8111-111111111111';
 const request: AssistantRequest = { version: 'fitness-assistant-v2', requestId: id, conversationId: id, locale: 'zh', timeZone: 'Asia/Shanghai', adultConfirmed: true, messages: [{ role: 'user', content: 'Hello' }] };
@@ -58,6 +58,15 @@ describe('assistant v2 model', () => {
   it('limits context and enforces user last message', () => {
     expect(assistantRequestSchema.safeParse({ ...request, messages: Array(21).fill(request.messages[0]) }).success).toBe(false);
     expect(assistantRequestSchema.safeParse({ ...request, messages: [{ role: 'assistant', content: 'x' }] }).success).toBe(false);
+  });
+  it.each(['改为每周两次，每次20分钟，不要沿用30分钟', 'Change to twice a week, 20 minutes, not 30 minutes'])('latest explicit schedule overrides defaults while legacy adapter remains strict: %s', content => {
+    const original = {...context,task:'ONBOARD_PLAN' as const,profile:{goalText:'fitness',weeklyTarget:3,sessionMinutes:30,scheduleOriginalText:'old',place:'home' as const,equipment:[],adultConfirmed:true as const,cautions:[]}};
+    const {target: _target, template: _template, instruction: _instruction, ...onboard} = original;
+    const effective = applyAssistantPreferences(onboard,[{role:'user',content}]);
+    expect(effective).toMatchObject({profile:{weeklyTarget:2,sessionMinutes:20,scheduleOriginalText:content,cautions:[]}});
+    const candidate = {requestId:id,restoreGeneration:0,mutationAllowed:false,type:'plan_proposal',proposal:{goalText:'fitness',weeklyTarget:2,sessionMinutes:20,scheduleOriginalText:content,templates:[context.template,{...context.template,id:'B'}],reasons:['a','b','c']}};
+    expect(() => adaptCoachResponse(onboard,candidate)).toThrow();
+    expect(repairAssistantAttachment(candidate,{...request,context:effective}).attachment?.type).toBe('plan_proposal');
   });
   it('text generation failure stops second stage', async () => {
     const model = provider(); model.streamText = async function* () { throw new Error('private provider error'); };
