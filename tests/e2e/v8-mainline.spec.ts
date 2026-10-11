@@ -1,7 +1,9 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
+import { mockActiveCoachAccess } from './helpers/coach-access';
 
 test('coach uses explicit send and confirmation before changing a single workout',async({page})=>{
+ await mockActiveCoachAccess(page);
  let calls=0;await page.route('**/api/v1/plans/generate',async route=>{calls++;const envelope=route.request().postDataJSON(),request=envelope.coach;
   expect(request.body).toBeUndefined();expect(request.history).toBeUndefined();
   await route.fulfill({json:{requestId:request.requestId,context:{restoreGeneration:request.restoreGeneration,inputDigest:envelope.sendConfirmation},accounting:'settled',result:{requestId:request.requestId,restoreGeneration:request.restoreGeneration,mutationAllowed:false,type:'today_adjustment',target:request.target,template:{...request.template,items:request.template.items.map((i:any)=>({...i,sets:1}))},summary:'本次每个动作一组'}}});
@@ -14,6 +16,7 @@ test('coach uses explicit send and confirmation before changing a single workout
 });
 
 test('home composer opens coach and sends once with optional data excluded',async({page})=>{
+ await mockActiveCoachAccess(page);
  let calls=0;await page.route('**/api/v1/plans/generate',async route=>{calls++;const request=route.request().postDataJSON().coach;expect(request.body).toBeUndefined();expect(request.history).toBeUndefined();expect(request.instruction).toBe('今天轻一点');await route.fulfill({status:503,json:{error:'AI_DISABLED'}});});
  await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();
  await page.getByRole('textbox',{name:'跟芽芽说'}).fill('今天轻一点');expect(calls).toBe(0);
@@ -23,6 +26,7 @@ test('home composer opens coach and sends once with optional data excluded',asyn
 });
 
 test('monthly review sends the visible month instead of the current week',async({page})=>{
+ await mockActiveCoachAccess(page);
  let received:any;
  await page.route('**/api/v1/stages/summarize',async route=>{received=route.request().postDataJSON().coach;await route.fulfill({status:503,json:{error:'AI_DISABLED'}});});
  await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();

@@ -1,10 +1,12 @@
 import {test,expect,type Page} from '@playwright/test';
 import {mkdirSync,writeFileSync,readFileSync} from 'node:fs';
+import { mockActiveCoachAccess } from './helpers/coach-access';
 const oz=JSON.parse(readFileSync('src/i18n/features/onboarding/zh.json','utf8')),oe=JSON.parse(readFileSync('src/i18n/features/onboarding/en.json','utf8'));
 const tz=JSON.parse(readFileSync('src/i18n/features/training/zh.json','utf8')),te=JSON.parse(readFileSync('src/i18n/features/training/en.json','utf8'));
 const root='outputs/v8-cleanup';
 for(const theme of ['qingci','liubai','jingshe','zhuangse'])for(const locale of (theme==='qingci'?['zh','en']:['zh']))for(const width of [390,1440])test(`${theme} ${locale} ${width} final matrix`,async({page})=>{
  test.setTimeout(120000);const o=locale==='zh'?oz:oe,t=locale==='zh'?tz:te;const metrics:any[]=[];
+ await mockActiveCoachAccess(page);
  await page.addInitScript(({theme,locale})=>{localStorage.setItem('fitness-theme',theme);localStorage.setItem('fitness.language',locale);},{theme,locale});
  await page.setViewportSize({width,height:900});await page.emulateMedia({reducedMotion:'reduce'});
  async function capture(name:string){await page.evaluate(()=>document.fonts.ready);await page.evaluate(async()=>{await Promise.all(document.getAnimations().filter(a=>Number.isFinite(a.effect?.getComputedTiming().endTime)).map(a=>a.finished.catch(()=>{})));});const metric=await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth,controls:[...document.querySelectorAll('button,summary,select,input,textarea')].filter(e=>(e as HTMLElement).offsetWidth>0).map(e=>{const target=(e instanceof HTMLInputElement&&e.type==='checkbox'?e.closest('label'):e)!;const r=target.getBoundingClientRect();return {tag:e.tagName,text:e.textContent?.slice(0,40),width:r.width,height:r.height};}),animations:document.getAnimations().filter(a=>a.playState==='running').length}));metrics.push({page:name,...metric});for(const c of metric.controls){expect(c.width,`${name} ${c.text}`).toBeGreaterThanOrEqual(44);expect(c.height,`${name} ${c.text}`).toBeGreaterThanOrEqual(44);}expect(metric.scrollWidth).toBeLessThanOrEqual(width);await page.screenshot({path:`${root}/screenshots/${theme}-${locale}-${width}-${name}.png`,fullPage:true});}
