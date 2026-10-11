@@ -198,3 +198,8 @@ it('delegates preview probes to the private allowlisted adapter and strips redir
  const response=await adapter.fetch(request(current.smokeOrigin+'/'),settings);expect(await response.text()).not.toContain('secret');expect(outbound).toHaveBeenCalledTimes(4);
  context.env.ADMIN_ENVIRONMENT='production';await runReleaseSmoke(context,'production',current,direct);expect(direct).toHaveBeenCalledTimes(3);
 });
+
+it('uses actual production metadata only for the active environment',()=>{
+ const {context}=fixture();context.env.ADMIN_ENVIRONMENT='production';context.env.ADMIN_RELEASE_REGISTRY=JSON.stringify([{environment:'preview',dataVersion:11,current,previous},{environment:'production',dataVersion:11,current,previous}]);context.env.CF_VERSION_METADATA={id:'33333333-3333-4333-8333-333333333333',timestamp:'2026-10-12T00:00:00Z'};
+ const entries=registeredReleases(context.env);expect(entries[0].current.deploymentId).toBe(current.deploymentId);expect(entries[1].current.deploymentId).toBe(context.env.CF_VERSION_METADATA.id);expect(entries[1].current.publishedAt).toBe(context.env.CF_VERSION_METADATA.timestamp);expect(entries[1].previous!.deploymentId).toBe(previous.deploymentId);
+});
