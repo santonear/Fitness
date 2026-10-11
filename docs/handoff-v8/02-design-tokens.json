@@ -47,7 +47,7 @@
       "font": {
         "display": "\"Noto Serif SC\", \"Songti SC\", \"STSong\", \"SimSun\", serif",
         "body": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
-        "num": "\"Cormorant Garamond\", \"Noto Serif SC\", serif",
+        "num": "\"Archivo\", \"Noto Sans SC\", sans-serif",
         "weightBody": 300, "weightDisplay": 400, "weightNum": 300, "weightStrong": 400
       },
       "shape": { "control": "999px", "panel": "28px", "chip": "24px", "border": "1px" },
@@ -89,7 +89,7 @@
       "font": {
         "display": "\"Noto Serif SC\", \"Songti SC\", \"STSong\", \"SimSun\", serif",
         "body": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
-        "num": "\"Noto Sans SC\", sans-serif",
+        "num": "\"Archivo\", \"Noto Sans SC\", sans-serif",
         "weightBody": 300, "weightDisplay": 400, "weightNum": 200, "weightStrong": 400
       },
       "shape": { "control": "2px", "panel": "4px", "chip": "2px", "border": "1px" },
@@ -131,7 +131,7 @@
       "font": {
         "display": "\"Noto Sans SC\", \"PingFang SC\", sans-serif",
         "body": "\"Noto Sans SC\", \"PingFang SC\", sans-serif",
-        "num": "\"Jost\", \"Noto Sans SC\", sans-serif",
+        "num": "\"Archivo\", \"Noto Sans SC\", sans-serif",
         "weightBody": 300, "weightDisplay": 300, "weightNum": 200, "weightStrong": 400
       },
       "shape": { "control": "999px", "panel": "20px", "chip": "999px", "border": "1px" },

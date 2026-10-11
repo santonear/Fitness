@@ -7,6 +7,6 @@ export function createManifest(id: BuiltinThemeId): ThemeManifest {
   const theme = tokens.themes[id];
   return { id, name: theme.name, description: theme.tagline,
     colorScheme: theme.colorScheme === 'dark' ? 'dark' : 'light',
-    preview: '', fonts: themeFonts[id], slots: {} };
+    preview: `/themes/${id}.svg`, fonts: themeFonts[id], slots: {} };
 }
 

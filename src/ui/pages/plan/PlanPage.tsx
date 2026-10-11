@@ -2,6 +2,8 @@ import type { PlannedItem, PlanVersion, SessionTemplate } from '../../../domain/
 import { planMessages, type PlanLanguage } from '../../../i18n/features/plan/messages';
 import { Button, Chip, Row, Sheet } from '../../components/common';
 import './plan.css';
+import guideZh from '../../../i18n/features/training/guide.zh.json';
+import guideEn from '../../../i18n/features/training/guide.en.json';
 
 export interface PlanPageProps {
   version: PlanVersion;
@@ -18,7 +20,7 @@ export interface PlanPageProps {
 
 export function itemTarget(item: PlannedItem, language: PlanLanguage): string {
   const t = planMessages[language], target = item.target;
-  const value = target.metricType === 'reps_load' ? `${t.reps(target.reps)} · ${t.kg(target.loadGrams / 1000)}`
+  const value = target.metricType === 'reps_load' ? `${t.reps(target.reps)} · ${target.loadGrams>0?t.kg(target.loadGrams / 1000):(language==='zh'?guideZh:guideEn).chooseLoad}`
     : target.metricType === 'reps' ? t.reps(target.reps)
     : target.metricType === 'duration' ? t.seconds(target.durationSeconds)
     : `${t.seconds(target.durationSeconds)}${target.distanceMeters === undefined ? '' : ` · ${t.meters(target.distanceMeters)}`}`;
@@ -31,9 +33,11 @@ export function templateLabel(template: Pick<SessionTemplate, 'id' | 'name'>, la
 
 export function PlanPage({ version, currentVersionId, language, exerciseName, onVersions, onExercises, onExercise, onDiscuss }: PlanPageProps) {
   const t = planMessages[language], current = version.id === currentVersionId;
+  const sourceCopy=language==='zh'?guideZh:guideEn;
+  const source=version.source==='local'?sourceCopy.basic:version.source==='ai'?sourceCopy.ai:version.origin==='onboard'?sourceCopy.initial:t.origins[version.origin];
   return <section className="plan-page" aria-labelledby="plan-title">
     <header><h1 id="plan-title">{t.title}</h1>
-      <p className="plan-muted">{t.version(version.versionNumber)} · <time dateTime={version.createdAt}>{new Intl.DateTimeFormat(language, { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(version.createdAt))}</time> · {t.origins[version.origin]}{!current && ` · ${t.readOnly}`}</p>
+      <p className="plan-muted">{t.version(version.versionNumber)} · <time dateTime={version.createdAt}>{new Intl.DateTimeFormat(language, { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(version.createdAt))}</time> · {source}{!current && ` · ${t.readOnly}`}</p>
     </header>
     <div className="plan-overview"><Sheet><dl className="plan-summary"><dt>{t.goal}</dt><dd>{version.goalText}</dd></dl></Sheet><Sheet><dl className="plan-summary"><dt>{t.rhythm}</dt><dd>{t.pace(version.weeklyTarget)}</dd><dd className="plan-muted">{t.minutes(version.sessionMinutes)}</dd></dl></Sheet></div>
     {version.scheduleOriginalText.trim() && <p className="plan-muted">{version.scheduleOriginalText}</p>}

@@ -3,6 +3,7 @@ import { useEffect, useId, useRef, type ReactNode, type RefObject } from 'react'
 export type MorphPanelProps = {
   open: boolean; onClose: () => void; triggerRef: RefObject<HTMLElement | null>;
   title: string; closeLabel?: string; children: ReactNode;
+  placement?: 'center' | 'bottom';
 };
 
 const frame = (element: HTMLElement): Keyframe => {
@@ -11,7 +12,7 @@ const frame = (element: HTMLElement): Keyframe => {
 };
 
 /** Native modal semantics keep background content inert and keyboard focus inside. */
-export function MorphPanel({ open, onClose, triggerRef, title, closeLabel = '关闭', children }: MorphPanelProps) {
+export function MorphPanel({ open, onClose, triggerRef, title, closeLabel = '关闭', children, placement = 'center' }: MorphPanelProps) {
   const dialog = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   useEffect(() => {
@@ -56,7 +57,7 @@ export function MorphPanel({ open, onClose, triggerRef, title, closeLabel = '关
     return () => document.removeEventListener('keydown', containTab, true);
   }, []);
   useEffect(() => () => { if (dialog.current?.open) dialog.current.close(); if (triggerRef.current?.isConnected) triggerRef.current.focus({ preventScroll: true }); }, [triggerRef]);
-  return <dialog ref={dialog} className="v8-morph" aria-labelledby={titleId} aria-modal="true"
+  return <dialog ref={dialog} className="v8-morph" data-placement={placement} aria-labelledby={titleId} aria-modal="true"
     onCancel={event => { event.preventDefault(); onClose(); }}
     onClick={event => { if (event.target === event.currentTarget) { const r = event.currentTarget.getBoundingClientRect(); if (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom) onClose(); } }}>
     <div className="v8-morph-body" data-open={open}>
