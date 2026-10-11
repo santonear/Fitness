@@ -35,7 +35,7 @@ export function PlanRoute({ versions = false }: { versions?: boolean }) {
  {enabled&&selectedPlan&&selectedPlan.id!==c.data?.plan?.id&&!query.has('version')&&<Button disabled={c.busy||!!c.data?.active} onClick={event=>askActivate(selectedPlan.id,event.currentTarget)}>{life.activate}</Button>}
  {enabled&&selectedPlan&&!query.has('version')&&<><Button disabled={c.busy||activePlanId===selectedPlan.id} onClick={()=>askDelete(selectedPlan.id)}>{selectedPlan.id===c.data?.plan?.id?life.stop:life.delete}</Button>{activePlanId===selectedPlan.id&&<p>{life.active}</p>}</>}
  <MorphPanel open={enabled&&!!target} title={life.confirmTitle} closeLabel={life.cancel} onClose={()=>{if(!c.busy)setDeleting(undefined);}} triggerRef={deleteTrigger}>
- <p>{target?.name}</p><p>{life.confirmHint}</p><Button disabled={c.busy} onClick={()=>{if(target)void c.deletePlan(target.id).then(success=>{if(success){setDeleting(undefined);setQuery({});}});}}>{life.confirm}</Button>
+ <p>{target?.name}</p><p>{life.confirmHint}</p><Button disabled={c.busy} onClick={()=>{if(target)void c.deletePlan(target.id).then(success=>{if(success){setDeleting(undefined);if(location.pathname==='/plans')setQuery({});}});}}>{life.confirm}</Button>
  </MorphPanel>
  <MorphPanel open={enabled&&!!activating} title={life.activateTitle} closeLabel={life.cancel} onClose={()=>{if(!c.busy)setActivating(undefined);}} triggerRef={activateTrigger}><p>{plans.find(p=>p.id===activating?.id)?.name}</p><p>{life.activateHint}</p><Button disabled={c.busy||!!c.data?.active} onClick={()=>{if(enabled&&activating)void activate(activating.id,activating.revision);}}>{life.activateConfirm}</Button></MorphPanel></main>;
 }

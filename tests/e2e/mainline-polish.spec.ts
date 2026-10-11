@@ -117,7 +117,26 @@ test('manual selection to completed record, appearance previews and reminders',a
  const remove=async()=>{await page.goto('/plans');await page.getByRole('button',{name:'不再使用这份计划',exact:true}).click();const dialog=page.getByRole('dialog');await expect(dialog).toContainText('训练记录、回顾统计和进步记录全部保留');await shot(page,'plan-delete-confirm');await dialog.getByRole('button',{name:'确认删除',exact:true}).click();await expect(page.getByText('已删除计划',{exact:true})).toBeVisible();};
  await remove();await page.getByRole('button',{name:'撤销',exact:true}).click();await expect(page.getByRole('button',{name:'不再使用这份计划',exact:true})).toBeVisible();
  await remove();await page.goto('/');await expect(page.getByRole('button',{name:'重新制定计划',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'手动训练',exact:true})).toBeVisible();await shot(page,'no-plan');
- await page.goto('/review');await expect(page.locator('.v8-facts dd')).toHaveText(before);
+ await page.goto('/review');await expect(page.locator('.v8-facts dd')).toHaveText(before);await expect(page.getByText(/还差.*次|按现在的计划继续/)).toHaveCount(0);await shot(page,'no-plan-review');
  await page.goto('/settings');await page.getByRole('button',{name:'已删除的计划',exact:true}).click();await expect(page.getByRole('button',{name:'恢复',exact:true})).toBeVisible();await shot(page,'plan-restore');await page.getByRole('button',{name:'恢复',exact:true}).click();await expect(page.getByText('已恢复到以前的计划',{exact:true})).toBeVisible();
- await page.goto('/plans');await expect(page.getByRole('heading',{name:'以前的计划',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'查看',exact:true})).toBeVisible();await shot(page,'previous-plans');
+ await page.goto('/plans');await expect(page.getByRole('heading',{name:'以前的计划',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'查看',exact:true})).toBeVisible();await shot(page,'previous-plans');await page.getByRole('button',{name:'重新使用',exact:true}).click();await expect(page.getByRole('button',{name:'不再使用这份计划',exact:true})).toBeVisible();await shot(page,'reused-plan');
  });
+
+test('preview retains cached lifecycle offline and confirms reuse of a previous plan',async({page,context})=>{
+ if(!process.env.POLISH_BASE_URL)await page.route('**/api/v1/features',r=>r.fulfill({json:{version:1,flags:{planLifecycle:true},expiresAt:Date.now()+60000}}));
+ await onboard(page);await page.getByRole('button',{name:'就用这份计划',exact:true}).click();await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
+ await page.goto('/plans');await expect(page.getByRole('button',{name:'不再使用这份计划',exact:true})).toBeVisible();await page.clock.install();await context.setOffline(true);
+ await page.evaluate(()=>{Object.defineProperty(document,'visibilityState',{configurable:true,get:()=> 'hidden'});document.dispatchEvent(new Event('visibilitychange'));});await page.clock.fastForward(90000);
+ await expect(page.getByRole('button',{name:'不再使用这份计划',exact:true})).toBeVisible();
+ await page.evaluate(()=>{Object.defineProperty(document,'visibilityState',{configurable:true,get:()=> 'visible'});document.dispatchEvent(new Event('visibilitychange'));});
+ await page.getByRole('button',{name:'不再使用这份计划',exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:'确认删除',exact:true}).click();await expect(page.getByRole('dialog')).not.toBeVisible();
+ await page.evaluate(()=>{history.pushState(null,'','/settings');window.dispatchEvent(new PopStateEvent('popstate'));});await page.getByRole('button',{name:'已删除的计划',exact:true}).click();await expect(page.getByRole('button',{name:'恢复',exact:true})).toBeVisible();await shot(page,'offline-restore');
+ await page.getByRole('button',{name:'恢复',exact:true}).click();await expect(page.getByText('已恢复到以前的计划',{exact:true})).toBeVisible();await context.setOffline(false);
+ await page.route('**/api/v1/features',r=>r.abort());await page.reload();await expect(page.getByRole('button',{name:'已删除的计划',exact:true})).toBeVisible();
+ await page.goto('/onboarding');
+ for(let i=0;i<3&&await page.getByRole('button',{name:'上一步',exact:true}).count();i++)await page.getByRole('button',{name:'上一步',exact:true}).click();
+ for(const answer of ['第二份力量计划','每周2次，每次30分钟','在家，只有瑜伽垫']){await page.getByLabel('你的回答').fill(answer);await page.getByRole('button',{name:'继续',exact:true}).click();}
+ await page.getByLabel('我已年满 18 岁',{exact:false}).check();await page.getByRole('button',{name:'生成我的第一版计划'}).click();await page.getByRole('button',{name:'就用这份计划',exact:true}).click();await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
+ await page.goto('/plans');await page.getByRole('button',{name:'重新使用',exact:true}).click();await expect(page.getByRole('dialog')).toContainText('当前计划会移到以前的计划');await shot(page,'reuse-confirm');await page.getByRole('dialog').getByRole('button',{name:'确认使用',exact:true}).click();await expect(page.getByRole('dialog')).not.toBeVisible();
+ await expect(page.getByRole('heading',{name:'第二份力量计划',exact:true})).toBeVisible();await shot(page,'reuse-previous-list');
+});

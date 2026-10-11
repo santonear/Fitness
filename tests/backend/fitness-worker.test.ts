@@ -24,3 +24,9 @@ it('config read failures are 503, never successful all-off responses; explicit f
  }
  const response=await worker.fetch(request,{FITNESS_FEATURE_FLAGS:JSON.stringify({planLifecycle:false})});expect(response.status).toBe(200);expect((await response.json()).flags.planLifecycle).toBe(false);
 });
+it('public config preserves missing keys and server security gates still fail closed',async()=>{
+ const worker=createFitnessWorker(),request=new Request('https://preview.test/api/v1/features');
+ const response=await worker.fetch(request,{FITNESS_FEATURE_FLAGS:'{"nutrition":true}'});expect((await response.json()).flags).toEqual({nutrition:true});
+ expect((await worker.fetch(request,{})).status).toBe(503);
+ const {readFeatureFlags}=await import('../../src/backend/feature-config');expect((await readFeatureFlags({FITNESS_FEATURE_CONFIG:{get:async()=>{throw Error('offline');}}})).systemNotifications).toBe(false);
+});

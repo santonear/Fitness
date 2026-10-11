@@ -1,6 +1,6 @@
 import { createDeepSeekWorker, type DeepSeekWorkerEnv } from './deepseek-worker';
 import { verifyAdministrator, type ManagementEnv } from './management-auth';
-import { readFeatureFlags, type FeatureConfigEnv } from './feature-config';
+import { readFeatureFlags, readPublicFeatureFlags, type FeatureConfigEnv } from './feature-config';
 import { monitoringError } from '../application/monitoring';
 import { DailyUsageStore } from './daily-usage-store';
 import { anonymousBatchSchema, TelemetryStore } from './telemetry-store';
@@ -20,7 +20,7 @@ export function createFitnessWorker(control = createDeepSeekWorker(), authentica
     }
     if (path === '/api/v1/features' && request.method === 'GET') {
       try {
-        return new Response(JSON.stringify({version: 1, flags: await readFeatureFlags(env, true), expiresAt: Date.now() + 60_000}),
+        return new Response(JSON.stringify({version: 1, flags: await readPublicFeatureFlags(env), expiresAt: Date.now() + 60_000}),
           { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
       } catch { return new Response(null, { status: 503, headers: { 'Cache-Control': 'no-store' } }); }
     }

@@ -26,7 +26,7 @@ async function finishOneSet(page:Page){
 async function removeCurrentPlan(page:Page){
  await page.goto('/plans');await page.getByRole('button',{name:'不再使用这份计划',exact:true}).click();
  const dialog=page.getByRole('dialog');await expect(dialog).toContainText('训练记录');await expect(dialog).toContainText('回顾');await expect(dialog).toContainText('进步');
- await dialog.getByRole('button',{name:'确认删除',exact:true}).click();await expect(page.getByText('已删除计划',{exact:true})).toBeVisible();
+ await dialog.getByRole('button',{name:'确认删除',exact:true}).click();await expect(page.getByText('已删除计划',{exact:true})).toBeVisible();await expect(page.getByRole('dialog')).not.toBeVisible();
 }
 
 test('deleting the current plan preserves its versions and undo restores the same plan',async({page})=>{
@@ -95,7 +95,7 @@ test('cached deletion and recovery entries remain offline and after 90 seconds i
  await expect(page.getByRole('button',{name:'不再使用这份计划',exact:true})).toBeVisible();
  await page.evaluate(()=>{Object.defineProperty(document,'visibilityState',{configurable:true,get:()=> 'visible'});document.dispatchEvent(new Event('visibilitychange'));});
  await page.getByRole('button',{name:'不再使用这份计划',exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:'确认删除',exact:true}).click();
- await expect(page.getByText('已删除计划',{exact:true})).toBeVisible();
+ await expect(page.getByText('已删除计划',{exact:true})).toBeVisible();await expect(page.getByRole('dialog')).not.toBeVisible();
  await page.evaluate(()=>{history.pushState(null,'','/settings');window.dispatchEvent(new PopStateEvent('popstate'));});
  await page.getByRole('button',{name:'已删除的计划',exact:true}).click();await expect(page.getByRole('button',{name:'恢复',exact:true})).toBeVisible();
  await page.clock.fastForward(90000);await expect(page.getByRole('button',{name:'恢复',exact:true})).toBeVisible();
