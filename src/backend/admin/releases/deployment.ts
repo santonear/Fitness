@@ -8,6 +8,18 @@ export function registeredReleases(env:ReleasesEnv) {
   try {const parsed=registry.parse(JSON.parse(env.ADMIN_RELEASE_REGISTRY ?? '[]'));if(new Set(parsed.map(item=>item.environment)).size!==parsed.length)throw new Error();return parsed;}
   catch {throw new AdminError('RELEASE_REGISTRY_UNAVAILABLE',503);}
 }
+export async function checkCurrentRelease(context:AdminContext<ReleasesEnv>,environment:ReleaseEnvironment,releaseId:string) {
+  const entry=registeredReleases(context.env).find(item=>item.environment===environment);
+  if(!entry)throw new AdminError('UNREGISTERED_RELEASE',409);
+  const db=requireAdminDb(context);
+  const state=await db.prepare('SELECT current_id,operation_id FROM admin_release_state WHERE environment=?').bind(environment).first<{current_id:string;operation_id:string|null}>();
+  if(state?.operation_id)throw new AdminError('RELEASE_CHANGED_OR_BUSY',409);
+  if((state?.current_id??entry.current.id)!==releaseId)throw new AdminError('RELEASE_CHANGED_OR_BUSY',409);
+  const target=[entry.current,entry.previous].find(item=>item?.id===releaseId);
+  if(!target)throw new AdminError('UNREGISTERED_RELEASE',409);
+  await db.prepare('INSERT OR IGNORE INTO admin_release_state(environment,current_id,previous_id,changed_at,operation_id) VALUES(?,?,?,?,NULL)').bind(environment,entry.current.id,entry.previous?.id??null,entry.current.publishedAt).run();
+  return runReleaseSmoke(context,environment,target);
+}
 export async function runReleaseSmoke(context:AdminContext<ReleasesEnv>, environment:ReleaseEnvironment, target:ReleaseRegistration, transport:typeof fetch=fetch) {
   const paths={application:'/',features:'/api/v1/features',managementAccess:'/api/v1/management/console/releases'};
   const results:SmokeCheck[]=await Promise.all(smokeChecks.map(async check=>{

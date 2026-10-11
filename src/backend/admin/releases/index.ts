@@ -1,7 +1,8 @@
 import { adminJson, AdminError, requireFreshContext, type AdminContext } from '../core/contracts';
+import {z} from 'zod';
 import { flagChangeSchema,promptChangeSchema,rollbackSchema,sensitiveFeatures,type ReleasesEnv } from './model';
 import { releaseOverview,saveFlag,savePrompt } from './store';
-import { registeredReleases,rollbackRelease } from './deployment';
+import { checkCurrentRelease,registeredReleases,rollbackRelease } from './deployment';
 
 export async function handleReleases(request:Request,context:AdminContext<ReleasesEnv>):Promise<Response|undefined> {
   const path=new URL(request.url).pathname.replace('/api/v1/management/console/releases','');
@@ -10,6 +11,13 @@ export async function handleReleases(request:Request,context:AdminContext<Releas
   if(request.method==='GET' && (path===''||path==='/'))return adminJson({...await releaseOverview(context),registered:registeredReleases(context.env).filter(item=>item.environment===context.env.ADMIN_ENVIRONMENT),adapterAvailable:!!context.env.ADMIN_RELEASE_ADAPTER});
   if(request.method!=='POST')throw new AdminError('METHOD_NOT_ALLOWED',405);
   const raw:unknown=await request.json().catch(()=>null);
+  if(path==='/smoke') {
+    const parsed=z.object({environment:z.enum(['preview','production']),releaseId:z.string().regex(/^[\w.-]{1,80}$/)}).strict().safeParse(raw);
+    if(!parsed.success)throw new AdminError('INVALID_SMOKE_CHECK');
+    if(parsed.data.environment!==context.env.ADMIN_ENVIRONMENT)throw new AdminError('ENVIRONMENT_NOT_CONNECTED',409);
+    const smoke=await checkCurrentRelease(context,parsed.data.environment,parsed.data.releaseId);
+    await context.audit('release_smoke',parsed.data.releaseId,smoke.every(item=>item.status==='passed')?'success':'needs_attention');return adminJson({smoke});
+  }
   if(path==='/flags') {
     const parsed=flagChangeSchema.safeParse(raw);if(!parsed.success)throw new AdminError('INVALID_FLAG_CHANGE');
     const value=parsed.data;const sensitive=value.enabled&&value.environment==='production'&&sensitiveFeatures.has(value.name);

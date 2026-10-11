@@ -88,6 +88,14 @@ describe('persistent release controls',()=>{
     expect(result.smoke).toHaveLength(3);expect(result.smoke.every(row=>row.status==='failed')).toBe(true);
     expect((await releaseTodoSource.evaluate(context))[0]).toMatchObject({level:'alert'});
   });
+  it('rechecks the registered current release and clears resolved smoke todo without deploying',async()=>{
+    const {context}=fixture();context.env.ADMIN_RELEASE_REGISTRY=JSON.stringify([{environment:'preview',dataVersion:11,current,previous}]);
+    vi.stubGlobal('fetch',vi.fn(async()=>new Response(null,{status:503})));
+    await handleReleases(post('smoke',{environment:'preview',releaseId:current.id}),context);expect(await releaseTodoSource.evaluate(context)).toHaveLength(1);
+    vi.stubGlobal('fetch',vi.fn(async(request:Request)=>new URL(request.url).pathname.includes('management')?new Response(null,{status:403}):new URL(request.url).pathname.endsWith('features')?Response.json({flags:{}}):new Response('Application')));
+    context.requestId='request-00002';await handleReleases(post('smoke',{environment:'preview',releaseId:current.id}),context);expect(await releaseTodoSource.evaluate(context)).toHaveLength(0);
+    await expect(handleReleases(post('smoke',{environment:'preview',releaseId:'unregistered'}),context)).rejects.toMatchObject({code:'RELEASE_CHANGED_OR_BUSY'});
+  });
   it('keeps unknown rollback locked to same request and can retry it',async()=>{
     const {context}=fixture();context.env.ADMIN_RELEASE_REGISTRY=JSON.stringify([{environment:'preview',dataVersion:11,current,previous}]);
     context.env.ADMIN_RELEASE_ADAPTER={fetch:vi.fn(async()=>{throw new Error('timeout');})};

@@ -9,4 +9,4 @@ export interface ReleaseOverview {
  promptTasks:string[];registeredPromptVersions:string[];
  history:{request_id:string;environment:string;kind:string;object_id:string;before_value:string|null;after_value:string;actor:string;created_at:string}[];
 }
-export interface ReleaseCommand {path:'flags'|'prompts'|'rollback';requestId:ReturnType<typeof crypto.randomUUID>;body:Record<string,unknown>;title:string;impact:string}
+export interface ReleaseCommand {path:'flags'|'prompts'|'rollback'|'smoke';requestId:ReturnType<typeof crypto.randomUUID>;body:Record<string,unknown>;title:string;impact:string}
