@@ -39,6 +39,8 @@
 .v8-shell main { min-width: 0; padding-bottom: calc(var(--touch-workout) + var(--s6) + env(safe-area-inset-bottom)); }
 .v8-shell .v8-row { display: flex; flex-wrap: wrap; gap: var(--s3); }
 .v8-coach-launcher { position: fixed; right: var(--s4); bottom: calc(var(--touch-workout) + var(--s6) + env(safe-area-inset-bottom)); z-index: 6; }
+.v8-review-header { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); }
+.v8-review-coach { flex-shrink: 0; }
 .v8-topline .coach-visual { width: var(--touch-min); }
 .v8-month-chart { display: flex; gap: var(--s2); }
 .v8-month-chart > div { flex: 1; min-width: 0; text-align: center; font-size: var(--t2); }

@@ -23,7 +23,7 @@ test('legacy exercise cards use provider or original person images, never stick 
 });
 test('RepDB guide retains both poses and visible source link',async({page})=>{
  await page.goto('/manual');await page.getByRole('searchbox').fill('reverse lunge');await page.getByRole('button',{name:'反向弓步',exact:true}).click();await page.getByRole('button',{name:'开始',exact:true}).click();await page.getByRole('button',{name:'查看动作指导',exact:true}).click();
- const dialog=page.getByRole('dialog');await expect(dialog.locator('.repdb-media img')).toHaveCount(2);await expect(dialog.getByRole('link',{name:'RepDB',exact:true})).toHaveAttribute('href','https://repdb.co/');
+ const dialog=page.getByRole('dialog');await expect(dialog).toHaveAttribute('role','dialog');await expect(dialog).toHaveAttribute('aria-modal','true');await expect(dialog.locator('.repdb-media img')).toHaveCount(2);await expect(dialog.getByRole('link',{name:'RepDB',exact:true})).toHaveAttribute('href','https://repdb.co/');
  for(const image of await dialog.locator('.repdb-media img').all())await expect.poll(()=>image.evaluate((e:HTMLImageElement)=>e.complete&&e.naturalWidth>0)).toBe(true);
  await shot(page,'repdb-guide');
 });
@@ -49,7 +49,7 @@ test('fresh mainline: duration, local coach, exercise guide, bottom pause, finis
  await page.getByRole('button',{name:'就用这份计划'}).click();await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
  await page.getByRole('button',{name:'和芽芽聊聊',exact:true}).first().click();
  await page.getByRole('dialog').getByRole('textbox',{name:'跟芽芽说'}).fill('膝盖不适');await page.getByRole('dialog').getByRole('button',{name:'发送',exact:true}).click();
- await expect(page.getByText('如果疼痛明显或持续，先休息，并请专业人士看看',{exact:true})).toBeVisible();await shot(page,'coach-local-pain');
+ await expect(page.getByText('如果疼痛明显或持续，先休息，并请专业人士看看',{exact:true})).toBeVisible();await expect(page.getByRole('dialog')).toContainText('蚌式');await expect(page.getByRole('dialog')).toContainText('现在用的是本地建议');await expect(page.getByRole('dialog')).not.toContainText('芽芽暂时连不上');await shot(page,'coach-local-pain');
  await page.getByRole('dialog').getByRole('button',{name:'关闭',exact:true}).click();
  await page.getByRole('button',{name:'开始训练',exact:true}).click();
  await expect(page.locator('.exercise-guide-points li')).toHaveCount(2);await expect(page.locator('.exercise-guide-open img')).toBeVisible();
@@ -61,6 +61,22 @@ test('fresh mainline: duration, local coach, exercise guide, bottom pause, finis
  }
  await shot(page,'pause');await dialog.getByRole('button',{name:'结束并记下',exact:true}).click();await expect(page.getByText(/本次用时/)).toBeVisible();await shot(page,'finish');
  await page.getByRole('button',{name:'记下来',exact:true}).click();await expect(page.locator('[data-context="review"]')).toHaveCount(1);await shot(page,'week-review');expect(modelCalls).toBe(0);
+});
+test('review coach remains separate from statistics at narrow widths and after scrolling',async({page})=>{
+ await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();await page.goto('/review');
+ const original=page.viewportSize()!;
+ for(const width of original.width===375?[320,375]:[original.width]){
+  await page.setViewportSize({width,height:original.height});
+  for(const scroll of [0,200,600]){
+   await page.evaluate(y=>window.scrollTo(0,y),scroll);
+   const coach=await page.getByRole('button',{name:'和芽芽聊聊',exact:true}).boundingBox(),facts=await page.locator('.v8-facts').boundingBox();
+   expect(coach).not.toBeNull();expect(facts).not.toBeNull();
+   expect(coach!.y+coach!.height<=facts!.y||facts!.y+facts!.height<=coach!.y||coach!.x+coach!.width<=facts!.x||facts!.x+facts!.width<=coach!.x).toBe(true);
+   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  }
+ }
+ await page.evaluate(()=>window.scrollTo(0,0));await shot(page,'review-coach-clearance');
+ await page.getByRole('button',{name:'和芽芽聊聊',exact:true}).click();await expect(page.getByRole('dialog')).toHaveAttribute('aria-modal','true');
 });
 test('unknown load stays unknown until a chosen fractional weight, all theme numerals',async({page})=>{
  await page.goto('/manual');await page.getByRole('searchbox').fill('高脚杯深蹲');await page.getByRole('button',{name:'高脚杯深蹲',exact:true}).first().click();await page.getByRole('button',{name:'开始',exact:true}).click();
@@ -83,3 +99,12 @@ test('manual selection to completed record, appearance previews and reminders',a
   await shot(page,`appearance-${theme}`);
  }
 });
+
+ test('home defaults and empty filter recovery work on deployed assets',async({page})=>{
+ await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();await page.goto('/manual');
+ for(const name of ['无器械','瑜伽垫'])await expect(page.getByRole('button',{name,exact:true})).toHaveAttribute('aria-pressed','true');
+ await page.getByRole('searchbox').fill('zzzzzzzz');
+ const empty=page.locator('.manual-empty');await expect(empty).toContainText(/清空筛选后有 \d+ 个动作/);
+ const count=(await empty.innerText()).match(/清空筛选后有 (\d+) 个动作/)![1];await shot(page,'manual-empty-recovery');
+ await empty.getByRole('button',{name:'清空筛选',exact:true}).click();await expect(page.getByRole('searchbox')).toHaveValue('');await expect(page.locator('.manual-results-heading')).toContainText(count);
+ });
