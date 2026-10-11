@@ -63,6 +63,8 @@ describe('assistant v2 model', () => {
     const model = provider(); model.streamText = async function* () { throw new Error('private provider error'); };
     const events = await collect(request, model);
     expect(events.map(e => e.type)).toEqual(['error', 'done']); expect(JSON.stringify(events)).not.toContain('private provider');
+    expect(events.at(-1)).toMatchObject({ calls: [{ stage: 'text', result: 'failed' }] });
+    const done = events.at(-1); if (done?.type === 'done') expect(done.calls?.[0].inputTokens).toBeUndefined();
   });
   it('parses split unicode SSE and rejects truncated streams', async () => {
     const encoded = new TextEncoder().encode('data: {"choices":[{"delta":{"content":"你好"}}]}\r\n\r\ndata: {"usage":{"prompt_tokens":2,"completion_tokens":1}}\n\ndata: [DONE]\n\n');

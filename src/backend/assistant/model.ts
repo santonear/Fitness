@@ -4,7 +4,7 @@ import { repairAssistantAttachment } from './repair';
 
 export interface AssistantProvider {
   streamText(messages: AssistantPromptMessage[], signal?: AbortSignal): AsyncIterable<{ delta?: string; usage?: AssistantUsage }>;
-  generateAttachment(messages: AssistantPromptMessage[], signal?: AbortSignal): Promise<{ content: unknown; usage: AssistantUsage }>;
+  generateAttachment(messages: AssistantPromptMessage[], signal?: AbortSignal): Promise<{ content: unknown; usage?: AssistantUsage }>;
 }
 export type AssistantModelOptions = { provider: AssistantProvider; promptVersion?: string; signal?: AbortSignal };
 
@@ -16,9 +16,9 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
   if (minor) request.adultConfirmed = false;
   const version = options.promptVersion ?? ASSISTANT_PROMPT_VERSION;
   const calls: AssistantCall[] = [];
-  const usage = () => calls.reduce((sum, call) => ({ inputTokens: sum.inputTokens + call.inputTokens, outputTokens: sum.outputTokens + call.outputTokens }), { inputTokens: 0, outputTokens: 0 });
+  const usage = () => calls.reduce((sum, call) => ({ inputTokens: sum.inputTokens + (call.inputTokens ?? 0), outputTokens: sum.outputTokens + (call.outputTokens ?? 0) }), { inputTokens: 0, outputTokens: 0 });
   let text = '';
-  const textCall: AssistantCall = { stage: 'text', result: 'failed', inputTokens: 0, outputTokens: 0 };
+  const textCall: AssistantCall = { stage: 'text', result: 'failed' };
   calls.push(textCall);
   try {
     for await (const chunk of options.provider.streamText(assistantPrompt(request, 'text', version), options.signal)) {
@@ -43,7 +43,7 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
   }
   yield { type: 'attachment_pending' };
   for (let attempt = 0; attempt < 2; attempt++) {
-    const call: AssistantCall = { stage: 'attachment', result: 'failed', inputTokens: 0, outputTokens: 0 };
+    const call: AssistantCall = { stage: 'attachment', result: 'failed' };
     calls.push(call);
     try {
       if (options.signal?.aborted) throw new Error('ABORTED');
@@ -104,7 +104,7 @@ export function createAssistantProvider(options: { apiKey: string; baseUrl: stri
       const body = await response.text();
       if (body.length > 65536) throw new Error('ATTACHMENT_LIMIT');
       const parsed = JSON.parse(body) as { choices?: { message?: { content?: string } }[]; usage?: { prompt_tokens?: number; completion_tokens?: number } };
-      return { content: parsed.choices?.[0]?.message?.content, usage: usage(parsed.usage) };
+      return { content: parsed.choices?.[0]?.message?.content, ...(parsed.usage ? { usage: usage(parsed.usage) } : {}) };
     },
   };
 }
