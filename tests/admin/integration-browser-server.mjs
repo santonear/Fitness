@@ -20,6 +20,7 @@ const currentDeployment='30000000-0000-4000-8000-000000000003';
 const previousDeployment='40000000-0000-4000-8000-000000000004';
 let syntheticDeployment=currentDeployment;
 let smokeFailure=false;
+let featureFailure=false;
 
 function binding(connection){
   const prepare=(sql,values=[])=>({
@@ -58,7 +59,7 @@ async function reset(){
   control.exec('CREATE TABLE control_ledger(id INTEGER PRIMARY KEY CHECK(id=1),revision INTEGER NOT NULL,state TEXT NOT NULL CHECK(json_valid(state)))');
   const state=initialState();state.applications={[applicationId]:{id:applicationId,ownerDigest:'a'.repeat(64),kind:'new',name:'合成申请人',note:'仅用于本机集成验证的申请说明',createdAt:Date.now()-3600000,state:'pending'}};
   const period=new Date().toISOString().slice(0,7);state.subjects[subjectId]={expiresAt:Date.now()+7*86400000,revoked:false};state.usages[`${subjectId}:${period}`]={understand:1,generate:2,summary:0};state.budgets[period]={spent:35,reserved:0};state.audit=[{at:Date.now()-3600000,event:'issued',subjectId}];
-  state.requests['50000000-0000-4000-8000-000000000005']={subjectId,requestId:'50000000-0000-4000-8000-000000000005',inputDigest:'b'.repeat(64),operation:'generate',createdAt:Date.now()-1800000,period,bound:300,status:'settled',cancelled:false,actualCost:35};
+  state.requests[`${subjectId}:50000000-0000-4000-8000-000000000005`]={subjectId,requestId:'50000000-0000-4000-8000-000000000005',inputDigest:'b'.repeat(64),operation:'generate',createdAt:Date.now()-1800000,period,bound:300,status:'settled',cancelled:false,actualCost:35};
   control.prepare('INSERT INTO control_ledger VALUES(1,0,?)').run(JSON.stringify(state));
   admin.prepare('INSERT INTO admin_finance_events VALUES(?,?,?,?,?,?,?)').run('synthetic-fee',new Date().toISOString().slice(0,10),'ONBOARD_PLAN','settled',35,0,Date.now()-1800000);
   admin.prepare('INSERT INTO admin_quality_errors VALUES(?,?,?,?,?,?)').run('network','/settings','1.0.0','Chrome','Windows',Date.now()-3600000);
@@ -69,13 +70,14 @@ const send=(response,status,data,headers={})=>{response.writeHead(status,{'Conte
 const html='<!doctype html><html lang="zh"><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0}</style></head><body><div id="root"></div><script type="module" src="/@integration-entry"></script></body></html>';
 const server=await createServer({configFile:false,server:{host:'127.0.0.1',port,strictPort:true},esbuild:{jsx:'automatic'},plugins:[{
   name:'real-admin-integration',resolveId(id){if(id==='/@integration-entry')return '\0integration-entry';},
-  load(id){if(id==='\0integration-entry')return "import React from 'react';import {createRoot} from 'react-dom/client';import '/src/i18n/index.ts';import '/src/ui/theme.css';import '/src/ui/shared.css';import {AdminShell} from '/src/ui/admin/shell/AdminShell.tsx';createRoot(document.getElementById('root')).render(React.createElement(AdminShell));";},
+  load(id){if(id==='\0integration-entry')return "import React from 'react';import {createRoot} from 'react-dom/client';import '/src/i18n/index.ts';import '/src/ui/theme.css';import '/src/ui/shared.css';import {ManagementPage} from '/src/ui/pages/ManagementPage.tsx';import {startFeatureFlags} from '/src/application/feature-flags.ts';startFeatureFlags();createRoot(document.getElementById('root')).render(React.createElement(ManagementPage));";},
   configureServer(vite){vite.middlewares.use(async(request,response,next)=>{
     const path=new URL(request.url??'/',origin).pathname;
     try{
       if(path==='/__test/ready')return send(response,200,{ready:Boolean(worker),migrations});
-      if(path==='/__test/reset'&&request.method==='POST'){await bodyOf(request);await reset();return send(response,200,{reset:true});}
+      if(path==='/__test/reset'&&request.method==='POST'){await bodyOf(request);featureFailure=false;env.CONTROL_MODE='control-only';await reset();return send(response,200,{reset:true});}
       if(path==='/__test/drop-next-user-response'&&request.method==='POST'){await bodyOf(request);dropNextUserResponse=true;return send(response,200,{armed:true});}
+      if(path==='/__test/features-mode'&&request.method==='POST'){featureFailure=JSON.parse((await bodyOf(request)).toString()).fail===true;return send(response,200,{fail:featureFailure});}
       if(path==='/__test/smoke-mode'&&request.method==='POST'){const data=JSON.parse((await bodyOf(request)).toString());smokeFailure=data.fail===true;return send(response,200,{fail:smokeFailure});}
       if(path==='/__test/session'&&request.method==='POST'){
         const {mode='fresh'}=JSON.parse((await bodyOf(request)).toString()||'{}');
@@ -84,9 +86,17 @@ const server=await createServer({configFile:false,server:{host:'127.0.0.1',port,
         if(mode==='invalid')token=token.slice(0,token.lastIndexOf('.')+1)+'invalid';if(mode==='none')token='';
         return send(response,200,{mode},{'Set-Cookie':`integration-access=${token}; HttpOnly; SameSite=Strict; Path=/`});
       }
+      if(path==='/__test/parity-fixture'&&request.method==='POST'){
+        const {mode}=JSON.parse((await bodyOf(request)).toString());const state=JSON.parse(control.prepare('SELECT state FROM control_ledger WHERE id=1').get().state);
+        if(mode==='pending'){const r=state.requests[`${subjectId}:50000000-0000-4000-8000-000000000005`];r.status='pending';delete r.actualCost;state.budgets[r.period]={spent:0,reserved:300};}
+        else if(mode==='expired'){state.applications[applicationId].state='rejected';state.applications[applicationId].decidedAt=Date.now()-40*86400000;}
+        else if(mode==='ai'){env.CONTROL_MODE='external';env.SUPPLIER_PROVIDER='deepseek';env.DEEPSEEK_API_KEY=randomBytes(32).toString('hex');env.SUPPLIER_ENDPOINT='https://api.deepseek.com/chat/completions';env.SUPPLIER_ORIGIN='https://api.deepseek.com';}
+        else return send(response,400,{error:'INVALID_FIXTURE'});
+        control.prepare('UPDATE control_ledger SET state=? WHERE id=1').run(JSON.stringify(state));return send(response,200,{mode});
+      }
       if(path==='/__test/evidence'){
         const row=control.prepare('SELECT revision,state FROM control_ledger WHERE id=1').get();const state=JSON.parse(row.state);
-        return send(response,200,{revision:row.revision,applicationState:state.applications[applicationId].state,approvalEvents:state.audit.filter(item=>item.event===`application-approve:${applicationId}`).length,syntheticDeployment,invites:Object.keys(state.invites).length,audit:admin.prepare('SELECT actor,action,result,object_id FROM admin_audit').all(),migrations});
+        return send(response,200,{revision:row.revision,subjects:state.subjects,requests:state.requests,application:state.applications[applicationId],inviteRecords:state.invites,quotaRestorations:state.quotaRestorations??{},usage:state.usages,budgets:state.budgets,releaseStates:admin.prepare("SELECT * FROM admin_release_state").all(),aiEnabled:state.aiEnabled,applicationState:state.applications[applicationId]?.state,approvalEvents:state.audit.filter(item=>item.event===`application-approve:${applicationId}`).length,syntheticDeployment,invites:Object.keys(state.invites).length,audit:admin.prepare('SELECT actor,action,result,object_id FROM admin_audit').all(),migrations});
       }
       if(path.startsWith('/api/')){
         const headers=new Headers();for(const [key,value] of Object.entries(request.headers)){if(value!==undefined)headers.set(key,Array.isArray(value)?value.join(','):value);}
@@ -95,7 +105,9 @@ const server=await createServer({configFile:false,server:{host:'127.0.0.1',port,
         const token=(headers.get('cookie')??'').split(';').map(value=>value.trim()).find(value=>value.startsWith('integration-access='))?.slice('integration-access='.length);
         headers.delete('cf-access-jwt-assertion');if(token)headers.set('cf-access-jwt-assertion',token);
         const data=['GET','HEAD'].includes(request.method??'GET')?undefined:await bodyOf(request);
-        const result=await worker.fetch(new Request(workerOrigin+request.url,{method:request.method,headers,body:data}),env);
+        const forwarded=new Request(workerOrigin+request.url,{method:request.method,headers,body:data});
+        if(path==='/api/v1/features'){if(featureFailure)return send(response,503,{error:'TEST_FEATURES_UNAVAILABLE'});if(!await auth.verifyAdministrator(forwarded,env,async()=>publicKey))return send(response,403,{error:'TEST_ACCESS_REQUIRED'});}
+        const result=await worker.fetch(forwarded,env);
         // Drop the successful upstream payload after commit and emit a gateway error.
         // A TCP reset may be transparently retried by Chromium, hiding the unknown state.
         if(path==='/api/v1/management/console/users/action'&&request.method==='POST'&&dropNextUserResponse){dropNextUserResponse=false;return send(response,503,{error:'OPERATION_RESULT_UNKNOWN'});}
@@ -106,6 +118,8 @@ const server=await createServer({configFile:false,server:{host:'127.0.0.1',port,
     }catch(error){console.error('Integration harness error:',error);send(response,500,{error:'INTEGRATION_HARNESS_ERROR'});}
   });},
 }]});
+const {createPreviewSimulationAdapter}=await server.ssrLoadModule('/src/backend/admin/releases/preview-simulation-adapter.ts');
+const simulationAdapter=createPreviewSimulationAdapter();env.ADMIN_PREVIEW_SIMULATION={fetch:request=>simulationAdapter.fetch(request,{ADMIN_ENVIRONMENT:'preview',ADMIN_SIMULATION_DB:binding(admin),ADMIN_RELEASE_REGISTRY:env.ADMIN_RELEASE_REGISTRY})};
 auth=await server.ssrLoadModule('/src/backend/management-auth.ts');
 ({initialState}=await server.ssrLoadModule('/src/backend/store.ts'));
 const {createFitnessWorker}=await server.ssrLoadModule('/src/backend/fitness-worker.ts');
