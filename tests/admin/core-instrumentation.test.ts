@@ -2,9 +2,17 @@ import {describe,it,expect,vi} from 'vitest';
 import {initialState,type ControlStore} from '../../src/backend/store';
 import {trackFinanceChanges,syncFinanceMetadata} from '../../src/backend/admin/core/instrumentation';
 import type {AdminDatabase} from '../../src/backend/admin/core/contracts';
+import {idempotentAdminStore} from '../../src/backend/admin/core/idempotent-store';
 const {record}=vi.hoisted(()=>({record:vi.fn(async()=>{})}));
 vi.mock('../../src/backend/admin/finance',()=>({recordFinanceEvent:record}));
 describe('finance metadata projection',()=>{
+ it('preserves replay values when finance tracking sits inside receipt storage',async()=>{
+  const state=initialState();const base:ControlStore={read:async()=>structuredClone(state),transact:async change=>change(state)};
+  const tracked=trackFinanceChanges(base);const store=idempotentAdminStore(tracked.store,'operation','fingerprint','owner');
+  const action=vi.fn(()=>({id:'10000000-0000-4000-8000-000000000001',state:'approved'}));
+  expect(await store.transact(action)).toEqual(await store.transact(action));expect(action).toHaveBeenCalledTimes(1);
+  expect(state.adminReceipts?.operation.value).toEqual({id:'10000000-0000-4000-8000-000000000001',state:'approved'});
+ });
  it('records only committed changed requests and never invents dates for old records',async()=>{
   const state=initialState();const r={subjectId:'s',requestId:'r',inputDigest:'private',operation:'generate' as const,period:'2026-10',bound:300,status:'reserved' as const,cancelled:false};
   state.requests.old={...r};state.requests.new={...r,createdAt:Date.UTC(2026,9,11)};

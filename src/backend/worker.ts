@@ -79,6 +79,7 @@ export function createWorker(dependencies: { store?: (env: WorkerEnv) => Control
       }
       let store = dependencies.store ? dependencies.store(env) : env.CONTROL_DB ? new D1ControlStore(env.CONTROL_DB) : null;
       if (!store) throw new ControlError('CONTROL_UNAVAILABLE', 503);
+      const tracked=trackFinanceChanges(store);store=tracked.store;
       const operationId=request.headers.get('x-admin-operation-id');
       if(path.startsWith('/api/v1/admin/') && operationId) {
         if(request.headers.get('authorization')!==`Bearer ${config.control.adminSecret}`||!/^[a-f0-9-]{36}$/i.test(operationId))throw new ControlError('ADMIN_REQUIRED',403);
@@ -89,7 +90,6 @@ export function createWorker(dependencies: { store?: (env: WorkerEnv) => Control
       if (config.mode === 'control-only' && path === '/api/v1/health' && request.method === 'GET')
         return json({ status: 'control-only', productionModelEnabled: false });
       config.control.coachPromptVersion=env.FITNESS_COACH_PROMPT_RELEASE;
-      const tracked=trackFinanceChanges(store);store=tracked.store;
       const reports:Promise<unknown>[]=[];
       const service = new ControlService(store, config.control, supplier, Date.now, error => {diagnostic({stage:'candidate'});if(env.ADMIN_CONSOLE_ENABLED==='true'&&env.ADMIN_DB&&error instanceof CoachLanguageError)for(const category of error.categories)reports.push(recordBlockedCategory(env.ADMIN_DB,category).catch(()=>{}))});
       if(env.APPLICATION_RETENTION_DAYS!==undefined)config.control.retentionDays=Number(env.APPLICATION_RETENTION_DAYS);
@@ -104,5 +104,6 @@ export function createWorker(dependencies: { store?: (env: WorkerEnv) => Control
   } };
 }
 export default createWorker();
+
 
 
