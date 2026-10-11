@@ -1,5 +1,6 @@
 import { isFeatureEnabled } from './feature-flags';
 import { monitoringError, type AnonymousEvent, type SafeErrorEvent } from './monitoring';
+import { version as packageVersion } from '../../package.json';
 const optKey='fitness.anonymous-usage';
 let counts: Partial<Record<AnonymousEvent,number>> = {};
 const reported = new Set<string>();
@@ -19,11 +20,22 @@ export async function flushUsage() {
  }
 }
 export function reportSafeError(type:SafeErrorEvent['type']) {
+ if(!isFeatureEnabled('errorReports'))return;
  const path=location.pathname, page:SafeErrorEvent['page']=path==='/onboarding'?'onboarding':path.startsWith('/workout')?'training':path.startsWith('/plans')?'plan':path==='/review'?'review':path.startsWith('/settings')?'settings':'other';
  const agent=navigator.userAgent, browser:SafeErrorEvent['browser']=/Firefox/.test(agent)?'firefox':/Chrome|Chromium|Edg/.test(agent)?'chromium':/Safari/.test(agent)?'safari':'other';
- const event=monitoringError({type,page,version:'v8',browser},isFeatureEnabled('errorReports'));
- const key=`${type}:${page}`;if(!event||reported.has(key)||reported.size>=10)return;reported.add(key);
- void fetch('/api/v1/telemetry/errors',{method:'POST',credentials:'omit',headers:{'Content-Type':'application/json'},body:JSON.stringify(event)}).catch(()=>{});
+ const event=monitoringError({type,page,version:'v8',browser},true);
+ const admin=isFeatureEnabled('adminConsole');
+ const key=`${admin?'admin':'legacy'}:${type}:${page}`;if(!event||reported.has(key)||reported.size>=10)return;
+ // Neither URLs nor user-agent strings are transmitted; dynamic routes become fixed names.
+ const route=path==='/'?'/':path==='/today'?'/today':path==='/plans'||path.startsWith('/plans/')?'/plan':path==='/workout'||path.startsWith('/workout/')?'/workout':path==='/history'||path.startsWith('/history/')?'/history':path==='/review'||path.startsWith('/review/')?'/review':path==='/settings'||path.startsWith('/settings/')?'/settings':path==='/admin'||path.startsWith('/admin/')?'/admin':'other';
+ const family=/Edg\//.test(agent)?'Edge':/Firefox\//.test(agent)?'Firefox':/Chrome|Chromium/.test(agent)?'Chrome':/Safari\//.test(agent)?'Safari':'Other';
+ const os=/iPhone|iPad/.test(agent)?'iOS':/Android/.test(agent)?'Android':/Windows/.test(agent)?'Windows':/Mac OS/.test(agent)?'macOS':/Linux/.test(agent)?'Linux':'Other';
+ const version=import.meta.env.VITE_APP_VERSION??packageVersion;
+ if(admin&&!/^(?:[a-f0-9]{7,40}|\d+\.\d+\.\d+(?:-[a-z0-9.]{1,20})?)$/.test(version))return;
+ const payload=admin?{type:type==='validation'?'unexpected':type,route,version,browser:family,os,time:Date.now()}:event;
+ if(!isFeatureEnabled('errorReports'))return;
+ reported.add(key);
+ void fetch('/api/v1/telemetry/errors',{method:'POST',credentials:'omit',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).catch(()=>{});
 }
 export function startMonitoring() {
  const error=()=>reportSafeError('unexpected');window.addEventListener('error',error);window.addEventListener('unhandledrejection',error);
