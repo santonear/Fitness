@@ -1,3 +1,4 @@
+import {useFeature} from '../useFeature';
 import { ApplicationsTable } from '../admin/ApplicationsTable';
 import { AdminShell } from '../admin/shell/AdminShell';
 import { adminTokens } from '../admin/tokens';
@@ -10,9 +11,8 @@ import { ManualInvites } from '../components/ManualInvites';
 import type { ControlService } from '../../backend/control';
 type Data = Awaited<ReturnType<ControlService['managementReport']>>;
 export function ManagementPage() {
-  const [enabled,setEnabled]=useState(false);
-  useEffect(()=>{let active=true;if(new URLSearchParams(location.search).has('legacy'))return;fetch('/api/v1/management/console/session',{credentials:'same-origin'}).then(r=>r.ok?r.json():null).then(v=>{if(active)setEnabled(v?.enabled===true)}).catch(()=>{});return()=>{active=false}},[]);
-  return enabled?<AdminShell/>:<LegacyManagementPage/>;
+  const enabled=useFeature('adminConsole');
+  return enabled&&!new URLSearchParams(location.search).has('legacy')?<AdminShell/>:<LegacyManagementPage/>;
 }
 function LegacyManagementPage() {
   const { i18n } = useTranslation(); const zh = i18n.resolvedLanguage === 'zh';
