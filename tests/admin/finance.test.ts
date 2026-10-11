@@ -4,6 +4,7 @@ import { afterEach,expect,it } from 'vitest';
 import type { AdminDatabase,AdminStatement } from '../../src/backend/admin/core/contracts';
 import { FinanceStore, handleFinance, resolveRuntimeEnv, activeAnnouncement, recordFinanceEvent, dailyCosts, ledgerProjection, ledgerCsv, financeTodos, environmentDefaults, reconciliationTodos, recentCosts } from '../../src/backend/admin/finance';
 import { initialState } from '../../src/backend/store';
+import {financeOutcome,mutationCopy} from '../../src/ui/admin/finance/outcome';
 const databases:DatabaseSync[]=[];
 afterEach(()=>databases.splice(0).forEach(d=>d.close()));
 function setup(){
@@ -75,4 +76,16 @@ it('audit outage then same-request retry does not append a second configuration 
  const {db,context,post}=setup(),request=()=>post('config',{expectedVersion:0,config});
  await expect(handleFinance(request(),{...context,audit:async()=>{throw new Error('audit outage')}})).rejects.toThrow('audit outage');
  await handleFinance(request(),context);expect((await new FinanceStore(db).read()).versions).toHaveLength(1);
+});
+it('released requests remove old pending metrics without recording an uncalled request',async()=>{
+ const {db}=setup(),event={eventKey:'a'.repeat(64),day:'2026-10-01',task:'generate' as const,status:'pending' as const,costFen:0,reservedFen:100,at:1};
+ await recordFinanceEvent(db,event);await recordFinanceEvent(db,{...event,status:'released',reservedFen:0});await recordFinanceEvent(db,{...event,eventKey:'b'.repeat(64),status:'released',reservedFen:0});
+ expect(await dailyCosts(db,'2026-10')).toEqual([]);expect((await recentCosts(db,Date.UTC(2026,9,3))).rows).toEqual([]);
+ await recordFinanceEvent(db,event);expect(await dailyCosts(db,'2026-10')).toEqual([]);
+ await expect(recordFinanceEvent(db,{...event,costFen:4})).rejects.toThrow('INVALID_FINANCE_AMOUNTS');
+});
+it('only known rejection permits editing; unknown conflict/timeout and Access preserve retry identity',()=>{
+ expect(financeOutcome({code:'INVALID_FINANCE_INPUT',status:400})).toBe('rejected');expect(financeOutcome({code:'CONFIG_VERSION_CONFLICT',status:409})).toBe('rejected');
+ expect(financeOutcome({code:'OPERATION_IN_PROGRESS',status:409})).toBe('unknown');expect(financeOutcome({code:'TIMEOUT',status:408})).toBe('unknown');expect(financeOutcome(new Error('network'))).toBe('unknown');
+ expect(financeOutcome({code:'ADMIN_REQUIRED',status:403})).toBe('reverify');expect(mutationCopy.en.success).toBe('Operation completed');
 });
