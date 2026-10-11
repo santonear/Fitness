@@ -30,6 +30,7 @@ export function PlanDraftPage({ locale, candidate, basic = false, busy = false, 
     <header><slots.BrandMark label={t.brand} />{basic && <span>{t.basic}</span>}</header>
     <section className="v8-onboarding-conversation">
       <slots.AiLine><h1>{t.draft}</h1></slots.AiLine>
+      {basic && <p>{t.basicHint}</p>}
       <p>{plan.goalText}</p><p>{count(t.weekly, plan.weeklyTarget)}</p>
       {plan.templates.map(template => <section key={template.id} className="v8-draft-template"><h2>{templateLabel(template,locale)}</h2><p>{count(t.minutes, template.estimatedMinutes)}</p>
         {template.items.map((item, index) => { const text = exerciseText(item.exerciseId), target = item.target; return <button type="button" className="v8-draft-exercise" key={`${item.exerciseId}-${index}`} onClick={event=>{trigger.current=event.currentTarget;setDetail(item.exerciseId);}}><strong>{text.name}</strong><span>{count(t.sets, item.sets)}</span>

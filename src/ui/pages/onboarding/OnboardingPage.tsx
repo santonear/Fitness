@@ -48,8 +48,9 @@ export function OnboardingPage({ locale, step, answers, slots, mode, bodyEnabled
           {(['knee', 'back', 'shoulder', 'wrist', 'other'] as const).map(part => <Chip key={part} selected={answers.cautions.includes(part)} disabled={busy} onClick={() => onChange({ ...answers, safetyAnswered: true, cautions: answers.cautions.includes(part) ? answers.cautions.filter(value => value !== part) : [...answers.cautions, part] })}>{t.parts[part]}</Chip>)}
         </div></fieldset>
         {!answers.adultConfirmed && <p>{t.minor}</p>}
-        {mode === 'ai' ? <details><summary>{t.consent}</summary><dl>{[answers.goalText, answers.scheduleOriginalText, answers.placeEquipmentText, answers.adultConfirmed ? t.adult : '—', answers.cautions.length ? answers.cautions.map(part => t.parts[part]).join(' / ') : t.parts.none].map((value, i) => <div key={t.fields[i]}><dt>{t.fields[i]}</dt><dd>{value}</dd></div>)}</dl></details> : <p>{t.basic}</p>}
+        {mode === 'ai' ? <details><summary>{t.consent}</summary><dl>{[answers.goalText, answers.scheduleOriginalText, answers.placeEquipmentText, answers.adultConfirmed ? t.adult : '—', answers.cautions.length ? answers.cautions.map(part => t.parts[part]).join(' / ') : t.parts.none].map((value, i) => <div key={t.fields[i]}><dt>{t.fields[i]}</dt><dd>{value}</dd></div>)}</dl></details> : <p>{t.basic} · {t.basicHint}</p>}
       </>}
+      {busy && <p role="status">{mode === 'ai' ? t.aiWorking : t.working}</p>}
       {error && <p role="alert">{error}</p>}
       <footer>
         {step > 0 && <Button disabled={busy} onClick={() => onStep((step - 1) as 0 | 1 | 2 | 3)}>{t.back}</Button>}
