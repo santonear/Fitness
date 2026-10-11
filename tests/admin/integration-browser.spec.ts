@@ -26,7 +26,7 @@ test('application approval persists through real console and removes its todo',a
   await page.goto('/admin/todo');await expect(page.getByRole('heading',{name:'新申请',exact:true})).toBeVisible();await page.getByRole('link',{name:'逐个审核',exact:true}).click();
   await expect(page.getByRole('heading',{name:/合成申请人/})).toBeVisible();await page.getByRole('button',{name:'批准',exact:true}).click();await expect(page.getByRole('dialog')).toBeVisible();
   const write=page.waitForResponse(response=>response.url().endsWith('/console/users/action')&&response.request().method()==='POST');await page.getByRole('button',{name:'确认',exact:true}).click();expect((await write).status()).toBe(200);
-  await expect(page.getByRole('button',{name:'批准',exact:true})).toHaveCount(0);await expect(page.locator('article').filter({has:page.getByRole('heading',{name:/合成申请人/})})).toContainText('approved');
+  await expect(page.getByRole('button',{name:'批准',exact:true})).toHaveCount(0);await expect(page.locator('article').filter({has:page.getByRole('heading',{name:/合成申请人/})})).toContainText('已批准');
   const evidence=await (await page.request.get('/__test/evidence')).json();expect(evidence.applicationState).toBe('approved');expect(evidence.revision).toBeGreaterThan(0);expect(evidence.audit).toContainEqual(expect.objectContaining({actor:'admin@integration.test',action:'approve',result:'success'}));expect(evidence.migrations).toEqual(expect.arrayContaining(['1_core.sql','2_releases.sql','3_finance.sql','4_quality.sql']));
   await page.getByRole('navigation',{name:'手机后台导航'}).getByRole('link',{name:/待办/}).click();await expect(page.getByText('当前没有需要处理的待办')).toBeVisible();expect((await (await page.request.get('/api/v1/management/console/todos')).json()).items).toEqual([]);
   await page.reload();await expect(page.getByText('当前没有需要处理的待办')).toBeVisible();
@@ -130,6 +130,33 @@ test('legacy parity AI switch persists without invoking any model transport',asy
  for(const name of ['开启 AI 服务','关闭 AI 服务']){await page.getByRole('button',{name,exact:true}).click();const response=page.waitForResponse(r=>r.url().endsWith('/console/users/action'));await page.getByRole('button',{name:'确认',exact:true}).click();expect((await response).status()).toBe(200);await expect(page.getByRole('dialog')).not.toBeVisible();expect((await (await page.request.get('/__test/evidence')).json()).aiEnabled).toBe(name==='开启 AI 服务');}
 });
 test('legacy parity audit filter and CSV preserve UTF8 BOM',async({page})=>{
- await page.goto('/admin/applications');await page.getByRole('button',{name:'批准',exact:true}).click();await page.getByRole('button',{name:'确认',exact:true}).click();await expect(page.getByRole('dialog')).not.toBeVisible();await page.goto('/admin/audit');await page.getByLabel('筛选操作').fill('approve');await expect(page.getByText(/admin@integration.test.*approve.*success/)).toBeVisible();
+ await page.goto('/admin/applications');await page.getByRole('button',{name:'批准',exact:true}).click();await page.getByRole('button',{name:'确认',exact:true}).click();await expect(page.getByRole('dialog')).not.toBeVisible();await page.goto('/admin/audit');await page.getByLabel('筛选操作').fill('批准申请');await expect(page.getByText(/admin@integration.test.*批准申请.*已完成/)).toBeVisible();
  const download=page.waitForEvent('download');await page.getByRole('link',{name:'导出 CSV',exact:true}).click();const path=await (await download).path();const {readFile}=await import('node:fs/promises');const bytes=await readFile(path!);expect([...bytes.subarray(0,3)]).toEqual([239,187,191]);expect(bytes.toString('utf8')).toContain('approve');
+});
+
+
+test('review evidence yuan input confirms before storing integer fen',async({page})=>{
+ await page.goto('/admin/settings');await page.getByLabel('月预算上限（元）',{exact:true}).fill('45.67');await page.getByLabel('单次预留（元）',{exact:true}).fill('2.34');
+ await page.getByRole('button',{name:'查看改动',exact:true}).click();await expect(page.getByRole('dialog')).toContainText('¥ 45.67');await expect(page.getByRole('dialog')).toContainText('¥ 2.34');
+ const before=await (await page.request.get('/api/v1/management/console/finance/config')).json();expect(before.current.config.monthlyBudgetFen).toBe(3500);
+ const response=page.waitForResponse(r=>r.url().endsWith('/finance/config')&&r.request().method()==='POST');await page.getByRole('button',{name:'确认',exact:true}).click();expect((await response).status()).toBe(200);
+ const after=await (await page.request.get('/api/v1/management/console/finance/config')).json();expect(after.current.config).toMatchObject({monthlyBudgetFen:4567,reservationFen:234});
+});
+test.describe('Shanghai announcement review evidence',()=>{
+ test.use({timezoneId:'Asia/Shanghai'});
+ test('review evidence local announcement inputs show matching UTC and persist timestamps',async({page})=>{
+  await page.goto('/admin/settings');await page.getByLabel('公告内容',{exact:true}).fill('系统维护中，训练记录可继续保存。');
+  await page.getByLabel('开始时间 (Asia/Shanghai)',{exact:false}).fill('2026-10-12T10:30');await page.getByLabel('结束时间 (Asia/Shanghai)',{exact:false}).fill('2026-10-12T12:00');
+  await expect(page.getByText('UTC: 2026-10-12 02:30',{exact:true})).toBeVisible();await expect(page.getByText('UTC: 2026-10-12 04:00',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'发布公告',exact:true}).click();await expect(page.getByRole('dialog')).toBeVisible();expect((await (await page.request.get('/api/v1/management/console/finance/announcement')).json()).announcement).toBeNull();
+  const response=page.waitForResponse(r=>r.url().endsWith('/finance/announcement')&&r.request().method()==='POST');await page.getByRole('button',{name:'确认',exact:true}).click();expect((await response).status()).toBe(200);
+  const saved=await (await page.request.get('/api/v1/management/console/finance/announcement')).json();expect(saved.announcement).toMatchObject({start:Date.parse('2026-10-12T02:30:00Z'),end:Date.parse('2026-10-12T04:00:00Z')});
+ });
+});
+test('review evidence 50 percent budget dismisses but 80 percent stays actionable',async({page})=>{
+ await page.request.post('/__test/parity-fixture',{data:{mode:'budget50'}});await page.goto('/admin/todo');await expect(page.getByRole('heading',{name:'本月预算已用到 50%',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'关闭本月 50% 提醒',exact:true}).click();await expect(page.getByRole('heading',{name:'本月预算已用到 50%',exact:true})).toHaveCount(0);
+ await page.goto('/admin/todo');await expect(page.getByRole('heading',{name:'本月预算已用到 50%',exact:true})).toHaveCount(0);
+ await page.request.post('/__test/parity-fixture',{data:{mode:'budget80'}});await page.reload();await expect(page.getByRole('heading',{name:'本月预算已用到 80%',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'关闭本月 50% 提醒',exact:true})).toHaveCount(0);
+ await page.goto('/admin/ledger');await expect(page.getByRole('progressbar')).toHaveAttribute('value','2800');await expect(page.getByRole('button',{name:'关闭本月 50% 预算提示',exact:true})).toHaveCount(0);
 });

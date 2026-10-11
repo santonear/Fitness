@@ -89,6 +89,7 @@ const server=await createServer({configFile:false,server:{host:'127.0.0.1',port,
       if(path==='/__test/parity-fixture'&&request.method==='POST'){
         const {mode}=JSON.parse((await bodyOf(request)).toString());const state=JSON.parse(control.prepare('SELECT state FROM control_ledger WHERE id=1').get().state);
         if(mode==='pending'){const r=state.requests[`${subjectId}:50000000-0000-4000-8000-000000000005`];r.status='pending';delete r.actualCost;state.budgets[r.period]={spent:0,reserved:300};}
+        else if(mode==='budget50'||mode==='budget80'){const period=new Date().toISOString().slice(0,7);state.budgets[period]={spent:mode==='budget50'?1750:2800,reserved:0};}
         else if(mode==='expired'){state.applications[applicationId].state='rejected';state.applications[applicationId].decidedAt=Date.now()-40*86400000;}
         else if(mode==='ai'){env.CONTROL_MODE='external';env.SUPPLIER_PROVIDER='deepseek';env.DEEPSEEK_API_KEY=randomBytes(32).toString('hex');env.SUPPLIER_ENDPOINT='https://api.deepseek.com/chat/completions';env.SUPPLIER_ORIGIN='https://api.deepseek.com';}
         else return send(response,400,{error:'INVALID_FIXTURE'});
