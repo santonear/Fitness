@@ -34,7 +34,7 @@ test('storage denied or corrupt never prevents in-memory success',async()=>{
 test('duplicate starts share one poller, background over 60 seconds retains flags and sends no requests',async()=>{
  vi.useFakeTimers();const doc=Object.assign(new EventTarget(),{visibilityState:'visible'}),win=new EventTarget(),nav={onLine:true};
  vi.stubGlobal('document',doc);vi.stubGlobal('window',win);vi.stubGlobal('navigator',nav);
- const fetcher=vi.fn(async()=>response({planLifecycle:true}));vi.stubGlobal('fetch',fetcher);
+ const fetcher=vi.fn<typeof fetch>(async()=>response({planLifecycle:true}));vi.stubGlobal('fetch',fetcher);
  const f=await import('../../src/application/feature-flags');const stop1=f.startFeatureFlags(),stop2=f.startFeatureFlags();await Promise.resolve();await Promise.resolve();
  await vi.advanceTimersByTimeAsync(0);expect(fetcher).toHaveBeenCalledTimes(1);
  doc.visibilityState='hidden';doc.dispatchEvent(new Event('visibilitychange'));await vi.advanceTimersByTimeAsync(90000);
@@ -51,7 +51,7 @@ test('concurrent callers share a single pending network request',async()=>{
 });
 test.each([true,false])('startup requests once even when hidden (online=%s), then pauses polling',async(onLine)=>{
  vi.useFakeTimers();vi.stubGlobal('document',Object.assign(new EventTarget(),{visibilityState:'hidden'}));vi.stubGlobal('window',new EventTarget());vi.stubGlobal('navigator',{onLine});
- const fetcher=vi.fn(async()=>response({planLifecycle:true}));vi.stubGlobal('fetch',fetcher);
+ const fetcher=vi.fn<typeof fetch>(async()=>response({planLifecycle:true}));vi.stubGlobal('fetch',fetcher);
  const f=await import('../../src/application/feature-flags');const stop=f.startFeatureFlags(),stopAgain=f.startFeatureFlags();await vi.advanceTimersByTimeAsync(0);expect(fetcher).toHaveBeenCalledTimes(1);expect(f.isFeatureEnabled('planLifecycle')).toBe(true);
  await vi.advanceTimersByTimeAsync(90000);expect(fetcher).toHaveBeenCalledTimes(1);stop();stopAgain();
 });
@@ -64,3 +64,10 @@ test('admin flag requests preserve Access cookies and expose failure without rev
  expect(f.getFeatureLoadState()).toBe('error');expect(f.isFeatureEnabled('adminConsole')).toBe(true);
 });
 
+
+test('route remounts reuse a recent success; explicit refresh and a new admin scope still request',async()=>{
+ vi.useFakeTimers();vi.stubGlobal('document',Object.assign(new EventTarget(),{visibilityState:'visible'}));vi.stubGlobal('window',new EventTarget());vi.stubGlobal('navigator',{onLine:true});vi.stubGlobal('location',{pathname:'/'});
+ const fetcher=vi.fn<typeof fetch>(async()=>response({planLifecycle:true}));vi.stubGlobal('fetch',fetcher);const f=await import('../../src/application/feature-flags');
+ const stop=f.startFeatureFlags();await vi.advanceTimersByTimeAsync(0);stop();const stopAgain=f.startFeatureFlags();await vi.advanceTimersByTimeAsync(0);expect(fetcher).toHaveBeenCalledTimes(1);
+ await f.refreshFeatureFlags(fetcher);expect(fetcher).toHaveBeenCalledTimes(2);vi.stubGlobal('location',{pathname:'/admin'});await f.refreshFeatureFlags(fetcher,true);expect(fetcher).toHaveBeenCalledTimes(3);expect(fetcher.mock.calls[2][1]).toMatchObject({credentials:'same-origin'});stopAgain();
+});

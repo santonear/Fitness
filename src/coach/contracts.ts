@@ -27,7 +27,7 @@ const common = {
   nutrition: z.array(z.strictObject({localDate:z.iso.date(),meal:z.enum(['breakfast','lunch','dinner','snack']),portion:z.string().max(500).optional(),calories:z.number().int().nonnegative().max(10000).optional()})).max(100).optional(),
 };
 const timingCounts = z.strictObject({ partial: count, notStarted: count });
-const timeBands = z.strictObject({ morning: timingCounts, daytime: timingCounts, evening: timingCounts });
+const timeBands = z.strictObject({ morning: timingCounts, daytime: timingCounts, evening: timingCounts, overnight: timingCounts.optional() });
 export const reviewFactsSchema = z.strictObject({
   from: z.iso.date(), to: z.iso.date(), complete: count, partial: count, notStarted: count,
   movementCount: count, missingCount: count, activityMinutes: count, trainingSeconds: count,

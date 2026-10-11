@@ -32,8 +32,8 @@ for (const lostResponse of [false, true]) test(`original applicant refresh claim
     if (path.endsWith('/application-config')) return route.fulfill({ json: { available: false, siteKey: null } });
     if (path.endsWith('/applications')) return route.fulfill({ json: [{ id, kind: 'new', state: claimed || lostResponse ? 'claimed' : 'approved', directlyActivated: true, createdAt: Date.now(), claimUntil: Date.now() + 86400000 }] });
     if (path.endsWith('/claim')) { expect(route.request().postDataJSON()).toEqual({ receipt: 'a'.repeat(64), id }); claimed = true; return route.fulfill({ json: {} }); }
-    if (path.endsWith('/status')) return claimed ? route.fulfill({ json: { expiresAt: Date.now() + 86400000, used: { understand: 0, generate: 0 }, limits: { understand: 8, generate: 4 }, aiEnabled: true } }) : route.fulfill({ status: 401, json: { error: 'QUALIFICATION_REQUIRED' } });
+    if (path.endsWith('/access-status')) return claimed ? route.fulfill({ json: { qualification:'active',sessionValid:true,expiresAt: Date.now() + 86400000, used: { understand: 0, generate: 0 }, limits: { understand: 8, generate: 4 }, aiEnabled: true } }) : route.fulfill({json:{qualification:'none',sessionValid:false}});
     return route.fulfill({ status: 500, json: { error: 'Unexpected endpoint' } });
   });
-  await page.goto('/trial'); await expect(page.getByRole('button', { name: 'Start planning your training' })).toBeEnabled(); expect(claimed).toBe(true);
+  await page.goto('/trial'); await expect(page.getByRole('button', { name: 'Return to training' })).toBeEnabled(); expect(claimed).toBe(true);
 });

@@ -90,5 +90,6 @@
  "askCoach": "和芽芽聊聊",
  "oldWorkout": "这次训练沿用原计划，请结束并记下后再调整新计划。",
  "meters": "米",
-  "restoreSucceeded": "恢复成功。"
+  "restoreSucceeded": "恢复成功。",
+  "firstWorkoutReason": "从这份训练开始，按今天的状态来。"
 }

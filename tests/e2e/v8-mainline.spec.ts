@@ -69,7 +69,7 @@ async function onboard(page: Page, caution?: string) {
   await page.getByLabel('你的回答').fill('每周 2 次，每次 20 分钟'); await page.getByRole('button', { name: '继续', exact: true }).click();
   await page.getByLabel('你的回答').fill('在家，只有瑜伽垫'); await page.getByRole('button', { name: '继续', exact: true }).click();
   if (caution) await page.getByRole('button', { name: caution, exact: true }).click();
-  await page.getByLabel('我已年满 18 岁').check(); await page.getByRole('button', { name: '生成我的第一版计划' }).click();
+  await page.getByLabel('我已年满 18 岁').check(); await page.getByRole('button', { name: '生成新计划' }).click();
   await expect(page.getByRole('heading', { name: '你的第一版计划' })).toBeVisible();
 }
 test('real local mainline persists a confirmed plan, training and review with no model requests', async ({ page }) => {
@@ -138,7 +138,7 @@ test('onboarding is resumable and adult confirmation is required for basic gener
   await page.getByLabel('你的回答').fill('每周 3 次，每次 30 分钟'); await page.reload();
   await expect(page.getByLabel('你的回答')).toHaveValue('每周 3 次，每次 30 分钟');
   await page.getByRole('button', { name: '继续', exact: true }).click(); await page.getByLabel('你的回答').fill('在家'); await page.getByRole('button', { name: '继续', exact: true }).click();
-  await expect(page.getByRole('button', { name: '生成我的第一版计划' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: '生成新计划' })).toBeDisabled();
 });
 
 
@@ -148,7 +148,7 @@ test('one focused exercise, edited defaults, replacement and pause retain facts'
  await page.getByRole('button',{name:'换一份',exact:true}).click();await page.getByRole('button',{name:'开始训练',exact:true}).click();
  await page.getByRole('button',{name:'修改数值'}).click();await page.getByLabel('次',{exact:true}).fill('9');await page.getByRole('button',{name:'确定',exact:true}).click();
  await page.getByRole('button',{name:'完成这一组'}).click();await expect(page.getByText('第 2 组，共 2 组',{exact:true})).toBeVisible();
- await page.getByRole('button',{name:'换动作',exact:true}).click();await page.getByLabel('替换动作',{exact:true}).selectOption({label:'自阻力划船'});await page.getByLabel('换动作的原因').selectOption('discomfort');await page.getByRole('button',{name:'确定',exact:true}).click();
+ await page.getByRole('button',{name:'换动作',exact:true}).click();await page.getByRole('dialog').getByRole('searchbox').fill('自阻力划船');await page.getByRole('dialog').getByRole('button',{name:'自阻力划船',exact:true}).click();await page.getByLabel('换动作的原因').selectOption('discomfort');await page.getByRole('button',{name:'确定',exact:true}).click();
  await expect(page.getByRole('heading',{name:'自阻力划船',exact:true})).toBeVisible();await page.getByRole('button',{name:'完成这一组'}).click();
  await expect(page.getByRole('button',{name:'这个动作完成了，换下一个'})).toBeVisible();
  const result=await page.evaluate(async()=>{const p='/src/persistence/db.ts';const db=(await import(/* @vite-ignore */ p)).database;return (await db.v8Workouts.toArray())[0];});
@@ -205,4 +205,38 @@ test('review adjustment is previewed then saved as a new version without rewriti
  expect(after.workouts).toEqual(before.workouts);expect(after.versions).toHaveLength(2);expect(after.versions.find((v:{id:string})=>v.id===before.versions[0].id)).toEqual(before.versions[0]);
  await page.getByRole('button',{name:'本月回顾',exact:true}).click();await expect(page.getByRole('heading',{name:'本月回顾',exact:true})).toBeVisible();
  await page.goto('/plans/versions');await expect(page.getByRole('button',{name:'查看计划',exact:true})).toHaveCount(2);
+});
+
+
+test('current-week overnight patterns, replacement review and localized names',async({page})=>{
+ await page.clock.setFixedTime(new Date('2026-10-14T03:00:00Z'));await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();
+ const before=await page.evaluate(async()=>{const path='/src/persistence/db.ts',db=(await import(/* @vite-ignore */ path)).database;const profile=await db.profiles.toCollection().first();await db.profiles.put({...profile,timeZone:'Asia/Shanghai'});const version=(await db.v8PlanVersions.toArray())[0];
+  const dates=['2026-10-11T15:59:00Z','2026-10-11T16:01:00Z','2026-10-12T16:01:00Z'];await db.v8Workouts.bulkAdd(dates.map(startedAt=>({id:crypto.randomUUID(),planVersionId:version.id,templateId:version.templates[0].id,startedAt,endedAt:new Date(Date.parse(startedAt)+600000).toISOString(),localDate:startedAt.slice(0,10),timeZone:'UTC',status:'partial',plannedSetCount:8,sets:[{exerciseId:version.templates[0].items[0].exerciseId,itemIndex:0,setIndex:0,reps:8,completedAt:new Date(Date.parse(startedAt)+60000).toISOString()}],feedback:{reasons:['time']}})));return version;
+ });
+ await page.goto('/review');await expect(page.getByText('工作日凌晨有 2 次没练完。',{exact:true})).toBeVisible();await expect(page.getByText(/周末晚上有/)).toHaveCount(0);await expect(page.locator('.v8-facts dd')).toHaveText(['0','2','2','20','0']);
+ await page.getByRole('button',{name:'就这样调整',exact:true}).click();await page.getByRole('button',{name:'就这样调整',exact:true}).click();await expect(page.getByRole('status')).toHaveText('已保存为新的计划版本。');
+ const current=await page.evaluate(async()=>{const path='/src/persistence/db.ts',db=(await import(/* @vite-ignore */ path)).database;return(await db.v8PlanVersions.toArray()).find((v:{versionNumber:number})=>v.versionNumber===2)});
+ expect(current.templates.map((t:{id:string})=>t.id)).toEqual(before.templates.map((t:{id:string})=>t.id));expect(current.templates[0].estimatedMinutes).toBeLessThan(before.templates[0].estimatedMinutes);
+ await page.goto('/plans');await expect(page.getByRole('heading',{name:`${current.templates[0].estimatedMinutes} 分钟`,exact:true})).toBeVisible();
+ await page.goto('/settings');await page.getByRole('combobox',{name:'语言',exact:true}).selectOption('en');await page.goto('/plans');await expect(page.getByRole('heading',{name:`${current.templates[0].estimatedMinutes} min`,exact:true})).toBeVisible();await page.getByRole('button',{name:'View previous versions',exact:true}).click();await expect(page.getByText('Replaced the corresponding workout with a shorter session.',{exact:true})).toBeVisible();
+});
+
+test('server-revoked access replaces local entitlement and blocks paid requests',async({page})=>{
+ let qualification='active',modelCalls=0;
+ await page.route('**/api/v1/trial/access-status',route=>route.fulfill({json:{qualification,sessionValid:qualification==='active',expiresAt:Date.now()+86400000,aiEnabled:true,planningBudgetDisabled:true,used:{generate:0},limits:{generate:4}}}));
+ await page.route('**/api/v1/plans/generate',route=>{modelCalls++;return route.fulfill({status:500,json:{error:'UNEXPECTED'}})});
+ await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();await page.goto('/settings');await expect(page.getByText('AI 资格有效',{exact:true})).toBeVisible();qualification='revoked';await page.getByRole('button',{name:'刷新资格',exact:true}).click();await expect(page.getByText('此浏览器的资格已失效',{exact:true})).toBeVisible();await expect(page.getByRole('link',{name:'恢复领取或申请补发'})).toHaveAttribute('href','/trial');
+ await page.goto('/');await page.getByRole('button',{name:'和芽芽聊聊',exact:true}).click();await page.getByRole('dialog').getByRole('textbox',{name:'跟芽芽说'}).fill('今天时间不够');await page.getByRole('dialog').getByRole('button',{name:'发送',exact:true}).click();await expect(page.getByRole('dialog').getByRole('status')).toContainText('现在用的是本地建议 · 资格无效');expect(modelCalls).toBe(0);
+});
+
+test('activities require an explicit type and replanning starts with previous answers',async({page})=>{
+ await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();await page.goto('/activity');await expect(page.getByRole('button',{name:'记下来',exact:true})).toBeDisabled();await page.getByRole('button',{name:'散步',exact:true}).click();await expect(page.getByRole('button',{name:'记下来',exact:true})).toBeEnabled();
+ await page.goto('/settings');await page.getByRole('button',{name:'生成新计划',exact:true}).click();await expect(page.getByLabel('你的回答')).not.toHaveValue('');await expect(page.getByRole('button',{name:'继续',exact:true})).toBeVisible();
+});
+
+test('favorite exercises roundtrip through a downloaded backup without changing workout facts',async({page})=>{
+ await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();await page.goto('/exercises');await page.getByRole('searchbox').fill('自阻力划船');await page.getByRole('button',{name:'收藏 自阻力划船',exact:true}).click();await page.goto('/settings');await page.getByRole('button',{name:'备份恢复',exact:true}).click();const downloaded=page.waitForEvent('download');await page.getByRole('button',{name:'导出 JSON 备份',exact:true}).click();const download=await downloaded;const file=await download.path();expect(file).toBeTruthy();
+ const {readFileSync}=await import('node:fs');const envelope=JSON.parse(readFileSync(file!,'utf8'));expect(envelope.schemaVersion).toBe(10);expect(envelope.data.exerciseFavorites).toHaveLength(1);
+ const result=await page.evaluate(async backup=>{const p='/src/persistence/repository.ts',b='/src/application/backup.ts',repo=(await import(/* @vite-ignore */ p)).repository,service=(await import(/* @vite-ignore */ b)).createBackupService(repo);await repo.write(async()=>{await repo.db.exerciseFavorites.clear()});const input=await service.validateBackup(new File([JSON.stringify(backup)],'backup.json'));await service.importBackup(input,{backupExported:true,replacementConfirmed:true,expectedRevision:input.expectedRevision});return {favorites:await repo.db.exerciseFavorites.toArray(),workouts:await repo.db.v8Workouts.toArray()};},envelope);
+ expect(result.favorites).toEqual(envelope.data.exerciseFavorites);expect(result.workouts).toEqual(envelope.data.v8.workouts);await page.goto('/exercises');await page.getByLabel('只看已收藏').check();await expect(page.getByRole('button',{name:'自阻力划船',exact:true})).toBeVisible();
 });

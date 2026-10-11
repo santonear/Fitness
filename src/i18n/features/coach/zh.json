@@ -82,7 +82,7 @@
     "sets": "组数",
     "target": "目标",
     "reps": "次数",
-    "loadGrams": "重量（克）",
+    "loadGrams": "重量（公斤）",
     "durationSeconds": "时间（秒）",
     "distanceMeters": "距离（米）",
     "reasons": "安排理由",
@@ -125,10 +125,15 @@
     "current": "现在",
     "metric": "比较内容",
     "heightCm": "身高（厘米）",
-    "weightGrams": "体重（克）"
+    "weightGrams": "体重（克）",
+    "biologicalSex": "性别",
+    "weightKg": "体重（公斤）",
+    "waistCm": "腰围（厘米）"
   },
   "currentPlan": "当前计划",
   "defaultInstruction": "想调整一下。",
   "localStatus": "现在用的是本地建议",
-  "sameAsMessage": "同本次对话中的最新一条用户消息。"
+  "sameAsMessage": "同本次对话中的最新一条用户消息。",
+  "bodySource": "来自你的身体资料",
+  "bodyChanged": "身体资料已更新，请重新打开芽芽并核对发送内容。"
 }

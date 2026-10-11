@@ -1,5 +1,6 @@
 /** Declarative V8 route inventory. */
 export const v8Routes = [
+  {id:'bodyProfile',path:'/settings/body',page:'settings/BodyProfilePage',namespace:'settings',owner:'integration'},
   { id: 'nutrition', path: '/settings/nutrition', page: 'settings/NutritionPage', namespace: 'settings', owner: 'followup' },
   { id: 'activityImport', path: '/settings/import', page: 'settings/ActivityImportPage', namespace: 'settings', owner: 'followup' },
   { id: 'onboarding', path: '/onboarding', page: 'onboarding/OnboardingPage', namespace: 'onboarding', owner: 'E' },

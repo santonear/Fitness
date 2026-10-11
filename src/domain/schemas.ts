@@ -1,3 +1,4 @@
+import {bodyDetailsSchema} from './body-profile';
 import { z } from 'zod';
 import { nutritionRecordSchema, activityImportReceiptSchema } from './lifestyle';
 import { schedulingFields, validateScheduling, setTimingSchema } from './training-time';
@@ -51,7 +52,7 @@ export const trainingPreferencesSchema = z.strictObject({
   }
 });
 export const localProfileSchema = z.strictObject({
-  ...entityFields, locale: localeSchema, timeZone: timeZoneSchema, units: z.literal('metric'), trainingPreferences: trainingPreferencesSchema.optional(),
+  ...entityFields, bodyDetails: bodyDetailsSchema.optional(), locale: localeSchema, timeZone: timeZoneSchema, units: z.literal('metric'), trainingPreferences: trainingPreferencesSchema.optional(),
 });
 export const plannedExerciseSchema = z.strictObject({
   exerciseId: exerciseIdSchema, order: nonnegative, targetSets: z.array(setMetricsSchema).min(1), setTimings: z.array(setTimingSchema).min(1).optional(), notes: z.string().optional(),
@@ -136,6 +137,7 @@ export const v8PlanVersionSchema = z.strictObject({
   templates: z.array(z.strictObject({ id: z.string().min(1), name: z.string().min(1), estimatedMinutes: v8Minutes,
     items: z.array(z.strictObject({ exerciseId: exerciseIdSchema, equipment: z.string(), sets: positive, target: setMetricsSchema })).min(1),
   })).min(1), createdAt: utcTimestampSchema, origin: z.enum(['onboard', 'coach_change', 'review_suggestion', 'manual', 'migrated']),
+  reviewRule: z.enum(['time','progression','frequency','restart','discomfort']).optional(),
   changeSummary: z.array(z.string()), basedOnVersionId: uuidSchema.optional(), source: z.enum(['local', 'ai']).optional(),
 });
 const v8NextWorkoutOverrideSchema = z.strictObject({ planVersionId: uuidSchema, templateId: z.string(), template: v8PlanVersionSchema.shape.templates.element, requestId: uuidSchema });
@@ -172,6 +174,7 @@ export const v8PlanReferenceSchema = z.strictObject({ id: uuidSchema, planId: uu
 export const v8BackupSchema = z.strictObject({ state: v8StateSchema, plans: z.array(v8PlanSchema), planVersions: z.array(v8PlanVersionSchema),
   workouts: z.array(v8WorkoutSchema), activities: z.array(v8ActivitySchema), planReferences: z.array(v8PlanReferenceSchema).optional() });
 export const backupDataSchema = z.strictObject({
+  exerciseFavorites: z.array(z.strictObject({id:z.string().min(1)})).optional(),
   metadata: metadataSchema, profiles: z.array(localProfileSchema), plans: z.array(planSchema), planVersions: z.array(planVersionSchema),
   sessions: z.array(workoutSessionSchema), sets: z.array(setRecordSchema), scheduledWorkouts: z.array(legacyBackupScheduleSchema),
   bodyWeights: z.array(bodyWeightObservationSchema), trainingMemo: trainingMemoSchema, aiMemoryNotes: z.array(aiMemoryNoteSchema), timers: z.array(timerStateSchema),

@@ -1,3 +1,4 @@
+import {versionSummary} from '../../../i18n/features/plan/labels';
 import type { PlanVersion } from '../../../domain/v8/contracts';
 import { planMessages, type PlanLanguage } from '../../../i18n/features/plan/messages';
 import { Button, Row } from '../../components/common';
@@ -21,8 +22,8 @@ export function VersionsPage({ versions, currentVersionId, language, onBack, onV
     <ol className="plan-timeline">{sorted.map(version => <li key={version.id}>
       <Row><h2>{t.version(version.versionNumber)} · {version.id === currentVersionId ? t.current : t.readOnly}</h2>
         <time className="plan-muted" dateTime={version.createdAt}>{new Intl.DateTimeFormat(language, { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(version.createdAt))}</time></Row>
-      <p>{version.goalText}</p><p className="plan-muted">{version.source==='local'?guide.basic:version.source==='ai'?guide.ai:version.origin==='onboard'?guide.initial:t.origins[version.origin]}</p>
-      <ul>{version.changeSummary.map((change, index) => <li key={index}>{change}</li>)}</ul>
+      <p>{version.goalText}</p><p className="plan-muted">{t.origins[version.origin]}{version.source==='local'?` · ${guide.basic}`:version.source==='ai'?` · ${guide.ai}`:''}</p>
+      <ul>{versionSummary(version,language).map((change, index) => <li key={index}>{change}</li>)}</ul>
       <Button onClick={() => onView(version)}>{t.view}</Button>
     </li>)}</ol>
   </section>;

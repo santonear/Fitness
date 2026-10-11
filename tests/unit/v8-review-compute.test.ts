@@ -49,11 +49,11 @@ describe('V8 review facts', () => {
     expect(week).toMatchObject({movementCount:2,complete:0,partial:0,notStarted:0,missingCount:3,reasonCounts:{time:0}});
     expect(computeMonthFacts({...data,from:'2026-10-01',to:'2026-10-31'})).toMatchObject({movementCount:2,complete:0,partial:0});expect(data).toEqual(before);
   });
-  it('counts two-week incomplete reasons once per record and local weekday bands', () => {
+  it('counts only this week incomplete reasons and local weekday bands', () => {
     const result = computeWeekFacts(input([row('last', 'partial', '2026-10-01', { feedback: { reasons: ['time', 'time'] } }),
       row('now', 'not_started', '2026-10-10', { feedback: { reasons: ['time'] } }), row('complete', 'complete', '2026-10-10', { feedback: { reasons: ['time'] } })]));
-    expect(result.reasonCounts.time).toBe(2);
-    expect(result.incompleteTiming.weekday.daytime.partial).toBe(1);
+    expect(result.reasonCounts.time).toBe(1);
+    expect(result.incompleteTiming.weekday.daytime.partial).toBe(0);
     expect(result.incompleteTiming.weekend.daytime.notStarted).toBe(1);
   });
   it('does not mutate inputs and detects only in-range body weight', () => {

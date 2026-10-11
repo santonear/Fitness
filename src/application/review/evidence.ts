@@ -1,20 +1,20 @@
 import type { WorkoutRecord } from '../../domain/v8/contracts';
 import type { IncompleteTiming, ReviewDayType, ReviewTimeBand } from './contracts';
 
-/** The caller selects the review period; every instant uses its own saved timezone. */
-export function computeIncompleteTiming(workouts: readonly Pick<WorkoutRecord, 'status' | 'startedAt' | 'timeZone'>[]): IncompleteTiming {
+/** The caller selects the review period; instants use the viewing timezone, with the saved timezone as a compatibility fallback. */
+export function computeIncompleteTiming(workouts: readonly Pick<WorkoutRecord, 'status' | 'startedAt' | 'timeZone'>[], timeZone?:string): IncompleteTiming {
   const counts = () => ({ partial: 0, notStarted: 0 });
-  const bands = () => ({ morning: counts(), daytime: counts(), evening: counts() });
+  const bands = () => ({ morning: counts(), daytime: counts(), evening: counts(), overnight: counts() });
   const result = { weekday: bands(), weekend: bands() };
   for (const workout of workouts) {
     if (workout.status !== 'partial' && workout.status !== 'not_started') continue;
     const parts = new Intl.DateTimeFormat('en-US', {
-      timeZone: workout.timeZone, weekday: 'short', hour: '2-digit', hourCycle: 'h23',
+      timeZone: timeZone ?? workout.timeZone, weekday: 'short', hour: '2-digit', hourCycle: 'h23',
     }).formatToParts(new Date(workout.startedAt));
     const weekday = parts.find(part => part.type === 'weekday')!.value;
     const hour = Number(parts.find(part => part.type === 'hour')!.value);
     const day: ReviewDayType = weekday === 'Sat' || weekday === 'Sun' ? 'weekend' : 'weekday';
-    const band: ReviewTimeBand = hour >= 5 && hour < 12 ? 'morning' : hour >= 12 && hour < 17 ? 'daytime' : 'evening';
+    const band: ReviewTimeBand = hour < 5 ? 'overnight' : hour >= 5 && hour < 12 ? 'morning' : hour >= 12 && hour < 17 ? 'daytime' : 'evening';
     result[day][band][workout.status === 'partial' ? 'partial' : 'notStarted']++;
   }
   return result;

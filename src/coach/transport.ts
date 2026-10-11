@@ -1,21 +1,13 @@
+import {readAccessStatus,accessReason} from '../application/ai-access';
 import { z } from 'zod';
 import { confirmationFor } from '../domain/request-fingerprint';
 import type { CoachEnvelope } from '../backend/contracts';
 import { coachRequestSchema, type CoachRequest } from './contracts';
 import { readCoachResponseEnvelope } from './wire-versions';
 
-const accessSchema = z.object({ qualification:z.enum(['none','active','expired','revoked']), sessionValid:z.boolean(),
- expiresAt:z.number().finite().optional(), aiEnabled:z.boolean().optional(), summaryAvailable:z.boolean().optional() });
-/** Check the cookie session without sending any coach, profile or health content. */
-async function requireCoachAccess(task:CoachRequest['task'],signal:AbortSignal,fetcher:typeof fetch) {
- const response=await fetcher('/api/v1/trial/access-status',{method:'POST',credentials:'same-origin',cache:'no-store',redirect:'manual',
-  signal:AbortSignal.any([signal,AbortSignal.timeout(10000)]),headers:{'Content-Type':'application/json'},body:'{}'});
- if(!response.ok||response.redirected||response.type==='opaqueredirect')throw new Error('CONTROL_UNAVAILABLE');
- const access=accessSchema.safeParse(await response.json());signal.throwIfAborted();
- if(!access.success)throw new Error('CONTROL_UNAVAILABLE');
- const status=access.data;
- if(status.qualification!=='active'||!status.sessionValid||status.expiresAt===undefined||status.expiresAt<=Date.now())throw new Error('QUALIFICATION_REQUIRED');
- if(status.aiEnabled!==true||task==='PERIOD_REVIEW'&&status.summaryAvailable!==true)throw new Error('AI_DISABLED');
+/** Server access is checked immediately before every model request. */
+async function requireCoachAccess(task:CoachRequest['task'],signal:AbortSignal,fetcher:typeof fetch){
+ const status=await readAccessStatus(fetcher);signal.throwIfAborted();const reason=accessReason(status,task);if(reason)throw Error(reason==='invalid'?'QUALIFICATION_REQUIRED':reason==='disabled'?'AI_DISABLED':'INDIVIDUAL_QUOTA_EXHAUSTED');
 }
 
 /** Call only after the displayed request is explicitly approved. No retries or local writes. */

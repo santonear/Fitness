@@ -6,9 +6,9 @@ export interface ReviewInput {
   bodyWeights: readonly { localDate: string; weightGrams: number }[];
 }
 export type ReviewDayType = 'weekday' | 'weekend';
-export type ReviewTimeBand = 'morning' | 'daytime' | 'evening';
-/** Local startedAt: 05:00–11:59 / 12:00–16:59 / all other times. */
-export type IncompleteTiming = Readonly<Record<ReviewDayType, Readonly<Record<ReviewTimeBand, Readonly<{ partial: number; notStarted: number }>>>>>;
+export type ReviewTimeBand = 'morning' | 'daytime' | 'evening' | 'overnight';
+/** User timezone: 00–04 overnight, 05–11 morning, 12–16 daytime, 17–23 evening. */
+export type IncompleteTiming = Readonly<Record<ReviewDayType, Readonly<Record<Exclude<ReviewTimeBand, 'overnight'>, Readonly<{ partial: number; notStarted: number }>> & {overnight?:Readonly<{partial:number;notStarted:number}>}>>>;
 export interface ReviewFacts {
   from: string; to: string; complete: number; partial: number; notStarted: number;
   movementCount: number; missingCount: number; activityMinutes: number; trainingSeconds: number;
@@ -21,7 +21,7 @@ export interface WeekFacts extends ReviewFacts { previousMovementCount: number }
 export interface MonthFacts extends ReviewFacts { weeks: readonly { from: string; complete: number; partial: number }[] }
 export interface PlanProposal { goalText: string; weeklyTarget: number; scheduleOriginalText: string; sessionMinutes: number; templates: SessionTemplate[]; reasons: [string, string, string] }
 export interface ReviewSuggestion { id: string; rule: 'time' | 'discomfort' | 'progression' | 'frequency' | 'restart'; summary: string; basedOnVersionId: string; proposal: PlanProposal }
-export interface SuggestionInput { current: WeekFacts; previous: WeekFacts; workouts: readonly WorkoutRecord[]; plan: PlanVersion; dismissedIds: readonly string[]; profile?: CoachProfile; todayLocalDate?: string; completedWeeks?: readonly [WeekFacts, WeekFacts] }
+export interface SuggestionInput { timeZone?: string; current: WeekFacts; previous: WeekFacts; workouts: readonly WorkoutRecord[]; plan: PlanVersion; dismissedIds: readonly string[]; profile?: CoachProfile; todayLocalDate?: string; completedWeeks?: readonly [WeekFacts, WeekFacts] }
 export type ComputeWeekFacts = (input: ReviewInput) => WeekFacts;
 export type ComputeMonthFacts = (input: ReviewInput) => MonthFacts;
 export type SuggestChange = (input: SuggestionInput) => ReviewSuggestion | null;

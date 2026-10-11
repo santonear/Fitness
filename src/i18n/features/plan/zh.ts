@@ -7,6 +7,6 @@ title: '我的计划', versions: '计划版本', goal: '目标', rhythm: '节奏
     minutes: (n: number) => `${n} 分钟`, sets: (n: number) => `${n} 组`,
     reps: (n: number) => `${n} 次`, seconds: (n: number) => `${n} 秒`,
     kg: (n: number) => `${n} 千克`, meters: (n: number) => `${n} 米`,
-    origins: { onboard: '和芽芽一起制定', coach_change: '和芽芽一起调整', review_suggestion: '采纳本周建议', manual: '手动调整', migrated: '从以前的计划保留' },
+    origins: { onboard: '初始计划', coach_change: '芽芽调整', review_suggestion: '回顾调整', manual: '手动调整', migrated: '从以前的计划保留' },
   };
 

@@ -1,5 +1,6 @@
 import type { WorkoutRecord, LegacyWorkoutProjection } from '../../domain/v8/contracts';
 import type { ReviewInput, ReviewFacts, ComputeWeekFacts, ComputeMonthFacts } from './contracts';
+import { workoutSeconds } from '../workout-duration';
 import { computeIncompleteTiming } from './evidence';
 
 type Record = WorkoutRecord | LegacyWorkoutProjection;
@@ -33,7 +34,7 @@ function maxima(rows: readonly Record[]) {
   }
   return result;
 }
-function facts(input: ReviewInput, comparisonFrom: string, patternFrom = comparisonFrom): ReviewFacts {
+function facts(input: ReviewInput, comparisonFrom: string, patternFrom = input.from): ReviewFacts {
   check(input);
   const all = records(input);
   const inRange = (row: Record) => within(dateAt(row.startedAt, input.timeZone), input.from, input.to);
@@ -59,11 +60,8 @@ function facts(input: ReviewInput, comparisonFrom: string, patternFrom = compari
   return { from: input.from, to: input.to, complete, partial, notStarted: planned.filter(row => row.status === 'not_started').length,
     movementCount: current.filter(moved).length + activities.length, missingCount: Math.max(0, input.weeklyTarget - complete),
     activityMinutes: activities.reduce((sum, row) => sum + row.minutes, 0), activityCounts, reasonCounts,
-    trainingSeconds: current.filter(moved).reduce((sum, row) => {
-      const seconds = row.endedAt ? (Date.parse(row.endedAt) - Date.parse(row.startedAt)) / 1000 : NaN;
-      return sum + (Number.isFinite(seconds) && seconds >= 0 && seconds <= 43200 ? seconds : 0);
-    }, 0), hasBodyWeight: input.bodyWeights.some(row => within(row.localDate, input.from, input.to)),
-    incompleteTiming: computeIncompleteTiming(patterns), improvements };
+    trainingSeconds: current.filter(moved).reduce((sum,row)=>sum+workoutSeconds(row.startedAt,row.endedAt),0), hasBodyWeight: input.bodyWeights.some(row => within(row.localDate, input.from, input.to)),
+    incompleteTiming: computeIncompleteTiming(patterns,input.timeZone), improvements };
 }
 export const computeWeekFacts: ComputeWeekFacts = input => {
   const previousFrom = shift(input.from, -7), previousTo = shift(input.from, -1);

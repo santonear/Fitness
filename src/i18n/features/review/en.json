@@ -35,5 +35,6 @@
   "noPlanFacts": "You completed {complete} sessions and partially completed {partial}.",
   "noPlanNext": "There is no current plan. You can train manually or create a new plan.",
   "manualTraining": "Manual training",
-  "newPlan": "Create a new plan"
+  "newPlan": "Create a new plan",
+  "overnight": "early morning"
 }

@@ -1,4 +1,6 @@
+import {migrateBodyProfile} from './body-profile-migration';
 import type { CoachLedger } from '../domain/coach-reminders';
+import {legacyExerciseFavorites} from './exercise-favorites';
 import Dexie, { type Table } from 'dexie';
 import type { GuidedState } from '../domain/guided-contracts';
 import { DomainError } from '../domain/errors';
@@ -8,6 +10,7 @@ import { upgradeToV8, type V8Library } from './v8-migration';
 import type { NutritionRecord, ActivityImportReceipt } from '../domain/lifestyle';
 
 export class FitnessDatabase extends Dexie {
+  exerciseFavorites!: Table<{id:string},string>;
   nutritionRecords!: Table<NutritionRecord, string>;
   activityImportReceipts!: Table<ActivityImportReceipt, string>;
   v8PlanReferences!: Table<NonNullable<V8Library['planReferences']>[number], string>;
@@ -76,6 +79,12 @@ export class FitnessDatabase extends Dexie {
     });
     this.version(11).stores({ v8Plans: 'id,currentVersionId,deletedAt', v8PlanReferences: 'id,planId' }).upgrade(async transaction => {
       await transaction.table('metadata').toCollection().modify((row: Metadata) => { row.schemaVersion = 11; });
+    });
+    this.version(12).stores({ exerciseFavorites: 'id' }).upgrade(async transaction => {
+      await transaction.table('exerciseFavorites').bulkPut(legacyExerciseFavorites());
+      const guided=await transaction.table('guidedStates').get('guided');
+      await transaction.table('profiles').toCollection().modify((profile:LocalProfile)=>{Object.assign(profile,migrateBodyProfile(profile,guided,new Date().toISOString()))});
+      await transaction.table('metadata').toCollection().modify((row: Metadata) => { row.schemaVersion = 12; });
     });
     this.version(10).stores({}).upgrade(async transaction => {
       // New versions may record their source. Never infer or rewrite old plan facts.

@@ -7,7 +7,6 @@ import { z } from 'zod';
 import type { ApplicationKind } from '../../backend/trial-applications';
 
 type Application = z.infer<typeof applicationSchema>;
-type Status = z.infer<typeof statusSchema>;
 const counts = z.object({ understand: z.number().int().nonnegative(), generate: z.number().int().nonnegative() });
 const statusSchema = z.object({ expiresAt: z.number().finite(), used: counts, limits: counts, period: z.string().optional(), pending: z.number().int().nonnegative().optional(), reconciliationRequired: z.boolean().optional(), planningReconciliationRequired: z.boolean().optional(), aiEnabled: z.boolean().optional() });
 const policyStatusSchema = statusSchema.extend({ planningBudgetDisabled: z.boolean().optional(), resetAt: z.number().finite().optional(), timeZone: z.string().optional(), maxDays: z.number().int().min(1).max(14).optional(), maximumRequestCost: z.number().int().nonnegative().optional(), budgetAvailable: z.object({ understand: z.boolean(), generate: z.boolean() }).optional() });
@@ -58,7 +57,7 @@ function SecurityCheck({ siteKey, onProof }: { siteKey: string; onProof: (proof:
 
 export function TrialAccess({ onContinue, onSkip, onStartPlanning }: { onContinue?: () => void; onSkip?: () => void; onStartPlanning?: () => void }) {
   const navigate = useNavigate();
-  const { i18n } = useTranslation(); const zh = i18n.resolvedLanguage === 'zh';
+  const { i18n } = useTranslation(); const zh = !i18n.resolvedLanguage?.startsWith('en');
   const [status, setStatus] = useState<z.infer<typeof policyStatusSchema>>(); const [apps, setApps] = useState<Application[]>([]);
   const [qualificationState, setQualificationState] = useState<'unknown'|'none'|'active'|'expired'|'revoked'>('unknown');
   const [sessionValid, setSessionValid] = useState(false);
@@ -71,24 +70,25 @@ export function TrialAccess({ onContinue, onSkip, onStartPlanning }: { onContinu
   async function refresh(owner = receipt, start = false) {
     setQualificationState('unknown'); setStatus(undefined); setSessionValid(false);
     let [qualification, applications, availability] = await Promise.allSettled([
-      trialApi<Status>('trial/status'), owner ? trialApi<Application[]>('trial/applications', { receipt: owner }) : Promise.resolve([]),
-      trialApi<{ available: boolean; siteKey: string | null }>('trial/application-config'),
+      trialApi('trial/access-status', owner ? {receipt:owner}:{}).then(value=>accessStatusSchema.parse(value)), owner ? trialApi<Application[]>('trial/applications', {receipt:owner}):Promise.resolve([]),
+      trialApi<{available:boolean;siteKey:string|null}>('trial/application-config'),
     ]);
-    if (availability.status === 'fulfilled') setConfig(configSchema.parse(availability.value));
-    if (applications.status === 'fulfilled' && qualification.status === 'rejected' && qualification.reason instanceof Error && qualification.reason.message === 'QUALIFICATION_REQUIRED' &&
-      await claimDirectActivation(owner, applications.value, body => trialApi('trial/claim', body))) {
-      [qualification, applications] = await Promise.allSettled([trialApi<Status>('trial/status'), trialApi<Application[]>('trial/applications', { receipt: owner })]);
+    if(availability.status==='fulfilled')setConfig(configSchema.parse(availability.value));
+    if(applications.status==='fulfilled')setApps(z.array(applicationSchema).parse(applications.value));
+    if(qualification.status==='rejected')throw qualification.reason;
+    if(applications.status==='fulfilled'&&!qualification.value.sessionValid&&qualification.value.qualification!=='revoked'&&qualification.value.qualification!=='expired'&&await claimDirectActivation(owner,applications.value,body=>trialApi('trial/claim',body))){
+      [qualification,applications]=await Promise.allSettled([trialApi('trial/access-status',owner?{receipt:owner}:{}).then(value=>accessStatusSchema.parse(value)),trialApi<Application[]>('trial/applications',{receipt:owner})]);
     }
-    if (qualification.status === 'fulfilled') { setStatus(policyStatusSchema.parse(qualification.value)); setQualificationState('active'); setSessionValid(true); if (onContinue) onContinue(); }
-    else {
-      if (!(qualification.reason instanceof Error) || qualification.reason.message !== 'QUALIFICATION_REQUIRED') throw qualification.reason;
-      const access = accessStatusSchema.parse(await trialApi('trial/access-status', owner ? { receipt: owner } : {}));
-      setQualificationState(access.qualification); setSessionValid(access.sessionValid);
-      if (access.qualification !== 'none') setStatus(access);
-    }
-    if (applications.status === 'fulfilled') setApps(z.array(applicationSchema).parse(applications.value)); else throw applications.reason;
-    if (availability.status === 'rejected') throw availability.reason;
-    if (start && qualification.status === 'fulfilled' && !onContinue) { if(onStartPlanning)onStartPlanning();else navigate('/ai'); }
+    if(qualification.status==='rejected')throw qualification.reason;
+    const access=qualification.value;
+    setQualificationState(access.qualification);setSessionValid(access.sessionValid);
+    if(access.qualification!=='none')setStatus(access);
+    const valid=access.qualification==='active'&&access.sessionValid;
+    if(valid&&onContinue)onContinue();
+    if(applications.status==='fulfilled')setApps(z.array(applicationSchema).parse(applications.value));else throw applications.reason;
+    if(availability.status==='rejected')throw availability.reason;
+    if(start&&valid&&!onContinue){if(onStartPlanning)onStartPlanning();else navigate('/');}
+
   }
   useEffect(() => {
     let value = '';
@@ -126,28 +126,21 @@ export function TrialAccess({ onContinue, onSkip, onStartPlanning }: { onContinu
   const pending = apps.some(a => a.state === 'pending' || a.state === 'approved' && (a.claimUntil ?? 0) > Date.now());
   const hasTrial = Boolean(status || apps.some(a => a.state === 'claimed'));
   const active = qualificationState === 'active' && sessionValid;
-  const quotaExhausted = status && (status.used.generate >= status.limits.generate);
+  const quotaExhausted = status && !status.planningBudgetDisabled && (status.used.generate >= status.limits.generate);
   const budgetInsufficient = status?.budgetAvailable && (!status.budgetAvailable.understand || !status.budgetAvailable.generate);
-  const planningPaused = !active || quotaExhausted || budgetInsufficient || status?.aiEnabled === false || (status?.planningReconciliationRequired ?? status?.reconciliationRequired);
   const words = { pending: zh ? '等待审核' : 'Awaiting review', approved: zh ? '已批准，待领取' : 'Approved · ready to claim', rejected: zh ? '未获批准' : 'Not approved', claimed: zh ? '已领取' : 'Claimed' };
-  const statusDetails = <>
-    <div className="v31-service-status"><p><strong>{zh?'平台状态：':'Service: '}</strong>{status?.aiEnabled===true?(zh?'模型已启用':'Model enabled'):status?.aiEnabled===false?(zh?'模型已关闭，本地训练可继续':'Model disabled; local training stays available'):(zh?'未知':'Unknown')}</p><p><strong>{zh?'核算状态：':'Accounting: '}</strong>{status?.reconciliationRequired?(status.planningReconciliationRequired===false?(zh?'费用待核对，计划生成仍可用':'Costs pending reconciliation; plan generation remains available'):(zh?'需要对账，新增请求暂停':'Reconciliation required; requests paused')):status?.pending?(zh?`${status.pending} 个请求待核算；是否允许继续由服务端判定`:`${status.pending} requests pending; the server determines availability`):status?.pending===0?(zh?'无待核算请求':'No pending requests'):(zh?'未知':'Unknown')}</p><p>{zh?'项目预算与个人次数分别限制请求。这里不推算项目剩余金额；资格有效不代表下一次 AI 请求一定获准。':'Project budget and personal quota are separate limits. Project balance is not estimated here; valid access does not guarantee admission of the next request.'}</p></div>
-  </>;
   return <section className="trial-access" aria-labelledby="trial-title">
-    <span className="trial-kicker">FITNESS · AI ACCESS</span><h1 id="trial-title">{zh ? '一起开始，开启 AI 试用' : 'Start together. Unlock your AI trial.'}</h1>
+    <span className="trial-kicker">FITNESS · AI ACCESS</span><h1 id="trial-title">{zh ? 'AI 试用资格' : 'AI trial access'}</h1>
     <p>{zh ? '已有邀请码？填写用户名和邀请码，即可开始。还没有邀请码可以申请试用。' : 'Have an invitation? Enter your name and code to get started, or apply for a trial.'}</p>
     {!loaded && <p role="status"><AppIcon name="info"/>{zh ? '正在查询资格…' : 'Checking your trial…'}</p>}
     {error && <p role="alert"><StatusIcon status="error"/>{error}</p>}{notice && <p role="status"><AppIcon name="info"/>{notice}</p>}
     {loaded && qualificationState === 'none' && <p role="status"><AppIcon name="info"/>{zh ? '此浏览器尚无可验证的试用资格。可兑换邀请码或查看申请。' : 'No verified trial on this browser. Redeem an invitation or check your application.'}</p>}
     {status && <div className="trial-summary"><strong>{qualificationState === 'expired' ? (zh ? '试用已到期，可申请延期' : 'Trial expired — request an extension') : qualificationState === 'revoked' ? (zh ? '资格已撤销，请联系管理员' : 'Access revoked — contact the administrator') : !sessionValid ? (zh ? '资格有效，但此浏览器未启用；可恢复领取或申请补发' : 'Trial active, but this browser is not activated. Recover the claim or request a replacement.') : (zh ? 'AI 试用有效' : 'Your AI trial is active')}</strong><p>{zh ? '有效期至：' : 'Valid until: '}{new Date(status.expiresAt).toLocaleString(zh ? 'zh-CN' : 'en')}</p>
-      <button className="trial-primary" disabled={busy || Boolean(planningPaused)} onClick={() => onStartPlanning ? onStartPlanning() : navigate('/ai')}>{zh ? '开始制定训练计划' : 'Start planning your training'}</button>
+      <button className="trial-primary" disabled={busy} onClick={() => navigate('/')}>{zh ? '返回训练' : 'Return to training'}</button>
       {quotaExhausted && <p role="status"><AppIcon name="info"/>{zh ? '个人次数不足，请等待本期重置或联系管理员。' : 'Personal quota exhausted. Wait for the monthly reset or contact the administrator.'}</p>}
       {budgetInsufficient && <p role="status"><AppIcon name="info"/>{zh ? '项目预算不足，新的 AI 请求暂不可用。请稍后刷新或联系管理员。' : 'Project budget is insufficient for new AI requests. Refresh later or contact the administrator.'}</p>}
-      {status.maxDays !== undefined && <p>{zh ? `每次最多选择 ${status.maxDays} 个训练日` : `Select up to ${status.maxDays} training dates per request`}</p>}
-      {!status.planningBudgetDisabled && status.maximumRequestCost !== undefined && <p>{zh ? '单请求费用上限：' : 'Per-request cost limit: '}¥{(status.maximumRequestCost / 100).toFixed(2)}</p>}
-      <p>{zh ? '确认目标、选择日期、核对外发内容，再审阅并保存计划。' : 'Confirm your goal, choose dates, review what is sent, then preview and save.'}</p></div>}
-    {active && statusDetails}
-    <ul className="trial-applications">{apps.map(a => <li key={a.id}><strong>{a.kind === 'extend' ? (zh ? '延期申请 · ' : 'Extension · ') : a.kind === 'replace' ? (zh ? '补发申请 · ' : 'Replacement · ') : ''}{words[a.state]}</strong><small>{a.id}</small>{a.reason && <p>{a.reason}</p>}
+      <p>{zh?'试用资格只影响 AI 服务，手动训练和本地记录始终可用。':'Trial access applies to AI services. Manual training and local records remain available.'}</p></div>}
+    <ul className="trial-applications">{apps.map(a => <li key={a.id}><strong>{a.kind === 'extend' ? (zh ? '延期申请 · ' : 'Extension · ') : a.kind === 'replace' ? (zh ? '补发申请 · ' : 'Replacement · ') : ''}{words[a.state]}</strong>{a.reason && <p>{a.reason}</p>}
       {a.state === 'approved' && <button disabled={busy || (a.claimUntil ?? 0) <= Date.now()} onClick={() => void run(async () => { await trialApi('trial/claim', { receipt, id: a.id }); await refresh(); })}>{(a.claimUntil ?? 0) <= Date.now() ? (zh ? '领取已过期' : 'Claim expired') : (zh ? '领取并启用' : 'Claim and activate')}</button>}
       {a.state === 'claimed' && !active && qualificationState === 'active' && <button disabled={busy} onClick={() => void run(async () => { await trialApi('trial/claim', { receipt, id: a.id }); await refresh(); })}>{zh ? '恢复领取结果' : 'Recover claim result'}</button>}</li>)}</ul>
     <div className="trial-actions">
@@ -174,7 +167,6 @@ export function TrialAccess({ onContinue, onSkip, onStartPlanning }: { onContinu
       <button type="submit" disabled={!proof}>{zh ? '提交申请' : 'Submit application'}</button><button type="button" onClick={() => setForm(false)}>{zh ? '返回' : 'Back'}</button>
     </fieldset></form>}
 
-    {!active && statusDetails}
     <button disabled={busy} onClick={() => void run(() => refresh())}>{zh ? '刷新状态' : 'Refresh status'}</button>
     {receipt && <><button disabled={busy} onClick={() => setLink(`${location.origin}/trial#trial=${receipt}`)}>{zh ? '查看私密领取链接' : 'Show private claim link'}</button>{link && <label>{zh ? '请自行保管，不要公开分享' : 'Keep this private; do not share publicly'}<input readOnly value={link} onFocus={e => e.target.select()} /></label>}</>}
     {onSkip && <button className="trial-skip" onClick={onSkip}>{zh ? '先看看应用' : 'Explore the app first'}</button>}

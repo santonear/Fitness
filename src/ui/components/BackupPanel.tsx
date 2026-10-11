@@ -57,8 +57,8 @@ export function BackupPanel({ restored = false }: { restored?: boolean }) {
   return (
     <section className="v31-backup" aria-label={zh ? 'JSON 备份与恢复' : 'JSON backup and restore'}>
       <h2>{zh ? '备份与恢复' : 'Backup and restore'}</h2>
-      <p>{zh ? '可以恢复旧版备份；含日期计划的新备份需要此版或兼容的新版本。旧版不支持升级后的日期计划和新备份，请勿直接回退操作同一本地库；回退前保管升级前备份，并使用隔离环境。' : 'Older backups can be restored here. Date plans and new backups require this or a compatible newer app. Older apps do not support the new data: do not roll back against the same library. Keep a pre-upgrade backup and use an isolated environment.'}</p>
-      <p>{zh ? `手动下载完整 JSON，保管到浏览器以外。恢复将替换全部本地数据。支持上限：16 MiB（${MAX_BACKUP_BYTES} 个 UTF-8 字节）。旧版应用可能无法恢复超过旧上限的文件。` : `Download complete JSON and keep it outside this browser. Restore replaces all local data. Supported limit: 16 MiB (${MAX_BACKUP_BYTES} UTF-8 bytes). Older apps may reject files above their old limit.`}</p>
+      <p>{zh ? '备份会保存你的计划、训练记录、体重、备注和动作收藏。请把下载的文件放在手机或电脑里妥善保管，清除浏览器数据后也能找回。' : 'A backup includes your plans, training records, weight observations, notes and favorite exercises. Keep the downloaded file on your phone or computer so you can recover your data if browser storage is cleared.'}</p>
+      <p>{zh ? '恢复会用文件中的内容替换此浏览器现有的数据。我们会先检查文件，并请你备份当前数据、确认后再恢复。支持旧版备份，文件最大 16 MB；提醒设置留在当前设备上。' : 'Restoring replaces the data on this browser with the file’s contents. We check the file first and ask you to back up your current data and confirm before restoring. Older backups are supported, up to 16 MB. Reminder settings stay on this device.'}</p>
       <button disabled={busy} onClick={() => void run(async () => {
         download(await backupService.exportBackup());
         setMessage(zh ? '备份下载已开始，请确认文件已保管。' : 'Backup download started. Check that the file is kept.');

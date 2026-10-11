@@ -8,6 +8,7 @@ import { exerciseVisualMetadata } from '../../catalog/exercise-visual';
 import zh from '../../i18n/features/training/guide.zh.json';
 import en from '../../i18n/features/training/guide.en.json';
 import './exercise-guide.css';
+import '../pages/plan/exercise-detail.css';
 
 export function ExerciseGuideImage({id,locale}:{id:string;locale:Locale}) {
  const guide=getExerciseGuide(id,locale),copy=locale==='zh'?zh:en;
@@ -28,7 +29,7 @@ export function ExerciseGuidePanel({id,locale,open,onClose,triggerRef}:{id?:stri
 }
 export function ExerciseGuideContent({id,locale}:{id:string;locale:Locale}) {
  const guide=getExerciseGuide(id,locale),copy=locale==='zh'?zh:en;
- return <div className="exercise-guide-detail">{exerciseVisualMetadata(id)?<RepDBMedia exerciseId={id} exerciseName={guide.name} locale={locale}/>:<><ExerciseGuideImage key={id} id={id} locale={locale}/><ExerciseGuideAttribution id={id} locale={locale}/></>}
+ return <div className="exercise-guide-detail">{exerciseVisualMetadata(id)?<div className="v8-exercise-media"><RepDBMedia exerciseId={id} exerciseName={guide.name} locale={locale}/></div>:<><ExerciseGuideImage key={id} id={id} locale={locale}/><ExerciseGuideAttribution id={id} locale={locale}/></>}
    <h3>{copy.points}</h3><ul>{guide.keyPoints.map((v,i)=><li key={i}>{v}</li>)}</ul>
    <h3>{copy.steps}</h3><ol>{guide.steps.map((v,i)=><li key={i}>{v}</li>)}</ol>
    {!!guide.mistakes.length&&<><h3>{copy.mistakes}</h3><ul>{guide.mistakes.map((v,i)=><li key={i}>{v}</li>)}</ul></>}

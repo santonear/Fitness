@@ -1,3 +1,4 @@
+import {displayTimeZone} from '../../../coach/disclosure-format';
 import { backgroundPushEnabled, disableBackgroundPush } from '../../../application/pwa-push';
 import settingsZh from '../../../i18n/features/settings/zh.json';
 import settingsEn from '../../../i18n/features/settings/en.json';
@@ -13,7 +14,7 @@ export function ReminderSettings({locale}:{locale:'zh'|'en'}){
  return <section id="reminders"><h2>{copy.reminderSettings1}</h2><p>{copy.reminderSettings2}</p><p>{copy.reminderSettings3}</p>{value&&<>
   <Toggle checked={value.enabled} onCheckedChange={enabled=>change({enabled})}>{copy.reminderSettings4}</Toggle>
   <fieldset><legend>{copy.reminderSettings5}</legend>{copy.weekdays.map((label,i)=><label key={i}><input type="checkbox" checked={value.weekdays?.includes(i+1)??false} onChange={e=>change({weekdays:e.target.checked?[...(value.weekdays??[]),i+1]:(value.weekdays??[]).filter(d=>d!==i+1)})}/>{label}</label>)}</fieldset>
-  <label>{copy.reminderSettings6}<input type="time" value={value.time??''} onChange={e=>change({time:e.target.value})}/></label><p>{value.timeZone}</p>
+  <label>{copy.reminderSettings6}<input type="time" value={value.time??''} onChange={e=>change({time:e.target.value})}/></label><p>{displayTimeZone(value.timeZone,locale)}</p>
   <label>{copy.dailyLimit}<select value={value.dailyLimit} onChange={e=>change({dailyLimit:Number(e.target.value) as 0|1|2})}>{[0,1,2].map(n=><option key={n} value={n}>{n}</option>)}</select></label>
   <label>{copy.quietStart}<input type="time" value={value.quietStart} onChange={e=>change({quietStart:e.target.value})}/></label>
   <label>{copy.quietEnd}<input type="time" value={value.quietEnd} onChange={e=>change({quietEnd:e.target.value})}/></label>

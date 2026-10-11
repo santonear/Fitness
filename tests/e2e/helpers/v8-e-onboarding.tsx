@@ -24,7 +24,7 @@ const candidate: OnboardingProposal = {
 const query = new URLSearchParams(location.search);
 document.documentElement.dataset.theme = query.get('theme') ?? 'qingci';
 function Fixture() {
-  const [step, setStep] = useState<0 | 1 | 2 | 3>(0);
+  const [step, setStep] = useState<0 | 1 | 2 | 3 | 4>(0);
   const [answers, setAnswers] = useState<OnboardingAnswers>({ goalText: '', scheduleOriginalText: '', placeEquipmentText: '', adultConfirmed: false, cautions: [] });
   const [generated, setGenerated] = useState(0), [confirmed, setConfirmed] = useState(0), [manual, setManual] = useState(0);
   const [draft, setDraft] = useState(query.has('draft'));

@@ -6,16 +6,15 @@ test('planning admission can stay open while accounting remains pending, with co
  let planningFlag:boolean|undefined=false;
  await page.route('**/api/v1/**',route=>{
   const path=new URL(route.request().url()).pathname;
-  if(path.endsWith('/access-status'))return route.fulfill({json:{qualification:'none',sessionValid:false}});
   if(path.endsWith('/application-config'))return route.fulfill({json:{available:true,siteKey:'fixture'}});
-  if(path.endsWith('/status'))return route.fulfill({json:{expiresAt:Date.now()+86400000,used:{understand:0,generate:0},limits:{understand:8,generate:4},aiEnabled:true,pending:1,reconciliationRequired:true,...(planningFlag===undefined?{}:{planningReconciliationRequired:planningFlag})}});
+  if(path.endsWith('/access-status'))return route.fulfill({json:{qualification:'active',sessionValid:true,expiresAt:Date.now()+86400000,used:{understand:0,generate:0},limits:{understand:8,generate:4},aiEnabled:true,pending:1,reconciliationRequired:true,...(planningFlag===undefined?{}:{planningReconciliationRequired:planningFlag})}});
   return route.fulfill({status:503,json:{error:'UNEXPECTED'}});
  });
  await completedPlanningProfile(page);await page.goto('/trial');
- const start=page.getByRole('button',{name:'开始制定训练计划',exact:true});await expect(start).toBeEnabled();
+ const start=page.getByRole('button',{name:'返回训练',exact:true});await expect(start).toBeEnabled();
  for(const width of [390,1440]){await page.setViewportSize({width,height:900});await page.screenshot({path:`outputs/deepseek-diagnostic/${info.project.name}-trial-${width}.png`,fullPage:true});}
- planningFlag=undefined;await page.reload();await expect(start).toBeDisabled();
- planningFlag=true;await page.reload();await expect(start).toBeDisabled();
+ planningFlag=undefined;await page.reload();await expect(start).toBeEnabled();
+ planningFlag=true;await page.reload();await expect(start).toBeEnabled();
 });
 
 for (const zh of [false, true]) test(`active trial enters planning and refreshes allowance without model calls (${zh ? 'zh' : 'en'})`, async ({ page }) => {
@@ -23,19 +22,18 @@ for (const zh of [false, true]) test(`active trial enters planning and refreshes
   let writes = 0;
   await page.route('**/api/v1/**', route => {
     const path = new URL(route.request().url()).pathname;
-    if (route.request().method() !== 'GET') writes++;
-    if (path.endsWith('/access-status')) return route.fulfill({json:{qualification:'none',sessionValid:false}});
+    if (route.request().method() !== 'GET' && !path.endsWith('/access-status')) writes++;
     if (path.endsWith('/application-config')) return route.fulfill({ json: { available: true, siteKey: 'fixture' } });
-    if (path.endsWith('/status')) return route.fulfill({ json: { expiresAt: Date.now() + 86400000, period: '2026-10', used: { understand: 0, generate: 0 }, limits: { understand: 8, generate: 4 }, aiEnabled: true, pending: 0 } });
+    if (path.endsWith('/access-status')) return route.fulfill({ json: { qualification:'active',sessionValid:true,expiresAt: Date.now() + 86400000, period: '2026-10', used: { understand: 0, generate: 0 }, limits: { understand: 8, generate: 4 }, aiEnabled: true, pending: 0 } });
     return route.fulfill({ status: 503, json: { error: 'UNEXPECTED' } });
   });
   await completedPlanningProfile(page);
   await page.goto('/trial');
-  await page.getByRole('button', { name: zh ? '开始制定训练计划' : 'Start planning your training', exact: true }).click();
-  await expect(page).toHaveURL(/\/onboarding$/);
-  await expect(page.locator('.v8-onboarding')).toBeVisible();
-  await page.goto('/trial'); await expect(page.getByRole('button', { name: zh ? '开始制定训练计划' : 'Start planning your training', exact: true })).toBeEnabled();
-  await page.reload();await expect(page).toHaveURL(/\/trial$/); await expect(page.getByRole('button', { name: zh ? '开始制定训练计划' : 'Start planning your training', exact: true })).toBeEnabled();
+  await page.getByRole('button', { name: zh ? '返回训练' : 'Return to training', exact: true }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByRole('heading',{name:zh?'下一次':'Next workout',exact:true})).toBeVisible();
+  await page.goto('/trial'); await expect(page.getByRole('button', { name: zh ? '返回训练' : 'Return to training', exact: true })).toBeEnabled();
+  await page.reload();await expect(page).toHaveURL(/\/trial$/); await expect(page.getByRole('button', { name: zh ? '返回训练' : 'Return to training', exact: true })).toBeEnabled();
   expect(writes).toBe(0);
 });
 
@@ -135,12 +133,11 @@ for (const zh of [false, true]) {
     let application: Record<string, unknown> | undefined; let active = false; let submissions = 0;
     await page.route('**/api/v1/**', async route => {
       const path = new URL(route.request().url()).pathname;
-      if (path.endsWith('/access-status')) return route.fulfill({json:{qualification:'none',sessionValid:false}});
-    if (path.endsWith('/application-config')) return route.fulfill({ json: { available: true, siteKey: 'synthetic-site-key' } });
-      if (path.endsWith('/status')) return active ? route.fulfill({ json: { expiresAt: Date.now() + 86400000, used: { understand: 0, generate: 0 }, limits: { understand: 8, generate: 4 } } }) : route.fulfill({ status: 401, json: { error: 'QUALIFICATION_REQUIRED' } });
+      if (path.endsWith('/application-config')) return route.fulfill({ json: { available: true, siteKey: 'synthetic-site-key' } });
+      if (path.endsWith('/access-status')) return active ? route.fulfill({ json: { qualification:'active',sessionValid:true,expiresAt: Date.now() + 86400000, used: { understand: 0, generate: 0 }, limits: { understand: 8, generate: 4 } } }) : route.fulfill({ status: 401, json: { error: 'QUALIFICATION_REQUIRED' } });
       if (path.endsWith('/applications')) return route.fulfill({ json: application ? [application] : [] });
       if (path.endsWith('/apply')) { submissions++; const body = route.request().postDataJSON(); expect(body.receipt).toMatch(/^[a-f0-9]{64}$/); application = { id: body.id, kind: 'new', state: 'pending', createdAt: Date.now() }; return route.fulfill({ json: application }); }
-      if (path.endsWith('/claim')) { active = true; application!.state = 'claimed'; return route.fulfill({ json: { expiresAt: Date.now() + 86400000 } }); }
+      if (path.endsWith('/claim')) { active = true; application!.state = 'claimed'; return route.fulfill({ json: { qualification:'active',sessionValid:true,expiresAt: Date.now() + 86400000 } }); }
       return route.fulfill({ status: 503, json: { error: 'UNEXPECTED' } });
     });
     await page.goto('/trial');
@@ -161,8 +158,8 @@ for (const zh of [false, true]) {
     await page.getByRole('button', { name: zh ? '刷新状态' : 'Refresh status', exact: true }).click();
     await page.getByRole('button', { name: zh ? '领取并启用' : 'Claim and activate', exact: true }).click();
     await expect(page.getByText(zh ? 'AI 试用有效' : 'Your AI trial is active',{exact:true})).toBeVisible();
-    await page.getByRole('button',{name:zh?'开始制定训练计划':'Start planning your training',exact:true}).click();
-    await expect(page).toHaveURL(/\/onboarding$/);await expect(page.locator('.v8-onboarding')).toBeVisible();
+    await page.getByRole('button',{name:zh?'返回训练':'Return to training',exact:true}).click();
+    await expect(page).toHaveURL(/\/$/);await expect(page.getByRole('heading',{name:zh?'下一次':'Next workout',exact:true})).toBeVisible();
     await page.goto('/trial'); await expect(page.getByRole('button', { name: zh ? '申请延期 30 天' : 'Request 30-day extension' })).toBeVisible();
     await expect(page.getByRole('button', { name: zh ? '申请 AI 试用' : 'Apply for AI trial', exact: true })).toHaveCount(0);
   });
@@ -199,10 +196,9 @@ for (const zh of [false, true]) test(`visible invitation entry starts planning w
   await page.route('**/api/v1/**', route => {
     const path = new URL(route.request().url()).pathname;
     if (route.request().method() !== 'GET' && path !== '/api/v1/trial/access-status') writes.push(path);
-    if (path.endsWith('/access-status')) return route.fulfill({json:{qualification:'none',sessionValid:false}});
     if (path.endsWith('/application-config')) return route.fulfill({ json: { available: true, siteKey: null } });
-    if (path.endsWith('/status')) return active ? route.fulfill({ json: { expiresAt: Date.now() + 86400000, used: { understand: 0, generate: 0 }, limits: { understand: 8, generate: 4 } } }) : route.fulfill({ status: 401, json: { error: 'QUALIFICATION_REQUIRED' } });
-    if (path.endsWith('/redeem')) { expect(route.request().postDataJSON()).toEqual({ code: 'a'.repeat(64) }); active = true; return route.fulfill({ json: { expiresAt: Date.now() + 86400000 } }); }
+    if (path.endsWith('/access-status')) return active ? route.fulfill({ json: { qualification:'active',sessionValid:true,expiresAt: Date.now() + 86400000, used: { understand: 0, generate: 0 }, limits: { understand: 8, generate: 4 } } }) : route.fulfill({ status: 401, json: { error: 'QUALIFICATION_REQUIRED' } });
+    if (path.endsWith('/redeem')) { expect(route.request().postDataJSON()).toEqual({ code: 'a'.repeat(64) }); active = true; return route.fulfill({ json: { qualification:'active',sessionValid:true,expiresAt: Date.now() + 86400000 } }); }
     return route.fulfill({ status: 503, json: { error: 'UNEXPECTED' } });
   });
   await page.goto('/trial');
@@ -238,10 +234,9 @@ for (const zh of [false, true]) test(`pending applicants can enter a code and in
   let redemptions = 0;
   await page.route('**/api/v1/**', route => {
     const path = new URL(route.request().url()).pathname;
-    if (path.endsWith('/access-status')) return route.fulfill({json:{qualification:'none',sessionValid:false}});
     if (path.endsWith('/application-config')) return route.fulfill({ json: { available: false, siteKey: null } });
     if (path.endsWith('/applications')) return route.fulfill({ json: [{ id: '7df87763-d1b4-40bd-a8dd-9a995793da13', kind: 'new', state: 'pending', createdAt: Date.now() }] });
-    if (path.endsWith('/status')) return route.fulfill({ status: 401, json: { error: 'QUALIFICATION_REQUIRED' } });
+    if (path.endsWith('/access-status')) return route.fulfill({ status: 401, json: { error: 'QUALIFICATION_REQUIRED' } });
     if (path.endsWith('/redeem')) { redemptions++; return route.fulfill({ status: 400, json: { error: 'INVITE_INVALID' } }); }
     return route.fulfill({ status: 503, json: { error: 'UNEXPECTED' } });
   });
@@ -260,7 +255,7 @@ for(const zh of [false,true])test(`temporary monetary bypass shows enabled plann
  await page.addInitScript(zh=>localStorage.setItem('fitness.language',zh?'zh':'en'),zh);
  const status={expiresAt:Date.now()+86400000,period:'2026-10',used:{understand:0,generate:0},limits:{understand:8,generate:4},aiEnabled:true,pending:13,reconciliationRequired:false,planningBudgetDisabled:true,maximumRequestCost:300,budgetAvailable:{understand:true,generate:true}};
  await page.route('**/api/v1/**',r=>{const p=new URL(r.request().url()).pathname;return r.fulfill({json:p.endsWith('/access-status')?{qualification:'active',sessionValid:true,...status}:p.endsWith('/application-config')?{available:false,siteKey:null}:status});});
- await page.goto('/trial');await expect(page.getByRole('button',{name:zh?'开始制定训练计划':'Start planning your training',exact:true})).toBeEnabled();
+ await page.goto('/trial');await expect(page.getByRole('button',{name:zh?'返回训练':'Return to training',exact:true})).toBeEnabled();
  await expect(page.getByText(zh?'理解与生成的金额预算限制已暂时关闭；生成次数限制仍有效。':'Monetary budget limits for understanding and generation are temporarily off; generation quotas still apply.',{exact:true})).toHaveCount(0);
  await expect(page.getByText(/单请求费用上限|Per-request cost limit/)).toHaveCount(0);
 });
