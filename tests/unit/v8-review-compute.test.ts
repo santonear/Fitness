@@ -41,7 +41,13 @@ describe('V8 review facts', () => {
   });
   it('does not count free training toward the plan target', () => {
     expect(computeWeekFacts(input([row('free', 'complete', undefined, { planVersionId: undefined })])))
-      .toMatchObject({ complete: 0, movementCount: 0, missingCount: 3, trainingSeconds: 1800 });
+      .toMatchObject({ complete: 0, movementCount: 1, missingCount: 3, trainingSeconds: 1800 });
+  });
+  it('counts saved free complete and partial movement without changing plan gaps or suggestion evidence',()=>{
+    const data=input(['complete','partial','not_started','abandoned','in_progress'].map((status,index)=>row(`free-${index}`,status as WorkoutRecord['status'],undefined,{planVersionId:undefined,feedback:{reasons:['time']}})));
+    const before=structuredClone(data),week=computeWeekFacts(data);
+    expect(week).toMatchObject({movementCount:2,complete:0,partial:0,notStarted:0,missingCount:3,reasonCounts:{time:0}});
+    expect(computeMonthFacts({...data,from:'2026-10-01',to:'2026-10-31'})).toMatchObject({movementCount:2,complete:0,partial:0});expect(data).toEqual(before);
   });
   it('counts two-week incomplete reasons once per record and local weekday bands', () => {
     const result = computeWeekFacts(input([row('last', 'partial', '2026-10-01', { feedback: { reasons: ['time', 'time'] } }),

@@ -71,7 +71,7 @@ export function CoachPanel({open,onClose,request,expectedRevision,onApply,onResp
  }
  async function send(scope=preview,revision=expectedRevision){
   if(sending.current||applyLock.current)return;
-  if(localOnly||noAccess||!request){
+  if(localOnly||!request){
    sending.current=true;const serial=++sequence.current;setError('');setState('thinking');
    try{await replyLocally(scope,revision,scope?.messages.filter(m=>m.role==='user').at(-1)?.content||text.trim(),serial);}
    finally{if(serial===sequence.current)sending.current=false;}

@@ -12,13 +12,7 @@ export function FinishPage(){
  const done=active.sets.length,complete=done===active.plannedSetCount;
  const copy=locale==='en'?en:zh;
  const elapsed=Math.max(0,Math.round((Date.now()-Date.parse(active.startedAt))/60000));
- const manualCount=data.workouts.filter(workout=>{
-  if(workout.planVersionId||!['complete','partial'].includes(workout.status)||!facts)return false;
-  const parts=new Intl.DateTimeFormat('en-US',{timeZone:data.profile?.timeZone??active.timeZone,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date(workout.startedAt));
-  const date=['year','month','day'].map(type=>parts.find(part=>part.type===type)!.value).join('-');
-  return date>=facts.from&&date<=facts.to;
- }).length;
- const ordinal=(facts?.complete??0)+(facts?.partial??0)+manualCount+1;
+ const ordinal=facts?facts.movementCount-Object.values(facts.activityCounts).reduce((sum,count)=>sum+count,0)+1:1;
  const message=done===0?t.zeroMessage:complete?format(t.completeMessage,{count:ordinal}):format(t.partialMessage,{count:done});
  return <main><h1>{t.finish}</h1><slots.FeatureCard context="finish" motionReduced={false} trainingActive={false}><p>{message}</p><p>{done} / {active.plannedSetCount} {t.sets}</p><p>{format(copy.elapsed,{minutes:elapsed})}</p>{done>0&&!complete&&<p>{format(copy.ordinal,{count:ordinal})}</p>}</slots.FeatureCard>
  <fieldset><legend>{t.feel}</legend><div className="v8-capsules">{feels.map((feel,i)=><Chip key={feel} selected={feedback.feel===feel} onClick={()=>setFeedback({...feedback,feel:feedback.feel===feel?undefined:feel})}>{t.feelOptions[i]}</Chip>)}</div></fieldset>

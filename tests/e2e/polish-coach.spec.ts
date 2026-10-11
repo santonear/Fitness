@@ -8,6 +8,7 @@ test('missing plan uses conservative local pain response and review navigation w
  await page.getByRole('textbox',{name:'跟芽芽说'}).fill('想看看这周');await page.getByRole('button',{name:'发送',exact:true}).click();
  await page.getByRole('button',{name:'查看本地回顾'}).last().click();await expect(page.getByText('本周回顾已打开')).toBeVisible();expect(calls).toBe(0);
 });
+test.beforeEach(async({page})=>{await page.route('**/api/v1/trial/access-status',async route=>{await route.fulfill({json:{qualification:'active',sessionValid:true,expiresAt:Date.now()+60000,aiEnabled:true}});});});
 test('qualification failure produces a confirmable local short plan without a second model call',async({page})=>{
  let calls=0,applies=0;await page.route('**/api/v1/plans/generate',async route=>{calls++;await route.fulfill({status:403,json:{error:'QUALIFICATION_REQUIRED'}});});
  await page.route('**/fixture/apply',async route=>{applies++;await route.fulfill({status:200,body:'saved'});});
@@ -15,6 +16,14 @@ test('qualification failure produces a confirmable local short plan without a se
  await page.getByRole('textbox',{name:'跟芽芽说'}).fill('今天时间不够');await page.getByRole('button',{name:'发送',exact:true}).click();
  await expect(page.getByText('可以试试这份约 15 分钟的短版，只改今天。',{exact:true})).toBeVisible();expect(applies).toBe(0);
  await page.getByRole('button',{name:'确认应用'}).click();await expect(page.getByText('已保存',{exact:true})).toBeVisible();expect(applies).toBe(1);expect(calls).toBe(1);
+});
+for(const status of ['none','unknown','offline'])test(`access ${status} returns a local short plan with zero generate requests`,async({page})=>{
+ let generationCalls=0,accessCalls=0;
+ await page.route('**/api/v1/trial/access-status',async route=>{accessCalls++;expect(route.request().postDataJSON()).toEqual({});if(status==='offline')await route.abort();else await route.fulfill({json:status==='none'?{qualification:'none',sessionValid:false}:{qualification:'unknown',sessionValid:false}});});
+ await page.route('**/api/v1/plans/generate',async route=>{generationCalls++;await route.abort();});
+ await page.goto('/tests/fixtures/v8-coach/index.html?local-adjust');await page.getByRole('button',{name:'跟芽芽说',exact:true}).click();
+ await page.getByRole('textbox',{name:'跟芽芽说'}).fill('今天时间不够');await page.getByRole('button',{name:'发送',exact:true}).click();
+ await expect(page.getByText('可以试试这份约 15 分钟的短版，只改今天。',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'确认应用'})).toBeVisible();expect(accessCalls).toBe(1);expect(generationCalls).toBe(0);
 });
 test('review has one factual feature card and finish includes elapsed time and partial sessions in its ordinal',async({page})=>{
  await page.goto('/');await page.getByLabel('你的回答').fill('保持力量');await page.getByRole('button',{name:'继续',exact:true}).click();
@@ -33,7 +42,7 @@ test('review has one factual feature card and finish includes elapsed time and p
   await repository.db.v8Workouts.update(current.id,{startedAt:new Date(Date.now()-7*60000).toISOString()});return current.id;
  });
  await page.goto(`/workout/${activeId}/finish`);await expect(page.getByText('本次用时 7 分钟',{exact:true})).toBeVisible();await expect(page.getByText('这是你本周第 3 次训练。',{exact:true})).toBeVisible();
- await page.getByRole('button',{name:'记下来',exact:true}).click();await expect(page.locator('[data-context="review"]')).toHaveCount(1);await expect(page.getByText('这周你动了 1 次。',{exact:true})).toBeVisible();await expect(page.getByText('完成了 0 次，部分完成 1 次，还差 3 次。',{exact:true})).toBeVisible();
- await page.getByRole('button',{name:'本月回顾',exact:true}).click();await expect(page.getByText('这个月你动了 1 次。',{exact:true})).toBeVisible();await expect(page.locator('[data-context="review"]')).toHaveCount(1);
+ await page.getByRole('button',{name:'记下来',exact:true}).click();await expect(page.locator('[data-context="review"]')).toHaveCount(1);await expect(page.getByText('这周你动了 3 次。',{exact:true})).toBeVisible();await expect(page.getByText('完成了 0 次，部分完成 1 次，还差 3 次。',{exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'本月回顾',exact:true}).click();await expect(page.getByText('这个月你动了 3 次。',{exact:true})).toBeVisible();await expect(page.locator('[data-context="review"]')).toHaveCount(1);
  for(const width of [390,1440]){await page.setViewportSize({width,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:`outputs/polish-coach/review-${width}.png`,fullPage:true});}
 });

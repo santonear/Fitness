@@ -1,5 +1,6 @@
 import {test,expect} from '@playwright/test';
 import {EXERCISE_IDS} from '../../src/catalog/exercise-ids';
+test.beforeEach(async({page})=>{await page.route('**/api/v1/trial/access-status',async route=>{await route.fulfill({json:{qualification:'active',sessionValid:true,expiresAt:Date.now()+60000,aiEnabled:true}});});});
 test('explicit send omits optional data, validates response, and keeps draft when closed',async({page})=>{
  let sent:any;
  await page.route('**/api/v1/plans/generate',async route=>{sent=route.request().postDataJSON();await route.fulfill({json:{requestId:sent.requestId,context:{restoreGeneration:0,inputDigest:sent.sendConfirmation},accounting:'settled',result:{requestId:sent.requestId,restoreGeneration:0,mutationAllowed:false,type:'clarify',question:'想在哪里练？'}}});});
