@@ -5,6 +5,7 @@ import type { AdminDatabase,AdminStatement } from '../../src/backend/admin/core/
 import { FinanceStore, handleFinance, resolveRuntimeEnv, activeAnnouncement, recordFinanceEvent, dailyCosts, ledgerProjection, ledgerCsv, financeTodos, environmentDefaults, reconciliationTodos, recentCosts } from '../../src/backend/admin/finance';
 import { initialState } from '../../src/backend/store';
 import {financeOutcome,mutationCopy} from '../../src/ui/admin/finance/outcome';
+import {dismissibleBudgetMonth} from '../../src/ui/admin/todos/budget-dismiss';
 const databases:DatabaseSync[]=[];
 afterEach(()=>databases.splice(0).forEach(d=>d.close()));
 function setup(){
@@ -17,6 +18,10 @@ function setup(){
  return {db,env,context,post};
 }
 const config={quotaUnderstand:5,quotaGenerate:8,quotaSummary:3,monthlyBudgetFen:5000,reservationFen:200,maxConcurrent:2,retentionDays:20};
+it('budget title reports the actual percentage and amount while preserving threshold dismissal identity',()=>{
+ const todo=financeTodos(1500,300,3000,'2026-10')[0];expect(todo.title).toBe('本月预算已用 60%（¥18.00 / ¥30.00）');expect(todo.id).toBe('finance-budget-2026-10-50');expect(dismissibleBudgetMonth(todo)).toBe('2026-10');
+ expect(dismissibleBudgetMonth(financeTodos(2400,0,3000,'2026-10')[0])).toBeUndefined();
+});
 it('config CAS, repeat idempotency, immutable history and fresh Access',async()=>{
  const {db,context,post}=setup();const req=()=>post('config',{expectedVersion:0,config});
  await expect(handleFinance(req(),{...context,fresh:false})).rejects.toMatchObject({code:'FRESH_ACCESS_REQUIRED'});

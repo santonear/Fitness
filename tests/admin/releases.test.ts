@@ -25,6 +25,17 @@ function fixture() {
   return {sqlite,db,context};
 }
 function post(path:string,body:unknown){return new Request(`https://example.test/api/v1/management/console/releases/${path}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});}
+it('Access login interception is not a failure todo; real 503 produces a localized environment todo',async()=>{
+ const {db,context}=fixture();
+ await db.prepare("INSERT INTO admin_release_state(environment,current_id,changed_at) VALUES('preview','release-current','2026-10-12')").run();
+ await db.prepare("INSERT INTO admin_release_smoke(environment,release_id,check_id,status,checked_at) VALUES('preview','release-current','application','unavailable','2026-10-12')").run();
+ await db.prepare("INSERT INTO admin_release_smoke_reason VALUES('preview','release-current','application','access_login_required',302)").run();
+ expect(await releaseTodoSource.evaluate(context)).toEqual([]);
+ await db.prepare("UPDATE admin_release_smoke SET status='failed'").run();await db.prepare("UPDATE admin_release_smoke_reason SET reason='http_error',http_status=503").run();
+ expect((await releaseTodoSource.evaluate(context))[0]).toMatchObject({level:'alert',text:'预览 有 1 项检查未通过或暂不可用。'});
+ await db.prepare("UPDATE admin_release_state SET environment='production'").run();await db.prepare("UPDATE admin_release_smoke SET environment='production'").run();await db.prepare("UPDATE admin_release_smoke_reason SET environment='production'").run();context.env.ADMIN_ENVIRONMENT='production';
+ expect((await releaseTodoSource.evaluate(context))[0].text).toContain('生产');
+});
 const current={id:'release-current',deploymentId:'11111111-1111-4111-8111-111111111111',publishedAt:'2026-10-11T10:00:00Z',compatibleDataVersion:11,smokeOrigin:'https://preview.example.test'};
 const previous={...current,id:'release-previous',deploymentId:'22222222-2222-4222-8222-222222222222'};
 afterEach(()=>{for(const connection of connections.splice(0))connection.close();vi.unstubAllGlobals();});

@@ -36,11 +36,12 @@ export function ledgerProjection(state:ControlState, month:string) {
 }
 export function financeTodos(spent:number,pending:number,budget:number,month:string):AdminTodo[] {
   const ratio=(spent+pending)/budget, threshold=ratio>=1?100:ratio>=.8?80:ratio>=.5?50:0;
-  return threshold?[{id:`finance-budget-${month}-${threshold}`,level:threshold===100?'alert':threshold===80?'warn':'info',title:`本月预算已用到 ${threshold}%`,text:'包含已核算费用与待核算预留；不改变当前调用准入规则。',actions:[{label:'查看费用',href:'/admin/ledger'}]}]:[];
+  return threshold?[{id:`finance-budget-${month}-${threshold}`,level:threshold===100?'alert':threshold===80?'warn':'info',title:`本月预算已用 ${Math.round(ratio*100)}%（¥${((spent+pending)/100).toFixed(2)} / ¥${(budget/100).toFixed(2)}）`,text:'包含已核算费用与待核算预留；不改变当前调用准入规则。',actions:[{label:'查看费用',href:'/admin/ledger'}]}]:[];
 }
 export function ledgerCsv(value:ReturnType<typeof ledgerProjection>) {
   const rows=[['month','subject','request','task','status','reserved_fen','settled_fen'],...value.rows.map(r=>[value.month,r.subjectShortId,r.requestShortId,r.operation,r.status,r.reservedFen,r.settledFen]),[value.month,'','','','unattributed',0,value.unattributedFen]];
   return '\uFEFF'+rows.map(r=>r.map(v=>'"'+String(v).replace(/^[=+@\-]/,"'$&").replaceAll('"','""')+'"').join(',')).join('\r\n');
 }
+
 
 
