@@ -51,5 +51,7 @@
   "details": "Exercise notes",
   "helpEmpty": "No local selection is available with these filters. Adjust them or choose exercises yourself.",
   "adultRequired": "Local suggestions are available after confirming you are 18 or older. You can still choose exercises yourself.",
-  "placeRequired": "Choose where you will train before requesting a local selection."
+  "placeRequired": "Choose where you will train before requesting a local selection.",
+  "manualDefaults": "Switched to a manual workout with 2 sets per exercise.",
+  "planTargets": "This session keeps its planned sets and targets. Adding or removing exercises switches to a manual workout."
 }

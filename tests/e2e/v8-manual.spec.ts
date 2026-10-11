@@ -7,9 +7,9 @@ test('manual search, multi-select, filters and shared estimate lead to a multi-a
   await expect(start).toBeDisabled();
   const search = page.getByRole('searchbox', { name: '搜索动作' });
   await search.fill('squat');
-  await page.getByRole('button', { name: '徒手深蹲', exact: true }).click();
+  await page.getByRole('button', { name: '徒手深蹲', exact: true }).first().click();
   await search.fill('plank');
-  await page.getByRole('button', { name: '平板支撑', exact: true }).click();
+  await page.getByRole('button', { name: '平板支撑', exact: true }).first().click();
   await expect(page.locator('.manual-start')).toContainText('已选 2 个动作');
   await expect(page.locator('.manual-start')).toContainText('约 15 分钟');
   await page.getByRole('button', { name: '康复', exact: true }).click();
@@ -40,4 +40,40 @@ test('empty and local helper states stay editable without a network AI request',
   await expect(page.getByRole('status')).toContainText('确认已满18岁');
   await expect(page.locator('.manual-start')).toContainText('已选 0 个动作');
   expect(calls).toBe(0);
+});
+
+test('confirmed onboarding filters are editable and local selection uses them', async ({ page }) => {
+  await page.goto('/manual');
+  await expect(page.getByRole('heading', { name: '手动训练', exact: true })).toBeVisible();
+  const plannedSets = await page.evaluate(async () => {
+    const path = '/src/ui/mainline/context.tsx'; const { workflow } = await import(/* @vite-ignore */ path);
+    const candidate = await workflow.propose({ goalText: '体能', scheduleOriginalText: '每周2次，每次30分钟', weeklyTarget: 2, sessionMinutes: 30, place: 'home', equipment: ['none'], adultConfirmed: true, cautions: [], confirmedAt: new Date().toISOString() });
+    candidate.proposal.templates[0].items[0].sets = 3;
+    candidate.proposal.templates[0].items[0].target = { metricType: 'reps', reps: 12 };
+    await workflow.adopt(candidate);
+    return candidate.proposal.templates[0].items.reduce((total: number, item: { sets: number }) => total + item.sets, 0);
+  });
+  await page.reload();
+  await expect(page.getByRole('button', { name: '在家', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('button', { name: '无器械', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await page.getByRole('button', { name: '芽芽帮配', exact: true }).click();
+  await expect(page.locator('.manual-start')).toContainText('已选 4 个动作');
+  await expect(page.getByRole('status')).toContainText('按当前筛选本地搭配');
+  await page.getByRole('button', { name: '清空已选', exact: true }).click();
+  await expect(page.getByRole('button', { name: '开始', exact: true })).toBeDisabled();
+  await page.getByRole('button', { name: '在家', exact: true }).click();
+  await expect(page.getByRole('button', { name: '在家', exact: true })).toHaveAttribute('aria-pressed', 'false');
+  await page.getByRole('button', { name: '按计划来一份', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '选择一份训练单', exact: true })).toBeVisible();
+  await page.locator('.manual-plans button').first().click();
+  await expect(page.getByRole('status')).toContainText('保留这份训练单的组数和目标');
+  await page.locator('section.manual-chips button').first().click();
+  await expect(page.getByRole('status')).toContainText('已切换为手动训练');
+  await page.getByRole('button', { name: '按计划来一份', exact: true }).click();
+  await page.locator('.manual-plans button').first().click();
+  await page.getByRole('button', { name: '开始', exact: true }).click();
+  await expect(page).toHaveURL(/\/workout\//);
+  const workout = await page.evaluate(async () => { const path = '/src/ui/mainline/context.tsx'; return (await (await import(/* @vite-ignore */ path)).workflow.snapshot()).active; });
+  expect(workout.plannedSetCount).toBe(plannedSets);
+  expect(workout.templateSnapshot.items[0]).toMatchObject({ sets: 3, target: { reps: 12 } });
 });

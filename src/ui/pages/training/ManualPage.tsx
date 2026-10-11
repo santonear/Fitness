@@ -16,13 +16,14 @@ import en from '../../../i18n/features/manual/en.json';
 import './manual/manual.css';
 
 export function ManualPage() {
-  const { locale, data, answers, startManual, busy } = useMainline();
+  const { locale, data, answers, startManual, start, busy } = useMainline();
   const copy = locale === 'zh' ? zh : en;
   const saved = data?.state?.coachProfile;
   const source = saved ? [saved.place, ...saved.equipment].join(' ') : answers.placeEquipmentText;
   const initial = initialFilters(source);
   const filtersEdited = useRef(false);
   const [selected, setSelected] = useState<string[]>([]);
+  const [templateId, setTemplateId] = useState<string>();
   const [query, setQuery] = useState('');
   const [filters, setFilters] = useState<ExerciseSearchFilters>({ places: initial.places, equipment: initial.equipment });
   const [limit, setLimit] = useState(36);
@@ -43,7 +44,8 @@ export function ManualPage() {
   function filterGroup(title: string, key: 'places' | 'equipment' | 'bodyParts' | 'goals', values: readonly string[]) {
     return <fieldset className="manual-filter-group"><legend>{title}</legend><div className="manual-chips">{values.map(value => <button type="button" key={value} aria-pressed={(filters[key] as readonly string[] | undefined)?.includes(value) ?? false} onClick={() => toggleFilter(key, value)}>{label(value)}</button>)}</div></fieldset>;
   }
-  function choose(ids: string[], message = '') { setSelected([...new Set(ids)].filter(id => exercises.some(exercise => exercise.id === id))); setNotice(message); }
+  function choose(ids: string[], message = '') { setTemplateId(undefined); setSelected([...new Set(ids)].filter(id => exercises.some(exercise => exercise.id === id))); setNotice(message); }
+  function toggleExercise(id: string) { if (templateId) setNotice(copy.manualDefaults); setTemplateId(undefined); setSelected(current => toggleSelection(current, id)); }
   function localSelection() {
     if (!(saved?.adultConfirmed ?? answers.adultConfirmed)) { setNotice(copy.adultRequired); return; }
     if (!saved && !initialFilters(answers.placeEquipmentText).places.length && !filters.places?.length) { setNotice(copy.placeRequired); return; }
@@ -53,7 +55,8 @@ export function ManualPage() {
     const items = basicItems({ ...profile, equipment: selectedEquipment.length ? selectedEquipment : profile.equipment, cautions }, 0).items.filter(item => pool.has(item.exerciseId));
     if (items.length) choose(items.map(item => item.exerciseId), copy.local); else setNotice(copy.helpEmpty);
   }
-  const minutes = selected.length ? estimatePlannedMinutes(manualTrainingItems(selected)) : 0;
+  const template = data?.version?.templates.find(item => item.id === templateId);
+  const minutes = selected.length ? estimatePlannedMinutes(template?.items ?? manualTrainingItems(selected)) : 0;
   return <main className="manual-page">
     <header><h1>{copy.title}</h1><p>{copy.intro}</p></header>
     <label className="manual-search">{copy.search}<input type="search" value={query} placeholder={copy.searchHint} onChange={event => { setQuery(event.target.value); setLimit(36); }} /></label>
@@ -62,9 +65,9 @@ export function ManualPage() {
       <Button onClick={localSelection}>{copy.help}</Button>
       <Button onClick={() => { const recent = recentExerciseIds(data?.workouts ?? []); if (recent.length) choose(recent); else setNotice(copy.noRecent); }}>{copy.recent}</Button>
     </div>
-    {showPlans && <section className="manual-plans" aria-label={copy.choosePlan}><h2>{copy.choosePlan}</h2>{data?.version?.templates.map(template => <Button key={template.id} onClick={() => { choose(template.items.map(item => item.exerciseId)); setShowPlans(false); }}>{template.name}</Button>)}<Button onClick={() => setShowPlans(false)}>{copy.close}</Button></section>}
+    {showPlans && <section className="manual-plans" aria-label={copy.choosePlan}><h2>{copy.choosePlan}</h2>{data?.version?.templates.map(template => <Button key={template.id} onClick={() => { choose(template.items.map(item => item.exerciseId), copy.planTargets); setTemplateId(template.id); setShowPlans(false); }}>{template.name}</Button>)}<Button onClick={() => setShowPlans(false)}>{copy.close}</Button></section>}
     <p role="status" className="manual-notice">{notice}</p>
-    {selected.length > 0 && <section aria-label={format(copy.selected, { count: selected.length })} className="manual-chips">{selected.map(id => <button type="button" key={id} aria-pressed="true" onClick={() => setSelected(current => toggleSelection(current, id))}>{exercises.find(exercise => exercise.id === id)!.name[locale]} ×</button>)}</section>}
+    {selected.length > 0 && <section aria-label={format(copy.selected, { count: selected.length })} className="manual-chips">{selected.map(id => <button type="button" key={id} aria-pressed="true" onClick={() => toggleExercise(id)}>{exercises.find(exercise => exercise.id === id)!.name[locale]} ×</button>)}</section>}
     <details className="manual-filters" open><summary>{copy.filters}</summary>
       {(initial.places.length > 0 || initial.equipment.length > 0) && <p>{copy.prefill}</p>}
       {filterGroup(copy.place, 'places', places)}
@@ -82,7 +85,7 @@ export function ManualPage() {
       const body = exerciseBodyPart(exercise.id);
       const caution = exerciseCautionAreas(exercise.id).some(area => cautionAreas.includes(area));
       return <article className="manual-card" key={exercise.id} data-selected={selected.includes(exercise.id)}>
-        <button type="button" className="manual-pick" aria-pressed={selected.includes(exercise.id)} aria-label={exercise.name[locale]} onClick={() => setSelected(current => toggleSelection(current, exercise.id))}>
+        <button type="button" className="manual-pick" aria-pressed={selected.includes(exercise.id)} aria-label={exercise.name[locale]} onClick={() => toggleExercise(exercise.id)}>
           {guide.media ? <img src={guide.media.src} alt="" loading="lazy" /> : <span className="manual-no-image" aria-hidden="true">{copy.noImage}</span>}
           <span className="manual-card-copy"><strong>{exercise.name[locale]}</strong><span>{equipmentLabel(exercise.equipment, locale)} · {BODY_PARTS[body]?.[locale === 'zh' ? 0 : 1] ?? label(body)}</span></span><span className="manual-check" aria-hidden="true">{selected.includes(exercise.id) ? '✓' : '+'}</span>
         </button>
@@ -91,6 +94,6 @@ export function ManualPage() {
       </article>;
     })}</div>
     {results.length > limit && <Button onClick={() => setLimit(value => value + 36)}>{copy.more}</Button>}
-    <footer className="manual-start"><div aria-live="polite"><strong>{format(copy.selected, { count: selected.length })}</strong><span>{format(copy.minutes, { minutes })}</span></div><Button variant="primary" disabled={!selected.length || busy} onClick={() => void startManual(selected)}>{copy.start}</Button></footer>
+    <footer className="manual-start"><div aria-live="polite"><strong>{format(copy.selected, { count: selected.length })}</strong><span>{format(copy.minutes, { minutes })}</span></div><Button variant="primary" disabled={!selected.length || busy} onClick={() => void (template ? start(template.id) : startManual(selected))}>{copy.start}</Button></footer>
   </main>;
 }
