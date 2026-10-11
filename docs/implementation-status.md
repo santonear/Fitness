@@ -1,6 +1,6 @@
 # Fitness 当前交付状态
 
-最新状态（2026-10-11）：main 基线0bd268b（PR #51）。本次主线修复与动作体验四线已汇入feature/mainline-polish，隔离预览已部署并通过375/1280六项浏览器验收；唯一PR准备中，未合入main、未发布生产。详细范围与待审决定见docs/handoff-v8/mainline-polish-plan.md和pending-decisions.md。下方旧段落仅为历史，不代表当前状态。
+最新状态（2026-10-11）：main 基线0bd268b（PR #51）。本次主线修复与动作体验四线已汇入feature/mainline-polish，隔离预览已部署并通过375/1280六项浏览器验收；唯一 PR #52 已创建，CI 检查中，未合入main、未发布生产。详细范围与待审决定见docs/handoff-v8/mainline-polish-plan.md和pending-decisions.md。下方旧段落仅为历史，不代表当前状态。
 
 
 更新基线：2026-10-09，已发布 PR #22 / `ac130fa`。这是代码工作区的当前状态摘要；旧进度与验收文件保留历史语境，不能将其中的“待发布”直接视为当前待办。
