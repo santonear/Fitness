@@ -4,14 +4,19 @@ import { computeExerciseEvidence } from './evidence';
 import { estimatePlannedMinutes } from '../rules/duration-estimate';
 import { discomfortReplacement } from '../rules/basic-items';
 
+function reviewDate(input:SuggestionInput,workout:SuggestionInput['workouts'][number]):string {
+ if(!input.timeZone)return workout.localDate;
+ const parts=new Intl.DateTimeFormat('en-CA',{timeZone:input.timeZone,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date(workout.startedAt));
+ return ['year','month','day'].map(key=>parts.find(part=>part.type===key)!.value).join('-');
+}
 function shortTemplate(source:SessionTemplate):SessionTemplate {
  const items=source.items.slice(0,3).map(item=>({...structuredClone(item),sets:2}));
  const estimatedMinutes=estimatePlannedMinutes(items);
- return {...structuredClone(source),id:'review-short',name:`${estimatedMinutes} min`,estimatedMinutes,items};
+ return {...structuredClone(source),name:`${estimatedMinutes} min`,estimatedMinutes,items};
 }
 
 export function recurringDiscomfort(input: SuggestionInput): string[] {
- const rows=input.workouts.filter(w=>w.planVersionId===input.plan.id&&w.localDate>=input.previous.from&&w.localDate<=input.current.to&&!['in_progress','abandoned'].includes(w.status)).sort((a,b)=>b.startedAt.localeCompare(a.startedAt));
+ const rows=input.workouts.filter(w=>w.planVersionId===input.plan.id&&reviewDate(input,w)>=input.previous.from&&reviewDate(input,w)<=input.current.to&&!['in_progress','abandoned'].includes(w.status)).sort((a,b)=>b.startedAt.localeCompare(a.startedAt));
  return [...new Set(rows.flatMap(w=>computeExerciseEvidence(w).discomfortExerciseIds))].filter(id=>{
   const attempts=rows.filter(w=>w.sets.some(s=>s.exerciseId===id)||w.substitutions?.some(s=>s.fromExerciseId===id));
   return attempts.length>=2&&attempts.slice(0,2).every(w=>computeExerciseEvidence(w).discomfortExerciseIds.includes(id));
@@ -31,14 +36,16 @@ export function suggestChange(input: SuggestionInput): ReviewSuggestion | null {
    const original=plan.templates.find(item=>item.id===template.id);
    if(!original||JSON.stringify(original.items)!==JSON.stringify(template.items)){
     template.estimatedMinutes=estimatePlannedMinutes(template.items);
-    if(template.id==='review-short'&&/^\d+ min$/.test(template.name))template.name=`${template.estimatedMinutes} min`;
+    if(/^\d+ min$/.test(template.name))template.name=`${template.estimatedMinutes} min`;
    }
   }
+  const durations=proposal.templates.map(t=>t.estimatedMinutes).sort((a,b)=>a-b);
+  if(durations.length)proposal.sessionMinutes=Math.round((durations[Math.floor((durations.length-1)/2)]+durations[Math.floor(durations.length/2)])/2);
   return { id, rule, summary: rule, basedOnVersionId: plan.id, proposal };
  };
  // A dismissed suggestion does not fall through into another suggestion this week.
  if (input.dismissedIds.some(id => id.startsWith(`${current.from}:${plan.id}:`))) return null;
- const rows = input.workouts.filter(w => w.planVersionId === plan.id && w.localDate >= previous.from && w.localDate <= current.to && !['in_progress','abandoned'].includes(w.status))
+ const rows = input.workouts.filter(w => w.planVersionId === plan.id && reviewDate(input,w) >= previous.from && reviewDate(input,w) <= current.to && !['in_progress','abandoned'].includes(w.status))
   .sort((a,b) => b.startedAt.localeCompare(a.startedAt));
  // Do not offer load increases while any relevant discomfort is unresolved.
  const discomfort = new Set(rows.flatMap(w => computeExerciseEvidence(w).discomfortExerciseIds));
@@ -54,10 +61,12 @@ export function suggestChange(input: SuggestionInput): ReviewSuggestion | null {
   }
   return null;
  }
- if (current.reasonCounts.time >= 2 && !plan.templates.some(t => t.id === 'review-short')) {
-  const source=plan.templates.find(t => t.items.length >= 3);
-  if(source) return candidate('time', { ...base, templates: [...base.templates, shortTemplate(source)] });
+ if (current.reasonCounts.time >= 2) {
+  const affected=rows.filter(w=>reviewDate(input,w)>=current.from&&w.feedback?.reasons.includes('time')).map(w=>w.templateId);
+  const source=plan.templates.find(t=>affected.includes(t.id)&&t.items.length>=3&&t.estimatedMinutes>estimatePlannedMinutes(shortTemplate(t).items))??(!affected.some(Boolean)?plan.templates.find(t=>t.items.length>=3&&t.estimatedMinutes>estimatePlannedMinutes(shortTemplate(t).items)):undefined);
+  if(source)return candidate('time',{...base,templates:base.templates.map(t=>t.id===source.id?shortTemplate(source):t)},source.id);
  }
+
  for (const id of new Set(plan.templates.flatMap(t=>t.items.map(i=>i.exerciseId)))) {
   if(discomfort.has(id))continue;
   const relevant=rows.filter(w=>w.plannedExercises?.some(e=>e.exerciseId===id)||w.sets.some(s=>s.exerciseId===id)||w.substitutions?.some(s=>s.fromExerciseId===id));

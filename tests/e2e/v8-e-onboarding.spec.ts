@@ -17,7 +17,7 @@ for (const theme of ['qingci', 'liubai', 'jingshe', 'zhuangse']) for (const widt
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await page.screenshot({ path: info.outputPath(`${theme}-${width}-question.png`), fullPage: true });
     await questions(page);
-    const generate = page.getByRole('button', { name: '生成我的第一版计划', exact: true });
+    const generate = page.getByRole('button', { name: '生成新计划', exact: true });
     await expect(generate).toBeDisabled();
     await page.getByRole('button', { name: '手动训练', exact: true }).click();
     await expect(page.getByLabel('manual calls')).toHaveText('1');
@@ -36,7 +36,7 @@ for (const theme of ['qingci', 'liubai', 'jingshe', 'zhuangse']) for (const widt
     await generate.click();
     await expect(page.getByLabel('generate calls')).toHaveText('1');
     await expect(page.getByLabel('confirm calls')).toHaveText('0');
-    await page.locator('.v8-draft-exercise button').first().click();
+    await page.locator('button.v8-draft-exercise').first().click();
     await expect(page.getByRole('dialog')).toBeVisible();
     await page.getByRole('dialog').getByRole('button', { name: '关闭', exact: true }).click();
     await expect(page.locator('.v8-draft-exercise').first().getByText('哑铃', { exact: true })).toBeVisible();
@@ -52,7 +52,7 @@ test('basic mode also requires adulthood and never presents external consent', a
   await page.goto('/tests/e2e/helpers/v8-e-onboarding.html?basic'); await questions(page);
   await expect(page.getByText('基础计划', { exact: true })).toBeVisible();
   await expect(page.locator('summary')).toHaveCount(0);
-  await expect(page.getByRole('button', { name: '生成我的第一版计划' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: '生成新计划' })).toBeDisabled();
   await page.getByRole('button', { name: '上一步', exact: true }).click();
   await expect(page.getByLabel('你的回答', { exact: true })).toHaveValue('在家，只有瑜伽垫');
 });

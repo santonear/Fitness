@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { D1ControlStore } from '../../d1-store';
 import { adminJson, AdminError, requireAdminDb, requireFreshContext, type AdminContext } from '../core/contracts';
 import { FinanceStore, environmentDefaults, runtimeSchema, validateAnnouncement, type FinanceEnv } from './runtime';
-import { dailyCosts, financeTodos, ledgerCsv, ledgerProjection, reconciliationTodos, recentCosts } from './report';
+import { ledgerDailyCosts, ledgerRecentCosts, financeLocalDate, financeTodos, ledgerCsv, ledgerProjection, reconciliationTodos } from './report';
 export * from './runtime';
 export * from './report';
 export type FinanceContext = AdminContext & { env: AdminContext['env'] & FinanceEnv; settle?: (subjectId:string, requestId:string, actualCost:number)=>Promise<void> };
@@ -20,14 +20,19 @@ async function handleFinanceInternal(request:Request,context:FinanceContext):Pro
   if(!url.pathname.startsWith(prefix+'/'))return undefined;
   const route=url.pathname.slice(prefix.length+1), db=requireAdminDb(context), store=new FinanceStore(db);
   if(request.method==='GET') {
-    if(route==='recent-costs')return adminJson(await recentCosts(db,context.now));
+
     if(route==='config') {const s=await store.read();return adminJson({current:s.versions.at(-1)??{version:0,config:environmentDefaults(context.env)},history:s.versions,dismissedBudgetMonths:s.dismissedBudgetMonths??[],defaults:environmentDefaults(context.env)});}
     if(route==='announcement')return adminJson({announcement:(await store.read()).announcement});
-    if(['ledger','export','costs'].includes(route)) {
-      const month=monthSchema.parse(url.searchParams.get('month')??(route==='costs'?new Date(context.now).toISOString().slice(0,7):ledgerMonth(context.now,context.env.CONTROL_POLICY)));
-      if(route==='costs')return adminJson({month,timeZone:'UTC',rows:await dailyCosts(db,month)});
+    if(['ledger','export','costs','recent-costs'].includes(route)) {
+      const timeZone=url.searchParams.get('timeZone')??'Asia/Shanghai';
+      try{financeLocalDate(context.now,timeZone)}catch{throw new AdminError('INVALID_TIME_ZONE',400)}
       if(!context.env.CONTROL_DB)throw new AdminError('LEDGER_UNAVAILABLE',503);
-      const ledger=ledgerProjection(await new D1ControlStore(context.env.CONTROL_DB).read(),month);
+      const control=await new D1ControlStore(context.env.CONTROL_DB).read();
+      if(route==='recent-costs'){const events=(await db.prepare("SELECT task,at FROM admin_finance_events WHERE status='fallback' AND at>=?").bind(context.now-8*86400000).all<{task:string;at:number}>()).results;return adminJson(ledgerRecentCosts(control,context.now,timeZone,events));}
+      const month=monthSchema.parse(url.searchParams.get('month')??financeLocalDate(context.now,timeZone).slice(0,7));
+      if(route==='costs'){const events=(await db.prepare("SELECT task,at FROM admin_finance_events WHERE status='fallback' AND at>=?").bind(Date.parse(month+'-01T00:00:00Z')-86400000).all<{task:string;at:number}>()).results;return adminJson({month,timeZone,rows:ledgerDailyCosts(control,timeZone,events).filter(row=>row.day.startsWith(month))});}
+      if(!context.env.CONTROL_DB)throw new AdminError('LEDGER_UNAVAILABLE',503);
+      const ledger=ledgerProjection(control,month,timeZone);
       if(route==='export'){await context.audit('finance.export',month,'completed');return new Response(ledgerCsv(ledger),{headers:{'Content-Type':'text/csv;charset=utf-8','Content-Disposition':`attachment; filename="ledger-${month}.csv"`,'Cache-Control':'no-store'}});}
       return adminJson(ledger);
     }

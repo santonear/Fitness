@@ -11,7 +11,7 @@ const feels = ['easy','right','tired','very_tired'] as const;
 export function ActivityPage() {
  const c=useMainline(), t=c.locale==='zh'?zh:en;
  const [id]=useState(()=>crypto.randomUUID()), [revision]=useState(()=>c.data!.metadata.dataRevision), [generation]=useState(()=>c.data!.metadata.restoreGeneration??0);
- const [type,setType]=useState<ActivityRecord['type']>('walk'),[minutes,setMinutes]=useState(30),[customName,setCustomName]=useState(''),[feel,setFeel]=useState<Feel>(),[note,setNote]=useState('');
+ const [type,setType]=useState<ActivityRecord['type']>(),[minutes,setMinutes]=useState(30),[customName,setCustomName]=useState(''),[feel,setFeel]=useState<Feel>(),[note,setNote]=useState('');
  const zone=c.data?.profile?.timeZone??'Asia/Shanghai', today=activityDate(zone);
  const [when,setWhen]=useState('now'),[date,setDate]=useState(today);
  return <main><Button onClick={()=>c.navigate('/')}>{c.t.back}</Button><h1>{t.title}</h1>
@@ -23,5 +23,5 @@ export function ActivityPage() {
  {when==='date'&&<label>{t.date}<input type="date" max={today} value={date} onChange={e=>setDate(e.target.value)}/></label>}
  <fieldset><legend>{c.t.feel}</legend><div className="v8-capsules">{feels.map((f,i)=><Chip key={f} selected={feel===f} onClick={()=>setFeel(feel===f?undefined:f)}>{c.t.feelOptions[i]}</Chip>)}</div></fieldset>
  <label>{c.t.note}<textarea value={note} onChange={e=>setNote(e.target.value)}/></label><p>{t.hint}</p>
- <Button variant="primary" disabled={c.busy||!Number.isInteger(minutes)||minutes<5||!date||date>today} onClick={()=>void c.run(async()=>{await createActivityService(repository).save({id,type,minutes,localDate:date,timeZone:zone,...(type==='other'&&customName.trim()?{customName:customName.trim()}:{}),...(feel?{feel}:{}),...(note.trim()?{note:note.trim()}:{})},revision,generation);c.navigate('/review');})}>{c.t.save}</Button></main>;
+ <Button variant="primary" disabled={c.busy||!type||!Number.isInteger(minutes)||minutes<5||!date||date>today} onClick={()=>void c.run(async()=>{if(!type)return;await createActivityService(repository).save({id,type,minutes,localDate:date,timeZone:zone,...(type==='other'&&customName.trim()?{customName:customName.trim()}:{}),...(feel?{feel}:{}),...(note.trim()?{note:note.trim()}:{})},revision,generation);c.navigate('/review');})}>{c.t.save}</Button></main>;
 }

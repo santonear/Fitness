@@ -16,7 +16,7 @@ test('production shell reloads offline and preserves actual recorded training', 
   await page.getByLabel('你的回答').fill('想有些力量，不再容易累'); await page.getByRole('button', { name: '继续', exact: true }).click();
   await page.getByLabel('你的回答').fill('每周 2 次，每次 20 分钟'); await page.getByRole('button', { name: '继续', exact: true }).click();
   await page.getByLabel('你的回答').fill('在家，只有瑜伽垫'); await page.getByRole('button', { name: '继续', exact: true }).click();
-  await page.getByLabel('我已年满 18 岁').check(); await page.getByRole('button', { name: '生成我的第一版计划' }).click();
+  await page.getByLabel('我已年满 18 岁').check(); await page.getByRole('button', { name: '生成新计划' }).click();
   await page.getByRole('button', { name: '就用这份计划' }).click();
   await expect(page.getByRole('heading', { name: '下一次' })).toBeVisible();
   await page.getByRole('button', { name: '开始训练', exact: true }).first().click();

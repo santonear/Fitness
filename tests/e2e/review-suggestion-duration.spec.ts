@@ -5,7 +5,7 @@ test('month facts use the month while suggestions retain the approved recent-wee
  await page.goto('/');await page.getByLabel('你的回答').fill('保持力量');await page.getByRole('button',{name:'继续',exact:true}).click();
  await page.getByLabel('你的回答').fill('每周3次，每次30分钟');await page.getByRole('button',{name:'继续',exact:true}).click();
  await page.getByLabel('你的回答').fill('在家，只有瑜伽垫');await page.getByRole('button',{name:'继续',exact:true}).click();
- await page.getByLabel('我已年满 18 岁',{exact:false}).check();await page.getByRole('button',{name:'生成我的第一版计划'}).click();await page.getByRole('button',{name:'就用这份计划'}).click();
+ await page.getByLabel('我已年满 18 岁',{exact:false}).check();await page.getByRole('button',{name:'生成新计划'}).click();await page.getByRole('button',{name:'就用这份计划'}).click();
  await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
  const seed=async(days:number[])=>page.evaluate(async days=>{
   const rp='/src/persistence/repository.ts';const {repository}=await import(/* @vite-ignore */ rp);

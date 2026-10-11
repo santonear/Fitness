@@ -35,5 +35,6 @@
   "noPlanFacts": "完成了 {complete} 次，部分完成 {partial} 次。",
   "noPlanNext": "现在没有当前计划，可以手动训练，或重新制定计划。",
   "manualTraining": "手动训练",
-  "newPlan": "重新制定计划"
+  "newPlan": "重新制定计划",
+  "overnight": "凌晨"
 }

@@ -6,7 +6,7 @@ async function plan(page:Page){
  await page.goto('/');await page.getByLabel('你的回答').fill('保持力量');await page.getByRole('button',{name:'继续',exact:true}).click();
  await page.getByLabel('你的回答').fill('每周3次，每次30分钟');await page.getByRole('button',{name:'继续',exact:true}).click();
  await page.getByLabel('你的回答').fill('在家，只有瑜伽垫');await page.getByRole('button',{name:'继续',exact:true}).click();
- await page.getByLabel('我已年满 18 岁',{exact:false}).check();await page.getByRole('button',{name:'生成我的第一版计划'}).click();await page.getByRole('button',{name:'就用这份计划'}).click();
+ await page.getByLabel('我已年满 18 岁',{exact:false}).check();await page.getByRole('button',{name:'生成新计划'}).click();await page.getByRole('button',{name:'就用这份计划'}).click();
  await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
 }
 test('plan details morph from a chip, preserve read-only versions, and restore keyboard focus',async({page})=>{
@@ -18,14 +18,14 @@ test('plan details morph from a chip, preserve read-only versions, and restore k
 });
 test('library near matches preserve equipment filters and open complete guidance',async({page})=>{
  await plan(page);await page.goto('/exercises');
- await page.getByLabel('器械',{exact:true}).selectOption('none');
+ await page.getByRole('button',{name:'无器械',exact:true}).click();
  await page.getByRole('searchbox').fill('俯误错');
- await expect(page.getByRole('status')).toContainText('相近动作');
+ await expect(page.getByRole('heading',{name:'相近动作（保留当前筛选）'})).toBeVisible();
  await page.getByRole('button',{name:'俯卧撑',exact:true}).click();
  await expect(page.getByRole('dialog').getByRole('heading',{name:'常见错误',exact:true})).toBeVisible();
  await page.getByRole('dialog').getByRole('button',{name:'关闭',exact:true}).click();
- await page.getByLabel('器械',{exact:true}).selectOption('barbell');
- await expect(page.getByRole('status')).toContainText('没有符合条件');
+ await page.getByRole('button',{name:'无器械',exact:true}).click();await page.getByRole('button',{name:'杠铃',exact:true}).click();
+ await expect(page.locator('.manual-empty')).toBeVisible();
  await expect(page.getByRole('button',{name:'俯卧撑',exact:true})).toHaveCount(0);
 });
 
@@ -41,11 +41,11 @@ test('library favorites are filtered before exact matches and suggestion limits'
  await page.goto('/exercises');await page.getByRole('searchbox').fill('杠铃背蹲');
  await page.getByRole('button',{name:'收藏 杠铃背蹲',exact:true}).first().click();
  await page.getByLabel('只看已收藏').check();await page.getByRole('searchbox').fill('哑铃深蹲');
- await expect(page.getByRole('status')).toContainText('相近动作');
+ await expect(page.getByRole('heading',{name:'相近动作（保留当前筛选）'})).toBeVisible();
  await expect(page.getByRole('button',{name:'杠铃背蹲',exact:true})).toBeVisible();
  await expect(page.getByRole('button',{name:'哑铃深蹲',exact:true})).toHaveCount(0);
- await page.getByLabel('器械',{exact:true}).selectOption('dumbbell');
- await expect(page.getByRole('status')).toContainText('没有符合条件');
+ await page.getByRole('button',{name:'哑铃',exact:true}).click();
+ await expect(page.locator('.manual-empty')).toBeVisible();
 });
 
 async function timeEvidence(page:Page){
@@ -65,7 +65,7 @@ test('monthly facts remain visible and adopting a preview adds a version without
  await expect(page.getByRole('status')).toHaveText('已保存为新的计划版本。');
  const after=await page.evaluate(async()=>{const p='/src/persistence/db.ts',db=(await import(/* @vite-ignore */ p)).database;return {versions:await db.v8PlanVersions.toArray(),rows:await db.v8Workouts.toArray()};});
  expect(after.versions).toHaveLength(2);expect(after.versions.find((v:{id:string})=>v.id===before.version.id)).toEqual(before.version);expect(after.rows).toEqual(expect.arrayContaining(before.rows));
- expect(after.versions.find((v:{id:string})=>v.id!==before.version.id).templates.some((t:{id:string})=>t.id==='review-short')).toBe(true);
+ expect(after.versions.find((v:{id:string})=>v.id!==before.version.id).templates.map((t:{id:string})=>t.id)).toEqual(before.version.templates.map((t:{id:string})=>t.id));
 });
 test('declining a suggestion suppresses it after reload for the same week',async({page})=>{
  await plan(page);await timeEvidence(page);await page.goto('/review');await page.getByRole('button',{name:'先不改',exact:true}).click();await page.reload();await expect(page.getByRole('button',{name:'就这样调整',exact:true})).toHaveCount(0);
@@ -86,5 +86,5 @@ test('legacy workout notes and metrics appear in both review periods without rew
 test('all retained plan versions remain readable and library filters retain attribution in English',async({page})=>{
  await plan(page);await page.evaluate(async()=>{const p='/src/persistence/db.ts',db=(await import(/* @vite-ignore */ p)).database;const current=(await db.v8PlanVersions.toArray())[0];const planId=crypto.randomUUID(),versionId=crypto.randomUUID();await db.transaction('rw',db.v8Plans,db.v8PlanVersions,async()=>{await db.v8Plans.add({id:planId,currentVersionId:versionId,name:'Earlier retained plan',readOnly:true});await db.v8PlanVersions.add({...current,id:versionId,planId,goalText:'Earlier retained plan',origin:'migrated',versionNumber:1});});const profile=await db.profiles.toCollection().first();await db.profiles.put({...profile,locale:'en'});});
  await page.goto('/plans');const retained=page.locator('section').filter({has:page.getByRole('heading',{name:'Previous plans',exact:true})}).locator('.v8-sheet').filter({has:page.getByText('Earlier retained plan',{exact:true})});await retained.getByRole('button',{name:'View',exact:true}).click();await page.getByRole('button',{name:'View previous versions',exact:true}).click();await page.locator('.plan-timeline li').filter({has:page.getByText('Earlier retained plan',{exact:true})}).getByRole('button',{name:'View plan',exact:true}).click();await expect(page.getByText('Earlier retained plan',{exact:true})).toBeVisible();await expect(page.getByText(/Read only/)).toBeVisible();
- await page.goto('/exercises');await expect(page.getByRole('link',{name:'RepDB',exact:true})).toBeVisible();await page.getByLabel('Search exercises').fill('Self-resisted Row');await page.getByLabel('Equipment',{exact:true}).selectOption('none');await expect(page.getByRole('button',{name:'Self-resisted Row',exact:true})).toBeVisible();await page.getByLabel('Equipment',{exact:true}).selectOption('dumbbell');await expect(page.getByRole('button',{name:'Self-resisted Row',exact:true})).toHaveCount(0);
+ await page.goto('/exercises');await expect(page.getByRole('link',{name:'RepDB',exact:true})).toBeVisible();await page.getByRole('searchbox').fill('Self-resisted Row');await page.getByRole('button',{name:'No equipment',exact:true}).click();await expect(page.getByRole('button',{name:'Self-resisted Row',exact:true})).toBeVisible();await page.getByRole('button',{name:'No equipment',exact:true}).click();await page.getByRole('button',{name:'dumbbell',exact:true}).click();await expect(page.getByRole('button',{name:'Self-resisted Row',exact:true})).toHaveCount(0);
 });

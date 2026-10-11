@@ -8,7 +8,7 @@ async function onboard(page:Page){
  for(const answer of ['保持力量','每周3次，每次30–45分钟','在家，只有瑜伽垫']){
   await page.getByLabel('你的回答').fill(answer);await page.getByRole('button',{name:'继续',exact:true}).click();
  }
- await page.getByLabel('我已年满 18 岁',{exact:false}).check();await page.getByRole('button',{name:'生成我的第一版计划'}).click();
+ await page.getByLabel('我已年满 18 岁',{exact:false}).check();await page.getByRole('button',{name:'生成新计划'}).click();
 }
 
 test('legacy exercise cards use provider or original person images, never stick SVGs',async({page})=>{
@@ -36,7 +36,7 @@ test('manual near matches and library share complete exercise guidance',async({p
  for(const name of ['动作要点','完整步骤','常见错误','注意事项'])await expect(page.getByRole('dialog').getByRole('heading',{name,exact:true})).toBeVisible();
  await shot(page,'manual-full-guide');await page.getByRole('dialog').getByRole('button',{name:'关闭',exact:true}).click();
  await page.goto('/exercises');await page.getByRole('searchbox').fill('俯误错');
- await expect(page.getByRole('status')).toContainText('相近动作');await page.getByRole('button',{name:'俯卧撑',exact:true}).first().click();
+ await expect(page.getByRole('heading',{name:'相近动作（保留当前筛选）'})).toBeVisible();await page.getByRole('button',{name:'俯卧撑',exact:true}).first().click();
  await expect(page.getByRole('dialog').getByRole('heading',{name:'常见错误',exact:true})).toBeVisible();await shot(page,'library-full-guide');
 });
 test('fresh mainline: duration, local coach, exercise guide, bottom pause, finish and review',async({page})=>{
@@ -45,7 +45,7 @@ test('fresh mainline: duration, local coach, exercise guide, bottom pause, finis
  const minutes=await page.locator('.v8-draft-template').first().locator('p').first().innerText();
  expect(Number(minutes.match(/\d+/)![0])).toBeGreaterThanOrEqual(30);expect(Number(minutes.match(/\d+/)![0])).toBeLessThanOrEqual(45);
  await shot(page,'draft');
- await page.locator('.v8-draft-exercise button').first().click();await expect(page.getByRole('dialog')).toContainText('常见错误');await shot(page,'draft-guide');await page.getByRole('dialog').getByRole('button',{name:'关闭',exact:true}).click();
+ await page.locator('button.v8-draft-exercise').first().click();await expect(page.getByRole('dialog')).toContainText('常见错误');await shot(page,'draft-guide');await page.getByRole('dialog').getByRole('button',{name:'关闭',exact:true}).click();
  await page.getByRole('button',{name:'就用这份计划'}).click();await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
  await page.getByRole('button',{name:'和芽芽聊聊',exact:true}).first().click();
  await page.getByRole('dialog').getByRole('textbox',{name:'跟芽芽说'}).fill('膝盖不适');await page.getByRole('dialog').getByRole('button',{name:'发送',exact:true}).click();
@@ -133,10 +133,10 @@ test('preview retains cached lifecycle offline and confirms reuse of a previous 
  await page.evaluate(()=>{history.pushState(null,'','/settings');window.dispatchEvent(new PopStateEvent('popstate'));});await page.getByRole('button',{name:'已删除的计划',exact:true}).click();await expect(page.getByRole('button',{name:'恢复',exact:true})).toBeVisible();await shot(page,'offline-restore');
  await page.getByRole('button',{name:'恢复',exact:true}).click();await expect(page.getByText('已恢复到以前的计划',{exact:true})).toBeVisible();await context.setOffline(false);
  await page.route('**/api/v1/features',r=>r.abort());await page.reload();await expect(page.getByRole('button',{name:'已删除的计划',exact:true})).toBeVisible();
- await page.goto('/onboarding');await expect(page.getByRole('button',{name:'生成我的第一版计划',exact:true})).toBeVisible();
+ await page.goto('/onboarding');await expect(page.getByRole('button',{name:'生成新计划',exact:true})).toBeVisible();
  for(let i=0;i<3&&await page.getByRole('button',{name:'上一步',exact:true}).count();i++)await page.getByRole('button',{name:'上一步',exact:true}).click();
  for(const answer of ['第二份力量计划','每周2次，每次30分钟','在家，只有瑜伽垫']){await page.getByLabel('你的回答').fill(answer);await page.getByRole('button',{name:'继续',exact:true}).click();}
- await page.getByLabel('我已年满 18 岁',{exact:false}).check();await page.getByRole('button',{name:'生成我的第一版计划'}).click();await page.getByRole('button',{name:'就用这份计划',exact:true}).click();await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
+ await page.getByLabel('我已年满 18 岁',{exact:false}).check();await page.getByRole('button',{name:'生成新计划'}).click();await page.getByRole('button',{name:'就用这份计划',exact:true}).click();await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
  await page.goto('/plans');await page.getByRole('button',{name:'重新使用',exact:true}).click();await expect(page.getByRole('dialog')).toContainText('当前计划会移到以前的计划');await shot(page,'reuse-confirm');await page.getByRole('dialog').getByRole('button',{name:'确认使用',exact:true}).click();await expect(page.getByRole('dialog')).not.toBeVisible();
  await expect(page.getByRole('heading',{name:'第二份力量计划',exact:true})).toBeVisible();await shot(page,'reuse-previous-list');
 });

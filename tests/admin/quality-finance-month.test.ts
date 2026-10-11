@@ -4,7 +4,7 @@ import {evaluateFinanceTodos,handleFinance} from '../../src/backend/admin/financ
 import {initialState} from '../../src/backend/store';
 import type {AdminContext,AdminDatabase,AdminStatement} from '../../src/backend/admin/core/contracts';
 const now=Date.parse('2026-10-31T16:30:00Z');
-it('ledger month follows policy at Shanghai November boundary, independently of UTC costs',async()=>{
+it('ledger month follows policy at Shanghai November boundary, with costs using the same administrator time zone',async()=>{
  expect(ledgerMonth(now,JSON.stringify({timeZone:'Asia/Shanghai'}))).toBe('2026-11');
  expect(ledgerMonth(now,JSON.stringify({timeZone:'UTC'}))).toBe('2026-10');
  expect(ledgerMonth(now,JSON.stringify({timeZone:'America/Los_Angeles'}))).toBe('2026-10');
@@ -17,6 +17,6 @@ it('ledger month follows policy at Shanghai November boundary, independently of 
  const get=async(path:string)=>handleFinance(new Request('https://example.test/api/v1/management/console/finance/'+path),context);
  expect(await (await get('ledger'))!.json()).toMatchObject({month:'2026-11',settledFen:3000});
  expect((await get('export'))!.headers.get('Content-Disposition')).toContain('ledger-2026-11.csv');
- expect(await (await get('costs'))!.json()).toMatchObject({month:'2026-10',timeZone:'UTC'});
+ expect(await (await get('costs'))!.json()).toMatchObject({month:'2026-11',timeZone:'Asia/Shanghai'});
  expect(await (await get('ledger?month=2026-10'))!.json()).toMatchObject({month:'2026-10',settledFen:0});
 });

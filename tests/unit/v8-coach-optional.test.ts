@@ -1,8 +1,12 @@
 import { it,expect } from 'vitest';
 import { optionalCoachBody,optionalCoachHistory } from '../../src/application/v8-coach-optional';
 import type { WorkoutRecord } from '../../src/domain/v8/contracts';
-it('keeps skipped body fields unknown and rejects invalid answers',()=>{
- expect(optionalCoachBody(undefined,{heightCm:{status:'answered',value:170},weightKg:{status:'skipped'},age:{status:'answered',value:999}})).toEqual({heightCm:170});
+it('only confirmed canonical body details can be offered to the coach',()=>{
+ const base={id:crypto.randomUUID(),createdAt:'2026-10-12T00:00:00Z',updatedAt:'2026-10-12T00:00:00Z',revision:0,locale:'zh' as const,timeZone:'Asia/Shanghai',units:'metric' as const,trainingPreferences:{updatedAt:'2026-10-12T00:00:00Z',heightCm:180}};
+ expect(optionalCoachBody(base)).toBeUndefined();
+ const bodyDetails={values:{heightCm:170},source:'migrated' as const,updatedAt:base.updatedAt};
+ expect(optionalCoachBody({...base,bodyDetails})).toBeUndefined();
+ expect(optionalCoachBody({...base,bodyDetails:{...bodyDetails,confirmedAt:base.updatedAt}})).toEqual({heightCm:170});
  expect(optionalCoachBody(undefined)).toBeUndefined();
 });
 it('history uses recent committed facts only and omits personal notes and body data',()=>{

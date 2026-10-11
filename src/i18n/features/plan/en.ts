@@ -7,6 +7,6 @@ title: 'My plan', versions: 'Plan versions', goal: 'Goal', rhythm: 'Rhythm',
     minutes: (n: number) => `${n} min`, sets: (n: number) => `${n} sets`,
     reps: (n: number) => `${n} reps`, seconds: (n: number) => `${n} sec`,
     kg: (n: number) => `${n} kg`, meters: (n: number) => `${n} m`,
-    origins: { onboard: 'Created with Yaya', coach_change: 'Adjusted with Yaya', review_suggestion: 'Weekly suggestion adopted', manual: 'Manually adjusted', migrated: 'Kept from a previous plan' },
+    origins: { onboard: 'Initial plan', coach_change: 'Adjusted with Yaya', review_suggestion: 'Review adjustment', manual: 'Manually adjusted', migrated: 'Kept from a previous plan' },
   };
 

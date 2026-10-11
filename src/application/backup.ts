@@ -1,6 +1,8 @@
+import {migrateBodyProfile} from '../persistence/body-profile-migration';
 import type { BackupEnvelope, ExerciseSnapshot, ImportReport, PlanVersion, ReplaceConfirmation, SetRecord, ValidatedBackup, WorkoutSession } from '../domain/models';
 import { backupEnvelopeSchema } from '../domain/schemas';
 import { DomainError } from '../domain/errors';
+import {knownExerciseIds} from '../catalog/registry';
 import { exercises } from '../catalog/exercises';
 import { expandSchedule } from '../domain/calendar';
 import { repository, type Repository } from '../persistence/repository';
@@ -79,13 +81,17 @@ function validateSession(session: WorkoutSession, sets: SetRecord[], versions: M
 }
 
 export function validateBackupEnvelope(value: unknown): BackupEnvelope {
-  if (typeof value === 'object' && value !== null && 'schemaVersion' in value && ![2,3,4,5,6,7,8,9].includes(value.schemaVersion as number)) {
-    throw new DomainError('BACKUP_VERSION_UNSUPPORTED', 'Unsupported JSON backup version; versions 2 through 9 are supported');
+  if (typeof value === 'object' && value !== null && 'schemaVersion' in value && ![2,3,4,5,6,7,8,9,10].includes(value.schemaVersion as number)) {
+    throw new DomainError('BACKUP_VERSION_UNSUPPORTED', 'Unsupported JSON backup version; versions 2 through 10 are supported');
   }
   const parsed = backupEnvelopeSchema.safeParse(value);
   if (!parsed.success) throw new DomainError('BACKUP_INVALID', `Invalid backup: ${parsed.error.message}`);
   const envelope = parsed.data;
   const data = envelope.data;
+  if(envelope.schemaVersion>=10&&!data.exerciseFavorites)invalid('Exercise favorites required');
+  if(envelope.schemaVersion<10&&data.exerciseFavorites!==undefined)invalid('Exercise favorites require version 10');
+  if(data.exerciseFavorites){distinct(data.exerciseFavorites.map(row=>row.id),'favorite exercise');if(data.exerciseFavorites.some(row=>!knownExerciseIds.has(row.id)))invalid('Unknown favorite exercise');}
+
   if (envelope.schemaVersion >= 4 && !data.guidedStates) invalid('Guided state collection is required in backup versions 4 and 5');
   if (envelope.schemaVersion < 4 && data.guidedStates?.length) invalid('Guided state requires backup version 4');
   if (envelope.catalogVersion !== 1 || data.metadata.catalogVersion !== 1 || data.metadata.schemaVersion !== (envelope.schemaVersion >= 6 ? envelope.schemaVersion + 2 : envelope.schemaVersion + 1) || data.trainingMemo.schemaVersion !== 1) {
@@ -215,7 +221,7 @@ export function validateBackupEnvelope(value: unknown): BackupEnvelope {
     if (projected) daySlots.push(projected);
   }
   distinct(daySlots, 'occupying day plan date');
-  distinct(data.bodyWeights.map(row => row.localDate), 'weight observation date');
+  if(envelope.schemaVersion<10)distinct(data.bodyWeights.map(row => row.localDate), 'weight observation date');
   data.bodyWeights.forEach(row => validDate(row.localDate));
   distinct(data.timers.map(timer => `${timer.sessionId}:${timer.exerciseInstanceId}:${timer.kind}`), 'timer association');
   for (const timer of data.timers) {
@@ -316,8 +322,9 @@ export function createBackupService(repo: Repository) {
       const versions = await repo.db.planVersions.toArray();
       const previousMemo = await repo.db.trainingMemo.get(1);
       return validateBackupEnvelope({
-        format: 'fitness-local', schemaVersion: 9, catalogVersion: 1, exportedAt: new Date().toISOString(),
+        format: 'fitness-local', schemaVersion: 10, catalogVersion: 1, exportedAt: new Date().toISOString(),
         data: {
+          exerciseFavorites: await repo.db.exerciseFavorites.toArray(),
           metadata, profiles: await repo.db.profiles.toArray(), plans: await repo.db.plans.toArray(), planVersions: versions,
           sessions, sets, scheduledWorkouts: await repo.db.scheduledWorkouts.toArray(), bodyWeights: await repo.db.bodyWeights.toArray(),
           aiMemoryNotes: await repo.db.aiMemoryNotes.toArray(), timers: await repo.db.timers.toArray(), mediaAssets: await repo.db.mediaAssets.toArray(),
@@ -368,8 +375,9 @@ export function createBackupService(repo: Repository) {
       // Device reminder preferences and suppression ledger are not portable training facts.
       for (const table of repo.db.tables) if (table.name !== 'coachDevice') await table.clear();
       const data = envelope.data;
-      await repo.db.metadata.put({ ...data.metadata, schemaVersion: 11, revision: before.revision, dataRevision: before.dataRevision, restoreGeneration: committedGeneration, importedAt: new Date().toISOString() });
-      await repo.db.profiles.bulkAdd(data.profiles);
+      await repo.db.metadata.put({ ...data.metadata, schemaVersion: 12, revision: before.revision, dataRevision: before.dataRevision, restoreGeneration: committedGeneration, importedAt: new Date().toISOString() });
+      await repo.db.profiles.bulkAdd(data.profiles.map(profile=>migrateBodyProfile(profile,data.guidedStates?.find(row=>row.id==='guided'),new Date().toISOString())));
+      await repo.db.exerciseFavorites.bulkAdd(data.exerciseFavorites ?? []);
       await repo.db.plans.bulkAdd(data.plans);
       await repo.db.planVersions.bulkAdd(data.planVersions);
       await repo.db.sessions.bulkAdd(data.sessions);

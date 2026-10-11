@@ -22,7 +22,7 @@ export function basicProposal(profile: CoachProfile, locale = 'zh') {
   if (!profile.adultConfirmed) return undefined;
   const copy = locale === 'en' ? basicEn : basicZh;
   const selection = [basicItems(profile, 0), basicItems(profile, 1)];
-  const selectedTemplates = selection.filter(s => s.items.length).map(({ items }, index) => ({ id: `basic-${index}`, name: String.fromCharCode(65 + index), items, estimatedMinutes: estimatePlannedMinutes(items) }));
+  const selectedTemplates = selection.filter((s,index,all) => s.items.length && !all.slice(0,index).some(previous=>JSON.stringify(previous.items.map(item=>JSON.stringify(item)).sort())===JSON.stringify(s.items.map(item=>JSON.stringify(item)).sort()))).map(({ items }, index) => ({ id: `basic-${index}`, name: String.fromCharCode(65 + index), items, estimatedMinutes: estimatePlannedMinutes(items) }));
   const missing = [...new Set(selection.flatMap(s => s.missing))].map(f => copy.families[f as keyof typeof copy.families]).join(' / ');
   const shorter = selectedTemplates.find(template => template.estimatedMinutes < profile.sessionMinutes);
   return { goalText: profile.goalText, weeklyTarget: profile.weeklyTarget, sessionMinutes: profile.sessionMinutes, scheduleOriginalText: profile.scheduleOriginalText, templates: selectedTemplates,
@@ -50,7 +50,8 @@ export function createV8Workflow(repo: Repository) {
     });
   }
   async function propose(profile: CoachProfile): Promise<LocalCandidate> {
-    const locale = (await db.profiles.toCollection().first())?.locale;
+    const local = await db.profiles.toCollection().first(),locale=local?.locale;
+    if(local?.bodyDetails?.values.age!==undefined&&local.bodyDetails.values.age<18)return invalid('ADULT_CONFIRMATION_REQUIRED');
     const proposal = basicProposal(profile, locale);
     if (!proposal) return invalid('BASIC_PLAN_UNAVAILABLE');
     const metadata = await repo.readMetadata();
@@ -119,14 +120,15 @@ export function createV8Workflow(repo: Repository) {
       await db.v8Workouts.put(next); return next;
     });
   }
-  async function finish(id: string, feedback: Feedback, abandon = false) {
+  async function finish(id: string, feedback: Feedback, abandon = false, endedAt = new Date().toISOString()) {
     return repo.write(async () => {
       const record = await db.v8Workouts.get(id);
       if (!record || record.status !== 'in_progress') throw new DomainError('SESSION_READ_ONLY', 'TRAINING_ENDED');
       const allowed = new Set(record.sets.map(set => set.exerciseId));
       if (feedback.discomfortExerciseIds?.some(id => !allowed.has(id))) return invalid('INVALID_FEEDBACK_EXERCISE');
       const status = abandon ? 'abandoned' : record.sets.length === 0 ? 'not_started' : record.sets.length === record.plannedSetCount ? 'complete' : 'partial';
-      const next = v8WorkoutSchema.parse({ ...record, status, endedAt: new Date().toISOString(), feedback });
+      if(!Number.isFinite(Date.parse(endedAt))||Date.parse(endedAt)>Date.now()||Date.parse(endedAt)<Date.parse(record.startedAt))return invalid('INVALID_END_TIME');
+      const next = v8WorkoutSchema.parse({ ...record, status, endedAt, feedback });
       await db.v8Workouts.put(next); return next;
     });
   }

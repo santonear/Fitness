@@ -13,12 +13,12 @@ const set = (exerciseId: string, itemIndex = 0, setIndex = 0) => ({
 
 describe('incomplete timing facts (caller supplies the review period)', () => {
   it.each([
-    ['04:59:59', 'evening'], ['05:00:00', 'morning'], ['11:59:59', 'morning'],
+    ['04:59:59', 'overnight'], ['05:00:00', 'morning'], ['11:59:59', 'morning'],
     ['12:00:00', 'daytime'], ['16:59:59', 'daytime'], ['17:00:00', 'evening'],
-    ['00:00:00', 'evening'], ['23:59:59', 'evening'],
+    ['00:00:00', 'overnight'], ['23:59:59', 'evening'],
   ] as const)('classifies %s as %s', (time, band) => {
     const result = computeIncompleteTiming([workout({ startedAt: `2026-10-09T${time}Z` })]);
-    expect(result.weekday[band].partial).toBe(1);
+    expect(result.weekday[band]!.partial).toBe(1);
   });
   it('uses each saved timezone and instant, not localDate or the machine timezone', () => {
     const records = [
@@ -35,7 +35,7 @@ describe('incomplete timing facts (caller supplies the review period)', () => {
       workout({ startedAt: '2026-03-08T08:59:00Z', timeZone: 'America/New_York' }),
       workout({ startedAt: '2026-03-08T09:00:00Z', timeZone: 'America/New_York' }),
     ]);
-    expect(result.weekend.evening.partial).toBe(1);
+    expect(result.weekend.overnight!.partial).toBe(1);
     expect(result.weekend.morning.partial).toBe(1);
   });
   it('only counts partial and not_started and returns independent empty buckets', () => {

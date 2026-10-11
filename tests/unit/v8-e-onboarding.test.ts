@@ -14,11 +14,11 @@ describe('onboarding presentation boundaries', () => {
     const html = renderToStaticMarkup(h(OnboardingPage, { locale: 'en', step: 3, answers, slots, mode: 'ai', onChange() {}, onStep() {}, onGenerate() { calls++; }, onManual() {} }));
     expect(calls).toBe(0); expect(html).toContain('&lt;script&gt;private words&lt;/script&gt;');
     expect(html).not.toContain('<script>'); expect(html).toContain('15 minutes');
-    expect(html).toMatch(/<button[^>]*disabled[^>]*>Generate my first plan/);
+    expect(html).toMatch(/<button[^>]*disabled[^>]*>Generate a new plan/);
   });
   it('incomplete answers cannot generate even with an adult declaration', () => {
     const html = renderToStaticMarkup(h(OnboardingPage, { locale: 'en', step: 3, answers: { ...answers, adultConfirmed: true, goalText: '   ' }, slots, mode: 'basic', onChange() {}, onStep() {}, onGenerate() {}, onManual() {} }));
-    expect(html).toMatch(/<button[^>]*disabled[^>]*>Generate my first plan/); expect(html).not.toContain('<details>');
+    expect(html).toMatch(/<button[^>]*disabled[^>]*>Generate a new plan/); expect(html).not.toContain('<details>');
   });
   it('draft render never saves and shows metric values without translating custom text', () => {
     let saves = 0;
@@ -28,8 +28,8 @@ describe('onboarding presentation boundaries', () => {
     for (const [code, label] of [['none', '无需器械'], ['dumbbell', '哑铃'], ['custom-equipment', 'custom-equipment']]) {
       candidate.proposal.templates[0].items[0].equipment = code;
       const localized = renderToStaticMarkup(h(PlanDraftPage, { locale: 'zh', candidate, slots, exerciseText: () => ({ name: '动作', instructions: '要领' }), onConfirm() {}, onDiscuss() {} }));
-      expect(localized).toContain(`<p>${label}</p>`);
-      if (code !== label) expect(localized).not.toContain(`<p>${code}</p>`);
+      expect(localized).toContain(`<span>${label}</span>`);
+      if (code !== label) expect(localized).not.toContain(`<span>${code}</span>`);
     }
   });
 });

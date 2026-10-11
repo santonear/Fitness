@@ -12,7 +12,7 @@ export type CoachRequestInput = { task: CoachRequest['task']; data: Snapshot; co
 export function buildCoachRequest(input:CoachRequestInput):CoachRequest|undefined {
  const {data,task}=input;
  const profile=input.profile??data.state?.coachProfile;
- if(!profile?.adultConfirmed)return;
+ if(!profile?.adultConfirmed||data.profile?.bodyDetails?.values.age!==undefined&&data.profile.bodyDetails.values.age<18)return;
  const revision=data.metadata.dataRevision,generation=data.metadata.restoreGeneration??0;
  const common={version:'fitness-coach-v8',requestId:crypto.randomUUID(),conversationId:input.conversationId??crypto.randomUUID(),restoreGeneration:generation,
   inputSnapshot:JSON.stringify({revision,generation,versionId:data.version?.id}),sendConfirmation:'preview',locale:data.profile?.locale??'zh',timeZone:data.profile?.timeZone??'Asia/Shanghai',adultConfirmed:true,messages:[],...(input.body?{body:input.body}:{}),...(input.history?{history:input.history}:{})};

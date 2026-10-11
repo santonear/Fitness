@@ -38,7 +38,7 @@
   },
   "minutes": "minutes",
   "sets": "sets",
-  "technical": "View exact request",
+  "technical": "View original request",
   "yes": "Yes",
   "no": "No",
   "empty": "None",
@@ -62,7 +62,10 @@
     "assistant": "Yaya",
     "none": "No equipment",
     "zh": "中文",
-    "en": "English"
+    "en": "English",
+    "女性": "Female",
+    "男性": "Male",
+    "不愿透露": "Prefer not to disclose"
   },
   "detailLabels": {
     "goalText": "Goal",
@@ -82,7 +85,7 @@
     "sets": "Sets",
     "target": "Target",
     "reps": "Repetitions",
-    "loadGrams": "Load (grams)",
+    "loadGrams": "Weight (kg)",
     "durationSeconds": "Duration (seconds)",
     "distanceMeters": "Distance (metres)",
     "reasons": "Reasons",
@@ -125,10 +128,15 @@
     "current": "Current",
     "metric": "Metric",
     "heightCm": "Height (cm)",
-    "weightGrams": "Weight (grams)"
+    "weightGrams": "Weight (grams)",
+    "biologicalSex": "Sex",
+    "weightKg": "Weight (kg)",
+    "waistCm": "Waist (cm)"
   },
   "currentPlan": "Current plan",
   "defaultInstruction": "I would like to adjust this.",
   "localStatus": "You are using local suggestions now.",
-  "sameAsMessage": "Same as your latest message in this conversation."
+  "sameAsMessage": "Same as your latest message in this conversation.",
+  "bodySource": "From your body details",
+  "bodyChanged": "Body details have changed. Reopen the coach and review what will be sent."
 }

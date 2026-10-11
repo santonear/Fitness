@@ -19,6 +19,7 @@ export interface PlanVersion {
   id: string; planId: string; versionNumber: number; goalText: string; weeklyTarget: number;
   scheduleOriginalText: string; sessionMinutes: number; templates: SessionTemplate[];
   createdAt: string; origin: 'onboard' | 'coach_change' | 'review_suggestion' | 'manual' | 'migrated';
+  reviewRule?: 'time'|'progression'|'frequency'|'restart'|'discomfort';
   changeSummary: string[]; basedOnVersionId?: string;
   /** Explicit creation source; absent on older versions means unknown. */
   source?: 'local' | 'ai';
