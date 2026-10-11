@@ -33,6 +33,22 @@ export function createPlanLifecycle(repo:Repository, now:()=>number=Date.now) {
    return {planId,restoredAsCurrent:!!makeCurrent};
   },expectedRevision);
  }
+ async function activatePlan(planId:string,expectedRevision:number) {
+  return repo.write(async()=>{
+   const plan=await db.v8Plans.get(planId),state=await db.v8State.get('v8');
+   if(!plan||plan.deletedAt||!state)return conflict('PLAN_UNAVAILABLE');
+   const version=await db.v8PlanVersions.get(plan.currentVersionId);
+   if(!version||version.planId!==plan.id)return conflict('PLAN_UNAVAILABLE');
+   if((await db.v8Workouts.toArray()).some(w=>w.status==='in_progress'))return conflict('PLAN_TRAINING_ACTIVE');
+   if(state.currentPlanId===plan.id)return {planId};
+   const current=state.currentPlanId?await db.v8Plans.get(state.currentPlanId):undefined;
+   if(current)await db.v8Plans.put({...current,readOnly:true});
+   await db.v8Plans.put({...plan,readOnly:false});
+   const {planDismissedAt:_dismissed,nextWorkoutOverride:_override,...rest}=state;
+   await db.v8State.put({...rest,currentPlanId:plan.id,reviewWeeklyTarget:version.weeklyTarget});
+   return {planId};
+  },expectedRevision);
+ }
  async function purgeExpiredPlans() {
   // Check and mutate under one serialized transaction. No-op reads do not increment revisions.
   return db.transaction('rw',db.tables,async()=>{
@@ -53,5 +69,5 @@ export function createPlanLifecycle(repo:Repository, now:()=>number=Date.now) {
    });
   });
  }
- return {deletePlan,restorePlan,purgeExpiredPlans};
+ return {deletePlan,restorePlan,activatePlan,purgeExpiredPlans};
 }

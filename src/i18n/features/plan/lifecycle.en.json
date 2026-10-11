@@ -20,5 +20,10 @@
   "trashEmpty": "No plans to restore",
   "active": "This plan has a workout in progress. Finish that workout before deleting the plan.",
   "deletedOn": "Deleted on",
-  "noPrevious": "No previous plans"
+  "noPrevious": "No previous plans",
+  "activate": "Use again",
+  "activateTitle": "Use this plan again?",
+  "activateHint": "Your current plan will move to Previous plans. Workout records stay unchanged. Your next workout will use this plan.",
+  "activateConfirm": "Confirm plan",
+  "activateActive": "Finish your current workout before switching plans."
 }

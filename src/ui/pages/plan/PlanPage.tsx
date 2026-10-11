@@ -14,7 +14,7 @@ export interface PlanPageProps {
   onVersions: () => void;
   onExercises: () => void;
   /** Opens read-only details; any proposed edits require the host's separate confirmation flow. */
-  onExercise: (version: PlanVersion, templateId: string, itemIndex: number) => void;
+  onExercise: (version: PlanVersion, templateId: string, itemIndex: number, trigger?: HTMLElement) => void;
   onDiscuss?: (version: PlanVersion) => void;
 }
 
@@ -44,7 +44,7 @@ export function PlanPage({ version, currentVersionId, language, exerciseName, on
     {version.templates.map(template => <section className="plan-session" key={template.id} aria-label={templateLabel(template, language)}>
       <Row><h2>{templateLabel(template, language)}</h2><span className="plan-muted">{t.minutes(template.estimatedMinutes)}</span></Row>
       <div className="plan-items">{template.items.map((item, index) => <Chip key={`${item.exerciseId}-${index}`} selected={false}
-        onClick={() => onExercise(version, template.id, index)}>{exerciseName(item.exerciseId)} · {itemTarget(item, language)}</Chip>)}</div>
+        onClick={event => onExercise(version, template.id, index, event.currentTarget)}>{exerciseName(item.exerciseId)} · {itemTarget(item, language)}</Chip>)}</div>
     </section>)}
     <nav className="plan-actions" aria-label={t.title}><Button onClick={onVersions}>{t.history}</Button><Button onClick={onExercises}>{t.library}</Button></nav>
     {current && onDiscuss && <Button variant="primary" onClick={() => { if (version.id === currentVersionId) onDiscuss(version); }}>{t.chat}</Button>}

@@ -20,5 +20,10 @@
   "trashEmpty": "没有可恢复的计划",
   "active": "这份计划还有正在进行的训练，请先结束训练再删除。",
   "deletedOn": "删除于",
-  "noPrevious": "暂无以前的计划"
+  "noPrevious": "暂无以前的计划",
+  "activate": "重新使用",
+  "activateTitle": "重新使用这份计划？",
+  "activateHint": "当前计划会移到以前的计划中，训练记录保持不变。下一次训练将使用这份计划。",
+  "activateConfirm": "确认使用",
+  "activateActive": "有正在进行的训练，请先结束训练再切换计划。"
 }

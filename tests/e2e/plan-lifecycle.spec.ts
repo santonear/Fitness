@@ -103,3 +103,13 @@ test('cached deletion and recovery entries remain offline and after 90 seconds i
  await context.setOffline(false);await page.unroute('**/api/v1/features');await page.route('**/api/v1/features',route=>route.abort());
  await page.reload();await expect(page.getByRole('button',{name:'已删除的计划',exact:true})).toBeVisible();
 });
+
+test('reuse requires confirmation when replacing current, preserves records and keeps the former current in previous plans',async({page})=>{
+ await createPlan(page);const first=await records(page);await draft(page,'第二份训练计划');await page.getByRole('button',{name:'就用这份计划',exact:true}).click();await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();const before=await records(page);
+ await page.goto('/plans');await page.getByRole('button',{name:'重新使用',exact:true}).click();await expect(page.getByRole('dialog')).toContainText('当前计划会移到以前的计划');expect((await records(page)).state.currentPlanId).toBe(before.state.currentPlanId);
+ await page.keyboard.press('Escape');expect((await records(page)).state.currentPlanId).toBe(before.state.currentPlanId);await page.getByRole('button',{name:'重新使用',exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:'确认使用',exact:true}).click();await expect.poll(async()=>(await records(page)).state.currentPlanId).toBe(first.state.currentPlanId);const after=await records(page);expect(after.workouts).toEqual(before.workouts);expect(after.versions).toEqual(before.versions);expect(after.plans.find((p:any)=>p.id===before.state.currentPlanId).readOnly).toBe(true);
+});
+test('restored plan can be reused without a current plan and exercise guide restores its actual trigger',async({page})=>{
+ await createPlan(page);const first=await records(page);await removeCurrentPlan(page);await page.goto('/settings');await page.getByRole('button',{name:'已删除的计划',exact:true}).click();await page.getByRole('button',{name:'恢复',exact:true}).click();await expect.poll(async()=>(await records(page)).plans[0].deletedAt).toBeUndefined();await page.goto('/plans');await page.getByRole('button',{name:'重新使用',exact:true}).click();await expect.poll(async()=>(await records(page)).state.currentPlanId).toBe(first.state.currentPlanId);await expect(page.getByRole('dialog')).toHaveCount(0);
+ const trigger=page.locator('.plan-items button').first();await page.locator('.plan-actions button').first().focus();await trigger.evaluate((el:HTMLElement)=>el.click());await expect(page.getByRole('dialog')).toBeVisible();await page.keyboard.press('Escape');await expect(trigger).toBeFocused();
+});
