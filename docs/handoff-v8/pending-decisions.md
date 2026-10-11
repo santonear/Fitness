@@ -164,3 +164,10 @@ PR #38 已全绿合入；组件 #39、建议 #40、字体 #41、三主题 #42 �
 RepDB官方证据：[数据许可证](https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md)、[署名要求](https://github.com/RepDB/exercise-dataset/blob/main/ATTRIBUTION.md)。部署产物中的受限数据仅供应用使用，不作为公开数据集仓库分发。
 
 最终审查补充：手动计时默认与估算统一20秒；计划捷径展示并消费同一有效今日调整，过期调整不使用。仅改新训练默认/显示，不改历史。文件：WorkoutPage、ManualPage及对应测试。
+
+### PR #52 动作图片补充（2026-10-11）
+- 情况：旧动作ID仍优先选择几何SVG，部分本地动作无图。
+- 决定：共享图片解析器，精确匹配复用RepDB，其余两项独立生成人物图，旧ID/历史不变；旧SVG不再进入显示路径。
+- 理由：避免哑铃/壶铃误配；RepDB License第5条不允许生成参考，因此没有向生成器提供RepDB图片。自阻力划船只表示准备姿势，未找到完全匹配的权威网络来源，不声明专业审核。
+- 涉及：src/catalog/exercise-visual.ts、exercise-guide.ts、ExerciseMedia/ExerciseGuide/RepDBMedia、public/media两PNG及NOTICE。
+- 验证：类型检查、23项针对性单元、375/1280真实浏览器图片加载通过。桌面浏览器不等于真机。

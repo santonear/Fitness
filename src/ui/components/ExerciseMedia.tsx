@@ -1,4 +1,4 @@
-import { catalogMetadata } from '../../catalog/registry';
+import { exerciseVisual, exerciseVisualMetadata } from '../../catalog/exercise-visual';
 import { RepDBMedia } from './RepDBMedia';
 import { AppIcon } from './AppIcon';
 import { useState } from 'react';
@@ -10,14 +10,15 @@ export function ExerciseMedia({ exerciseId, exerciseName, locale }: { exerciseId
  const [state, setState] = useState<'idle' | 'loading' | 'failed'>('idle');
  const [imageFailed, setImageFailed] = useState(false);
  const zh = locale === 'zh';
- const repdb = catalogMetadata.has(exerciseId);
- if (!media) return repdb ? <RepDBMedia exerciseId={exerciseId} exerciseName={exerciseName} locale={locale} /> : null;
+ const repdb = exerciseVisualMetadata(exerciseId);
+ const visual = exerciseVisual(exerciseId);
+ if (!media) return repdb ? <RepDBMedia exerciseId={exerciseId} exerciseName={exerciseName} locale={locale} /> : visual ? <><img src={visual.src} alt={exerciseName} width="280" height="280"/><p className="muted">{zh ? 'Fitness 原创示意图' : visual.attribution}</p></> : null;
  const url = media.videoId && youtubeEmbedUrl(media.videoId);
  return <section style={{ overflowWrap: 'anywhere' }} aria-label={zh ? `${exerciseName} 媒体参考` : `${exerciseName} media reference`}>
-  {!imageFailed && <img src={media.illustration} alt={zh ? `${exerciseName} 原创示意图` : `${exerciseName} original illustration`} width="280" height="160" style={{ maxWidth: '100%', height: 'auto' }} onError={() => setImageFailed(true)} />}
+  {repdb ? <RepDBMedia exerciseId={exerciseId} exerciseName={exerciseName} locale={locale}/> : !imageFailed && visual && <img src={visual.src} alt={exerciseName} width="280" height="280" style={{ maxWidth: '100%', height: 'auto' }} onError={() => setImageFailed(true)} />}
   {imageFailed && <p role="status"><AppIcon name="info"/>{zh ? '示意图不可用，仍可阅读动作步骤。' : 'Illustration unavailable. Written steps remain available.'}</p>}
-  <p className="muted">{zh ? '原创示意图；动作姿势尚未经专业审核。' : 'Original illustration; movement form has not been professionally reviewed.'}</p>
-  <p className="muted">{zh ? '图片为本项目原创素材；未使用第三方图片授权。' : 'The illustration is original to this project; no third-party image licence is claimed.'}</p>
+  {!repdb && <><p className="muted">{zh ? '原创示意图；动作姿势尚未经专业审核。' : 'Original illustration; movement form has not been professionally reviewed.'}</p>
+  <p className="muted">{zh ? '图片为本项目原创素材；未使用第三方图片授权。' : 'The illustration is original to this project; no third-party image licence is claimed.'}</p></>}
   <p><a href={media.source.url} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer">{zh ? '查看来源（连接第三方）' : 'Open source (connects to a third party)'}: {media.source.title}</a></p>
   {url ? <>
    {media.video && <>

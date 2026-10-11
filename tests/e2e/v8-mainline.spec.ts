@@ -102,8 +102,11 @@ test('manual timed distance exercise preserves edited measurements after reload'
   await onboard(page); await page.getByRole('button', { name: '就用这份计划' }).click();
   await page.getByRole('button', { name: '手动训练', exact: true }).click();
   const id = await page.evaluate(async () => { const p = '/src/catalog/exercises.ts'; return (await import(/* @vite-ignore */ p)).exercises.find((e: { metricType: string }) => e.metricType === 'duration_distance').id; });
-  await page.getByRole('combobox', { name: '选择动作' }).selectOption(id);
-  await page.getByRole('button', { name: '开始训练', exact: true }).click();
+  const name = await page.evaluate(async (exerciseId) => { const p = '/src/catalog/exercises.ts'; return (await import(/* @vite-ignore */ p)).exercises.find((e: { id: string }) => e.id === exerciseId).name.zh; }, id);
+  await page.getByRole('button', { name: '清空筛选', exact: true }).click();
+  await page.getByRole('searchbox').fill(name);
+  await page.getByRole('button', { name, exact: true }).first().click();
+  await page.getByRole('button', { name: '开始', exact: true }).click();
   await page.getByRole('button', { name: '修改数值' }).click();
   await page.getByLabel('秒', { exact: true }).fill('120');
   await page.getByLabel('米', { exact: true }).fill('250');

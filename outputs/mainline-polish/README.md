@@ -2,7 +2,7 @@
 
 隔离预览：https://fitness-mainline-polish-preview.initdevl.workers.dev
 
-Worker版本：99ef8e4f-08c4-430d-9e49-313c72e79362。2026-10-11，Chromium新浏览器资料，375/1280宽度，合成输入；无真实设备、无付费模型。8项公网预览验收通过。截图关闭捕获时动画以避免记录胶囊中间帧。
+Worker版本：e133eaf1-5712-4bb2-b1ce-36b228a88e41。2026-10-11，Chromium新浏览器资料，375/1280宽度，合成输入；无真实设备、无付费模型。10项公网预览验收通过（37.3秒），包括新增人物图加载。截图关闭捕获时动画以避免记录胶囊中间帧。
 
 - [preview-1280-appearance-撞色.png](preview-1280-appearance-撞色.png)
 - [preview-1280-appearance-留白.png](preview-1280-appearance-留白.png)
@@ -46,3 +46,6 @@ Worker版本：99ef8e4f-08c4-430d-9e49-313c72e79362。2026-10-11，Chromium新�
 - [preview-375-week-review.png](preview-375-week-review.png)
 - [preview-375-workout-guide.png](preview-375-workout-guide.png)
 - [preview-375-workout.png](preview-375-workout.png)
+
+
+补充截图：preview-375/1280-manual-illustration-高脚杯深蹲.png、preview-375/1280-manual-illustration-自阻力划船.png。源图和姿势参考说明见public/media/NOTICE.md；未做专业姿势审查。23项媒体针对性单元通过，类型/构建/V8样式通过。旧测试选择器与备份版本同步，远程完整CI以PR52最新检查为准。

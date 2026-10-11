@@ -3,7 +3,7 @@ import { EXERCISE_IDS } from './exercise-ids';
 import { exercises } from './exercises';
 import { DomainError } from '../domain/errors';
 import { catalogMetadata, exerciseBodyPart } from './registry';
-import { getExerciseMedia } from './media';
+import { exerciseVisual } from './exercise-visual';
 import guides from './generated/guides-zh.json';
 import details from './generated/details.json';
 export type ExercisePlace = 'home' | 'gym' | 'outdoor';
@@ -20,12 +20,12 @@ function exercise(id:string) {const e=exercises.find(e=>e.id===id);if(!e)throw n
 export function getExerciseGuide(id:string,locale:Locale):ExerciseGuide {
  const e=exercise(id),meta=catalogMetadata.get(id),slug=meta?.slug??(id===EXERCISE_IDS.gobletSquat?'goblet-squat':id===EXERCISE_IDS.bodyweightSquat?'bodyweight-squat':undefined),detail=detailMap.get(id);
  const guide=slug?guideMap[slug]:undefined;
- const local=getExerciseMedia(id);const src=meta?.media.start??meta?.media.main??meta?.media.peak??local?.illustration;
+ const visual=exerciseVisual(id);
  const steps=locale==='zh'?(id===EXERCISE_IDS.gobletSquat?e.steps.zh:guide?.steps??e.steps.zh):(detail?.steps??e.steps.en);
  return structuredClone({name:e.name[locale],keyPoints:locale==='zh'?(guide?.keyPoints??steps.slice(0,2)):(detail?.cautions.slice(0,2).length===2?detail.cautions.slice(0,2):steps.slice(0,2)),steps,
  mistakes:locale==='zh'?(guide?.mistakes??['避免借力猛拉或追求无法控制的动作幅度。']):['Avoid jerking or using a range you cannot control.'],
  cautions:locale==='zh'?(guide?.cautions??e.cautions.zh):(detail?.cautions??e.cautions.en),
- ...(src?{media:{src,alt:e.name[locale],attribution:meta?'Exercise data by RepDB (repdb.co)':'Fitness original illustration'}}:{})});
+ ...(visual?{media:{...visual,alt:e.name[locale]}}:{})});
 }
 export function getExerciseTags(id:string):ExerciseTags {
  const e=exercise(id),meta=catalogMetadata.get(id),slug=meta?.slug??'',body=exerciseBodyPart(id),muscles=meta?.primaryMuscles??[];

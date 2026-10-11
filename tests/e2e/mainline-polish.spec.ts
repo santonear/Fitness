@@ -10,6 +10,17 @@ async function onboard(page:Page){
  }
  await page.getByLabel('我已年满 18 岁',{exact:false}).check();await page.getByRole('button',{name:'生成我的第一版计划'}).click();
 }
+
+test('legacy exercise cards use provider or original person images, never stick SVGs',async({page})=>{
+ await page.goto('/manual');
+ for(const [name,src] of [['高脚杯深蹲','/media/dumbbell-goblet-squat.png'],['自阻力划船','/media/self-resisted-row.png'],['徒手深蹲','bodyweight-squat'],['平板支撑','plank']]) {
+  await page.getByRole('searchbox').fill(name);
+  const card=page.locator('.manual-card').filter({has:page.getByRole('button',{name,exact:true})}).first();
+  const image=card.locator('img').first();await expect(image).toHaveAttribute('src',new RegExp(src));
+  await expect.poll(()=>image.evaluate((img:HTMLImageElement)=>img.complete&&img.naturalWidth>0)).toBe(true);
+  if(src.startsWith('/media/')) { await card.scrollIntoViewIfNeeded(); await shot(page,`manual-illustration-${name}`); }
+ }
+});
 test('RepDB guide retains both poses and visible source link',async({page})=>{
  await page.goto('/manual');await page.getByRole('searchbox').fill('reverse lunge');await page.getByRole('button',{name:'反向弓步',exact:true}).click();await page.getByRole('button',{name:'开始',exact:true}).click();await page.getByRole('button',{name:'查看动作指导',exact:true}).click();
  const dialog=page.getByRole('dialog');await expect(dialog.locator('.repdb-media img')).toHaveCount(2);await expect(dialog.getByRole('link',{name:'RepDB',exact:true})).toHaveAttribute('href','https://repdb.co/');
