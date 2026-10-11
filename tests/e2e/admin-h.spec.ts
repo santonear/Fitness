@@ -1,6 +1,27 @@
 import { test, expect, type Page } from '@playwright/test';
 const id = '11111111-1111-4111-8111-111111111111';
 const subjectId = '22222222-2222-4222-8222-222222222222';
+test('confirmed legacy configuration refresh preserves unsubmitted review text', async ({ page }) => {
+  await mock(page); await page.goto('/admin');
+  const note=page.getByRole('table',{name:'申请审核'}).getByLabel('处理说明');
+  await note.fill('尚未提交的审核说明');
+  await page.evaluate(async()=>{
+    const path='/src/application/feature-flags.ts';
+    const {refreshFeatureFlags}=await import(/* @vite-ignore */ path);
+    await refreshFeatureFlags(async()=>{
+      await new Promise(resolve=>setTimeout(resolve,100));
+      return new Response(JSON.stringify({version:1,flags:{adminConsole:false},expiresAt:Date.now()+60000}),{headers:{'Content-Type':'application/json'}});
+    });
+  });
+  await expect(note).toHaveValue('尚未提交的审核说明');
+  await page.evaluate(async()=>{
+    const path='/src/application/feature-flags.ts';
+    const {refreshFeatureFlags}=await import(/* @vite-ignore */ path);
+    await refreshFeatureFlags(async()=>{throw new Error('offline')});
+  });
+  await expect(page.getByRole('alert')).toContainText('暂时无法读取后台配置');
+  await expect(note).toHaveValue('尚未提交的审核说明');
+});
 function report() {
   return {
     applications: [{ id, name: '小林', kind: 'new', state: 'pending', createdAt: 1791504000000, note: '希望开始规律训练' }],

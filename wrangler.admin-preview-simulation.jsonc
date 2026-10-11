@@ -1,0 +1,21 @@
+{
+  "name": "fitness-admin-preview-simulation",
+  "main": "src/backend/admin/releases/preview-simulation-adapter.ts",
+  "compatibility_date": "2026-10-05",
+  "workers_dev": false,
+  "preview_urls": false,
+  "vars": {
+    "ADMIN_ENVIRONMENT": "preview",
+    "ADMIN_RELEASE_REGISTRY": "[{\"environment\":\"preview\",\"dataVersion\":1,\"current\":{\"id\":\"admin-preview-final-review\",\"deploymentId\":\"0e5efcc6-1997-4326-9880-e67210a021de\",\"publishedAt\":\"2026-10-11T16:26:13.524Z\",\"compatibleDataVersion\":1,\"smokeOrigin\":\"https://fitness-admin-preview.initdevl.workers.dev\"},\"previous\":{\"id\":\"admin-preview-review\",\"deploymentId\":\"48640820-0dbc-428c-97e1-69607e5ec502\",\"publishedAt\":\"2026-10-11T16:03:34.814Z\",\"compatibleDataVersion\":1,\"smokeOrigin\":\"https://fitness-admin-preview.initdevl.workers.dev\"}}]"
+  },
+  "d1_databases": [
+    {
+      "binding": "ADMIN_SIMULATION_DB",
+      "database_name": "fitness-admin-preview-20261011",
+      "database_id": "91e3eb6e-050e-4170-85f7-351819f959c2"
+    }
+  ],
+  "observability": {
+    "enabled": false
+  }
+}

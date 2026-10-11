@@ -2,6 +2,7 @@ export type Operation = 'understand' | 'generate' | 'summary';
 export type OperationCounts = { understand: number; generate: number; summary?: number };
 export type RequestStatus = 'reserved' | 'submitted' | 'pending' | 'settled' | 'released';
 export interface ControlState {
+  adminReceipts?: Record<string, import('./admin/core/idempotent-store').AdminReceipt>;
   quotaRestorations?: Record<string, { subjectId: string; period: string; reason: string; at: number; credits: { understand: number; generate: number } }>;
   applications?: Record<string, import('./trial-applications').TrialApplication>;
   version: 1;
@@ -13,6 +14,7 @@ export interface ControlState {
   usages: Record<string, OperationCounts>;
   budgets: Record<string, { spent: number; reserved: number }>;
   requests: Record<string, { subjectId: string; requestId: string; inputDigest: string; operation: Operation;
+    createdAt?: number;
     period: string; bound: number; status: RequestStatus; cancelled: boolean; actualCost?: number; error?: string;
     verifiedBoundFen?: number;
     coachContract?: { promptVersion: string; schemaVersion: string; catalogVersion: number; task: string } }>;
