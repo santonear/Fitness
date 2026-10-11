@@ -1,7 +1,7 @@
 import { DatabaseSync } from 'node:sqlite';
 import { readFileSync } from 'node:fs';
 import { afterEach, expect, it, vi } from 'vitest';
-import { handleAssistant, type AssistantEnv } from '../../src/backend/assistant/route';
+import { assistantAccessStatus, handleAssistant, type AssistantEnv } from '../../src/backend/assistant/route';
 import { initialState, type ControlState } from '../../src/backend/store';
 import { digest } from '../../src/backend/contracts';
 import type { AdminDatabase, AdminStatement } from '../../src/backend/admin/core/contracts';
@@ -75,4 +75,13 @@ it('disconnect aborts generation, releases lease and does not consume daily mess
   const runner: Runner = async function* (_input,options) { yield {type:'text_delta',delta:'Partial.'}; await new Promise<void>(resolve=>{if(options.signal?.aborted)resolve();else options.signal?.addEventListener('abort',()=>resolve(),{once:true});}); yield {...complete,success:false,result:'failed'}; };
   const response=await handleAssistant(request(),env,runner); const reader=response.body!.getReader(); await reader.read(); await reader.cancel();
   await vi.waitFor(()=>expect(db.prepare('SELECT used,active_request,lease_until FROM assistant_daily').get()).toMatchObject({used:0,active_request:null,lease_until:0}));
+});
+
+it('V2 access status ignores legacy pending and omits retired monthly counters',async()=>{
+ const {env,request}=await setup(state=>{state.requests.old={subjectId:subject,requestId:'old',inputDigest:'old',operation:'generate',period:'2026-10',bound:300,status:'pending',cancelled:false};});
+ const headers=request().headers;
+ const response=await assistantAccessStatus(new Request('https://preview.test/api/v1/trial/access-status',{method:'POST',headers,body:'{}'}),env);
+ expect(response.status).toBe(200);const data=await response.json();
+ expect(data).toMatchObject({qualification:'active',sessionValid:true,aiEnabled:true,summaryAvailable:true,assistantV2:true});
+ expect(data).not.toHaveProperty('used');expect(data).not.toHaveProperty('reconciliationRequired');
 });

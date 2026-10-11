@@ -1,3 +1,4 @@
+import {useFeature} from '../useFeature';
 import {applicationSchema,claimDirectActivation,receiptKey} from '../../ai/trial-recovery';
 import { AppIcon, StatusIcon } from './AppIcon';
 import { useEffect, useRef, useState } from 'react';
@@ -8,7 +9,7 @@ import type { ApplicationKind } from '../../backend/trial-applications';
 
 type Application = z.infer<typeof applicationSchema>;
 const counts = z.object({ understand: z.number().int().nonnegative(), generate: z.number().int().nonnegative() });
-const statusSchema = z.object({ expiresAt: z.number().finite(), used: counts, limits: counts, period: z.string().optional(), pending: z.number().int().nonnegative().optional(), reconciliationRequired: z.boolean().optional(), planningReconciliationRequired: z.boolean().optional(), aiEnabled: z.boolean().optional() });
+const statusSchema = z.object({ expiresAt: z.number().finite(), used: counts.optional(), limits: counts.optional(), period: z.string().optional(), pending: z.number().int().nonnegative().optional(), reconciliationRequired: z.boolean().optional(), planningReconciliationRequired: z.boolean().optional(), aiEnabled: z.boolean().optional() });
 const policyStatusSchema = statusSchema.extend({ planningBudgetDisabled: z.boolean().optional(), resetAt: z.number().finite().optional(), timeZone: z.string().optional(), maxDays: z.number().int().min(1).max(14).optional(), maximumRequestCost: z.number().int().nonnegative().optional(), budgetAvailable: z.object({ understand: z.boolean(), generate: z.boolean() }).optional() });
 const accessStatusSchema = z.discriminatedUnion('qualification', [z.object({ qualification: z.literal('none'), sessionValid: z.literal(false) }), ...(['active','expired','revoked'] as const).map(qualification => policyStatusSchema.extend({ qualification: z.literal(qualification), sessionValid: z.boolean() }))]);
 const configSchema = z.object({ available: z.boolean(), siteKey: z.string().nullable() });
@@ -57,6 +58,7 @@ function SecurityCheck({ siteKey, onProof }: { siteKey: string; onProof: (proof:
 
 export function TrialAccess({ onContinue, onSkip, onStartPlanning }: { onContinue?: () => void; onSkip?: () => void; onStartPlanning?: () => void }) {
   const navigate = useNavigate();
+  const assistantV2 = useFeature('aiAssistantV2');
   const { i18n } = useTranslation(); const zh = !i18n.resolvedLanguage?.startsWith('en');
   const [status, setStatus] = useState<z.infer<typeof policyStatusSchema>>(); const [apps, setApps] = useState<Application[]>([]);
   const [qualificationState, setQualificationState] = useState<'unknown'|'none'|'active'|'expired'|'revoked'>('unknown');
@@ -126,8 +128,8 @@ export function TrialAccess({ onContinue, onSkip, onStartPlanning }: { onContinu
   const pending = apps.some(a => a.state === 'pending' || a.state === 'approved' && (a.claimUntil ?? 0) > Date.now());
   const hasTrial = Boolean(status || apps.some(a => a.state === 'claimed'));
   const active = qualificationState === 'active' && sessionValid;
-  const quotaExhausted = status && !status.planningBudgetDisabled && (status.used.generate >= status.limits.generate);
-  const budgetInsufficient = status?.budgetAvailable && (!status.budgetAvailable.understand || !status.budgetAvailable.generate);
+  const quotaExhausted = !assistantV2 && status && !status.planningBudgetDisabled && status.used && status.limits && (status.used.generate >= status.limits.generate);
+  const budgetInsufficient = !assistantV2 && status?.budgetAvailable && (!status.budgetAvailable.understand || !status.budgetAvailable.generate);
   const words = { pending: zh ? '等待审核' : 'Awaiting review', approved: zh ? '已批准，待领取' : 'Approved · ready to claim', rejected: zh ? '未获批准' : 'Not approved', claimed: zh ? '已领取' : 'Claimed' };
   return <section className="trial-access" aria-labelledby="trial-title">
     <span className="trial-kicker">FITNESS · AI ACCESS</span><h1 id="trial-title">{zh ? 'AI 试用资格' : 'AI trial access'}</h1>
@@ -160,7 +162,7 @@ export function TrialAccess({ onContinue, onSkip, onStartPlanning }: { onContinu
       <legend>{kind === 'extend' ? (zh ? '申请延期' : 'Extension request') : kind === 'replace' ? (zh ? '申请补发' : 'Replacement request') : (zh ? '申请试用' : 'Trial application')}</legend>
       <label>{zh ? '称呼' : 'Name'}<input required maxLength={60} value={name} onChange={e => { setName(e.target.value); requestId.current = crypto.randomUUID(); }} /></label>
       <label>{zh ? '申请说明（可选，请勿填写健康或敏感信息）' : 'Note (optional; no health or sensitive information)'}<textarea maxLength={300} value={note} onChange={e => { setNote(e.target.value); requestId.current = crypto.randomUUID(); }} /></label>
-      <p>{kind === 'extend' ? (zh ? '批准后延长 30 天，不重置次数或预算。' : 'Approval adds 30 days without resetting usage or budgets.') : kind === 'replace' ? (zh ? '批准补发将撤销旧浏览器资格，不延长期限或增加次数。' : 'Approval revokes the old browser session without adding time or usage.') : (zh ? '批准后 7 天内领取，兑换后试用 30 天。AI 调用还受个人次数与项目预算限制。' : 'Claim within 7 days of approval for a 30-day trial. Personal usage and project budget limits still apply.')}</p>
+      <p>{assistantV2 ? (zh ? '试用有效期间，AI 服务按每日消息上限使用；手动训练始终可用。' : 'During your trial, AI follows a daily message limit. Manual training remains available.') : kind === 'extend' ? (zh ? '批准后延长 30 天，不重置次数或预算。' : 'Approval adds 30 days without resetting usage or budgets.') : kind === 'replace' ? (zh ? '批准补发将撤销旧浏览器资格，不延长期限或增加次数。' : 'Approval revokes the old browser session without adding time or usage.') : (zh ? '批准后 7 天内领取，兑换后试用 30 天。AI 调用还受个人次数与项目预算限制。' : 'Claim within 7 days of approval for a 30-day trial. Personal usage and project budget limits still apply.')}</p>
       <p>{zh ? '申请资料用于审核；关闭后按保留规则清理。安全验证由 Cloudflare 提供。' : 'Application details are used for review and cleared under the retention policy. Cloudflare provides the security check.'}</p>
       <details><summary>{zh ? '申请资料如何保存' : 'How application details are retained'}</summary><p>{zh ? '不收集邮箱或训练数据。未获批申请关闭后保留 30 天；获批申请在试用结束且相关事项处理完毕后保留 30 天，再清理申请资料。费用与必要审计记录独立保留。' : 'No email or training data is collected. Unapproved application details are retained for 30 days after closure; approved details for 30 days after the trial and related matters are complete. Billing and necessary audit records are retained separately.'}</p></details>
       {config?.siteKey && <SecurityCheck key={challenge} siteKey={config.siteKey} onProof={setProof} />}

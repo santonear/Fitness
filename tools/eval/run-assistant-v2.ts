@@ -65,7 +65,7 @@ try {
   journal.entries.push(entry); await save(); // Crash or unknown usage retains the complete hold.
   const started = performance.now(); let events: any[] = [], httpStatus: number | undefined;
   try {
-   const response = await fetch(endpoint, { method: 'POST', redirect: 'error', headers: { 'Content-Type': 'application/json', Cookie: cookie! }, body: JSON.stringify(request), signal: AbortSignal.timeout(150000) });
+   const response = await fetch(endpoint, { method: 'POST', redirect: 'error', headers: { 'Content-Type': 'application/json', Origin: new URL(endpoint).origin, Cookie: cookie! }, body: JSON.stringify(request), signal: AbortSignal.timeout(150000) });
    httpStatus = response.status;
    if (!response.ok) throw Error('HTTP_REJECTED');
    const stream = await response.text();
@@ -79,7 +79,7 @@ try {
    const report = { ...preflight, events, outputText: events.filter(event => event.type === 'text_delta').map(event => event.delta).join(''), latencyMs: performance.now() - started, httpStatus, calls: done.calls, actualCny, price: { inputCnyPerMillion: inputPrice, outputCnyPerMillion: outputPrice }, score };
    entry.report = `${scenario.scenarioId}-${createHash('sha256').update(requestId).digest('hex').slice(0,8)}.json`;
    await writeFile(resolve(directory, entry.report), JSON.stringify(report, null, 2), { mode: 0o600 }); records.push(report); executed++;
-  } catch { entry.status = 'unknown-or-transport-failure'; stopReason = 'unknown-cost-held-no-retry'; records.push({ scenarioId: scenario.scenarioId, httpStatus, latencyMs: performance.now() - started, reservedCny, status: entry.status }); }
+  } catch { entry.status = 'unknown-or-transport-failure'; stopReason = 'unknown-cost-held-no-retry'; records.push({ scenarioId: scenario.scenarioId, events, httpStatus, latencyMs: performance.now() - started, reservedCny, status: entry.status }); }
   await save();
   if (stopReason !== 'completed') break;
  }

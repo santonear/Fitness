@@ -259,3 +259,18 @@ for(const zh of [false,true])test(`temporary monetary bypass shows enabled plann
  await expect(page.getByText(zh?'理解与生成的金额预算限制已暂时关闭；生成次数限制仍有效。':'Monetary budget limits for understanding and generation are temporarily off; generation quotas still apply.',{exact:true})).toHaveCount(0);
  await expect(page.getByText(/单请求费用上限|Per-request cost limit/)).toHaveCount(0);
 });
+
+test('assistant V2 trial accepts server qualification without retired monthly counters',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('fitness.language','zh'));
+ await page.route('**/api/v1/**',route=>{
+  const path=new URL(route.request().url()).pathname;
+  if(path.endsWith('/features'))return route.fulfill({json:{version:1,flags:{aiAssistantV2:true},expiresAt:Date.now()+60000}});
+  if(path.endsWith('/application-config'))return route.fulfill({json:{available:true,siteKey:null}});
+  if(path.endsWith('/access-status'))return route.fulfill({json:{qualification:'active',sessionValid:true,expiresAt:Date.now()+86400000,aiEnabled:true,summaryAvailable:true,assistantV2:true}});
+  return route.fulfill({status:503,json:{error:'UNEXPECTED'}});
+ });
+ await completedPlanningProfile(page);await page.goto('/trial');
+ await expect(page.getByText('AI 试用有效',{exact:true})).toBeVisible();
+ await expect(page.getByRole('button',{name:'返回训练',exact:true})).toBeEnabled();
+ await expect(page.getByRole('alert')).toHaveCount(0);
+});

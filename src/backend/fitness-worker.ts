@@ -1,3 +1,4 @@
+import {handleAssistant,assistantAccessStatus} from './assistant/route';
 import { createDeepSeekWorker, type DeepSeekWorkerEnv } from './deepseek-worker';
 import { verifyAdministrator, requireFreshAccess, type ManagementEnv } from './management-auth';
 import { readFeatureFlags, readPublicFeatureFlags, type FeatureConfigEnv } from './feature-config';
@@ -20,6 +21,8 @@ export interface FitnessWorkerEnv extends DeepSeekWorkerEnv, ManagementEnv, Feat
 export function createFitnessWorker(control = createDeepSeekWorker(), authenticate = verifyAdministrator) {
   return { async scheduled(_event:unknown,env:FitnessWorkerEnv){await runAdminSchedule(env)}, async fetch(request: Request, env: FitnessWorkerEnv): Promise<Response> {
     const path = new URL(request.url).pathname;
+    if(path==='/api/v1/trial/access-status'&&(await readFeatureFlags(env)).aiAssistantV2)return assistantAccessStatus(request,env);
+    if(path==='/api/v1/assistant/chat'){if(!(await readFeatureFlags(env)).aiAssistantV2)return adminJson({error:'AI_DISABLED'},503);return handleAssistant(request,env)}
     if(path==='/api/v1/announcement'&&request.method==='GET') {try{return adminJson({announcement:env.ADMIN_CONSOLE_ENABLED==='true'?await activeAnnouncement(env):null})}catch{return adminJson({announcement:null})}}
     if(path==='/api/v1/telemetry/errors'&&env.ADMIN_CONSOLE_ENABLED==='true')return collectError(request,{...env,ADMIN_ERROR_COLLECTION_ENABLED:(await readFeatureFlags(env)).errorReports?env.ADMIN_ERROR_COLLECTION_ENABLED:'false'});
     if (path.startsWith('/api/v1/push/')) {
@@ -85,7 +88,10 @@ export function createFitnessWorker(control = createDeepSeekWorker(), authentica
         return control.fetch(forwarded, env);
       }
     }
-    if (path === '/api' || path.startsWith('/api/')) {try{return control.fetch(request,env.ADMIN_CONSOLE_ENABLED==='true'?await resolveRuntimeEnv(env):env)}catch{return adminJson({error:'CONTROL_UNAVAILABLE'},503)}}
+    if (path === '/api' || path.startsWith('/api/')) {try{
+      const response=await control.fetch(request,env.ADMIN_CONSOLE_ENABLED==='true'?await resolveRuntimeEnv(env):env);
+      return response;
+    }catch{return adminJson({error:'CONTROL_UNAVAILABLE'},503)}}
     if (!env.ASSETS) return new Response('Application assets are unavailable', { status: 503 });
     return env.ASSETS.fetch(request);
   } };

@@ -30,7 +30,7 @@ export async function saveFlag(context:AdminContext<ReleasesEnv>, value:{name:st
   ]);
 }
 export async function savePrompt(context:AdminContext<ReleasesEnv>, value:{task:string;environment:ReleaseEnvironment;version:string}) {
-  if (!registeredPromptVersions.includes(value.version as typeof registeredPromptVersions[number])) throw new AdminError('UNREGISTERED_PROMPT');
+  if (!registeredPromptVersions.includes(value.version as typeof registeredPromptVersions[number]) || (value.task==='ASSISTANT_CHAT')!==value.version.startsWith('assistant-')) throw new AdminError('UNREGISTERED_PROMPT');
   const db=requireAdminDb(context); const time=new Date(context.now).toISOString();
   if(await alreadyCommitted(context,value.environment,'prompt',value.task,value.version))return;
   await db.batch([

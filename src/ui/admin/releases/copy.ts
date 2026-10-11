@@ -1,4 +1,5 @@
 export const featureCopy:Record<string,[string,string,string,string]>={
+  aiAssistantV2:['芽芽对话新版','每日消息限额、流式对话和只读用量；关闭回到原链路。','Assistant V2','Daily message limits, streaming conversation and read-only usage.'],
   bodyProfile:['身体资料','五步初见与本机身体资料；发送前逐项确认。','Body details','Five-step onboarding and local body details with per-field sending consent.'],
   adminConsole:['新版后台','关闭后停止访问新版后台；需要通过受控维护重新开启。','Admin console','Turning this off closes the new console. Re-enabling requires controlled maintenance.'],
   planLifecycle:['计划整理','整理、删除与恢复本机计划。','Plan management','Organize, delete and restore local plans.'],
@@ -13,4 +14,4 @@ export const featureCopy:Record<string,[string,string,string,string]>={
   nutrition:['饮食记录','启用本机饮食记录能力。','Nutrition records','Enable local nutrition records.'],
   activityImport:['活动导入','启用用户主动选择的活动数据导入。','Activity import','Enable user-selected activity imports.'],
 };
-export const taskCopy:Record<string,[string,string]>={ONBOARD_PLAN:['生成计划','Create plan'],ADJUST_TODAY:['今日调整','Adjust today'],MODIFY_PLAN:['修改计划','Modify plan'],PERIOD_REVIEW:['回顾','Review']};
+export const taskCopy:Record<string,[string,string]>={ASSISTANT_CHAT:['芽芽对话','Assistant chat'],ONBOARD_PLAN:['生成计划','Create plan'],ADJUST_TODAY:['今日调整','Adjust today'],MODIFY_PLAN:['修改计划','Modify plan'],PERIOD_REVIEW:['回顾','Review']};

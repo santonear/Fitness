@@ -1,0 +1,23 @@
+# 芽芽 V2 实施与验收
+
+基线 main b67abf6；唯一集成分支 codex/ai-assistant-v2，一个PR，预览验收后才申请生产发布。
+
+|线|负责|文件边界|状态|
+|---|---|---|---|
+|1 统筹|资格/每日上限/并发/只读用量/后台/集成|backend/assistant admission/store/route，worker routing，admin/finance，flags，docs|已集成，验收中|
+|2|流式对话、存储与备份、入口接入|Assistant组件/client，CoachPanel，db/backup/domain新增，App接线|已集成，验收中|
+|3|模型两阶段、结构修复、提示词、评测|assistant/contracts，backend/assistant/model/provider/prompts/repair，tests/eval|已集成，验收中|
+|4|初见/本地解析/基础计划/本地意图|onboarding、rules、本地计划理由|已集成，验收中|
+
+验收：定向单元→集成类型和全部单元→浏览器连续5轮/改口/应用版本/训练/回顾/错误→四主题375/1280→预览模型评测（≤¥5）→远程CI→一个PR预览等用户。不删/跳过测试。
+
+待审决定：旧费用状态用独立归档标记只读保留，新链路不调用旧准入；新链路暂时失效时仅退本地，不静默调用旧付费链路。停止后的供应商token未知显示未知。
+
+## 2026-10-12 集成证据
+- 独立预览：https://fitness-ai-assistant-preview.initdevl.workers.dev/；独立 D1，没有修改生产。
+- 集成单元测试：147 文件通过，1207 用例通过；29 skipped / 5 todo 为现有测试状态，未为本任务跳过测试。
+- 新对话浏览器回归23项通过；资格无旧月度计数的 Chromium/WebKit 测试2项通过。当前训练上下文另有7项针对单测及浏览器验证。
+- 四主题375/1280截图：outputs/assistant-v2/。
+- 真实评测未完成：一次模型失败未返回用量，保留¥0.63588保守上界占用，暂停后续付费调用；等待用户明确批准在原¥5上限内按¥0.64计入并继续。合成评分器通过不代表真实模型合格率。
+- 旧费用字段保留用于回滚和历史读取；V2资格、生成准入与用量互相分离。后台用量未知token明确标注未知，CSV跟随用户/任务筛选。
+- 发布门禁：远程CI、真实评测和用户预览实测完成前不合并main、不发布生产。回滚方式为关闭aiAssistantV2，历史记录不删除。
