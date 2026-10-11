@@ -70,3 +70,9 @@
 - 失败提示截图：`.cache/admin-integration-screens/feature-read-failure-390.png`，本机真实 ManagementPage + 签名测试会话 + 配置503；不能作为公网真实登录验收的替代。
 - 最终私有模拟重新返回200，目标为上一复查版本；Cloudflare部署回读仍为当前版本100%。真实回滚和真机推送继续保留原验收边界。
 - 技术依据：[Cloudflare 公网 fetch 路由说明](https://developers.cloudflare.com/workers/configuration/compatibility-flags/#global-fetch-strictly-public)。公开登录后的页面复查仍由管理员完成。
+
+### 2026-10-12 同轮五项修正
+- 登录拦截不进故障待办；实际公网检查 application/features 为 access_login_required、管理入口为 access_protected，通过同一待办函数验证返回空列表。真实 503 仍保留待办，已做单元测试。
+- 预算显示实际比例和金额（预览合成 60%、¥18.00 / ¥30.00），近 7 天表补 ¥；50% 提醒关闭行为保留。时区优先上海/柏林，别名去重且兼容旧值；作废资格隐藏剩余天数。
+- 失败页使用后台样式，截图：.cache/admin-integration-screens/feature-read-failure-390.png。26 项相关单元、8 项浏览器回归、类型检查与构建通过；其中 Chromium/WebKit 验证缓存及未保存输入。
+- 预览部署：5dc0d468-e395-4b71-818b-3e434619bc33，100% 流量；私有模拟适配器：6c885572-9af9-4d7c-82e0-90820bb8994b。只更新预览，未改 main/生产，未重置合成数据或调用模型。

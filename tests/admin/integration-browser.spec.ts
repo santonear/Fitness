@@ -74,6 +74,8 @@ test('real management entry carries Access cookie and retries unavailable config
   await page.request.post('/__test/features-mode',{data:{fail:true}});
   await page.goto('/admin');await expect(page.getByRole('alert')).toContainText('暂时无法读取后台配置');
   await expect(page.getByRole('heading',{name:'应用管理',exact:true})).toHaveCount(0);
+  await expect(page.locator('.admin-access-state')).toBeVisible();
+  expect(await page.getByRole('button',{name:'重试',exact:true}).evaluate(el=>getComputedStyle(el).getPropertyValue('--a-primary').trim())).not.toBe('');
   const directory=resolve('.cache/admin-integration-screens');await mkdir(directory,{recursive:true});
   await page.screenshot({path:resolve(directory,'feature-read-failure-390.png'),fullPage:true});
   await page.request.post('/__test/features-mode',{data:{fail:false}});
@@ -81,6 +83,12 @@ test('real management entry carries Access cookie and retries unavailable config
   await page.getByRole('button',{name:'重试',exact:true}).click();await loaded;
   await expect(page.locator('.admin-bottom')).toBeVisible();
   expect(await page.evaluate(async()=> (await fetch('/api/v1/features',{credentials:'omit'})).status)).toBe(403);
+});
+
+test('revoked access does not advertise remaining days',async({page})=>{
+ await page.goto('/admin/users');await page.getByRole('button',{name:/20000000.*有效/}).click();
+ await page.getByRole('button',{name:'作废资格',exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:'确认',exact:true}).click();
+ const user=page.getByRole('button',{name:/20000000.*已作废/});await expect(user).toBeVisible();await expect(user).not.toContainText('剩余');
 });
 
 test('unknown preview restoration retries its original receipt after reopening without another credit',async({page})=>{
@@ -114,8 +122,8 @@ test('preview synthetic costs filter by task and the 50 percent reminder can be 
  const costs=page.locator('section').filter({has:page.getByRole('heading',{name:'芽芽费用',exact:true})});
  await expect(costs.locator('tbody tr')).toHaveCount(3);await expect(costs.locator('tbody')).toContainText('今日调整');
  await filter.selectOption('review');await expect(costs.locator('tbody tr')).toHaveCount(3);await expect(costs.locator('tbody')).toContainText('回顾');
- await page.goto('/admin/todo');await expect(page.getByRole('heading',{name:'本月预算已用到 50%',exact:true})).toBeVisible();
- await page.getByRole('button',{name:'关闭本月 50% 提醒',exact:true}).click();await page.reload();await expect(page.getByRole('heading',{name:'本月预算已用到 50%',exact:true})).toHaveCount(0);
+ await page.goto('/admin/todo');await expect(page.getByRole('heading',{name:'本月预算已用 60%（¥21.00 / ¥35.00）',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'关闭本月 50% 提醒',exact:true}).click();await page.reload();await expect(page.getByRole('heading',{name:'本月预算已用 60%（¥21.00 / ¥35.00）',exact:true})).toHaveCount(0);
 });
 
 
@@ -191,9 +199,9 @@ test.describe('Shanghai announcement review evidence',()=>{
  });
 });
 test('review evidence 50 percent budget dismisses but 80 percent stays actionable',async({page})=>{
- await page.request.post('/__test/parity-fixture',{data:{mode:'budget50'}});await page.goto('/admin/todo');await expect(page.getByRole('heading',{name:'本月预算已用到 50%',exact:true})).toBeVisible();
- await page.getByRole('button',{name:'关闭本月 50% 提醒',exact:true}).click();await expect(page.getByRole('heading',{name:'本月预算已用到 50%',exact:true})).toHaveCount(0);
- await page.goto('/admin/todo');await expect(page.getByRole('heading',{name:'本月预算已用到 50%',exact:true})).toHaveCount(0);
- await page.request.post('/__test/parity-fixture',{data:{mode:'budget80'}});await page.reload();await expect(page.getByRole('heading',{name:'本月预算已用到 80%',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'关闭本月 50% 提醒',exact:true})).toHaveCount(0);
+ await page.request.post('/__test/parity-fixture',{data:{mode:'budget50'}});await page.goto('/admin/todo');await expect(page.getByRole('heading',{name:'本月预算已用 50%（¥17.50 / ¥35.00）',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'关闭本月 50% 提醒',exact:true}).click();await expect(page.getByRole('heading',{name:'本月预算已用 50%（¥17.50 / ¥35.00）',exact:true})).toHaveCount(0);
+ await page.goto('/admin/todo');await expect(page.getByRole('heading',{name:'本月预算已用 50%（¥17.50 / ¥35.00）',exact:true})).toHaveCount(0);
+ await page.request.post('/__test/parity-fixture',{data:{mode:'budget80'}});await page.reload();await expect(page.getByRole('heading',{name:'本月预算已用 80%（¥28.00 / ¥35.00）',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'关闭本月 50% 提醒',exact:true})).toHaveCount(0);
  await page.goto('/admin/ledger');await expect(page.getByRole('progressbar')).toHaveAttribute('value','2800');await expect(page.getByRole('button',{name:'关闭本月 50% 预算提示',exact:true})).toHaveCount(0);
 });
