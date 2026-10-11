@@ -4,7 +4,7 @@ test('missing plan uses conservative local pain response and review navigation w
  await page.goto('/tests/fixtures/v8-coach/index.html?missing');await page.getByRole('button',{name:'跟芽芽说',exact:true}).click();
  await page.getByRole('textbox',{name:'跟芽芽说'}).fill('膝盖痛');await page.getByRole('button',{name:'发送',exact:true}).click();
  await expect(page.getByText('如果疼痛明显或持续，先休息，并请专业人士看看',{exact:true})).toBeVisible();
- await expect(page.getByText('可以先停下不舒服的动作。 可以试试 蚌式开合。',{exact:true})).toBeVisible();
+ await expect(page.getByText('可以先停下不舒服的动作。可以试试蚌式开合。',{exact:true})).toBeVisible();
  await expect(page.getByText('现在用的是本地建议',{exact:true})).toBeVisible();
  await expect(page.getByRole('button',{name:'确认应用'})).toHaveCount(0);
  await page.getByRole('textbox',{name:'跟芽芽说'}).fill('想看看这周');await page.getByRole('button',{name:'发送',exact:true}).click();
@@ -48,4 +48,17 @@ test('review has one factual feature card and finish includes elapsed time and p
  await page.getByRole('button',{name:'记下来',exact:true}).click();await expect(page.locator('[data-context="review"]')).toHaveCount(1);await expect(page.getByText('这周你动了 3 次。',{exact:true})).toBeVisible();await expect(page.getByText('完成了 0 次，部分完成 1 次，还差 3 次。',{exact:true})).toBeVisible();
  await page.getByRole('button',{name:'本月回顾',exact:true}).click();await expect(page.getByText('这个月你动了 3 次。',{exact:true})).toBeVisible();await expect(page.locator('[data-context="review"]')).toHaveCount(1);
  for(const width of [390,1440]){await page.setViewportSize({width,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:`outputs/polish-coach/review-${width}.png`,fullPage:true});}
+});
+
+test('week and month reviews without a current plan retain facts and offer manual or new planning',async({page})=>{
+ await page.goto('/onboarding');
+ for(const answer of ['保持力量','每周3次，每次30分钟','在家，只有瑜伽垫']){await page.getByLabel('你的回答').fill(answer);await page.getByRole('button',{name:'继续',exact:true}).click();}
+ await page.getByLabel('我已年满 18 岁',{exact:false}).check();await page.getByRole('button',{name:'生成我的第一版计划',exact:true}).click();await page.getByRole('button',{name:'就用这份计划',exact:true}).click();
+ await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
+ await page.evaluate(async()=>{const rp='/src/persistence/repository.ts',wp='/src/application/v8-workflow.ts';const {repository}=await import(/* @vite-ignore */ rp),{createV8Workflow}=await import(/* @vite-ignore */ wp);const flow=createV8Workflow(repository),s=await flow.snapshot();const w=await flow.start(s.version.templates[0].id);await flow.recordSet(w.id,0,0,{reps:8});await flow.finish(w.id,{reasons:['time']});});
+ await page.goto('/review');await expect(page.locator('.v8-facts dd')).toHaveCount(5);const before=await page.locator('.v8-facts dd').allTextContents();
+ await page.evaluate(async()=>{const rp='/src/persistence/repository.ts',wp='/src/application/v8-workflow.ts';const {repository}=await import(/* @vite-ignore */ rp),{createV8Workflow}=await import(/* @vite-ignore */ wp);const flow=createV8Workflow(repository),s=await flow.snapshot();await flow.deletePlan(s.plan.id,s.metadata.dataRevision);});
+ await page.reload();
+ for(const kind of ['本周回顾','本月回顾']){await page.getByRole('button',{name:kind,exact:true}).click();await expect(page.locator('.v8-facts dd')).toHaveText(before);await expect(page.getByText(/还差.*次|按现在的计划继续/)).toHaveCount(0);await expect(page.getByText('完成了 0 次，部分完成 1 次。',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'手动训练',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'重新制定计划',exact:true})).toBeVisible();}
+ await page.getByRole('button',{name:'手动训练',exact:true}).click();await expect(page).toHaveURL(/\/manual$/);await page.goto('/review');await page.getByRole('button',{name:'重新制定计划',exact:true}).click();await expect(page).toHaveURL(/\/onboarding$/);
 });

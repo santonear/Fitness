@@ -31,5 +31,9 @@
   "encouragement": "Recording what happened helps us decide what to adjust.",
   "gap": "You completed {complete} sessions and partially completed {partial}; {missing} remain toward your target.",
   "continuePlan": "You can continue with your current plan for now.",
-  "pattern": "{count} sessions were unfinished on {day} {band}."
+  "pattern": "{count} sessions were unfinished on {day} {band}.",
+  "noPlanFacts": "You completed {complete} sessions and partially completed {partial}.",
+  "noPlanNext": "There is no current plan. You can train manually or create a new plan.",
+  "manualTraining": "Manual training",
+  "newPlan": "Create a new plan"
 }

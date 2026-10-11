@@ -21,7 +21,7 @@ export function localCoachReply(message: string, request?: CoachRequest, profile
     if (areas.length !== 1 || /其他|其它|全身|脖|颈|髋|脚|踝|肘|胸|other|neck|hip|ankle|foot|elbow|chest|all over/i.test(message)) return { lines };
     const example = discomfortExample(cautions);
     const mentionsMovement = exercises.some(exercise => [exercise.name.zh, exercise.name.en].some(name => message.toLowerCase().includes(name.toLowerCase())));
-    if (example && !mentionsMovement) lines[3] += ' ' + fill(copy.example, { after: example.name[locale] });
+    if (example && !mentionsMovement) lines[3] += (locale === 'zh' ? '' : ' ') + fill(copy.example, { after: example.name[locale] });
     if (request?.task !== 'ADJUST_TODAY' || !profile) return { lines };
     // Never guess the painful movement or a new medical exclusion boundary.
     const named = request.template.items.filter(item => { const e = exercises.find(e => e.id === item.exerciseId); return e && [e.name.zh,e.name.en].some(name => message.toLowerCase().includes(name.toLowerCase())); });

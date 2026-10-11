@@ -21,6 +21,7 @@ export function ReviewPage(){
  const c=useMainline(),{data,t,name}=c,r=c.locale==='zh'?zh:en,activities=c.locale==='zh'?activityZh:activityEn;
  const nutritionEnabled=useFeature('nutrition'); const [dietDates,setDietDates]=useState<string[]>([]); useEffect(()=>{let active=true;void repository.db.nutritionRecords.toArray().then(rows=>{if(active)setDietDates(rows.map(row=>row.localDate));});return()=>{active=false;};},[data?.metadata.dataRevision]);
  const monthly=c.reviewKind==='month';
+ const hasCurrentPlan=!!data?.plan&&!!data.version;
  const [dismissed,setDismissed]=useState<string[]>([]),[preview,setPreview]=useState<{suggestion:ReviewSuggestion;revision:number;generation:number}>(),[saved,setSaved]=useState(false);
  const [history,setHistory]=useState<ReviewHistoryRow[]>([]),[historyError,setHistoryError]=useState(false);
  useEffect(()=>{let active=true;setHistory([]);setHistoryError(false);const service=createV8DataService(repository);void Promise.all([service.getReviewWorkouts(),service.getLegacyHistory()]).then(([rows,legacy])=>{if(active)setHistory(reviewHistory(rows.workouts,rows.legacyWorkouts,legacy));}).catch(()=>{if(active)setHistoryError(true);});return()=>{active=false;};},[data?.metadata.dataRevision,data?.metadata.restoreGeneration,data?.metadata.localProfileId]);
@@ -37,8 +38,9 @@ export function ReviewPage(){
  <h1>{monthly?r.month:r.week}</h1><p>{facts.from} — {facts.to}</p>
  <c.slots.FeatureCard context="review" motionReduced={false} trainingActive={!!data?.active}>
  <p>{format(monthly?r.monthOpening:r.weekOpening,{count:facts.movementCount})}</p><p>{r.encouragement}</p>
- <p>{format(r.gap,{complete:facts.complete,partial:facts.partial,missing:facts.missingCount})}</p>
- <p>{suggestion?suggestionText(suggestion):r.continuePlan}</p>
+ <p>{format(hasCurrentPlan?r.gap:r.noPlanFacts,{complete:facts.complete,partial:facts.partial,missing:facts.missingCount})}</p>
+ <p>{!hasCurrentPlan?r.noPlanNext:suggestion?suggestionText(suggestion):r.continuePlan}</p>
+ {!hasCurrentPlan&&<div className="v8-row"><Button onClick={()=>c.navigate('/manual')}>{r.manualTraining}</Button><Button onClick={()=>c.navigate('/onboarding')}>{r.newPlan}</Button></div>}
  <div className="v8-facts"><Stat label={t.complete} value={facts.complete}/><Stat label={t.partial} value={facts.partial}/><Stat label={t.movement} value={facts.movementCount}/><Stat label={t.minutes} value={Math.round(facts.trainingSeconds/60)}/><Stat label={r.activityMinutes} value={facts.activityMinutes}/></div></c.slots.FeatureCard>
  {monthly&&c.monthFacts&&<section className="v8-month-chart" aria-label={r.month}>{c.monthFacts.weeks.map(w=><div key={w.from}><div className="v8-month-column" role="img" aria-label={`${w.from}: ${t.complete} ${w.complete}, ${t.partial} ${w.partial}`} style={{'--complete-ratio':w.complete/Math.max(7,...c.monthFacts!.weeks.map(x=>x.complete+x.partial)),'--partial-ratio':w.partial/Math.max(7,...c.monthFacts!.weeks.map(x=>x.complete+x.partial))} as CSSProperties}><span className="v8-month-complete"/><span className="v8-month-partial"/></div><p>{w.from.slice(5)}<br/>{w.complete} / {w.partial}</p></div>)}</section>}
  <section><h2>{r.patterns}</h2>{(['weekday','weekend'] as const).flatMap(day=>(['morning','daytime','evening'] as const).map(band=>{const n=facts.incompleteTiming[day][band];return n.partial+n.notStarted>0?<p key={day+band}>{format(r.pattern,{day:r[day],band:r[band],count:n.partial+n.notStarted})}</p>:null;}))}</section>

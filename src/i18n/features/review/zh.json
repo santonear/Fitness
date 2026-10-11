@@ -31,5 +31,9 @@
   "encouragement": "如实记下来，之后才知道怎么调。",
   "gap": "完成了 {complete} 次，部分完成 {partial} 次，还差 {missing} 次。",
   "continuePlan": "可以先按现在的计划继续。",
-  "pattern": "{day}{band}有 {count} 次没练完。"
+  "pattern": "{day}{band}有 {count} 次没练完。",
+  "noPlanFacts": "完成了 {complete} 次，部分完成 {partial} 次。",
+  "noPlanNext": "现在没有当前计划，可以手动训练，或重新制定计划。",
+  "manualTraining": "手动训练",
+  "newPlan": "重新制定计划"
 }
