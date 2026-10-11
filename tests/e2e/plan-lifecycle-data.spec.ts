@@ -16,7 +16,7 @@ for(const fail of [false,true])test(`DB10 lifecycle upgrade ${fail?'rolls back o
  const after=await snap(db);db.close();await db.open();return{rejected,same:facts===await snap(db,['metadata','v8PlanReferences']),version:db.verno,metadata:(await db.metadata.toCollection().first()).schemaVersion,empty:await db.v8PlanReferences.count()===0,idempotent:after===await snap(db)};
  }finally{db.close();await db.delete();}
  },{source,fail});
- expect(result).toEqual(fail?{rejected:true,same:true,version:10}:{rejected:false,same:true,version:12,metadata:12,empty:true,idempotent:true});
+ expect(result).toEqual(fail?{rejected:true,same:true,version:10}:{rejected:false,same:true,version:13,metadata:13,empty:true,idempotent:true});
 });
 
 test('real IndexedDB deletion backup, expiry cleanup and rollback preserve training and review',async({page})=>{

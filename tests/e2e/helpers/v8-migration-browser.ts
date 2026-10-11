@@ -38,7 +38,7 @@ export async function verifyV8Migration(envelope: BackupEnvelope, failUpgrade = 
       return { rejected, unchanged, version };
     }
     await db.open();
-    const omit = ['exerciseFavorites', 'metadata', 'v8Plans', 'v8PlanVersions', 'v8Workouts', 'v8Activities', 'v8State', 'v8PlanReferences', 'nutritionRecords', 'activityImportReceipts'];
+    const omit = ['assistantConversations', 'exerciseFavorites', 'metadata', 'v8Plans', 'v8PlanVersions', 'v8Workouts', 'v8Activities', 'v8State', 'v8PlanReferences', 'nutritionRecords', 'activityImportReceipts'];
     const legacyAfter=JSON.parse(await snapshot(db,omit)) as [string,Record<string,unknown>[]][];
     for(const [name,rows] of legacyAfter)if(name==='profiles')for(const row of rows)delete row.bodyDetails;
     const unchanged = await db.exerciseFavorites.count() === 0 && JSON.stringify(legacyAfter) === legacyBefore && await db.nutritionRecords.count() === 0 && await db.activityImportReceipts.count() === 0 && await db.table('v8PlanReferences').count() === 0;
