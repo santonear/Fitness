@@ -34,12 +34,12 @@ test('library details share modal behavior and favorites survive reload',async({
    const movement=page.getByRole('button',{name:'自阻力划船',exact:true});await movement.click();await expect(page.getByRole('dialog')).toBeVisible();
    for(const name of ['动作要点','完整步骤','常见错误','注意事项']) await expect(page.getByRole('dialog').getByRole('heading',{name,exact:true})).toBeVisible();
    await page.getByRole('dialog').getByRole('button',{name:'关闭',exact:true}).click();await expect(page.getByRole('dialog')).not.toBeVisible();await expect(movement).toBeFocused();
- await page.getByRole('button',{name:'收藏 自阻力划船',exact:true}).click();await page.reload();await page.getByLabel('只看已收藏').check();await expect(page.getByRole('button',{name:'自阻力划船',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'收藏 自阻力划船',exact:true}).click();await expect(page.getByRole('button',{name:'收藏 自阻力划船',exact:true})).toHaveAttribute('aria-pressed','true');await page.reload();await page.getByLabel('只看已收藏').check();await expect(page.getByRole('button',{name:'自阻力划船',exact:true})).toBeVisible();
 });
 
 test('library favorites are filtered before exact matches and suggestion limits',async({page})=>{
  await page.goto('/exercises');await page.getByRole('searchbox').fill('杠铃背蹲');
- await page.getByRole('button',{name:'收藏 杠铃背蹲',exact:true}).first().click();
+ await page.getByRole('button',{name:'收藏 杠铃背蹲',exact:true}).first().click();await expect(page.getByRole('button',{name:'收藏 杠铃背蹲',exact:true}).first()).toHaveAttribute('aria-pressed','true');
  await page.getByLabel('只看已收藏').check();await page.getByRole('searchbox').fill('哑铃深蹲');
  await expect(page.getByRole('heading',{name:'相近动作（保留当前筛选）'})).toBeVisible();
  await expect(page.getByRole('button',{name:'杠铃背蹲',exact:true})).toBeVisible();
