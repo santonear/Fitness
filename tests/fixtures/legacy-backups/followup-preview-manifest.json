@@ -1,0 +1,13 @@
+{
+  "file": "followup-preview-v9.json",
+  "sha256": "fb3fcdcfb4a62824e4bfce7b14b1f8038156b124adf066fc97202f6a1caa474f",
+  "source": "fitness-v8-followup/outputs/followup-preview/synthetic-backup.json",
+  "evidence": "fitness-v8-followup/outputs/followup-preview/result.json",
+  "previewVersion": "24f5c851-c548-442c-8f22-84ff5a204cbf",
+  "browser": "153.0.8010.12",
+  "synthetic": true,
+  "backupExport": true,
+  "modelCalls": 0,
+  "productionChanged": false,
+  "note": "Unmodified prior preview UI download; backup envelope 7 and database metadata 9. Copied for source-field migration regression."
+}
