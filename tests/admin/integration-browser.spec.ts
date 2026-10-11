@@ -74,11 +74,48 @@ test('real management entry carries Access cookie and retries unavailable config
   await page.request.post('/__test/features-mode',{data:{fail:true}});
   await page.goto('/admin');await expect(page.getByRole('alert')).toContainText('暂时无法读取后台配置');
   await expect(page.getByRole('heading',{name:'应用管理',exact:true})).toHaveCount(0);
+  const directory=resolve('.cache/admin-integration-screens');await mkdir(directory,{recursive:true});
+  await page.screenshot({path:resolve(directory,'feature-read-failure-390.png'),fullPage:true});
   await page.request.post('/__test/features-mode',{data:{fail:false}});
   const loaded=page.waitForResponse(r=>r.url().endsWith('/api/v1/features')&&r.status()===200);
   await page.getByRole('button',{name:'重试',exact:true}).click();await loaded;
   await expect(page.locator('.admin-bottom')).toBeVisible();
   expect(await page.evaluate(async()=> (await fetch('/api/v1/features',{credentials:'omit'})).status)).toBe(403);
+});
+
+test('unknown preview restoration retries its original receipt after reopening without another credit',async({page})=>{
+ await page.request.post('/__test/parity-fixture',{data:{mode:'quota-unknown'}});await page.goto('/admin/users');
+ await page.getByRole('button',{name:/预览合成 · 额度恢复结果未知/}).click();
+ await expect(page.getByText(/资格到期：/)).toBeVisible();await expect(page.getByText(/本月计划生成已用 \/ 总数：2 \/ 6/)).toBeVisible();
+ await expect(page.getByRole('button',{name:/额度恢复结果未知.*剩余 1 天/})).toBeVisible();
+ await expect(page.getByRole('button',{name:'刷新额度',exact:true})).toBeDisabled();
+ await expect(page.getByText(/沿用原请求编号重试，不会再次恢复额度/)).toBeVisible();
+ const before=await(await page.request.get('/__test/evidence')).json();await page.reload();
+ await page.getByRole('button',{name:/预览合成 · 额度恢复结果未知/}).click();await page.getByRole('button',{name:'重试同一次',exact:true}).click();
+ const response=page.waitForResponse(r=>r.url().endsWith('/users/action')&&r.request().method()==='POST');
+ await page.getByRole('dialog').getByRole('button',{name:'确认',exact:true}).click();const result=await response;
+ expect(result.status()).toBe(200);expect(result.request().headers()['x-request-id']).toBe('94000000-0004-4000-8000-000000000004');
+ await expect(page.getByRole('button',{name:'重试同一次',exact:true})).toHaveCount(0);await expect(page.getByRole('button',{name:'刷新额度',exact:true})).toBeEnabled();
+ const after=await(await page.request.get('/__test/evidence')).json();expect(after.quotaRestorations).toEqual(before.quotaRestorations);expect(after.usage).toEqual(before.usage);expect(after.budgets).toEqual(before.budgets);
+});
+
+test('config review lists changed keys only and notification timezone has a readable label',async({page})=>{
+ await page.goto('/admin/settings');const zone=page.getByRole('combobox',{name:'时区',exact:true});
+ await expect(zone.locator('option:checked')).toContainText('东八区（UTC+8）');await expect(zone).toHaveValue('Asia/Shanghai');
+ await page.getByLabel('月预算上限（元）',{exact:true}).fill('45.67');await page.getByRole('button',{name:'查看改动',exact:true}).click();
+ await expect(page.getByRole('dialog').locator('dt')).toHaveCount(1);await expect(page.getByRole('dialog')).toContainText('45.67');
+ await page.getByRole('dialog').getByRole('button',{name:'取消',exact:true}).click();
+});
+
+test('preview synthetic costs filter by task and the 50 percent reminder can be dismissed',async({page})=>{
+ await page.request.post('/__test/parity-fixture',{data:{mode:'finance-synthetic'}});await page.goto('/admin/coach');
+ await expect(page.getByText(/本环境包含预览合成用户与费用/)).toBeVisible();
+ const filter=page.getByRole('combobox',{name:'任务',exact:true});await filter.selectOption('adjust');
+ const costs=page.locator('section').filter({has:page.getByRole('heading',{name:'芽芽费用',exact:true})});
+ await expect(costs.locator('tbody tr')).toHaveCount(3);await expect(costs.locator('tbody')).toContainText('今日调整');
+ await filter.selectOption('review');await expect(costs.locator('tbody tr')).toHaveCount(3);await expect(costs.locator('tbody')).toContainText('回顾');
+ await page.goto('/admin/todo');await expect(page.getByRole('heading',{name:'本月预算已用到 50%',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'关闭本月 50% 提醒',exact:true}).click();await page.reload();await expect(page.getByRole('heading',{name:'本月预算已用到 50%',exact:true})).toHaveCount(0);
 });
 
 
@@ -146,8 +183,8 @@ test.describe('Shanghai announcement review evidence',()=>{
  test.use({timezoneId:'Asia/Shanghai'});
  test('review evidence local announcement inputs show matching UTC and persist timestamps',async({page})=>{
   await page.goto('/admin/settings');await page.getByLabel('公告内容',{exact:true}).fill('系统维护中，训练记录可继续保存。');
-  await page.getByLabel('开始时间 (Asia/Shanghai)',{exact:false}).fill('2026-10-12T10:30');await page.getByLabel('结束时间 (Asia/Shanghai)',{exact:false}).fill('2026-10-12T12:00');
-  await expect(page.getByText('UTC: 2026-10-12 02:30',{exact:true})).toBeVisible();await expect(page.getByText('UTC: 2026-10-12 04:00',{exact:true})).toBeVisible();
+  await page.getByLabel('开始时间 (东八区（UTC+8）)',{exact:false}).fill('2026-10-12T10:30');await page.getByLabel('结束时间 (东八区（UTC+8）)',{exact:false}).fill('2026-10-12T12:00');
+  await expect(page.getByText('零时区（UTC+0）: 2026-10-12 02:30',{exact:true})).toBeVisible();await expect(page.getByText('零时区（UTC+0）: 2026-10-12 04:00',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'发布公告',exact:true}).click();await expect(page.getByRole('dialog')).toBeVisible();expect((await (await page.request.get('/api/v1/management/console/finance/announcement')).json()).announcement).toBeNull();
   const response=page.waitForResponse(r=>r.url().endsWith('/finance/announcement')&&r.request().method()==='POST');await page.getByRole('button',{name:'确认',exact:true}).click();expect((await response).status()).toBe(200);
   const saved=await (await page.request.get('/api/v1/management/console/finance/announcement')).json();expect(saved.announcement).toMatchObject({start:Date.parse('2026-10-12T02:30:00Z'),end:Date.parse('2026-10-12T04:00:00Z')});

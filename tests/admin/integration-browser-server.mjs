@@ -3,6 +3,7 @@ import {DatabaseSync} from 'node:sqlite';
 import {readFile,readdir} from 'node:fs/promises';
 import {randomBytes} from 'node:crypto';
 import {generateKeyPair,SignJWT} from 'jose';
+import {buildPreviewFinanceSeed} from '../../tools/admin/prepare-preview-finance.mjs';
 
 // Test-only loopback server. No production credentials, model transport or public listener.
 const port=Number(process.env.ADMIN_INTEGRATION_PORT??5397);
@@ -89,7 +90,19 @@ const server=await createServer({configFile:false,server:{host:'127.0.0.1',port,
       if(path==='/__test/parity-fixture'&&request.method==='POST'){
         const {mode}=JSON.parse((await bodyOf(request)).toString());const state=JSON.parse(control.prepare('SELECT state FROM control_ledger WHERE id=1').get().state);
         if(mode==='pending'){const r=state.requests[`${subjectId}:50000000-0000-4000-8000-000000000005`];r.status='pending';delete r.actualCost;state.budgets[r.period]={spent:0,reserved:300};}
+        else if(mode==='quota-unknown'){
+          const id='93000000-0003-4000-8000-000000000003',requestId='94000000-0004-4000-8000-000000000004',period=new Date().toISOString().slice(0,7);
+          state.subjects[id]={expiresAt:Date.now()+86400000,revoked:false};state.usages[`${id}:${period}`]={understand:0,generate:2};
+          state.quotaRestorations={[requestId]:{subjectId:id,period,reason:'预览合成：额度恢复响应丢失',at:Date.now(),credits:{understand:0,generate:2}}};
+          state.audit.push({at:Date.now(),event:`quota-restore-unknown:${requestId}`,subjectId:id});
+        }
         else if(mode==='budget50'||mode==='budget80'){const period=new Date().toISOString().slice(0,7);state.budgets[period]={spent:mode==='budget50'?1750:2800,reserved:0};}
+        else if(mode==='finance-synthetic'){
+          const config=JSON.parse(await readFile(new URL('../../wrangler.admin-preview.jsonc',import.meta.url),'utf8'));
+          const revision=control.prepare('SELECT revision FROM control_ledger WHERE id=1').get().revision;
+          const seed=buildPreviewFinanceSeed(config,{control:{revision,state},runtimeBudgetFen:3500});
+          control.exec(seed.controlSql);admin.exec(seed.adminSql);return send(response,200,{mode});
+        }
         else if(mode==='expired'){state.applications[applicationId].state='rejected';state.applications[applicationId].decidedAt=Date.now()-40*86400000;}
         else if(mode==='ai'){env.CONTROL_MODE='external';env.SUPPLIER_PROVIDER='deepseek';env.DEEPSEEK_API_KEY=randomBytes(32).toString('hex');env.SUPPLIER_ENDPOINT='https://api.deepseek.com/chat/completions';env.SUPPLIER_ORIGIN='https://api.deepseek.com';}
         else return send(response,400,{error:'INVALID_FIXTURE'});

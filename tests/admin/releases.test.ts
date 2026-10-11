@@ -12,6 +12,10 @@ import {createPreviewSimulationAdapter} from '../../src/backend/admin/releases/p
 import {readFeatureFlags} from '../../src/backend/feature-config';
 
 const connections:DatabaseSync[]=[];
+it('private preview probes use public routing through Access rather than the internal origin',()=>{
+ const config=JSON.parse(readFileSync(new URL('../../wrangler.admin-preview-simulation.jsonc',import.meta.url),'utf8'));
+ expect(config.compatibility_flags).toContain('global_fetch_strictly_public');expect(config.workers_dev).toBe(false);expect(config.preview_urls).toBe(false);expect(config.vars.ADMIN_ENVIRONMENT).toBe('preview');
+});
 function fixture() {
   const sqlite=new DatabaseSync(':memory:');connections.push(sqlite);
   const migration=readFileSync(new URL('../../migrations/admin/2_releases.sql',import.meta.url),'utf8');sqlite.exec(migration);sqlite.exec(migration);sqlite.exec(readFileSync(new URL('../../migrations/admin/2_smoke_reason.sql',import.meta.url),'utf8'));
