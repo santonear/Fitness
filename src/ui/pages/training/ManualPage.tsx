@@ -87,7 +87,7 @@ export function ManualPage() {
     if (metadata.dataRevision !== candidate.expectedRevision || (metadata.restoreGeneration ?? 0) !== candidate.request.restoreGeneration) throw new Error('STALE_CANDIDATE');
     const response = adaptCoachResponse(candidate.request, candidate.response);
     if (candidate.request.task !== 'ONBOARD_PLAN' || response.type !== 'plan_proposal') throw new Error('INVALID_CANDIDATE');
-    setCandidateTemplates(response.proposal.templates.map(template => ({adultConfirmed: candidate.request.adultConfirmed, template, expectedRevision: metadata.dataRevision, restoreGeneration: metadata.restoreGeneration ?? 0})));
+    setCandidateTemplates(response.proposal.templates.map(template => ({adultConfirmed: candidate.request.adultConfirmed, template: { ...template, estimatedMinutes: estimatePlannedMinutes(template.items) }, expectedRevision: metadata.dataRevision, restoreGeneration: metadata.restoreGeneration ?? 0})));
     setCoachOpen(false); setNotice(copy.chooseCandidate);
   }
   const template = templates.find(item => item.id === templateId);
@@ -132,6 +132,6 @@ export function ManualPage() {
     {results.length > limit && <Button onClick={() => setLimit(value => value + 36)}>{copy.more}</Button>}
     <footer className="manual-start"><div aria-live="polite"><strong>{format(copy.selected, { count: selected.length })}</strong><span>{format(copy.minutes, { minutes })}</span></div><Button variant="primary" disabled={!selected.length || busy} onClick={() => void (template ? start(template.id) : startManual(selected, manualSelection))}>{copy.start}</Button></footer>
     <ExerciseGuidePanel id={guideId} locale={locale} open={!!guideId} onClose={()=>setGuideId(undefined)} triggerRef={guideTrigger}/>
-    <CoachPanel open={coachOpen} onClose={()=>setCoachOpen(false)} request={coachRequest} expectedRevision={coachRevision} onApply={importCandidate} locale={locale} disableNutrition localFallbackOnError applyLabel={copy.importCandidate} successLabel={copy.candidateReady} onLocalPlan={()=>{setCoachOpen(false);localSelection();}}/>
+    <CoachPanel open={coachOpen} onClose={()=>setCoachOpen(false)} request={coachRequest} expectedRevision={coachRevision} onApply={importCandidate} locale={locale} disableNutrition localFallbackOnError templateMinutes={template=>estimatePlannedMinutes(template.items)} applyLabel={copy.importCandidate} successLabel={copy.candidateReady} onLocalPlan={()=>{setCoachOpen(false);localSelection();}}/>
   </main>;
 }

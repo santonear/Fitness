@@ -62,9 +62,9 @@ describe('local coach fallback',()=>{
  it.each([{confirmed:true,saved:undefined,allowed:true},{confirmed:false,saved:undefined,allowed:false},{confirmed:undefined,saved:undefined,allowed:false},{confirmed:true,saved:false,allowed:false}])('manual candidate adult boundary %j',async({confirmed,saved,allowed})=>{
   const records:any[]=[];let meta:any={localProfileId:id,schemaVersion:10,catalogVersion:1,revision:0,dataRevision:0,restoreGeneration:0};
   const db={tables:[],transaction:async(_m:unknown,_t:unknown,fn:()=>Promise<unknown>)=>fn(),metadata:{toCollection:()=>({first:async()=>meta}),put:async(value:unknown)=>{meta=value;}},v8Workouts:{where:()=>({equals:()=>({count:async()=>records.length})}),add:async(value:unknown)=>{records.push(value);}},sessions:{where:()=>({equals:()=>({count:async()=>0})})},v8State:{get:async()=>saved===undefined?undefined:{coachProfile:{adultConfirmed:saved}}},profiles:{toCollection:()=>({first:async()=>({timeZone:'Asia/Shanghai'})})}} as unknown as FitnessDatabase;
-  const workflow=createV8Workflow(createRepository(db)),template={id:'manual-candidate',name:'候选',estimatedMinutes:15,items:[{exerciseId:EXERCISE_IDS.bodyweightSquat,equipment:'none',sets:3,target:{metricType:'reps' as const,reps:11}}]};
+  const workflow=createV8Workflow(createRepository(db)),template={id:'manual-candidate',name:'候选',estimatedMinutes:15,items:[{exerciseId:EXERCISE_IDS.bodyweightSquat,equipment:'none',sets:3,target:{metricType:'reps' as const,reps:11}},{exerciseId:EXERCISE_IDS.bodyweightSquat,equipment:'none',sets:1,target:{metricType:'reps' as const,reps:6}}]};
   const attempt=workflow.start(undefined,undefined,[EXERCISE_IDS.bodyweightSquat],{template,adultConfirmed:confirmed as boolean,expectedRevision:0,restoreGeneration:0});
-  if(allowed){const record=await attempt;expect(record.templateSnapshot).toEqual(template);expect(record.planVersionId).toBeUndefined();expect(record.plannedSetCount).toBe(3);}else{await expect(attempt).rejects.toThrow();expect(records).toHaveLength(0);}
+  if(allowed){const record=await attempt;expect(record.templateSnapshot).toEqual(template);expect(record.planVersionId).toBeUndefined();expect(record.plannedSetCount).toBe(4);expect(record.plannedExercises).toHaveLength(2);}else{await expect(attempt).rejects.toThrow();expect(records).toHaveLength(0);}
  });
 
 });

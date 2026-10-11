@@ -122,7 +122,7 @@ for(const mode of ['success','denied','failure','reject','stale','stale-start'] 
   expect(r.task).toBe('ONBOARD_PLAN');expect(r.body).toBeUndefined();expect(r.history).toBeUndefined();expect(r.nutrition).toBeUndefined();
   const proposal=await page.evaluate(async profile=>{const path='/src/application/v8-workflow.ts';return(await import(/* @vite-ignore */ path)).basicProposal({...profile,confirmedAt:new Date().toISOString()});},r.profile);
   const exercise=await page.evaluate(async request=>{const path='/src/coach/response-adapter.ts';return(await import(/* @vite-ignore */ path)).coachV8Exercises(request).find((e:any)=>e.metricType==='reps');},r);
-  proposal.templates.forEach((t:any)=>{t.estimatedMinutes=r.profile.sessionMinutes;t.items=[{exerciseId:exercise.id,equipment:exercise.equipment,sets:3,target:{metricType:'reps',reps:11}}];});
+  proposal.templates.forEach((t:any)=>{t.estimatedMinutes=r.profile.sessionMinutes;t.items=[{exerciseId:exercise.id,equipment:exercise.equipment,sets:3,target:{metricType:'reps',reps:11}},{exerciseId:exercise.id,equipment:exercise.equipment,sets:1,target:{metricType:'reps',reps:6}}];});
   await route.fulfill({json:{requestId:r.requestId,context:{restoreGeneration:r.restoreGeneration,inputDigest:envelope.sendConfirmation},accounting:'settled',result:{requestId:r.requestId,restoreGeneration:r.restoreGeneration,mutationAllowed:false,type:'plan_proposal',proposal}}});
  });
  await seedManual(page);
@@ -135,6 +135,8 @@ for(const mode of ['success','denied','failure','reject','stale','stale-start'] 
   await page.getByRole('dialog').getByRole('button',{name:'使用基础计划',exact:true}).click();expect(calls).toBe(mode==='denied'?0:1);
  }else{
   await expect(page.getByRole('button',{name:'带回手动训练页选择',exact:true})).toBeVisible();
+  if(mode==='success')await expect(page.getByRole('dialog').getByText('15 分钟',{exact:true})).toHaveCount(2);
+  if(mode==='success'&&process.env.MANUAL_AI_SCREENSHOTS==='1'){for(const width of [375,1280]){await page.setViewportSize({width,height:900});await page.getByRole('dialog').locator('.coach-panel-content > section').first().scrollIntoViewIfNeeded();await page.screenshot({path:`outputs/mainline-polish/mock-${width}-manual-ai-candidate.png`,animations:'disabled'});}}
   if(mode==='stale'){
    await page.evaluate(async()=>{const path='/src/persistence/repository.ts';const {repository}=await import(/* @vite-ignore */ path);const m=await repository.readMetadata();await repository.db.metadata.put({...m,restoreGeneration:(m.restoreGeneration??0)+1});});
    await expect(page.getByRole('button',{name:'带回手动训练页选择',exact:true})).toHaveCount(0);await expect(page.getByRole('dialog')).toHaveCount(0);expect(await snapshot()).toEqual(before);return;
@@ -143,10 +145,11 @@ for(const mode of ['success','denied','failure','reject','stale','stale-start'] 
  }
  expect(await snapshot()).toEqual(before);await expect(page.getByRole('button',{name:'开始',exact:true})).toBeDisabled();
  await page.getByRole('button',{name:'选择这份训练单',exact:true}).first().click();expect(await snapshot()).toEqual(before);
+ if(mode==='success'){await expect(page.locator('.manual-start')).toContainText('已选 1 个动作');await expect(page.locator('.manual-start')).toContainText('约 15 分钟');}
  if(mode==='stale-start'){await page.evaluate(async()=>{const path='/src/persistence/repository.ts';const {repository}=await import(/* @vite-ignore */ path);await repository.write(async()=>{});});await page.getByRole('button',{name:'开始',exact:true}).click();await expect(page.getByRole('alert')).toBeVisible();expect(await snapshot()).toEqual(before);return;}
  await page.getByRole('button',{name:'开始',exact:true}).click();await expect(page).toHaveURL(/\/workout\//);
  const after=await snapshot();expect(after.versions).toEqual(before.versions);expect(after.active.planVersionId).toBeUndefined();expect(after.active.templateSnapshot.items[0].sets).toBe(mode==='success'?3:before.versions[0].templates[0].items[0].sets);
- if(mode==='success')expect(after.active.templateSnapshot.items[0].target.reps).toBe(11);
+ if(mode==='success'){expect(after.active.templateSnapshot.items.map((item:any)=>({sets:item.sets,target:item.target}))).toEqual([{sets:3,target:{metricType:'reps',reps:11}},{sets:1,target:{metricType:'reps',reps:6}}]);expect(after.active.plannedExercises).toHaveLength(2);expect(after.active.plannedSetCount).toBe(4);expect(after.active.templateSnapshot.estimatedMinutes).toBe(15);}
  await page.reload();expect((await snapshot()).active.templateSnapshot).toEqual(after.active.templateSnapshot);
 });
 test('manual typo suggestions retain filters and open the complete shared guide',async({page})=>{

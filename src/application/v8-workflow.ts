@@ -87,7 +87,7 @@ export function createV8Workflow(repo: Repository) {
       const manualTemplate = manualSelection ? v8PlanVersionSchema.shape.templates.element.parse(manualSelection.template) : undefined;
       if (manualTemplate && (manualSelection?.adultConfirmed !== true || state?.coachProfile?.adultConfirmed === false)) return invalid('ADULT_CONFIRMATION_REQUIRED');
       const manualIds = [...new Set(manualExerciseIds ?? (manualExerciseId ? [manualExerciseId] : []))];
-      if (manualTemplate && (manualTemplate.items.length !== manualIds.length || manualTemplate.items.some((item, index) => item.exerciseId !== manualIds[index] || exercises.find(e => e.id === item.exerciseId)?.metricType !== item.target.metricType))) return invalid('INVALID_MANUAL_SELECTION');
+      if (manualTemplate && (new Set(manualTemplate.items.map(item => item.exerciseId)).size !== manualIds.length || manualTemplate.items.some(item => !manualIds.includes(item.exerciseId) || exercises.find(e => e.id === item.exerciseId)?.metricType !== item.target.metricType))) return invalid('INVALID_MANUAL_SELECTION');
       if (!template && (!manualIds.length || manualIds.some(id => !exercises.some(item => item.id === id)))) return invalid('SELECT_EXERCISE');
       const items = template?.items ?? manualTemplate?.items ?? manualTrainingItems(manualIds);
       const record = v8WorkoutSchema.parse({ id: crypto.randomUUID(), ...(template ? { planVersionId: version!.id, templateId } : {}),
