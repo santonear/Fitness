@@ -10,7 +10,7 @@ export async function adminBoundary(request:Request,context:AdminContext,handle:
  if(request.method!=='POST'||request.headers.get('origin')!==new URL(request.url).origin||request.headers.get('sec-fetch-site')==='cross-site')throw new AdminError('ADMIN_REQUIRED',403);
  if(!/^[a-zA-Z0-9_-]{16,80}$/.test(context.requestId))throw new AdminError('REQUEST_ID_REQUIRED');
  if(!request.headers.get('content-type')?.startsWith('application/json'))throw new AdminError('INVALID_CONTENT_TYPE');
- const body=await request.clone().text();if(new TextEncoder().encode(body).byteLength>32768)throw new AdminError('BODY_TOO_LARGE',413);
+ const reader=request.clone().body?.getReader();let size=0;if(reader){try{while(true){const part=await reader.read();if(part.done)break;size+=part.value.byteLength;if(size>32768){void reader.cancel();throw new AdminError('BODY_TOO_LARGE',413)}}}finally{reader.releaseLock()}} 
  }
  return await handle(request,context)??adminJson({error:'NOT_FOUND'},404);
  }catch(error){return adminJson({error:error instanceof AdminError?error.code:'ADMIN_UNAVAILABLE'},error instanceof AdminError?error.status:503)}

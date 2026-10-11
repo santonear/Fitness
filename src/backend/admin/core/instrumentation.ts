@@ -1,0 +1,5 @@
+import type {ControlStore} from '../../store';
+import type {AdminDatabase} from './contracts';
+import {recordFinanceEvent} from '../finance';
+/** Drain only metadata created by current requests; old undated ledger entries remain explicitly unknown. */
+export async function syncFinanceMetadata(store:ControlStore,db:AdminDatabase){const state=await store.read();for(const r of Object.values(state.requests)){if(r.createdAt===undefined)continue;const eventKey=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(`${r.subjectId}:${r.requestId}`))),v=>v.toString(16).padStart(2,'0')).join('');const tasks={ONBOARD_PLAN:'generate',ADJUST_TODAY:'adjust',MODIFY_PLAN:'modify',PERIOD_REVIEW:'review'} as const;const task=tasks[r.coachContract?.task as keyof typeof tasks]??r.operation;await recordFinanceEvent(db,{eventKey,day:new Date(r.createdAt).toISOString().slice(0,10),task,status:r.status==='settled'?'settled':'pending',costFen:r.actualCost??0,reservedFen:['pending','submitted','reserved'].includes(r.status)?r.bound:0,at:r.createdAt})}}

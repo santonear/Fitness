@@ -18,7 +18,7 @@ export const applicationAdminView = (a: TrialApplication) => ({ ...applicationVi
 /** Uses the existing CAS transaction so approval and qualification cannot diverge.
  * Bounded metadata only; no training, email, raw receipt, code or session is persisted. */
 export class TrialApplications {
-  constructor(private readonly store: ControlStore, private readonly secret: string, private readonly now = Date.now) {}
+  constructor(private readonly store: ControlStore, private readonly secret: string, private readonly now = Date.now, private readonly retentionDays = 30) {if(!Number.isInteger(retentionDays)||retentionDays<1||retentionDays>365)throw new ControlError('INVALID_RETENTION',400)}
   private async owner(receipt: string) {
     if (!/^[a-f0-9]{64}$/.test(receipt)) throw new ControlError('APPLICATION_CREDENTIAL_REQUIRED', 401);
     return digest(`application:${receipt}`, this.secret);
@@ -130,7 +130,7 @@ export class TrialApplications {
         const subject = a.subjectId ? state.subjects[a.subjectId] : undefined;
         const unresolved = a.subjectId && Object.values(state.requests).some(r => r.subjectId === a.subjectId && ['reserved','submitted','pending'].includes(r.status));
         const closed = a.state === 'rejected' ? a.decidedAt : a.state === 'claimed' ? subject?.expiresAt : a.state === 'approved' ? Math.max(a.claimUntil ?? Infinity, subject?.expiresAt ?? 0) : undefined;
-        if (!unresolved && closed !== undefined && Math.max(closed, a.accountingClosedAt ?? 0) + 30 * DAY <= this.now()) { delete state.applications![id]; removed++; }
+        if (!unresolved && closed !== undefined && Math.max(closed, a.accountingClosedAt ?? 0) + this.retentionDays * DAY <= this.now()) { delete state.applications![id]; removed++; }
       }
       this.audit(state, 'application-retention', String(removed)); return { removed };
     });

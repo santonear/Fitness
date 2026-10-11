@@ -1,3 +1,5 @@
+import {syncFinanceMetadata} from './admin/core/instrumentation';
+import {recordBlockedCategory} from './admin/quality';
 import { z } from 'zod';
 import { ControlService, type ControlConfig } from './control';
 import { D1ControlStore, type D1Binding } from './d1-store';
@@ -8,6 +10,7 @@ import { assertOperatorSecret, createSupplierTransport, type ProviderCodec, type
 import { DailyUsageStore, withDailyUsage } from './daily-usage-store';
 import { readFeatureFlags, type FeatureConfigEnv } from './feature-config';
 import { supplierDiagnostics } from './supplier-diagnostics';
+import { idempotentAdminStore } from './admin/core/idempotent-store';
 
 export interface WorkerEnv extends FeatureConfigEnv {
   TURNSTILE_SECRET_KEY?: string; TURNSTILE_SITE_KEY?: string;
@@ -18,6 +21,7 @@ export interface WorkerEnv extends FeatureConfigEnv {
   FITNESS_OPS_DB?: D1Binding;
   FITNESS_DAILY_LIMITS?: string;
   FITNESS_SUPPLIER_DIAGNOSTICS?: string;
+  APPLICATION_RETENTION_DAYS?: string; FITNESS_COACH_PROMPT_RELEASE?: string;
 }
 const count = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 const policy = z.strictObject({ timeZone: z.string().min(1), k: count.min(1).max(14), budgetLimit: count,
@@ -32,7 +36,7 @@ export function readWorkerConfig(env: WorkerEnv): WorkerConfig | null {
     assertOperatorSecret(env.CONTROL_ADMIN_SECRET); assertOperatorSecret(env.CONTROL_DIGEST_SECRET);
     if (env.CONTROL_ADMIN_SECRET === env.CONTROL_DIGEST_SECRET) throw new Error('distinct secrets required');
     const values = policy.parse(JSON.parse(env.CONTROL_POLICY ?? ''));
-    if (values.allowBoundedPending && (values.budgetLimit !== 3000 || values.maximumRequestCost !== 300 || Object.values(values.requestBounds).some(value => value !== 300))) throw new Error('invalid bounded-pending policy');
+    if (values.allowBoundedPending && (values.maximumRequestCost > values.budgetLimit || Object.values(values.requestBounds).some(value => value > values.maximumRequestCost))) throw new Error('invalid bounded-pending policy');
     new Intl.DateTimeFormat('en', { timeZone: values.timeZone });
     if (Object.values(values.requestBounds).some(cost => cost > values.maximumRequestCost || cost > values.budgetLimit)) throw new Error('invalid bounds');
     const origins = z.array(z.string().url()).min(1).max(8).parse(JSON.parse(env.CONTROL_ORIGINS ?? ''));
@@ -72,16 +76,28 @@ export function createWorker(dependencies: { store?: (env: WorkerEnv) => Control
         if (!limits.success) throw new ControlError('DAILY_USAGE_FALLBACK',503);
         supplier = withDailyUsage(supplier,new DailyUsageStore(env.FITNESS_OPS_DB),limits.data);
       }
-      const store = dependencies.store ? dependencies.store(env) : env.CONTROL_DB ? new D1ControlStore(env.CONTROL_DB) : null;
+      let store = dependencies.store ? dependencies.store(env) : env.CONTROL_DB ? new D1ControlStore(env.CONTROL_DB) : null;
       if (!store) throw new ControlError('CONTROL_UNAVAILABLE', 503);
+      const operationId=request.headers.get('x-admin-operation-id');
+      if(path.startsWith('/api/v1/admin/') && operationId) {
+        if(request.headers.get('authorization')!==`Bearer ${config.control.adminSecret}`||!/^[a-f0-9-]{36}$/i.test(operationId))throw new ControlError('ADMIN_REQUIRED',403);
+        const fingerprint=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(path+await request.clone().text()))),v=>v.toString(16).padStart(2,'0')).join('');
+        store=idempotentAdminStore(store,operationId,fingerprint,request.headers.get('x-admin-actor')??'owner');
+        config.control.adminOperationId=operationId;
+      }
       if (config.mode === 'control-only' && path === '/api/v1/health' && request.method === 'GET')
         return json({ status: 'control-only', productionModelEnabled: false });
-      const service = new ControlService(store, config.control, supplier, Date.now, () => diagnostic({ stage: 'candidate' }));
-      return createHandler(service, { origins: config.origins, maxBodyBytes: config.control.maxInputBytes,
+      config.control.coachPromptVersion=env.FITNESS_COACH_PROMPT_RELEASE;
+      const reports:Promise<unknown>[]=[];
+      const service = new ControlService(store, config.control, supplier, Date.now, error => {diagnostic({stage:'candidate'});if(env.ADMIN_CONSOLE_ENABLED==='true'&&env.ADMIN_DB&&error instanceof Error&&error.message==='Invalid coach response: coach language')reports.push(recordBlockedCategory(env.ADMIN_DB,'other').catch(()=>{}))});
+      if(env.APPLICATION_RETENTION_DAYS!==undefined)config.control.retentionDays=Number(env.APPLICATION_RETENTION_DAYS);
+      const response=await createHandler(service, { origins: config.origins, maxBodyBytes: config.control.maxInputBytes,
         nutritionEnabled: (await readFeatureFlags(env)).nutrition,
         ...(env.TURNSTILE_SECRET_KEY && env.TURNSTILE_SITE_KEY ? { turnstileSiteKey: env.TURNSTILE_SITE_KEY,
           verifyApplication: (proof: string) => verifyApplicationProof(proof, env.TURNSTILE_SECRET_KEY!, new URL(request.url).hostname) } : {}),
         supplierMode: 'external-transport' })(request);
+      if(env.ADMIN_CONSOLE_ENABLED==='true'&&env.ADMIN_DB)await syncFinanceMetadata(store,env.ADMIN_DB).catch(()=>{});
+      await Promise.all(reports);return response;
     } catch (error) { return error instanceof ControlError ? json({ error: error.code }, error.status) : json({ error: 'CONTROL_UNAVAILABLE' }, 503); }
   } };
 }
