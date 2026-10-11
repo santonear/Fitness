@@ -1,11 +1,12 @@
 import './exercise-detail.css';
 import { isFeatureEnabled, subscribeFeatureFlags } from '../../../application/feature-flags';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { searchExercises } from '../../../catalog/catalog-service';
+import { searchExercises, suggestExercises } from '../../../catalog/catalog-service';
 import { knownExerciseIds } from '../../../catalog/registry';
 import { EQUIPMENT, equipmentLabel } from '../../../catalog/taxonomy';
 import { Button, Chip, MorphPanel } from '../../components/common';
 import { ExerciseMedia } from '../../components/ExerciseMedia';
+import { ExerciseGuideContent } from '../../components/ExerciseGuide';
 import { RepDBAttribution } from '../../components/RepDBAttribution';
 import { useMainline } from '../../mainline/context';
 import zh from '../../../i18n/features/plan/library.zh.json';
@@ -20,13 +21,17 @@ export function ExercisesPage(){
  useEffect(()=>{const change=()=>setFavorites(read());window.addEventListener('storage',change);return()=>window.removeEventListener('storage',change);},[]);
  const triggerRef=useRef<HTMLElement|null>(null),[open,setOpen]=useState(false);
  const detail=searchExercises('',c.locale,{}).find(e=>e.id===selected);
- const rows=searchExercises(query,c.locale,{equipment:gear}).filter(e=>!favoriteOnly||favorites.includes(e.id));
+ const filters={equipment:gear?[gear]:undefined,allowedIds:favoriteOnly?favorites:undefined};
+ const rows=searchExercises(query,filters);
+ const suggestions=rows.length?[]:suggestExercises(query,filters);
+ const displayed=rows.length?rows:suggestions;
  return <main><Button onClick={()=>c.navigate('/plans')}>{c.t.back}</Button><h1>{t.title}</h1><RepDBAttribution/>
  <label>{t.search}<input type="search" value={query} onChange={e=>setQuery(e.target.value)}/></label><label>{t.equipment}<select aria-label={t.equipment} value={gear??''} onChange={e=>setGear(e.target.value as typeof gear||undefined)}><option value="">{t.all}</option>{EQUIPMENT.map(g=><option key={g} value={g}>{equipmentLabel(g,c.locale)}</option>)}</select></label>
  <label><input type="checkbox" checked={favoriteOnly} onChange={e=>setFavoriteOnly(e.target.checked)}/>{t.favorites}</label><p>{t.favoriteNote}</p>{error&&<p role="alert">{error}</p>}
- {rows.slice(0,limit).map(e=><section key={e.id}><div className="v8-row"><Chip selected={open&&selected===e.id} onClick={event=>{triggerRef.current=event.currentTarget;setSelected(e.id);setOpen(true);}}>{e.name[c.locale]}</Chip><Chip selected={favorites.includes(e.id)} aria-label={`${t.favorite} ${e.name[c.locale]}`} onClick={()=>{const previous=read(),next=previous.includes(e.id)?previous.filter(id=>id!==e.id):[...previous,e.id];try{localStorage.setItem(key,JSON.stringify(next));setFavorites(next);setError('');}catch{setError(t.storageError);}}}>{t.favorite}</Chip></div>
+ {!rows.length&&<p role="status">{suggestions.length?t.suggestions:t.noMatch}</p>}
+ {displayed.slice(0,limit).map(e=><section key={e.id}><div className="v8-row"><Chip selected={open&&selected===e.id} onClick={event=>{triggerRef.current=event.currentTarget;setSelected(e.id);setOpen(true);}}>{e.name[c.locale]}</Chip><Chip selected={favorites.includes(e.id)} aria-label={`${t.favorite} ${e.name[c.locale]}`} onClick={()=>{const previous=read(),next=previous.includes(e.id)?previous.filter(id=>id!==e.id):[...previous,e.id];try{localStorage.setItem(key,JSON.stringify(next));setFavorites(next);setError('');}catch{setError(t.storageError);}}}>{t.favorite}</Chip></div>
  </section>)}
- <MorphPanel open={open&&!!detail} onClose={()=>setOpen(false)} triggerRef={triggerRef} title={detail?.name[c.locale]??''} closeLabel={c.t.close}>{detail&&<><ol>{detail.steps[c.locale].map((text,i)=><li key={i}>{text}</li>)}</ol>{detail.cautions[c.locale].length>0&&<><h3>{t.cautions}</h3><ul>{detail.cautions[c.locale].map((text,i)=><li key={i}>{text}</li>)}</ul></>}{open&&<div className={panelEnabled ? "v8-exercise-media" : undefined}><ExerciseMedia key={detail.id} exerciseId={detail.id} exerciseName={detail.name[c.locale]} locale={c.locale}/></div>}</>}</MorphPanel>
- {rows.length>limit&&<Button onClick={()=>setLimit(limit+24)}>{t.more}</Button>}</main>;
+ <MorphPanel open={open&&!!detail} onClose={()=>setOpen(false)} triggerRef={triggerRef} title={detail?.name[c.locale]??''} closeLabel={c.t.close}>{open&&detail&&<><div className={panelEnabled ? 'v8-exercise-media' : undefined}><ExerciseGuideContent key={detail.id} id={detail.id} locale={c.locale}/></div><ExerciseMedia key={detail.id} exerciseId={detail.id} exerciseName={detail.name[c.locale]} locale={c.locale} referenceOnly/></>}</MorphPanel>
+ {displayed.length>limit&&<Button onClick={()=>setLimit(limit+24)}>{t.more}</Button>}</main>;
 }
 

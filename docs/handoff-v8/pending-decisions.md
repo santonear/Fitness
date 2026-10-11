@@ -171,3 +171,13 @@ RepDB官方证据：[数据许可证](https://github.com/RepDB/exercise-dataset/
 - 理由：避免哑铃/壶铃误配；RepDB License第5条不允许生成参考，因此没有向生成器提供RepDB图片。自阻力划船只表示准备姿势，未找到完全匹配的权威网络来源，不声明专业审核。
 - 涉及：src/catalog/exercise-visual.ts、exercise-guide.ts、ExerciseMedia/ExerciseGuide/RepDBMedia、public/media两PNG及NOTICE。
 - 验证：类型检查、23项针对性单元、375/1280真实浏览器图片加载通过。桌面浏览器不等于真机。
+
+### PR #52 审计缺口补齐（2026-10-11，同日 V8.0.8）
+| 情况 | 决定 | 理由 | 涉及文件 |
+|---|---|---|---|
+| 零结果建议只有数据接口 | 手动训练与动作库展示同筛选内的相近结果；收藏条件也保留 | 不悄悄放宽用户筛选 | ManualPage、ExercisesPage |
+| 手动搭配需要AI但不能替换计划 | 复用ONBOARD_PLAN同意面板；候选经导入、选单、开始后只保存训练快照；无资格或失败提供本地候选 | 沿用外发和用户确认边界，保留原计划 | CoachPanel、ManualPage、context、v8-workflow |
+| 已确认成人但尚未保存计划 | 新增ManualSelection确认快照；已有未成年档案仍否决，开始时再校验数据版本和恢复代数 | 不要求先创建计划才能手动训练，不推断年龄 | v8-workflow、ManualPage |
+| 支撑动作注意标签过粗 | 区分前臂与手掌支撑；提示及排序使用同一标签；不当作医学适用判断 | 避免漏提示和一概标注手腕 | exercise-guide、catalog-service |
+| 详情遗漏部分指导、旧视频参考需保留 | 共享完整Guide内容；动作库保留原可选视频来源且不重复示意图 | 保留署名与已有功能 | ExerciseGuide、ExerciseMedia、ExercisesPage |
+| 回顾候选修改动作后时长过期 | 仅新候选重算实际时长及短版名称；用户原时长和历史不改 | 显示与候选内容一致 | review/suggest、PlanPage、ReviewPage |

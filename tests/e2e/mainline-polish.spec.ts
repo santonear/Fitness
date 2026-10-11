@@ -27,6 +27,18 @@ test('RepDB guide retains both poses and visible source link',async({page})=>{
  for(const image of await dialog.locator('.repdb-media img').all())await expect.poll(()=>image.evaluate((e:HTMLImageElement)=>e.complete&&e.naturalWidth>0)).toBe(true);
  await shot(page,'repdb-guide');
 });
+test('manual near matches and library share complete exercise guidance',async({page})=>{
+ await page.goto('/manual');await page.getByRole('searchbox').fill('俯误错');
+ await expect(page.getByRole('heading',{name:'相近动作（保留当前筛选）'})).toBeVisible();
+ const card=page.locator('.manual-card').filter({has:page.getByRole('button',{name:'俯卧撑',exact:true})}).first();
+ await card.scrollIntoViewIfNeeded();await shot(page,'manual-near-matches');
+ await card.getByRole('button',{name:'动作提示',exact:true}).click();
+ for(const name of ['动作要点','完整步骤','常见错误','注意事项'])await expect(page.getByRole('dialog').getByRole('heading',{name,exact:true})).toBeVisible();
+ await shot(page,'manual-full-guide');await page.getByRole('dialog').getByRole('button',{name:'关闭',exact:true}).click();
+ await page.goto('/exercises');await page.getByRole('searchbox').fill('俯误错');
+ await expect(page.getByRole('status')).toContainText('相近动作');await page.getByRole('button',{name:'俯卧撑',exact:true}).first().click();
+ await expect(page.getByRole('dialog').getByRole('heading',{name:'常见错误',exact:true})).toBeVisible();await shot(page,'library-full-guide');
+});
 test('fresh mainline: duration, local coach, exercise guide, bottom pause, finish and review',async({page})=>{
  let modelCalls=0;await page.route('**/api/v1/plans/generate',async r=>{modelCalls++;await r.abort();});
  await onboard(page);await expect(page.getByText('基础计划',{exact:true})).toBeVisible();
