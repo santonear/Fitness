@@ -1,12 +1,14 @@
 import { test, expect, type Page } from '@playwright/test';
 
 let aiCalls=0;
-test.beforeEach(async({page})=>{aiCalls=0;await page.route('**/api/v1/plans/generate',route=>{aiCalls++;return route.abort();});});
+test.beforeEach(async({page})=>{aiCalls=0;await page.route('**/api/v1/features',route=>route.fulfill({json:{version:1,flags:{planLifecycle:true},expiresAt:Date.now()+60000}}));await page.route('**/api/v1/plans/generate',route=>{aiCalls++;return route.abort();});});
 test.afterEach(()=>expect(aiCalls).toBe(0));
 
-async function draft(page:Page){
+async function draft(page:Page,goal='保持力量'){
  await page.goto('/onboarding');
- for(const answer of ['保持力量','每周3次，每次30分钟','在家，只有瑜伽垫']){await page.getByLabel('你的回答').fill(answer);await page.getByRole('button',{name:'继续',exact:true}).click();}
+ await expect(page.getByRole('heading').first()).toBeVisible();
+ for(let step=0;step<3&&await page.getByRole('button',{name:'上一步',exact:true}).count();step++)await page.getByRole('button',{name:'上一步',exact:true}).click();
+ for(const answer of [goal,'每周3次，每次30分钟','在家，只有瑜伽垫']){await page.getByLabel('你的回答').fill(answer);await page.getByRole('button',{name:'继续',exact:true}).click();}
  await page.getByLabel('我已年满 18 岁',{exact:false}).check();
  await page.getByRole('button',{name:'生成我的第一版计划',exact:true}).click();
  await expect(page.getByRole('button',{name:'就用这份计划',exact:true})).toBeVisible();
@@ -47,14 +49,21 @@ test('deleted plans leave workout facts and weekly totals intact and restore fro
  await page.goto('/review');await expect(page.locator('.v8-facts dd')).toHaveText(totals);
 });
 
-test('previous plans remain readable while individual version detail has no delete action',async({page})=>{
- await createPlan(page);const before=await records(page);await removeCurrentPlan(page);await page.goto('/plans');
- await expect(page.getByRole('heading',{name:'以前的计划',exact:true})).toBeVisible();
+test('previous plans can be read and deleted, while individual version detail has no delete action',async({page})=>{
+ await createPlan(page);const before=await records(page);
+ await draft(page,'第二份训练计划');await page.getByRole('button',{name:'就用这份计划',exact:true}).click();await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
+ await page.goto('/plans');await expect(page.getByRole('heading',{name:'以前的计划',exact:true})).toBeVisible();
  await page.getByRole('button',{name:'查看',exact:true}).first().click();await expect(page.getByText('保持力量',{exact:true})).toBeVisible();
- await page.goto(`/plans?version=${before.versions[0].id}`);
- await expect(page.getByRole('heading',{name:'我的计划',exact:true})).toBeVisible();
+ await page.goto(`/plans?version=${before.versions[0].id}`);await expect(page.getByRole('heading',{name:'我的计划',exact:true})).toBeVisible();
  await expect(page.getByRole('button',{name:'删除计划',exact:true})).toHaveCount(0);await expect(page.getByRole('button',{name:'不再使用这份计划',exact:true})).toHaveCount(0);
- expect((await records(page)).versions).toEqual(before.versions);
+ await page.goto('/plans');await page.getByRole('button',{name:'删除计划',exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:'确认删除',exact:true}).click();
+ await expect(page.getByText('已删除计划',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'查看',exact:true})).toHaveCount(0);
+ const after=await records(page);expect(after.plans.find((plan:any)=>plan.id===before.plans[0].id).deletedAt).toEqual(expect.any(String));expect(after.versions.find((version:any)=>version.id===before.versions[0].id)).toEqual(before.versions[0]);expect(after.state.currentPlanId).not.toBe(before.plans[0].id);
+});
+
+test('deleting a plan without workout records keeps the home empty after reload',async({page})=>{
+ await createPlan(page);expect((await records(page)).workouts).toHaveLength(0);await removeCurrentPlan(page);await page.goto('/');await page.reload();
+ await expect(page).toHaveURL(/\/$/);await expect(page.getByRole('button',{name:'重新制定计划',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'手动训练',exact:true})).toBeVisible();expect((await records(page)).workouts).toHaveLength(0);
 });
 
 test('undo expires after ten seconds without purging the recoverable plan',async({page})=>{

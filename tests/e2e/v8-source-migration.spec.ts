@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 const source = JSON.parse(readFileSync(new URL('../fixtures/legacy-backups/followup-preview-v9.json', import.meta.url), 'utf8'));
 
-for (const fail of [false, true]) test(`database 9 to 10 ${fail ? 'failure rolls back every table' : 'preserves all old facts and repeated opening is idempotent'}`, async ({ page }) => {
+for (const fail of [false, true]) test(`database 9 to current ${fail ? 'failure rolls back every table' : 'preserves all old facts and repeated opening is idempotent'}`, async ({ page }) => {
   await page.goto('/tests/e2e/helpers/capacity-entry.html');
   const result = await page.evaluate(async ({ source, fail }) => {
     const load = (path: string) => import(/* @vite-ignore */ path);
@@ -32,7 +32,7 @@ for (const fail of [false, true]) test(`database 9 to 10 ${fail ? 'failure rolls
       return { rejected, unchanged: facts === await snapshot(current, true), idempotent: after === await snapshot(current), version: current.verno, metadata: (await current.metadata.toCollection().first()).schemaVersion, noInferredSource: (await current.v8PlanVersions.toArray()).every((version: any) => !('source' in version)) };
     } finally { current.close(); await current.delete(); }
   }, { source, fail });
-  expect(result).toEqual(fail ? { rejected: true, unchanged: true, version: 9, metadata: 9 } : { rejected: false, unchanged: true, idempotent: true, version: 10, metadata: 10, noInferredSource: true });
+  expect(result).toEqual(fail ? { rejected: true, unchanged: true, version: 9, metadata: 9 } : { rejected: false, unchanged: true, idempotent: true, version: 11, metadata: 11, noInferredSource: true });
 });
 
 test('optional local and AI sources round-trip without rewriting old records; failed restore is atomic', async ({ page }) => {
@@ -63,5 +63,5 @@ test('optional local and AI sources round-trip without rewriting old records; fa
       return { results, failed, rolledBack, invalidRejected, invalidUnchanged: before === await snapshot() };
     } finally { db.close(); await db.delete(); }
   }, source);
-  expect(result).toEqual({ results: [null,'local','ai'].map(origin => ({ origin, same: true, version: 8, metadata: 10 })), failed: true, rolledBack: true, invalidRejected: true, invalidUnchanged: true });
+  expect(result).toEqual({ results: [null,'local','ai'].map(origin => ({ origin, same: true, version: 9, metadata: 11 })), failed: true, rolledBack: true, invalidRejected: true, invalidUnchanged: true });
 });
