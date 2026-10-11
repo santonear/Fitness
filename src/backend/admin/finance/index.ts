@@ -12,14 +12,14 @@ export async function evaluateFinanceTodos(context:AdminContext) {
   const state=await new FinanceStore(context.env.ADMIN_DB).read(), config=state.versions.at(-1)?.config??environmentDefaults(context.env);
   const control=await new D1ControlStore(context.env.CONTROL_DB).read();
   const period=new Date(context.now).toISOString().slice(0,7),budget=control.budgets[period];
-  return financeTodos(budget?.spent??0,budget?.reserved??0,config.monthlyBudgetFen,period);
+  return financeTodos(budget?.spent??0,budget?.reserved??0,config.monthlyBudgetFen,period).filter(t=>t.level!=='info'||!state.dismissedBudgetMonths?.includes(period));
 }
-export async function handleFinance(request:Request,context:FinanceContext):Promise<Response|undefined> {
+async function handleFinanceInternal(request:Request,context:FinanceContext):Promise<Response|undefined> {
   const url=new URL(request.url), prefix='/api/v1/management/console/finance';
   if(!url.pathname.startsWith(prefix+'/'))return undefined;
   const route=url.pathname.slice(prefix.length+1), db=requireAdminDb(context), store=new FinanceStore(db);
   if(request.method==='GET') {
-    if(route==='config') {const s=await store.read();return adminJson({current:s.versions.at(-1)??{version:0,config:environmentDefaults(context.env)},history:s.versions});}
+    if(route==='config') {const s=await store.read();return adminJson({current:s.versions.at(-1)??{version:0,config:environmentDefaults(context.env)},history:s.versions,defaults:environmentDefaults(context.env)});}
     if(route==='announcement')return adminJson({announcement:(await store.read()).announcement});
     if(['ledger','export','costs'].includes(route)) {
       const month=monthSchema.parse(url.searchParams.get('month')??new Date(context.now).toISOString().slice(0,7));
@@ -42,7 +42,7 @@ export async function handleFinance(request:Request,context:FinanceContext):Prom
     await context.settle(matches[0].subjectId,matches[0].requestId,input.actualCost);
     await context.audit('finance.settle',input.requestShortId,'completed');return adminJson({settled:true});
   }
-  if(!['config','announcement'].includes(route))return undefined;
+  if(!['config','announcement','dismiss-budget'].includes(route))return undefined;
   if(route==='config')requireFreshContext(context);
   const receiptKey=`${context.actor}:${context.requestId}`, fingerprint=JSON.stringify({route,body});
   const result=await store.mutate(s=>{
@@ -54,6 +54,9 @@ export async function handleFinance(request:Request,context:FinanceContext):Prom
       const config=input.config??(input.restoreVersion===0?environmentDefaults(context.env):s.versions.find(v=>v.version===input.restoreVersion)?.config);
       if(!config)throw new AdminError('CONFIG_VERSION_NOT_FOUND',404);
       s.versions.push({version:input.expectedVersion+1,config:runtimeSchema.parse(config),actor:context.actor,at:context.now,requestId:context.requestId});
+    }else if(route==='dismiss-budget'){
+      const input=z.strictObject({month:monthSchema}).parse(body);
+      s.dismissedBudgetMonths=[...new Set([...(s.dismissedBudgetMonths??[]),input.month])];
     }else{
       const input=z.strictObject({announcement:z.unknown().nullable()}).parse(body);
       s.announcement=input.announcement===null?null:validateAnnouncement(input.announcement);
@@ -62,3 +65,8 @@ export async function handleFinance(request:Request,context:FinanceContext):Prom
   });
   await context.audit(`finance.${route}`,route,'completed');return adminJson(result);
 }
+
+export async function handleFinance(request:Request,context:FinanceContext):Promise<Response|undefined> {
+  try { return await handleFinanceInternal(request,context); } catch(error) { if(error instanceof z.ZodError) throw new AdminError('INVALID_FINANCE_INPUT',400); throw error; }
+}
+

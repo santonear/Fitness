@@ -10,7 +10,7 @@ export async function recordFinanceEvent(db: AdminDatabase, input: z.infer<typeo
   if (!result.success) throw new Error('FINANCE_EVENT_UNAVAILABLE');
 }
 export async function dailyCosts(db:AdminDatabase, month:string) {
-  return (await db.prepare('SELECT day,task,COUNT(*) AS calls,SUM(CASE WHEN status=\'settled\' THEN cost_fen ELSE 0 END) AS settledFen,SUM(CASE WHEN status=\'pending\' THEN reserved_fen ELSE 0 END) AS pendingFen,SUM(CASE WHEN status=\'fallback\' THEN 1 ELSE 0 END) AS fallbacks,MIN(at) AS firstAt,MAX(at) AS lastAt FROM admin_finance_events WHERE day LIKE ? GROUP BY day,task ORDER BY day,task').bind(`${month}-%`).all()).results;
+  return (await db.prepare('SELECT day,task,COUNT(*) AS calls,SUM(CASE WHEN status=\'settled\' THEN cost_fen ELSE 0 END) AS settledFen,SUM(CASE WHEN status=\'pending\' THEN reserved_fen ELSE 0 END) AS pendingFen,SUM(CASE WHEN status=\'fallback\' THEN 1 ELSE 0 END) AS fallbacks,MIN(CASE WHEN status=\'fallback\' THEN at END) AS firstAt,MAX(CASE WHEN status=\'fallback\' THEN at END) AS lastAt FROM admin_finance_events WHERE day LIKE ? GROUP BY day,task ORDER BY day,task').bind(`${month}-%`).all()).results;
 }
 export function ledgerProjection(state:ControlState, month:string) {
   const entries=Object.values(state.requests).filter(r=>r.period===month);
@@ -26,3 +26,4 @@ export function ledgerCsv(value:ReturnType<typeof ledgerProjection>) {
   const rows=[['month','subject','request','task','status','reserved_fen','settled_fen'],...value.rows.map(r=>[value.month,r.subjectShortId,r.requestShortId,r.operation,r.status,r.reservedFen,r.settledFen]),[value.month,'','','','unattributed',0,value.unattributedFen]];
   return '\uFEFF'+rows.map(r=>r.map(v=>'"'+String(v).replace(/^[=+@\-]/,"'$&").replaceAll('"','""')+'"').join(',')).join('\r\n');
 }
+

@@ -8,6 +8,7 @@ const databases:DatabaseSync[]=[];
 afterEach(()=>databases.splice(0).forEach(d=>d.close()));
 function setup(){
  const sql=new DatabaseSync(':memory:');databases.push(sql);sql.exec(readFileSync('migrations/admin/3_finance.sql','utf8'));
+ sql.exec(readFileSync('migrations/admin/3_finance.sql','utf8'));
  const db:AdminDatabase={prepare(query:string){let values:unknown[]=[];const stmt:AdminStatement={bind(...v){values=v;return stmt},async first<T>(){return sql.prepare(query).get(...values as never[]) as T??null},async all<T>(){return {results:sql.prepare(query).all(...values as never[]) as T[]}},async run(){const r=sql.prepare(query).run(...values as never[]);return {success:true,meta:{changes:Number(r.changes)}}}};return stmt},async batch(){throw new Error('unused')}};
  const env={ADMIN_DB:db,CONTROL_POLICY:JSON.stringify({budgetLimit:3000,maximumRequestCost:300,requestBounds:{generate:300,understand:300},quotas:{generate:3,understand:3},maxConcurrent:1,planningBudgetDisabled:true,allowUncertainPlanningPending:true})};
  const context={env,actor:'admin@example.test',now:Date.UTC(2026,9,11),fresh:true,requestId:'request-1',audit:async()=>{}};
@@ -28,6 +29,12 @@ it('config CAS, repeat idempotency, immutable history and fresh Access',async()=
 it('runtime snapshots preserve approved unlimited admission and old requests',async()=>{
  const {env,context,post}=setup();const before=await resolveRuntimeEnv(env);await handleFinance(post('config',{expectedVersion:0,config}),context);
  const after=await resolveRuntimeEnv(env),p=JSON.parse(after.CONTROL_POLICY!);expect(p.planningBudgetDisabled).toBe(true);expect(p.allowUncertainPlanningPending).toBe(true);expect(p.budgetLimit).toBe(5000);expect(JSON.parse(before.CONTROL_POLICY!).budgetLimit).toBe(3000);
+});
+it('migration is repeatable and stale concurrent writers cannot partially append versions',async()=>{
+ const {db,context,post}=setup();
+ const results=await Promise.allSettled([handleFinance(post('config',{expectedVersion:0,config}),context),handleFinance(post('config',{expectedVersion:0,config:{...config,maxConcurrent:4}}),{...context,requestId:'concurrent'})]);
+ expect(results.filter(r=>r.status==='fulfilled')).toHaveLength(1);
+ const state=await new FinanceStore(db).read();expect(state.versions).toHaveLength(1);expect(Object.keys(state.receipts)).toHaveLength(1);
 });
 it('announcement enforces tone, single line and seven-day limit; expires',async()=>{
  const {env,context,post}=setup(),a={text:'芽芽暂时休息，训练和记录不受影响。',start:context.now,end:context.now+1000};
