@@ -12,7 +12,7 @@ export async function releaseOverview(context: AdminContext<ReleasesEnv>) {
     db.prepare('SELECT request_id,environment,kind,object_id,before_value,after_value,actor,created_at FROM admin_release_history WHERE environment=? ORDER BY created_at DESC LIMIT 100').bind(environment).all(),
     db.prepare('SELECT environment,task,version,changed_by,changed_at FROM admin_prompt_selection WHERE environment=?').bind(environment).all(),
     db.prepare('SELECT environment,current_id,previous_id,changed_at,operation_id FROM admin_release_state WHERE environment=?').bind(environment).all(),
-    db.prepare('SELECT environment,release_id,check_id,status,checked_at FROM admin_release_smoke WHERE environment=?').bind(environment).all(),
+    db.prepare('SELECT s.environment,s.release_id,s.check_id,s.status,s.checked_at,r.reason,r.http_status FROM admin_release_smoke s LEFT JOIN admin_release_smoke_reason r ON r.environment=s.environment AND r.release_id=s.release_id AND r.check_id=s.check_id WHERE s.environment=?').bind(environment).all(),
     readFeatureFlags(context.env),
   ]);
   return { features: featureNames.map(name => ({ name, sensitive: sensitiveFeatures.has(name), states: (['preview','production'] as const).map(environment => {

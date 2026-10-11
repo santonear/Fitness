@@ -25,3 +25,10 @@ for(const width of [320,390,1024,1440])test(`layout ${width} stays within viewpo
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  if(width===390||width===1440)await page.screenshot({path:testInfo.outputPath(`releases-${width}.png`),fullPage:true});
 });
+
+
+test('smoke reasons distinguish Access login blocks from service faults and legacy checks',async({page})=>{
+ const base=fixture();const smoke=[{check_id:'application',status:'unavailable',reason:'access_login_required',http_status:302},{check_id:'features',status:'failed',reason:'http_error',http_status:503},{check_id:'managementAccess',status:'passed',reason:'access_protected',http_status:307}].map(row=>({...row,environment:'production',release_id:'release-current',checked_at:'2026-10-12T00:00:00Z'}));
+ await page.route('**/api/v1/management/console/releases',route=>route.fulfill({json:{...base,smoke}}));await page.goto('/harness');
+ await expect(page.getByText(/应用页面：登录拦截，内容未验证/)).toBeVisible();await expect(page.getByText(/功能配置：需要处理.*服务返回错误响应.*503/)).toBeVisible();await expect(page.getByText(/管理入口保护：通过.*Access 登录保护已生效.*307/)).toBeVisible();
+});

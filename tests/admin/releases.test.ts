@@ -14,7 +14,7 @@ import {readFeatureFlags} from '../../src/backend/feature-config';
 const connections:DatabaseSync[]=[];
 function fixture() {
   const sqlite=new DatabaseSync(':memory:');connections.push(sqlite);
-  const migration=readFileSync(new URL('../../migrations/admin/2_releases.sql',import.meta.url),'utf8');sqlite.exec(migration);sqlite.exec(migration);
+  const migration=readFileSync(new URL('../../migrations/admin/2_releases.sql',import.meta.url),'utf8');sqlite.exec(migration);sqlite.exec(migration);sqlite.exec(readFileSync(new URL('../../migrations/admin/2_smoke_reason.sql',import.meta.url),'utf8'));
   const prepare=(sql:string,values:unknown[]=[]):AdminStatement=>({bind:(...next)=>prepare(sql,next),first:async<T>()=>(sqlite.prepare(sql).get(...values as never[])??null) as T|null,all:async<T>()=>({results:sqlite.prepare(sql).all(...values as never[]) as T[]}),run:async()=>({success:true,meta:{changes:Number(sqlite.prepare(sql).run(...values as never[]).changes)}})});
   const db:AdminDatabase={prepare,batch:async statements=>{sqlite.exec('BEGIN');try{const output=[];for(const statement of statements)output.push(await statement.run());sqlite.exec('COMMIT');return output;}catch(error){sqlite.exec('ROLLBACK');throw error;}}};
   const context:AdminContext<ReleasesEnv>={env:{ADMIN_DB:db,ADMIN_ENVIRONMENT:'preview'},actor:'admin@example.test',now:Date.parse('2026-10-11T10:00:00Z'),fresh:true,requestId:'request-00001',audit:vi.fn(async()=>{})};
@@ -157,5 +157,29 @@ it('uses runtime metadata for preview current only and treats login redirects as
  const {context}=fixture();context.env.ADMIN_RELEASE_REGISTRY=JSON.stringify([{environment:'preview',dataVersion:11,current,previous},{environment:'production',dataVersion:11,current,previous}]);context.env.CF_VERSION_METADATA={id:'33333333-3333-4333-8333-333333333333'};
  const entries=registeredReleases(context.env);expect(entries[0].current.deploymentId).toBe(context.env.CF_VERSION_METADATA.id);expect(entries[0].previous!.deploymentId).toBe(previous.deploymentId);expect(entries[1].current.deploymentId).toBe(current.deploymentId);
  context.env.ADMIN_ENVIRONMENT='production';expect(registeredReleases(context.env)[0].current.deploymentId).toBe(current.deploymentId);
- const checks=await runReleaseSmoke(context,'preview',current,async()=>new Response(null,{status:302,headers:{Location:'https://login.example.test'}}));expect(checks.map(c=>[c.check,c.status])).toEqual([['application','failed'],['features','failed'],['managementAccess','passed']]);
+ const checks=await runReleaseSmoke(context,'preview',current,async()=>new Response(null,{status:302,headers:{Location:'https://login.example.test'}}));expect(checks.map(c=>[c.check,c.status])).toEqual([['application','failed'],['features','failed'],['managementAccess','failed']]);
+});
+
+
+it('recognizes trusted Access redirects without credentials and persists per-check causes',async()=>{
+ const {context,sqlite}=fixture();context.env.ADMIN_ACCESS_ISSUER='https://team.cloudflareaccess.com';
+ const requests:Request[]=[];const checks=await runReleaseSmoke(context,'preview',current,async input=>{requests.push(input as Request);return new Response(null,{status:302,headers:{Location:'https://team.cloudflareaccess.com/cdn-cgi/access/login/preview.example.test?token=never-persist'}})});
+ expect(checks.map(r=>[r.status,r.reason])).toEqual([['unavailable','access_login_required'],['unavailable','access_login_required'],['passed','access_protected']]);
+ expect(requests.every(r=>r.redirect==='manual'&&r.credentials==='omit'&&!r.headers.has('Cookie')&&!r.headers.has('Authorization'))).toBe(true);
+ const persisted=sqlite.prepare('SELECT * FROM admin_release_smoke_reason').all();expect(JSON.stringify(persisted)).not.toContain('never-persist');expect(persisted).toHaveLength(3);
+ const fault=await runReleaseSmoke(context,'preview',current,async()=>new Response(null,{status:503}));expect(fault.every(r=>r.status==='failed'&&r.httpStatus===503)).toBe(true);
+ const unavailable=await runReleaseSmoke(context,'preview',current,async()=>{throw new TypeError('sensitive detail')});expect(unavailable.every(r=>r.reason==='transport_unavailable')).toBe(true);expect(JSON.stringify(unavailable)).not.toContain('sensitive');
+});
+
+
+it('delegates preview probes to the private allowlisted adapter and strips redirect queries',async()=>{
+ const {context,db}=fixture();const registry=JSON.stringify([{environment:'preview',dataVersion:11,current,previous}]);context.env.ADMIN_RELEASE_REGISTRY=registry;context.env.ADMIN_ACCESS_ISSUER='https://team.cloudflareaccess.com';
+ const adapter=createPreviewSimulationAdapter(),settings={ADMIN_ENVIRONMENT:'preview',ADMIN_SIMULATION_DB:db,ADMIN_RELEASE_REGISTRY:registry};
+ const outbound=vi.fn(async(request:Request)=>{expect(request.credentials).toBe('omit');expect(request.redirect).toBe('manual');expect(request.headers.has('Cookie')).toBe(false);return new Response(null,{status:307,headers:{Location:'https://team.cloudflareaccess.com/cdn-cgi/access/login/preview.example.test?token=secret'}})});vi.stubGlobal('fetch',outbound);
+ context.env.ADMIN_PREVIEW_SIMULATION={fetch:request=>adapter.fetch(request,settings)};const direct=vi.fn(async()=>{throw new Error('SELF_FETCH_FORBIDDEN')});
+ const checks=await runReleaseSmoke(context,'preview',current,direct);expect(direct).not.toHaveBeenCalled();expect(checks[2]).toMatchObject({status:'passed',reason:'access_protected',httpStatus:307});expect(checks[0].reason).toBe('access_login_required');
+ const request=(url:string)=>new Request('https://private/probe',{method:'POST',body:JSON.stringify({url})});
+ expect((await adapter.fetch(request('https://evil.example/'),settings)).status).toBe(400);expect((await adapter.fetch(request(current.smokeOrigin+'/api/admin'),settings)).status).toBe(400);expect((await adapter.fetch(request(current.smokeOrigin+'/'),{...settings,ADMIN_ENVIRONMENT:'production'})).status).toBe(503);
+ const response=await adapter.fetch(request(current.smokeOrigin+'/'),settings);expect(await response.text()).not.toContain('secret');expect(outbound).toHaveBeenCalledTimes(4);
+ context.env.ADMIN_ENVIRONMENT='production';await runReleaseSmoke(context,'production',current,direct);expect(direct).toHaveBeenCalledTimes(3);
 });

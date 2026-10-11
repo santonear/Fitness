@@ -12,7 +12,7 @@ export const flagChangeSchema = z.object({ name: z.enum(featureNames), environme
 export const promptChangeSchema = z.object({ task: z.enum(promptTasks), environment: environmentSchema, version: z.enum(registeredPromptVersions), confirmed: z.literal(true) }).strict();
 export const rollbackSchema = z.object({ environment: environmentSchema, expectedCurrent: z.string().regex(/^[a-zA-Z0-9._-]{1,80}$/), target: z.string().regex(/^[a-zA-Z0-9._-]{1,80}$/), confirmed: z.literal(true) }).strict();
 export const smokeChecks = ['application', 'features', 'managementAccess'] as const;
-export type SmokeCheck = { check: typeof smokeChecks[number]; status: 'passed' | 'failed' | 'unavailable'; checkedAt: string };
+export type SmokeCheck = { check: typeof smokeChecks[number]; status: 'passed' | 'failed' | 'unavailable'; checkedAt: string; reason?:string; httpStatus?:number };
 export interface ReleaseRegistration { id: string; deploymentId: string; publishedAt: string; compatibleDataVersion: number; smokeOrigin: string }
 export interface ReleaseRegistry { environment: ReleaseEnvironment; dataVersion: number; current: ReleaseRegistration; previous?: ReleaseRegistration }
 export interface FlagRow { name: FeatureName; environment: ReleaseEnvironment; enabled: number; pending: number; changed_by: string; changed_at: string }

@@ -7,6 +7,16 @@ export function createPreviewSimulationAdapter(){return {async fetch(request:Req
  if(env.ADMIN_ENVIRONMENT!=='preview'||!env.ADMIN_SIMULATION_DB)return adminJson({error:'PREVIEW_SIMULATION_UNAVAILABLE'},503);
  const registry=registeredReleases({ADMIN_RELEASE_REGISTRY:env.ADMIN_RELEASE_REGISTRY}).find(item=>item.environment==='preview');
  if(!registry?.previous)return adminJson({error:'PREVIEW_SIMULATION_UNREGISTERED'},503);
+ if(request.method==='POST'&&new URL(request.url).pathname==='/probe'){
+  const input=z.object({url:z.string().url()}).strict().safeParse(await request.json().catch(()=>null));if(!input.success)return adminJson({error:'INVALID_PROBE'},400);
+  const target=new URL(input.data.url),allowed=[registry.current.smokeOrigin,registry.previous.smokeOrigin];
+  if(!allowed.includes(target.origin)||target.username||target.password||target.search||target.hash||!['/','/api/v1/features','/api/v1/management/console/releases'].includes(target.pathname))return adminJson({error:'UNREGISTERED_PROBE'},400);
+  try{const response=await fetch(new Request(target,{redirect:'manual',credentials:'omit',signal:AbortSignal.timeout(10000),headers:{'Cache-Control':'no-cache'}}));let location:string|undefined;
+   const raw=response.headers.get('Location');if(raw){try{const next=new URL(raw,target);if(next.protocol==='https:'&&!next.username&&!next.password)location=next.origin+next.pathname;}catch{}}
+   let featuresValid=false;if(target.pathname==='/api/v1/features'&&response.ok){try{const value=await response.json() as {flags?:unknown};featuresValid=!!value?.flags&&typeof value.flags==='object'&&!Array.isArray(value.flags);}catch{}}
+   return adminJson({status:response.status,...(location?{location}:{}),featuresValid});
+  }catch{return adminJson({error:'PROBE_TRANSPORT_UNAVAILABLE'},503);}
+ }
  const db=env.ADMIN_SIMULATION_DB;
  if(request.method==='GET'){
   const row=await db.prepare('SELECT deployment_id,changed_at,request_id FROM admin_preview_simulation WHERE id=1').first<{deployment_id:string;changed_at:string;request_id:string}>();

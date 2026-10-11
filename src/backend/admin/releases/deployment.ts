@@ -20,19 +20,42 @@ export async function checkCurrentRelease(context:AdminContext<ReleasesEnv>,envi
   await db.prepare('INSERT OR IGNORE INTO admin_release_state(environment,current_id,previous_id,changed_at,operation_id) VALUES(?,?,?,?,NULL)').bind(environment,entry.current.id,entry.previous?.id??null,entry.current.publishedAt).run();
   return runReleaseSmoke(context,environment,target);
 }
+/** Only recognized Access login destinations count as protected redirects. Never follow them. */
+export function isAccessLoginRedirect(response:Response,origin:string,issuer?:string){
+ if(![301,302,303,307,308].includes(response.status))return false;
+ const location=response.headers.get('Location');if(!location)return false;
+ try{const url=new URL(location,origin);if(url.protocol!=='https:'||url.username||url.password)return false;
+ const trusted=issuer?url.origin===new URL(issuer).origin:/^[a-z0-9-]+\.cloudflareaccess\.com$/.test(url.hostname);
+ return (trusted||url.origin===origin)&&/^\/cdn-cgi\/access\/(?:login|authorize)(?:\/|$)/.test(url.pathname);
+ }catch{return false;}
+}
 export async function runReleaseSmoke(context:AdminContext<ReleasesEnv>, environment:ReleaseEnvironment, target:ReleaseRegistration, transport:typeof fetch=fetch) {
-  const paths={application:'/',features:'/api/v1/features',managementAccess:'/api/v1/management/console/releases'};
-  const results:SmokeCheck[]=await Promise.all(smokeChecks.map(async check=>{
-    let status:SmokeCheck['status']='unavailable';
-    try {
-      const response=await transport(new Request(target.smokeOrigin+paths[check],{redirect:'manual',signal:AbortSignal.timeout(10000),headers:{'Cache-Control':'no-cache'}}));
-      status=(check==='managementAccess' ? [302,401,403].includes(response.status) : response.ok) ? 'passed':'failed';
-      if(check==='features' && response.ok) {const body:unknown=await response.json();if(!body||typeof body!=='object'||!('flags' in body))status='failed';}
-    }catch{ /* Transport errors are unavailable, never success; response bodies are not persisted. */ }
-    return {check,status,checkedAt:new Date(context.now).toISOString()};
-  }));
-  await requireAdminDb(context).batch(results.map(item=>requireAdminDb(context).prepare('INSERT INTO admin_release_smoke(environment,release_id,check_id,status,checked_at) VALUES(?,?,?,?,?) ON CONFLICT(environment,release_id,check_id) DO UPDATE SET status=excluded.status,checked_at=excluded.checked_at').bind(environment,target.id,item.check,item.status,item.checkedAt)));
-  return results;
+ const paths={application:'/',features:'/api/v1/features',managementAccess:'/api/v1/management/console/releases'};
+ // Preview probes run in the independent private worker to avoid self-fetch restrictions.
+ const probe=async(request:Request)=>{
+  if(context.env.ADMIN_ENVIRONMENT!=='preview'||!context.env.ADMIN_PREVIEW_SIMULATION)return transport(request);
+  const result=await context.env.ADMIN_PREVIEW_SIMULATION.fetch(new Request('https://preview-simulation/probe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:request.url})}));
+  if(!result.ok)throw new Error('PROBE_UNAVAILABLE');
+  const value=z.object({status:z.number().int().min(200).max(599),location:z.string().url().optional(),featuresValid:z.boolean()}).strict().parse(await result.json());
+  return new Response([204,205,304].includes(value.status)?null:JSON.stringify(value.featuresValid?{flags:{}}:null),{status:value.status,headers:value.location?{Location:value.location}:{}});
+ };
+
+ const results:SmokeCheck[]=await Promise.all(smokeChecks.map(async check=>{
+  let status:SmokeCheck['status']='unavailable',reason='transport_unavailable';let httpStatus:number|undefined;
+  try{
+   const response=await probe(new Request(target.smokeOrigin+paths[check],{redirect:'manual',credentials:'omit',signal:AbortSignal.timeout(10000),headers:{'Cache-Control':'no-cache'}}));httpStatus=response.status;
+   if(isAccessLoginRedirect(response,target.smokeOrigin,context.env.ADMIN_ACCESS_ISSUER)){status=check==='managementAccess'?'passed':'unavailable';reason=check==='managementAccess'?'access_protected':'access_login_required';}
+   else if(check==='managementAccess'){status=[401,403].includes(response.status)?'passed':'failed';reason=status==='passed'?'anonymous_denied':response.ok?'anonymous_access_allowed':'unexpected_response';}
+   else if(!response.ok){status='failed';reason=response.status>=300&&response.status<400?'unexpected_redirect':'http_error';}
+   else if(check==='features'){let body:unknown;try{body=await response.json()}catch{}const flags=body&&typeof body==='object'&&!Array.isArray(body)&&'flags' in body?(body as {flags:unknown}).flags:undefined;status=flags&&typeof flags==='object'&&!Array.isArray(flags)?'passed':'failed';reason=status==='passed'?'content_available':'invalid_features';}
+   else{status='passed';reason='content_available';}
+  }catch{ /* No credentials, response body, Location or token is persisted. */ }
+  return {check,status,reason,...(httpStatus===undefined?{}:{httpStatus}),checkedAt:new Date(context.now).toISOString()};
+ }));
+ const db=requireAdminDb(context);await db.batch(results.flatMap(item=>[
+  db.prepare('INSERT INTO admin_release_smoke(environment,release_id,check_id,status,checked_at) VALUES(?,?,?,?,?) ON CONFLICT(environment,release_id,check_id) DO UPDATE SET status=excluded.status,checked_at=excluded.checked_at').bind(environment,target.id,item.check,item.status,item.checkedAt),
+  db.prepare('INSERT INTO admin_release_smoke_reason(environment,release_id,check_id,reason,http_status) VALUES(?,?,?,?,?) ON CONFLICT(environment,release_id,check_id) DO UPDATE SET reason=excluded.reason,http_status=excluded.http_status').bind(environment,target.id,item.check,item.reason??null,item.httpStatus??null),
+ ]));return results;
 }
 /** Secret-bound server adapter owns deployment credentials; browser supplies only registered IDs. */
 export async function rollbackRelease(context:AdminContext<ReleasesEnv>, input:{environment:ReleaseEnvironment;expectedCurrent:string;target:string}) {
