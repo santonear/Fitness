@@ -1,3 +1,4 @@
+import { planLifecycleCopy } from '../../../i18n/features/plan/lifecycle';
 import { useState } from 'react';
 import { buildCoachRequest } from '../../../coach/request-builder';
 import { coachMessageScope } from '../../../coach/consent';
@@ -32,7 +33,7 @@ export function NextPage(){
  {data?.active&&<Button onClick={()=>navigate(`/workout/${data.active!.id}`)}>{t.ongoing}</Button>}
  {selected?<><slots.FeatureCard context="next" motionReduced={false} trainingActive={false}><slots.StartHero {...selected} templateId={selected.id} templateLabel={selected.name} nextLabel={t.next} startLabel={t.start} disabled={busy||!!data?.active} onStart={()=>void start(selected.id)}/><p className="v8-center">{lastSelected?.status==='partial'?t.partialReason:format(t.reason,{minutes:selected.estimatedMinutes})}</p></slots.FeatureCard>
  <p>{t.details}</p><div className="v8-capsules">{selected.items.map((item,index)=><details key={index}><summary>{name(item.exerciseId)} · {item.sets} {t.sets}</summary><p>{exercises.find(e=>e.id===item.exerciseId)?.steps[data?.profile?.locale??'zh'].join(' ')}</p></details>)}</div>
- <div className="v8-row"><Button disabled={templates.length<2} onClick={()=>setChoice(templates[(templates.findIndex(item=>item.id===selected.id)+1)%templates.length].id)}>{t.switch}</Button><Button onClick={()=>navigate('/manual')}>{t.manual}</Button></div></>:<Button variant="primary" onClick={()=>navigate('/onboarding')}>{t.create}</Button>}
+ <div className="v8-row"><Button disabled={templates.length<2} onClick={()=>setChoice(templates[(templates.findIndex(item=>item.id===selected.id)+1)%templates.length].id)}>{t.switch}</Button><Button onClick={()=>navigate('/manual')}>{t.manual}</Button></div></>:<div className="v8-row"><Button variant="primary" onClick={()=>navigate('/onboarding')}>{planLifecycleCopy[locale].create}</Button><Button onClick={()=>navigate('/manual')}>{t.manual}</Button></div>}
  <Button onClick={()=>navigate('/activity')}>{t.recordActivity}</Button>
  {homePreview&&<section><CoachScopeDisclosure request={homePreview} locale={locale}/><Composer value={message} onChange={value=>setMessage(value.slice(0,1600))} label={coachCopy.input} sendLabel={coachCopy.send} disabled={busy} onSend={()=>{if(homePreview&&message.trim())sendHomeCoach(homePreview,message);}}/></section>}
  <Button disabled={busy} onClick={()=>openCoach('ADJUST_TODAY',selected?.id)}><CoachVisual/>{t.askCoach}</Button>

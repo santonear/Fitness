@@ -108,3 +108,16 @@ test('manual selection to completed record, appearance previews and reminders',a
  const count=(await empty.innerText()).match(/清空筛选后有 (\d+) 个动作/)![1];await shot(page,'manual-empty-recovery');
  await empty.getByRole('button',{name:'清空筛选',exact:true}).click();await expect(page.getByRole('searchbox')).toHaveValue('');await expect(page.locator('.manual-results-heading')).toContainText(count);
  });
+
+ test('plan removal, undo and settings recovery preserve review totals',async({page})=>{
+ if(!process.env.POLISH_BASE_URL)await page.route('**/api/v1/features',r=>r.fulfill({json:{version:1,flags:{planLifecycle:true},expiresAt:Date.now()+60000}}));
+ await onboard(page);await page.getByRole('button',{name:'就用这份计划',exact:true}).click();await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'开始训练',exact:true}).click();await page.getByRole('button',{name:'完成这一组',exact:true}).click();await page.getByRole('button',{name:'暂停或结束',exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:'结束并记下',exact:true}).click();await page.getByRole('button',{name:'记下来',exact:true}).click();
+ await expect(page.locator('.v8-facts dd').nth(1)).toHaveText('1');const before=await page.locator('.v8-facts dd').allTextContents();
+ const remove=async()=>{await page.goto('/plans');await page.getByRole('button',{name:'不再使用这份计划',exact:true}).click();const dialog=page.getByRole('dialog');await expect(dialog).toContainText('训练记录、回顾统计和进步记录全部保留');await shot(page,'plan-delete-confirm');await dialog.getByRole('button',{name:'确认删除',exact:true}).click();await expect(page.getByText('已删除计划',{exact:true})).toBeVisible();};
+ await remove();await page.getByRole('button',{name:'撤销',exact:true}).click();await expect(page.getByRole('button',{name:'不再使用这份计划',exact:true})).toBeVisible();
+ await remove();await page.goto('/');await expect(page.getByRole('button',{name:'重新制定计划',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'手动训练',exact:true})).toBeVisible();await shot(page,'no-plan');
+ await page.goto('/review');await expect(page.locator('.v8-facts dd')).toHaveText(before);
+ await page.goto('/settings');await page.getByRole('button',{name:'已删除的计划',exact:true}).click();await expect(page.getByRole('button',{name:'恢复',exact:true})).toBeVisible();await shot(page,'plan-restore');await page.getByRole('button',{name:'恢复',exact:true}).click();await expect(page.getByText('已恢复到以前的计划',{exact:true})).toBeVisible();
+ await page.goto('/plans');await expect(page.getByRole('heading',{name:'以前的计划',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'查看',exact:true})).toBeVisible();await shot(page,'previous-plans');
+ });

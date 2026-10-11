@@ -7,7 +7,7 @@ test('V8 database upgrade is additive, idempotent and rolls back a failing trans
  const source=JSON.parse(readFileSync(new URL('../fixtures/legacy-backups/v807-mainline.json',import.meta.url),'utf8'));
  await page.goto('/settings');
  const upgraded=await page.evaluate(async source=>{const p='/tests/e2e/helpers/followup-migration.ts';return(await import(/* @vite-ignore */ p)).checkV8Upgrade(source);},source);
- expect(upgraded).toEqual({unchanged:true,version:10,metadata:10,empty:true});
+ expect(upgraded).toEqual({unchanged:true,version:11,metadata:11,empty:true});
  const failed=await page.evaluate(async source=>{const p='/tests/e2e/helpers/followup-migration.ts';return(await import(/* @vite-ignore */ p)).checkV8Upgrade(source,true);},source);
  expect(failed).toEqual({rejected:true,version:8,unchanged:true});
 });
@@ -54,7 +54,7 @@ test('every UI-exported legacy and V8 backup restores through new envelope witho
     for (const table of ['profiles','plans','planVersions','sessions','sets','bodyWeights','aiMemoryNotes']) expect(result.first.data[table], `${source.name}:${table}`).toEqual(source.value.data[table]);
     expect(result.first.schemaVersion).toBe(9); expect(result.first.data.metadata.schemaVersion).toBe(11);
     expect(result.second.data.v8).toEqual(result.first.data.v8);
-    if (source.value.data.v8) expect(result.first.data.v8).toEqual(source.value.data.v8);
+    if (source.value.data.v8) expect(result.first.data.v8).toEqual({...source.value.data.v8,planReferences:source.value.data.v8.planReferences??[]});
     expect(result.first.data.nutritionRecords).toEqual(source.value.data.nutritionRecords ?? []);
     expect(result.second.data.nutritionRecords).toEqual(result.first.data.nutritionRecords);
     expect(result.second.data.activityImportReceipts).toEqual(result.first.data.activityImportReceipts);

@@ -1,3 +1,4 @@
+import { planLifecycleCopy } from '../../../i18n/features/plan/lifecycle';
 import type { CoachResponse } from '../../../coach/contracts';
 import { EQUIPMENT, equipmentLabel } from '../../../catalog/taxonomy';
 import type { V8Locale } from '../../../i18n/namespaces.contract';
@@ -17,9 +18,9 @@ export interface PlanDraftPageProps {
   slots: Pick<ThemeSlots, 'BrandMark' | 'AiLine'>;
   exerciseText: (exerciseId: string) => { name: string; instructions: string };
   /** Parent must revalidate candidate identity, version and restore generation before writing. */
-  onConfirm: (candidate: OnboardingProposal) => void; onDiscuss: () => void;
+  onConfirm: (candidate: OnboardingProposal) => void; onDiscuss: () => void; onDiscard?: () => void;
 }
-export function PlanDraftPage({ locale, candidate, basic = false, busy = false, error, slots, exerciseText, onConfirm, onDiscuss }: PlanDraftPageProps) {
+export function PlanDraftPage({ locale, candidate, basic = false, busy = false, error, slots, exerciseText, onConfirm, onDiscuss, onDiscard }: PlanDraftPageProps) {
   const t = locale === 'zh' ? zh : en, plan = candidate.proposal;
   const guideCopy=locale==='zh'?guideZh:guideEn;
   const [detail,setDetail]=useState<string>(),trigger=useRef<HTMLElement|null>(null);
@@ -36,7 +37,7 @@ export function PlanDraftPage({ locale, candidate, basic = false, busy = false, 
       </section>)}
       <section><h2>{t.why}</h2><ul>{plan.reasons.map((reason, i) => <li key={i}>{reason}</li>)}</ul></section>
       {error && <p role="alert">{error}</p>}
-      <footer><Button variant="primary" disabled={busy || !plan.templates.length} onClick={() => { if (!busy && plan.templates.length) onConfirm(candidate); }}>{busy ? t.saving : t.accept}</Button><Button disabled={busy} onClick={onDiscuss}>{t.change}</Button></footer>
+      <footer><Button variant="primary" disabled={busy || !plan.templates.length} onClick={() => { if (!busy && plan.templates.length) onConfirm(candidate); }}>{busy ? t.saving : t.accept}</Button><Button disabled={busy} onClick={onDiscuss}>{t.change}</Button>{onDiscard&&<Button disabled={busy} onClick={onDiscard}>{planLifecycleCopy[locale].discard}</Button>}</footer>
     </section>
     <ExerciseGuidePanel id={detail} locale={locale} open={!!detail} onClose={()=>setDetail(undefined)} triggerRef={trigger}/>
   </main>;

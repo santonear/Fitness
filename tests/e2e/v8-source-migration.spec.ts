@@ -53,7 +53,7 @@ test('optional local and AI sources round-trip without rewriting old records; fa
         if (origin) envelope.data.v8.planVersions[0].source = origin;
         await restore(envelope); const exported = JSON.parse(await (await backup.exportBackup()).text());
         await restore(exported); const again = JSON.parse(await (await backup.exportBackup()).text());
-        results.push({ origin: again.data.v8.planVersions[0].source ?? null, same: JSON.stringify(canonical(envelope.data.v8)) === JSON.stringify(canonical(again.data.v8)), version: exported.schemaVersion, metadata: exported.data.metadata.schemaVersion });
+        results.push({ origin: again.data.v8.planVersions[0].source ?? null, same: JSON.stringify(canonical({...envelope.data.v8,planReferences:envelope.data.v8.planReferences??[]})) === JSON.stringify(canonical(again.data.v8)), version: exported.schemaVersion, metadata: exported.data.metadata.schemaVersion });
       }
       const before = await snapshot(); const reject = () => { throw Error('injected restore failure'); }; db.v8PlanVersions.hook('creating', reject);
       const failed = await restore(source).then(() => false, () => true); db.v8PlanVersions.hook('creating').unsubscribe(reject);

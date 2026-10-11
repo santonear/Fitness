@@ -1,3 +1,5 @@
+import { DeletedPlans } from './DeletedPlans';
+import { planLifecycleCopy } from '../../../i18n/features/plan/lifecycle';
 import { anonymousUsageEnabled, setAnonymousUsage } from '../../../application/monitoring-client';
 import { operationsCopy } from '../../../i18n/features/settings/operations';
 import { SystemNotifications } from './SystemNotifications';
@@ -14,13 +16,14 @@ import { profileService } from '../../../application/profile';
 import i18n from '../../../i18n';
 import { lifestyleCopy } from '../../../i18n/features/settings/lifestyle';
 import { useFeature } from '../../useFeature';
-export function SettingsPage(){const{t,navigate,locale,run,busy}=useMainline();const location=useLocation();const[section,setSection]=useState(location.hash==='#reminders'?'reminders':'');const copy=locale==='zh'?settingsZh:settingsEn; const [vibration,setVibration]=useState(()=>{try{return localStorage.getItem(restVibrationKey)==='on';}catch{return false;}}); const analytics=useFeature('anonymousUsage'), errorReports=useFeature('errorReports'); const [optedIn,setOptedIn]=useState(anonymousUsageEnabled); const nutritionEnabled=useFeature('nutrition'), importEnabled=useFeature('activityImport'); const [hasNutrition,setHasNutrition]=useState(false); useEffect(()=>{void import('../../../persistence/repository').then(({repository})=>repository.db.nutritionRecords.count()).then(n=>setHasNutrition(n>0));},[]); const vibrationSupported=typeof navigator.vibrate==='function';
+export function SettingsPage(){const{t,navigate,locale,run,busy}=useMainline();const location=useLocation();const[section,setSection]=useState(location.hash==='#reminders'?'reminders':'');const copy=locale==='zh'?settingsZh:settingsEn; const [vibration,setVibration]=useState(()=>{try{return localStorage.getItem(restVibrationKey)==='on';}catch{return false;}}); const planLifecycle=useFeature('planLifecycle'); const analytics=useFeature('anonymousUsage'), errorReports=useFeature('errorReports'); const [optedIn,setOptedIn]=useState(anonymousUsageEnabled); const nutritionEnabled=useFeature('nutrition'), importEnabled=useFeature('activityImport'); const [hasNutrition,setHasNutrition]=useState(false); useEffect(()=>{void import('../../../persistence/repository').then(({repository})=>repository.db.nutritionRecords.count()).then(n=>setHasNutrition(n>0));},[]); const vibrationSupported=typeof navigator.vibrate==='function';
  useEffect(()=>{void i18n.changeLanguage(locale);},[locale]);
  return <main><h1>{t.settings}</h1><label>{copy.language}<select value={locale} disabled={busy} onChange={event=>{const next=event.target.value==='en'?'en':'zh';void run(async()=>{await profileService.setLocale(next);await i18n.changeLanguage(next);});}}><option value="zh">{copy.chinese}</option><option value="en">{copy.english}</option></select></label><Button onClick={()=>navigate('/settings/appearance')}>{t.appearance}</Button>
  <Button onClick={()=>setSection(section==='reminders'?'':'reminders')}>{copy.settingsPage0}</Button>
  <Button onClick={()=>setSection(section==='backup'?'':'backup')}>{copy.settingsPage1}</Button>
  <Button onClick={()=>setSection(section==='privacy'?'':'privacy')}>{copy.settingsPage2}</Button>
  {(nutritionEnabled||hasNutrition)&&<Button onClick={()=>navigate('/settings/nutrition')}>{lifestyleCopy[locale].nutrition}</Button>}{importEnabled&&<Button onClick={()=>navigate('/settings/import')}>{lifestyleCopy[locale].importActivity}</Button>}
+ {planLifecycle&&<Button onClick={()=>setSection(section==='deletedPlans'?'':'deletedPlans')}>{planLifecycleCopy[locale].trash}</Button>}{planLifecycle&&section==='deletedPlans'&&<DeletedPlans/>}
  <Button onClick={()=>navigate('/trial')}>{copy.trial}</Button>
  <Button onClick={()=>navigate('/onboarding')}>{copy.settingsPage3}</Button>
  <label><input type="checkbox" checked={vibration} disabled={!vibrationSupported} onChange={event=>{const value=event.target.checked;try{localStorage.setItem(restVibrationKey,value?'on':'off');setVibration(value);}catch{/* Keep the saved preference unchanged. */}}}/>{copy.restVibration}</label>{!vibrationSupported&&<p>{copy.vibrationUnavailable}</p>}{section==='reminders'&&<ReminderSettings locale={locale}/>}{section==='backup'&&<BackupPanel/>}

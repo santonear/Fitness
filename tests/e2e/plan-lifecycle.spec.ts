@@ -21,7 +21,7 @@ async function finishOneSet(page:Page){
  await page.getByRole('button',{name:'暂停或结束',exact:true}).click();
  await page.getByRole('dialog').getByRole('button',{name:'结束并记下',exact:true}).click();
  await page.getByRole('button',{name:'记下来',exact:true}).click();
- await expect(page.locator('.v8-facts dd')).toHaveCount(5);
+ await expect(page.locator('.v8-facts dd')).toHaveCount(5);await expect(page.locator('.v8-facts dd').nth(1)).toHaveText('1');
 }
 async function removeCurrentPlan(page:Page){
  await page.goto('/plans');await page.getByRole('button',{name:'不再使用这份计划',exact:true}).click();
