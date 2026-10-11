@@ -1,1 +1,1 @@
-{"id":"/admin","name":"Fitness 管理","short_name":"Fitness 管理","start_url":"/admin","scope":"/admin","display":"standalone","background_color":"#EEF1EF","theme_color":"#3E6B5C"}
+{"id":"/admin","name":"Fitness 管理","short_name":"Fitness 管理","start_url":"/admin","scope":"/admin","display":"standalone","background_color":"#EEF1EF","theme_color":"#3E6B5C","icons":[{"src":"/admin-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}

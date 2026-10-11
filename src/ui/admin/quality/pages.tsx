@@ -1,0 +1,51 @@
+import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { adminRequest } from '../shared/api';
+import type { NotificationSettings } from '../../../backend/admin/quality/contracts';
+
+function useQualityData<T>(path: string) {
+  const [data, setData] = useState<T>(); const [error, setError] = useState(false);
+  const refresh = () => { setError(false); void adminRequest<T>(`quality/${path}`).then(setData).catch(() => setError(true)); };
+  useEffect(refresh, [path]);
+  return { data, error, refresh };
+}
+function useWords() { const { i18n } = useTranslation(); return (zh: string, en: string) => i18n.language.startsWith('zh') ? zh : en; }
+interface Group { type: string; count: number; first: number; last: number; versions: string[]; browsers: Record<string, number>; currentHour: number; spike: boolean; trend: { time: number; count: number }[] }
+export function AdminErrorsPage() {
+  const t = useWords(); const { data, error, refresh } = useQualityData<{ groups: Group[] }>('errors');
+  return <section><h1>{t('错误', 'Errors')}</h1><p className="admin-muted">{t('仅显示错误类别、次数和环境大类。', 'Only error categories, counts and environment families are recorded.')}</p><button onClick={refresh}>{t('刷新', 'Refresh')}</button>
+    {error ? <p role="alert">{t('暂时无法读取错误统计。', 'Error statistics are unavailable.')}</p> : !data ? <p role="status">{t('正在读取…', 'Loading…')}</p> : data.groups.length === 0 ? <p>{t('暂无错误上报。', 'No error reports.')}</p> : data.groups.map(group => <article className="admin-card" key={group.type}><h2>{group.type} · {group.count}</h2><p>{group.spike ? t('最近一小时错误增加', 'Error spike in the last hour') : t('最近一小时', 'Last hour')}：{group.currentHour}</p><p>{new Date(group.first).toLocaleString()} — {new Date(group.last).toLocaleString()}</p><p>{t('涉及版本', 'Versions')}：{group.versions.join(', ')}</p><p>{t('浏览器', 'Browsers')}：{Object.entries(group.browsers).map(([browser, count]) => `${browser} ${count}`).join(' · ')}</p><details><summary>{t('近 24 小时趋势', '24-hour trend')}</summary><div className="admin-scroll"><table><thead><tr><th>{t('时间', 'Time')}</th><th>{t('次数', 'Count')}</th></tr></thead><tbody>{group.trend.map(point => <tr key={point.time}><td>{new Date(point.time).toLocaleTimeString()}</td><td>{point.count}</td></tr>)}</tbody></table></div></details></article>)}
+  </section>;
+}
+interface Report { id: string; time: number; promptVersion: string; model: string; durationMs: number; costMicros: number; scenarios: { scenario: string; passed: boolean; violations: number }[] }
+export function AdminQualityPage() {
+  const t = useWords(); const { data, error, refresh } = useQualityData<{ reports: Report[]; blocks: { day: string; category: string; count: number }[] }>('reports');
+  return <section><h1>{t('芽芽质量', 'Yaya quality')}</h1><p className="admin-muted">{t('评测只使用合成数据。生产话术仅统计拦截次数和类别。', 'Evaluations use synthetic data only. Production checks retain only counts and rule categories.')}</p><button onClick={refresh}>{t('刷新', 'Refresh')}</button>{error ? <p role="alert">{t('报告暂时无法读取。', 'Reports are unavailable.')}</p> : !data ? <p role="status">{t('正在读取…', 'Loading…')}</p> : <><h2>{t('评测报告', 'Evaluation reports')}</h2>{data.reports.length === 0 && <p>{t('暂无评测报告。', 'No evaluation reports.')}</p>}{data.reports.map(report => <article className="admin-card" key={report.id}><h3>{new Date(report.time).toLocaleString()}</h3><p>{t('提示词版本', 'Prompt version')}：{report.promptVersion} · {report.model}</p><p>{report.durationMs} ms · {t('费用', 'Cost')}：{(report.costMicros / 1000000).toFixed(6)}</p><ul>{report.scenarios.map((scenario, i) => <li key={`${scenario.scenario}-${i}`}>{scenario.scenario} · {scenario.passed ? t('通过', 'Passed') : t('需要查看', 'Needs review')} · {t('话术检查条数', 'Rule findings')} {scenario.violations}</li>)}</ul></article>)}<h2>{t('生产话术拦截', 'Production wording checks')}</h2>{data.blocks.length === 0 ? <p>{t('暂无拦截记录。', 'No blocked wording recorded.')}</p> : <div className="admin-scroll"><table><thead><tr><th>{t('日期', 'Day')}</th><th>{t('类别', 'Category')}</th><th>{t('次数', 'Count')}</th></tr></thead><tbody>{data.blocks.map(row => <tr key={`${row.day}-${row.category}`}><td>{row.day}</td><td>{row.category}</td><td>{row.count}</td></tr>)}</tbody></table></div>}</>}
+  </section>;
+}
+export function AdminNotificationSettings() {
+  const t = useWords(); const { data, error, refresh } = useQualityData<{ settings: NotificationSettings; available: boolean; publicKey: string | null; subscriptions: { id: string }[] }>('notifications');
+  const [settings, setSettings] = useState<NotificationSettings>(); const [busy, setBusy] = useState(false); const [message, setMessage] = useState('');
+  const pending = useRef<{ path: string; body: unknown; id: ReturnType<typeof crypto.randomUUID> } | null>(null);
+  useEffect(() => { if (data) setSettings(data.settings); }, [data]);
+  async function mutate(path: string, body: unknown) {
+    if (pending.current && (pending.current.path !== path || JSON.stringify(pending.current.body) !== JSON.stringify(body))) { setMessage(t('请先重试上一次未确认的操作。', 'Retry the unconfirmed operation first.')); return; }
+    pending.current ??= { path, body, id: crypto.randomUUID() }; setBusy(true);
+    try { const result = await adminRequest<{ delivery?: string }>(`quality/${path}`, body, pending.current.id); pending.current = null; setMessage(result.delivery === 'accepted-by-push-service' ? t('推送服务已接收，请在手机上确认。', 'Push service accepted the message. Check your phone.') : result.delivery === 'pending' ? t('提醒等待重试，尚未确认送达。', 'Notification is pending retry; delivery is unconfirmed.') : t('已保存。', 'Saved.')); refresh(); } catch { setMessage(t('结果尚未确认，请重试同一次。', 'Result is unconfirmed. Retry the same operation.')); } finally { setBusy(false); }
+  }
+  async function subscribe() {
+    if (!data?.publicKey || !('serviceWorker' in navigator) || !('PushManager' in window)) { setMessage(t('此浏览器暂不支持推送。', 'Push is unavailable in this browser.')); return; }
+    setBusy(true);
+    try {
+      const permission = await Notification.requestPermission(); if (permission !== 'granted') { setMessage(t('未获得通知权限。', 'Notification permission was not granted.')); return; }
+      const registration = await navigator.serviceWorker.register('/admin-sw.js', { scope: '/admin' });
+      if (!registration.active) await new Promise<void>((resolve, reject) => { const worker = registration.installing ?? registration.waiting; if (!worker) { reject(Error('NO_WORKER')); return; } worker.addEventListener('statechange', () => { if (worker.state === 'activated') resolve(); if (worker.state === 'redundant') reject(Error('WORKER_FAILED')); }); });
+      const key = Uint8Array.from(atob(data.publicKey.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+      const subscription = await registration.pushManager.getSubscription() ?? await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key });
+      const value = subscription.toJSON(); await mutate('notifications/subscribe', { endpoint: value.endpoint, keys: value.keys });
+    } catch { setMessage(t('订阅尚未完成，请检查浏览器权限后重试。', 'Subscription is incomplete. Check browser permissions and retry.')); } finally { setBusy(false); }
+  }
+  const labels = { ledger: t('账本核对（必选）', 'Ledger reconciliation (required)'), smoke: t('发布检查（必选）', 'Release checks (required)'), errors: t('错误增加', 'Error spikes'), budget80: t('预算 80%', 'Budget 80%'), budget100: t('预算 100%（必选）', 'Budget 100% (required)'), applications: t('申请超过两天', 'Applications older than two days') };
+  return <section className="admin-card"><h2>{t('管理员提醒', 'Administrator notifications')}</h2><p>{t('iPhone / iPad 请先将后台添加到主屏幕，再从主屏幕打开并启用提醒。', 'On iPhone or iPad, add this admin page to your Home Screen, then open it there to enable notifications.')}</p>{error && <p role="alert">{t('提醒设置暂时无法读取。', 'Notification settings are unavailable.')}</p>}{data && !data.available && <p role="status">{t('推送尚未启用或缺少服务配置，暂时无法订阅和发送。', 'Push is disabled or its service configuration is missing.')}</p>}{settings && <form onSubmit={event => { event.preventDefault(); void mutate('notifications/settings', settings); }}><fieldset disabled={busy}><legend>{t('提醒类别', 'Categories')}</legend>{Object.entries(labels).map(([key, label]) => <label key={key}><input type="checkbox" checked={settings.enabled[key as keyof typeof labels]} disabled={['ledger', 'smoke', 'budget100'].includes(key)} onChange={event => setSettings({ ...settings, enabled: { ...settings.enabled, [key]: event.target.checked } })}/>{label}</label>)}</fieldset><p>{t('必选类别不受静默时段限制。申请提醒每天最多一次。', 'Required categories bypass quiet hours. Application reminders are sent at most once per day.')}</p><label>{t('静默开始', 'Quiet hours start')}<input type="time" value={settings.quietStart} onChange={event => setSettings({ ...settings, quietStart: event.target.value })}/></label><label>{t('静默结束', 'Quiet hours end')}<input type="time" value={settings.quietEnd} onChange={event => setSettings({ ...settings, quietEnd: event.target.value })}/></label><label>{t('时区', 'Time zone')}<input value={settings.timeZone} onChange={event => setSettings({ ...settings, timeZone: event.target.value })}/></label><button disabled={busy} type="submit">{t('保存提醒设置', 'Save settings')}</button></form>}<div className="admin-actions"><button disabled={busy || !data?.available} onClick={() => void subscribe()}>{t('启用这台设备的提醒', 'Enable on this device')}</button><button disabled={busy || !data?.available || !data.subscriptions.length} onClick={() => void mutate('notifications/test', {})}>{t('发送测试提醒', 'Send test notification')}</button>{pending.current && <button disabled={busy} onClick={() => { const item = pending.current; if (item) void mutate(item.path, item.body); }}>{t('重试同一次', 'Retry same operation')}</button>}</div>{message && <p role="status">{message}</p>}</section>;
+}
+
