@@ -3,13 +3,16 @@ import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AdminDatabase, AdminStatement } from '../../src/backend/admin/core/contracts';
 import { collectError, errorSummary, recordBlockedCategory, saveEvaluation } from '../../src/backend/admin/quality/service';
-import { dispatchAdminPush, enqueueNotification, evaluateQualityNotifications } from '../../src/backend/admin/quality/notifications';
+import { dispatchAdminPush, enqueueNotification, evaluateQualityNotifications, reconcileNotificationIncidents } from '../../src/backend/admin/quality/notifications';
 import { handleQuality } from '../../src/backend/admin/quality';
 
 function database(): AdminDatabase {
   const sqlite = new DatabaseSync(':memory:');
   const migration = readFileSync('migrations/admin/4_quality.sql', 'utf8');
   sqlite.exec(migration); sqlite.exec(migration);
+  const incidents = readFileSync('migrations/admin/4_quality_incidents.sql', 'utf8');
+  sqlite.exec(incidents); sqlite.exec(incidents);
+  let batches: Promise<unknown> = Promise.resolve();
   return {
     prepare(sql) {
       let values: (string | number | null)[] = [];
@@ -20,7 +23,7 @@ function database(): AdminDatabase {
         async run() { const result = sqlite.prepare(sql).run(...values); return { success: true, meta: { changes: Number(result.changes) } }; },
       }; return statement;
     },
-    async batch(statements) { sqlite.exec('BEGIN'); try { const result = []; for (const statement of statements) result.push(await statement.run()); sqlite.exec('COMMIT'); return result; } catch (error) { sqlite.exec('ROLLBACK'); throw error; } },
+    batch(statements) { const operation = batches.then(async () => { sqlite.exec('BEGIN'); try { const result = []; for (const statement of statements) result.push(await statement.run()); sqlite.exec('COMMIT'); return result; } catch (error) { sqlite.exec('ROLLBACK'); throw error; } }); batches = operation.catch(() => {}); return operation; },
   };
 }
 describe('quality SQLite persistence and retry', () => {
@@ -123,5 +126,54 @@ describe('quality SQLite persistence and retry', () => {
     for (let i = 0; i < 2; i++) expect((await handleQuality(new Request('https://test/api/v1/management/console/quality/notifications/unsubscribe', { method: 'POST', body: JSON.stringify({ id }) }), context))?.status).toBe(200);
     expect((await db.prepare('SELECT * FROM admin_quality_subscriptions').all()).results).toHaveLength(0);
     expect(await db.prepare('SELECT state FROM admin_quality_deliveries').first()).toMatchObject({ state: 'cancelled' });
+  });
+  it('notifies once per active incident and creates a new notification after resolution and recurrence', async () => {
+    await subscribe(); const event = { id: 'finance-ledger-reconciliation', category: 'ledger' as const, count: 3 };
+    await reconcileNotificationIncidents(db, [event], now);
+    await reconcileNotificationIncidents(db, [{ ...event, count: 4 }], now + 1);
+    expect((await db.prepare('SELECT * FROM admin_quality_notifications').all()).results).toHaveLength(1);
+    await reconcileNotificationIncidents(db, [], now + 2);
+    expect(await db.prepare('SELECT state FROM admin_quality_deliveries').first()).toMatchObject({ state: 'cancelled' });
+    await reconcileNotificationIncidents(db, [event], now + 3);
+    expect((await db.prepare('SELECT * FROM admin_quality_notifications').all()).results).toHaveLength(2);
+    const send = vi.fn().mockResolvedValue(201);
+    await dispatchAdminPush(env(), now + 4, send);
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(send.mock.calls[0].slice(-2)).toEqual(['ledger', 3]);
+  });
+  it('serializes concurrent snapshots, rejects stale snapshots and rolls back incomplete incident writes', async () => {
+    await subscribe(); const event = { id: 'smoke:preview:release1', category: 'smoke' as const, count: 2 };
+    await Promise.all([reconcileNotificationIncidents(db, [event], now), reconcileNotificationIncidents(db, [event], now)]);
+    expect((await db.prepare('SELECT * FROM admin_quality_notifications').all()).results).toHaveLength(1);
+    await reconcileNotificationIncidents(db, [], now + 2);
+    await reconcileNotificationIncidents(db, [event], now + 1);
+    expect(await db.prepare('SELECT active,generation FROM admin_quality_incidents').first()).toMatchObject({ active: 0, generation: 1 });
+    const broken = { ...db, batch: (statements: AdminStatement[]) => db.batch([...statements, db.prepare('INSERT INTO nonexistent VALUES(1)')]) };
+    await expect(reconcileNotificationIncidents(broken, [event], now + 3)).rejects.toThrow();
+    expect(await db.prepare('SELECT active,generation FROM admin_quality_incidents').first()).toMatchObject({ active: 0, generation: 1 });
+    await reconcileNotificationIncidents(db, [event], now + 3);
+    expect(await db.prepare('SELECT active,generation FROM admin_quality_incidents').first()).toMatchObject({ active: 1, generation: 2 });
+  });
+  it('resends a previously delivered event only after a completed resolution cycle', async () => {
+    await subscribe(); const event = { id: 'finance-budget-2026-10-100', category: 'budget100' as const, count: 1 };
+    const send = vi.fn().mockResolvedValue(201);
+    await reconcileNotificationIncidents(db, [event], now);
+    await dispatchAdminPush(env(), now, send);
+    await reconcileNotificationIncidents(db, [event], now + 1);
+    await dispatchAdminPush(env(), now + 1, send);
+    expect(send).toHaveBeenCalledTimes(1);
+    await reconcileNotificationIncidents(db, [], now + 2);
+    await reconcileNotificationIncidents(db, [event], now + 3);
+    await dispatchAdminPush(env(), now + 3, send);
+    expect(send).toHaveBeenCalledTimes(2);
+  });
+  it('does not revive a cancelled delivery after an in-flight transport failure', async () => {
+    await subscribe(); const event = { id: 'finance-ledger-reconciliation', category: 'ledger' as const, count: 1 };
+    await reconcileNotificationIncidents(db, [event], now);
+    const send = vi.fn(async () => { await reconcileNotificationIncidents(db, [], now + 1); return 503; });
+    await dispatchAdminPush(env(), now, send);
+    expect(await db.prepare('SELECT state FROM admin_quality_deliveries').first()).toMatchObject({ state: 'cancelled' });
+    await dispatchAdminPush(env(), now + 60000, send);
+    expect(send).toHaveBeenCalledTimes(1);
   });
 });

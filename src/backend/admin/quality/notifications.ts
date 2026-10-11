@@ -2,6 +2,32 @@ import { capabilityHash } from '../../push-service';
 import { sendAdminPush } from './push-payload';
 import { defaultSettings, notificationSettings, notificationAllowed, type Category, type QualityDatabase, type QualityEnv } from './contracts';
 import { errorSummary } from './service';
+import { z } from 'zod';
+import { categories } from './contracts';
+
+const incidentInput = z.array(z.object({ id: z.string().regex(/^[a-zA-Z0-9][a-zA-Z0-9:._-]{0,159}$/), category: z.enum(categories), count: z.number().int().positive().max(Number.MAX_SAFE_INTEGER) }).strict()).max(100);
+export interface ActiveNotificationIncident { id: string; category: Category; count: number }
+/** Complete active snapshot, scoped to this source. One atomic D1 batch protects transitions,
+ * queue creation, and cancellation. A stale or equal-time snapshot cannot overwrite a newer one.
+ * Pass finance/release incidents together; quality error/application queues remain independent. */
+export async function reconcileNotificationIncidents(db: QualityDatabase, input: ActiveNotificationIncident[], now = Date.now()): Promise<void> {
+  const active = incidentInput.parse(input);
+  if (!Number.isSafeInteger(now) || now < 0) throw Error('INVALID_INCIDENT_TIME');
+  if (new Set(active.map(item => item.id)).size !== active.length) throw Error('DUPLICATE_INCIDENT_ID');
+  const token = crypto.randomUUID();
+  const owns = 'EXISTS (SELECT 1 FROM admin_quality_incident_snapshot WHERE id=1 AND token=?)';
+  const hashed = await Promise.all(active.map(async item => ({ ...item, key: await capabilityHash(item.id) })));
+  const statements = [db.prepare('INSERT INTO admin_quality_incident_snapshot(id,at,token) VALUES(1,?,?) ON CONFLICT(id) DO UPDATE SET at=excluded.at,token=excluded.token WHERE excluded.at>admin_quality_incident_snapshot.at').bind(now, token)];
+  for (const item of hashed) {
+    statements.push(db.prepare(`INSERT INTO admin_quality_incidents(id,category,count,active,generation) SELECT ?,?,?,1,1 WHERE ${owns} ON CONFLICT(id) DO UPDATE SET category=excluded.category,count=excluded.count,active=1,generation=CASE WHEN admin_quality_incidents.active=0 THEN admin_quality_incidents.generation+1 ELSE admin_quality_incidents.generation END WHERE ${owns}`).bind(item.key, item.category, item.count, token, token));
+    statements.push(db.prepare(`INSERT OR IGNORE INTO admin_quality_notifications(id,category,count,created_at) SELECT 'incident:'||id||':'||generation,category,count,? FROM admin_quality_incidents WHERE id=? AND active=1 AND ${owns}`).bind(now, item.key, token));
+    statements.push(db.prepare(`INSERT OR IGNORE INTO admin_quality_deliveries(notification_id,subscription_id) SELECT 'incident:'||i.id||':'||i.generation,s.id FROM admin_quality_incidents i CROSS JOIN admin_quality_subscriptions s WHERE i.id=? AND i.active=1 AND ${owns}`).bind(item.key, token));
+  }
+  const absent = hashed.length ? ` AND id NOT IN (${hashed.map(() => '?').join(',')})` : '';
+  statements.push(db.prepare(`UPDATE admin_quality_incidents SET active=0 WHERE active=1 AND ${owns}${absent}`).bind(token, ...hashed.map(item => item.key)));
+  statements.push(db.prepare(`UPDATE admin_quality_deliveries SET state='cancelled' WHERE state IN ('pending','sending') AND notification_id IN (SELECT 'incident:'||id||':'||generation FROM admin_quality_incidents WHERE active=0) AND ${owns}`).bind(token));
+  await db.batch(statements);
+}
 
 export async function readSettings(db: QualityDatabase) {
   const row = await db.prepare('SELECT value FROM admin_quality_settings WHERE id=1').first<{ value: string }>();
@@ -48,7 +74,7 @@ export async function dispatchAdminPush(env: QualityEnv, now = Date.now(), send 
     const delivered = status >= 200 && status < 300;
     if (delivered) sent++;
     const terminal = status === 404 || status === 410 || (status >= 400 && status < 500 && status !== 408 && status !== 429);
-    await db.prepare('UPDATE admin_quality_deliveries SET state=?,retry_at=? WHERE notification_id=? AND subscription_id=?').bind(delivered ? 'sent' : terminal || row.attempts >= 4 ? 'failed' : 'pending', now + Math.min(3600000, 60000 * 2 ** row.attempts), row.notification_id, row.subscription_id).run();
+    await db.prepare("UPDATE admin_quality_deliveries SET state=?,retry_at=? WHERE notification_id=? AND subscription_id=? AND state='sending'").bind(delivered ? 'sent' : terminal || row.attempts >= 4 ? 'failed' : 'pending', now + Math.min(3600000, 60000 * 2 ** row.attempts), row.notification_id, row.subscription_id).run();
     if (status === 404 || status === 410) await db.prepare('DELETE FROM admin_quality_subscriptions WHERE id=?').bind(row.subscription_id).run();
   }
   return { available: true, sent, pending: results.length - sent };
