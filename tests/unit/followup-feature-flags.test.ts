@@ -55,3 +55,12 @@ test.each([true,false])('startup requests once even when hidden (online=%s), the
  const f=await import('../../src/application/feature-flags');const stop=f.startFeatureFlags(),stopAgain=f.startFeatureFlags();await vi.advanceTimersByTimeAsync(0);expect(fetcher).toHaveBeenCalledTimes(1);expect(f.isFeatureEnabled('planLifecycle')).toBe(true);
  await vi.advanceTimersByTimeAsync(90000);expect(fetcher).toHaveBeenCalledTimes(1);stop();stopAgain();
 });
+
+test('admin flag requests preserve Access cookies and expose failure without revoking last success',async()=>{
+ vi.stubGlobal('location',{pathname:'/admin/users'});const f=await import('../../src/application/feature-flags');
+ const transport=vi.fn<typeof fetch>(async()=>response({adminConsole:true}));await f.refreshFeatureFlags(transport);
+ expect(transport.mock.calls[0][1]).toMatchObject({credentials:'same-origin'});expect(f.getFeatureLoadState()).toBe('ready');
+ await f.refreshFeatureFlags(async()=>new Response('<html>Sign in</html>',{headers:{'Content-Type':'text/html'}}));
+ expect(f.getFeatureLoadState()).toBe('error');expect(f.isFeatureEnabled('adminConsole')).toBe(true);
+});
+

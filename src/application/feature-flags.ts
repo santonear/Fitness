@@ -6,6 +6,10 @@ let loaded = false;
 let pending: Promise<void> | undefined;
 let stopPolling: (() => void) | undefined;
 let consumers = 0;
+let loadState: 'idle'|'loading'|'ready'|'error' = 'idle';
+export const getFeatureLoadState = () => loadState;
+const loadListeners=new Set<()=>void>();
+export const subscribeFeatureLoadState=(listener:()=>void)=>{loadListeners.add(listener);return()=>{loadListeners.delete(listener)}};
 const listeners = new Set<() => void>();
 export const subscribeFeatureFlags = (listener: () => void) => { listeners.add(listener); return () => { listeners.delete(listener); }; };
 function mergeFlags(value: unknown): FeatureFlags {
@@ -36,18 +40,20 @@ function publish(next: FeatureFlags) {
   try { localStorage.setItem(cacheKey, JSON.stringify({ version: 1, flags })); } catch { /* Keep in-memory state if storage is unavailable. */ }
   for (const listener of listeners) listener();
 }
-/** No user ID, cookies, profile, or device details are sent to the public config endpoint. */
+/** Admin requests need the same-origin Access session; public pages remain cookieless. */
 export function refreshFeatureFlags(transport: typeof fetch = fetch): Promise<void> {
   loadCache();
   if (pending) return pending;
+  loadState='loading';for(const listener of loadListeners)listener();
   pending = (async () => {
     try {
-      const response = await transport('/api/v1/features', { credentials: 'omit', cache: 'no-store', signal: AbortSignal.timeout(5000) });
+      const admin=typeof location!=='undefined'&&/^\/admin(?:\/|$)/.test(location.pathname);
+      const response = await transport('/api/v1/features', { credentials: admin?'same-origin':'omit', cache: 'no-store', signal: AbortSignal.timeout(5000) });
       if (!response.ok) throw new Error('FEATURE_CONFIG_UNAVAILABLE');
       const value = await response.json() as { version?: unknown; flags?: unknown; expiresAt?: unknown };
       if (value.version !== 1 || typeof value.expiresAt !== 'number' || !Number.isFinite(value.expiresAt) || value.expiresAt <= Date.now()) throw new Error('FEATURE_CONFIG_INVALID');
-      publish(mergeFlags(value.flags));
-    } catch { /* Offline, stale and failed responses cannot revoke a confirmed setting. */ }
+      const next=mergeFlags(value.flags);loadState='ready';publish(next);for(const listener of loadListeners)listener();
+    } catch { loadState='error';for(const listener of loadListeners)listener(); /* Preserve last validated flags. */ }
   })().finally(() => { pending = undefined; });
   return pending;
 }
@@ -72,3 +78,4 @@ export function startFeatureFlags(): () => void {
   let stopped = false;
   return () => { if (stopped) return; stopped = true; if (--consumers === 0) { stopPolling?.(); stopPolling = undefined; } };
 }
+
