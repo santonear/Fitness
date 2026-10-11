@@ -8,7 +8,7 @@ export const primaryEquipment = ['none', 'yoga-mat', 'dumbbell', 'kettlebell', '
 export const machineEquipment = EQUIPMENT.filter(key => /machine|cable|smith|leg-press|hack-squat|leg-curl|leg-extension|pec-deck|rower|treadmill|elliptical|bike|stair|ski-erg/.test(key));
 export const bodyParts = ['full-body', 'legs', 'glutes', 'chest', 'back', 'shoulders', 'arms', 'core', 'cardio'];
 export function toggleSelection(values: string[], id: string): string[] { return values.includes(id) ? values.filter(value => value !== id) : [...values, id]; }
-/** Only recognised information is backfilled; an empty answer means no filter. */
+/** Explicit home selection adds the basic equipment defaults; an empty answer stays unfiltered. */
 export function initialFilters(text: string) {
   const selectedPlaces = places.filter((place, index) => [ /在家|家里|家中|居家|\bhome\b/i, /健身房|\bgym\b/i, /户外|\boutdoor\b/i ][index].test(text));
   const equipment = [...new Set([...EQUIPMENT, 'yoga-mat'])].filter(key => {
@@ -16,7 +16,7 @@ export function initialFilters(text: string) {
     if (key === 'yoga-mat') return /瑜伽垫|yoga.mat/i.test(text);
     return text.toLowerCase().includes(key.replaceAll('-', ' ')) || text.toLowerCase().includes(key) || text.includes(equipmentLabel(key, 'zh'));
   });
-  return { places: [...selectedPlaces], equipment };
+  return { places: [...selectedPlaces], equipment: selectedPlaces.includes('home') ? [...new Set([...equipment, 'none', 'yoga-mat'])] : equipment };
 }
 export function recentExerciseIds(workouts: WorkoutRecord[]): string[] {
   const known = new Set(exercises.map(exercise => exercise.id));

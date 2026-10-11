@@ -157,3 +157,26 @@ test('manual typo suggestions retain filters and open the complete shared guide'
  await expect(page.getByRole('button',{name:'在家',exact:true})).toHaveAttribute('aria-pressed','true');
  await page.locator('.manual-card').first().getByRole('button',{name:'动作提示'}).click();const dialog=page.getByRole('dialog');await expect(dialog).toContainText('动作要点');await expect(dialog).toContainText('常见错误');await expect(dialog.getByRole('link',{name:'RepDB'})).toHaveAttribute('href','https://repdb.co/');
 });
+
+test('home equipment defaults remain editable and empty-state clear count matches its effect',async({page})=>{
+ await seedManual(page);
+ for(const name of ['无器械','瑜伽垫'])await expect(page.getByRole('button',{name,exact:true})).toHaveAttribute('aria-pressed','true');
+ await page.getByRole('button',{name:'无器械',exact:true}).click();
+ await page.getByRole('button',{name:'哑铃',exact:true}).click();
+ await page.getByRole('searchbox').fill('徒手深蹲');
+ await expect(page.getByRole('button',{name:'无器械',exact:true})).toHaveAttribute('aria-pressed','false');
+ await expect(page.getByRole('button',{name:'哑铃',exact:true})).toHaveAttribute('aria-pressed','true');
+ await page.getByRole('button',{name:'徒手深蹲',exact:true}).first().click();
+ const count=await page.evaluate(async()=>{const path='/src/catalog/catalog-service.ts';return(await import(/* @vite-ignore */ path)).searchExercises('',{}).length;});
+ await page.getByRole('button',{name:'胸',exact:true}).click();
+ await expect(page.locator('.manual-empty')).toContainText(`清空筛选后有 ${count} 个动作`);
+ await expect(page.getByRole('searchbox')).toHaveValue('徒手深蹲');
+ await page.getByRole('searchbox').fill('zzzzzzzz');
+ await expect(page.locator('.manual-empty')).toContainText(`清空筛选后有 ${count} 个动作`);
+ await expect(page.locator('.manual-empty')).toContainText('同时清空搜索词');
+ await page.locator('.manual-empty').getByRole('button',{name:'清空筛选',exact:true}).click();
+ await expect(page.getByRole('searchbox')).toHaveValue('');
+ await expect(page.locator('.manual-results-heading')).toContainText(String(count));
+ await expect(page.locator('.manual-filters button[aria-pressed="true"]')).toHaveCount(0);
+ await expect(page.locator('.manual-start')).toContainText('已选 1 个动作');
+});

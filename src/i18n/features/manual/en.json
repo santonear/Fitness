@@ -60,5 +60,7 @@
   "candidateReady": "Workout selected. Review it before starting.",
   "useCandidate": "Choose this workout",
   "importCandidate": "Bring back to manual workout",
-  "sets": "sets"
+  "sets": "sets",
+  "clearCount": "{count} exercises available after clearing filters",
+  "clearSearchHint": "Clearing filters also clears the search text. Selected exercises stay selected."
 }

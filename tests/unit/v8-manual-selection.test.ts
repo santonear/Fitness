@@ -6,9 +6,12 @@ import type { WorkoutRecord } from '../../src/domain/v8/contracts';
 describe('manual workout selection', () => {
   it('backfills only explicitly provided places and equipment, including bilingual text', () => {
     expect(initialFilters('')).toEqual({ places: [], equipment: [] });
-    expect(initialFilters('家里、户外，哑铃和瑜伽垫')).toEqual({ places: ['home', 'outdoor'], equipment: ['dumbbell','yoga-mat'] });
+    expect(initialFilters('家里、户外，哑铃和瑜伽垫')).toEqual({ places: ['home', 'outdoor'], equipment: ['dumbbell','yoga-mat','none'] });
+    expect(initialFilters('home dumbbell').equipment).toEqual(['dumbbell','none','yoga-mat']);
+    expect(initialFilters('在家').equipment).toEqual(['none','yoga-mat']);
+    expect(initialFilters('户外').equipment).toEqual([]);
     expect(initialFilters('gym pull-up-bar')).toEqual({ places: ['gym'], equipment: ['pull-up-bar'] });
-    expect(initialFilters('home none').equipment).toEqual(['none']);
+    expect(initialFilters('home none').equipment).toEqual(['none','yoga-mat']);
   });
   it('supports removing a selection without mutating its source or changing the remaining order', () => {
     const selected = ['a','b'];

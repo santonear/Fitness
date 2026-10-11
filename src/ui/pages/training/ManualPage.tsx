@@ -55,6 +55,8 @@ export function ManualPage() {
   }, [query, filters, cautions]);
   const results = useMemo(() => searchExercises(query, searchFilters), [query, searchFilters]);
   const suggestions = useMemo(() => results.length ? [] : suggestExercises(query, searchFilters), [query, searchFilters, results]);
+  const clearedCount = useMemo(() => results.length ? 0 : searchExercises('', { cautionAreas }).length, [results, cautions]);
+  function clearFilters() { filtersEdited.current = true; setFilters({}); setQuery(''); setLimit(36); }
   const shown = results.length ? results : suggestions;
   const label = (key: string) => copy[key as keyof typeof copy] ?? equipmentLabel(key, locale);
   function toggleFilter(key: 'places' | 'equipment' | 'bodyParts' | 'goals', value: string) {
@@ -112,10 +114,10 @@ export function ManualPage() {
       {filterGroup(copy.body, 'bodyParts', bodyParts)}
       {filterGroup(copy.goal, 'goals', goals)}
       {filters.goals?.includes('rehab') && <p role="note">{copy.rehabHint}</p>}
-      <Button onClick={() => { filtersEdited.current = true; setFilters({}); setQuery(''); setLimit(36); }}>{copy.clear}</Button>
+      {!!results.length && <Button onClick={clearFilters}>{copy.clear}</Button>}
     </details>
     <div className="manual-results-heading"><h2>{format(copy.results, { count: results.length })}</h2>{selected.length > 0 && <Button onClick={() => choose([])}>{copy.removeAll}</Button>}</div>
-    {!results.length && <p>{copy.noMatch}</p>}{!!suggestions.length && <h2>{copy.similar}</h2>}
+    {!results.length && <section className="manual-empty"><p>{copy.noMatch}</p><p>{format(copy.clearCount, { count: clearedCount })}</p><p>{copy.clearSearchHint}</p><Button onClick={clearFilters}>{copy.clear}</Button></section>}{!!suggestions.length && <h2>{copy.similar}</h2>}
     <div className="manual-grid">{shown.slice(0, limit).map(exercise => {
       const guide = getExerciseGuide(exercise.id, locale);
       const body = exerciseBodyPart(exercise.id);

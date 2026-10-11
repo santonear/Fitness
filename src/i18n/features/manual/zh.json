@@ -60,5 +60,7 @@
   "candidateReady": "已选入训练单，请确认后开始。",
   "useCandidate": "选择这份训练单",
   "importCandidate": "带回手动训练页选择",
-  "sets": "组"
+  "sets": "组",
+  "clearCount": "清空筛选后有 {count} 个动作",
+  "clearSearchHint": "清空筛选会同时清空搜索词，已选动作保留。"
 }
