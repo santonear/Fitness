@@ -1,6 +1,7 @@
 import { sanitizeAssistantRequest, type AssistantCall, type AssistantEvent, type AssistantUsage } from '../../assistant/contracts';
 import { assistantPrompt, ASSISTANT_PROMPT_VERSION, type AssistantPromptMessage } from './prompts';
 import { repairAssistantAttachment } from './repair';
+import { checkCoachLanguage } from '../../application/rules/coach-language';
 
 export interface AssistantProvider {
   streamText(messages: AssistantPromptMessage[], signal?: AbortSignal): AsyncIterable<{ delta?: string; usage?: AssistantUsage }>;
@@ -17,7 +18,7 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
   const version = options.promptVersion ?? ASSISTANT_PROMPT_VERSION;
   const calls: AssistantCall[] = [];
   const usage = () => calls.reduce((sum, call) => ({ inputTokens: sum.inputTokens + (call.inputTokens ?? 0), outputTokens: sum.outputTokens + (call.outputTokens ?? 0) }), { inputTokens: 0, outputTokens: 0 });
-  let text = '';
+  let text = '', emitted = 0, attachmentKind = 'none';
   const textCall: AssistantCall = { stage: 'text', result: 'failed' };
   calls.push(textCall);
   try {
@@ -27,17 +28,25 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
       if (chunk.delta) {
         if (text.length + chunk.delta.length > 16000) throw new Error('TEXT_LIMIT');
         text += chunk.delta;
-        yield { type: 'text_delta', delta: chunk.delta };
+        if (checkCoachLanguage(text).length) throw new Error('COACH_LANGUAGE');
+        // Hold the short routing suffix and any partial banned phrase across chunks.
+        const markerAt = text.indexOf('<<ATTACHMENT:');
+        const safeEnd = Math.max(emitted, Math.min(text.length - 80, markerAt < 0 ? text.length : markerAt));
+        if (safeEnd > emitted) { yield { type: 'text_delta', delta: text.slice(emitted, safeEnd) }; emitted = safeEnd; }
       }
     }
+    const marker = text.match(/<<ATTACHMENT:(none|plan|today|change|exercise|review)>>\s*$/);
+    if (marker) { attachmentKind = marker[1]; text = text.slice(0, marker.index).trimEnd(); }
+    else if (text.includes('<<ATTACH')) text = text.slice(0, text.indexOf('<<ATTACH')).trimEnd();
     if (!text.trim()) throw new Error('EMPTY_TEXT');
+    if (text.length > emitted) yield { type: 'text_delta', delta: text.slice(emitted) };
     textCall.result = 'success';
   } catch {
     yield { type: 'error', code: options.signal?.aborted ? 'ABORTED' : 'GENERATION_FAILED' };
     yield { type: 'done', success: false, usage: usage(), calls, promptVersion: version, result: 'failed' };
     return;
   }
-  if (!request.adultConfirmed) {
+  if (!request.adultConfirmed || attachmentKind === 'none') {
     yield { type: 'done', success: true, usage: usage(), calls, promptVersion: version, result: 'success' };
     return;
   }
@@ -67,7 +76,7 @@ export function createAssistantProvider(options: { apiKey: string; baseUrl: stri
   const send = async (messages: AssistantPromptMessage[], stream: boolean, signal?: AbortSignal) => {
     const response = await (options.fetch ?? fetch)(`${options.baseUrl.replace(/\/$/, '')}/chat/completions`, {
       method: 'POST', signal, headers: { Authorization: `Bearer ${options.apiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: options.model ?? 'deepseek-flash', messages, stream, max_tokens: Math.max(1, Math.min(options.maxTokens ?? (stream ? 1600 : 3000), 3000)), ...(stream ? { stream_options: { include_usage: true } } : { response_format: { type: 'json_object' } }) }),
+      body: JSON.stringify({ model: options.model ?? 'deepseek-flash', messages, stream, thinking: { type: 'disabled' }, max_tokens: Math.max(1, Math.min(options.maxTokens ?? (stream ? 1600 : 3000), 3000)), ...(stream ? { stream_options: { include_usage: true } } : { response_format: { type: 'json_object' } }) }),
     });
     if (!response.ok) throw new Error('PROVIDER_FAILED');
     return response;

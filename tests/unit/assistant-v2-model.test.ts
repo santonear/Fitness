@@ -12,19 +12,19 @@ const context = { version: 'fitness-coach-v8' as const, requestId: id, conversat
 const attachment = { type: 'today_adjustment', requestId: id, restoreGeneration: 0, mutationAllowed: false, target: context.target, template: context.template, summary: 'A shorter session.' };
 const usage = { inputTokens: 10, outputTokens: 3 };
 function provider(outputs: unknown[] = [{ attachment: null }]): AssistantProvider {
-  return { async *streamText() { yield { delta: 'Hello ' }; yield { delta: 'there', usage }; }, async generateAttachment() { const content = outputs.shift(); if (content instanceof Error) throw content; return { content, usage }; } };
+  return { async *streamText() { yield { delta: 'Hello ' }; yield { delta: 'there<<ATTACHMENT:today>>', usage }; }, async generateAttachment() { const content = outputs.shift(); if (content instanceof Error) throw content; return { content, usage }; } };
 }
 async function gather<T>(source: AsyncIterable<T>): Promise<T[]> { const result: T[] = []; for await (const value of source) result.push(value); return result; }
 async function collect(input = request, model = provider()) { return gather(runAssistantModel(input, { provider: model })); }
 describe('assistant v2 model', () => {
   it('streams text before optional attachment and accounts calls', async () => {
     const events = await collect({ ...request, context }, provider([{ attachment }]));
-    expect(events.map(e => e.type)).toEqual(['text_delta', 'text_delta', 'attachment_pending', 'attachment', 'done']);
+    expect(events.map(e => e.type)).toEqual(['text_delta', 'attachment_pending', 'attachment', 'done']);
     expect(events.at(-1)).toMatchObject({ success: true, usage: { inputTokens: 20, outputTokens: 6 }, calls: [{ stage: 'text' }, { stage: 'attachment' }] });
   });
   it('retains text, retries once, does not consume successful daily message on attachment failure', async () => {
     const events = await collect(request, provider(['bad json', 'still bad']));
-    expect(events[0]).toMatchObject({ delta: 'Hello ' });
+    expect(events[0]).toMatchObject({ delta: 'Hello there' });
     expect(events.at(-2)?.type).toBe('attachment_failed');
     expect(events.at(-1)).toMatchObject({ success: false, result: 'attachment_failed', calls: [{ result: 'success' }, { result: 'failed' }, { result: 'failed' }] });
   });
@@ -65,6 +65,21 @@ describe('assistant v2 model', () => {
     expect(events.map(e => e.type)).toEqual(['error', 'done']); expect(JSON.stringify(events)).not.toContain('private provider');
     expect(events.at(-1)).toMatchObject({ calls: [{ stage: 'text', result: 'failed' }] });
     const done = events.at(-1); if (done?.type === 'done') expect(done.calls?.[0].inputTokens).toBeUndefined();
+  });
+  it.each(['<<ATTACHMENT:none>>', '', '<<ATTACHMENT:invalid>>', '<<ATTACHMENT:'])('chat or absent routing marker makes only one model call: %s', async marker => {
+    const model = provider();
+    model.streamText = async function* () { for (const delta of (`A helpful reply.${marker}`)) yield { delta }; };
+    model.generateAttachment = async () => { throw new Error('must not be called'); };
+    const events = await collect(request, model);
+    expect(events.map(e => e.type)).toEqual(['text_delta','done']);
+    expect(events[0]).toMatchObject({delta:'A helpful reply.'});
+    expect(events.at(-1)).toMatchObject({ success:true, calls:[{stage:'text'}] });
+  });
+  it('blocks banned language split across chunks before it is displayed', async () => {
+    const model = provider(); model.streamText = async function* () { yield {delta:'你必'}; yield {delta:'须继续'}; };
+    const events = await collect(request, model);
+    expect(events.some(e => e.type === 'text_delta')).toBe(false);
+    expect(events.at(-1)).toMatchObject({success:false});
   });
   it('parses split unicode SSE and rejects truncated streams', async () => {
     const encoded = new TextEncoder().encode('data: {"choices":[{"delta":{"content":"你好"}}]}\r\n\r\ndata: {"usage":{"prompt_tokens":2,"completion_tokens":1}}\n\ndata: [DONE]\n\n');
