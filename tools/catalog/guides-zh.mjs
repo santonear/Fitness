@@ -45,3 +45,30 @@ export const guideFamilies = [
  ['四肢伸展时骨盆不晃动|保持均匀呼吸','缓慢伸出一侧手臂和对侧腿。|收回起始位置，再交替另一侧。','抬腿过高造成塌腰；为了伸远扭转身体。','只伸到腰背能够保持稳定的范围；疼痛时停止。', [['bird-dog','四点跪姿，手在肩下，膝在髋下。'],['dead-bug','仰卧，髋膝屈曲约直角，手臂伸向天花板，伸展时向地面降下对侧手脚。']]],
 ];
 export const chineseGuides = Object.fromEntries(guideFamilies.flatMap(([points,steps,mistakes,cautions,variants]) => variants.map(([slug,setup]) => [slug,{keyPoints:points.split('|'),steps:[setup,...steps.split('|')],mistakes:[mistakes],cautions:[cautions]}])));
+// Variant exceptions are explicit: similar English names do not imply identical mechanics.
+Object.assign(chineseGuides, {
+ 'banded-standing-curl': {keyPoints:['大腿保持稳定','只弯曲活动侧膝盖'],steps:['将弹力带一端固定在前方低处或踩在支撑脚下，另一端套在活动侧脚踝；扶稳支撑。','屈膝把活动侧脚跟向臀部方向勾起，保持大腿朝下。','控制伸膝放回，完成一侧后换腿。'],mistakes:['把动作做成手臂弯举；髋部向前后摆动借力。'],cautions:['检查弹力带固定处，避免松脱回弹；膝后疼痛时停止。']},
+ 'heel-touches': {keyPoints:['肩部轻抬并保持','腰部贴近垫面'],steps:['仰卧屈膝，双脚踩地，头肩轻抬，双臂伸向脚跟。','躯干轻向一侧弯曲，用同侧手伸向脚跟，不必强求触到。','回到中间，再向另一侧伸手，平稳交替。'],mistakes:['抬起整个上身坐起；扭转骨盆；用头部甩动带动身体。'],cautions:['颈部保持自然；颈腰疼痛时停止，先休息再选择更轻的动作。']},
+ 'cross-body-crunch': {keyPoints:['转动来自上背','不要用手拉脖子'],steps:['仰卧屈膝，双手轻放耳旁，腰部贴近垫面。','卷起一侧肩膀并转向对侧，同时将对侧膝轻向胸前收，肘与膝靠近。','受控返回，再换另一侧；不必强求肘膝相触。'],mistakes:['拉头碰膝；整个人靠摆动坐起；转动时腰部离垫。'],cautions:['颈部或腰背疼痛时停止；只使用可控的小幅度。']},
+ 'dead-bug': {keyPoints:['腰背保持稳定贴近垫面','对侧手脚一起缓慢下放'],steps:['仰卧，双臂向上，髋膝约直角，保持自然呼吸。','将一侧手臂向头后、对侧腿向前缓慢伸展并靠近地面，腰背不拱起。','回到起始姿势，再交替另一侧。'],mistakes:['手脚下放过低造成腰部拱起；急于交替而失去控制。'],cautions:['腰背无法稳定时缩小伸展范围；疼痛时停止。']},
+});
+chineseGuides['banded-hip-thrust'].steps[0]='上背靠凳，环形弹力带套在膝上，双脚踩稳，膝盖保持轻微向外的张力。';
+chineseGuides['sumo-squat'].steps[0]='将杠铃稳放于上背，采用较宽站距，脚尖略向外。';
+chineseGuides['kettlebell-squat'].steps[0]='双手握壶铃提手，让壶铃自然垂在双腿之间，双脚约肩宽。';
+chineseGuides['kettlebell-kickstand-deadlift'].steps[0]='单手持壶铃于髋旁，后脚脚尖点地，主要重心在前腿。';
+chineseGuides['db-kickstand-deadlift'].steps[0]='一脚在前承重，另一脚脚尖在后方点地，单手持一只哑铃于髋旁。';
+chineseGuides['kettlebell-bulgarian-split-squat'].steps[0]='后脚脚背放于低凳，与前侧承重腿相对的一手持壶铃垂于体侧。';
+chineseGuides['kettlebell-reverse-lunge'].steps[0]='单手持壶铃垂在体侧，同侧腿向后迈步，前脚留在原地。';
+chineseGuides['kneeling-cable-row'].steps[0]='将滑轮调至跪姿胸部高度，面对配重跪稳，双手握住把手。';
+chineseGuides['kettlebell-floor-press'].steps[0]='仰卧地面屈膝，双手各持一只壶铃于胸旁，铃体靠前臂外侧，手腕保持稳定。';
+chineseGuides['dumbbell-tricep-extension'].steps[0]='单手持一只轻哑铃举过头，上臂保持稳定，完成一侧后换手。';
+chineseGuides['db-preacher-curl'].steps[0]='双侧上臂贴稳牧师凳垫面，双手各持哑铃，掌心向上。';
+chineseGuides['heel-elevated-squat'].steps[0]='将双脚跟垫在稳固斜板上，脚前掌保持受力；杠铃置上背或双手持哑铃于体侧。';
+chineseGuides['box-squat'].steps[1]='髋向后移并屈膝，臀部轻触箱面，不将身体突然坐塌在箱上。';
+chineseGuides['walking-lunge'].steps[2]='前脚蹬地站起，后脚向前迈过或先并步，再交替向前做下一次弓步。';
+chineseGuides['dumbbell-deadlift'].steps=['双手持哑铃于大腿前，双脚约髋宽，膝盖微屈。','髋向后推，让哑铃贴近腿前侧下降，背部保持稳定。','到可控深度后伸髋站直，不在顶部向后折腰。'];
+chineseGuides['close-grip-db-bench-press'].steps[0]='仰卧平凳，双手持哑铃在胸前靠拢，掌心相对，肘贴近躯干。';
+chineseGuides['air-bike'].steps[1]='双腿平稳踩踏，同时交替推拉活动把手，保持均匀节奏。';
+chineseGuides['barbell-calf-raise'].steps[0]='将杠铃放于上背，在保护架内让前脚掌踩稳低踏板，脚跟留出升降空间。';
+chineseGuides['dumbbell-calf-raise'].steps[0]='双手持哑铃于体侧，前脚掌踩稳低踏板，脚跟悬空；不稳时单手扶住支撑。';
+chineseGuides['single-leg-calf-raise'].steps[0]='单脚前脚掌踩稳低踏板，脚跟悬空，另一脚抬起，一手扶稳支撑。';

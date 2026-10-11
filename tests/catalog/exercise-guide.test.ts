@@ -20,3 +20,9 @@ describe('shared exercise guidance',()=>{
  it('keeps the old locale/filter signature',()=>{const result=searchExercises('','en',{equipment:'dumbbell',metricType:'reps_load'});expect(result.length).toBeGreaterThan(0);expect(result.every(e=>e.equipment==='dumbbell'&&e.metricType==='reps_load')).toBe(true);});
 });
 
+
+describe('variant correctness regressions',()=>{
+ it('keeps the banded standing curl a leg curl, not an arm curl',()=>{const g=getExerciseGuide(id('banded-standing-curl'),'zh');expect(g.name).toBe('弹力带站姿腿弯举');expect(g.steps.join('')).toContain('脚踝');expect(g.steps.join('')).toContain('屈膝');expect(g.steps.join('')).not.toContain('向肩前');});
+ it('retains band position and unilateral kettlebell setup',()=>{expect(getExerciseGuide(id('banded-hip-thrust'),'zh').steps[0]).toContain('膝上');expect(getExerciseGuide(id('kettlebell-kickstand-deadlift'),'zh').steps[0]).toContain('单手');expect(getExerciseGuide(id('kettlebell-squat'),'zh').steps[0]).toContain('双腿之间');});
+ it('does not apply ordinary crunch sequencing to heel touches or dead bug',()=>{expect(getExerciseGuide(id('heel-touches'),'zh').steps[2]).toContain('另一侧');expect(getExerciseGuide(id('dead-bug'),'zh').steps[1]).toContain('对侧腿');expect(getExerciseGuide(id('walking-lunge'),'zh').steps[2]).toContain('向前');});
+});
