@@ -7,6 +7,7 @@ export const knownExerciseIds = new Set([...Object.values(EXERCISE_IDS), ...regi
 export function exerciseBodyPart(id: string): string {
   if (id === EXERCISE_IDS.gobletSquat || id === EXERCISE_IDS.bodyweightSquat) return 'legs';
   if (id === EXERCISE_IDS.walking) return 'cardio';
+  if (id === EXERCISE_IDS.selfResistedRow) return 'back';
   if (id === EXERCISE_IDS.plank) return 'core';
   return catalogMetadata.get(id)?.bodyPart ?? '';
 }
