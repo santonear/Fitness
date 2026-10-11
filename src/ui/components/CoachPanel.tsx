@@ -100,6 +100,6 @@ export function CoachPanel({open,onClose,request,expectedRevision,onApply,onResp
    <CoachScopeDisclosure request={preview} locale={lang?'en':'zh'}/>
    <Composer value={text} onChange={setText} onSend={()=>void send()} label={t.input} sendLabel={t.send} busy={busy} disabled={busy||applying}/></>}
   {!preview&&<Composer value={text} onChange={setText} onSend={()=>void send()} label={t.input} sendLabel={t.send} busy={busy} disabled={busy||applying}/>}
-  {busy&&<Button onClick={()=>{sequence.current++;controller.current?.abort();sending.current=false;setState('idle');}}>{t.cancel}</Button>}{error&&<p role="alert">{error}</p>}
+  {busy&&<Button onClick={()=>{sequence.current++;controller.current?.abort();sending.current=false;setState('idle');}}>{t.cancel}</Button>}{error&&(!localReply||error===t.stale)&&<p role="alert">{error}</p>}{localReply&&<p role="status">{t.localStatus}</p>}
   </div></MorphPanel>;
 }

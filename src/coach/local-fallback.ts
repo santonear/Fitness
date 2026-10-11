@@ -1,7 +1,7 @@
 import type { CoachRequest, CoachResponse } from './contracts';
 import type { CoachProfile } from '../domain/v8/contracts';
 import { exercises } from '../catalog/exercises';
-import { discomfortReplacement } from '../application/rules/basic-items';
+import { discomfortReplacement, discomfortExample } from '../application/rules/basic-items';
 import { estimatePlannedMinutes } from '../application/rules/duration-estimate';
 import zh from '../i18n/features/coach/local.zh.json';
 import en from '../i18n/features/coach/local.en.json';
@@ -14,9 +14,15 @@ export function localCoachReply(message: string, request?: CoachRequest, profile
   const identity = request && { requestId: request.requestId, restoreGeneration: request.restoreGeneration, mutationAllowed: false as const };
   if (/疼|痛|不适|不舒服|pain|hurt|discomfort/i.test(message)) {
     const lines = [...copy.pain, copy.safety];
-    if (request?.task !== 'ADJUST_TODAY' || !profile) return { lines };
     const areas: CoachProfile['cautions'] = [];
     for (const [pattern,area] of [[/膝|knee/i,'knee'],[/腰|背|back/i,'back'],[/肩|shoulder/i,'shoulder'],[/腕|wrist/i,'wrist']] as const) if (pattern.test(message)) areas.push(area);
+    const cautions = [...new Set([...(profile?.cautions ?? []), ...areas])];
+    // Unspecified or multiple painful areas are not enough for an exercise example.
+    if (areas.length !== 1 || /其他|其它|全身|脖|颈|髋|脚|踝|肘|胸|other|neck|hip|ankle|foot|elbow|chest|all over/i.test(message)) return { lines };
+    const example = discomfortExample(cautions);
+    const mentionsMovement = exercises.some(exercise => [exercise.name.zh, exercise.name.en].some(name => message.toLowerCase().includes(name.toLowerCase())));
+    if (example && !mentionsMovement) lines[3] += ' ' + fill(copy.example, { after: example.name[locale] });
+    if (request?.task !== 'ADJUST_TODAY' || !profile) return { lines };
     // Never guess the painful movement or a new medical exclusion boundary.
     const named = request.template.items.filter(item => { const e = exercises.find(e => e.id === item.exerciseId); return e && [e.name.zh,e.name.en].some(name => message.toLowerCase().includes(name.toLowerCase())); });
     if (!areas.length || named.length !== 1 || request.workoutId && (!lockedItemIndexes || lockedItemIndexes.includes(request.template.items.indexOf(named[0])))) return { lines };

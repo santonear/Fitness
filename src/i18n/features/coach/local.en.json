@@ -25,5 +25,6 @@
     "The coach service is unavailable right now.",
     "You can view the basic plan or open this week’s review."
   ],
-  "noShort": "You can stop for now and record what you actually completed."
+  "noShort": "You can stop for now and record what you actually completed.",
+  "example": "You can try {after}."
 }

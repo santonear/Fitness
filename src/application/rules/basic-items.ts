@@ -63,3 +63,12 @@ export function discomfortReplacement(exerciseId: string, profile: CoachProfile)
     return item.exerciseId!==exerciseId&&!!name&&lowerImpact.includes(name)&&choices.find(c=>c.name===name)?.family===family;
   });
 }
+
+/** Text-only example from the existing conservative subset; no equipment is assumed. */
+export function discomfortExample(cautions: CoachProfile['cautions']) {
+  if (!cautions.length || cautions.includes('other')) return undefined;
+  return choices.filter(choice => ['Clamshells', 'Wall Push Ups', 'Dead Bug'].includes(choice.name))
+    .filter(choice => !choice.avoid.some(area => cautions.includes(area as Area)))
+    .map(choice => exercises.find(exercise => exercise.name.en.toLowerCase() === choice.name.toLowerCase()))
+    .find(exercise => exercise?.equipment === 'none');
+}

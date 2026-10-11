@@ -128,5 +128,6 @@
     "weightGrams": "Weight (grams)"
   },
   "currentPlan": "Current plan",
-  "defaultInstruction": "I would like to adjust this."
+  "defaultInstruction": "I would like to adjust this.",
+  "localStatus": "You are using local suggestions now."
 }

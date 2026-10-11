@@ -128,5 +128,6 @@
     "weightGrams": "体重（克）"
   },
   "currentPlan": "当前计划",
-  "defaultInstruction": "想调整一下。"
+  "defaultInstruction": "想调整一下。",
+  "localStatus": "现在用的是本地建议"
 }

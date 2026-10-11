@@ -28,6 +28,20 @@ describe('local coach fallback',()=>{
  it('gives the exact pain reminder without inferring an unknown replacement',()=>{
   const reply=localCoachReply('膝盖很痛',request(),profile);expect(reply.response).toBeUndefined();expect(reply.lines.join('')).toContain('如果疼痛明显或持续，先休息，并请专业人士看看');
  });
+ it('offers a named equipment-free knee example without creating a plan, with or without request context',()=>{
+  const example=exercises.find(e=>e.name.en==='Clamshells')!;
+  expect(example.equipment).toBe('none');
+  for(const input of [undefined,request()]){
+   const reply=localCoachReply('膝盖不舒服',input,input?profile:undefined);
+   expect(reply.lines.join('')).toContain(example.name.zh);expect(reply.response).toBeUndefined();
+   expect(reply.lines.join('')).toContain('如果疼痛明显或持续，先休息，并请专业人士看看');
+  }
+  expect(localCoachReply('knee pain',undefined,undefined,'en').lines.join('')).toContain(example.name.en);
+ });
+ it('does not offer examples for unknown or multiple areas, or ignore saved exclusions',()=>{
+  for(const message of ['不舒服','蚌式开合膝盖痛','膝盖和腰痛','膝盖和脚踝痛','knee and neck pain'])expect(localCoachReply(message).lines[3]).toBe('可以先停下不舒服的动作。');
+  for(const cautions of [['other'],['back','shoulder','wrist']] as CoachProfile['cautions'][])expect(localCoachReply('膝盖痛',undefined,{...profile,cautions}).lines[3]).toBe('可以先停下不舒服的动作。');
+ });
  it('offers only an existing conservative replacement for one named movement and known area',()=>{
   const input=request();const squat=input.template.items.find(i=>i.exerciseId===EXERCISE_IDS.bodyweightSquat)!;
   const reply=localCoachReply(`${exercises.find(e=>e.id===squat.exerciseId)!.name.zh}膝盖不舒服`,input,profile);

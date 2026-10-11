@@ -4,6 +4,8 @@ test('missing plan uses conservative local pain response and review navigation w
  await page.goto('/tests/fixtures/v8-coach/index.html?missing');await page.getByRole('button',{name:'跟芽芽说',exact:true}).click();
  await page.getByRole('textbox',{name:'跟芽芽说'}).fill('膝盖痛');await page.getByRole('button',{name:'发送',exact:true}).click();
  await expect(page.getByText('如果疼痛明显或持续，先休息，并请专业人士看看',{exact:true})).toBeVisible();
+ await expect(page.getByText('可以先停下不舒服的动作。 可以试试 蚌式开合。',{exact:true})).toBeVisible();
+ await expect(page.getByText('现在用的是本地建议',{exact:true})).toBeVisible();
  await expect(page.getByRole('button',{name:'确认应用'})).toHaveCount(0);
  await page.getByRole('textbox',{name:'跟芽芽说'}).fill('想看看这周');await page.getByRole('button',{name:'发送',exact:true}).click();
  await page.getByRole('button',{name:'查看本地回顾'}).last().click();await expect(page.getByText('本周回顾已打开')).toBeVisible();expect(calls).toBe(0);
@@ -24,6 +26,7 @@ for(const status of ['none','unknown','offline'])test(`access ${status} returns 
  await page.goto('/tests/fixtures/v8-coach/index.html?local-adjust');await page.getByRole('button',{name:'跟芽芽说',exact:true}).click();
  await page.getByRole('textbox',{name:'跟芽芽说'}).fill('今天时间不够');await page.getByRole('button',{name:'发送',exact:true}).click();
  await expect(page.getByText('可以试试这份约 15 分钟的短版，只改今天。',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'确认应用'})).toBeVisible();expect(accessCalls).toBe(1);expect(generationCalls).toBe(0);
+ await expect(page.getByText('现在用的是本地建议',{exact:true})).toBeVisible();await expect(page.getByText('芽芽暂时连不上，你的记录不受影响',{exact:true})).toHaveCount(0);
 });
 test('review has one factual feature card and finish includes elapsed time and partial sessions in its ordinal',async({page})=>{
  await page.goto('/');await page.getByLabel('你的回答').fill('保持力量');await page.getByRole('button',{name:'继续',exact:true}).click();
