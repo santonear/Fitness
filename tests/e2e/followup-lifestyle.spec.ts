@@ -7,7 +7,7 @@ test('V8 database upgrade is additive, idempotent and rolls back a failing trans
  const source=JSON.parse(readFileSync(new URL('../fixtures/legacy-backups/v807-mainline.json',import.meta.url),'utf8'));
  await page.goto('/settings');
  const upgraded=await page.evaluate(async source=>{const p='/tests/e2e/helpers/followup-migration.ts';return(await import(/* @vite-ignore */ p)).checkV8Upgrade(source);},source);
- expect(upgraded).toEqual({unchanged:true,version:9,metadata:9,empty:true});
+ expect(upgraded).toEqual({unchanged:true,version:11,metadata:11,empty:true});
  const failed=await page.evaluate(async source=>{const p='/tests/e2e/helpers/followup-migration.ts';return(await import(/* @vite-ignore */ p)).checkV8Upgrade(source,true);},source);
  expect(failed).toEqual({rejected:true,version:8,unchanged:true});
 });
@@ -27,7 +27,7 @@ test('local food and GPX use actual forms, roundtrip without implicit model requ
   await upload(); await page.getByRole('button', { name: '确认导入' }).click();
   await expect(page.getByRole('status')).toHaveText('已导入 0 项，跳过 1 项重复记录。');
   const exported = await page.evaluate(async () => { const p='/src/application/backup.ts'; return JSON.parse(await(await(await import(/* @vite-ignore */ p)).backupService.exportBackup()).text()); });
-  expect(exported.schemaVersion).toBe(7); expect(exported.data.metadata.schemaVersion).toBe(9);
+  expect(exported.schemaVersion).toBe(9); expect(exported.data.metadata.schemaVersion).toBe(11);
   expect(exported.data.nutritionRecords[0].calories).toBeUndefined(); expect(exported.data.v8.activities).toHaveLength(1);
   expect(JSON.stringify(exported)).not.toContain('Never store this'); expect(exported.data.activityImportReceipts).toHaveLength(1); expect(modelCalls).toBe(0);
   const invalidGpx=gpx.replaceAll('2026-01-01','2026-02-30');await page.getByLabel('选择 GPX 文件').setInputFiles({name:'invalid.gpx',mimeType:'application/gpx+xml',buffer:Buffer.from(invalidGpx)});await expect(page.getByRole('status')).toContainText('无法读取');
@@ -37,6 +37,8 @@ test('every UI-exported legacy and V8 backup restores through new envelope witho
   const folder = new URL('../fixtures/legacy-backups/', import.meta.url);
   const sources = readdirSync(folder).filter(name => name.endsWith('.json') && !name.includes('manifest')).map(name => ({ name, value: JSON.parse(readFileSync(new URL(name, folder), 'utf8')) }));
   expect(sources.some(source => source.name === 'v807-mainline.json')).toBe(true);
+  expect(sources.some(source => source.name === 'followup-preview-v9.json')).toBe(true);
+  expect(sources.some(source => source.name === 'pr52-before-plan-delete.json')).toBe(true);
   await page.goto('/settings'); await expect(page.getByRole('heading', {name:'设置',exact:true})).toBeVisible();
   for (const source of sources) {
     const result = await page.evaluate(async ({ name, value }) => {
@@ -50,9 +52,12 @@ test('every UI-exported legacy and V8 backup restores through new envelope witho
       return { first, second };
     }, source);
     for (const table of ['profiles','plans','planVersions','sessions','sets','bodyWeights','aiMemoryNotes']) expect(result.first.data[table], `${source.name}:${table}`).toEqual(source.value.data[table]);
-    expect(result.first.schemaVersion).toBe(7); expect(result.first.data.metadata.schemaVersion).toBe(9);
+    expect(result.first.schemaVersion).toBe(9); expect(result.first.data.metadata.schemaVersion).toBe(11);
     expect(result.second.data.v8).toEqual(result.first.data.v8);
-    expect(result.second.data.nutritionRecords).toEqual([]);
+    if (source.value.data.v8) expect(result.first.data.v8).toEqual({...source.value.data.v8,planReferences:source.value.data.v8.planReferences??[]});
+    expect(result.first.data.nutritionRecords).toEqual(source.value.data.nutritionRecords ?? []);
+    expect(result.second.data.nutritionRecords).toEqual(result.first.data.nutritionRecords);
+    expect(result.second.data.activityImportReceipts).toEqual(result.first.data.activityImportReceipts);
   }
 });
 test('lifestyle transaction failure and stale generation never partially write', async ({ page }) => {

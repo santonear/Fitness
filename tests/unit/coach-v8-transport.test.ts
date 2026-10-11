@@ -19,14 +19,15 @@ describe('coach transport consent and identity',()=>{
  it('binds both confirmations and validates the returned identity without retries',async()=>{
   const approved=await approveCoachScope(coachScope(request));
   const fetcher=vi.fn(async(_url:unknown,init?:RequestInit)=>{
+   if(_url==='/api/v1/trial/access-status'){expect(init?.body).toBe('{}');return Response.json({qualification:'active',sessionValid:true,expiresAt:Date.now()+60000,aiEnabled:true});}
    const envelope=JSON.parse(String(init?.body));
    expect(await validateTransportRequest(envelope,7,100000)).toEqual(envelope);
    return Response.json({requestId:id,context:{restoreGeneration:2,inputDigest:envelope.sendConfirmation},accounting:'settled',result:{type:'clarify',question:'想在哪里练？',requestId:id,restoreGeneration:2,mutationAllowed:false}});
   });
   expect((await sendCoach(approved,new AbortController().signal,fetcher as typeof fetch)).response.type).toBe('clarify');
-  expect(fetcher).toHaveBeenCalledTimes(1);
+  expect(fetcher).toHaveBeenCalledTimes(2);
   await expect(sendCoach({...approved,history:'changed'},new AbortController().signal,fetcher as typeof fetch)).rejects.toThrow('CONFIRMATION_REQUIRED');
-  expect(fetcher).toHaveBeenCalledTimes(1);
+  expect(fetcher).toHaveBeenCalledTimes(2);
  });
  it('rejects known minors even when adultConfirmed is true',async()=>{
   const coach=await approveCoachScope({...request,body:{age:17}});
@@ -36,6 +37,22 @@ describe('coach transport consent and identity',()=>{
  it('does not dispatch an already cancelled request',async()=>{
   const controller=new AbortController();controller.abort();const fetcher=vi.fn();
   await expect(sendCoach(await approveCoachScope(request),controller.signal,fetcher)).rejects.toThrow();expect(fetcher).not.toHaveBeenCalled();
+ });
+ it.each([
+  {qualification:'none',sessionValid:false},
+  {qualification:'active',sessionValid:false,expiresAt:Date.now()+60000,aiEnabled:true},
+  {qualification:'active',sessionValid:true,expiresAt:Date.now()+60000},
+  {qualification:'active',sessionValid:true,expiresAt:Date.now()+60000,aiEnabled:false},
+  {qualification:'expired',sessionValid:true,expiresAt:Date.now()-1,aiEnabled:true},
+  {qualification:'unknown',sessionValid:true},
+ ])('never sends coach content for unavailable or unknown access: %j',async status=>{
+  const fetcher=vi.fn(async(url:unknown,init?:RequestInit)=>{expect(url).toBe('/api/v1/trial/access-status');expect(init?.body).toBe('{}');return Response.json(status);});
+  await expect(sendCoach(await approveCoachScope(request),new AbortController().signal,fetcher as typeof fetch)).rejects.toThrow();
+  expect(fetcher).toHaveBeenCalledTimes(1);
+ });
+ it.each(['network','http','malformed'])('never sends content when the status check fails: %s',async failure=>{
+  const fetcher=vi.fn(async()=>{if(failure==='network')throw Error('offline');return failure==='http'?new Response('',{status:503}):new Response('not json');});
+  await expect(sendCoach(await approveCoachScope(request),new AbortController().signal,fetcher as typeof fetch)).rejects.toThrow();expect(fetcher).toHaveBeenCalledTimes(1);
  });
 });
 

@@ -1,17 +1,20 @@
+import { createPlanLifecycle, PLAN_RETENTION_MS } from './plan-lifecycle';
 import type { Repository } from '../persistence/repository';
 import { DomainError } from '../domain/errors';
 import { v8CoachProfileSchema, v8PlanVersionSchema, v8WorkoutSchema, setMetricsSchema } from '../domain/schemas';
-import type { CoachProfile, Feedback, SetFact } from '../domain/v8/contracts';
+import type { CoachProfile, Feedback, SetFact, SessionTemplate } from '../domain/v8/contracts';
 import type { CoachResponse, CoachRequest } from '../coach/contracts';
 import { adaptCoachResponse } from '../coach/response-adapter';
 import { planProposalSchema } from '../coach/contracts';
 import { exercises } from '../catalog/exercises';
-import { estimateTrainingMinutes } from './rules/duration-estimate';
+import { estimatePlannedMinutes } from './rules/duration-estimate';
+import { manualTrainingItems } from './rules/manual-items';
 import { basicItems } from './rules/basic-items';
 import basicZh from '../i18n/features/onboarding/basic.zh.json';
 import basicEn from '../i18n/features/onboarding/basic.en.json';
 
-export type LocalCandidate = Extract<CoachResponse, { type: 'plan_proposal' }> & { expectedRevision: number; profile: CoachProfile };
+export type LocalCandidate = Extract<CoachResponse, { type: 'plan_proposal' }> & { expectedRevision: number; profile: CoachProfile; source?: 'local' | 'ai' };
+export type ManualSelection = { adultConfirmed: boolean; template: SessionTemplate; expectedRevision: number; restoreGeneration: number };
 const invalid = (message: string): never => { throw new DomainError('INVALID', message); };
 /** Basic rules are local and conservative; no model call or inferred medical suitability. */
 export function basicProposal(profile: CoachProfile, locale = 'zh') {
@@ -19,10 +22,11 @@ export function basicProposal(profile: CoachProfile, locale = 'zh') {
   if (!profile.adultConfirmed) return undefined;
   const copy = locale === 'en' ? basicEn : basicZh;
   const selection = [basicItems(profile, 0), basicItems(profile, 1)];
-  const selectedTemplates = selection.filter(s => s.items.length).map(({ items }, index) => ({ id: `basic-${index}`, name: String.fromCharCode(65 + index), items, estimatedMinutes: estimateTrainingMinutes(items.map(item => ({ sets: Array.from({ length: item.sets }, () => 'reps' in item.target ? { reps: item.target.reps } : { durationSeconds: item.target.durationSeconds }) }))) }));
+  const selectedTemplates = selection.filter(s => s.items.length).map(({ items }, index) => ({ id: `basic-${index}`, name: String.fromCharCode(65 + index), items, estimatedMinutes: estimatePlannedMinutes(items) }));
   const missing = [...new Set(selection.flatMap(s => s.missing))].map(f => copy.families[f as keyof typeof copy.families]).join(' / ');
+  const shorter = selectedTemplates.find(template => template.estimatedMinutes < profile.sessionMinutes);
   return { goalText: profile.goalText, weeklyTarget: profile.weeklyTarget, sessionMinutes: profile.sessionMinutes, scheduleOriginalText: profile.scheduleOriginalText, templates: selectedTemplates,
-    reasons: [profile.scheduleOriginalText || copy.basicReason, profile.cautions.length ? copy.adapted : copy.basicReason, !selectedTemplates.length ? copy.empty : missing ? copy.missing.replace('{types}', missing) : profile.goalText] as [string, string, string] };
+    reasons: [profile.scheduleOriginalText || copy.basicReason, [profile.cautions.length ? copy.adapted : copy.basicReason, shorter ? copy.shorter.replace('{minutes}', String(shorter.estimatedMinutes)) : ''].filter(Boolean).join(' '), !selectedTemplates.length ? copy.empty : missing ? copy.missing.replace('{types}', missing) : profile.goalText] as [string, string, string] };
 }
 function localDate(timeZone: string) {
   const parts = new Intl.DateTimeFormat('en-US', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date());
@@ -30,15 +34,19 @@ function localDate(timeZone: string) {
 }
 export function createV8Workflow(repo: Repository) {
   const db = repo.db;
+  const lifecycle = createPlanLifecycle(repo);
   async function snapshot() {
     return db.transaction('r', db.tables, async () => {
       const metadata = await repo.readMetadata(), state = await db.v8State.get('v8');
-      const plan = state?.currentPlanId ? await db.v8Plans.get(state.currentPlanId) : undefined;
-      const version = plan ? await db.v8PlanVersions.get(plan.currentVersionId) : undefined;
+      const allPlans = await db.v8Plans.toArray();
+      const plans = allPlans.filter(p=>!p.deletedAt), deletedPlans=allPlans.filter(p=>p.deletedAt&&Date.now()-Date.parse(p.deletedAt)<PLAN_RETENTION_MS);
+      const plan = plans.find(p=>p.id===state?.currentPlanId);
+      const historyVersions = await db.v8PlanVersions.toArray();
+      const version = plan ? historyVersions.find(v=>v.id===plan.currentVersionId) : undefined;
       const workouts = await db.v8Workouts.toArray();
       const profile = await db.profiles.toCollection().first();
       const hasFutureLegacyDates = !!state?.legacyPlanIds.length && (await db.scheduledWorkouts.toArray()).some(row => !row.hiddenAt && row.status === 'pending' && !row.completedSessionId && row.scheduledDate >= localDate(profile?.timeZone ?? 'Asia/Shanghai'));
-      return { metadata, state, plan, version, workouts, hasFutureLegacyDates, versions: await db.v8PlanVersions.toArray(), activities: await db.v8Activities.toArray(), profile, active: workouts.find(row => row.status === 'in_progress') };
+      return { metadata, state, plan, version, plans, deletedPlans, planReferences: await db.v8PlanReferences.toArray(), workouts, hasFutureLegacyDates, historyVersions, versions: historyVersions.filter(v=>plans.some(p=>p.id===v.planId)), activities: await db.v8Activities.toArray(), profile, active: workouts.find(row => row.status === 'in_progress') };
     });
   }
   async function propose(profile: CoachProfile): Promise<LocalCandidate> {
@@ -47,7 +55,7 @@ export function createV8Workflow(repo: Repository) {
     if (!proposal) return invalid('BASIC_PLAN_UNAVAILABLE');
     const metadata = await repo.readMetadata();
     return { type: 'plan_proposal', requestId: crypto.randomUUID(), mutationAllowed: false, restoreGeneration: metadata.restoreGeneration ?? 0,
-      expectedRevision: metadata.dataRevision, profile: structuredClone(profile), proposal };
+      source: 'local', expectedRevision: metadata.dataRevision, profile: structuredClone(profile), proposal };
   }
   async function adopt(candidate: LocalCandidate) {
     const proposal = planProposalSchema.parse(candidate.proposal), profile = v8CoachProfileSchema.parse(candidate.profile);
@@ -60,7 +68,7 @@ export function createV8Workflow(repo: Repository) {
       const id = crypto.randomUUID();
       const { reasons: _reasons, ...content } = proposal;
       const version = v8PlanVersionSchema.parse({ ...content, id, planId: candidate.requestId, versionNumber: 1, createdAt: new Date().toISOString(),
-        origin: 'onboard', changeSummary: [] });
+        origin: 'onboard', source: candidate.source ?? 'local', changeSummary: [] });
       await db.v8Plans.toCollection().modify({ readOnly: true });
       await db.v8Plans.add({ id: candidate.requestId, currentVersionId: id, readOnly: false, name: proposal.goalText });
       await db.v8PlanVersions.add(version);
@@ -69,21 +77,27 @@ export function createV8Workflow(repo: Repository) {
       return version;
     }, candidate.expectedRevision);
   }
-  async function start(templateId?: string, manualExerciseId?: string) {
+  async function start(templateId?: string, manualExerciseId?: string, manualExerciseIds?: string[], manualSelection?: ManualSelection) {
     return repo.write(async () => {
+      const metadata = await repo.readMetadata();
+      if (manualSelection && (templateId || metadata.dataRevision !== manualSelection.expectedRevision || (metadata.restoreGeneration ?? 0) !== manualSelection.restoreGeneration)) throw new DomainError('CONFLICT', 'STALE_CANDIDATE');
       if (await db.v8Workouts.where('status').equals('in_progress').count() || await db.sessions.where('status').equals('in_progress').count()) throw new DomainError('CONFLICT', 'TRAINING_ALREADY_ACTIVE');
       const state = await db.v8State.get('v8'), profile = await db.profiles.toCollection().first();
       const plan = state?.currentPlanId ? await db.v8Plans.get(state.currentPlanId) : undefined;
       const version = plan ? await db.v8PlanVersions.get(plan.currentVersionId) : undefined;
       const override = state?.nextWorkoutOverride;
       const template = override && override.planVersionId === version?.id && override.templateId === templateId ? override.template : version?.templates.find(item => item.id === templateId);
-      if (templateId && (!template || plan?.readOnly)) return invalid('TEMPLATE_UNAVAILABLE');
+      if (templateId && (!template || plan?.readOnly || plan?.deletedAt)) return invalid('TEMPLATE_UNAVAILABLE');
       if (!profile) return invalid('PROFILE_REQUIRED');
-      if (!template && !exercises.some(item => item.id === manualExerciseId)) return invalid('SELECT_EXERCISE');
-      const items = template?.items ?? [{ exerciseId: manualExerciseId!, sets: 2 }];
+      const manualTemplate = manualSelection ? v8PlanVersionSchema.shape.templates.element.parse(manualSelection.template) : undefined;
+      if (manualTemplate && (manualSelection?.adultConfirmed !== true || state?.coachProfile?.adultConfirmed === false)) return invalid('ADULT_CONFIRMATION_REQUIRED');
+      const manualIds = [...new Set(manualExerciseIds ?? (manualExerciseId ? [manualExerciseId] : []))];
+      if (manualTemplate && (new Set(manualTemplate.items.map(item => item.exerciseId)).size !== manualIds.length || manualTemplate.items.some(item => !manualIds.includes(item.exerciseId) || exercises.find(e => e.id === item.exerciseId)?.metricType !== item.target.metricType))) return invalid('INVALID_MANUAL_SELECTION');
+      if (!template && (!manualIds.length || manualIds.some(id => !exercises.some(item => item.id === id)))) return invalid('SELECT_EXERCISE');
+      const items = template?.items ?? manualTemplate?.items ?? manualTrainingItems(manualIds);
       const record = v8WorkoutSchema.parse({ id: crypto.randomUUID(), ...(template ? { planVersionId: version!.id, templateId } : {}),
         startedAt: new Date().toISOString(), localDate: localDate(profile.timeZone), timeZone: profile.timeZone, status: 'in_progress', sets: [],
-        ...(template ? { templateSnapshot: template } : {}), plannedSetCount: items.reduce((sum, item) => sum + item.sets, 0),
+        ...(template || manualTemplate ? { templateSnapshot: template ?? manualTemplate } : {}), plannedSetCount: items.reduce((sum, item) => sum + item.sets, 0),
         plannedExercises: items.map((item, itemIndex) => ({ exerciseId: item.exerciseId, itemIndex, plannedSetCount: item.sets })) });
       await db.v8Workouts.add(record);
       if (override && template === override.template && state) { const { nextWorkoutOverride: _used, ...rest } = state; await db.v8State.put(rest); }
@@ -132,14 +146,14 @@ export function createV8Workflow(repo: Repository) {
   async function applyCoachCandidate({ request, response: raw, expectedRevision }: { request: CoachRequest; response: CoachResponse; expectedRevision: number }) {
     const response = adaptCoachResponse(request, raw);
     if (request.task === 'ONBOARD_PLAN' && response.type === 'plan_proposal') {
-      return adopt({ ...response, expectedRevision, profile: { ...request.profile, confirmedAt: new Date().toISOString() } });
+      return adopt({ ...response, source: 'ai', expectedRevision, profile: { ...request.profile, confirmedAt: new Date().toISOString() } });
     }
     if (!('target' in response) || !('target' in request)) return invalid('NO_PLAN_CANDIDATE');
     return repo.write(async () => {
       const meta = await repo.readMetadata(), state = await db.v8State.get('v8');
       const plan = await db.v8Plans.get(request.target.planId);
       if (request.restoreGeneration !== (meta.restoreGeneration ?? 0) || request.target.revision !== expectedRevision ||
-          !state || !plan || plan.readOnly || state.currentPlanId !== plan.id || plan.currentVersionId !== request.target.versionId) throw new DomainError('CONFLICT', 'STALE_CANDIDATE');
+          !state || !plan || plan.deletedAt || plan.readOnly || state.currentPlanId !== plan.id || plan.currentVersionId !== request.target.versionId) throw new DomainError('CONFLICT', 'STALE_CANDIDATE');
       const version = await db.v8PlanVersions.get(plan.currentVersionId);
       if (!version) return invalid('PLAN_UNAVAILABLE');
       if (response.type === 'today_adjustment' && request.task === 'ADJUST_TODAY') {
@@ -164,12 +178,13 @@ export function createV8Workflow(repo: Repository) {
       if (!proposal) return invalid('NO_PLAN_CANDIDATE');
       const { reasons: _reasons, ...content } = proposal;
       const next = v8PlanVersionSchema.parse({ ...content, id: crypto.randomUUID(), planId: plan.id, versionNumber: version.versionNumber + 1,
-        createdAt: new Date().toISOString(), origin: response.type === 'review_summary' ? 'review_suggestion' : 'coach_change',
+        createdAt: new Date().toISOString(), source: 'ai', origin: response.type === 'review_summary' ? 'review_suggestion' : 'coach_change',
         basedOnVersionId: version.id, changeSummary: response.type === 'change_proposal' ? response.changes : [response.type === 'review_summary' ? response.suggestion!.summary : ''] });
       await db.v8PlanVersions.add(next); await db.v8Plans.put({ ...plan, currentVersionId: next.id });
       const { nextWorkoutOverride: _stale, ...rest } = state; await db.v8State.put(rest);
       return next;
     }, expectedRevision);
   }
-  return { snapshot, propose, adopt, start, recordSet, finish, substitute, applyCoachCandidate };
+  return { ...lifecycle, snapshot, propose, adopt, start, recordSet, finish, substitute, applyCoachCandidate };
 }
+

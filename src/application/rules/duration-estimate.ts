@@ -18,3 +18,8 @@ export function estimateTrainingMinutes(exercises: readonly { sets: readonly Dur
   }
   return Math.max(15, Math.min(120, Math.ceil(seconds / 300) * 5));
 }
+
+/** One estimator for plan cards, drafts and local adjustments. */
+export function estimatePlannedMinutes(items: readonly { sets: number; target: DurationTarget }[]): number {
+  return estimateTrainingMinutes(items.map(item => ({ sets: Array.from({ length: item.sets }, () => item.target) })));
+}

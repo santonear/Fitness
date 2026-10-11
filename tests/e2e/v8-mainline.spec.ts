@@ -1,7 +1,9 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
+import { mockActiveCoachAccess } from './helpers/coach-access';
 
 test('coach uses explicit send and confirmation before changing a single workout',async({page})=>{
+ await mockActiveCoachAccess(page);
  let calls=0;await page.route('**/api/v1/plans/generate',async route=>{calls++;const envelope=route.request().postDataJSON(),request=envelope.coach;
   expect(request.body).toBeUndefined();expect(request.history).toBeUndefined();
   await route.fulfill({json:{requestId:request.requestId,context:{restoreGeneration:request.restoreGeneration,inputDigest:envelope.sendConfirmation},accounting:'settled',result:{requestId:request.requestId,restoreGeneration:request.restoreGeneration,mutationAllowed:false,type:'today_adjustment',target:request.target,template:{...request.template,items:request.template.items.map((i:any)=>({...i,sets:1}))},summary:'本次每个动作一组'}}});
@@ -14,6 +16,7 @@ test('coach uses explicit send and confirmation before changing a single workout
 });
 
 test('home composer opens coach and sends once with optional data excluded',async({page})=>{
+ await mockActiveCoachAccess(page);
  let calls=0;await page.route('**/api/v1/plans/generate',async route=>{calls++;const request=route.request().postDataJSON().coach;expect(request.body).toBeUndefined();expect(request.history).toBeUndefined();expect(request.instruction).toBe('今天轻一点');await route.fulfill({status:503,json:{error:'AI_DISABLED'}});});
  await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();
  await page.getByRole('textbox',{name:'跟芽芽说'}).fill('今天轻一点');expect(calls).toBe(0);
@@ -23,6 +26,7 @@ test('home composer opens coach and sends once with optional data excluded',asyn
 });
 
 test('monthly review sends the visible month instead of the current week',async({page})=>{
+ await mockActiveCoachAccess(page);
  let received:any;
  await page.route('**/api/v1/stages/summarize',async route=>{received=route.request().postDataJSON().coach;await route.fulfill({status:503,json:{error:'AI_DISABLED'}});});
  await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();
@@ -98,8 +102,11 @@ test('manual timed distance exercise preserves edited measurements after reload'
   await onboard(page); await page.getByRole('button', { name: '就用这份计划' }).click();
   await page.getByRole('button', { name: '手动训练', exact: true }).click();
   const id = await page.evaluate(async () => { const p = '/src/catalog/exercises.ts'; return (await import(/* @vite-ignore */ p)).exercises.find((e: { metricType: string }) => e.metricType === 'duration_distance').id; });
-  await page.getByRole('combobox', { name: '选择动作' }).selectOption(id);
-  await page.getByRole('button', { name: '开始训练', exact: true }).click();
+  const name = await page.evaluate(async (exerciseId) => { const p = '/src/catalog/exercises.ts'; return (await import(/* @vite-ignore */ p)).exercises.find((e: { id: string }) => e.id === exerciseId).name.zh; }, id);
+  await page.getByRole('button', { name: '清空筛选', exact: true }).click();
+  await page.getByRole('searchbox').fill(name);
+  await page.getByRole('button', { name, exact: true }).first().click();
+  await page.getByRole('button', { name: '开始', exact: true }).click();
   await page.getByRole('button', { name: '修改数值' }).click();
   await page.getByLabel('秒', { exact: true }).fill('120');
   await page.getByLabel('米', { exact: true }).fill('250');

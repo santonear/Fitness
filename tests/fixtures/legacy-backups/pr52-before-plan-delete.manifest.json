@@ -1,0 +1,15 @@
+{
+  "sourceUrl": "https://fitness-mainline-polish-preview.initdevl.workers.dev",
+  "sourceCommit": "687a048",
+  "workerVersion": "10f4af19-9b80-4375-b773-e4f672a4ebdd",
+  "generatedAt": "2026-10-11T11:20:25.612Z",
+  "method": "Fresh Chromium context; real onboarding, local plan acceptance, one recorded set, finish, Settings > Export JSON backup download. No DB injection or JSON rewrite.",
+  "synthetic": true,
+  "aiCalls": 0,
+  "envelopeVersion": 8,
+  "databaseVersion": 10,
+  "sha256": "5bbc6780120e0a41d048070e4c980198a49a40aba756cb2719d9631aa857f726",
+  "bytes": 8085,
+  "downloadFilename": "fitness-backup-2026-10-11T11-20-25.409Z.json",
+  "generator": "tests/e2e/export-pr52-before-plan-delete.mjs"
+}

@@ -70,6 +70,9 @@
   font-family: var(--f-body); font-size: var(--t3); line-height: var(--lh-body);
 }
 .v8-morph::backdrop { background: var(--c-scrim); }
+.v8-morph[data-placement="bottom"] { top: auto; bottom: max(var(--s2), env(safe-area-inset-bottom)); height: auto; max-height: calc(100dvh - var(--s5) - env(safe-area-inset-top)); }
+.v8-morph[data-placement="bottom"] .v8-morph-body { height: auto; max-height: calc(100dvh - var(--s5) - env(safe-area-inset-top)); }
+.v8-pause-actions { display: grid; gap: var(--s3); }
 .v8-morph-body { box-sizing: border-box; height: 100%; overflow: auto; padding: var(--s5); opacity: 0; transition: opacity var(--fade); }
 .v8-morph-body[data-open="true"] { opacity: 1; transition-delay: 200ms; }
 .v8-morph-header { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); margin-block-end: var(--s4); }
@@ -83,3 +86,7 @@
 .v8-composer-label { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 @media (prefers-reduced-motion: reduce) { .v8-morph-body { transition: none; } }
 
+
+/* Lining, equal-width numerals remain legible during training in every theme. */
+.v8-stat dd, .v8-minutes, .v8-set-value, .v8-rest time, input[type="number"] { font-variant-numeric: lining-nums tabular-nums slashed-zero; }
+input[type="number"] { font-family: var(--f-num); }

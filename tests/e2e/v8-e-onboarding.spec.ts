@@ -36,10 +36,12 @@ for (const theme of ['qingci', 'liubai', 'jingshe', 'zhuangse']) for (const widt
     await generate.click();
     await expect(page.getByLabel('generate calls')).toHaveText('1');
     await expect(page.getByLabel('confirm calls')).toHaveText('0');
-    await page.locator('.v8-draft-exercise summary').first().click();
+    await page.locator('.v8-draft-exercise button').first().click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await page.getByRole('dialog').getByRole('button', { name: '关闭', exact: true }).click();
     await expect(page.locator('.v8-draft-exercise').first().getByText('哑铃', { exact: true })).toBeVisible();
     await expect(page.locator('.v8-draft-exercise').first()).not.toContainText('dumbbell');
-    await expect(page.locator('.v8-draft-exercise').first().getByText('8 次', { exact: true })).toBeVisible();
+    await expect(page.locator('.v8-draft-exercise').first().getByText(/^8 次(?: · .+)?$/)).toBeVisible();
     await page.screenshot({ path: info.outputPath(`${theme}-${width}-draft.png`), fullPage: true });
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
     await page.getByRole('button', { name: '就用这份计划', exact: true }).click();

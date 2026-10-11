@@ -51,7 +51,7 @@ export async function verifyGuidedBackup(name: string) {
     const old = structuredClone(envelope); old.schemaVersion = 3; old.data.metadata.schemaVersion = 4; delete old.data.guidedStates; delete old.data.v8; delete old.data.nutritionRecords; delete old.data.activityImportReceipts;
     await restore(old);
     const oldCleared = await db.guidedStates.count() === 0;
-    const upgraded = (await repo.readMetadata()).schemaVersion === 9;
+    const upgraded = (await repo.readMetadata()).schemaVersion === 11;
     const noInventedProgram = (JSON.parse(await (await backup.exportBackup()).text()).data.guidedStates as unknown[]).length === 0;
     return { version: envelope.schemaVersion, preserved, staleWriter, rollback, oldCleared, upgraded, noInventedProgram };
   } finally {

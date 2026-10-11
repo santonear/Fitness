@@ -1,0 +1,30 @@
+{
+  "pain": [
+    "You mentioned discomfort.",
+    "Take care of how you feel today.",
+    "The available information cannot explain the cause.",
+    "You can stop the uncomfortable movement for now."
+  ],
+  "safety": "If pain is significant or persists, rest first and consult a professional.",
+  "replacement": "You can try replacing {before} with {after}, for today only.",
+  "time": [
+    "You said you have less time today.",
+    "We can work with the time you have.",
+    "The original session is about {before} minutes.",
+    "You can try this shorter session of about {after} minutes, for today only."
+  ],
+  "review": [
+    "You want to look back at this week.",
+    "Recording what happened helps us decide what to adjust.",
+    "The review uses your saved records.",
+    "You can open this week’s review."
+  ],
+  "unknown": [
+    "I have your question.",
+    "We can start with your existing records and plan.",
+    "The coach service is unavailable right now.",
+    "You can view the basic plan or open this week’s review."
+  ],
+  "noShort": "You can stop for now and record what you actually completed.",
+  "example": "You can try {after}."
+}

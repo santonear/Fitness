@@ -6,13 +6,13 @@ const control = {fetch: vi.fn(async () => new Response('control'))};
 const worker = createFitnessWorker(control);
 const env = (value: Partial<FitnessWorkerEnv>) => value as FitnessWorkerEnv;
 const post = (path: string, data: unknown) => new Request('https://fitness.example'+path,{method:'POST',headers:{origin:'https://fitness.example','Content-Type':'application/json'},body:JSON.stringify(data)});
-it('serves remote flags without model/control configuration and fails closed on KV errors', async () => {
+it('serves remote flags without model/control configuration and reports KV failures without replacing cached flags', async () => {
   const request = new Request('https://fitness.example/api/v1/features');
   const response = await worker.fetch(request,env({FITNESS_FEATURE_CONFIG:{get:async () => '{"errorReports":true}'}}));
   expect((await response.json()).flags.errorReports).toBe(true);
   expect(response.headers.get('Cache-Control')).toBe('no-store');
   const failed = await worker.fetch(request,env({FITNESS_FEATURE_FLAGS:'{"errorReports":true}',FITNESS_FEATURE_CONFIG:{get:async () => {throw new Error('offline');}}}));
-  expect((await failed.json()).flags.errorReports).toBe(false);
+  expect(failed.status).toBe(503);
 });
 it('collects only gated sanitized events, never raw text or opted-out counts', async () => {
   const send = vi.fn(async () => undefined);

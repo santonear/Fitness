@@ -3,6 +3,7 @@ import { useEffect, useId, useRef, type ReactNode, type RefObject } from 'react'
 export type MorphPanelProps = {
   open: boolean; onClose: () => void; triggerRef: RefObject<HTMLElement | null>;
   title: string; closeLabel?: string; children: ReactNode;
+  placement?: 'center' | 'bottom';
 };
 
 const frame = (element: HTMLElement): Keyframe => {
@@ -11,20 +12,24 @@ const frame = (element: HTMLElement): Keyframe => {
 };
 
 /** Native modal semantics keep background content inert and keyboard focus inside. */
-export function MorphPanel({ open, onClose, triggerRef, title, closeLabel = '关闭', children }: MorphPanelProps) {
+export function MorphPanel({ open, onClose, triggerRef, title, closeLabel = '关闭', children, placement = 'center' }: MorphPanelProps) {
   const dialog = useRef<HTMLDialogElement>(null);
   const titleId = useId();
+  const opener = useRef<HTMLElement | null>(null);
   useEffect(() => {
     const panel = dialog.current;
     if (!panel) return;
     let animation: Animation | undefined;
     let cancelled = false;
-    const source = triggerRef.current;
+    let closeTimer: ReturnType<typeof setTimeout> | undefined;
+    let finished = false;
+    if (open && !panel.open) opener.current = triggerRef.current;
+    const source = opener.current;
     const originalVisibility = source?.style.visibility ?? '';
     const reveal = () => { if (source) source.style.visibility = originalVisibility; };
     if (source && (open || panel.open)) source.style.visibility = 'hidden';
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const finish = () => { if (!cancelled) { panel.close(); reveal(); if (source?.isConnected) source.focus({ preventScroll: true }); } };
+    const finish = () => { if (!cancelled && !finished) { finished = true; clearTimeout(closeTimer); panel.close(); reveal(); if (source?.isConnected) source.focus({ preventScroll: true }); } };
     if (open) {
       if (!panel.open) panel.showModal();
       const style = getComputedStyle(panel);
@@ -36,8 +41,9 @@ export function MorphPanel({ open, onClose, triggerRef, title, closeLabel = '关
       const frames = reduced || !source?.isConnected ? [{ opacity: 1 }, { opacity: 0 }] : [frame(panel), frame(source)];
       animation = panel.animate(frames, { duration: reduced ? 120 : 420, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'forwards' });
       animation.onfinish = finish;
+      closeTimer = setTimeout(finish, 600);
     }
-    return () => { cancelled = true; animation?.cancel(); reveal(); };
+    return () => { cancelled = true; clearTimeout(closeTimer); animation?.cancel(); reveal(); };
   }, [open, triggerRef]);
   useEffect(() => {
     // WebKit can move focus to the document when the focused submit button becomes disabled.
@@ -55,8 +61,8 @@ export function MorphPanel({ open, onClose, triggerRef, title, closeLabel = '关
     document.addEventListener('keydown', containTab, true);
     return () => document.removeEventListener('keydown', containTab, true);
   }, []);
-  useEffect(() => () => { if (dialog.current?.open) dialog.current.close(); if (triggerRef.current?.isConnected) triggerRef.current.focus({ preventScroll: true }); }, [triggerRef]);
-  return <dialog ref={dialog} className="v8-morph" aria-labelledby={titleId} aria-modal="true"
+  useEffect(() => { const panel = dialog.current; return () => { if (panel?.open) panel.close(); if (opener.current?.isConnected) opener.current.focus({ preventScroll: true }); }; }, []);
+  return <dialog ref={dialog} role="dialog" className="v8-morph" data-placement={placement} aria-labelledby={titleId} aria-modal="true"
     onCancel={event => { event.preventDefault(); onClose(); }}
     onClick={event => { if (event.target === event.currentTarget) { const r = event.currentTarget.getBoundingClientRect(); if (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom) onClose(); } }}>
     <div className="v8-morph-body" data-open={open}>

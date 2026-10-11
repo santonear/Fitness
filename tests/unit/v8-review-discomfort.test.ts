@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { exercises } from '../../src/catalog/exercises';
+import { estimatePlannedMinutes } from '../../src/application/rules/duration-estimate';
 import { discomfortReplacement } from '../../src/application/rules/basic-items';
 import { recurringDiscomfort, suggestChange } from '../../src/application/review/suggest';
 import { computeWeekFacts } from '../../src/application/review/compute';
@@ -20,7 +21,7 @@ describe('conservative discomfort proposals',()=>{
  });
  it('replaces only the affected movement and preserves completed facts',()=>{
   const before=structuredClone(input),result=suggestChange(input)!;
-  expect(result.rule).toBe('discomfort');expect(result.proposal.templates[0].items[0].exerciseId).toBe(id('Clamshells'));
+  expect(result.proposal.templates[0].estimatedMinutes).toBe(estimatePlannedMinutes(result.proposal.templates[0].items));expect(result.rule).toBe('discomfort');expect(result.proposal.templates[0].items[0].exerciseId).toBe(id('Clamshells'));
   expect(result.proposal.templates[0].items[1]).toEqual(plan.templates[0].items[1]);expect(input).toEqual(before);
   expect(suggestChange({...input,dismissedIds:[result.id]})).toBeNull();
  });

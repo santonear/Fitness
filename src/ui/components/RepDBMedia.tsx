@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { catalogMetadata } from '../../catalog/registry';
+import { exerciseVisualMetadata } from '../../catalog/exercise-visual';
 import type { Locale } from '../../domain/models';
 import { RepDBAttribution } from './RepDBAttribution';
 
@@ -10,7 +10,7 @@ export function CatalogImage({ src, alt, locale }: { src?: string; alt: string; 
     : <img src={src} alt={alt} width="280" height="200" loading="lazy" style={{ maxWidth: '100%', height: 'auto', objectFit: 'contain' }} onError={() => setFailed(src)} />;
 }
 export function RepDBMedia({ exerciseId, exerciseName, locale, thumbnail = false }: { exerciseId: string; exerciseName: string; locale: Locale; thumbnail?: boolean }) {
-  const metadata = catalogMetadata.get(exerciseId);
+  const metadata = exerciseVisualMetadata(exerciseId);
   if (!metadata) return null;
   const poses = (['start', 'peak', 'main'] as const).filter(pose => metadata.media[pose]);
   const selected = thumbnail ? poses.slice(0, 1) : poses;

@@ -57,7 +57,7 @@ function facts(input: ReviewInput, comparisonFrom: string, patternFrom = compari
     || a.exerciseId.localeCompare(b.exerciseId) || a.metric.localeCompare(b.metric));
   const improvements = candidates.filter((row, index) => candidates.findIndex(other => other.exerciseId === row.exerciseId) === index).slice(0, 2);
   return { from: input.from, to: input.to, complete, partial, notStarted: planned.filter(row => row.status === 'not_started').length,
-    movementCount: complete + partial + activities.length, missingCount: Math.max(0, input.weeklyTarget - complete),
+    movementCount: current.filter(moved).length + activities.length, missingCount: Math.max(0, input.weeklyTarget - complete),
     activityMinutes: activities.reduce((sum, row) => sum + row.minutes, 0), activityCounts, reasonCounts,
     trainingSeconds: current.filter(moved).reduce((sum, row) => {
       const seconds = row.endedAt ? (Date.parse(row.endedAt) - Date.parse(row.startedAt)) / 1000 : NaN;

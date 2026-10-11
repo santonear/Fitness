@@ -2,6 +2,7 @@ import {readFile,writeFile as writeBytes,mkdir,readdir} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {inflateRawSync} from 'node:zlib';
 import {SOURCE,adaptDataset,validateReplacements} from './repdb.mjs';
+import {chineseGuides} from './guides-zh.mjs';
 import {chineseName} from './names-zh.mjs';
 import {fileURLToPath} from 'node:url';
 import {resolve} from 'node:path';
@@ -35,7 +36,8 @@ export async function build(){
   for(const path of await readdir('public/exercise-media/repdb',{recursive:true}))if(!allowedFiles.has(path.replaceAll('\\','/')))throw Error('Unexpected public RepDB resource: '+path);
   const registry=catalog.entries.map(({id,slug,metricType,aliases,bodyPart,primaryMuscles,secondaryMuscles,media})=>({id,slug,metricType,aliases,bodyPart,primaryMuscles,secondaryMuscles,media}));
   // Runtime core is small; detailed provider instructions remain a lazy app chunk.
-  const core=catalog.entries.map(({id,name,equipment,category,metricType,allowedMetrics})=>({id,catalogVersion:1,name,equipment,category,metricType,allowedMetrics,steps:{zh:['详细说明为英文；请查看动作详情。'],en:['See exercise details for the original English instructions.']},cautions:{zh:[],en:[]}}));
+  const core=catalog.entries.map(({id,slug,name,equipment,category,metricType,allowedMetrics})=>({id,catalogVersion:1,name,equipment,category,metricType,allowedMetrics,steps:{zh:chineseGuides[slug]?.steps ?? ['对照动作图确认起始姿势与结束姿势。','先用舒适的小幅度熟悉动作，保持呼吸自然。'],en:['See exercise details for the original English instructions.']},cautions:{zh:chineseGuides[slug]?.cautions ?? ['出现疼痛或无法保持稳定时停止。'],en:[]}}));
+  await writeIfChanged('src/catalog/generated/guides-zh.json',JSON.stringify(chineseGuides));
   await writeIfChanged('src/catalog/generated/registry.json',JSON.stringify(registry));await writeIfChanged('src/catalog/generated/core.json',JSON.stringify(core));await writeIfChanged('src/catalog/generated/details.json',JSON.stringify(catalog));
   let copied=0;for(const row of catalog.entries)for(const pose of Object.keys(row.media)){const name=`images/flat/${row.source.externalId}-${pose}.webp`;const image=files.get(name)();if(image.toString('ascii',0,4)!=='RIFF'||image.toString('ascii',8,12)!=='WEBP')throw Error('Invalid WebP');await writeIfChanged('public'+row.media[pose],image);copied++;}
   await mkdir('public/exercise-media/repdb/notices',{recursive:true});

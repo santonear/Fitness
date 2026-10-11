@@ -1,6 +1,6 @@
 # Fitness 当前交付状态
 
-最新状态（2026-10-11）：V8 PR #47 已合入 main（492b9f7）并发布，Worker 8bca7f94-341a-4200-a151-79fdf6cfbc7b。当前后续开发在 codex/v8-followup；四线已本地集成，类型/构建/831项单元通过，整体验收和公网预览仍在进行，尚未发布这些新增功能。模型评测已按批准限额执行，存在格式和事实失败，未通过质量验收；所有生产敏感开关保持关闭。执行状态见 docs/handoff-v8/followup-plan.md，待审决定见同目录pending-decisions.md。下方旧段落保留为历史。
+最新状态（2026-10-11）：main 基线0bd268b（PR #51）。本次主线修复与动作体验四线已汇入feature/mainline-polish，隔离预览已部署并通过375/1280六项浏览器验收；唯一 PR #52 已创建，CI 检查中，未合入main、未发布生产。详细范围与待审决定见docs/handoff-v8/mainline-polish-plan.md和pending-decisions.md。下方旧段落仅为历史，不代表当前状态。
 
 
 更新基线：2026-10-09，已发布 PR #22 / `ac130fa`。这是代码工作区的当前状态摘要；旧进度与验收文件保留历史语境，不能将其中的“待发布”直接视为当前待办。

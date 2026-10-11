@@ -1,0 +1,11 @@
+{
+ "$schema": "./node_modules/wrangler/config-schema.json",
+ "name": "fitness-mainline-polish-preview",
+ "main": "src/backend/fitness-worker.ts",
+ "compatibility_date": "2026-10-05",
+ "workers_dev": true,
+ "preview_urls": false,
+ "vars": { "CONTROL_MODE": "disabled", "FITNESS_FEATURE_FLAGS": "{\"planLifecycle\":true,\"themeDiscovery\":true,\"fontSubset\":true,\"exercisePanel\":true}" },
+ "observability": { "enabled": false },
+ "assets": { "directory": "./dist", "binding": "ASSETS", "not_found_handling": "single-page-application", "run_worker_first": ["/api/*", "/api", "/admin", "/admin/*"] }
+}

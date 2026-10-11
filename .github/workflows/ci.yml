@@ -73,6 +73,7 @@ jobs:
       - run: npx playwright install --with-deps chromium webkit
       - run: npx playwright test --config playwright.trial.config.ts
       - run: npx playwright test --config tests/e2e/v8-mainline.config.ts
+      - run: npx playwright test --config tests/e2e/mainline-polish.config.ts
       - run: npx playwright test --config tests/e2e/v8-plan-review.config.ts
       - run: npx playwright test --config playwright.v8-coach.config.ts
 

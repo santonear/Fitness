@@ -1,7 +1,13 @@
 {
- "adapted": "Exercises loading the areas you selected have been excluded. This is not a medical suitability assessment.",
- "missing": "Not yet included: {types}. Add equipment or specific limitations to complete the draft.",
- "families": {"lower":"lower body","push":"upper push","pull":"upper pull","core":"core"},
- "basicReason": "Uses the equipment you described, starting with manageable set counts.",
- "empty": "Your answers are retained. No exercises could be reliably selected under these constraints. Add specific limitations to complete the draft."
+  "adapted": "Exercises loading the areas you selected have been excluded. This is not a medical suitability assessment.",
+  "missing": "Not yet included: {types}. Add equipment or specific limitations to complete the draft.",
+  "families": {
+    "lower": "lower body",
+    "push": "upper push",
+    "pull": "upper pull",
+    "core": "core"
+  },
+  "basicReason": "Uses the equipment you described, starting with manageable set counts.",
+  "empty": "Your answers are retained. No exercises could be reliably selected under these constraints. Add specific limitations to complete the draft.",
+  "shorter": "With the movements available, this session is about {minutes} minutes and does not fill your reserved time."
 }

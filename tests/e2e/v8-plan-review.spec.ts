@@ -14,10 +14,36 @@ test('plan details morph from a chip, preserve read-only versions, and restore k
  await page.keyboard.press('Escape');await expect(dialog).not.toBeVisible();await expect(chip).toBeFocused();
  await page.getByRole('button',{name:'查看以前的版本'}).click();await expect(page.getByRole('heading',{name:'计划版本',exact:true})).toBeVisible();await page.getByRole('button',{name:'查看计划',exact:true}).first().click();await expect(page.getByRole('heading',{name:'我的计划'})).toBeVisible();
 });
+test('library near matches preserve equipment filters and open complete guidance',async({page})=>{
+ await plan(page);await page.goto('/exercises');
+ await page.getByLabel('器械',{exact:true}).selectOption('none');
+ await page.getByRole('searchbox').fill('俯误错');
+ await expect(page.getByRole('status')).toContainText('相近动作');
+ await page.getByRole('button',{name:'俯卧撑',exact:true}).click();
+ await expect(page.getByRole('dialog').getByRole('heading',{name:'常见错误',exact:true})).toBeVisible();
+ await page.getByRole('dialog').getByRole('button',{name:'关闭',exact:true}).click();
+ await page.getByLabel('器械',{exact:true}).selectOption('barbell');
+ await expect(page.getByRole('status')).toContainText('没有符合条件');
+ await expect(page.getByRole('button',{name:'俯卧撑',exact:true})).toHaveCount(0);
+});
+
 test('library details share modal behavior and favorites survive reload',async({page})=>{
  await plan(page);await page.goto('/exercises');await page.getByLabel('搜索动作').fill('自阻力划船');
- const movement=page.getByRole('button',{name:'自阻力划船',exact:true});await movement.click();await expect(page.getByRole('dialog')).toBeVisible();await page.getByRole('dialog').getByRole('button',{name:'关闭',exact:true}).click();await expect(page.getByRole('dialog')).not.toBeVisible();await expect(movement).toBeFocused();
+   const movement=page.getByRole('button',{name:'自阻力划船',exact:true});await movement.click();await expect(page.getByRole('dialog')).toBeVisible();
+   for(const name of ['动作要点','完整步骤','常见错误','注意事项']) await expect(page.getByRole('dialog').getByRole('heading',{name,exact:true})).toBeVisible();
+   await page.getByRole('dialog').getByRole('button',{name:'关闭',exact:true}).click();await expect(page.getByRole('dialog')).not.toBeVisible();await expect(movement).toBeFocused();
  await page.getByRole('button',{name:'收藏 自阻力划船',exact:true}).click();await page.reload();await page.getByLabel('只看已收藏').check();await expect(page.getByRole('button',{name:'自阻力划船',exact:true})).toBeVisible();
+});
+
+test('library favorites are filtered before exact matches and suggestion limits',async({page})=>{
+ await page.goto('/exercises');await page.getByRole('searchbox').fill('杠铃背蹲');
+ await page.getByRole('button',{name:'收藏 杠铃背蹲',exact:true}).first().click();
+ await page.getByLabel('只看已收藏').check();await page.getByRole('searchbox').fill('哑铃深蹲');
+ await expect(page.getByRole('status')).toContainText('相近动作');
+ await expect(page.getByRole('button',{name:'杠铃背蹲',exact:true})).toBeVisible();
+ await expect(page.getByRole('button',{name:'哑铃深蹲',exact:true})).toHaveCount(0);
+ await page.getByLabel('器械',{exact:true}).selectOption('dumbbell');
+ await expect(page.getByRole('status')).toContainText('没有符合条件');
 });
 
 async function timeEvidence(page:Page){
@@ -55,7 +81,7 @@ test('legacy workout notes and metrics appear in both review periods without rew
  expect(after.session).toEqual(before.session);expect(after.sets).toEqual(expect.arrayContaining(before.sets));
 });
 test('all retained plan versions remain readable and library filters retain attribution in English',async({page})=>{
- await plan(page);await page.evaluate(async()=>{const p='/src/persistence/db.ts',db=(await import(/* @vite-ignore */ p)).database;const current=(await db.v8PlanVersions.toArray())[0];await db.v8PlanVersions.add({...current,id:crypto.randomUUID(),planId:crypto.randomUUID(),goalText:'Earlier retained plan',origin:'migrated',versionNumber:1});const profile=await db.profiles.toCollection().first();await db.profiles.put({...profile,locale:'en'});});
- await page.goto('/plans/versions');const retained=page.locator('.plan-timeline li').filter({has:page.getByText('Earlier retained plan',{exact:true})});await retained.getByRole('button',{name:'View plan',exact:true}).click();await expect(page.getByText('Earlier retained plan',{exact:true})).toBeVisible();await expect(page.getByText(/Read only/)).toBeVisible();
+ await plan(page);await page.evaluate(async()=>{const p='/src/persistence/db.ts',db=(await import(/* @vite-ignore */ p)).database;const current=(await db.v8PlanVersions.toArray())[0];const planId=crypto.randomUUID(),versionId=crypto.randomUUID();await db.transaction('rw',db.v8Plans,db.v8PlanVersions,async()=>{await db.v8Plans.add({id:planId,currentVersionId:versionId,name:'Earlier retained plan',readOnly:true});await db.v8PlanVersions.add({...current,id:versionId,planId,goalText:'Earlier retained plan',origin:'migrated',versionNumber:1});});const profile=await db.profiles.toCollection().first();await db.profiles.put({...profile,locale:'en'});});
+ await page.goto('/plans');const retained=page.locator('section').filter({has:page.getByRole('heading',{name:'Previous plans',exact:true})}).locator('.v8-sheet').filter({has:page.getByText('Earlier retained plan',{exact:true})});await retained.getByRole('button',{name:'View',exact:true}).click();await page.getByRole('button',{name:'View previous versions',exact:true}).click();await page.locator('.plan-timeline li').filter({has:page.getByText('Earlier retained plan',{exact:true})}).getByRole('button',{name:'View plan',exact:true}).click();await expect(page.getByText('Earlier retained plan',{exact:true})).toBeVisible();await expect(page.getByText(/Read only/)).toBeVisible();
  await page.goto('/exercises');await expect(page.getByRole('link',{name:'RepDB',exact:true})).toBeVisible();await page.getByLabel('Search exercises').fill('Self-resisted Row');await page.getByLabel('Equipment',{exact:true}).selectOption('none');await expect(page.getByRole('button',{name:'Self-resisted Row',exact:true})).toBeVisible();await page.getByLabel('Equipment',{exact:true}).selectOption('dumbbell');await expect(page.getByRole('button',{name:'Self-resisted Row',exact:true})).toHaveCount(0);
 });

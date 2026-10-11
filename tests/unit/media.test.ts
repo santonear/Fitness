@@ -15,8 +15,9 @@ describe('catalogue media trust boundary', () => {
   const before = structuredClone(exercises);
   for (const exercise of exercises.slice(0, 4)) {
    const html = renderToStaticMarkup(createElement(ExerciseMedia, { exerciseId: exercise.id, exerciseName: exercise.name.en, locale: 'en' }));
-   expect(html).not.toContain('<iframe'); expect(html).toContain('src="/media/');
-   expect(html).toContain('movement form has not been professionally reviewed');
+   expect(html).not.toContain('<iframe'); expect(html).toMatch(/src="\/(media|exercise-media)\//);
+   expect(html).not.toMatch(/src="\/media\/[^" ]+\.svg/);
+   expect(html).toContain(exercise.id === exercises[0].id ? 'movement form has not been professionally reviewed' : 'RepDB');
    expect(html).toContain('no-referrer');
   }
   expect(exercises).toEqual(before);

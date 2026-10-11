@@ -35,7 +35,7 @@ for (const zh of [false, true]) test(`active trial enters planning and refreshes
   await expect(page).toHaveURL(/\/onboarding$/);
   await expect(page.locator('.v8-onboarding')).toBeVisible();
   await page.goto('/trial'); await expect(page.getByRole('button', { name: zh ? '开始制定训练计划' : 'Start planning your training', exact: true })).toBeEnabled();
-  await page.reload();await page.goto('/trial'); await expect(page.getByRole('button', { name: zh ? '开始制定训练计划' : 'Start planning your training', exact: true })).toBeEnabled();
+  await page.reload();await expect(page).toHaveURL(/\/trial$/); await expect(page.getByRole('button', { name: zh ? '开始制定训练计划' : 'Start planning your training', exact: true })).toBeEnabled();
   expect(writes).toBe(0);
 });
 

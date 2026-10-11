@@ -1,6 +1,6 @@
 import { createDeepSeekWorker, type DeepSeekWorkerEnv } from './deepseek-worker';
 import { verifyAdministrator, type ManagementEnv } from './management-auth';
-import { readFeatureFlags, type FeatureConfigEnv } from './feature-config';
+import { readFeatureFlags, readPublicFeatureFlags, type FeatureConfigEnv } from './feature-config';
 import { monitoringError } from '../application/monitoring';
 import { DailyUsageStore } from './daily-usage-store';
 import { anonymousBatchSchema, TelemetryStore } from './telemetry-store';
@@ -18,9 +18,12 @@ export function createFitnessWorker(control = createDeepSeekWorker(), authentica
       if (request.method !== 'DELETE' && !(await readFeatureFlags(env)).systemNotifications) return new Response(null, { status: 503 });
       return env.PUSH.fetch(request);
     }
-    if (path === '/api/v1/features' && request.method === 'GET') return new Response(JSON.stringify({
-      version: 1, flags: await readFeatureFlags(env), expiresAt: Date.now() + 60_000,
-    }), { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
+    if (path === '/api/v1/features' && request.method === 'GET') {
+      try {
+        return new Response(JSON.stringify({version: 1, flags: await readPublicFeatureFlags(env), expiresAt: Date.now() + 60_000}),
+          { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
+      } catch { return new Response(null, { status: 503, headers: { 'Cache-Control': 'no-store' } }); }
+    }
     if (path === '/api/v1/telemetry/errors' || path === '/api/v1/telemetry/counts') {
       if (request.method !== 'POST' || new URL(request.url).protocol !== 'https:' || request.headers.get('origin') !== new URL(request.url).origin || request.headers.get('sec-fetch-site') === 'cross-site') return new Response(null, {status:403});
       const flags = await readFeatureFlags(env);

@@ -10,6 +10,7 @@ import type { NutritionRecord, ActivityImportReceipt } from '../domain/lifestyle
 export class FitnessDatabase extends Dexie {
   nutritionRecords!: Table<NutritionRecord, string>;
   activityImportReceipts!: Table<ActivityImportReceipt, string>;
+  v8PlanReferences!: Table<NonNullable<V8Library['planReferences']>[number], string>;
   v8Plans!: Table<V8Library['plans'][number], string>;
   v8PlanVersions!: Table<V8Library['planVersions'][number], string>;
   v8Workouts!: Table<V8Library['workouts'][number], string>;
@@ -72,6 +73,13 @@ export class FitnessDatabase extends Dexie {
     this.version(9).stores({ nutritionRecords: 'id,localDate', activityImportReceipts: 'id,&activityId' }).upgrade(async transaction => {
       // Additive only: every existing fact remains byte-for-byte unchanged.
       await transaction.table('metadata').toCollection().modify((row: Metadata) => { row.schemaVersion = 9; });
+    });
+    this.version(11).stores({ v8Plans: 'id,currentVersionId,deletedAt', v8PlanReferences: 'id,planId' }).upgrade(async transaction => {
+      await transaction.table('metadata').toCollection().modify((row: Metadata) => { row.schemaVersion = 11; });
+    });
+    this.version(10).stores({}).upgrade(async transaction => {
+      // New versions may record their source. Never infer or rewrite old plan facts.
+      await transaction.table('metadata').toCollection().modify((row: Metadata) => { row.schemaVersion = 10; });
     });
   }
 }
