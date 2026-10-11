@@ -34,7 +34,7 @@ describe('persistent release controls',()=>{
     expect(sqlite.prepare('SELECT actor FROM admin_release_history').all()).toHaveLength(2);
   });
   it('creates pending todo, rejects stale sensitive enable, permits fresh confirmation and removes todo',async()=>{
-    const {context}=fixture();context.fresh=false;
+    const {context}=fixture();context.fresh=false;context.env.ADMIN_ENVIRONMENT='production';
     const value={name:'errorReports',environment:'production',enabled:true};
     expect((await handleReleases(post('flags',value),context))?.status).toBe(202);
     expect(await releaseTodoSource.evaluate(context)).toHaveLength(1);
@@ -55,6 +55,13 @@ describe('persistent release controls',()=>{
     const {context}=fixture();await handleReleases(post('flags',{name:'exercisePanel',environment:'preview',enabled:true}),context);
     await expect(handleReleases(post('flags',{name:'exercisePanel',environment:'preview',enabled:false}),context)).rejects.toThrow();
     expect(await readManagedFeatureFlags(context.env)).toEqual({exercisePanel:true});
+  });
+  it('refuses foreign-environment writes and masks foreign-environment state',async()=>{
+    const {context,sqlite}=fixture();
+    sqlite.prepare('INSERT INTO admin_feature_flags VALUES(?,?,?,?,?,?)').run('production','nutrition',1,0,'operator','2026-10-11');
+    await expect(handleReleases(post('flags',{name:'nutrition',environment:'production',enabled:false}),context)).rejects.toMatchObject({code:'ENVIRONMENT_NOT_CONNECTED'});
+    const response=await handleReleases(new Request('https://example.test/api/v1/management/console/releases'),context);
+    const body=await response!.json();expect(body.features.find((item:{name:string})=>item.name==='nutrition').states[1].enabled).toBe(null);
   });
   it('rejects incompatible rollback before adapter call and absent adapter fails closed',async()=>{
     const {context}=fixture();context.env.ADMIN_RELEASE_REGISTRY=JSON.stringify([{environment:'preview',dataVersion:12,current,previous}]);
