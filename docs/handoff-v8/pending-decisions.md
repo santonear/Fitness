@@ -181,3 +181,5 @@ RepDB官方证据：[数据许可证](https://github.com/RepDB/exercise-dataset/
 | 支撑动作注意标签过粗 | 区分前臂与手掌支撑；提示及排序使用同一标签；不当作医学适用判断 | 避免漏提示和一概标注手腕 | exercise-guide、catalog-service |
 | 详情遗漏部分指导、旧视频参考需保留 | 共享完整Guide内容；动作库保留原可选视频来源且不重复示意图 | 保留署名与已有功能 | ExerciseGuide、ExerciseMedia、ExercisesPage |
 | 回顾候选修改动作后时长过期 | 仅新候选重算实际时长及短版名称；用户原时长和历史不改 | 显示与候选内容一致 | review/suggest、PlanPage、ReviewPage |
+| 收藏条件在建议截断之后才生效 | 新增可选allowedIds，先限定候选再匹配/排序/截断 | 收藏里的近似动作不被非收藏挤掉 | catalog-service、ExercisesPage |
+| 手动候选可能同动作多个目标 | 保留模板全部条目及顺序，卡片只显示唯一动作；预览、对话摘录、底栏和保存快照统一估算 | 不丢目标、不显示互相矛盾的时长 | CoachPanel、ManualPage、v8-workflow |

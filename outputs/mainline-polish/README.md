@@ -2,7 +2,13 @@
 
 隔离预览：https://fitness-mainline-polish-preview.initdevl.workers.dev
 
-Worker版本：e133eaf1-5712-4bb2-b1ce-36b228a88e41。2026-10-11，Chromium新浏览器资料，375/1280宽度，合成输入；无真实设备、无付费模型。10项公网预览验收通过（37.3秒），包括新增人物图加载。截图关闭捕获时动画以避免记录胶囊中间帧。
+Worker版本：230a990c-7473-4068-a88e-ac57034f897c；修复代码79aea38。2026-10-11，Chromium新浏览器资料，375/1280宽度，合成输入；无真实设备、无付费模型。最终12项公网预览验收通过（39.8秒），包括两条主线、人物图、无结果相近建议及完整指导。截图关闭捕获时动画以避免记录胶囊中间帧。
+
+新增审计修复截图：
+- [375手动相近结果](preview-375-manual-near-matches.png) / [1280](preview-1280-manual-near-matches.png)
+- [375手动完整指导](preview-375-manual-full-guide.png) / [1280](preview-1280-manual-full-guide.png)
+- [375动作库完整指导](preview-375-library-full-guide.png) / [1280](preview-1280-library-full-guide.png)
+- [375手动AI候选模拟](mock-375-manual-ai-candidate.png) / [1280](mock-1280-manual-ai-candidate.png)：仅本地HTTP合成返回，验证重复动作目标、估算和确认界面，不能当作真实DeepSeek响应证据。
 
 - [preview-1280-appearance-撞色.png](preview-1280-appearance-撞色.png)
 - [preview-1280-appearance-留白.png](preview-1280-appearance-留白.png)
