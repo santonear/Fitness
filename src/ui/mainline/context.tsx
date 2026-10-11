@@ -3,7 +3,7 @@ import { createContext, useContext, useEffect, useRef, useState, type ReactNode 
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../themes/ThemeProvider';
 import { getThemeSlots } from '../../themes/registry';
-import { createV8Workflow, type LocalCandidate } from '../../application/v8-workflow';
+import { createV8Workflow, type LocalCandidate, type ManualSelection } from '../../application/v8-workflow';
 import { optionalCoachBody,optionalCoachHistory } from '../../application/v8-coach-optional';
 import { activityDate } from '../../application/v8-activity';
 import { backfillOnboarding } from '../../application/v8-onboarding-backfill';
@@ -88,7 +88,7 @@ function useController() {
  const slots=getThemeSlots(appearance.theme);
  const name=(id:string)=>exercises.find(e=>e.id===id)?.name[locale]??id;
  const start=(templateId?:string,manualId?:string)=>run(async()=>{const record=await workflow.start(templateId,manualId);setWorkoutValues({});setFocusIndex(0);navigate(`/workout/${record.id}`);});
- const startManual=(ids:string[])=>run(async()=>{const record=await workflow.start(undefined,undefined,ids);setWorkoutValues({});setFocusIndex(0);navigate(`/workout/${record.id}`);});
+ const startManual=(ids:string[],selection?:ManualSelection)=>run(async()=>{const record=await workflow.start(undefined,undefined,ids,selection);setWorkoutValues({});setFocusIndex(0);navigate(`/workout/${record.id}`);});
  return {coachInitialSend,sendHomeCoach,reviewKind,setReviewKind,coachOpen,setCoachOpen,coachRequest,coachRevision,coachTrigger,openCoach,completedWeeks,monthFacts,previousFacts,workoutValues,setWorkoutValues,focusIndex,setFocusIndex,data,facts,answers,setAnswers,step,setStep,candidate,setCandidate,busy,error,locale,t,slots,name,navigate,run,reload,start,startManual,appearance};
 }
 const Context=createContext<ReturnType<typeof useController>|null>(null);

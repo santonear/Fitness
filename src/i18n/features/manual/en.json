@@ -33,7 +33,7 @@
   "plan": "Use a planned session",
   "help": "Let Yaya help",
   "recent": "Recent exercises",
-  "local": "A local selection based on your filters. You can adjust it.",
+  "local": "Local candidates use your confirmed place, equipment and cautions. Search filters stay unchanged.",
   "noPlan": "No plan yet. Choose a few exercises to begin.",
   "noRecent": "No recently completed exercises yet.",
   "noMatch": "No exercises match. Try another word or clear the filters.",
@@ -53,5 +53,12 @@
   "adultRequired": "Local suggestions are available after confirming you are 18 or older. You can still choose exercises yourself.",
   "placeRequired": "Choose where you will train before requesting a local selection.",
   "manualDefaults": "Switched to a manual workout with 2 sets per exercise.",
-  "planTargets": "This session keeps its planned sets and targets. Adding or removing exercises switches to a manual workout."
+  "planTargets": "This session keeps its planned sets and targets. Adding or removing exercises switches to a manual workout.",
+  "similar": "Similar exercises (current filters retained)",
+  "chooseCandidate": "Choose this workout",
+  "candidateHint": "This only prepares a manual workout; your plan stays unchanged. Adding or removing exercises resets each exercise to 2 sets.",
+  "candidateReady": "Workout selected. Review it before starting.",
+  "useCandidate": "Choose this workout",
+  "importCandidate": "Bring back to manual workout",
+  "sets": "sets"
 }

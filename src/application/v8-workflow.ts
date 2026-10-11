@@ -1,7 +1,7 @@
 import type { Repository } from '../persistence/repository';
 import { DomainError } from '../domain/errors';
 import { v8CoachProfileSchema, v8PlanVersionSchema, v8WorkoutSchema, setMetricsSchema } from '../domain/schemas';
-import type { CoachProfile, Feedback, SetFact } from '../domain/v8/contracts';
+import type { CoachProfile, Feedback, SetFact, SessionTemplate } from '../domain/v8/contracts';
 import type { CoachResponse, CoachRequest } from '../coach/contracts';
 import { adaptCoachResponse } from '../coach/response-adapter';
 import { planProposalSchema } from '../coach/contracts';
@@ -13,6 +13,7 @@ import basicZh from '../i18n/features/onboarding/basic.zh.json';
 import basicEn from '../i18n/features/onboarding/basic.en.json';
 
 export type LocalCandidate = Extract<CoachResponse, { type: 'plan_proposal' }> & { expectedRevision: number; profile: CoachProfile; source?: 'local' | 'ai' };
+export type ManualSelection = { adultConfirmed: boolean; template: SessionTemplate; expectedRevision: number; restoreGeneration: number };
 const invalid = (message: string): never => { throw new DomainError('INVALID', message); };
 /** Basic rules are local and conservative; no model call or inferred medical suitability. */
 export function basicProposal(profile: CoachProfile, locale = 'zh') {
@@ -71,8 +72,10 @@ export function createV8Workflow(repo: Repository) {
       return version;
     }, candidate.expectedRevision);
   }
-  async function start(templateId?: string, manualExerciseId?: string, manualExerciseIds?: string[]) {
+  async function start(templateId?: string, manualExerciseId?: string, manualExerciseIds?: string[], manualSelection?: ManualSelection) {
     return repo.write(async () => {
+      const metadata = await repo.readMetadata();
+      if (manualSelection && (templateId || metadata.dataRevision !== manualSelection.expectedRevision || (metadata.restoreGeneration ?? 0) !== manualSelection.restoreGeneration)) throw new DomainError('CONFLICT', 'STALE_CANDIDATE');
       if (await db.v8Workouts.where('status').equals('in_progress').count() || await db.sessions.where('status').equals('in_progress').count()) throw new DomainError('CONFLICT', 'TRAINING_ALREADY_ACTIVE');
       const state = await db.v8State.get('v8'), profile = await db.profiles.toCollection().first();
       const plan = state?.currentPlanId ? await db.v8Plans.get(state.currentPlanId) : undefined;
@@ -81,12 +84,15 @@ export function createV8Workflow(repo: Repository) {
       const template = override && override.planVersionId === version?.id && override.templateId === templateId ? override.template : version?.templates.find(item => item.id === templateId);
       if (templateId && (!template || plan?.readOnly)) return invalid('TEMPLATE_UNAVAILABLE');
       if (!profile) return invalid('PROFILE_REQUIRED');
+      const manualTemplate = manualSelection ? v8PlanVersionSchema.shape.templates.element.parse(manualSelection.template) : undefined;
+      if (manualTemplate && (manualSelection?.adultConfirmed !== true || state?.coachProfile?.adultConfirmed === false)) return invalid('ADULT_CONFIRMATION_REQUIRED');
       const manualIds = [...new Set(manualExerciseIds ?? (manualExerciseId ? [manualExerciseId] : []))];
+      if (manualTemplate && (manualTemplate.items.length !== manualIds.length || manualTemplate.items.some((item, index) => item.exerciseId !== manualIds[index] || exercises.find(e => e.id === item.exerciseId)?.metricType !== item.target.metricType))) return invalid('INVALID_MANUAL_SELECTION');
       if (!template && (!manualIds.length || manualIds.some(id => !exercises.some(item => item.id === id)))) return invalid('SELECT_EXERCISE');
-      const items = template?.items ?? manualTrainingItems(manualIds);
+      const items = template?.items ?? manualTemplate?.items ?? manualTrainingItems(manualIds);
       const record = v8WorkoutSchema.parse({ id: crypto.randomUUID(), ...(template ? { planVersionId: version!.id, templateId } : {}),
         startedAt: new Date().toISOString(), localDate: localDate(profile.timeZone), timeZone: profile.timeZone, status: 'in_progress', sets: [],
-        ...(template ? { templateSnapshot: template } : {}), plannedSetCount: items.reduce((sum, item) => sum + item.sets, 0),
+        ...(template || manualTemplate ? { templateSnapshot: template ?? manualTemplate } : {}), plannedSetCount: items.reduce((sum, item) => sum + item.sets, 0),
         plannedExercises: items.map((item, itemIndex) => ({ exerciseId: item.exerciseId, itemIndex, plannedSetCount: item.sets })) });
       await db.v8Workouts.add(record);
       if (override && template === override.template && state) { const { nextWorkoutOverride: _used, ...rest } = state; await db.v8State.put(rest); }

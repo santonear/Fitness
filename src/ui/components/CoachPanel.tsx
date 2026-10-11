@@ -17,7 +17,7 @@ import { targetText } from './ExerciseTargets';
 import { coachConversationExcerpt } from '../../ai/coach-context';
 
 export type CoachApplication = { request: CoachRequest; response: CoachResponse; expectedRevision: number };
-export type CoachPanelProps = { open: boolean; localOnly?: boolean; onClose: () => void; request?: CoachRequest; expectedRevision: number;
+export type CoachPanelProps = { open: boolean; localOnly?: boolean; applyLabel?: string; successLabel?: string; disableNutrition?: boolean; localFallbackOnError?: boolean; onClose: () => void; request?: CoachRequest; expectedRevision: number;
   initialSend?:{nonce:string;message:string;request:CoachRequest;expectedRevision:number};
   triggerRef?: RefObject<HTMLElement|null>; onLocalPlan?:()=>void; onLocalReview?:()=>void; locale?:'zh'|'en'; unavailableReason?:string; onApply: (candidate: CoachApplication) => Promise<unknown>; onResponse?: (candidate: CoachApplication) => void };
 
@@ -42,9 +42,9 @@ export function CoachScopeDisclosure({request,locale}:{request:CoachRequest;loca
  return <details><summary>{t.scope}</summary><p>{t.consent}</p><p>{t.taskNames[request.task]}</p><dl>{Object.entries(request).filter(([key])=>['locale','timeZone','adultConfirmed','profile','body','history','nutrition','messages','template','instruction','plan','kind','facts'].includes(key)).map(([key,value])=><div key={key}><dt>{key==='nutrition'?lifestyleCopy[locale].nutrition:t.fields[key as keyof typeof t.fields]}</dt><dd>{readable(value,t,lang?'en':'zh')}</dd></div>)}</dl><details><summary>{t.technical}</summary><dl>{coachScopeFields(request).map(field=><div key={field.key}><dt>{t.fields[field.key as keyof typeof t.fields]??field.key}</dt><dd>{field.value}</dd></div>)}</dl></details></details>;
 }
 /** Keep mounted when closed so drafts and reviewed candidates survive panel dismissal. */
-export function CoachPanel({open,onClose,request,expectedRevision,onApply,onResponse,triggerRef:externalTrigger,onLocalPlan,onLocalReview,locale,unavailableReason,initialSend,localOnly}:CoachPanelProps){
+export function CoachPanel({open,onClose,request,expectedRevision,onApply,onResponse,triggerRef:externalTrigger,onLocalPlan,onLocalReview,locale,unavailableReason,initialSend,localOnly,applyLabel,successLabel,disableNutrition,localFallbackOnError}:CoachPanelProps){
  const [text,setText]=useState(''),[bodyKeys,setBodyKeys]=useState<string[]>([]),[history,setHistory]=useState(false),[state,setState]=useState<CoachVisualState>('idle'),[error,setError]=useState(''),[candidate,setCandidate]=useState<CoachApplication>();
- const nutritionEnabled=useFeature('nutrition'); const [dietConsent,setDietConsent]=useState(false),[dietRows,setDietRows]=useState<CoachRequest['nutrition']>();
+ const nutritionFeature=useFeature('nutrition'); const nutritionEnabled=nutritionFeature&&!disableNutrition; const [dietConsent,setDietConsent]=useState(false),[dietRows,setDietRows]=useState<CoachRequest['nutrition']>();
  useEffect(()=>{let alive=true;setDietConsent(false);setDietRows(undefined);if(open&&nutritionEnabled)void repository.db.nutritionRecords.orderBy('localDate').toArray().then(rows=>{if(alive)setDietRows(nutritionForCoach(rows,true));});return()=>{alive=false;};},[open,nutritionEnabled,request?.restoreGeneration,request?.conversationId]);
  const [requestId,setRequestId]=useState(()=>crypto.randomUUID());
  const [applying,setApplying]=useState(false),applyLock=useRef(false);
@@ -90,11 +90,11 @@ export function CoachPanel({open,onClose,request,expectedRevision,onApply,onResp
  const canApply=candidate&&(['plan_proposal','change_proposal','today_adjustment'].includes(candidate.response.type)||candidate.response.type==='review_summary'&&candidate.response.suggestion);
  return <MorphPanel open={open} onClose={onClose} triggerRef={externalTrigger??triggerRef} title={t.title} closeLabel={t.close}>
   <div className="coach-panel-content">
-  <CoachVisual state={state}/><div aria-live="polite">{busy?t.thinking:state==='success'?t.saved:''}</div>
+  <CoachVisual state={state}/><div aria-live="polite">{busy?t.thinking:state==='success'?(successLabel??t.saved):''}</div>
   {!request&&<p>{unavailableReason??t.unavailable}</p>}
-  {(!request||noAccess)&&<>{onLocalPlan&&<Button onClick={onLocalPlan}>{t.localPlan}</Button>}{onLocalReview&&!localReply?.review&&<Button onClick={onLocalReview}>{t.localReview}</Button>}</>}
+  {(!request||noAccess||localFallbackOnError&&!!error)&&<>{onLocalPlan&&<Button onClick={onLocalPlan}>{t.localPlan}</Button>}{onLocalReview&&!localReply?.review&&<Button onClick={onLocalReview}>{t.localReview}</Button>}</>}
   {localReply&&!candidate&&<section>{localReply.lines.map((line,index)=><p key={index}>{line}</p>)}{localReply.review&&onLocalReview&&<Button onClick={onLocalReview}>{t.localReview}</Button>}</section>}
-  {candidate&&<section>{(localReply?.lines??responseText(candidate.response)).map((line,index)=><p key={index}>{line}</p>)}{templates.map(template=><section key={template.id}><h3>{template.name}</h3><p>{template.estimatedMinutes} {t.minutes}</p><ul>{template.items.map((item,index)=><li key={index}>{exercises.find(e=>e.id===item.exerciseId)?.name[lang?'en':'zh']??item.exerciseId} · {item.sets} {t.sets} · {targetText(item.target,lang?'en':'zh')}</li>)}</ul></section>)}{canApply&&state!=='success'&&<Button disabled={applying} onClick={()=>void apply()}>{t.apply}</Button>}</section>}
+  {candidate&&<section>{(localReply?.lines??responseText(candidate.response)).map((line,index)=><p key={index}>{line}</p>)}{templates.map(template=><section key={template.id}><h3>{template.name}</h3><p>{template.estimatedMinutes} {t.minutes}</p><ul>{template.items.map((item,index)=><li key={index}>{exercises.find(e=>e.id===item.exerciseId)?.name[lang?'en':'zh']??item.exerciseId} · {item.sets} {t.sets} · {targetText(item.target,lang?'en':'zh')}</li>)}</ul></section>)}{canApply&&state!=='success'&&<Button disabled={applying} onClick={()=>void apply()}>{applyLabel??t.apply}</Button>}</section>}
   {preview&&<><>{nutritionEnabled&&!!dietRows?.length&&<label><input type="checkbox" checked={dietConsent} disabled={busy||applying} onChange={e=>setDietConsent(e.target.checked)}/>{lifestyleCopy[lang?'en':'zh'].dietConsent}</label>}{request?.body&&Object.keys(request.body).length>0&&<fieldset disabled={busy||applying}><legend>{t.body}</legend>{Object.entries(request.body).map(([key,value])=><label key={key}><input type="checkbox" checked={bodyKeys.includes(key)} onChange={e=>setBodyKeys(keys=>e.target.checked?[...keys,key]:keys.filter(k=>k!==key))}/>{t.detailLabels[key as keyof typeof t.detailLabels]??key} · {readable(value,t,lang?'en':'zh')}</label>)}</fieldset>}{request?.history&&<label><input type="checkbox" checked={history} disabled={busy||applying} onChange={e=>setHistory(e.target.checked)}/>{t.history}</label>}</>
    <CoachScopeDisclosure request={preview} locale={lang?'en':'zh'}/>
    <Composer value={text} onChange={setText} onSend={()=>void send()} label={t.input} sendLabel={t.send} busy={busy} disabled={busy||applying}/></>}
