@@ -1,0 +1,17 @@
+
+Running 8 tests using 1 worker
+
+(node:37828) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [375] › tests\e2e\mainline-polish.spec.ts:13:1 › RepDB guide retains both poses and visible source link (2.5s)
+  ok 2 [375] › tests\e2e\mainline-polish.spec.ts:19:1 › fresh mainline: duration, local coach, exercise guide, bottom pause, finish and review (5.5s)
+  ok 3 [375] › tests\e2e\mainline-polish.spec.ts:42:1 › unknown load stays unknown until a chosen fractional weight, all theme numerals (6.5s)
+  ok 4 [375] › tests\e2e\mainline-polish.spec.ts:52:1 › manual selection to completed record, appearance previews and reminders (2.5s)
+(node:50808) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 5 [1280] › tests\e2e\mainline-polish.spec.ts:13:1 › RepDB guide retains both poses and visible source link (1.2s)
+  ok 6 [1280] › tests\e2e\mainline-polish.spec.ts:19:1 › fresh mainline: duration, local coach, exercise guide, bottom pause, finish and review (5.9s)
+  ok 7 [1280] › tests\e2e\mainline-polish.spec.ts:42:1 › unknown load stays unknown until a chosen fractional weight, all theme numerals (6.1s)
+  ok 8 [1280] › tests\e2e\mainline-polish.spec.ts:52:1 › manual selection to completed record, appearance previews and reminders (2.9s)
+
+  8 passed (35.7s)

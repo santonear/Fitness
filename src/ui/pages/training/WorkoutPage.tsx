@@ -7,6 +7,7 @@ import { useTrainingWakeLock } from './useTrainingWakeLock';
 import { CoachVisual } from '../../components/CoachVisual';
 import { ExerciseGuideImage, ExerciseGuidePanel, ExerciseGuideAttribution } from '../../components/ExerciseGuide';
 import { getExerciseGuide } from '../../../catalog/exercise-guide';
+import { manualTrainingItems } from '../../../application/rules/manual-items';
 import guideZh from '../../../i18n/features/training/guide.zh.json';
 import guideEn from '../../../i18n/features/training/guide.en.json';
 export function WorkoutPage(){
@@ -22,13 +23,13 @@ export function WorkoutPage(){
  const effectiveId=active.substitutions?.filter(s=>s.itemIndex===item.itemIndex).at(-1)?.toExerciseId??item.exerciseId;
  const exercise=exercises.find(e=>e.id===effectiveId)!;
  const template=active.templateSnapshot??data?.versions.find(v=>v.id===active.planVersionId)?.templates.find(s=>s.id===active.templateId),planned=template?.items[item.itemIndex];
- const matching=planned?.exerciseId===effectiveId?planned.target:undefined;
+ const matching=planned?.exerciseId===effectiveId?planned.target:manualTrainingItems([effectiveId])[0]?.target;
  const previous=active.sets.filter(s=>s.itemIndex===item.itemIndex&&s.exerciseId===effectiveId).at(-1);
  const timed=exercise.metricType.startsWith('duration');
  const key=`${active.id}:${index}:${effectiveId}`;
  const value=values[key]??(timed?previous?.durationSeconds??(matching&&'durationSeconds'in matching?matching.durationSeconds:30):previous?.reps??(matching&&'reps'in matching?matching.reps:8));
  const suggestedLoad=previous?.loadGrams??(matching&&'loadGrams'in matching?matching.loadGrams:undefined);
- const load=values[`${key}:kg`]??(suggestedLoad!==undefined&&suggestedLoad!==null&&suggestedLoad>0?suggestedLoad/1000:undefined);
+ const load=values[`${key}:kg`]??(typeof suggestedLoad==='number'&&suggestedLoad>0?suggestedLoad/1000:undefined);
  const hasLoad=load!==undefined&&Number.isFinite(load)&&load>0;
  const guide=getExerciseGuide(effectiveId,locale);
  const distance=values[`${key}:meters`]??previous?.distanceMeters??(matching&&'distanceMeters'in matching?matching.distanceMeters:undefined);

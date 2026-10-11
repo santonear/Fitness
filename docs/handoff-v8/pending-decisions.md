@@ -147,3 +147,20 @@ PR #38 已全绿合入；组件 #39、建议 #40、字体 #41、三主题 #42 �
 | 设置尚未接上规范中的休息轻震 | 使用设备本地关闭优先偏好；90秒到达且页面可见/有焦点、浏览器支持时尝试一次短震；暂停/离页清理定时，过期不补发 | 按现有规范补齐，不倒计时、不弹窗、不声称所有设备支持 | useRestVibration.ts、settings/training 文案及测试 |
 | 删除旧设置页影响备份UI回归 | 以V8设置的实际下载和文件上传恢复覆盖跨origin及无BroadcastChannel的另页旧输入保护 | 保留真实浏览器与文件链路，不能用service-only替代 | v8-backup-ui.spec.ts |
 | 自动发现第五套模板涉及固定ThemeId | 当前四套均保留；未擅自扩大冻结枚举或改变类型含义，此扩展能力尚未验收 | 可选模板发现不等于随意更改冻结字段 | themes/registry.ts、contract.ts |
+
+## 2026-10-11 · 主线修复与动作体验（集成待验收）
+
+| 情况 | 决定 | 理由 | 涉及文件 |
+|---|---|---|---|
+| 新增芽芽话术/头像背景 | 用户已批准四步话术及等义英文、本地像素去背景；原角色不重绘 | 沿用明确授权，不产生模型费用 | coach/local*.json、CoachVisual、public/coach |
+| 无资格仍先发生成请求 | 发送前仅查询空内容资格；未知/失败本地，有效才按同意清单发送 | 防止无资格时多余内容外发 | coach/transport.ts、CoachPanel |
+| 自由训练漏计“动了次数” | 加入已保存complete/partial自由训练；计划目标及建议不变 | 与真实运动及结束序号一致，不改事实 | review/compute.ts、FinishPage |
+| 长时长与安全动作集矛盾 | 单动作最多5组，不够时保留更短实际草案和理由 | 不为凑时长过量加组或编造动作 | rules/basic-items、duration-estimate |
+| 本地/AI来源旧字段无法区别 | 新增可选source、DB10/envelope8；旧值不推断 | 安全新增、备份可往返 | domain/schemas、db、backup |
+| 手动捷径按计划 | 未改选择时保留原组目标；增删后告知转手动2组 | 避免捷径悄悄降组 | manual/selection、ManualPage |
+| RepDB许可 | 官方Free v1.0允许署名的应用展示；Git不含批量JSON/WebP，不提供数据下载/API，排除premium，不做生成式处理 | 官网LICENSE-DATA/ATTRIBUTION及固定包已核对 | catalog/build、RepDBAttribution、translation-review |
+| 中文覆盖 | 150/637独立中文编辑指导，20例全文供审核；487项不宣称完整翻译 | 如实报告覆盖和审查边界 | guides-zh.mjs、mainline-translation-review.md |
+
+RepDB官方证据：[数据许可证](https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md)、[署名要求](https://github.com/RepDB/exercise-dataset/blob/main/ATTRIBUTION.md)。部署产物中的受限数据仅供应用使用，不作为公开数据集仓库分发。
+
+最终审查补充：手动计时默认与估算统一20秒；计划捷径展示并消费同一有效今日调整，过期调整不使用。仅改新训练默认/显示，不改历史。文件：WorkoutPage、ManualPage及对应测试。

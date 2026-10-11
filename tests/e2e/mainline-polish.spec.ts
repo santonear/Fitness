@@ -1,7 +1,7 @@
 import {test,expect,type Page} from '@playwright/test';
 async function shot(page:Page,name:string){
  await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- await page.screenshot({path:`outputs/mainline-polish/${process.env.POLISH_BASE_URL?'preview':'local'}-${page.viewportSize()!.width}-${name}.png`,fullPage:true,animations:'disabled'});
+ await page.screenshot({path:`outputs/mainline-polish/${process.env.POLISH_BASE_URL?'preview':'local'}-${page.viewportSize()!.width}-${name}.png`,fullPage:!name.startsWith('manual'),animations:'disabled'});
 }
 async function onboard(page:Page){
  await page.goto('/');
@@ -10,6 +10,12 @@ async function onboard(page:Page){
  }
  await page.getByLabel('我已年满 18 岁',{exact:false}).check();await page.getByRole('button',{name:'生成我的第一版计划'}).click();
 }
+test('RepDB guide retains both poses and visible source link',async({page})=>{
+ await page.goto('/manual');await page.getByRole('searchbox').fill('reverse lunge');await page.getByRole('button',{name:'反向弓步',exact:true}).click();await page.getByRole('button',{name:'开始',exact:true}).click();await page.getByRole('button',{name:'查看动作指导',exact:true}).click();
+ const dialog=page.getByRole('dialog');await expect(dialog.locator('.repdb-media img')).toHaveCount(2);await expect(dialog.getByRole('link',{name:'RepDB',exact:true})).toHaveAttribute('href','https://repdb.co/');
+ for(const image of await dialog.locator('.repdb-media img').all())await expect.poll(()=>image.evaluate((e:HTMLImageElement)=>e.complete&&e.naturalWidth>0)).toBe(true);
+ await shot(page,'repdb-guide');
+});
 test('fresh mainline: duration, local coach, exercise guide, bottom pause, finish and review',async({page})=>{
  let modelCalls=0;await page.route('**/api/v1/plans/generate',async r=>{modelCalls++;await r.abort();});
  await onboard(page);await expect(page.getByText('基础计划',{exact:true})).toBeVisible();
@@ -45,8 +51,8 @@ test('unknown load stays unknown until a chosen fractional weight, all theme num
 });
 test('manual selection to completed record, appearance previews and reminders',async({page})=>{
  await page.goto('/manual');const search=page.getByRole('searchbox',{name:'搜索动作'});await search.fill('squat');await page.getByRole('button',{name:'徒手深蹲',exact:true}).first().click();await shot(page,'manual-search');
- await search.fill('plank');await page.getByRole('button',{name:'平板支撑',exact:true}).first().click();await page.getByRole('button',{name:'清空筛选',exact:true}).click();await page.getByRole('button',{name:'在家',exact:true}).click();await shot(page,'manual-filter');
- await expect(page.locator('.manual-start')).toContainText('已选 2 个动作');await page.getByRole('button',{name:'开始',exact:true}).click();await page.getByRole('button',{name:'完成这一组',exact:true}).click();await page.getByRole('button',{name:'暂停或结束',exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:'结束并记下',exact:true}).click();await page.getByRole('button',{name:'记下来',exact:true}).click();
+ await search.fill('plank');await page.getByRole('button',{name:'平板支撑',exact:true}).first().click();await page.getByRole('button',{name:'清空筛选',exact:true}).click();await page.getByRole('button',{name:'在家',exact:true}).click();await shot(page,'manual-filter');await page.locator('.manual-card').first().scrollIntoViewIfNeeded();await shot(page,'manual-cards');
+ await expect(page.locator('.manual-start')).toContainText('已选 2 个动作');await page.getByRole('button',{name:'开始',exact:true}).click();await page.getByRole('button',{name:'完成这一组',exact:true}).click();await page.locator('.v8-capsules').getByRole('button',{name:'平板支撑',exact:true}).click();await expect(page.locator('.v8-set-value')).toContainText('20 秒');await page.getByRole('button',{name:'暂停或结束',exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:'结束并记下',exact:true}).click();await page.getByRole('button',{name:'记下来',exact:true}).click();
  await expect(page.getByText('这周你动了 1 次。',{exact:true})).toBeVisible();
  await page.goto('/settings/appearance');await expect(page.locator('.v8-theme-choice')).toHaveCount(4);await shot(page,'appearance');
  for(const theme of ['青瓷','留白','静奢','撞色']){
