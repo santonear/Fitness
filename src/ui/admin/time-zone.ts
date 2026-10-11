@@ -4,7 +4,7 @@ export function formatAdminTimeZone(timeZone:string,language:'zh'|'en'='zh',at:n
  if(language==='en')return offset==='UTC'?'UTC+0':offset;
  const match=/^UTC([+-])(\d+)(?::(\d+))?$/.exec(offset),numbers=['零','一','二','三','四','五','六','七','八','九','十','十一','十二','十三','十四'];
  if(!match||(Number(match[2])===0&&!match[3]))return '零时区（UTC+0）';
- if(match[3])return `${timeZone}（${offset}）`;
+ if(match[3])return `UTC${match[1]}${match[2]}:${match[3]}`;
  return `${match[1]==='+'?'东':'西'}${numbers[Number(match[2])]??match[2]}区（${offset}）`;
 }
 

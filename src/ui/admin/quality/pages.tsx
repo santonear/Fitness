@@ -1,6 +1,6 @@
 import { qualityLabel } from './copy';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { formatAdminTimeZone } from '../time-zone';
+import { adminTimeZoneOptions } from '../time-zone-options';
 import { useTranslation } from 'react-i18next';
 import { adminRequest } from '../shared/api';
 import type { NotificationSettings } from '../../../backend/admin/quality/contracts';
@@ -30,10 +30,7 @@ export function AdminNotificationSettings() {
   const [settings, setSettings] = useState<NotificationSettings>(); const [busy, setBusy] = useState(false); const [message, setMessage] = useState('');
   const pending = useRef<{ path: string; body: unknown; id: ReturnType<typeof crypto.randomUUID> } | null>(null);
   const { i18n } = useTranslation(); const language = i18n.language.startsWith('zh') ? 'zh' : 'en';
-  const timeZones = useMemo(() => [...new Set([settings?.timeZone ?? 'UTC', Intl.DateTimeFormat().resolvedOptions().timeZone, ...Intl.supportedValuesOf('timeZone')])].map(value => {
-    const name = new Intl.DateTimeFormat(language, { timeZone: value, timeZoneName: 'longGeneric' }).formatToParts().find(part => part.type === 'timeZoneName')?.value;
-    return { value, label: `${formatAdminTimeZone(value, language)} · ${name}` };
-  }), [settings?.timeZone, language]);
+  const timeZones = useMemo(() => adminTimeZoneOptions(settings?.timeZone ?? 'UTC', language), [settings?.timeZone, language]);
   useEffect(() => { if (data) setSettings(data.settings); }, [data]);
   async function mutate(path: string, body: unknown) {
     if (pending.current && (pending.current.path !== path || JSON.stringify(pending.current.body) !== JSON.stringify(body))) { setMessage(t('请先重试上一次未确认的操作。', 'Retry the unconfirmed operation first.')); return; }
