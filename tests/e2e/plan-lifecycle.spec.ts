@@ -6,6 +6,7 @@ test.afterEach(()=>expect(aiCalls).toBe(0));
 
 async function draft(page:Page,goal='保持力量'){
  await page.goto('/onboarding');
+ if(goal!=='保持力量')await expect(page.getByRole('button',{name:'生成我的第一版计划',exact:true})).toBeVisible();
  await expect(page.getByRole('heading').first()).toBeVisible();
  for(let step=0;step<3&&await page.getByRole('button',{name:'上一步',exact:true}).count();step++)await page.getByRole('button',{name:'上一步',exact:true}).click();
  for(const answer of [goal,'每周3次，每次30分钟','在家，只有瑜伽垫']){await page.getByLabel('你的回答').fill(answer);await page.getByRole('button',{name:'继续',exact:true}).click();}

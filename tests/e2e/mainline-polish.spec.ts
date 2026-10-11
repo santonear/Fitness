@@ -133,7 +133,7 @@ test('preview retains cached lifecycle offline and confirms reuse of a previous 
  await page.evaluate(()=>{history.pushState(null,'','/settings');window.dispatchEvent(new PopStateEvent('popstate'));});await page.getByRole('button',{name:'已删除的计划',exact:true}).click();await expect(page.getByRole('button',{name:'恢复',exact:true})).toBeVisible();await shot(page,'offline-restore');
  await page.getByRole('button',{name:'恢复',exact:true}).click();await expect(page.getByText('已恢复到以前的计划',{exact:true})).toBeVisible();await context.setOffline(false);
  await page.route('**/api/v1/features',r=>r.abort());await page.reload();await expect(page.getByRole('button',{name:'已删除的计划',exact:true})).toBeVisible();
- await page.goto('/onboarding');
+ await page.goto('/onboarding');await expect(page.getByRole('button',{name:'生成我的第一版计划',exact:true})).toBeVisible();
  for(let i=0;i<3&&await page.getByRole('button',{name:'上一步',exact:true}).count();i++)await page.getByRole('button',{name:'上一步',exact:true}).click();
  for(const answer of ['第二份力量计划','每周2次，每次30分钟','在家，只有瑜伽垫']){await page.getByLabel('你的回答').fill(answer);await page.getByRole('button',{name:'继续',exact:true}).click();}
  await page.getByLabel('我已年满 18 岁',{exact:false}).check();await page.getByRole('button',{name:'生成我的第一版计划'}).click();await page.getByRole('button',{name:'就用这份计划',exact:true}).click();await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
