@@ -98,6 +98,14 @@ describe('assistant v2 model', () => {
     const truncated = createAssistantProvider({ apiKey: '', baseUrl: 'https://example.test', fetch: async () => new Response('data: {"choices":[]}\n') });
     await expect(gather(truncated.streamText([]))).rejects.toThrow('TRUNCATED_STREAM');
   });
+  it('does not invent zero usage for incomplete provider reports',async () => {
+    const model=createAssistantProvider({apiKey:'',baseUrl:'https://example.test',fetch:async (_url,init)=>{
+      const request=JSON.parse(String(init?.body));
+      return request.stream ? new Response('data: {"usage":{"prompt_tokens":5}}\n\ndata: [DONE]\n\n') : Response.json({choices:[{message:{content:'{"attachment":null}'}}],usage:{prompt_tokens:5}});
+    }});
+    expect((await gather(model.streamText([])))[0].usage).toBeUndefined();
+    expect((await model.generateAttachment([])).usage).toBeUndefined();
+  });
 });
 
 
