@@ -88,7 +88,8 @@ function useController() {
  const slots=getThemeSlots(appearance.theme);
  const name=(id:string)=>exercises.find(e=>e.id===id)?.name[locale]??id;
  const start=(templateId?:string,manualId?:string)=>run(async()=>{const record=await workflow.start(templateId,manualId);setWorkoutValues({});setFocusIndex(0);navigate(`/workout/${record.id}`);});
- return {coachInitialSend,sendHomeCoach,reviewKind,setReviewKind,coachOpen,setCoachOpen,coachRequest,coachRevision,coachTrigger,openCoach,completedWeeks,monthFacts,previousFacts,workoutValues,setWorkoutValues,focusIndex,setFocusIndex,data,facts,answers,setAnswers,step,setStep,candidate,setCandidate,busy,error,locale,t,slots,name,navigate,run,reload,start,appearance};
+ const startManual=(ids:string[])=>run(async()=>{const record=await workflow.start(undefined,undefined,ids);setWorkoutValues({});setFocusIndex(0);navigate(`/workout/${record.id}`);});
+ return {coachInitialSend,sendHomeCoach,reviewKind,setReviewKind,coachOpen,setCoachOpen,coachRequest,coachRevision,coachTrigger,openCoach,completedWeeks,monthFacts,previousFacts,workoutValues,setWorkoutValues,focusIndex,setFocusIndex,data,facts,answers,setAnswers,step,setStep,candidate,setCandidate,busy,error,locale,t,slots,name,navigate,run,reload,start,startManual,appearance};
 }
 const Context=createContext<ReturnType<typeof useController>|null>(null);
 export const useMainline=()=>{const value=useContext(Context);if(!value)throw new Error('Missing mainline provider');return value;};
