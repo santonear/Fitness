@@ -39,6 +39,14 @@ function coverPatterns(template:SessionTemplate,candidates:Candidate[]){
  }
 }
 function recalculate(template:SessionTemplate,minimum=15){template.estimatedMinutes=estimatePlannedMinutes(template.items,minimum);}
+function fitDuration(template:SessionTemplate,minutes:number){
+ while(estimatePlannedMinutes(template.items)>minutes){
+  const reducible=[...template.items].reverse().find(item=>item.sets>1);
+  if(!reducible)break;
+  reducible.sets--;
+ }
+ recalculate(template);
+}
 function findExistingItem(template:SessionTemplate,value:string|undefined):number{
  if(!value)return -1;
  const key=normal(value);
@@ -96,9 +104,10 @@ export function assembleAssistantIntent(raw:unknown,request:AssistantRequest):{a
   const proposal=structuredClone(context.plan);
   if(intent.params?.daysPerWeek)proposal.weeklyTarget=intent.params.daysPerWeek;
   if(intent.params?.preferredDays)proposal.preferredDays=intent.params.preferredDays.filter(day=>['mon','tue','wed','thu','fri','sat','sun'].includes(day)) as typeof proposal.preferredDays;
+  if(intent.params?.minutesPerSession)proposal.sessionMinutes=Math.max(15,intent.params.minutesPerSession);
   let applied=0;
-  for(const template of proposal.templates){applied+=applyChanges(template,intent.changes,candidates,new Set(),dropped);coverPatterns(template,candidates);recalculate(template);}
-  if(intent.changes.length&&!applied&&!intent.params?.daysPerWeek&&!intent.params?.preferredDays?.length)throw Error('NO_APPLICABLE_CHANGE');
+  for(const template of proposal.templates){applied+=applyChanges(template,intent.changes,candidates,new Set(),dropped);coverPatterns(template,candidates);if(intent.params?.minutesPerSession)fitDuration(template,proposal.sessionMinutes);else recalculate(template);}
+  if(intent.changes.length&&!applied&&!intent.params?.daysPerWeek&&!intent.params?.minutesPerSession&&!intent.params?.preferredDays?.length)throw Error('NO_APPLICABLE_CHANGE');
   const changes=intent.changes.map(change=>`${change.op}: ${change.from??''} ${change.to??''}`.trim());
   return {attachment:coachResponseSchema.parse({...identity,type:'change_proposal',target:context.target,proposal,changes:changes.length?changes:['Adjusted the plan.']}),dropped,repaired:dropped.length>0};
  }

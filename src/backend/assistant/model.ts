@@ -3,6 +3,9 @@ import { assistantPrompt, ASSISTANT_PROMPT_VERSION, type AssistantPromptMessage 
 import { repairAssistantAttachment, AttachmentValidationError } from './repair';
 import { checkCoachLanguage } from '../../application/rules/coach-language';
 import { assembleAssistantIntent } from './assemble';
+import { selectAssistantCandidates, assistantMovement } from '../../catalog/ai-catalog';
+import { getExerciseGuide } from '../../catalog/exercise-guide';
+import { exercises } from '../../catalog/exercises';
 
 export interface AssistantProvider {
   streamText(messages: AssistantPromptMessage[], signal?: AbortSignal): AsyncIterable<{ delta?: string; usage?: AssistantUsage }>;
@@ -22,6 +25,13 @@ function buildPrompt(...args: Parameters<typeof assistantPrompt>) {
   try { return assistantPrompt(...args); }
   catch(error) { throw new AssistantProviderError(error instanceof Error && error.message === 'INVALID_PROMPT_VERSION' ? 'INVALID_PROMPT_VERSION' : 'PROMPT_BUILD_FAILED'); }
 }
+function localEnglishReply(message:string){
+ if(/pain|hurt|discomfort|chest/i.test(message))return 'Stop the movement that hurts. If the pain is severe or persists, seek professional care.';
+ if(/secret|system prompt|ignore|bypass|overwrite/i.test(message))return 'I cannot bypass confirmation or reveal private instructions. I can help you review a safe plan.';
+ if(/history|height|weight|body data/i.test(message))return 'We can discuss training without those details. What would you like to focus on?';
+ if(/plan|workout|training|exercise/i.test(message))return 'I can prepare a training suggestion for you to review.';
+ return 'I can help with your training question. Tell me what you would like to focus on.';
+}
 
 /** No persistence. Admission, charging and local confirmation belong to callers. */
 export async function* runAssistantModel(input: unknown, options: AssistantModelOptions): AsyncGenerator<AssistantEvent> {
@@ -32,7 +42,7 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
   const version = options.promptVersion ?? ASSISTANT_PROMPT_VERSION;
   const calls: AssistantCall[] = [];
   const usage = () => calls.reduce((sum, call) => ({ inputTokens: sum.inputTokens + (call.inputTokens ?? 0), outputTokens: sum.outputTokens + (call.outputTokens ?? 0) }), { inputTokens: 0, outputTokens: 0 });
-  let text = '', emitted = 0, attachmentKind = 'none', proseNormalized = false;
+  let text = '', emitted = 0, attachmentKind = 'none', proseNormalized = false, foreignLanguage = false;
   let blockedText: 'COACH_LANGUAGE' | 'TEXT_LIMIT' | undefined;
   const textCall: AssistantCall = { stage: 'text', result: 'failed' };
   calls.push(textCall);
@@ -46,13 +56,14 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
       if (chunk.delta) {
         if (text.length + chunk.delta.length > 16000) { blockedText='TEXT_LIMIT'; continue; }
         text += chunk.delta;
+        if(request.locale==='en'&&[...text.matchAll(/[\u3400-\u9fff]/gu)].length>=4)foreignLanguage=true;
         const normalized = text.replace(/[!！]+/g, request.locale === 'zh' ? '。' : '.').replace(/\p{Extended_Pictographic}|\p{Regional_Indicator}|\u20e3|\uFE0F|\u200D/gu, '');
         if(normalized !== text) {text=normalized;proseNormalized=true;}
         if (checkCoachLanguage(text).length) { blockedText='COACH_LANGUAGE'; continue; }
         // Hold the short routing suffix and any partial banned phrase across chunks.
         const markerAt = text.indexOf('<<ATTACHMENT:');
         const safeEnd = Math.max(emitted, Math.min(text.length - 80, markerAt < 0 ? text.length : markerAt));
-        if (safeEnd > emitted) { yield { type: 'text_delta', delta: text.slice(emitted, safeEnd) }; emitted = safeEnd; }
+        if (!foreignLanguage&&safeEnd > emitted) { yield { type: 'text_delta', delta: text.slice(emitted, safeEnd) }; emitted = safeEnd; }
       }
     }
     if (blockedText) throw new AssistantProviderError(blockedText);
@@ -66,10 +77,11 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
         // A request to replace an exercise needs the proposed replacement card.
         if(/换(?:个|成|掉)?动作|替换|replace|swap|alternative/i.test(latest)&&request.context?.task==='MODIFY_PLAN')attachmentKind='change';
         else if(/换(?:个|成|掉)?动作|替换|replace|swap|alternative/i.test(latest)&&request.context?.task==='ADJUST_TODAY')attachmentKind='today';
-        else attachmentKind='none';
       }
     }
     else if (text.includes('<<ATTACH')) text = text.slice(0, text.indexOf('<<ATTACH')).trimEnd();
+    if(version==='assistant-v3.0.0'&&attachmentKind==='none'&&/(?:介绍|讲讲|动作要领|怎么做|explain|how to do)/i.test(request.messages.at(-1)?.content??''))attachmentKind='exercise';
+    if(foreignLanguage){text=localEnglishReply(request.messages.at(-1)?.content??'');emitted=0;proseNormalized=true;}
     if (!text.trim()) throw new AssistantProviderError('EMPTY_TEXT');
     if (text.length > emitted) yield { type: 'text_delta', delta: text.slice(emitted) };
     textCall.result = proseNormalized ? 'repaired' : 'success';
@@ -80,6 +92,15 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
     yield { type: 'done', success: false, usage: usage(), calls, promptVersion: version, result: 'failed' };
     return;
   }
+  if(version==='assistant-v3.0.0'&&attachmentKind==='exercise'){
+    const latest=request.messages.at(-1)?.content.toLocaleLowerCase()??'';
+    const candidate=selectAssistantCandidates(request).find(row=>[row.exercise.name.zh,row.exercise.name.en].some(name=>latest.includes(name.toLocaleLowerCase())));
+    if(candidate){const guide=getExerciseGuide(candidate.exercise.id,request.locale);yield {type:'attachment',attachment:{type:'exercise_info',exerciseId:candidate.exercise.id,summary:guide.keyPoints.join(request.locale==='zh'?'；':'; '),mutationAllowed:false}};}
+    yield {type:'done',success:true,usage:usage(),calls,promptVersion:version,result:'success'};return;
+  }
+  // A free chat has no plan identity to apply. Keep its answer instead of
+  // treating an over-eager routing marker as a failed plan generation.
+  if(version==='assistant-v3.0.0'&&!request.context)attachmentKind='none';
   if (!request.adultConfirmed || attachmentKind === 'none') {
     yield { type: 'done', success: true, usage: usage(), calls, promptVersion: version, result: proseNormalized ? 'repaired' : 'success' };
     return;
@@ -115,11 +136,21 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
     try{
       const latest=request.messages.at(-1)!.content;
       const minutes=latest.match(/(\d{1,3})\s*(?:分钟|minutes?|mins?)/i);
-      const weekly=latest.match(/(?:每周|一周)\s*([1-7])\s*次|\b([1-7])\s*(?:times?\s*)?(?:a|per)\s*week/i);
+      const weekly=latest.match(/(?:每周|一周)\s*([1-7一二两三四五六七])\s*次|\b([1-7])\s*(?:times?\s*)?(?:a|per)\s*week|\b(twice|once)\s*(?:a|per)\s*week/i);
+      const weekValue=weekly&&({'一':1,'二':2,'两':2,'三':3,'四':4,'五':5,'六':6,'七':7,once:1,twice:2} as Record<string,number>)[(weekly[1]??weekly[2]??weekly[3]).toLowerCase()]||Number(weekly?.[1]??weekly?.[2]);
       const task=request.context.task;
-      const intent=task==='ONBOARD_PLAN'?{kind:'plan_new',params:{...(minutes?{minutesPerSession:Number(minutes[1])}:{}),...(weekly?{daysPerWeek:Number(weekly[1]??weekly[2])}:{})}}:
-        task==='ADJUST_TODAY'&&minutes?{kind:'today_adjust',minutes:Number(minutes[1])}:
-        task==='MODIFY_PLAN'&&weekly?{kind:'plan_modify',params:{daysPerWeek:Number(weekly[1]??weekly[2])},changes:[]}:
+      const addPush=/加.*(?:推|胸)|add.*(?:push|chest)/i.test(latest);
+      const lessEquipment=/少.*器械|less equipment/i.test(latest);
+      const candidateList=selectAssistantCandidates(request);
+      const plan=task==='MODIFY_PLAN'?request.context.plan:undefined;
+      const addCandidate=addPush&&plan?candidateList.find(row=>row.mode==='push'&&!plan.templates.some(template=>template.items.some(item=>item.exerciseId===row.exercise.id))):undefined;
+      const equipped=lessEquipment&&plan?plan.templates.flatMap(template=>template.items.map(item=>({template,item}))).find(({item})=>item.equipment!=='none'):undefined;
+      const previous=equipped?exercises.find(row=>row.id===equipped.item.exerciseId):undefined;
+      const replacement=previous?candidateList.find(row=>row.mode===assistantMovement(previous)&&row.exercise.equipment==='none'):undefined;
+      const changes=[...(addCandidate&&plan?[{op:'add' as const,session:plan.templates[0].id,to:addCandidate.code}]:[]),...(equipped&&replacement?[{op:'replace' as const,session:equipped.template.id,from:equipped.item.exerciseId,to:replacement.code}]:[])];
+      const intent=task==='ONBOARD_PLAN'?{kind:'plan_new',params:{...(minutes?{minutesPerSession:Number(minutes[1])}:{}),...(weekValue?{daysPerWeek:weekValue}:{})}}:
+        task==='ADJUST_TODAY'?{kind:'today_adjust',minutes:minutes?Number(minutes[1]):Math.max(10,request.context.template.estimatedMinutes-5)}:
+        task==='MODIFY_PLAN'?{kind:'plan_modify',params:{...(weekValue?{daysPerWeek:weekValue}:{}),...(minutes?{minutesPerSession:Number(minutes[1])}:{})},changes}:
         task==='PERIOD_REVIEW'?{kind:'review',highlights:[]}:null;
       if(intent){const fallback=assembleAssistantIntent(intent,request);if(fallback.attachment){yield {type:'attachment',attachment:fallback.attachment};yield {type:'done',success:true,usage:usage(),calls,promptVersion:version,result:'fallback'};return;}}
     }catch{ /* An unsafe fallback must not become an applicable card. */ }

@@ -30,6 +30,29 @@ describe('assistant v2 model', () => {
     const events=await gather(runAssistantModel(request,{provider:model,promptVersion:'assistant-v3.0.0'}));
     expect(calls).toBe(0);expect(events.at(-1)).toMatchObject({success:true});
   });
+  it('builds an exercise guide card locally without a second model call',async()=>{
+    let calls=0;const model=provider();model.generateAttachment=async()=>{calls++;throw Error('should not call');};
+    model.streamText=async function*(){yield {delta:'可以先看动作要点。<<ATTACHMENT:exercise>>',usage};};
+    const events=await gather(runAssistantModel({...request,messages:[{role:'user',content:'介绍一下徒手深蹲的动作'}]},{provider:model,promptVersion:'assistant-v3.0.0'}));
+    expect(calls).toBe(0);
+    expect(events.some(event=>event.type==='attachment'&&event.attachment.type==='exercise_info'&&event.attachment.exerciseId===EXERCISE_IDS.bodyweightSquat)).toBe(true);
+  });
+  it('keeps free chat usable when the model requests an inapplicable plan card',async()=>{
+    const model=provider();model.generateAttachment=async()=>{throw Error('should not call');};
+    model.streamText=async function*(){yield {delta:'I can discuss training with you.<<ATTACHMENT:plan>>',usage};};
+    const events=await gather(runAssistantModel(request,{provider:model,promptVersion:'assistant-v3.0.0'}));
+    expect(events.at(-1)).toMatchObject({type:'done',success:true});
+    expect(events.some(event=>event.type==='attachment_failed')).toBe(false);
+  });
+  it('replaces a wrong-language English response before emitting it',async()=>{
+    const model=provider();model.generateAttachment=async()=>{throw Error('should not call');};
+    model.streamText=async function*(){yield {delta:'可以，聊训练没问题。你更想先聊哪一类？<<ATTACHMENT:none>>',usage};};
+    const events=await gather(runAssistantModel({...request,messages:[{role:'user',content:'Can we discuss training without history?'}]},{provider:model,promptVersion:'assistant-v3.0.0'}));
+    const text=events.filter(event=>event.type==='text_delta').map(event=>event.delta).join('');
+    expect(text).toContain('We can discuss training');
+    expect(text).not.toMatch(/[\u3400-\u9fff]/u);
+    expect(events.at(-1)).toMatchObject({type:'done',success:true,result:'repaired'});
+  });
   it('streams text before optional attachment and accounts calls', async () => {
     const events = await collect({ ...request, context }, provider([{ attachment }]));
     expect(events.map(e => e.type)).toEqual(['text_delta', 'attachment_pending', 'attachment', 'done']);
