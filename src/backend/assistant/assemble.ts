@@ -197,10 +197,6 @@ export function assembleAssistantIntent(raw:unknown,request:AssistantRequest):{a
    if(intent.params?.minutesPerSession&&!scoped)fitDuration(template,proposal.sessionMinutes);else recalculate(template);
    syncTemplateName(template,request.locale);
   }
-  if(changesToApply.some(change=>['add','remove','replace','set_volume','shorten'].includes(change.op))&&!intent.params?.minutesPerSession){
-   const lengths=proposal.templates.map(template=>template.estimatedMinutes).sort((a,b)=>a-b);
-   proposal.sessionMinutes=Math.round((lengths[Math.floor((lengths.length-1)/2)]+lengths[Math.ceil((lengths.length-1)/2)])/2);
-  }
   proposal.scheduleOriginalText=context.plan.scheduleOriginalText;
   if(explicitReplacements.length&&!context.plan.templates.some((before,index)=>
    before.items.some((item,itemIndex)=>item.exerciseId!==proposal.templates[index]?.items[itemIndex]?.exerciseId)))throw Error('NO_APPLICABLE_CHANGE');
@@ -208,6 +204,7 @@ export function assembleAssistantIntent(raw:unknown,request:AssistantRequest):{a
   if(context.plan.weeklyTarget!==proposal.weeklyTarget)changes.push(request.locale==='zh'?`每周${proposal.weeklyTarget}次`:`${proposal.weeklyTarget} times per week`);
   if(JSON.stringify(context.plan.preferredDays??[])!==JSON.stringify(proposal.preferredDays??[]))changes.push(request.locale==='zh'?'调整训练日':'Changed training days');
   if(!changes.length)throw Error('NO_APPLICABLE_CHANGE');
+  changes.push(request.locale==='zh'?`预计${proposal.sessionMinutes}分钟`:`About ${proposal.sessionMinutes} minutes`);
   const reason=request.locale==='zh'?'按已确认的场地、器械和注意部位筛选动作。':'Exercises respect the confirmed place, equipment and cautions.';
   proposal.reasons=[changes[0],changes[1]??reason,request.locale==='zh'?`每次预计约${proposal.sessionMinutes}分钟。`:`About ${proposal.sessionMinutes} minutes per workout.`];
   return {attachment:coachResponseSchema.parse({...identity,type:'change_proposal',target:context.target,proposal,changes}),dropped,repaired:dropped.length>0};

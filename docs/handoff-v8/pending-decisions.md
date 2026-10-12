@@ -220,3 +220,5 @@ RepDB官方证据：[数据许可证](https://github.com/RepDB/exercise-dataset/
 - 情况：新健康资料功能需受远程开关保护。决定：新增敏感bodyProfile开关，仅预览开启；关闭后停止新增收集，已有资料仍可查看和删除。理由：保持此前敏感功能上线门禁。文件：feature-flags.ts、releases/model.ts、BodyProfilePanel.tsx。
 - 情况：管理员本地日期与账本月份不同。决定：费用和账本都用账本请求明细按管理员时区分日，旧账本不能归日的差额单独展示；本地降级次数只从运营事件补入，不从事件重复累计费用。文件：finance/report.ts、finance/index.ts。
 - 情况：当前用户安全筛选后A/B内容相同。决定：仅合并完全相同的动作与目标组合，保留每周频次，提供编辑注意部位入口。理由：避免伪造训练变化。文件：v8-workflow.ts、PlanDraftPage.tsx。
+
+- 2026-10-13 第三轮：用户未指定时长时保留 sessionMinutes，仅重算训练单 estimatedMinutes。计划修改卡的“分钟/次”和总摘要统一使用 sessionMinutes；单份训练单内仍显示实际预计用时。理由：不把偏好时长与单份训练单估算混为一谈。文件：assemble.ts、AssistantAttachment.tsx。
