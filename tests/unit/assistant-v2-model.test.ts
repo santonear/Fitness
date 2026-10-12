@@ -44,6 +44,14 @@ describe('assistant v2 model', () => {
     expect(events.at(-1)).toMatchObject({type:'done',success:true});
     expect(events.some(event=>event.type==='attachment_failed')).toBe(false);
   });
+  it('creates a draft when an explicit weekday schedule gets a missing marker',async()=>{
+    const {target:_target,template:_template,instruction:_instruction,...common}=context;
+    const input={...request,messages:[{role:'user' as const,content:'Monday Wednesday Friday evenings; maybe weekends, 40 minutes each'}],context:{...common,task:'ONBOARD_PLAN' as const,profile:{goalText:'fitness',weeklyTarget:3,sessionMinutes:40,scheduleOriginalText:'Monday Wednesday Friday evenings',place:'home' as const,equipment:['none'],adultConfirmed:true as const,cautions:[]}}};
+    const model=provider([{kind:'plan_new',params:{daysPerWeek:3}}]);
+    model.streamText=async function*(){yield {delta:'Three weekdays can be your baseline.<<ATTACHMENT:none>>',usage};};
+    const events=await gather(runAssistantModel(input,{provider:model,promptVersion:'assistant-v3.0.0'}));
+    expect(events.some(event=>event.type==='attachment'&&event.attachment.type==='plan_proposal'&&event.attachment.proposal.weeklyTarget===3)).toBe(true);
+  });
   it('replaces a wrong-language English response before emitting it',async()=>{
     const model=provider();model.generateAttachment=async()=>{throw Error('should not call');};
     model.streamText=async function*(){yield {delta:'可以，聊训练没问题。你更想先聊哪一类？<<ATTACHMENT:none>>',usage};};
