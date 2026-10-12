@@ -230,3 +230,5 @@ RepDB官方证据：[数据许可证](https://github.com/RepDB/exercise-dataset/
 - 2026-10-13 第四轮动作分类：upper-legs/lower-legs 先于通用 push/pull 名称匹配；提踵归现有 hinge，下肢深蹲类仍为 squat；核心 leg raise 归 core，肩部侧/前平举仍为 push。理由：复用现有模式，不让名称 raise 跨部位误配。文件：ai-catalog.ts、assemble.ts。
 
 - 2026-10-13 第四轮预计时长：卡片与计划页共用 estimatedDurationLabel，按训练单 estimatedMinutes 显示单值或范围；“当前/建议安排”的 sessionMinutes 仍为用户设定值。理由：区分实际预计用时和用户偏好时长。文件：labels.ts、PlanPage.tsx、AssistantAttachment.tsx、assemble.ts。
+
+- 2026-10-13 第四轮第4项（待确认、未实施）：新计划确认后，建议用新确认的场地/器械替换旧器械偏好，保留注意部位、禁用动作等其他偏好；需确认是否保留旧器械偏好的可撤销记录，以及只有本轮明确提供器械时才替换。理由：避免旧“去健身房”与新“在家有哑铃”并存；这是偏好语义变化，本轮不修改偏好。涉及 assistant-preferences.ts、onboarding 与计划应用路径。
