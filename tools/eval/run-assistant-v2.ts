@@ -92,14 +92,17 @@ try {
    const report = { ...preflight, promptVersion: done.promptVersion, events, outputText: events.filter(event => event.type === 'text_delta').map(event => event.delta).join(''), latencyMs: performance.now() - started, httpStatus, calls: done.calls, actualCny, price: { inputCnyPerMillion: inputPrice, outputCnyPerMillion: outputPrice }, score };
    entry.report = `${scenario.scenarioId}-${createHash('sha256').update(requestId).digest('hex').slice(0,8)}.json`;
    await writeFile(resolve(directory, entry.report), JSON.stringify(report, null, 2), { mode: 0o600 }); records.push(report); executed++;
-  } catch {
+  } catch (error) {
     entry.status = 'approved-conservative-upper-bound'; entry.chargedCny = reservedCny;
     const report = {...preflight, events, httpStatus, latencyMs:performance.now()-started, reservedCny, status:entry.status, costIsUpperBound:true, score:scoreAssistantV2(scenario,events,evidence)};
     entry.report = `${scenario.scenarioId}-${createHash('sha256').update(requestId).digest('hex').slice(0,8)}.json`;
     await writeFile(resolve(directory,entry.report),JSON.stringify(report,null,2),{mode:0o600});records.push(report);
-    // Admission or transport failures must stop this batch. Repeated 429s can
-    // exhaust the evaluation hold even though the model never ran.
-    if (httpStatus === 429) stopReason = 'preview-http-429-stop-for-review';
+    // An unaccounted response or admission failure needs review before any
+    // further paid call; repeated holds can exhaust the evaluation budget.
+    stopReason = httpStatus === 429 ? 'preview-http-429-stop-for-review'
+      : httpStatus && httpStatus >= 400 ? `preview-http-${httpStatus}-stop-for-review`
+      : error instanceof Error && error.message === 'UNKNOWN_USAGE' ? 'unknown-usage-stop-for-review'
+      : 'transport-failure-stop-for-review';
    }
   await save();
   if (stopReason !== 'completed') break;
