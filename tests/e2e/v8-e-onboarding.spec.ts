@@ -51,6 +51,7 @@ for (const theme of ['qingci', 'liubai', 'jingshe', 'zhuangse']) for (const widt
 test('basic mode also requires adulthood and never presents external consent', async ({ page }) => {
   await page.goto('/tests/e2e/helpers/v8-e-onboarding.html?basic'); await questions(page);
   await expect(page.getByText('基础计划', { exact: true })).toBeVisible();
+  await expect(page.getByText('开启 AI 后可以得到更贴合的计划', { exact: true })).toBeVisible();
   await expect(page.locator('summary')).toHaveCount(0);
   await expect(page.getByRole('button', { name: '生成新计划' })).toBeDisabled();
   await page.getByRole('button', { name: '上一步', exact: true }).click();
