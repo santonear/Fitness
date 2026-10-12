@@ -26,6 +26,9 @@ type Entry = { scenarioId: string; requestId: string; reservedCny: number; charg
 type Journal = { version: 1; entries: Entry[] };
 try {
  const { assistantV2Scenarios, scoreAssistantV2, evaluationMessages } = await vite.ssrLoadModule('/tools/eval/assistant-v2-scenarios.ts');
+ const selectedIds=(process.env.ASSISTANT_EVAL_SCENARIO_IDS??'').split(',').map(value=>value.trim()).filter(Boolean);
+ const selectedScenarios=selectedIds.length?assistantV2Scenarios.filter((scenario:{scenarioId:string})=>selectedIds.includes(scenario.scenarioId)):assistantV2Scenarios;
+ if(selectedIds.length&&selectedScenarios.length!==new Set(selectedIds).size)throw Error('UNKNOWN_OR_DUPLICATE_EVALUATION_SCENARIO');
  const { assistantRequestSchema, sanitizeAssistantRequest } = await vite.ssrLoadModule('/src/assistant/contracts.ts');
  const { assistantPrompt, ASSISTANT_PROMPT_VERSION } = await vite.ssrLoadModule('/src/backend/assistant/prompts.ts');
  const { basicProposal } = await vite.ssrLoadModule('/src/application/v8-workflow.ts');
@@ -52,7 +55,7 @@ try {
  const zeroBand = () => ({ morning: { partial: 0, notStarted: 0 }, daytime: { partial: 0, notStarted: 0 }, evening: { partial: 0, notStarted: 0 } });
  const records: unknown[] = [];
  let stopReason = 'completed', executed = 0, attemptedThisRun = 0;
- for (const scenario of assistantV2Scenarios) {
+ for (const scenario of selectedScenarios) {
   if (execute && attemptedThisRun >= maxScenarios) { stopReason = 'requested-batch-complete'; break; }
   const journalScenarioId = evaluationRevision === 'baseline' ? scenario.scenarioId : `${scenario.scenarioId}@${evaluationRevision}`;
   if (journal.entries.some(entry => entry.scenarioId === journalScenarioId)) continue; // No automatic reruns, even failed calls.
@@ -118,7 +121,7 @@ try {
   await save();
   if (stopReason !== 'completed') break;
  }
- const summary = { mode: execute ? 'execute' : 'dry-run', endpoint, scenarios: assistantV2Scenarios.length, executed, alreadyAttempted: journal.entries.length, totalBudgetCny, cumulativeSpentOrHeldCny: spent(), stopReason, metrics: summarizeAssistantEvaluation(records), humanReviewStillRequired: true, records };
+ const summary = { mode: execute ? 'execute' : 'dry-run', endpoint, scenarios: selectedScenarios.length, executed, alreadyAttempted: journal.entries.length, totalBudgetCny, cumulativeSpentOrHeldCny: spent(), stopReason, metrics: summarizeAssistantEvaluation(records), humanReviewStillRequired: true, records };
  await writeFile(resolve(directory, execute ? 'latest-report.json' : 'preflight.json'), JSON.stringify(summary, null, 2), { mode: 0o600 });
  if (execute) await writeFile(resolve(directory, `report-${evaluationRevision}.json`),JSON.stringify(summary,null,2),{mode:0o600});
  console.log(JSON.stringify({ ...summary, records: undefined }));
