@@ -38,7 +38,7 @@ test('deleting the current plan preserves its versions and undo restores the sam
  await page.getByRole('button',{name:'撤销',exact:true}).click();
  await expect.poll(async()=>(await records(page)).state.currentPlanId).toBe(before.plans[0].id);
  const restored=await records(page);expect(restored.plans[0].deletedAt).toBeUndefined();expect(restored.versions).toEqual(before.versions);
- await page.goto('/plans');await page.reload();await expect(page.getByRole('button',{name:'不再使用这份计划',exact:true})).toBeVisible();
+ await page.reload();await expect(page.getByRole('button',{name:'不再使用这份计划',exact:true})).toBeVisible();
 });
 
 test('deleted plans leave workout facts and weekly totals intact and restore from settings',async({page})=>{
