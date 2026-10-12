@@ -7,3 +7,23 @@ describe('assistant streaming client',()=>{
  it('preserves reset time and never retries daily admission',async()=>{let calls=0;await expect(sendAssistant(request,new AbortController().signal,()=>{},(async()=>{calls++;return Response.json({error:'DAILY_MESSAGE_LIMIT',resetAt:'2026-10-13T00:00:00Z'},{status:429});}) as typeof fetch)).rejects.toMatchObject({message:'DAILY_MESSAGE_LIMIT',resetAt:'2026-10-13T00:00:00Z'});expect(calls).toBe(1);});
  it('rejects a truncated stream even after text arrives',async()=>{await expect(sendAssistant(request,new AbortController().signal,()=>{},(async()=>new Response('data: {"type":"text_delta","delta":"partial"}\n\n')) as typeof fetch)).rejects.toThrow('NETWORK_ERROR');});
 });
+
+const attachment={type:'attachment',attachment:{type:'exercise_info',exerciseId:'synthetic',summary:'Preview',mutationAllowed:false}};
+const success={type:'done',success:true,usage:{inputTokens:1,outputTokens:1},promptVersion:'test'};
+const frame=(event:unknown)=>`data: ${JSON.stringify(event)}\n\n`;
+for(const ending of ['error','truncated','unsuccessful','stopped','success'] as const)it(`only releases attachments after successful completion: ${ending}`,async()=>{
+ const events:AssistantStreamEvent[]=[],abort=new AbortController();
+ let controller!:ReadableStreamDefaultController<Uint8Array>;
+ const body=new ReadableStream<Uint8Array>({start(c){controller=c;c.enqueue(new TextEncoder().encode(frame(attachment)));}});
+ const sending=sendAssistant(request,abort.signal,e=>events.push(e),(async()=>new Response(body)) as typeof fetch);
+ await new Promise(resolve=>setTimeout(resolve,0));
+ const premature=events.filter(e=>e.type==='attachment').length;
+ if(ending==='error')controller.enqueue(new TextEncoder().encode(frame({type:'error',code:'USAGE_UNAVAILABLE'})));
+ if(ending==='unsuccessful')controller.enqueue(new TextEncoder().encode(frame({...success,success:false})));
+ if(ending==='success')controller.enqueue(new TextEncoder().encode(frame(success)));
+ if(ending==='stopped')abort.abort();
+ controller.close();
+ if(['error','truncated','stopped'].includes(ending))await expect(sending).rejects.toThrow();else await sending;
+ expect(premature).toBe(0);
+ expect(events.filter(e=>e.type==='attachment')).toHaveLength(ending==='success'?1:0);
+});
