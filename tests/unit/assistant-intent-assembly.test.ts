@@ -53,13 +53,11 @@ describe('minimal assistant intent assembly',()=>{
   const result=assembleAssistantIntent({kind:'plan_new',params:{},picks:[{slot:'A:push',code:'not-an-exercise'}]},onboard);
   expect(result.attachment?.type).toBe('plan_proposal');expect(result.dropped).toContain('unknown_exercise');
  });
- it('gives a 10-minute today request an applicable card',()=>{
+ it('refuses a 10-minute card when the template cannot safely fit the promised duration',()=>{
   const plan=assembleAssistantIntent({kind:'plan_new',params:{}},onboard).attachment;
   if(plan?.type!=='plan_proposal')throw Error('missing');
   const context={...common,messages:[],task:'ADJUST_TODAY' as const,target:{planId:id,versionId:id,revision:0},instruction:'今天10分钟',template:plan.proposal.templates[0]};
-  const result=assembleAssistantIntent({kind:'today_adjust',minutes:10},{...onboard,context});
-  expect(result.attachment?.type).toBe('today_adjustment');
-  if(result.attachment?.type==='today_adjustment')expect(result.attachment.template.estimatedMinutes).toBeGreaterThanOrEqual(10);
+  expect(()=>assembleAssistantIntent({kind:'today_adjust',minutes:10},{...onboard,context})).toThrow('NO_APPLICABLE_CHANGE');
  });
  it('replaces an existing movement even when a new caution removes it from candidates',()=>{
   const plan=assembleAssistantIntent({kind:'plan_new',params:{}},onboard).attachment;
@@ -90,5 +88,35 @@ describe('minimal assistant intent assembly',()=>{
   if(plan?.type!=='plan_proposal')throw Error('missing plan');
   const modified={...onboard,context:{...common,messages:[],task:'MODIFY_PLAN' as const,target:{planId:id,versionId:id,revision:0},instruction:'换动作',plan:plan.proposal}} as AssistantRequest;
   expect(()=>assembleAssistantIntent({kind:'plan_modify',changes:[{op:'replace',from:'unknown',to:'also unknown'}]},modified)).toThrow('NO_APPLICABLE_CHANGE');
+ });
+ it('applies an upper-body 30-minute adjustment and removes lower movements',()=>{
+  const original=assembleAssistantIntent({kind:'plan_new',params:{}},onboard).attachment;
+  if(original?.type!=='plan_proposal')throw Error('missing plan');
+  const request:AssistantRequest={...onboard,messages:[{role:'user',content:'今天膝盖不太舒服，只练上半身，30分钟'}],context:{...common,messages:[],task:'ADJUST_TODAY',target:{planId:id,versionId:id,revision:0},instruction:'today',template:original.proposal.templates[0]}};
+  const result=assembleAssistantIntent({kind:'today_adjust',focus:'upper',minutes:30},request);
+  if(result.attachment?.type!=='today_adjustment')throw Error('missing adjustment');
+  const adjusted=result.attachment.template;
+  expect(adjusted.items.every(item=>['push','pull','core'].includes(assistantMovement(exercises.find(row=>row.id===item.exerciseId)!)))).toBe(true);
+  expect(adjusted.estimatedMinutes).toBeGreaterThanOrEqual(27);
+  expect(adjusted.estimatedMinutes).toBeLessThanOrEqual(33);
+  expect(JSON.stringify(adjusted.items)).not.toBe(JSON.stringify(original.proposal.templates[0].items));
+  expect(result.attachment.summary).toContain('膝盖');
+ });
+ it('replaces a forbidden farmer carry with a non-squat non-walking movement and Chinese diff',()=>{
+  const original=assembleAssistantIntent({kind:'plan_new',params:{}},onboard).attachment;
+  if(original?.type!=='plan_proposal')throw Error('missing plan');
+  const carry=exercises.find(row=>row.name.zh==='哑铃农夫行走');if(!carry)throw Error('missing carry');
+  original.proposal.templates[0].items[0]={exerciseId:carry.id,equipment:carry.equipment,sets:2,target:{metricType:'reps_load',reps:8,loadGrams:0}};
+  const request:AssistantRequest={...onboard,messages:[{role:'user',content:'以后别给我安排农夫行走了，帮我把计划里的换掉，膝盖以前受过伤'}],context:{...common,messages:[],task:'MODIFY_PLAN',target:{planId:id,versionId:id,revision:0},instruction:'replace',plan:original.proposal}};
+  const result=assembleAssistantIntent({kind:'plan_modify',changes:[{session:original.proposal.templates[0].id,op:'replace',from:carry.id,to:'高脚杯深蹲'}]},request);
+  const attachment=result.attachment;
+  if(attachment?.type!=='change_proposal')throw Error('missing change');
+  const proposal=attachment.proposal;
+  const next=exercises.find(row=>row.id===proposal.templates[0].items[0].exerciseId)!;
+  expect(next.id).not.toBe(carry.id);
+  expect(assistantMovement(next)).not.toBe('squat');
+  expect(assistantMovement(next)).not.toBe('carry');
+  expect(attachment.changes.join(' ')).toMatch(/将.*换成/);
+  expect(proposal.reasons.join(' ')).not.toMatch(/Adjusted the plan/);
  });
 });

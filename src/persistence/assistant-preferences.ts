@@ -2,6 +2,7 @@ import type {CoachRequest,CoachResponse} from '../coach/contracts';
 import type {AiMemoryNote} from '../domain/models';
 import {aiMemoryNoteSchema} from '../domain/schemas';
 import {exercises} from '../catalog/exercises';
+import {assistantMovement} from '../catalog/ai-catalog';
 import {repository} from './repository';
 
 export type AssistantPreference=Pick<AiMemoryNote,'kind'|'value'> & {kind:NonNullable<AiMemoryNote['kind']>;value:NonNullable<AiMemoryNote['value']>};
@@ -12,18 +13,29 @@ const proposalOf=(response:CoachResponse)=>'proposal' in response?response.propo
 export function confirmedPreferenceChanges(request:CoachRequest,response:CoachResponse,userMessage:string):AssistantPreference[]{
  const proposal=proposalOf(response),result:AssistantPreference[]=[];
  if(!proposal)return result;
+ if(request.task==='MODIFY_PLAN'&&JSON.stringify(proposal.templates)===JSON.stringify(request.plan.templates)&&
+  JSON.stringify(proposal.preferredDays)===JSON.stringify(request.plan.preferredDays)&&
+  proposal.weeklyTarget===request.plan.weeklyTarget&&proposal.sessionMinutes===request.plan.sessionMinutes&&proposal.goalText===request.plan.goalText)return result;
  if(proposal.preferredDays?.length&&(request.task==='ONBOARD_PLAN'||request.task==='MODIFY_PLAN'&&JSON.stringify(proposal.preferredDays)!==JSON.stringify(request.plan.preferredDays)))result.push({kind:'preferred_days',value:proposal.preferredDays});
  if(request.task==='ONBOARD_PLAN'){
   for(const caution of request.profile.cautions)result.push({kind:'caution_area',value:caution});
   if(request.profile.equipment.length)result.push({kind:'equipment',value:request.profile.equipment});
  }
  if(/(?:不能跳|不跳|避免跳|can't jump|cannot jump|no jumping)/i.test(userMessage))result.push({kind:'cannot_do',value:'jumping'});
- if(request.task==='MODIFY_PLAN'&&/(?:不会做|不想做|不要做|讨厌|can't do|cannot do|avoid)/i.test(userMessage)){
-  request.plan.templates.forEach((before,index)=>before.items.forEach((item,itemIndex)=>{
-   const replacement=proposal.templates[index]?.items[itemIndex];
-   const name=exercises.find(exercise=>exercise.id===item.exerciseId)?.name;
-   if(replacement&&replacement.exerciseId!==item.exerciseId&&name&&[name.zh,name.en].some(label=>label&&userMessage.toLowerCase().includes(label.toLowerCase())))result.push({kind:'dislike_exercise',value:item.exerciseId});
-  }));
+ const avoidCarry=/(?:以后|今后|往后|再也|以后都).{0,18}(?:别|不要|不再|不能|避免).{0,12}(?:农夫行走|负重行走)|(?:don't|do not|never|avoid|no more).{0,25}(?:farmer.?s? walk|farmer.?s? carry|walking carry)/i.test(userMessage);
+ const carryStillPlanned=proposal.templates.some(template=>template.items.some(item=>{
+  const exercise=exercises.find(entry=>entry.id===item.exerciseId);
+  return exercise&&assistantMovement(exercise)==='carry';
+ }));
+ if(avoidCarry&&!carryStillPlanned)result.push({kind:'cannot_do',value:'walking_carry'});
+ if(request.task==='MODIFY_PLAN'&&(avoidCarry||/(?:不会做|不想做|不要做|不再安排|别.{0,8}安排|讨厌|can't do|cannot do|avoid|don't|do not|never)/i.test(userMessage))){
+  const afterIds=new Set(proposal.templates.flatMap(template=>template.items.map(item=>item.exerciseId)));
+  for(const before of request.plan.templates)for(const item of before.items){
+   const exercise=exercises.find(entry=>entry.id===item.exerciseId);
+   if(!exercise||afterIds.has(item.exerciseId))continue;
+   const mentioned=[exercise.name.zh,exercise.name.en].some(label=>label&&userMessage.toLowerCase().includes(label.toLowerCase()));
+   if(mentioned||avoidCarry&&assistantMovement(exercise)==='carry')result.push({kind:'dislike_exercise',value:item.exerciseId});
+  }
  }
  return result.filter((item,index)=>result.findIndex(other=>same(item,other))===index);
 }

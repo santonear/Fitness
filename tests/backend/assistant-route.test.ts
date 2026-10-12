@@ -19,6 +19,7 @@ const success: Runner = async function* () { yield {type:'text_delta',delta:'Hel
 async function setup(change?: (state: ControlState) => void) {
   const db = new DatabaseSync(':memory:'); open.push(db);
   db.exec(readFileSync(new URL('../../migrations/admin/1_assistant_v2.sql',import.meta.url),'utf8'));
+  db.exec(readFileSync(new URL('../../migrations/admin/5_assistant_failure_detail.sql',import.meta.url),'utf8'));
   db.exec('CREATE TABLE control_ledger(id INTEGER PRIMARY KEY,revision INTEGER,state TEXT); CREATE TABLE admin_finance(id INTEGER PRIMARY KEY,state TEXT); CREATE TABLE admin_prompt_selection(environment TEXT,task TEXT,version TEXT)');
   const state = initialState(); state.aiEnabled = true;
   state.subjects[subject] = {expiresAt:Date.now()+86400000,revoked:false};

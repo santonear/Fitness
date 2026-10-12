@@ -59,15 +59,15 @@ export const assistantIntentSchema = z.discriminatedUnion('kind', [
 export type AssistantIntent = z.infer<typeof assistantIntentSchema>;
 export type AssistantRequest = z.infer<typeof assistantRequestSchema>;
 export type AssistantAttachment = z.infer<typeof assistantAttachmentSchema>;
-export type AssistantUsage = { inputTokens: number; outputTokens: number };
-export type AssistantCall = Partial<AssistantUsage> & { stage: 'text' | 'attachment'; result: 'success' | 'repaired' | 'failed'; failureCode?: string };
+export type AssistantUsage = { inputTokens: number; outputTokens: number; usageEstimated?: boolean };
+export type AssistantCall = Partial<AssistantUsage> & { stage: 'text' | 'attachment'; result: 'success' | 'repaired' | 'failed'; failureCode?: string; failureDetail?: string };
 export type AssistantEvent =
   | { type: 'text_delta'; delta: string }
   | { type: 'attachment_pending' }
   | { type: 'attachment'; attachment: AssistantAttachment }
   | { type: 'attachment_failed'; code: string }
   | { type: 'error'; code: string; resetAt?: string }
-  | { type: 'done'; success: boolean; usage: AssistantUsage; promptVersion: string; calls?: AssistantCall[]; result?: 'success' | 'repaired' | 'fallback' | 'attachment_failed' | 'failed' };
+  | { type: 'done'; success: boolean; usage: AssistantUsage; promptVersion: string; calls?: AssistantCall[]; result?: 'success' | 'repaired' | 'fallback' | 'no_change' | 'attachment_failed' | 'failed' };
 export type AssistantStreamEvent = AssistantEvent;
 
 /** Latest user text determines language; punctuation-only messages retain UI locale. */

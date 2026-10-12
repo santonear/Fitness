@@ -2,12 +2,19 @@ export type EvaluationResult = {
   scenarioId?: string;
   promptVersion?: string;
   outputText?: string;
-  score?: { automatedPass: boolean };
+  score?: { automatedPass: boolean; attachmentChanged?: boolean; failures?: string[] };
   events?: Array<{ type: string; result?: string; delta?: string; promptVersion?: string; calls?: Array<{ result?: string }> }>;
   actualCny?: number;
   latencyMs?: number;
   costIsUpperBound?: boolean;
 };
+/** Server-estimated usage is billable for evaluation; missing usage is not silently zero. */
+export function evaluationUsageCalls(done: { usage?: { inputTokens?: number; outputTokens?: number }; calls?: Array<{ inputTokens?: number; outputTokens?: number; stage?: string; result?: string }> } | undefined) {
+  const valid=(value:{inputTokens?:number;outputTokens?:number})=>Number.isInteger(value.inputTokens)&&value.inputTokens!>=0&&Number.isInteger(value.outputTokens)&&value.outputTokens!>=0;
+  if(done?.calls?.length&&done.calls.every(valid))return done.calls as Array<{inputTokens:number;outputTokens:number;stage?:string;result?:string}>;
+  if(done?.usage&&valid(done.usage))return [{inputTokens:done.usage.inputTokens!,outputTokens:done.usage.outputTokens!,stage:'aggregate',result:'success'}];
+  throw Error('UNKNOWN_USAGE');
+}
 export function promptByteBounds(build:(stage:'text'|'attachment',attempt:0|1)=>unknown) {
   return [0,1,2].map(index=>Buffer.byteLength(JSON.stringify(build(index===0?'text':'attachment',index===2?1:0)),'utf8')+1024);
 }
@@ -30,25 +37,31 @@ export function summarizeAssistantEvaluation(results: EvaluationResult[]) {
     return done?.result === 'success' || !done?.result && done?.calls?.every(call => call.result === 'success');
   });
   const repaired = usable.filter(result => outcome(result)?.result === 'repaired');
-  const fallback = usable.filter(result => outcome(result)?.result === 'fallback');
+  const fallback = usable.filter(result => outcome(result)?.result === 'fallback' && result.score?.attachmentChanged === true);
+  const noOp = attempted.filter(result => result.score?.failures?.includes('no-op-attachment'));
   const measured = attempted.filter(result => Number.isFinite(result.actualCny) && !result.costIsUpperBound);
   const latency = attempted.map(result => result.latencyMs).filter((value): value is number => value !== undefined && Number.isFinite(value) && value >= 0).sort((a,b) => a-b);
   const actualCostCny = measured.reduce((sum,result) => sum + result.actualCny!,0);
   const texts=attempted.map(result=>result.outputText ?? result.events?.filter(event=>event.type==='text_delta').map(event=>event.delta??'').join('') ?? '');
-  const lengths=texts.map(text=>[...text].length).sort((a,b)=>a-b);
+  const languageOf=(result:EvaluationResult)=>result.scenarioId?.endsWith('-en')?'en':'zh';
+  const length=(text:string,language:'zh'|'en')=>language==='en'?(text.trim().match(/\b[\p{L}\p{N}]+(?:['’][\p{L}\p{N}]+)?\b/gu)??[]).length:[...text].length;
+  const median=(values:number[])=>{const sorted=[...values].sort((a,b)=>a-b);return sorted.length?(sorted[Math.floor((sorted.length-1)/2)]+sorted[Math.ceil((sorted.length-1)/2)])/2:null;};
+  const lengths=texts.map((text,index)=>length(text,languageOf(attempted[index])));
   return {
     attempted: attempted.length,
     final_usable_rate: ratio(usable.length,attempted.length),
     first_pass_rate: ratio(firstPass.length,attempted.length),
     repair_rate: ratio(repaired.length,attempted.length),
     fallback_rate: ratio(fallback.length,attempted.length),
+    no_op_rate: ratio(noOp.length,attempted.length),
     actualCostCny,
     measuredCostCalls: measured.length,
     unknownCostCalls: attempted.length-measured.length,
     latencyMs: { mean: latency.length ? latency.reduce((a,b)=>a+b,0)/latency.length : null, p95: latency.length ? latency[Math.ceil(latency.length*0.95)-1] : null, samples: latency.length },
     internalTermOccurrences: texts.reduce((sum,text)=>sum+[...text.matchAll(internalTerms)].length,0),
     repeatedAnswers: texts.filter(repeated).length,
-    medianReplyLength: lengths.length ? (lengths[Math.floor((lengths.length-1)/2)]+lengths[Math.ceil((lengths.length-1)/2)])/2 : null,
+    medianReplyLength: median(lengths),
+    medianReplyLengthByLanguage: { zh:median(lengths.filter((_,index)=>languageOf(attempted[index])==='zh')), en:median(lengths.filter((_,index)=>languageOf(attempted[index])==='en')) },
   };
 }
 
@@ -60,6 +73,6 @@ export function compareAssistantPromptVersions(results: EvaluationResult[], vers
   const common=[...a.keys()].filter(id=>b.has(id));
   const base=summarizeAssistantEvaluation(common.map(id=>a.get(id)!));
   const candidate=summarizeAssistantEvaluation(common.map(id=>b.get(id)!));
-  const delta=(key:'final_usable_rate'|'first_pass_rate'|'repair_rate'|'fallback_rate')=>candidate[key].percent===null||base[key].percent===null?null:Number((candidate[key].percent!-base[key].percent!).toFixed(2));
-  return {versions:[versionA,versionB],sharedScenarios:common.length,missingInA:[...b.keys()].filter(id=>!a.has(id)),missingInB:[...a.keys()].filter(id=>!b.has(id)),baseline:base,candidate,deltaPercentagePoints:{final_usable_rate:delta('final_usable_rate'),first_pass_rate:delta('first_pass_rate'),repair_rate:delta('repair_rate'),fallback_rate:delta('fallback_rate')}};
+  const delta=(key:'final_usable_rate'|'first_pass_rate'|'repair_rate'|'fallback_rate'|'no_op_rate')=>candidate[key].percent===null||base[key].percent===null?null:Number((candidate[key].percent!-base[key].percent!).toFixed(2));
+  return {versions:[versionA,versionB],sharedScenarios:common.length,missingInA:[...b.keys()].filter(id=>!a.has(id)),missingInB:[...a.keys()].filter(id=>!b.has(id)),baseline:base,candidate,deltaPercentagePoints:{final_usable_rate:delta('final_usable_rate'),first_pass_rate:delta('first_pass_rate'),repair_rate:delta('repair_rate'),fallback_rate:delta('fallback_rate'),no_op_rate:delta('no_op_rate')}};
 }

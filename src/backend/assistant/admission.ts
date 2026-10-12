@@ -9,7 +9,7 @@ export function admissionWindow(previous:DailyState|null,now:number,timeZone:str
  if(previous&&now<previous.reset_at)return {day:previous.day,timeZone:previous.time_zone,resetAt:previous.reset_at,used:previous.used};
  return {day:localDay(now,timeZone),timeZone,resetAt:nextMidnight(now,timeZone),used:0};
 }
-export interface UsageCall {inputTokens?:number;outputTokens?:number;result:string;stage:string;failureCode?:string}
+export interface UsageCall {inputTokens?:number;outputTokens?:number;result:string;stage:string;failureCode?:string;failureDetail?:string}
 export interface UsagePrice {inputFenPerMillion:number;outputFenPerMillion:number;version:string}
 export function estimateFen(call:UsageCall,price:UsagePrice):number|null {return call.inputTokens===undefined||call.outputTokens===undefined?null:(call.inputTokens*price.inputFenPerMillion+call.outputTokens*price.outputFenPerMillion)/1000000}
 export class AssistantUsageStore {
@@ -29,7 +29,7 @@ export class AssistantUsageStore {
  async finish(subjectId:string,requestId:string,task:string,success:boolean,calls:UsageCall[],price:UsagePrice,now:number,result:string){
   const statements=[this.db.prepare("UPDATE assistant_requests SET result=? WHERE subject_id=? AND request_id=? AND result='running'").bind(result,subjectId,requestId),
    this.db.prepare('UPDATE assistant_daily SET used=used+?,active_request=NULL,lease_until=0 WHERE subject_id=? AND active_request=?').bind(success?1:0,subjectId,requestId)];
-  for(const [index,call] of calls.entries())statements.push(this.db.prepare('INSERT OR IGNORE INTO assistant_usage(id,at,subject_short_id,task,stage,input_tokens,output_tokens,estimated_fen,result,pricing_version) VALUES(?,?,?,?,?,?,?,?,?,?)').bind(`${subjectId}:${requestId}:${index}`,now,subjectId.slice(0,8),task,call.stage,call.inputTokens??null,call.outputTokens??null,estimateFen(call,price),call.failureCode??call.result,price.version));
+  for(const [index,call] of calls.entries())statements.push(this.db.prepare('INSERT OR IGNORE INTO assistant_usage(id,at,subject_short_id,task,stage,input_tokens,output_tokens,estimated_fen,result,pricing_version,failure_detail) VALUES(?,?,?,?,?,?,?,?,?,?,?)').bind(`${subjectId}:${requestId}:${index}`,now,subjectId.slice(0,8),task,call.stage,call.inputTokens??null,call.outputTokens??null,estimateFen(call,price),call.failureCode??call.result,price.version,call.failureDetail??null));
   await this.db.batch(statements);
  }
 }

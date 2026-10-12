@@ -15,4 +15,10 @@ describe('plan preferred days',()=>{
   expect(html).toContain('周一、三、五');
   expect(html).not.toContain('旧聊天原话');
  });
+ it('falls back to the structured weekly frequency when no weekdays were chosen',()=>{
+  const version={id:'version',createdAt:'2026-10-12T00:00:00.000Z',origin:'coach_change',source:'ai',versionNumber:3,goalText:'练力量',weeklyTarget:3,scheduleOriginalText:'时间随你',templates:[{id:'A',name:'A',estimatedMinutes:30,items:[]}]} as unknown as PlanVersion;
+  const html=renderToStaticMarkup(createElement(PlanPage,{version,currentVersionId:version.id,language:'zh',exerciseName:(id:string)=>id,onVersions:()=>{},onExercises:()=>{},onExercise:()=>{}}));
+  expect(html).toContain('每周 3 次');
+  expect(html).not.toContain('时间随你');
+ });
 });

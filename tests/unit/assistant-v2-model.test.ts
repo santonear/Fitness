@@ -180,7 +180,28 @@ describe('assistant v2 model', () => {
     const events = await collect(request, model);
     expect(events.map(e => e.type)).toEqual(['error', 'done']); expect(JSON.stringify(events)).not.toContain('private provider');
     expect(events.at(-1)).toMatchObject({ calls: [{ stage: 'text', result: 'failed' }] });
-    const done = events.at(-1); if (done?.type === 'done') expect(done.calls?.[0].inputTokens).toBeUndefined();
+    const done = events.at(-1); if (done?.type === 'done') { expect(done.calls?.[0].inputTokens).toBeGreaterThan(0); expect(done.usage.usageEstimated).toBe(true); }
+  });
+  it('estimates missing usage for text and a successful attachment without claiming exact supplier tokens',async()=>{
+    const model=provider([{kind:'today_adjust',minutes:15}]);
+    model.streamText=async function*(){yield {delta:'我先整理一下。<<ATTACHMENT:today>>'};};
+    model.generateAttachment=async()=>({content:{kind:'today_adjust',minutes:15}});
+    const events=await gather(runAssistantModel({...request,context},{provider:model,promptVersion:'assistant-v3.1.0'}));
+    const done=events.at(-1);if(done?.type!=='done')throw Error('missing done');
+    expect(done.success).toBe(true);
+    expect(done.usage).toMatchObject({usageEstimated:true});
+    expect(done.calls).toHaveLength(2);
+    expect(done.calls?.every(call=>call.usageEstimated&&Number.isInteger(call.inputTokens)&&Number.isInteger(call.outputTokens))).toBe(true);
+  });
+  it('includes estimated usage in a failed attachment completion',async()=>{
+    const model=provider();
+    model.streamText=async function*(){yield {delta:'我先整理一下。<<ATTACHMENT:today>>'};};
+    model.generateAttachment=async()=>{throw Error('provider omitted output')};
+    const events=await gather(runAssistantModel({...request,context},{provider:model,promptVersion:'assistant-v2.1.0'}));
+    const done=events.at(-1);if(done?.type!=='done')throw Error('missing done');
+    expect(done.success).toBe(false);
+    expect(done.usage.usageEstimated).toBe(true);
+    expect(done.calls?.every(call=>Number.isInteger(call.inputTokens)&&Number.isInteger(call.outputTokens))).toBe(true);
   });
   it.each(['<<ATTACHMENT:none>>', '', '<<ATTACHMENT:invalid>>', '<<ATTACHMENT:'])('chat or absent routing marker makes only one model call: %s', async marker => {
     const model = provider();

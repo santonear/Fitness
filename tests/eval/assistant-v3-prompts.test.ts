@@ -19,11 +19,13 @@ it.each([
 ] as const)('v3 safety source covers %s',(_,pattern)=>expect(v3PromptSections.safety).toMatch(pattern));
 
 it('keeps a V2 rollback path while v3 uses minimal intent and no old registries',async()=>{
- expect(assistantPromptRegistry).toMatchObject({current:'assistant-v3.0.0',previous:'assistant-v2.1.0'});
- const v3=assistantPrompt(request,'attachment','assistant-v3.0.0','','', 'today');
+ expect(assistantPromptRegistry).toMatchObject({current:'assistant-v3.1.0',previous:'assistant-v3.0.0',legacy:'assistant-v2.1.0'});
+ const v3=assistantPrompt(request,'attachment','assistant-v3.1.0','','', 'today');
  expect(v3[0].content).toContain('today_adjust');
  expect(v3[0].content).toContain('最小意图');
  expect(v3[0].content).not.toContain('mutationAllowed:false');
+ expect(assistantPrompt(request,'text','assistant-v3.1.0')[0].content).toContain('Do not claim that a specific exercise was replaced');
+ expect(assistantPrompt(request,'text','assistant-v3.0.0')[0].content).not.toContain('Do not claim that a specific exercise was replaced');
  const v2=assistantPrompt(request,'attachment','assistant-v2.1.0','','','today');
  expect(v2[0].content).toContain('Schema:');
  const source=await readFile(new URL('../../src/backend/assistant/prompts.ts',import.meta.url),'utf8');

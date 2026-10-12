@@ -26,4 +26,15 @@ describe('explicit coach candidate application',()=>{
  it('rejects replaced data and mismatched response identity',async()=>{const s=setup();await expect(s.workflow.applyCoachCandidate({...s,request:{...s.request,restoreGeneration:1},response:{...s.response,restoreGeneration:1},expectedRevision:4})).rejects.toThrow();await expect(s.workflow.applyCoachCandidate({...s,response:{...s.response,requestId:wid},expectedRevision:4})).rejects.toThrow();});
  it('adjusts an untouched active workout without changing plan templates',async()=>{const s=setup(true);await s.workflow.applyCoachCandidate({...s,expectedRevision:4});expect(s.get().workout.plannedSetCount).toBe(1);expect(s.versions.get(vid)!.templates[0].items[0].sets).toBe(2);});
  it('rejects changes to an item with completed facts',async()=>{const s=setup(true);s.completeSet();const before=structuredClone(s.get().workout);await expect(s.workflow.applyCoachCandidate({...s,expectedRevision:4})).rejects.toThrow();expect(s.get().workout).toEqual(before);});
+ it('preserves the original schedule answer when accepting a model plan change',async()=>{
+  const s=setup();
+  const original=s.versions.get(vid)!;
+  const proposal={goalText:original.goalText,weeklyTarget:original.weeklyTarget,sessionMinutes:original.sessionMinutes,scheduleOriginalText:'以后不要农夫行走',templates:original.templates,reasons:['安排已调整','动作已核对','时长按训练单计算'] as [string,string,string]};
+  const {template:_template,...common}=s.request as Extract<CoachRequest,{task:'ADJUST_TODAY'}>;
+  const request:CoachRequest={...common,task:'MODIFY_PLAN',plan:{...proposal,scheduleOriginalText:original.scheduleOriginalText},instruction:'以后不要农夫行走'};
+  const response:CoachResponse={requestId:request.requestId,restoreGeneration:request.restoreGeneration,mutationAllowed:false,type:'change_proposal',target:request.target,proposal,changes:['已调整动作']};
+  const saved=await s.workflow.applyCoachCandidate({request,response,expectedRevision:4});
+  expect(saved).toMatchObject({scheduleOriginalText:original.scheduleOriginalText});
+  expect(s.versions.get(vid)!.scheduleOriginalText).toBe(original.scheduleOriginalText);
+ });
 });

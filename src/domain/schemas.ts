@@ -116,6 +116,7 @@ export const metadataSchema = z.strictObject({
   schemaVersion: positive, localProfileId: uuidSchema, catalogVersion: positive, revision: nonnegative, dataRevision: nonnegative,
   importedAt: utcTimestampSchema.optional(), upgradedAt: utcTimestampSchema.optional(),
   restoreGeneration: nonnegative.optional(),
+  assistantScheduleRecoveryV2At: utcTimestampSchema.optional(),
 });
 export const memoSessionSchema = z.strictObject({ session: workoutSessionSchema, sets: z.array(setRecordSchema), planVersionSnapshot: planVersionSchema.optional() });
 export const trainingMemoSchema = z.strictObject({ schemaVersion: positive, revision: nonnegative, updatedAt: utcTimestampSchema, sourceRevision: nonnegative, sessions: z.array(memoSessionSchema) });

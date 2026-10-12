@@ -1,5 +1,5 @@
 import type {AssistantConversation} from './assistant-conversations';
-import {recoverAssistantSchedule} from './assistant-schedule-migration';
+import {recoverAssistantSchedule,recoverLegacyPlanSchedules} from './assistant-schedule-migration';
 import {migrateBodyProfile} from './body-profile-migration';
 import type { CoachLedger } from '../domain/coach-reminders';
 import {legacyExerciseFavorites} from './exercise-favorites';
@@ -38,6 +38,23 @@ export class FitnessDatabase extends Dexie {
   mediaAssets!: Table<MediaAsset, string>;
   constructor(name: string) {
     super(name);
+    this.on('ready', async vipDb=>{
+      const metadata=vipDb.table<Metadata,string>('metadata');
+      const versions=vipDb.table<V8Library['planVersions'][number],string>('v8PlanVersions');
+      const plans=vipDb.table<V8Library['plans'][number],string>('v8Plans');
+      const conversations=vipDb.table<AssistantConversation,string>('assistantConversations');
+      await vipDb.transaction('rw',metadata,versions,plans,conversations,async()=>{
+        const row=await metadata.toCollection().first();
+        if(!row||row.assistantScheduleRecoveryV2At)return;
+        const recoveredAt=new Date().toISOString();
+        const [allVersions,allPlans,allConversations]=await Promise.all([versions.toArray(),plans.toArray(),conversations.toArray()]);
+        const correctedVersions=recoverAssistantSchedule(allVersions,allConversations,recoveredAt);
+        const correctedPlans=recoverLegacyPlanSchedules(allPlans,allVersions,allConversations,recoveredAt);
+        if(correctedVersions.length)await versions.bulkPut(correctedVersions);
+        if(correctedPlans.length)await plans.bulkPut(correctedPlans);
+        await metadata.put({...row,assistantScheduleRecoveryV2At:recoveredAt});
+      });
+    });
     this.version(14).stores({}).upgrade(async tx=>{
       const versions=await tx.table('v8PlanVersions').toArray(),conversations=await tx.table('assistantConversations').toArray();
       const recovered=recoverAssistantSchedule(versions,conversations,new Date().toISOString());

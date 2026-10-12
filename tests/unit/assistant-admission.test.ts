@@ -10,6 +10,7 @@ const now = Date.parse('2026-10-11T10:00:00Z');
 function setup() {
  const sql = new DatabaseSync(':memory:'); databases.push(sql);
  sql.exec(readFileSync('migrations/admin/1_assistant_v2.sql', 'utf8'));
+ sql.exec(readFileSync('migrations/admin/5_assistant_failure_detail.sql', 'utf8'));
  const db: AdminDatabase = {
   prepare(query) { let values: unknown[] = []; const stmt: AdminStatement = {
    bind(...args) { values = args; return stmt; },

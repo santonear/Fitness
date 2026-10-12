@@ -37,7 +37,7 @@ export async function handleAssistant(request:Request,env:AssistantEnv,runner=ru
   await archiveLegacyUsage(env.ADMIN_DB,state,now);
   let promptVersion=ASSISTANT_PROMPT_VERSION;
   const selected=await env.ADMIN_DB.prepare('SELECT version FROM admin_prompt_selection WHERE environment=? AND task=?').bind(env.ADMIN_ENVIRONMENT??'preview','ASSISTANT_CHAT').first<{version:string}>();
-  if(selected){if(selected.version!==assistantPromptRegistry.current&&selected.version!==assistantPromptRegistry.previous)throw new AssistantAccessError('MODEL_UNAVAILABLE',503);promptVersion=selected.version}
+  if(selected){if(selected.version!==assistantPromptRegistry.current&&selected.version!==assistantPromptRegistry.previous&&selected.version!==assistantPromptRegistry.legacy)throw new AssistantAccessError('MODEL_UNAVAILABLE',503);promptVersion=selected.version}
   const abort=new AbortController(),signal=AbortSignal.any([request.signal,abort.signal,AbortSignal.timeout(150000)]);
   const provider=createAssistantProvider({apiKey:env.DEEPSEEK_API_KEY,baseUrl:'https://api.deepseek.com',model:'deepseek-flash',maxAttachmentTokens:env.ASSISTANT_MAX_ATTACHMENT_TOKENS?Number(env.ASSISTANT_MAX_ATTACHMENT_TOKENS):undefined,maxTokens:env.ASSISTANT_MAX_OUTPUT_TOKENS?Number(env.ASSISTANT_MAX_OUTPUT_TOKENS):undefined});
   const encoder=new TextEncoder();let disconnected=false;

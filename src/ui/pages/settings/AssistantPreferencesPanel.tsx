@@ -10,7 +10,7 @@ const cautions={knee:['膝盖','Knee'],lower_back:['腰背','Lower back'],should
 function noteText(note:AiMemoryNote,locale:'zh'|'en'){
  const zh=locale==='zh',value=note.value;
  if(note.kind==='dislike_exercise')return `${zh?'以后不安排':'Avoid'} ${exercises.find(exercise=>exercise.id===value)?.name[locale]??value}`;
- if(note.kind==='cannot_do')return value==='jumping'?(zh?'避免跳跃':'Avoid jumping'):`${zh?'避免':'Avoid'} ${value}`;
+ if(note.kind==='cannot_do')return value==='jumping'?(zh?'避免跳跃':'Avoid jumping'):value==='walking_carry'?(zh?'以后不安排负重行走':'Avoid walking carries'):`${zh?'避免':'Avoid'} ${value}`;
  if(note.kind==='caution_area')return `${zh?'注意部位：':'Caution: '}${cautions[value as keyof typeof cautions]?.[zh?0:1]??value}`;
  if(note.kind==='preferred_days')return `${zh?'训练日：':'Training days: '}${(Array.isArray(value)?value:[]).map(day=>days[day as keyof typeof days]?.[zh?0:1]??day).join(zh?'、':', ')}`;
  return `${zh?'可用器械：':'Equipment: '}${(Array.isArray(value)?value:[]).map(item=>equipmentLabel(item,locale)).join(zh?'、':', ')}`;

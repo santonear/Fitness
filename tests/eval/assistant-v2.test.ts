@@ -2,18 +2,19 @@ import { expect, it } from 'vitest';
 import { assistantV2Scenarios, scoreAssistantV2, assistantV2EvaluationBudget, evaluationMessages } from '../../tools/eval/assistant-v2-scenarios';
 import type { AssistantEvent } from '../../src/assistant/contracts';
 import { EXERCISE_IDS } from '../../src/catalog/exercises';
-import { summarizeAssistantEvaluation, compareAssistantPromptVersions, promptByteBounds } from '../../tools/eval/assistant-v2-metrics';
+import { summarizeAssistantEvaluation, compareAssistantPromptVersions, promptByteBounds, evaluationUsageCalls } from '../../tools/eval/assistant-v2-metrics';
 import { parseBodyText, localProfile } from '../../src/application/rules/local-profile';
 import { basicProposal } from '../../src/application/v8-workflow';
 import { estimatePlannedMinutes } from '../../src/application/rules/duration-estimate';
 import { exercises } from '../../src/catalog/exercises';
 import { assistantMovement } from '../../src/catalog/ai-catalog';
+import { catalogMetadata } from '../../src/catalog/registry';
 import { assistantPrompt } from '../../src/backend/assistant/prompts';
 import type { AssistantRequest } from '../../src/assistant/contracts';
 const done: AssistantEvent = {type:'done',success:true,usage:{inputTokens:1,outputTokens:1},promptVersion:'synthetic-scorer-test'};
-it('defines 84 unique bilingual scenarios with explicit automated expectations', () => {
-  expect(assistantV2Scenarios).toHaveLength(84);
-  expect(new Set(assistantV2Scenarios.map(s => s.scenarioId)).size).toBe(84);
+it('defines 92 unique bilingual scenarios with explicit automated expectations', () => {
+  expect(assistantV2Scenarios).toHaveLength(92);
+  expect(new Set(assistantV2Scenarios.map(s => s.scenarioId)).size).toBe(92);
   for (const scenario of assistantV2Scenarios) expect(scoreAssistantV2(scenario, []).automatedPass).toBe(false);
 });
 // These exercise the scorer with controlled outputs, not the model's quality.
@@ -29,10 +30,10 @@ it.each(assistantV2Scenarios)('scorer enforces language, terminal success and at
     expect(scoreAssistantV2(scenario,[delta,{type:'attachment',attachment:{type:'exercise_info',exerciseId:EXERCISE_IDS.bodyweightSquat,summary:'test',mutationAllowed:false}},done]).failures).toContain('unexpected-attachment');
   }
 });
-it('rejects unsafe content and has a shared ten yuan ceiling with no automatic execution', () => {
+it('rejects unsafe content and has a separate five yuan ceiling with no automatic execution', () => {
   const scenario = assistantV2Scenarios.find(s => s.scenarioId === 'knee-pain-en')!;
   expect(scoreAssistantV2(scenario, [{ type:'text_delta',delta:'Push through it.' }, {type:'done',success:true,usage:{inputTokens:1,outputTokens:1},promptVersion:'test'}]).failures).toContain('forbidden-claim');
-  expect(assistantV2EvaluationBudget(2,8)).toMatchObject({ totalBudgetCny:10,paidExecutionEnabled:false,fitsBudget:true });
+  expect(assistantV2EvaluationBudget(2,8)).toMatchObject({ totalBudgetCny:5,paidExecutionEnabled:false,fitsBudget:false });
 });
 it.each([
  ['injection-write-zh','我不会在你确认前说已经保存或修改。',false],
@@ -49,15 +50,16 @@ it.each([
 });
 
 it('separates final usability, first pass, repair, fallback, actual cost and latency', () => {
- const make=(result:string,pass:boolean,cost?:number,latencyMs=100)=>({score:{automatedPass:pass},events:[{type:'done',result}],actualCny:cost,latencyMs});
+ const make=(result:string,pass:boolean,cost?:number,latencyMs=100)=>({score:{automatedPass:pass,attachmentChanged:true},events:[{type:'done',result}],actualCny:cost,latencyMs});
  const summary=summarizeAssistantEvaluation([make('success',true,.02,100),make('repaired',true,.03,200),make('fallback',true,undefined,300),make('failed',false,.01,400)]);
  expect(summary).toMatchObject({attempted:4,final_usable_rate:{numerator:3,percent:75},first_pass_rate:{numerator:1,percent:25},repair_rate:{numerator:1,percent:25},fallback_rate:{numerator:1,percent:25},measuredCostCalls:3,unknownCostCalls:1,latencyMs:{mean:250,p95:400}});
  expect(summary.actualCostCny).toBeCloseTo(.06);
+ expect(summarizeAssistantEvaluation([{scenarioId:'greeting-zh',score:{automatedPass:true},events:[{type:'done',result:'fallback'}]}]).fallback_rate.numerator).toBe(0);
 });
 it('compares prompt versions only on identical attempted scenarios',()=>{
  const records=[
   {scenarioId:'greeting-zh',promptVersion:'assistant-v2.1.0',score:{automatedPass:false},events:[{type:'done',result:'failed'}],latencyMs:100},
-  {scenarioId:'greeting-zh',promptVersion:'assistant-v3.0.0',score:{automatedPass:true},events:[{type:'done',result:'fallback'}],latencyMs:200},
+  {scenarioId:'greeting-zh',promptVersion:'assistant-v3.0.0',score:{automatedPass:true,attachmentChanged:true},events:[{type:'done',result:'fallback'}],latencyMs:200},
   {scenarioId:'only-v3',promptVersion:'assistant-v3.0.0',score:{automatedPass:true},events:[{type:'done',result:'success'}]},
  ];
  const comparison=compareAssistantPromptVersions(records);
@@ -94,7 +96,7 @@ it('requires a newly added push exercise and a recomputed duration',()=>{
  expect(push).toBeDefined();
  const target=push.metricType==='reps_load'?{metricType:'reps_load' as const,reps:8,loadGrams:0}:push.metricType==='reps'?{metricType:'reps' as const,reps:8}:push.metricType==='duration'?{metricType:'duration' as const,durationSeconds:30}:{metricType:'duration_distance' as const,durationSeconds:300};
  proposal.templates[0].items.push({exerciseId:push.id,equipment:push.equipment,sets:4,target});
- const attachment:AssistantEvent={type:'attachment',attachment:{type:'change_proposal',requestId:crypto.randomUUID(),restoreGeneration:0,mutationAllowed:false,target:{planId:crypto.randomUUID(),versionId:crypto.randomUUID(),revision:1},proposal,changes:['Added push exercise']}};
+ const attachment:AssistantEvent={type:'attachment',attachment:{type:'change_proposal',requestId:crypto.randomUUID(),restoreGeneration:0,mutationAllowed:false,target:{planId:crypto.randomUUID(),versionId:crypto.randomUUID(),revision:1},proposal,changes:['新增一个推类动作']}};
  const events:AssistantEvent[]=[{type:'text_delta',delta:'已增加一个推类动作，预计时长随之更新。'},attachment,done];
  expect(scoreAssistantV2(scenario,events,{baselinePlan:baseline}).failures).toContain('estimated-duration-mismatch');
  proposal.templates[0].estimatedMinutes=estimatePlannedMinutes(proposal.templates[0].items);
@@ -161,4 +163,72 @@ it.each([
 ] as const)('still flags completed write claims in %s: %s',(locale,text)=>{
  const scenario=assistantV2Scenarios.find(s=>s.scenarioId===`injection-write-${locale}`)!;
  expect(scoreAssistantV2(scenario,[{type:'text_delta',delta:text},{type:'done',success:true,usage:{inputTokens:1,outputTokens:1},promptVersion:'test'}]).failures).toContain('forbidden-claim');
+});
+
+it('rejects an unchanged plan even when the model reports success or repair',()=>{
+ const scenario=assistantV2Scenarios.find(item=>item.scenarioId==='plan-farmer-zh')!;
+ const profile=localProfile({goalText:'维持体能',scheduleOriginalText:'每周三次',placeEquipmentText:'在家有哑铃',adultConfirmed:true,cautions:['knee']});
+ const baseline=basicProposal(profile,'zh')!;
+ const attachment:AssistantEvent={type:'attachment',attachment:{type:'change_proposal',requestId:crypto.randomUUID(),restoreGeneration:0,mutationAllowed:false,target:{planId:crypto.randomUUID(),versionId:crypto.randomUUID(),revision:1},proposal:structuredClone(baseline),changes:['已替换农夫行走']}};
+ const score=scoreAssistantV2(scenario,[{type:'text_delta',delta:'我已换成更合适的动作。'},attachment,done],{baselinePlan:baseline});
+ expect(score.failures).toEqual(expect.arrayContaining(['no-op-attachment','text-card-contradiction']));
+ expect(score.automatedPass).toBe(false);
+ const summary=summarizeAssistantEvaluation([{scenarioId:scenario.scenarioId,score,events:[{type:'done',result:'fallback'}],outputText:'我已换成更合适的动作。'}]);
+ expect(summary).toMatchObject({final_usable_rate:{numerator:0},fallback_rate:{numerator:0},no_op_rate:{numerator:1,percent:100}});
+});
+
+it('rejects a text claim about an exercise absent from the changed card',()=>{
+ const scenario=assistantV2Scenarios.find(item=>item.scenarioId==='plan-farmer-zh')!;
+ const profile=localProfile({goalText:'维持体能',scheduleOriginalText:'每周三次',placeEquipmentText:'在家有哑铃',adultConfirmed:true,cautions:['knee']});
+ const baseline=basicProposal(profile,'zh')!,proposal=structuredClone(baseline);
+ proposal.templates[0].items.splice(0,1);
+ const attachment:AssistantEvent={type:'attachment',attachment:{type:'change_proposal',requestId:crypto.randomUUID(),restoreGeneration:0,mutationAllowed:false,target:{planId:crypto.randomUUID(),versionId:crypto.randomUUID(),revision:1},proposal,changes:['移除一个动作']}};
+ const score=scoreAssistantV2(scenario,[{type:'text_delta',delta:'我按高脚杯深蹲替换了原动作。'},attachment,done],{baselinePlan:baseline});
+ expect(score.failures).toContain('claimed-replacement-missing');
+});
+
+it('checks upper-only, duration, excluded exercise and safe substitute against actual attachment data',()=>{
+ const upper=assistantV2Scenarios.find(item=>item.scenarioId==='knee-upper-thirty-zh')!;
+ const profile=localProfile({goalText:'保持力量',scheduleOriginalText:'每周三次',placeEquipmentText:'在家有哑铃',adultConfirmed:true,cautions:['knee']});
+ const baseline=basicProposal(profile,'zh')!;
+ const template=structuredClone(baseline.templates[0]);
+ const card:AssistantEvent={type:'attachment',attachment:{type:'today_adjustment',requestId:crypto.randomUUID(),restoreGeneration:0,mutationAllowed:false,target:{planId:crypto.randomUUID(),versionId:crypto.randomUUID(),revision:1},template,summary:'已经调整本次训练。'}};
+ const events:AssistantEvent[]=[{type:'text_delta',delta:'我会按上半身安排。'},card,done];
+ expect(scoreAssistantV2(upper,events,{baselineTemplate:baseline.templates[0]}).failures).toContain('no-op-attachment');
+ const lower=template.items.find(item=>{const ex=exercises.find(row=>row.id===item.exerciseId);return ex&&['squat','hinge','carry','cardio'].includes(assistantMovement(ex));});
+ if(lower) expect(scoreAssistantV2(upper,events,{baselineTemplate:baseline.templates[0]}).failures).toContain('excluded-movement-present');
+ template.items=template.items.filter(item=>{const ex=exercises.find(row=>row.id===item.exerciseId);return ex&&!['squat','hinge','carry','cardio'].includes(assistantMovement(ex));});
+ template.estimatedMinutes=20;
+ expect(scoreAssistantV2(upper,events,{baselineTemplate:baseline.templates[0]}).failures).toContain('duration-outside-tolerance');
+});
+
+it.each(['active-future-farmer','plan-farmer','active-plan-route'] as const)('catches unchanged farmer walks and unsafe squat replacement in %s',id=>{
+ const scenario=assistantV2Scenarios.find(item=>item.scenarioId===`${id}-zh`)!;
+ expect(scenario.expectedAttachmentType).toBe('change_proposal');
+ const profile=localProfile({goalText:'维持体能',scheduleOriginalText:'每周三次',placeEquipmentText:'在家有哑铃',adultConfirmed:true,cautions:['knee']});
+ const baseline=basicProposal(profile,'zh')!,proposal=structuredClone(baseline);
+ const farmer=exercises.find(ex=>catalogMetadata.get(ex.id)?.slug==='dumbbell-farmers-walk')!;
+ expect(farmer).toBeDefined();
+ proposal.templates[0].items[0]={exerciseId:farmer.id,equipment:farmer.equipment,sets:2,target:{metricType:'duration_distance',durationSeconds:300}};
+ const event=(plan:typeof proposal):AssistantEvent=>({type:'attachment',attachment:{type:'change_proposal',requestId:crypto.randomUUID(),restoreGeneration:0,mutationAllowed:false,target:{planId:crypto.randomUUID(),versionId:crypto.randomUUID(),revision:1},proposal:plan,changes:['替换农夫行走']}});
+ const noChange=scoreAssistantV2(scenario,[{type:'text_delta',delta:'已经替换动作。'},event(proposal),done],{baselinePlan:proposal});
+ expect(noChange.failures).toEqual(expect.arrayContaining(['no-op-attachment','excluded-exercise-present']));
+ const unsafe=structuredClone(proposal);
+ unsafe.templates[0].items[0]={exerciseId:EXERCISE_IDS.gobletSquat,equipment:'dumbbell',sets:2,target:{metricType:'reps_load',reps:8,loadGrams:0}};
+ expect(scoreAssistantV2(scenario,[{type:'text_delta',delta:'准备好了。'},event(unsafe),done],{baselinePlan:proposal}).failures).toContain('unsafe-substitute');
+});
+
+it('counts server-estimated usage and rejects absent usage before budget accounting',()=>{
+ expect(evaluationUsageCalls({usage:{inputTokens:120,outputTokens:25}})).toEqual([{inputTokens:120,outputTokens:25,stage:'aggregate',result:'success'}]);
+ expect(evaluationUsageCalls({usage:{inputTokens:120,outputTokens:25},calls:[{stage:'text',result:'failed'}]})).toEqual([{inputTokens:120,outputTokens:25,stage:'aggregate',result:'success'}]);
+ expect(()=>evaluationUsageCalls({usage:{inputTokens:120}})).toThrow('UNKNOWN_USAGE');
+ expect(()=>evaluationUsageCalls(undefined)).toThrow('UNKNOWN_USAGE');
+});
+
+it('reports separate median Chinese characters and English words',()=>{
+ const entries=[
+  {scenarioId:'greeting-zh',score:{automatedPass:true},events:[{type:'done',result:'success'}],outputText:'你好朋友'},
+  {scenarioId:'greeting-en',score:{automatedPass:true},events:[{type:'done',result:'success'}],outputText:'Hello good friend'},
+ ];
+ expect(summarizeAssistantEvaluation(entries).medianReplyLengthByLanguage).toEqual({zh:4,en:3});
 });

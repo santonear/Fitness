@@ -179,7 +179,7 @@ export function createV8Workflow(repo: Repository) {
       const proposal = response.type === 'change_proposal' ? response.proposal : response.type === 'review_summary' ? response.suggestion?.proposal : undefined;
       if (!proposal) return invalid('NO_PLAN_CANDIDATE');
       const { reasons: _reasons, ...content } = proposal;
-      const next = v8PlanVersionSchema.parse({ ...content, id: crypto.randomUUID(), planId: plan.id, versionNumber: version.versionNumber + 1,
+      const next = v8PlanVersionSchema.parse({ ...content, scheduleOriginalText: version.scheduleOriginalText, id: crypto.randomUUID(), planId: plan.id, versionNumber: version.versionNumber + 1,
         createdAt: new Date().toISOString(), source: 'ai', origin: response.type === 'review_summary' ? 'review_suggestion' : 'coach_change',
         basedOnVersionId: version.id, changeSummary: response.type === 'change_proposal' ? response.changes : [response.type === 'review_summary' ? response.suggestion!.summary : ''] });
       await db.v8PlanVersions.add(next); await db.v8Plans.put({ ...plan, currentVersionId: next.id });
