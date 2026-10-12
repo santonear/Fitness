@@ -37,5 +37,5 @@ test('real IndexedDB deletion backup, expiry cleanup and rollback preserve train
  return{softRestored,failed,rolledBack,count,again,idempotent,envelope:cleaned.schemaVersion,plans:await db.v8Plans.count(),versions:await db.v8PlanVersions.count(),references:await db.v8PlanReferences.count(),sameWorkouts:before===JSON.stringify(await db.v8Workouts.toArray()),sameFacts:previous===JSON.stringify(await facts())};
  }finally{db.close();await db.delete();}
  },source);
- expect(result).toEqual({softRestored:true,failed:true,rolledBack:true,count:1,again:0,idempotent:true,envelope:10,plans:0,versions:0,references:1,sameWorkouts:true,sameFacts:true});
+ expect(result).toEqual({softRestored:true,failed:true,rolledBack:true,count:1,again:0,idempotent:true,envelope:11,plans:0,versions:0,references:1,sameWorkouts:true,sameFacts:true});
 });
