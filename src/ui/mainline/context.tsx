@@ -69,7 +69,7 @@ function useController() {
  const observedCounts=useRef<{plans:number;started:number;completed:number}|undefined>(undefined);
  async function reload() {
   if(isFeatureEnabled('planLifecycle'))await workflow.purgeExpiredPlans();
-  const next = await workflow.snapshot(); setData(next);
+  const next = await workflow.snapshot();
   const counters={plans:next.versions.length,started:next.workouts.length,completed:next.workouts.filter(w=>['complete','partial','not_started'].includes(w.status)).length};
   if(observedCounts.current){for(const [key,event] of [['plans','plan_confirmed'],['started','workout_started'],['completed','workout_completed']] as const){const delta=counters[key]-observedCounts.current[key];if(delta>0)countUsage(event,delta);}}observedCounts.current=counters;
   const review = await createV8DataService(repository).getReviewWorkouts();
@@ -83,6 +83,8 @@ function useController() {
   const today=new Intl.DateTimeFormat('en-CA',{timeZone:input.timeZone,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
   const year=Number(today.find(p=>p.type==='year')!.value),month=Number(today.find(p=>p.type==='month')!.value);
   setMonthFacts(computeMonthFacts({...input,from:new Date(Date.UTC(year,month-1,1)).toISOString().slice(0,10),to:new Date(Date.UTC(year,month,0)).toISOString().slice(0,10)}));
+  // Publish the snapshot only when its assistant/review context is ready.
+  setData(next);
   return next;
  }
  async function run(action: () => Promise<void>) { if(lock.current)return; lock.current=true;setBusy(true);setError('');try{await action();await reload();}catch{reportSafeError('storage');setError(t.saveError);}finally{lock.current=false;setBusy(false);} }
