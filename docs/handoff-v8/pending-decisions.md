@@ -224,3 +224,5 @@ RepDB官方证据：[数据许可证](https://github.com/RepDB/exercise-dataset/
 - 2026-10-13 第三轮：用户未指定时长时保留 sessionMinutes，仅重算训练单 estimatedMinutes。计划修改卡的“分钟/次”和总摘要统一使用 sessionMinutes；单份训练单内仍显示实际预计用时。理由：不把偏好时长与单份训练单估算混为一谈。文件：assemble.ts、AssistantAttachment.tsx。
 
 - 2026-10-13 第三轮第6步（待确认、未实施）：当用户指定的动作不在当前计划中，拟只说明该动作当前未安排，不出修改卡；“以后不安排”是否单独写入长期偏好需要用户确认。拟中文文案：当前计划里没有这个动作。涉及 assemble.ts、model.ts、assistant.ts；本次保持既有 NO_CHANGE 行为，不新增话术。
+
+- 2026-10-13 第三轮：点名训练单与动作时，仅对指定范围执行模型或规则变更，不自动补齐动作模式；未点名训练单而点名动作则覆盖含该动作的全部训练单。差异按动作出现次数对齐，时长不计入动作项数；重复变更文案合并。理由：范围忠实于用户要求，避免删除后位置移动被误识别为替换。文件：assemble.ts、template-diff.ts、AssistantAttachment.tsx。

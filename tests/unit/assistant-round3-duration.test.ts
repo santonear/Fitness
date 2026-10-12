@@ -26,7 +26,7 @@ const clamshell=exercises.find(e=>e.name.zh==='蚌式开合')!.id;
 describe('round 3 requested duration',()=>{
  it('does not change the requested session length when only adding an exercise',()=>{
   const input=request('给我加一个练腿的动作');
-  const card=assembleAssistantIntent({kind:'plan_modify',changes:[{op:'add',to:'徒手早安式'}]},input).attachment;
+  const card=assembleAssistantIntent({kind:'plan_modify',params:{minutesPerSession:20},changes:[{op:'add',to:'徒手早安式'}]},input).attachment;
   expect(card?.type==='change_proposal'&&card.proposal.sessionMinutes).toBe(45);
   if(card?.type==='change_proposal'&&input.context){
    const html=renderToStaticMarkup(createElement(AssistantAttachment,{candidate:{request:input.context,response:card,expectedRevision:0},locale:'zh'}));

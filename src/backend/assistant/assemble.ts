@@ -186,15 +186,16 @@ export function assembleAssistantIntent(raw:unknown,request:AssistantRequest):{a
    if(!changesToApply.some(change=>change.op==='replace'&&change.session===inferred.session&&normal(change.from??'')===normal(inferred.from??'')))changesToApply.push(inferred);
   }
   const proposal=structuredClone(context.plan);
+  const explicitMinutes=/(?:\d+|半|一|二|两|三|四|五|六|七|八|九|十)\s*(?:分钟|minutes?|mins?|小时|hours?)/i.test(request.messages.at(-1)?.content??'')?intent.params?.minutesPerSession:undefined;
   if(intent.params?.daysPerWeek)proposal.weeklyTarget=intent.params.daysPerWeek;
   if(intent.params?.preferredDays)proposal.preferredDays=intent.params.preferredDays.filter(day=>['mon','tue','wed','thu','fri','sat','sun'].includes(day)) as typeof proposal.preferredDays;
-  if(intent.params?.minutesPerSession)proposal.sessionMinutes=Math.max(15,intent.params.minutesPerSession);
+  if(explicitMinutes)proposal.sessionMinutes=Math.max(15,explicitMinutes);
   for(const template of proposal.templates){
    if(scope.templates.size&&!scope.templates.has(template.id))continue;
    const filtered=changesToApply.filter(change=>!scope.templates.size||!change.session||scope.templates.has(change.session));
    applyChanges(template,filtered,candidates,new Set(),dropped);
    if(!scoped)coverPatterns(template,candidates);
-   if(intent.params?.minutesPerSession&&!scoped)fitDuration(template,proposal.sessionMinutes);else recalculate(template);
+   if(explicitMinutes&&!scoped)fitDuration(template,proposal.sessionMinutes);else recalculate(template);
    syncTemplateName(template,request.locale);
   }
   proposal.scheduleOriginalText=context.plan.scheduleOriginalText;
