@@ -6,8 +6,8 @@ import guides from '../../src/catalog/generated/guides-zh.json';
 import {exercises,EXERCISE_IDS} from '../../src/catalog/exercises';
 const id=(slug:string)=>[...catalogMetadata.values()].find(e=>e.slug===slug)!.id;
 describe('shared exercise guidance',()=>{
- it('has 171 concrete Chinese guides with variant setup and actual catalogue IDs',()=>{
-  expect(Object.keys(guides)).toHaveLength(171);
+ it('has at least 271 concrete Chinese guides with variant setup and actual catalogue IDs',()=>{
+  expect(Object.keys(guides).length).toBeGreaterThanOrEqual(271);
   for(const slug of Object.keys(guides)) {const guide=getExerciseGuide(id(slug),'zh');expect(guide.keyPoints.length).toBeGreaterThanOrEqual(2);expect(guide.keyPoints.length).toBeLessThanOrEqual(3);expect(guide.steps.length).toBeGreaterThanOrEqual(3);expect(guide.mistakes.length).toBeGreaterThan(0);expect(guide.cautions.length).toBeGreaterThan(0);expect(guide.media?.src).toMatch(/^\/exercise-media\/repdb\//);}
  });
  it('gives every catalogue entry a Chinese name and usable fallback without the old notice',()=>{for(const e of exercises){const g=getExerciseGuide(e.id,'zh');expect(g.name).toBeTruthy();expect(g.keyPoints.length).toBeGreaterThanOrEqual(2);expect(g.steps.join('')).not.toContain('详细说明为英文');}});

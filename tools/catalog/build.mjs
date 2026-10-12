@@ -31,6 +31,10 @@ export async function build(){
   if(createHash('sha256').update(bytes).digest('hex')!==SOURCE.sha256)throw Error('RepDB archive changed: review source and license before updating the pin');
   await writeIfChanged(cache,bytes);const files=readZip(bytes);const raw=JSON.parse(files.get('free.json')().toString());const catalog=adaptDataset(raw,new Set(files.keys()),chineseName);validateReplacements(catalog.entries);
   if(catalog.entries.length!==637)throw Error('Unexpected source count');
+  const knownSlugs=new Set(catalog.entries.map(row=>row.slug));
+  for(const [slug,guide] of Object.entries(chineseGuides)){
+    if(!knownSlugs.has(slug)||!['keyPoints','steps','mistakes','cautions'].every(key=>Array.isArray(guide[key])&&guide[key].length>0&&guide[key].every(value=>typeof value==='string'&&value.trim())))throw Error('Invalid Chinese guide: '+slug);
+  }
   await mkdir('src/catalog/generated',{recursive:true});await mkdir('public/exercise-media/repdb',{recursive:true});
   const allowedFiles=new Set(['notices','notices/LICENSE.md','notices/ATTRIBUTION.md',...catalog.entries.flatMap(row=>Object.values(row.media).map(path=>path.slice('/exercise-media/repdb/'.length)))]);
   for(const path of await readdir('public/exercise-media/repdb',{recursive:true}))if(!allowedFiles.has(path.replaceAll('\\','/')))throw Error('Unexpected public RepDB resource: '+path);

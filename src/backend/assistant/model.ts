@@ -2,6 +2,7 @@ import { sanitizeAssistantRequest, type AssistantCall, type AssistantEvent, type
 import { assistantPrompt, ASSISTANT_PROMPT_VERSION, type AssistantPromptMessage } from './prompts';
 import { repairAssistantAttachment, AttachmentValidationError } from './repair';
 import { checkCoachLanguage } from '../../application/rules/coach-language';
+import { assembleAssistantIntent } from './assemble';
 
 export interface AssistantProvider {
   streamText(messages: AssistantPromptMessage[], signal?: AbortSignal): AsyncIterable<{ delta?: string; usage?: AssistantUsage }>;
@@ -60,6 +61,13 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
       attachmentKind = marker[1]; text = text.slice(0, marker.index).trimEnd();
       // The local task defines the applicable card contract; model shorthand cannot change it.
       if(request.context && ['plan','today','change','review'].includes(attachmentKind)) attachmentKind=({ONBOARD_PLAN:'plan',ADJUST_TODAY:'today',MODIFY_PLAN:'change',PERIOD_REVIEW:'review'} as const)[request.context.task];
+      if(version==='assistant-v3.0.0'&&attachmentKind==='exercise'){
+        const latest=request.messages.at(-1)?.content??'';
+        // A request to replace an exercise needs the proposed replacement card.
+        if(/换(?:个|成|掉)?动作|替换|replace|swap|alternative/i.test(latest)&&request.context?.task==='MODIFY_PLAN')attachmentKind='change';
+        else if(/换(?:个|成|掉)?动作|替换|replace|swap|alternative/i.test(latest)&&request.context?.task==='ADJUST_TODAY')attachmentKind='today';
+        else attachmentKind='none';
+      }
     }
     else if (text.includes('<<ATTACH')) text = text.slice(0, text.indexOf('<<ATTACH')).trimEnd();
     if (!text.trim()) throw new AssistantProviderError('EMPTY_TEXT');
@@ -72,9 +80,7 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
     yield { type: 'done', success: false, usage: usage(), calls, promptVersion: version, result: 'failed' };
     return;
   }
-  const requestedMinutes=request.messages.at(-1)!.content.match(/(\d{1,3})\s*(?:分钟|minutes?|mins?)/i);
-  const belowPlanMinimum=requestedMinutes && Number(requestedMinutes[1])<15;
-  if (!request.adultConfirmed || attachmentKind === 'none' || belowPlanMinimum && ['plan','today','change'].includes(attachmentKind)) {
+  if (!request.adultConfirmed || attachmentKind === 'none') {
     yield { type: 'done', success: true, usage: usage(), calls, promptVersion: version, result: proseNormalized ? 'repaired' : 'success' };
     return;
   }
@@ -85,9 +91,12 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
     calls.push(call);
     try {
       if (options.signal?.aborted) throw new Error('ABORTED');
-      const generated = await options.provider.generateAttachment(buildPrompt(request, 'attachment', version, text, attempt ? `${retryFailure}: use exact schema, catalog, context identity and task; do not omit requested attachment` : undefined, attachmentKind), options.signal);
+      const retryHint=attempt?(version==='assistant-v3.0.0'?`Correct only this invalid part: ${retryFailure}. Return the requested minimal intent with candidate codes.`:`${retryFailure}: use exact schema, catalog, context identity and task; do not omit requested attachment`):undefined;
+      const generated = await options.provider.generateAttachment(buildPrompt(request, 'attachment', version, text, retryHint, attachmentKind), options.signal);
       Object.assign(call, generated.usage);
-      const checked = repairAssistantAttachment(generated.content, request);
+      const checked = version === 'assistant-v3.0.0'
+        ? assembleAssistantIntent(generated.content, request)
+        : repairAssistantAttachment(generated.content, request);
       const expectedType = ({plan:'plan_proposal',today:'today_adjustment',change:'change_proposal',exercise:'exercise_info',review:'review_summary'} as Record<string,string>)[attachmentKind];
       if(!checked.attachment || checked.attachment.type !== expectedType) throw new AssistantProviderError('INVALID_OUTPUT');
       call.result = checked.repaired || attempt ? 'repaired' : 'success';
@@ -102,6 +111,19 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
       if (error instanceof AssistantProviderError && !['INVALID_OUTPUT', 'INVALID_STREAM'].includes(error.code)) break;
     }
   }
+  if(version==='assistant-v3.0.0' && request.context){
+    try{
+      const latest=request.messages.at(-1)!.content;
+      const minutes=latest.match(/(\d{1,3})\s*(?:分钟|minutes?|mins?)/i);
+      const weekly=latest.match(/(?:每周|一周)\s*([1-7])\s*次|\b([1-7])\s*(?:times?\s*)?(?:a|per)\s*week/i);
+      const task=request.context.task;
+      const intent=task==='ONBOARD_PLAN'?{kind:'plan_new',params:{...(minutes?{minutesPerSession:Number(minutes[1])}:{}),...(weekly?{daysPerWeek:Number(weekly[1]??weekly[2])}:{})}}:
+        task==='ADJUST_TODAY'&&minutes?{kind:'today_adjust',minutes:Number(minutes[1])}:
+        task==='MODIFY_PLAN'&&weekly?{kind:'plan_modify',params:{daysPerWeek:Number(weekly[1]??weekly[2])},changes:[]}:
+        task==='PERIOD_REVIEW'?{kind:'review',highlights:[]}:null;
+      if(intent){const fallback=assembleAssistantIntent(intent,request);if(fallback.attachment){yield {type:'attachment',attachment:fallback.attachment};yield {type:'done',success:true,usage:usage(),calls,promptVersion:version,result:'fallback'};return;}}
+    }catch{ /* An unsafe fallback must not become an applicable card. */ }
+  }
   yield { type: 'attachment_failed', code: 'ATTACHMENT_UNAVAILABLE' };
   yield { type: 'done', success: false, usage: usage(), calls, promptVersion: version, result: 'attachment_failed' };
 }
@@ -113,7 +135,7 @@ export function createAssistantProvider(options: { apiKey: string; baseUrl: stri
     let response: Response;
     try { response = await (options.fetch ?? fetch)(`${options.baseUrl.replace(/\/$/, '')}/chat/completions`, {
       method: 'POST', signal, headers: { Authorization: `Bearer ${options.apiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: options.model ?? 'deepseek-flash', messages, stream, thinking: { type: 'disabled' }, max_tokens: Math.max(1, Math.min((stream ? options.maxTokens : options.maxAttachmentTokens ?? options.maxTokens) ?? (stream ? 1600 : 3000), 3000)), ...(stream ? { stream_options: { include_usage: true } } : { response_format: { type: 'json_object' } }) }),
+      body: JSON.stringify({ model: options.model ?? 'deepseek-flash', messages, stream, thinking: { type: 'disabled' }, max_tokens: Math.max(1, Math.min((stream ? options.maxTokens : options.maxAttachmentTokens ?? options.maxTokens) ?? (stream ? 1600 : 3000), 3000)), ...(stream ? { stream_options: { include_usage: true } } : { temperature: 0.1, response_format: { type: 'json_object' } }) }),
     }); } catch { throw new AssistantProviderError(signal?.aborted ? signal.reason instanceof DOMException && signal.reason.name === 'TimeoutError' ? 'TIMEOUT' : 'ABORTED' : 'NETWORK_ERROR'); }
     if (!response.ok) {
       await response.body?.cancel().catch(() => {});

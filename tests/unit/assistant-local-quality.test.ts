@@ -1,5 +1,5 @@
 import {describe,it,expect} from 'vitest';
-import {localProfile} from '../../src/application/rules/local-profile';
+import {localProfile,preferredTrainingDays,weeklyFrequency} from '../../src/application/rules/local-profile';
 import {basicProposal} from '../../src/application/v8-workflow';
 import {exercises} from '../../src/catalog/exercises';
 import type {CoachRequest} from '../../src/coach/contracts';
@@ -13,6 +13,8 @@ const phrases:[string,number,number][]=[
  ['3 times per week, 40 mins',3,40],['weekly 4, 30 minutes',4,30],['weekdays twice, weekends once, 40 minutes',3,40],['weekdays three times, weekends once, 30 minutes',4,30],['two times weekly, 20 minutes',2,20],['3 times a week, 30–45 minutes',3,30],['twice a week, 1 hour',2,60],['three times per week, 15 mins',3,15],['about 40 minutes each time',2,40]
 ];
 describe('V2 local plan quality',()=>{
+ it.each(['一三五晚上可以，每次40分钟左右，周末偶尔能练一次','周一三五晚上可以，周末偶尔一次','一三五晚上可以'])('keeps the three named days as weekly sessions: %s',text=>{expect(weeklyFrequency(text)).toBe(3);expect(preferredTrainingDays(text)).toEqual(['mon','wed','fri']);expect(localProfile({...answers,scheduleOriginalText:text}).preferredDays).toEqual(['mon','wed','fri']);});
+ it.each(['一周三次','每周三练','每周三次'])('parses explicit three sessions: %s',text=>expect(weeklyFrequency(text)).toBe(3));
  it.each(phrases)('parses %s',(text,weekly,minutes)=>{const result=localProfile({...answers,scheduleOriginalText:text});expect(result.weeklyTarget).toBe(weekly);expect(result.sessionMinutes).toBe(minutes);expect(result.scheduleOriginalText).toBe(text)});
  it('adds available low impact cardio for fat loss and limits all sets',()=>{const plan=basicProposal(localProfile(answers))!;expect(plan.templates).toHaveLength(2);expect(plan.templates[0].items[0].exerciseId).not.toBe(plan.templates[1].items[0].exerciseId);for(const template of plan.templates){expect(template.items.every(item=>item.sets<=4)).toBe(true);expect(template.items.some(item=>exercises.find(e=>e.id===item.exerciseId)?.name.en==='Walking')).toBe(true)}});
  it('keeps cautions and only confirmed equipment',()=>{const plan=basicProposal(localProfile({...answers,cautions:['knee']}))!;expect(plan.templates.flatMap(t=>t.items).every(item=>item.equipment==='none'&&exercises.find(e=>e.id===item.exerciseId)?.name.en!=='Walking')).toBe(true)});

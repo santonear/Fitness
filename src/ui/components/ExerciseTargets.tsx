@@ -1,12 +1,13 @@
 import type { ExerciseSnapshot, Locale, SetMetrics } from '../../domain/models';
 import { exercises } from '../../catalog/exercises';
 
-export function targetText(target: SetMetrics, locale: Locale) {
+export function targetText(target: SetMetrics, locale: Locale, hideDistance = false) {
+  const zh=locale==='zh';
   switch (target.metricType) {
-    case 'reps_load': return `${target.reps} ${locale === 'zh' ? '次' : 'reps'} · ${target.loadGrams / 1000} kg`;
+    case 'reps_load': return `${target.reps} ${zh ? '次' : 'reps'} · ${target.loadGrams>0?`${target.loadGrams / 1000} ${zh?'公斤':'kg'}`:(zh?'选择你的重量':'Choose your weight')}`;
     case 'reps': return `${target.reps} ${locale === 'zh' ? '次' : 'reps'}`;
-    case 'duration': return `${target.durationSeconds} s`;
-    case 'duration_distance': return `${target.durationSeconds} s · ${target.distanceMeters === undefined ? (locale === 'zh' ? '距离未设置' : 'Distance not set') : `${target.distanceMeters / 1000} km`}`;
+    case 'duration': return `${target.durationSeconds} ${zh?'秒':'s'}`;
+    case 'duration_distance': return `${target.durationSeconds} ${zh?'秒':'s'}${hideDistance||target.distanceMeters===undefined?'':` · ${target.distanceMeters} ${zh?'米':'m'}`}`;
   }
 }
 

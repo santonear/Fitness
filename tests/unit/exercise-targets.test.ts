@@ -13,7 +13,8 @@ describe('read-only snapshot targets', () => {
  it('keeps nonuniform groups, metric units and zero/missing distinct without mutating', () => {
   const exercise = snapshot([{metricType:'reps_load',reps:8,loadGrams:1250},{metricType:'reps_load',reps:12,loadGrams:0},{metricType:'reps',reps:7},{metricType:'duration',durationSeconds:90},{metricType:'duration_distance',durationSeconds:90,distanceMeters:1500},{metricType:'duration_distance',durationSeconds:60},{metricType:'duration_distance',durationSeconds:30,distanceMeters:0}]);
   const before = structuredClone(exercise), html = render(exercise);
-  for(const text of ['8 reps · 1.25 kg','12 reps · 0 kg','7 reps','90 s · 1.5 km','60 s · Distance not set','30 s · 0 km','7 sets','Saved snapshot for this workout']) expect(html).toContain(text);
+  for(const text of ['8 reps · 1.25 kg','12 reps · Choose your weight','7 reps','90 s · 1500 m','60 s','30 s · 0 m','7 sets','Saved snapshot for this workout']) expect(html).toContain(text);
+  expect(html).not.toContain('Distance not set');
   expect(html.indexOf('8 reps')).toBeLessThan(html.indexOf('12 reps')); expect(exercise).toEqual(before);
  });
  it('shows empty targets explicitly and preserves original notes as escaped multiline text', () => {

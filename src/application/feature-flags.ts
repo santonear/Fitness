@@ -4,7 +4,7 @@ let flags = disabledFeatures();
 let confirmed = false;
 let loaded = false;
 const pending = new Map<string, Promise<void>>();
-const fetchedAt = new Map<string, number>();
+const nextRefreshAt = new Map<string, number>();
 let stopPolling: (() => void) | undefined;
 let consumers = 0;
 let loadState: 'idle'|'loading'|'ready'|'error' = 'idle';
@@ -47,8 +47,7 @@ export function refreshFeatureFlags(transport: typeof fetch = fetch, useCache = 
   const admin=typeof location!=='undefined'&&/^\/admin(?:\/|$)/.test(location.pathname);
   const scope=admin?'admin':'public';
   const active=pending.get(scope); if(active) return active;
-  if(useCache && Date.now()-(fetchedAt.get(scope)??-Infinity)<30_000) return Promise.resolve();
-  fetchedAt.set(scope,Date.now());
+  if(useCache && Date.now()<(nextRefreshAt.get(scope)??-Infinity)) return Promise.resolve();
   loadState='loading';for(const listener of loadListeners)listener();
   const request = (async () => {
     try {
@@ -56,7 +55,7 @@ export function refreshFeatureFlags(transport: typeof fetch = fetch, useCache = 
       if (!response.ok) throw new Error('FEATURE_CONFIG_UNAVAILABLE');
       const value = await response.json() as { version?: unknown; flags?: unknown; expiresAt?: unknown };
       if (value.version !== 1 || typeof value.expiresAt !== 'number' || !Number.isFinite(value.expiresAt) || value.expiresAt <= Date.now()) throw new Error('FEATURE_CONFIG_INVALID');
-      const next=mergeFlags(value.flags);fetchedAt.set(scope,Date.now());loadState='ready';publish(next);for(const listener of loadListeners)listener();
+      const next=mergeFlags(value.flags);nextRefreshAt.set(scope,Math.min(value.expiresAt,Date.now()+60_000));loadState='ready';publish(next);for(const listener of loadListeners)listener();
     } catch { loadState='error';for(const listener of loadListeners)listener(); /* Preserve last validated flags. */ }
   })().finally(() => { pending.delete(scope); });
   pending.set(scope,request);

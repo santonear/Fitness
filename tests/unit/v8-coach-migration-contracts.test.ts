@@ -23,8 +23,9 @@ describe('V8.0.5 migration wire compatibility', () => {
   it('continues to reject fractional or out-of-range plan and template durations', () => {
     for (const minutes of [14, 32.5, 121, NaN, Infinity]) {
       expect(planProposalSchema.safeParse({ ...proposal, sessionMinutes: minutes }).success).toBe(false);
-      expect(planProposalSchema.safeParse({ ...proposal, templates: [{ ...template, estimatedMinutes: minutes }] }).success).toBe(false);
     }
+    for (const minutes of [9, 32.5, 121, NaN, Infinity]) expect(planProposalSchema.safeParse({ ...proposal, templates: [{ ...template, estimatedMinutes: minutes }] }).success).toBe(false);
     for (const minutes of [15, 35, 120]) expect(planProposalSchema.safeParse({ ...proposal, sessionMinutes: minutes }).success).toBe(true);
+    expect(planProposalSchema.safeParse({ ...proposal, templates: [{ ...template, estimatedMinutes: 10 }] }).success).toBe(true);
   });
 });

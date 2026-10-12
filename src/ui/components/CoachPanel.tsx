@@ -24,7 +24,7 @@ import { targetText } from './ExerciseTargets';
 import { coachConversationExcerpt } from '../../ai/coach-context';
 
 export type CoachApplication = { request: CoachRequest; response: CoachResponse; expectedRevision: number };
-export type CoachPanelProps = { beforeSend?:(request:CoachRequest)=>Promise<void>; open: boolean; localOnly?: boolean; applyLabel?: string; successLabel?: string; disableNutrition?: boolean; localFallbackOnError?: boolean; templateMinutes?: (template: SessionTemplate) => number; onClose: () => void; request?: CoachRequest; expectedRevision: number;
+export type CoachPanelProps = { beforeSend?:(request:CoachRequest)=>Promise<void>; onPreferencesChanged?:()=>Promise<void>; rememberOnApply?:boolean; open: boolean; localOnly?: boolean; applyLabel?: string; successLabel?: string; disableNutrition?: boolean; localFallbackOnError?: boolean; templateMinutes?: (template: SessionTemplate) => number; onClose: () => void; request?: CoachRequest; expectedRevision: number;
   initialSend?:{nonce:string;message:string;request:CoachRequest;expectedRevision:number};
   triggerRef?: RefObject<HTMLElement|null>; onLocalPlan?:()=>void; onLocalReview?:()=>void; locale?:'zh'|'en'; unavailableReason?:string; onApply: (candidate: CoachApplication) => Promise<unknown>; onResponse?: (candidate: CoachApplication) => void };
 

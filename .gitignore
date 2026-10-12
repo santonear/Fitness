@@ -21,5 +21,6 @@ test-results-*/
 
 # RepDB licensed build inputs and generated application resources
 .cache/
+.secrets/
 src/catalog/generated/
 public/exercise-media/repdb/

@@ -15,8 +15,21 @@ function provider(outputs: unknown[] = [{ attachment: null }]): AssistantProvide
   return { async *streamText() { yield { delta: 'Hello ' }; yield { delta: 'there<<ATTACHMENT:today>>', usage }; }, async generateAttachment() { const content = outputs.shift(); if (content instanceof Error) throw content; return { content, usage }; } };
 }
 async function gather<T>(source: AsyncIterable<T>): Promise<T[]> { const result: T[] = []; for await (const value of source) result.push(value); return result; }
-async function collect(input = request, model = provider()) { return gather(runAssistantModel(input, { provider: model })); }
+async function collect(input = request, model = provider()) { return gather(runAssistantModel(input, { provider: model, promptVersion:'assistant-v2.1.0' })); }
 describe('assistant v2 model', () => {
+  it('assembles a V3 adjustment from minimal intent without model-supplied identity',async()=>{
+    const model=provider([{kind:'today_adjust',minutes:10}]);
+    model.streamText=async function*(){yield {delta:'今天整理成短版。<<ATTACHMENT:today>>',usage};};
+    const events=await gather(runAssistantModel({...request,context},{provider:model,promptVersion:'assistant-v3.0.0'}));
+    expect(events.some(event=>event.type==='attachment'&&event.attachment.type==='today_adjustment'&&event.attachment.requestId===id)).toBe(true);
+    expect(events.at(-1)).toMatchObject({success:true,promptVersion:'assistant-v3.0.0'});
+  });
+  it('keeps V3 exercise guidance in text without trying to create a nonexistent card',async()=>{
+    let calls=0;const model=provider();model.generateAttachment=async()=>{calls++;throw Error('should not call');};
+    model.streamText=async function*(){yield {delta:'先保持动作稳定。<<ATTACHMENT:exercise>>',usage};};
+    const events=await gather(runAssistantModel(request,{provider:model,promptVersion:'assistant-v3.0.0'}));
+    expect(calls).toBe(0);expect(events.at(-1)).toMatchObject({success:true});
+  });
   it('streams text before optional attachment and accounts calls', async () => {
     const events = await collect({ ...request, context }, provider([{ attachment }]));
     expect(events.map(e => e.type)).toEqual(['text_delta', 'attachment_pending', 'attachment', 'done']);
@@ -64,14 +77,14 @@ describe('assistant v2 model', () => {
     const withDumbbells=sanitizeAssistantRequest({...input,messages:[{role:'user',content:'在家，只有哑铃'}]});
     expect(withDumbbells.context).toMatchObject({profile:{place:'home',equipment:['dumbbell'],cautions:['knee']}});
   });
-  it('supports once weekly and prevents an inapplicable below-minimum plan attachment',async () => {
+  it('supports once weekly and attempts a ten-minute adjustment',async () => {
     const {target:_target,template:_template,instruction:_instruction,...common}=context;
     const contextPlan={...common,task:'ONBOARD_PLAN' as const,profile:{goalText:'fitness',weeklyTarget:3,sessionMinutes:40,scheduleOriginalText:'old',place:'gym' as const,equipment:[],adultConfirmed:true as const,cautions:[]}};
     expect(applyAssistantPreferences(contextPlan,[{role:'user',content:'once weekly'}])).toMatchObject({profile:{weeklyTarget:1}});
     const model=provider();let attachments=0;model.generateAttachment=async()=>{attachments++;return {content:{attachment:null},usage};};
     const events=await collect({...request,context,messages:[{role:'user',content:'Only 10 minutes today'}]},model);
-    expect(attachments).toBe(0);expect(events.some(event=>event.type==='attachment_pending')).toBe(false);
-    expect(events.at(-1)).toMatchObject({success:true,calls:[{stage:'text'}]});
+    expect(attachments).toBe(2);expect(events.some(event=>event.type==='attachment_pending')).toBe(true);
+    expect(events.at(-1)).toMatchObject({success:false,result:'attachment_failed'});
   });
   it('marks a mechanically repaired first attachment call in usage records',async () => {
     const candidate=structuredClone(attachment);candidate.template.items[0].sets=200;
@@ -126,9 +139,9 @@ describe('assistant v2 model', () => {
     const original = {...context,task:'ONBOARD_PLAN' as const,profile:{goalText:'fitness',weeklyTarget:3,sessionMinutes:30,scheduleOriginalText:'old',place:'home' as const,equipment:[],adultConfirmed:true as const,cautions:[]}};
     const {target: _target, template: _template, instruction: _instruction, ...onboard} = original;
     const effective = applyAssistantPreferences(onboard,[{role:'user',content}]);
-    expect(effective).toMatchObject({profile:{weeklyTarget:2,sessionMinutes:20,scheduleOriginalText:content,cautions:[]}});
-    const candidate = {requestId:id,restoreGeneration:0,mutationAllowed:false,type:'plan_proposal',proposal:{goalText:'fitness',weeklyTarget:2,sessionMinutes:20,scheduleOriginalText:content,templates:[context.template,{...context.template,id:'B'}],reasons:['a','b','c']}};
-    expect(() => adaptCoachResponse(onboard,candidate)).toThrow();
+    expect(effective).toMatchObject({profile:{weeklyTarget:2,sessionMinutes:20,scheduleOriginalText:'old',cautions:[]}});
+    const candidate = {requestId:id,restoreGeneration:0,mutationAllowed:false,type:'plan_proposal',proposal:{goalText:'fitness',weeklyTarget:2,sessionMinutes:20,scheduleOriginalText:'old',templates:[context.template,{...context.template,id:'B'}],reasons:['a','b','c']}};
+    expect(adaptCoachResponse(onboard,candidate).type).toBe('plan_proposal');
     expect(repairAssistantAttachment(candidate,{...request,context:effective}).attachment?.type).toBe('plan_proposal');
   });
   it('text generation failure stops second stage', async () => {

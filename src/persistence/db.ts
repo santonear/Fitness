@@ -1,4 +1,5 @@
 import type {AssistantConversation} from './assistant-conversations';
+import {recoverAssistantSchedule} from './assistant-schedule-migration';
 import {migrateBodyProfile} from './body-profile-migration';
 import type { CoachLedger } from '../domain/coach-reminders';
 import {legacyExerciseFavorites} from './exercise-favorites';
@@ -37,6 +38,12 @@ export class FitnessDatabase extends Dexie {
   mediaAssets!: Table<MediaAsset, string>;
   constructor(name: string) {
     super(name);
+    this.version(14).stores({}).upgrade(async tx=>{
+      const versions=await tx.table('v8PlanVersions').toArray(),conversations=await tx.table('assistantConversations').toArray();
+      const recovered=recoverAssistantSchedule(versions,conversations,new Date().toISOString());
+      if(recovered.length)await tx.table('v8PlanVersions').bulkPut(recovered);
+      await tx.table('metadata').toCollection().modify((row:Metadata)=>{row.schemaVersion=14;});
+    });
     this.version(13).stores({assistantConversations:'id,updatedAt'}).upgrade(async tx=>{await tx.table('metadata').toCollection().modify((row:Metadata)=>{row.schemaVersion=13;});});
     this.version(1).stores({ profiles: 'id', bodyWeights: 'id,localDate', metadata: 'localProfileId' });
     this.version(2).stores({

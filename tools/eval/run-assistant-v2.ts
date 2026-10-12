@@ -3,6 +3,7 @@ import { createServer } from 'vite';
 import { mkdir, readFile, writeFile, open } from 'node:fs/promises';
 import { resolve, relative, isAbsolute } from 'node:path';
 import { randomUUID, createHash } from 'node:crypto';
+import { summarizeAssistantEvaluation, promptByteBounds } from './assistant-v2-metrics';
 const endpoint = 'https://fitness-ai-assistant-preview.initdevl.workers.dev/api/v1/assistant/chat';
 const requested = new URL(process.env.ASSISTANT_EVAL_URL ?? endpoint);
 if (requested.href !== endpoint) throw Error('PREVIEW_ENDPOINT_ONLY');
@@ -10,9 +11,9 @@ const execute = process.argv.includes('--execute');
 // A new explicitly selected code revision starts a separate evaluation, never overwrites prior attempts.
 const evaluationRevision = process.env.ASSISTANT_EVAL_REVISION ?? 'baseline';
 if (!/^[a-zA-Z0-9._-]{1,40}$/.test(evaluationRevision)) throw Error('INVALID_EVALUATION_REVISION');
-const maxScenarios = Number(process.env.ASSISTANT_EVAL_MAX_SCENARIOS ?? 60);
-if (!Number.isInteger(maxScenarios) || maxScenarios < 1 || maxScenarios > 60) throw Error('INVALID_SCENARIO_LIMIT');
-const totalBudgetCny = 5, maxOutputTokens = 1200, maxAttachmentTokens = 3000, maxCalls = 3;
+const maxScenarios = Number(process.env.ASSISTANT_EVAL_MAX_SCENARIOS ?? 84);
+if (!Number.isInteger(maxScenarios) || maxScenarios < 1 || maxScenarios > 84) throw Error('INVALID_SCENARIO_LIMIT');
+const totalBudgetCny = 10, maxOutputTokens = 1200, maxAttachmentTokens = 3000, maxCalls = 3;
 const inputPrice = Number(process.env.ASSISTANT_EVAL_INPUT_CNY_PER_MILLION ?? 2);
 const outputPrice = Number(process.env.ASSISTANT_EVAL_OUTPUT_CNY_PER_MILLION ?? 8);
 if (![inputPrice, outputPrice].every(value => Number.isFinite(value) && value > 0)) throw Error('INVALID_PRICING');
@@ -23,11 +24,14 @@ const vite = await createServer({ configFile: false, server: { middlewareMode: t
 type Entry = { scenarioId: string; requestId: string; reservedCny: number; chargedCny?: number; status: string; report?: string };
 type Journal = { version: 1; entries: Entry[] };
 try {
- const { assistantV2Scenarios, scoreAssistantV2 } = await vite.ssrLoadModule('/tools/eval/assistant-v2-scenarios.ts');
+ const { assistantV2Scenarios, scoreAssistantV2, evaluationMessages } = await vite.ssrLoadModule('/tools/eval/assistant-v2-scenarios.ts');
  const { assistantRequestSchema, sanitizeAssistantRequest } = await vite.ssrLoadModule('/src/assistant/contracts.ts');
  const { assistantPrompt, ASSISTANT_PROMPT_VERSION } = await vite.ssrLoadModule('/src/backend/assistant/prompts.ts');
  const { basicProposal } = await vite.ssrLoadModule('/src/application/v8-workflow.ts');
- const { localProfile } = await vite.ssrLoadModule('/src/application/rules/local-profile.ts');
+ const { localProfile, parseBodyText } = await vite.ssrLoadModule('/src/application/rules/local-profile.ts');
+ const promptVersion = process.env.ASSISTANT_EVAL_PROMPT_VERSION ?? ASSISTANT_PROMPT_VERSION;
+ if (!['assistant-v2.1.0','assistant-v3.0.0'].includes(promptVersion)) throw Error('INVALID_EVALUATION_PROMPT_VERSION');
+ if (execute && (!process.env.ASSISTANT_EVAL_PROMPT_VERSION || evaluationRevision === 'baseline')) throw Error('EXPLICIT_PROMPT_VERSION_AND_REVISION_REQUIRED');
  const journalPath = resolve(directory, 'budget-journal.json');
  let journal: Journal;
  try { journal = JSON.parse(await readFile(journalPath, 'utf8')); } catch(error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; journal = { version: 1, entries: [] }; }
@@ -55,19 +59,20 @@ try {
   const { confirmedAt: _confirmedAt, ...wireProfile } = profile;
   const plan = basicProposal(profile, locale), target = { planId: randomUUID(), versionId: randomUUID(), revision: 1 };
   let context: unknown;
-  const task = scenario.contextTask ?? ({ 'home-no-equipment': 'ONBOARD_PLAN', 'gym-plan': 'ONBOARD_PLAN', 'clarification-limit': 'ONBOARD_PLAN', 'explicit-duration': 'MODIFY_PLAN', 'explicit-frequency': 'MODIFY_PLAN', 'plan-modification': 'MODIFY_PLAN', 'today-adjustment': 'ADJUST_TODAY', 'short-time': 'ADJUST_TODAY', 'review-facts': 'PERIOD_REVIEW' } as Record<string, string>)[scenario.id];
+  const task = scenario.contextTask ?? ({ 'home-no-equipment': 'ONBOARD_PLAN', 'gym-plan': 'ONBOARD_PLAN', 'clarification-limit': 'ONBOARD_PLAN', 'weekday-optional': 'ONBOARD_PLAN', 'movement-coverage': 'ONBOARD_PLAN', 'explicit-duration': 'MODIFY_PLAN', 'explicit-frequency': 'MODIFY_PLAN', 'plan-modification': 'MODIFY_PLAN', 'added-exercise-duration': 'MODIFY_PLAN', 'today-adjustment': 'ADJUST_TODAY', 'short-time': 'ADJUST_TODAY', 'upper-thirty': 'ADJUST_TODAY', 'you-decide': 'ADJUST_TODAY', 'review-facts': 'PERIOD_REVIEW' } as Record<string, string>)[scenario.id];
   if (task === 'ONBOARD_PLAN') context = { ...common, task, profile: wireProfile };
   if (task === 'MODIFY_PLAN') context = { ...common, task, target, plan, instruction: scenario.message };
   if (task === 'ADJUST_TODAY') context = { ...common, task, target, template: plan.templates[0], instruction: scenario.message };
   if (task === 'PERIOD_REVIEW') context = { ...common, task, target, kind: 'week', facts: { from: '2026-10-05', to: '2026-10-11', complete: 2, partial: 1, notStarted: 0, movementCount: 3, missingCount: 0, activityMinutes: 0, trainingSeconds: 5400, activityCounts: { walk:0,run:0,cycle:0,swim:0,yoga:0,stairs:0,other:0 }, reasonCounts: { time:0,fatigue:0,discomfort:0,equipment_busy:0,not_today:0,other:0 }, hasBodyWeight: false, incompleteTiming: { weekday: zeroBand(), weekend: zeroBand() }, improvements: [] } };
-  const request = assistantRequestSchema.parse({ version: 'fitness-assistant-v2', requestId, conversationId, locale, timeZone: 'Asia/Shanghai', adultConfirmed: !scenario.id.startsWith('minor'), messages: [{ role: 'user', content: scenario.message }], ...(context ? { context } : {}), consent: { body: false, history: false } });
+  const request = assistantRequestSchema.parse({ version: 'fitness-assistant-v2', requestId, conversationId, locale, timeZone: 'Asia/Shanghai', adultConfirmed: !scenario.id.startsWith('minor'), messages: evaluationMessages(scenario), ...(context ? { context } : {}), consent: { body: false, history: false } });
+  const evidence = { baselinePlan: scenario.id === 'added-exercise-duration' ? plan : undefined, parsedBody: scenario.id === 'spoken-measurements' ? parseBodyText(scenario.message) : undefined };
   // Byte fallback tokenization cannot exceed UTF-8 bytes. NUL maximizes JSON escaping of the server's 16000-character text cap.
   const effectiveRequest = sanitizeAssistantRequest(request);
-  const promptBytes = ['text', 'attachment', 'attachment'].map((stage, i) => Buffer.byteLength(JSON.stringify(assistantPrompt(effectiveRequest, stage, ASSISTANT_PROMPT_VERSION, i ? '\0'.repeat(16000) : '', i === 2 ? '\0'.repeat(1000) : undefined, i ? 'exercise' : undefined)), 'utf8') + 1024);
+  const promptBytes = promptByteBounds((stage,attempt)=>assistantPrompt(effectiveRequest,stage,promptVersion,stage==='attachment'?'\0'.repeat(16000):'',attempt?'\0'.repeat(1000):undefined,stage==='attachment'?'exercise':undefined));
   const reservedCny = (promptBytes.reduce((sum, bytes) => sum + bytes, 0) * inputPrice + (maxOutputTokens + 2 * maxAttachmentTokens) * outputPrice) / 1e6;
-  const preflight = { scenarioId: scenario.scenarioId, evaluationRevision, task: task ?? 'chat', promptInputTokenUpperBounds: promptBytes, outputTokensPerCall: [maxOutputTokens, maxAttachmentTokens, maxAttachmentTokens], reservedCny, request };
+  const preflight = { scenarioId: scenario.scenarioId, evaluationRevision, promptVersion, task: task ?? 'chat', promptInputTokenUpperBounds: promptBytes, outputTokensPerCall: [maxOutputTokens, maxAttachmentTokens, maxAttachmentTokens], reservedCny, request };
   if (!execute) { records.push(preflight); continue; }
-  if (spent() + reservedCny > totalBudgetCny) { stopReason = 'budget-reservation-would-exceed-5-cny'; break; }
+  if (spent() + reservedCny > totalBudgetCny) { stopReason = 'budget-reservation-would-exceed-10-cny'; break; }
   const entry: Entry = { scenarioId: journalScenarioId, requestId, reservedCny, status: 'reserved' };
   journal.entries.push(entry); attemptedThisRun++; await save(); // Crash or unknown usage retains the complete hold.
   const started = performance.now(); let events: any[] = [], httpStatus: number | undefined;
@@ -82,20 +87,22 @@ try {
    const actualCny = done.calls.reduce((sum: number, call: any) => sum + (call.inputTokens * inputPrice + call.outputTokens * outputPrice) / 1e6, 0);
    entry.chargedCny = actualCny; entry.status = done.success ? 'completed' : 'generation-failed';
    if (actualCny > reservedCny || done.calls.some((call: any) => call.outputTokens > (call.stage === 'text' ? maxOutputTokens : maxAttachmentTokens))) { entry.status = 'bound-violation'; stopReason = 'server-bound-violation'; }
-   const score = scoreAssistantV2(scenario, events);
-   const report = { ...preflight, events, outputText: events.filter(event => event.type === 'text_delta').map(event => event.delta).join(''), latencyMs: performance.now() - started, httpStatus, calls: done.calls, actualCny, price: { inputCnyPerMillion: inputPrice, outputCnyPerMillion: outputPrice }, score };
+   if (done.promptVersion !== promptVersion) { entry.status = 'prompt-version-mismatch'; stopReason = 'server-prompt-version-mismatch'; }
+   const score = scoreAssistantV2(scenario, events, evidence);
+   const report = { ...preflight, promptVersion: done.promptVersion, events, outputText: events.filter(event => event.type === 'text_delta').map(event => event.delta).join(''), latencyMs: performance.now() - started, httpStatus, calls: done.calls, actualCny, price: { inputCnyPerMillion: inputPrice, outputCnyPerMillion: outputPrice }, score };
    entry.report = `${scenario.scenarioId}-${createHash('sha256').update(requestId).digest('hex').slice(0,8)}.json`;
    await writeFile(resolve(directory, entry.report), JSON.stringify(report, null, 2), { mode: 0o600 }); records.push(report); executed++;
   } catch {
     entry.status = 'approved-conservative-upper-bound'; entry.chargedCny = reservedCny;
-    const report = {...preflight, events, httpStatus, latencyMs:performance.now()-started, reservedCny, status:entry.status, costIsUpperBound:true, score:scoreAssistantV2(scenario,events)};
+    const report = {...preflight, events, httpStatus, latencyMs:performance.now()-started, reservedCny, status:entry.status, costIsUpperBound:true, score:scoreAssistantV2(scenario,events,evidence)};
     entry.report = `${scenario.scenarioId}-${createHash('sha256').update(requestId).digest('hex').slice(0,8)}.json`;
     await writeFile(resolve(directory,entry.report),JSON.stringify(report,null,2),{mode:0o600});records.push(report);
    }
   await save();
   if (stopReason !== 'completed') break;
  }
- const summary = { mode: execute ? 'execute' : 'dry-run', endpoint, scenarios: assistantV2Scenarios.length, executed, alreadyAttempted: journal.entries.length, totalBudgetCny, cumulativeSpentOrHeldCny: spent(), stopReason, automatedPassedThisRun: records.filter((record: any) => record.score?.automatedPass).length, humanReviewStillRequired: true, records };
+ const summary = { mode: execute ? 'execute' : 'dry-run', endpoint, scenarios: assistantV2Scenarios.length, executed, alreadyAttempted: journal.entries.length, totalBudgetCny, cumulativeSpentOrHeldCny: spent(), stopReason, metrics: summarizeAssistantEvaluation(records), humanReviewStillRequired: true, records };
  await writeFile(resolve(directory, execute ? 'latest-report.json' : 'preflight.json'), JSON.stringify(summary, null, 2), { mode: 0o600 });
+ if (execute) await writeFile(resolve(directory, `report-${evaluationRevision}.json`),JSON.stringify(summary,null,2),{mode:0o600});
  console.log(JSON.stringify({ ...summary, records: undefined }));
 } finally { await vite.close(); await lock.close(); await (await import('node:fs/promises')).unlink(resolve(directory, 'run.lock')); }

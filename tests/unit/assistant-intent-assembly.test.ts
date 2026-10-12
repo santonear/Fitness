@@ -1,0 +1,81 @@
+import { describe,expect,it } from 'vitest';
+import { assembleAssistantIntent,resolveAssistantExercise } from '../../src/backend/assistant/assemble';
+import { selectAssistantCandidates } from '../../src/catalog/ai-catalog';
+import type { AssistantRequest } from '../../src/assistant/contracts';
+import { assistantMovement } from '../../src/catalog/ai-catalog';
+import { exercises } from '../../src/catalog/exercises';
+
+const id='11111111-1111-4111-8111-111111111111';
+const base={version:'fitness-assistant-v2',requestId:id,conversationId:id,locale:'zh',timeZone:'Asia/Shanghai',adultConfirmed:true,messages:[{role:'user',content:'每周三次，每次30分钟'}]} as const;
+const common={version:'fitness-coach-v8',requestId:id,conversationId:id,restoreGeneration:0,inputSnapshot:'snapshot',sendConfirmation:'confirmed',locale:'zh',timeZone:'Asia/Shanghai',adultConfirmed:true,messages:[]} as const;
+const onboard:AssistantRequest={...base,messages:[...base.messages],context:{...common,messages:[],task:'ONBOARD_PLAN',profile:{goalText:'规律训练',weeklyTarget:3,sessionMinutes:30,scheduleOriginalText:'原来每周三次',place:'home',equipment:['none'],adultConfirmed:true,cautions:[]}}};
+describe('minimal assistant intent assembly',()=>{
+ it('resolves candidate code and exact name but drops unknown names',()=>{
+  const candidates=selectAssistantCandidates(onboard),first=candidates[0];
+  expect(resolveAssistantExercise(first.code,candidates)?.exercise.id).toBe(first.exercise.id);
+  expect(resolveAssistantExercise(first.exercise.name.zh,candidates)?.exercise.id).toBe(first.exercise.id);
+  expect(resolveAssistantExercise('totally unknown future movement',candidates)).toBeUndefined();
+ });
+ it('filters unsafe or unavailable movements from the model vocabulary',()=>{
+  const request={...onboard,messages:[{role:'user' as const,content:'不能跳，膝盖需要注意'}],context:{...onboard.context!,task:'ONBOARD_PLAN' as const,profile:{...onboard.context!.task==='ONBOARD_PLAN'?onboard.context!.profile:undefined,cautions:['knee' as const],equipment:['none','dumbbell','resistance-band']}}} as AssistantRequest;
+  const candidates=selectAssistantCandidates(request);
+  expect(candidates.length).toBeLessThanOrEqual(60);
+  expect(candidates.every(row=>['none','dumbbell','resistance-band'].includes(row.exercise.equipment))).toBe(true);
+  expect(candidates.every(row=>!/jump|hop|burpee|squat|lunge|leg.press/i.test(row.exercise.name.en))).toBe(true);
+ });
+ it.each([
+  {place:'home' as const,equipment:['none','dumbbell','resistance-band'],cautions:['knee' as const],message:'不能跳'},
+  {place:'gym' as const,equipment:['none','gym-machine','barbell','dumbbell'],cautions:[],message:'安排健身房训练'},
+  {place:'home' as const,equipment:['none','yoga-mat'],cautions:[],message:'只有瑜伽垫'},
+ ])('keeps balanced candidates for $place / $message',scenario=>{
+  const req={...onboard,messages:[{role:'user' as const,content:scenario.message}],context:{...onboard.context!,task:'ONBOARD_PLAN' as const,profile:{...onboard.context!.task==='ONBOARD_PLAN'?onboard.context!.profile:undefined,place:scenario.place,equipment:scenario.equipment,cautions:scenario.cautions}}} as AssistantRequest;
+  const selected=selectAssistantCandidates(req),counts=new Map<string,number>();
+  for(const row of selected)counts.set(row.mode,(counts.get(row.mode)??0)+1);
+  expect(selected.length).toBeLessThanOrEqual(60);
+  for(const [mode,count] of counts){
+   // Do not fill a scarce mode with movements that violate a knee caution.
+   const floor=mode==='carry'?2:mode==='squat'&&scenario.cautions.some(area=>area==='knee')?1:4;
+   expect(count,mode).toBeGreaterThanOrEqual(floor);
+  }
+ });
+ it('builds complete plan with server identity and keeps original words',()=>{
+  const result=assembleAssistantIntent({kind:'plan_new',params:{daysPerWeek:3}},onboard);
+  expect(result.attachment).toMatchObject({type:'plan_proposal',requestId:id,mutationAllowed:false,proposal:{weeklyTarget:3,scheduleOriginalText:'原来每周三次'}});
+  if(result.attachment?.type!=='plan_proposal')throw Error('missing proposal');
+  for(const template of result.attachment.proposal.templates){
+   const modes=new Set(template.items.map(item=>assistantMovement(exercises.find(e=>e.id===item.exerciseId)!)));
+   expect(modes.has('push')).toBe(true);
+   expect([modes.has('push'),modes.has('pull'),modes.has('core'),modes.has('squat')||modes.has('hinge')].filter(Boolean).length).toBeGreaterThanOrEqual(3);
+   expect(template.estimatedMinutes).toBeGreaterThanOrEqual(10);
+  }
+ });
+ it('drops unknown picks without throwing away the valid plan',()=>{
+  const result=assembleAssistantIntent({kind:'plan_new',params:{},picks:[{slot:'A:push',code:'not-an-exercise'}]},onboard);
+  expect(result.attachment?.type).toBe('plan_proposal');expect(result.dropped).toContain('unknown_exercise');
+ });
+ it('gives a 10-minute today request an applicable card',()=>{
+  const plan=assembleAssistantIntent({kind:'plan_new',params:{}},onboard).attachment;
+  if(plan?.type!=='plan_proposal')throw Error('missing');
+  const context={...common,messages:[],task:'ADJUST_TODAY' as const,target:{planId:id,versionId:id,revision:0},instruction:'今天10分钟',template:plan.proposal.templates[0]};
+  const result=assembleAssistantIntent({kind:'today_adjust',minutes:10},{...onboard,context});
+  expect(result.attachment?.type).toBe('today_adjustment');
+  if(result.attachment?.type==='today_adjustment')expect(result.attachment.template.estimatedMinutes).toBeGreaterThanOrEqual(10);
+ });
+ it('replaces an existing movement even when a new caution removes it from candidates',()=>{
+  const plan=assembleAssistantIntent({kind:'plan_new',params:{}},onboard).attachment;
+  if(plan?.type!=='plan_proposal')throw Error('missing plan');
+  const original=plan.proposal.templates[0].items[0];
+  const modified={...onboard,context:{...common,messages:[],task:'MODIFY_PLAN' as const,target:{planId:id,versionId:id,revision:0},instruction:'换动作',plan:plan.proposal}} as AssistantRequest;
+  const safe=selectAssistantCandidates(modified).find(row=>row.exercise.id!==original.exerciseId);
+  if(!safe)throw Error('missing safe candidate');
+  const result=assembleAssistantIntent({kind:'plan_modify',changes:[{session:plan.proposal.templates[0].id,op:'replace',from:original.exerciseId,to:safe.code}]},modified);
+  expect(result.attachment?.type).toBe('change_proposal');
+  if(result.attachment?.type==='change_proposal')expect(result.attachment.proposal.templates[0].items[0].exerciseId).toBe(safe.exercise.id);
+ });
+ it('rejects a plan change that cannot be applied rather than presenting an unchanged plan',()=>{
+  const plan=assembleAssistantIntent({kind:'plan_new',params:{}},onboard).attachment;
+  if(plan?.type!=='plan_proposal')throw Error('missing plan');
+  const modified={...onboard,context:{...common,messages:[],task:'MODIFY_PLAN' as const,target:{planId:id,versionId:id,revision:0},instruction:'换动作',plan:plan.proposal}} as AssistantRequest;
+  expect(()=>assembleAssistantIntent({kind:'plan_modify',changes:[{op:'replace',from:'unknown',to:'also unknown'}]},modified)).toThrow('NO_APPLICABLE_CHANGE');
+ });
+});

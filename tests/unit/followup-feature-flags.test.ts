@@ -40,14 +40,21 @@ test('duplicate starts share one poller, background over 60 seconds retains flag
  doc.visibilityState='hidden';doc.dispatchEvent(new Event('visibilitychange'));await vi.advanceTimersByTimeAsync(90000);
  expect(fetcher).toHaveBeenCalledTimes(1);expect(f.isFeatureEnabled('planLifecycle')).toBe(true);
  doc.visibilityState='visible';doc.dispatchEvent(new Event('visibilitychange'));win.dispatchEvent(new Event('online'));await vi.advanceTimersByTimeAsync(0);expect(fetcher).toHaveBeenCalledTimes(2);
- stop1();await vi.advanceTimersByTimeAsync(30000);expect(fetcher).toHaveBeenCalledTimes(3);
- nav.onLine=false;await vi.advanceTimersByTimeAsync(60000);expect(fetcher).toHaveBeenCalledTimes(3);expect(f.isFeatureEnabled('planLifecycle')).toBe(true);
- stop2();stop2();await vi.advanceTimersByTimeAsync(60000);expect(fetcher).toHaveBeenCalledTimes(3);
+ stop1();await vi.advanceTimersByTimeAsync(30000);expect(fetcher).toHaveBeenCalledTimes(2);
+ nav.onLine=false;await vi.advanceTimersByTimeAsync(60000);expect(fetcher).toHaveBeenCalledTimes(2);expect(f.isFeatureEnabled('planLifecycle')).toBe(true);
+ stop2();stop2();await vi.advanceTimersByTimeAsync(60000);expect(fetcher).toHaveBeenCalledTimes(2);
 });
 test('concurrent callers share a single pending network request',async()=>{
  const f=await import('../../src/application/feature-flags');let finish!:(value:Response)=>void;
  const fetcher=vi.fn(()=>new Promise<Response>(resolve=>{finish=resolve;}));const a=f.refreshFeatureFlags(fetcher),b=f.refreshFeatureFlags(fetcher);
  expect(a).toBe(b);expect(fetcher).toHaveBeenCalledTimes(1);finish(response({planLifecycle:true}));await a;
+});
+test('four route consumers share one fresh flag response, then refresh at expiry',async()=>{
+ vi.useFakeTimers();const f=await import('../../src/application/feature-flags');const fetcher=vi.fn<typeof fetch>(async()=>response({planLifecycle:true}));
+ await Promise.all(Array.from({length:4},()=>f.refreshFeatureFlags(fetcher,true)));
+ expect(fetcher).toHaveBeenCalledTimes(1);
+ await vi.advanceTimersByTimeAsync(30000);await f.refreshFeatureFlags(fetcher,true);expect(fetcher).toHaveBeenCalledTimes(1);
+ await vi.advanceTimersByTimeAsync(30000);await f.refreshFeatureFlags(fetcher,true);expect(fetcher).toHaveBeenCalledTimes(2);
 });
 test.each([true,false])('startup requests once even when hidden (online=%s), then pauses polling',async(onLine)=>{
  vi.useFakeTimers();vi.stubGlobal('document',Object.assign(new EventTarget(),{visibilityState:'hidden'}));vi.stubGlobal('window',new EventTarget());vi.stubGlobal('navigator',{onLine});

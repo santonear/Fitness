@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createElement as h } from 'react';
 import { describe, expect, it } from 'vitest';
-import { OnboardingPage, type OnboardingAnswers } from '../../src/ui/pages/onboarding/OnboardingPage';
+import { OnboardingPage, cautionsFromGoal, type OnboardingAnswers } from '../../src/ui/pages/onboarding/OnboardingPage';
 import { PlanDraftPage, type OnboardingProposal } from '../../src/ui/pages/onboarding/PlanDraftPage';
 import type { ThemeSlots } from '../../src/themes/contract';
 const slots: Pick<ThemeSlots, 'BrandMark' | 'AiLine' | 'Suggestions'> = {
@@ -9,6 +9,15 @@ const slots: Pick<ThemeSlots, 'BrandMark' | 'AiLine' | 'Suggestions'> = {
 };
 const answers: OnboardingAnswers = { goalText: '<script>private words</script>', scheduleOriginalText: '15 minutes', placeEquipmentText: 'My equipment', adultConfirmed: false, cautions: [] };
 describe('onboarding presentation boundaries', () => {
+  it('recognizes explicit knee injuries but does not infer a limitation from an unrelated goal',()=>{expect(cautionsFromGoal('膝盖以前伤过，想练力量')).toEqual(['knee']);expect(cautionsFromGoal('提高力量和耐力')).toEqual([])});
+  it('shows old answers only as a placeholder and lists body details once in sending consent',()=>{
+    const old={...answers,goalText:'想练力量',scheduleOriginalText:'每周两次',placeEquipmentText:'在家',adultConfirmed:true,body:{biologicalSex:'男性' as const,age:34,heightCm:175,weightKg:82,waistCm:92}};
+    const input=renderToStaticMarkup(h(OnboardingPage,{locale:'zh',step:2,bodyEnabled:true,answers:old,slots,mode:'ai',onChange(){},onStep(){},onGenerate(){},onManual(){}}));
+    expect(input).toMatch(/<textarea[^>]*placeholder="每周两次"[^>]*><\/textarea>/);
+    const consent=renderToStaticMarkup(h(OnboardingPage,{locale:'zh',step:4,bodyEnabled:true,answers:old,slots,mode:'ai',onChange(){},onStep(){},onGenerate(){},onManual(){}}));
+    for(const label of ['性别','年龄','身高（厘米）','体重（公斤）','腰围（厘米）'])expect(consent).toContain(`<dt>${label}</dt>`);
+    expect(consent.match(/我已年满 18 岁/g)).toHaveLength(1);
+  });
   it('rendering safety never generates and escapes original text in the consent list', () => {
     let calls = 0;
     const html = renderToStaticMarkup(h(OnboardingPage, { locale: 'en', step: 3, answers, slots, mode: 'ai', onChange() {}, onStep() {}, onGenerate() { calls++; }, onManual() {} }));

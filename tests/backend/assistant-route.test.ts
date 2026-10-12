@@ -93,6 +93,17 @@ it('V2 access status ignores legacy pending and omits retired monthly counters',
  expect(data).toMatchObject({qualification:'active',sessionValid:true,aiEnabled:true,summaryAvailable:true,assistantV2:true});
  expect(data).not.toHaveProperty('used');expect(data).not.toHaveProperty('reconciliationRequired');
 });
+it('accepts same-origin GET status without an Origin header, but rejects cross-site reads',async()=>{
+ const {env}=await setup();const url='https://preview.test/api/v1/trial/access-status';
+ const headers={Cookie:`__Host-fitness_trial=${token}`,'Sec-Fetch-Site':'same-origin'};
+ const response=await assistantAccessStatus(new Request(url,{headers}),env);
+ expect(response.status).toBe(200);expect(await response.json()).toMatchObject({qualification:'active',sessionValid:true});
+ const byReferer=await assistantAccessStatus(new Request(url,{headers:{Cookie:headers.Cookie,Referer:'https://preview.test/settings'}}),env);
+ expect(byReferer.status).toBe(200);
+ for(const invalid of [{Cookie:headers.Cookie},{...headers,'Sec-Fetch-Site':'cross-site'},{...headers,Origin:'https://attacker.test'}]){
+  const denied=await assistantAccessStatus(new Request(url,{headers:invalid}),env);expect(denied.status).toBe(403);
+ }
+});
 
 it('runs fallible signal setup before admission and never calls provider on setup failure',async()=>{
   const {db,env,request}=await setup();let runs=0;

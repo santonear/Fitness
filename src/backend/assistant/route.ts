@@ -70,9 +70,14 @@ export async function handleAssistant(request:Request,env:AssistantEnv,runner=ru
 /** V2 qualification reads identity only; legacy budgets/reconciliation never enter this path. */
 export async function assistantAccessStatus(request:Request,env:AssistantEnv){
  try{
-  const url=new URL(request.url);if(request.method!=='POST'||url.protocol!=='https:'||request.headers.get('origin')!==url.origin||request.headers.get('sec-fetch-site')==='cross-site')return json({error:'ORIGIN_DENIED'},403);
+  const url=new URL(request.url),origin=request.headers.get('origin'),site=request.headers.get('sec-fetch-site'),referer=request.headers.get('referer');
+  const sameOriginGet=request.method==='GET'&&(origin===null||origin===url.origin)&&(
+   site==='same-origin'||origin===url.origin||referer!==null&&(()=>{try{return new URL(referer).origin===url.origin}catch{return false}})()
+  );
+  if(url.protocol!=='https:'||site==='cross-site'||!['GET','POST'].includes(request.method))return json({error:'ORIGIN_DENIED'},403);
+  if(request.method==='POST'?origin!==url.origin:!sameOriginGet)return json({error:'ORIGIN_DENIED'},403);
   if(!env.CONTROL_DB||!env.CONTROL_DIGEST_SECRET)return json({error:'SERVICE_UNAVAILABLE'},503);
-  const raw=await readInput(request) as {receipt?:unknown};if(!raw||typeof raw!=='object'||Array.isArray(raw)||Object.keys(raw).some(k=>k!=='receipt')||raw.receipt!==undefined&&(typeof raw.receipt!=='string'||!/^[a-f0-9]{64}$/.test(raw.receipt)))return json({error:'INVALID_INPUT'},400);
+  const raw=request.method==='GET'?{}:await readInput(request) as {receipt?:unknown};if(!raw||typeof raw!=='object'||Array.isArray(raw)||Object.keys(raw).some(k=>k!=='receipt')||raw.receipt!==undefined&&(typeof raw.receipt!=='string'||!/^[a-f0-9]{64}$/.test(raw.receipt)))return json({error:'INVALID_INPUT'},400);
   const state=await new D1ControlStore(env.CONTROL_DB).read();
   const cookies=(request.headers.get('cookie')??'').split(';').map(s=>s.trim()).filter(s=>s.startsWith('__Host-fitness_trial='));const token=cookies.length===1?cookies[0].slice('__Host-fitness_trial='.length):'';
   const session=/^[a-f0-9]{64}$/.test(token)?state.sessions[await digest(token,env.CONTROL_DIGEST_SECRET)]:undefined;

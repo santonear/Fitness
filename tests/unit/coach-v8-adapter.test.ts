@@ -71,10 +71,13 @@ describe('V8 response boundary', () => {
     }
     for (const minutes of [15, 30, 60, 120]) {
       const templates = proposal.templates.map(template => ({ ...template, estimatedMinutes: minutes }));
-      expect(() => adaptCoachResponse(onboard, { ...cases[0].response, proposal: { ...proposal, templates } })).toThrow('initial template duration');
+      expect(adaptCoachResponse(onboard, { ...cases[0].response, proposal: { ...proposal, templates } }).type).toBe('plan_proposal');
     }
-    for (const patch of [{ sessionMinutes: 30 }, { goalText: 'new' }, { scheduleOriginalText: 'translated' }, { weeklyTarget: 3 }, { templates: [template] }, { templates: Array.from({ length: 4 }, (_, i) => ({ ...template, id: String(i) })) }]) {
+    for (const patch of [{ goalText: 'new' }, { scheduleOriginalText: 'translated' }, { templates: Array.from({ length: 4 }, (_, i) => ({ ...template, id: String(i) })) }]) {
       expect(() => adaptCoachResponse(onboard, { ...cases[0].response, proposal: { ...proposal, ...patch } })).toThrow();
+    }
+    for (const patch of [{ sessionMinutes: 30 }, { weeklyTarget: 3 }, { templates: [template] }]) {
+      expect(adaptCoachResponse(onboard, { ...cases[0].response, proposal: { ...proposal, ...patch } }).type).toBe('plan_proposal');
     }
   });
   it('rejects unknown/out-of-scope IDs and wrong metrics', () => {

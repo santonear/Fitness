@@ -28,8 +28,8 @@ export function buildCoachRequest(input:CoachRequestInput):CoachRequest|undefine
  const copy=common.locale==='en'?en:zh;
  const instruction=input.instruction?.trim()||copy.defaultInstruction;
  if(task==='MODIFY_PLAN'){
-  const {goalText,weeklyTarget,scheduleOriginalText,sessionMinutes,templates}=data.version;
-  return coachRequestSchema.parse({...common,task,target,instruction,plan:{goalText,weeklyTarget,scheduleOriginalText,sessionMinutes,templates,reasons:['','',''].map(()=>copy.currentPlan)}});
+  const {goalText,weeklyTarget,preferredDays,scheduleOriginalText,sessionMinutes,templates}=data.version;
+  return coachRequestSchema.parse({...common,task,target,instruction,plan:{goalText,weeklyTarget,preferredDays,scheduleOriginalText,sessionMinutes,templates,reasons:['','',''].map(()=>copy.currentPlan)}});
  }
  const selectedId=input.templateId??data.active?.templateId??data.version.templates[0]?.id;
  const override=data.state?.nextWorkoutOverride;

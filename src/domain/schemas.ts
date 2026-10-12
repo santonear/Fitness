@@ -119,7 +119,10 @@ export const metadataSchema = z.strictObject({
 });
 export const memoSessionSchema = z.strictObject({ session: workoutSessionSchema, sets: z.array(setRecordSchema), planVersionSnapshot: planVersionSchema.optional() });
 export const trainingMemoSchema = z.strictObject({ schemaVersion: positive, revision: nonnegative, updatedAt: utcTimestampSchema, sourceRevision: nonnegative, sessions: z.array(memoSessionSchema) });
-export const aiMemoryNoteSchema = z.strictObject({ ...entityFields, memoRevision: nonnegative, generatorVersion: z.string(), locale: localeSchema, suggestion: z.string(), explanation: z.string() });
+export const aiMemoryNoteSchema = z.strictObject({ ...entityFields, memoRevision: nonnegative, generatorVersion: z.string(), locale: localeSchema, suggestion: z.string(), explanation: z.string(),
+  kind:z.enum(['dislike_exercise','cannot_do','caution_area','preferred_days','equipment']).optional(),
+  value:z.union([z.string().min(1).max(200),z.array(z.string().min(1).max(80)).min(1).max(7)]).optional(),
+}).superRefine((note,ctx)=>{if((note.kind===undefined)!==(note.value===undefined))ctx.addIssue({code:'custom',path:['value'],message:'Preference kind and value must be provided together'});});
 export const mediaAssetSchema = z.strictObject({
   id: z.string(), type: z.enum(['image', 'video']), provider: z.enum(['r2', 'youtube']),
   url: z.url().optional(), youtubeVideoId: z.string().optional(), creator: z.string(), language: z.string(),
@@ -132,10 +135,14 @@ export const timerStateSchema = z.strictObject({
   accumulatedMs: nonnegative, startedAtMs: nonnegative.optional(), targetMs: positive.optional(),
 });
 const v8Minutes = z.number().int().min(15).max(120);
+const v8AdjustmentMinutes = z.number().int().min(10).max(120);
+const v8PreferredDays = z.array(z.enum(['mon','tue','wed','thu','fri','sat','sun'])).max(7).optional();
 export const v8PlanVersionSchema = z.strictObject({
   id: uuidSchema, planId: uuidSchema, versionNumber: positive, goalText: z.string(), weeklyTarget: positive.max(7),
   scheduleOriginalText: z.string(), sessionMinutes: v8Minutes,
-  templates: z.array(z.strictObject({ id: z.string().min(1), name: z.string().min(1), estimatedMinutes: v8Minutes,
+  preferredDays: v8PreferredDays,
+  scheduleRecovery:z.strictObject({raw:z.string(),recoveredAt:utcTimestampSchema}).optional(),
+  templates: z.array(z.strictObject({ id: z.string().min(1), name: z.string().min(1), estimatedMinutes: v8AdjustmentMinutes,
     items: z.array(z.strictObject({ exerciseId: exerciseIdSchema, equipment: z.string(), sets: positive, target: setMetricsSchema })).min(1),
   })).min(1), createdAt: utcTimestampSchema, origin: z.enum(['onboard', 'coach_change', 'review_suggestion', 'manual', 'migrated']),
   reviewRule: z.enum(['time','progression','frequency','restart','discomfort']).optional(),
@@ -161,6 +168,7 @@ export const v8ActivitySchema = z.strictObject({ id: uuidSchema, type: z.enum(['
   minutes: z.number().positive().finite(), localDate: localDateSchema, timeZone: timeZoneSchema, feel: v8Feel.optional(), note: z.string().optional(), createdAt: utcTimestampSchema });
 export const v8CoachProfileSchema = z.strictObject({
   goalText: z.string(), weeklyTarget: positive.max(7), sessionMinutes: v8Minutes, scheduleOriginalText: z.string(),
+  preferredDays: v8PreferredDays,
   place: z.enum(['home', 'gym', 'outdoor', 'mixed']), equipment: z.array(z.string()), adultConfirmed: z.boolean(),
   cautions: z.array(z.enum(['knee', 'back', 'shoulder', 'wrist', 'other'])), cautionNote: z.string().optional(), confirmedAt: utcTimestampSchema,
 });
