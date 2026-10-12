@@ -21,7 +21,7 @@ test('candidate preview shows repetitions load duration and distance before conf
   await route.fulfill({json:{requestId:sent.requestId,context:{restoreGeneration:0,inputDigest:sent.sendConfirmation},accounting:'settled',result:{requestId:sent.requestId,restoreGeneration:0,mutationAllowed:false,type:'plan_proposal',proposal:{goalText:p.goalText,weeklyTarget:p.weeklyTarget,sessionMinutes:p.sessionMinutes,scheduleOriginalText:p.scheduleOriginalText,reasons:['a','b','c'],templates:[{id:'A',name:'A',estimatedMinutes:20,items},{id:'B',name:'B',estimatedMinutes:20,items}]}}}});
  });
  await page.goto('/tests/fixtures/v8-coach/index.html');await page.getByRole('button',{name:'跟芽芽说',exact:true}).click();await page.getByRole('textbox',{name:'跟芽芽说'}).fill('帮我看看');await page.getByRole('button',{name:'发送',exact:true}).click();
- await expect(page.getByText('高脚杯深蹲 · 2 组 · 8 次 · 12.5 kg').first()).toBeVisible();await expect(page.getByText('步行 · 1 组 · 600 s · 0.75 km').first()).toBeVisible();await expect(page.getByText('徒手深蹲 · 3 组 · 10 次').first()).toBeVisible();await expect(page.getByText('平板支撑 · 2 组 · 25 s').first()).toBeVisible();
+ await expect(page.getByText('高脚杯深蹲 · 2 组 · 8 次 · 12.5 公斤').first()).toBeVisible();await expect(page.getByText('步行 · 1 组 · 600 秒 · 750 米').first()).toBeVisible();await expect(page.getByText('徒手深蹲 · 3 组 · 10 次').first()).toBeVisible();await expect(page.getByText('平板支撑 · 2 组 · 25 秒').first()).toBeVisible();
 });
 test('duplicate apply is locked and a failed save retains the candidate without regenerating',async({page})=>{
  let modelCalls=0,applyCalls=0;let finishApply:(()=>void)|undefined;
