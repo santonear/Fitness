@@ -186,10 +186,11 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
       const weekValue=weekly&&({'一':1,'二':2,'两':2,'三':3,'四':4,'五':5,'六':6,'七':7,once:1,twice:2} as Record<string,number>)[(weekly[1]??weekly[2]??weekly[3]).toLowerCase()]||Number(weekly?.[1]??weekly?.[2]);
       const task=request.context.task;
       const addPush=/加.*(?:推|胸)|add.*(?:push|chest)/i.test(latest);
+      const addLower=/加.*(?:练腿|腿部|下肢)|add.*(?:leg|lower.body)/i.test(latest);
       const lessEquipment=/少.*器械|less equipment/i.test(latest);
       const candidateList=selectAssistantCandidates(request);
       const plan=task==='MODIFY_PLAN'?request.context.plan:undefined;
-      const addCandidate=addPush&&plan?candidateList.find(row=>row.mode==='push'&&!plan.templates.some(template=>template.items.some(item=>item.exerciseId===row.exercise.id))):undefined;
+      const addCandidate=(addPush||addLower)&&plan?candidateList.find(row=>(addLower?row.mode==='hinge':row.mode==='push')&&!plan.templates.some(template=>template.items.some(item=>item.exerciseId===row.exercise.id))):undefined;
       const equipped=lessEquipment&&plan?plan.templates.flatMap(template=>template.items.map(item=>({template,item}))).find(({item})=>item.equipment!=='none'):undefined;
       const previous=equipped?exercises.find(row=>row.id===equipped.item.exerciseId):undefined;
       const replacement=previous?candidateList.find(row=>row.mode===assistantMovement(previous)&&row.exercise.equipment==='none'):undefined;

@@ -31,6 +31,21 @@ describe('assistant v2 model', () => {
     expect(card?.type==='attachment'&&card.attachment.type==='change_proposal'&&card.attachment.proposal.templates[0].items[0].exerciseId!==carry.id).toBe(true);
     expect(events.filter(event=>event.type==='text_delta').map(event=>event.delta).join('')).not.toContain('没有农夫行走');
   });
+  it('falls back to a knee-conscious lower-body addition without reusing excluded carries',async()=>{
+    const plan=basicProposal({goalText:'力量',weeklyTarget:3,sessionMinutes:30,scheduleOriginalText:'每周三次',place:'home',equipment:['none','dumbbell'],adultConfirmed:true,cautions:['knee'],confirmedAt:new Date().toISOString()},'zh');
+    if(!plan)throw Error('missing plan');
+    const {template:_template,...common}=context;
+    const input:AssistantRequest={...request,messages:[{role:'user',content:'以后给我加一个练腿的动作'}],preferences:[{kind:'cannot_do',value:'walking_carry'}],context:{...common,task:'MODIFY_PLAN',plan,target:context.target}};
+    const model=provider([{kind:'none'},{kind:'none'}]);model.streamText=async function*(){yield {delta:'我先看看。<<ATTACHMENT:change>>',usage};};
+    const events=await gather(runAssistantModel(input,{provider:model,promptVersion:'assistant-v3.1.0'}));
+    const card=events.find(event=>event.type==='attachment');
+    expect(card?.type==='attachment'&&card.attachment.type==='change_proposal').toBe(true);
+    if(card?.type==='attachment'&&card.attachment.type==='change_proposal'){
+      const added=card.attachment.proposal.templates[0].items.find(item=>!plan.templates[0].items.some(old=>old.exerciseId===item.exerciseId));
+      expect(added).toBeDefined();
+      expect(added?.exerciseId).not.toBe(exercises.find(row=>row.name.zh==='哑铃农夫行走')?.id);
+    }
+  });
   it('assembles a V3 adjustment from minimal intent without model-supplied identity',async()=>{
     const model=provider([{kind:'today_adjust',minutes:10}]);
     model.streamText=async function*(){yield {delta:'今天整理成短版。<<ATTACHMENT:today>>',usage};};
