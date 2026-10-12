@@ -136,7 +136,9 @@ test('manual timed distance exercise preserves edited measurements after reload'
 test('onboarding is resumable and adult confirmation is required for basic generation', async ({ page }) => {
   await page.goto('/'); await page.getByLabel('你的回答').fill('保持活动'); await page.getByRole('button', { name: '继续', exact: true }).click();
   await page.getByLabel('你的回答').fill('每周 3 次，每次 30 分钟'); await page.reload();
-  await expect(page.getByLabel('你的回答')).toHaveValue('每周 3 次，每次 30 分钟');
+  await expect(page.getByLabel('你的回答')).toHaveValue('');
+  await expect(page.getByLabel('你的回答')).toHaveAttribute('placeholder','每周 3 次，每次 30 分钟');
+  await expect(page.getByRole('button', { name: '继续', exact: true })).toBeEnabled();
   await page.getByRole('button', { name: '继续', exact: true }).click(); await page.getByLabel('你的回答').fill('在家'); await page.getByRole('button', { name: '继续', exact: true }).click();
   await expect(page.getByRole('button', { name: '生成新计划' })).toBeDisabled();
 });
@@ -231,12 +233,12 @@ test('server-revoked access replaces local entitlement and blocks paid requests'
 
 test('activities require an explicit type and replanning starts with previous answers',async({page})=>{
  await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();await page.goto('/activity');await expect(page.getByRole('button',{name:'记下来',exact:true})).toBeDisabled();await page.getByRole('button',{name:'散步',exact:true}).click();await expect(page.getByRole('button',{name:'记下来',exact:true})).toBeEnabled();
- await page.goto('/settings');await page.getByRole('button',{name:'生成新计划',exact:true}).click();await expect(page.getByLabel('你的回答')).not.toHaveValue('');await expect(page.getByRole('button',{name:'继续',exact:true})).toBeVisible();
+ await page.goto('/settings');await page.getByRole('button',{name:'生成新计划',exact:true}).click();await expect(page.getByLabel('你的回答')).toHaveValue('');await expect(page.getByLabel('你的回答')).not.toHaveAttribute('placeholder','');await expect(page.getByRole('button',{name:'继续',exact:true})).toBeEnabled();
 });
 
 test('favorite exercises roundtrip through a downloaded backup without changing workout facts',async({page})=>{
  await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();await page.goto('/exercises');await page.getByRole('searchbox').fill('自阻力划船');await page.getByRole('button',{name:'收藏 自阻力划船',exact:true}).click();await page.goto('/settings');await page.getByRole('button',{name:'备份恢复',exact:true}).click();const downloaded=page.waitForEvent('download');await page.getByRole('button',{name:'导出 JSON 备份',exact:true}).click();const download=await downloaded;const file=await download.path();expect(file).toBeTruthy();
- const {readFileSync}=await import('node:fs');const envelope=JSON.parse(readFileSync(file!,'utf8'));expect(envelope.schemaVersion).toBe(11);expect(envelope.data.exerciseFavorites).toHaveLength(1);
+ const {readFileSync}=await import('node:fs');const envelope=JSON.parse(readFileSync(file!,'utf8'));expect(envelope.schemaVersion).toBe(12);expect(envelope.data.exerciseFavorites).toHaveLength(1);
  const result=await page.evaluate(async backup=>{const p='/src/persistence/repository.ts',b='/src/application/backup.ts',repo=(await import(/* @vite-ignore */ p)).repository,service=(await import(/* @vite-ignore */ b)).createBackupService(repo);await repo.write(async()=>{await repo.db.exerciseFavorites.clear()});const input=await service.validateBackup(new File([JSON.stringify(backup)],'backup.json'));await service.importBackup(input,{backupExported:true,replacementConfirmed:true,expectedRevision:input.expectedRevision});return {favorites:await repo.db.exerciseFavorites.toArray(),workouts:await repo.db.v8Workouts.toArray()};},envelope);
  expect(result.favorites).toEqual(envelope.data.exerciseFavorites);expect(result.workouts).toEqual(envelope.data.v8.workouts);await page.goto('/exercises');await page.getByLabel('只看已收藏').check();await expect(page.getByRole('button',{name:'自阻力划船',exact:true})).toBeVisible();
 });
