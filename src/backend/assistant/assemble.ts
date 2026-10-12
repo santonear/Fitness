@@ -159,7 +159,7 @@ export function assembleAssistantIntent(raw:unknown,request:AssistantRequest):{a
   if(intent.params?.preferredDays)proposal.preferredDays=intent.params.preferredDays.filter(day=>['mon','tue','wed','thu','fri','sat','sun'].includes(day)) as typeof proposal.preferredDays;
   if(intent.params?.minutesPerSession)proposal.sessionMinutes=Math.max(15,intent.params.minutesPerSession);
   for(const template of proposal.templates){applyChanges(template,changesToApply,candidates,new Set(),dropped);coverPatterns(template,candidates);if(intent.params?.minutesPerSession)fitDuration(template,proposal.sessionMinutes);else recalculate(template);syncTemplateName(template,request.locale);}
-  if(changesToApply.some(change=>change.op==='add')&&!intent.params?.minutesPerSession){
+  if(changesToApply.some(change=>['add','remove','replace','set_volume','shorten'].includes(change.op))&&!intent.params?.minutesPerSession){
    const lengths=proposal.templates.map(template=>template.estimatedMinutes).sort((a,b)=>a-b);
    proposal.sessionMinutes=Math.round((lengths[Math.floor((lengths.length-1)/2)]+lengths[Math.ceil((lengths.length-1)/2)])/2);
   }

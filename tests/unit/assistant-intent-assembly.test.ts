@@ -118,6 +118,8 @@ describe('minimal assistant intent assembly',()=>{
   expect(assistantMovement(next)).not.toBe('carry');
   expect(attachment.changes.join(' ')).toMatch(/将.*换成/);
   expect(proposal.reasons.join(' ')).not.toMatch(/Adjusted the plan/);
+  const lengths=proposal.templates.map(template=>template.estimatedMinutes).sort((a,b)=>a-b);
+  expect(proposal.sessionMinutes).toBe(Math.round((lengths[0]+lengths[lengths.length-1])/2));
  });
  it.each([{kind:'none' as const},{kind:'plan_modify' as const,changes:[]}])('honors an explicit existing exercise replacement when model returns $kind',intent=>{
   const original=assembleAssistantIntent({kind:'plan_new',params:{}},onboard).attachment;
