@@ -98,6 +98,13 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
     if(isV3&&attachmentKind==='none'&&request.adultConfirmed&&request.context){
       const latest=request.messages.at(-1)?.content??'';
       const declined=/(?:不要|先别|不用|撤回|只聊|do not|don't|withdraw|just discuss|no plan)/i.test(latest);
+      if(request.context.task==='MODIFY_PLAN'&&/(?:换掉|替换|换成|别安排|以后.*(?:换|不要)|replace|swap|remove|avoid)/i.test(latest)){
+        // A free-text denial cannot override an explicit request to replace an
+        // exercise already present in the supplied plan. Assembly verifies it.
+        attachmentKind='change';
+        text=request.locale==='zh'?'我先整理一份可预览的调整。':'I will prepare an adjustment for you to review.';
+        emitted=0;proseNormalized=true;
+      }
       if(!declined&&request.context.task==='ONBOARD_PLAN'&&/(?:帮我安排|给我.*(?:计划|全身训练)|help me plan|full.body workout|make a plan|一三五|周[一二三四五六日].*周[一二三四五六日]|(?:Mon|Monday).*(?:Wed|Wednesday).*(?:Fri|Friday))/i.test(latest))attachmentKind='plan';
       if(!declined&&request.context.task==='ADJUST_TODAY'&&/(?:今天.*(?:缩短|调整|训练)|shorter workout|workout today|adjust today)/i.test(latest))attachmentKind='today';
     }

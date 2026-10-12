@@ -78,6 +78,21 @@ function findExistingItem(template:SessionTemplate,value:string|undefined):numbe
   return !!exercise&&[exercise.id,exercise.name.zh,exercise.name.en,...catalogMetadata.get(exercise.id)?.aliases??[]].some(name=>normal(name)===key);
  });
 }
+function explicitExistingReplacements(request:AssistantRequest):Extract<AssistantIntent,{kind:'plan_modify'}>['changes']{
+ const context=request.context;
+ if(context?.task!=='MODIFY_PLAN')return [];
+ const text=normal(request.messages.at(-1)?.content??'');
+ if(!/(换|替换|不要|别安排|移除|replace|remove|swap|avoid)/i.test(text))return [];
+ const changes:Extract<AssistantIntent,{kind:'plan_modify'}>['changes']=[];
+ for(const template of context.plan.templates)for(const item of template.items){
+  const exercise=exercises.find(row=>row.id===item.exerciseId);
+  if(!exercise)continue;
+  const names=[exercise.name.zh,exercise.name.en,...catalogMetadata.get(exercise.id)?.aliases??[]].map(normal).filter(name=>name.length>=3);
+  const farmerAlias=catalogMetadata.get(exercise.id)?.slug==='dumbbell-farmers-walk'&&/农夫行走|farmer.?s?.?walk/i.test(text);
+  if(farmerAlias||names.some(name=>text.includes(name)))changes.push({session:template.id,op:'replace',from:exercise.id});
+ }
+ return changes;
+}
 function applyChanges(template:SessionTemplate,changes:Extract<AssistantIntent,{kind:'plan_modify'}>['changes'],candidates:Candidate[],locked=new Set<number>(),dropped:string[]=[]){
  let applied=0;
  for(const change of changes){
@@ -111,9 +126,12 @@ function applyChanges(template:SessionTemplate,changes:Extract<AssistantIntent,{
 export function assembleAssistantIntent(raw:unknown,request:AssistantRequest):{attachment:AssistantAttachment|null;dropped:string[];repaired:boolean}{
  const parsed=typeof raw==='string'?JSON.parse(raw):raw;
  const value=parsed&&typeof parsed==='object'&&'intent'in parsed?parsed.intent:parsed;
- const intent=assistantIntentSchema.parse(value);
+ let intent=assistantIntentSchema.parse(value);
  const context=request.context,candidates=selectAssistantCandidates(request),dropped:string[]=[];
- if(!request.adultConfirmed||!context||intent.kind==='none'||intent.kind==='clarify')return {attachment:null,dropped,repaired:false};
+ if(!request.adultConfirmed||!context)return {attachment:null,dropped,repaired:false};
+ const explicitReplacements=explicitExistingReplacements(request);
+ if((intent.kind==='none'||intent.kind==='clarify')&&!explicitReplacements.length)return {attachment:null,dropped,repaired:false};
+ if(explicitReplacements.length&&(intent.kind==='none'||intent.kind==='clarify'))intent={kind:'plan_modify',changes:explicitReplacements};
  const identity={requestId:context.requestId,restoreGeneration:context.restoreGeneration,mutationAllowed:false as const};
  if(intent.kind==='plan_new'&&context.task==='ONBOARD_PLAN'){
   const p=intent.params,profile={...context.profile,weeklyTarget:p.daysPerWeek??context.profile.weeklyTarget,sessionMinutes:p.minutesPerSession??context.profile.sessionMinutes,
@@ -132,16 +150,22 @@ export function assembleAssistantIntent(raw:unknown,request:AssistantRequest):{a
   return {attachment:coachResponseSchema.parse({...identity,type:'plan_proposal',proposal}),dropped,repaired:dropped.length>0};
  }
  if(intent.kind==='plan_modify'&&context.task==='MODIFY_PLAN'){
+  const changesToApply=[...intent.changes];
+  for(const inferred of explicitReplacements){
+   if(!changesToApply.some(change=>change.op==='replace'&&change.session===inferred.session&&normal(change.from??'')===normal(inferred.from??'')))changesToApply.push(inferred);
+  }
   const proposal=structuredClone(context.plan);
   if(intent.params?.daysPerWeek)proposal.weeklyTarget=intent.params.daysPerWeek;
   if(intent.params?.preferredDays)proposal.preferredDays=intent.params.preferredDays.filter(day=>['mon','tue','wed','thu','fri','sat','sun'].includes(day)) as typeof proposal.preferredDays;
   if(intent.params?.minutesPerSession)proposal.sessionMinutes=Math.max(15,intent.params.minutesPerSession);
-  for(const template of proposal.templates){applyChanges(template,intent.changes,candidates,new Set(),dropped);coverPatterns(template,candidates);if(intent.params?.minutesPerSession)fitDuration(template,proposal.sessionMinutes);else recalculate(template);syncTemplateName(template,request.locale);}
-  if(intent.changes.some(change=>change.op==='add')&&!intent.params?.minutesPerSession){
+  for(const template of proposal.templates){applyChanges(template,changesToApply,candidates,new Set(),dropped);coverPatterns(template,candidates);if(intent.params?.minutesPerSession)fitDuration(template,proposal.sessionMinutes);else recalculate(template);syncTemplateName(template,request.locale);}
+  if(changesToApply.some(change=>change.op==='add')&&!intent.params?.minutesPerSession){
    const lengths=proposal.templates.map(template=>template.estimatedMinutes).sort((a,b)=>a-b);
    proposal.sessionMinutes=Math.round((lengths[Math.floor((lengths.length-1)/2)]+lengths[Math.ceil((lengths.length-1)/2)])/2);
   }
   proposal.scheduleOriginalText=context.plan.scheduleOriginalText;
+  if(explicitReplacements.length&&!context.plan.templates.some((before,index)=>
+   before.items.some((item,itemIndex)=>item.exerciseId!==proposal.templates[index]?.items[itemIndex]?.exerciseId)))throw Error('NO_APPLICABLE_CHANGE');
   const changes=context.plan.templates.flatMap((before,index)=>proposal.templates[index]?templateDiff(before,proposal.templates[index],request.locale):[]);
   if(context.plan.weeklyTarget!==proposal.weeklyTarget)changes.push(request.locale==='zh'?`每周${proposal.weeklyTarget}次`:`${proposal.weeklyTarget} times per week`);
   if(JSON.stringify(context.plan.preferredDays??[])!==JSON.stringify(proposal.preferredDays??[]))changes.push(request.locale==='zh'?'调整训练日':'Changed training days');

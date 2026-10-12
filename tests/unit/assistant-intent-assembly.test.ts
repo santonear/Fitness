@@ -119,4 +119,15 @@ describe('minimal assistant intent assembly',()=>{
   expect(attachment.changes.join(' ')).toMatch(/将.*换成/);
   expect(proposal.reasons.join(' ')).not.toMatch(/Adjusted the plan/);
  });
+ it.each([{kind:'none' as const},{kind:'plan_modify' as const,changes:[]}])('honors an explicit existing exercise replacement when model returns $kind',intent=>{
+  const original=assembleAssistantIntent({kind:'plan_new',params:{}},onboard).attachment;
+  if(original?.type!=='plan_proposal')throw Error('missing plan');
+  const carry=exercises.find(row=>row.name.zh==='哑铃农夫行走');if(!carry)throw Error('missing carry');
+  original.proposal.templates[0].items[0]={exerciseId:carry.id,equipment:carry.equipment,sets:2,target:{metricType:'reps_load',reps:8,loadGrams:0}};
+  const request:AssistantRequest={...onboard,messages:[{role:'user',content:'以后别安排农夫行走，把计划里的换掉'}],context:{...common,messages:[],task:'MODIFY_PLAN',target:{planId:id,versionId:id,revision:0},instruction:'replace',plan:original.proposal}};
+  const attachment=assembleAssistantIntent(intent,request).attachment;
+  if(attachment?.type!=='change_proposal')throw Error('missing change');
+  expect(attachment.proposal.templates[0].items[0].exerciseId).not.toBe(carry.id);
+  expect(attachment.changes.join(' ')).toMatch(/将.*换成/);
+ });
 });
