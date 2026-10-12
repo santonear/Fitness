@@ -3,7 +3,7 @@ import { createServer } from 'vite';
 import { mkdir, readFile, writeFile, open } from 'node:fs/promises';
 import { resolve, relative, isAbsolute } from 'node:path';
 import { randomUUID, createHash } from 'node:crypto';
-import { summarizeAssistantEvaluation, promptByteBounds } from './assistant-v2-metrics';
+import { summarizeAssistantEvaluation, promptByteBounds } from './assistant-v2-metrics.ts';
 const endpoint = 'https://fitness-ai-assistant-preview.initdevl.workers.dev/api/v1/assistant/chat';
 const requested = new URL(process.env.ASSISTANT_EVAL_URL ?? endpoint);
 if (requested.href !== endpoint) throw Error('PREVIEW_ENDPOINT_ONLY');
@@ -97,6 +97,9 @@ try {
     const report = {...preflight, events, httpStatus, latencyMs:performance.now()-started, reservedCny, status:entry.status, costIsUpperBound:true, score:scoreAssistantV2(scenario,events,evidence)};
     entry.report = `${scenario.scenarioId}-${createHash('sha256').update(requestId).digest('hex').slice(0,8)}.json`;
     await writeFile(resolve(directory,entry.report),JSON.stringify(report,null,2),{mode:0o600});records.push(report);
+    // Admission or transport failures must stop this batch. Repeated 429s can
+    // exhaust the evaluation hold even though the model never ran.
+    if (httpStatus === 429) stopReason = 'preview-http-429-stop-for-review';
    }
   await save();
   if (stopReason !== 'completed') break;
