@@ -114,7 +114,7 @@ it('releases admission and records setup failure if Response construction throws
 });
 it('cleans a committed admission receipt whose acknowledgement throws before returning',async()=>{
   const {db,env,request}=await setup();let runs=0;const admit=AssistantUsageStore.prototype.admit;
-  vi.spyOn(AssistantUsageStore.prototype,'admit').mockImplementation(async function(...args){await admit.apply(this,args);throw new Error('synthetic lost acknowledgement');});
+  vi.spyOn(AssistantUsageStore.prototype,'admit').mockImplementation(async function(this: AssistantUsageStore,...args){await admit.apply(this,args);throw new Error('synthetic lost acknowledgement');});
   const response=await handleAssistant(request(),env,async function*(){runs++;yield complete;});
   expect(response.status).toBe(503);expect(runs).toBe(0);
   expect(db.prepare('SELECT active_request,used FROM assistant_daily').get()).toMatchObject({active_request:null,used:0});
