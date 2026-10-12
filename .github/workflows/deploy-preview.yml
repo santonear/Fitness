@@ -1,0 +1,60 @@
+name: Publish a Fitness preview
+
+# Preview deploys need no approval. They may run from any branch, but only to
+# a preview config that shares no Worker, D1 or KV with production.
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Preview to publish
+        type: choice
+        default: assistant-preview
+        options:
+          - assistant-preview
+          - mainline-preview
+          - followup-preview
+          - admin-preview
+          - admin-preview-simulation
+          - push-preview
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fitness-preview-${{ inputs.target }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: cloudflare-preview
+    env:
+      CONFIG: wrangler.${{ inputs.target }}.jsonc
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Refuse configs that touch production
+        run: node tools/release/check-preview-config.mjs "$CONFIG"
+      - name: Require Cloudflare credentials
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "Add CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID to the cloudflare-preview environment."
+            exit 1
+          fi
+      - run: npm ci
+      - run: npm run catalog:prepare
+      - run: npm run check
+      - name: Deploy the preview
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler deploy --config "$CONFIG" --message "preview ${GITHUB_REF_NAME} ${GITHUB_SHA::7}"
