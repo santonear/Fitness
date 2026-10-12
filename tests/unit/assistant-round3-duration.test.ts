@@ -1,3 +1,4 @@
+import {estimatedDurationLabel} from '../../src/i18n/features/plan/labels';
 import {describe,it,expect} from 'vitest';
 import {basicProposal} from '../../src/application/v8-workflow';
 import {assembleAssistantIntent} from '../../src/backend/assistant/assemble';
@@ -30,8 +31,8 @@ describe('round 3 requested duration',()=>{
   expect(card?.type==='change_proposal'&&card.proposal.sessionMinutes).toBe(45);
   if(card?.type==='change_proposal'&&input.context){
    const html=renderToStaticMarkup(createElement(AssistantAttachment,{candidate:{request:input.context,response:card,expectedRevision:0},locale:'zh'}));
-   expect(html).toContain('45 分钟/次');expect(html).toContain('预计 45 分钟');
-   expect(card.changes.filter(text=>text.includes('预计'))).toEqual(['预计45分钟']);
+   expect(html).toContain('45 分钟/次');expect(html).toContain(`预计 ${estimatedDurationLabel(card.proposal.templates,'zh')}`);
+   expect(card.changes.filter(text=>text.includes('预计'))).toEqual([`预计${estimatedDurationLabel(card.proposal.templates,'zh')}`]);
   }
  });
 });
