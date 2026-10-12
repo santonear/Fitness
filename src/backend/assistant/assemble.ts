@@ -1,3 +1,4 @@
+import {diffTemplates} from '../../assistant/template-diff';
 import { assistantIntentSchema, type AssistantAttachment, type AssistantIntent, type AssistantRequest } from '../../assistant/contracts';
 import { basicProposal } from '../../application/v8-workflow';
 import { estimatePlannedMinutes } from '../../application/rules/duration-estimate';
@@ -60,16 +61,10 @@ function syncTemplateName(template:SessionTemplate,locale:'zh'|'en'){
 }
 function itemName(id:string,locale:'zh'|'en'){return exercises.find(row=>row.id===id)?.name[locale]??id;}
 function templateDiff(before:SessionTemplate,after:SessionTemplate,locale:'zh'|'en'){
- const changes:string[]=[];
- for(let index=0;index<Math.max(before.items.length,after.items.length);index++){
-  const old=before.items[index],next=after.items[index];
-  if(old&&next&&old.exerciseId!==next.exerciseId)changes.push(locale==='zh'?`将${itemName(old.exerciseId,locale)}换成${itemName(next.exerciseId,locale)}`:`Replaced ${itemName(old.exerciseId,locale)} with ${itemName(next.exerciseId,locale)}`);
-  else if(old&&!next)changes.push(locale==='zh'?`移除${itemName(old.exerciseId,locale)}`:`Removed ${itemName(old.exerciseId,locale)}`);
-  else if(next&&!old)changes.push(locale==='zh'?`加入${itemName(next.exerciseId,locale)}`:`Added ${itemName(next.exerciseId,locale)}`);
-  else if(old&&next&&JSON.stringify(old)!==JSON.stringify(next))changes.push(locale==='zh'?`调整${itemName(next.exerciseId,locale)}的训练量`:`Changed the volume for ${itemName(next.exerciseId,locale)}`);
- }
- if(before.estimatedMinutes!==after.estimatedMinutes)changes.push(locale==='zh'?`预计${after.estimatedMinutes}分钟`:`About ${after.estimatedMinutes} minutes`);
- return changes;
+ return diffTemplates([before],[after]).changes.map(change=>{
+  const name=itemName(change.item.exerciseId,locale);
+  return change.kind==='replaced'?(locale==='zh'?`将${itemName(change.previous!.exerciseId,locale)}换成${name}`:`Replaced ${itemName(change.previous!.exerciseId,locale)} with ${name}`):change.kind==='removed'?(locale==='zh'?`移除${name}`:`Removed ${name}`):change.kind==='added'?(locale==='zh'?`加入${name}`:`Added ${name}`):(locale==='zh'?`调整${name}的训练量`:`Changed the volume for ${name}`);
+ });
 }
 function findExistingItem(template:SessionTemplate,value:string|undefined):number{
  if(!value)return -1;
@@ -85,7 +80,8 @@ function explicitExistingReplacements(request:AssistantRequest):Extract<Assistan
  const text=normal(request.messages.at(-1)?.content??'');
  if(!/(换|替换|不要|别安排|移除|replace|remove|swap|avoid)/i.test(text))return [];
  const changes:Extract<AssistantIntent,{kind:'plan_modify'}>['changes']=[];
- for(const template of context.plan.templates)for(const item of template.items){
+ const scope=namedPlanScope(request);
+ for(const template of context.plan.templates.filter(template=>!scope.templates.size||scope.templates.has(template.id)))for(const item of template.items){
   const exercise=exercises.find(row=>row.id===item.exerciseId);
   if(!exercise)continue;
   const names=[exercise.name.zh,exercise.name.en,...catalogMetadata.get(exercise.id)?.aliases??[]].map(normal).filter(name=>name.length>=3);
@@ -93,6 +89,19 @@ function explicitExistingReplacements(request:AssistantRequest):Extract<Assistan
   if(farmerAlias||names.some(name=>text.includes(name)))changes.push({session:template.id,op:'replace',from:exercise.id});
  }
  return changes;
+}
+function namedPlanScope(request:AssistantRequest){
+ const templates=new Set<string>(),items=new Set<string>();
+ if(request.context?.task!=='MODIFY_PLAN')return {templates,items};
+ const text=request.messages.at(-1)?.content??'';
+ for(const template of request.context.plan.templates){
+  for(const label of [template.id,template.name]){
+   const escaped=label.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+   if(new RegExp(`(?:^|[^a-z0-9])${escaped}\\s*(?:里|中|训练|的|workout|session)|(?:workout|session)\\s+${escaped}(?:\\b|$)`,'i').test(text))templates.add(template.id);
+  }
+  for(const item of template.items){const exercise=exercises.find(e=>e.id===item.exerciseId);if(exercise&&[exercise.name.zh,exercise.name.en,...catalogMetadata.get(item.exerciseId)?.aliases??[]].some(name=>name.length>=3&&normal(text).includes(normal(name))))items.add(item.exerciseId);}
+ }
+ return {templates,items};
 }
 function applyChanges(template:SessionTemplate,changes:Extract<AssistantIntent,{kind:'plan_modify'}>['changes'],candidates:Candidate[],locked=new Set<number>(),dropped:string[]=[]){
  let applied=0;
@@ -166,7 +175,9 @@ export function assembleAssistantIntent(raw:unknown,request:AssistantRequest):{a
   return {attachment:coachResponseSchema.parse({...identity,type:'plan_proposal',proposal}),dropped,repaired:dropped.length>0};
  }
  if(intent.kind==='plan_modify'&&context.task==='MODIFY_PLAN'){
-  const changesToApply=[...intent.changes];
+  const scope=namedPlanScope(request),scoped=scope.templates.size>0||scope.items.size>0;
+  const changesToApply=intent.changes.filter(change=>!scope.items.size||(change.from&&scope.items.has(exercises.find(e=>[e.id,e.name.zh,e.name.en].some(name=>normal(name)===normal(change.from!)))?.id??''))).map(change=>({...change}));
+  if(scope.templates.size)for(const change of changesToApply)if(!change.session)change.session=[...scope.templates][0];
   if(/加.*(?:练腿|腿部|下肢)|add.*(?:leg|lower.body)/i.test(request.messages.at(-1)?.content??'')){
    const safe=lowerBodyAddition(request);
    for(const change of changesToApply)if(change.op==='add'&&!resolveAssistantExercise(change.to,candidates)&&safe)change.to=safe.code;
@@ -178,7 +189,14 @@ export function assembleAssistantIntent(raw:unknown,request:AssistantRequest):{a
   if(intent.params?.daysPerWeek)proposal.weeklyTarget=intent.params.daysPerWeek;
   if(intent.params?.preferredDays)proposal.preferredDays=intent.params.preferredDays.filter(day=>['mon','tue','wed','thu','fri','sat','sun'].includes(day)) as typeof proposal.preferredDays;
   if(intent.params?.minutesPerSession)proposal.sessionMinutes=Math.max(15,intent.params.minutesPerSession);
-  for(const template of proposal.templates){applyChanges(template,changesToApply,candidates,new Set(),dropped);coverPatterns(template,candidates);if(intent.params?.minutesPerSession)fitDuration(template,proposal.sessionMinutes);else recalculate(template);syncTemplateName(template,request.locale);}
+  for(const template of proposal.templates){
+   if(scope.templates.size&&!scope.templates.has(template.id))continue;
+   const filtered=changesToApply.filter(change=>!scope.templates.size||!change.session||scope.templates.has(change.session));
+   applyChanges(template,filtered,candidates,new Set(),dropped);
+   if(!scoped)coverPatterns(template,candidates);
+   if(intent.params?.minutesPerSession&&!scoped)fitDuration(template,proposal.sessionMinutes);else recalculate(template);
+   syncTemplateName(template,request.locale);
+  }
   if(changesToApply.some(change=>['add','remove','replace','set_volume','shorten'].includes(change.op))&&!intent.params?.minutesPerSession){
    const lengths=proposal.templates.map(template=>template.estimatedMinutes).sort((a,b)=>a-b);
    proposal.sessionMinutes=Math.round((lengths[Math.floor((lengths.length-1)/2)]+lengths[Math.ceil((lengths.length-1)/2)])/2);
@@ -186,7 +204,7 @@ export function assembleAssistantIntent(raw:unknown,request:AssistantRequest):{a
   proposal.scheduleOriginalText=context.plan.scheduleOriginalText;
   if(explicitReplacements.length&&!context.plan.templates.some((before,index)=>
    before.items.some((item,itemIndex)=>item.exerciseId!==proposal.templates[index]?.items[itemIndex]?.exerciseId)))throw Error('NO_APPLICABLE_CHANGE');
-  const changes=context.plan.templates.flatMap((before,index)=>proposal.templates[index]?templateDiff(before,proposal.templates[index],request.locale):[]);
+  const changes=[...new Set(context.plan.templates.flatMap((before,index)=>proposal.templates[index]?templateDiff(before,proposal.templates[index],request.locale):[]))];
   if(context.plan.weeklyTarget!==proposal.weeklyTarget)changes.push(request.locale==='zh'?`每周${proposal.weeklyTarget}次`:`${proposal.weeklyTarget} times per week`);
   if(JSON.stringify(context.plan.preferredDays??[])!==JSON.stringify(proposal.preferredDays??[]))changes.push(request.locale==='zh'?'调整训练日':'Changed training days');
   if(!changes.length)throw Error('NO_APPLICABLE_CHANGE');
@@ -217,7 +235,7 @@ export function assembleAssistantIntent(raw:unknown,request:AssistantRequest):{a
   const changes=templateDiff(context.template,template,request.locale);
   if(!changes.length)throw Error('NO_APPLICABLE_CHANGE');
   const cautions=/膝盖.{0,8}(?:疼|痛|不适|受伤|舒服|伤)|knee\s*(?:pain|injury|discomfort)/i.test(request.messages.at(-1)?.content??'');
-  const summary=(request.locale==='zh'?`调整${changes.length}项 · 预计${template.estimatedMinutes}分钟`:`${changes.length} changes · about ${template.estimatedMinutes} minutes`)+(cautions?(request.locale==='zh'?' · 已避开加重膝盖负担的动作':' · Avoids high knee-load movements'):'');
+  const summary=(request.locale==='zh'?`调整${diffTemplates([context.template],[template]).changes.length}项 · 预计${template.estimatedMinutes}分钟`:`${diffTemplates([context.template],[template]).changes.length} changes · about ${template.estimatedMinutes} minutes`)+(cautions?(request.locale==='zh'?' · 已避开加重膝盖负担的动作':' · Avoids high knee-load movements'):'');
   return {attachment:coachResponseSchema.parse({...identity,type:'today_adjustment',target:context.target,workoutId:context.workoutId,template,summary}),dropped,repaired:dropped.length>0};
  }
  if(intent.kind==='review'&&context.task==='PERIOD_REVIEW'){
