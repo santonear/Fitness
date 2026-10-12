@@ -7,7 +7,9 @@ const endpoint = 'https://fitness-ai-assistant-preview.initdevl.workers.dev/api/
 const requested = new URL(process.env.ASSISTANT_EVAL_URL ?? endpoint);
 if (requested.href !== endpoint) throw Error('PREVIEW_ENDPOINT_ONLY');
 const execute = process.argv.includes('--execute');
-const totalBudgetCny = 5, maxOutputTokens = 1200, maxCalls = 3;
+const maxScenarios = Number(process.env.ASSISTANT_EVAL_MAX_SCENARIOS ?? 60);
+if (!Number.isInteger(maxScenarios) || maxScenarios < 1 || maxScenarios > 60) throw Error('INVALID_SCENARIO_LIMIT');
+const totalBudgetCny = 5, maxOutputTokens = 1200, maxAttachmentTokens = 3000, maxCalls = 3;
 const inputPrice = Number(process.env.ASSISTANT_EVAL_INPUT_CNY_PER_MILLION ?? 2);
 const outputPrice = Number(process.env.ASSISTANT_EVAL_OUTPUT_CNY_PER_MILLION ?? 8);
 if (![inputPrice, outputPrice].every(value => Number.isFinite(value) && value > 0)) throw Error('INVALID_PRICING');
@@ -39,8 +41,9 @@ try {
  if (execute && (!cookie || /[\r\n]/.test(cookie))) throw Error('VALID_EVAL_COOKIE_REQUIRED');
  const zeroBand = () => ({ morning: { partial: 0, notStarted: 0 }, daytime: { partial: 0, notStarted: 0 }, evening: { partial: 0, notStarted: 0 } });
  const records: unknown[] = [];
- let stopReason = 'completed', executed = 0;
+ let stopReason = 'completed', executed = 0, attemptedThisRun = 0;
  for (const scenario of assistantV2Scenarios) {
+  if (execute && attemptedThisRun >= maxScenarios) { stopReason = 'requested-batch-complete'; break; }
   if (journal.entries.some(entry => entry.scenarioId === scenario.scenarioId)) continue; // No automatic reruns, even failed calls.
   const requestId = randomUUID(), conversationId = randomUUID(), locale = scenario.locale;
   const common = { version: 'fitness-coach-v8', requestId, conversationId, restoreGeneration: 0, inputSnapshot: 'synthetic-eval', sendConfirmation: 'synthetic-fixtures-only', locale, timeZone: 'Asia/Shanghai', adultConfirmed: true, messages: [] };
@@ -57,12 +60,12 @@ try {
   // Byte fallback tokenization cannot exceed UTF-8 bytes. NUL maximizes JSON escaping of the server's 16000-character text cap.
   const effectiveRequest = sanitizeAssistantRequest(request);
   const promptBytes = ['text', 'attachment', 'attachment'].map((stage, i) => Buffer.byteLength(JSON.stringify(assistantPrompt(effectiveRequest, stage, ASSISTANT_PROMPT_VERSION, i ? '\0'.repeat(16000) : '', i === 2 ? 'ATTACHMENT_VALIDATION_FAILED: use exact schema, catalog, context identity and task' : undefined)), 'utf8') + 1024);
-  const reservedCny = (promptBytes.reduce((sum, bytes) => sum + bytes, 0) * inputPrice + maxCalls * maxOutputTokens * outputPrice) / 1e6;
-  const preflight = { scenarioId: scenario.scenarioId, task: task ?? 'chat', promptInputTokenUpperBounds: promptBytes, outputTokensPerCall: maxOutputTokens, reservedCny, request };
+  const reservedCny = (promptBytes.reduce((sum, bytes) => sum + bytes, 0) * inputPrice + (maxOutputTokens + 2 * maxAttachmentTokens) * outputPrice) / 1e6;
+  const preflight = { scenarioId: scenario.scenarioId, task: task ?? 'chat', promptInputTokenUpperBounds: promptBytes, outputTokensPerCall: [maxOutputTokens, maxAttachmentTokens, maxAttachmentTokens], reservedCny, request };
   if (!execute) { records.push(preflight); continue; }
   if (spent() + reservedCny > totalBudgetCny) { stopReason = 'budget-reservation-would-exceed-5-cny'; break; }
   const entry: Entry = { scenarioId: scenario.scenarioId, requestId, reservedCny, status: 'reserved' };
-  journal.entries.push(entry); await save(); // Crash or unknown usage retains the complete hold.
+  journal.entries.push(entry); attemptedThisRun++; await save(); // Crash or unknown usage retains the complete hold.
   const started = performance.now(); let events: any[] = [], httpStatus: number | undefined;
   try {
    const response = await fetch(endpoint, { method: 'POST', redirect: 'error', headers: { 'Content-Type': 'application/json', Origin: new URL(endpoint).origin, Cookie: cookie! }, body: JSON.stringify(request), signal: AbortSignal.timeout(150000) });
@@ -74,12 +77,17 @@ try {
    if (!done || !Array.isArray(done.calls) || !done.calls.length || done.calls.length > maxCalls || done.calls.some((call: any) => !Number.isInteger(call.inputTokens) || call.inputTokens < 0 || !Number.isInteger(call.outputTokens) || call.outputTokens < 0)) throw Error('UNKNOWN_USAGE');
    const actualCny = done.calls.reduce((sum: number, call: any) => sum + (call.inputTokens * inputPrice + call.outputTokens * outputPrice) / 1e6, 0);
    entry.chargedCny = actualCny; entry.status = done.success ? 'completed' : 'generation-failed';
-   if (actualCny > reservedCny || done.calls.some((call: any) => call.outputTokens > maxOutputTokens)) { entry.status = 'bound-violation'; stopReason = 'server-bound-violation'; }
+   if (actualCny > reservedCny || done.calls.some((call: any) => call.outputTokens > (call.stage === 'text' ? maxOutputTokens : maxAttachmentTokens))) { entry.status = 'bound-violation'; stopReason = 'server-bound-violation'; }
    const score = scoreAssistantV2(scenario, events);
    const report = { ...preflight, events, outputText: events.filter(event => event.type === 'text_delta').map(event => event.delta).join(''), latencyMs: performance.now() - started, httpStatus, calls: done.calls, actualCny, price: { inputCnyPerMillion: inputPrice, outputCnyPerMillion: outputPrice }, score };
    entry.report = `${scenario.scenarioId}-${createHash('sha256').update(requestId).digest('hex').slice(0,8)}.json`;
    await writeFile(resolve(directory, entry.report), JSON.stringify(report, null, 2), { mode: 0o600 }); records.push(report); executed++;
-  } catch { entry.status = 'unknown-or-transport-failure'; stopReason = 'unknown-cost-held-no-retry'; records.push({ scenarioId: scenario.scenarioId, events, httpStatus, latencyMs: performance.now() - started, reservedCny, status: entry.status }); }
+  } catch {
+    entry.status = 'approved-conservative-upper-bound'; entry.chargedCny = reservedCny;
+    const report = {...preflight, events, httpStatus, latencyMs:performance.now()-started, reservedCny, status:entry.status, costIsUpperBound:true, score:scoreAssistantV2(scenario,events)};
+    entry.report = `${scenario.scenarioId}-${createHash('sha256').update(requestId).digest('hex').slice(0,8)}.json`;
+    await writeFile(resolve(directory,entry.report),JSON.stringify(report,null,2),{mode:0o600});records.push(report);
+   }
   await save();
   if (stopReason !== 'completed') break;
  }

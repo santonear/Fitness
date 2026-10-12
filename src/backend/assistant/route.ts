@@ -8,7 +8,7 @@ import {FinanceStore} from '../admin/finance/runtime';
 import {archiveLegacyUsage} from './usage-report';
 import type {DeepSeekWorkerEnv} from '../deepseek-worker';
 import type {FeatureConfigEnv} from '../feature-config';
-export type AssistantEnv=DeepSeekWorkerEnv&FeatureConfigEnv&{ASSISTANT_MAX_OUTPUT_TOKENS?:string};
+export type AssistantEnv=DeepSeekWorkerEnv&FeatureConfigEnv&{ASSISTANT_MAX_OUTPUT_TOKENS?:string;ASSISTANT_MAX_ATTACHMENT_TOKENS?:string};
 // Official pricing verified 2026-10-12: uncached peak CNY 2 / 8 per million. Display estimate, never admission.
 export const assistantPrice={inputFenPerMillion:200,outputFenPerMillion:800,version:'deepseek-flash-2026-10-12-peak'};
 const json=(value:unknown,status=200)=>Response.json(value,{status,headers:{'Cache-Control':'no-store'}});
@@ -39,7 +39,7 @@ export async function handleAssistant(request:Request,env:AssistantEnv,runner=ru
   if(selected){if(selected.version!==assistantPromptRegistry.current&&selected.version!==assistantPromptRegistry.previous)throw new AssistantAccessError('MODEL_UNAVAILABLE',503);promptVersion=selected.version}
   await store.admit(subjectId,input.requestId,input.timeZone,limit,now);
   const abort=new AbortController(),signal=AbortSignal.any([request.signal,abort.signal,AbortSignal.timeout(150000)]);
-  const provider=createAssistantProvider({apiKey:env.DEEPSEEK_API_KEY,baseUrl:'https://api.deepseek.com',model:'deepseek-flash',maxTokens:env.ASSISTANT_MAX_OUTPUT_TOKENS?Number(env.ASSISTANT_MAX_OUTPUT_TOKENS):undefined});
+  const provider=createAssistantProvider({apiKey:env.DEEPSEEK_API_KEY,baseUrl:'https://api.deepseek.com',model:'deepseek-flash',maxAttachmentTokens:env.ASSISTANT_MAX_ATTACHMENT_TOKENS?Number(env.ASSISTANT_MAX_ATTACHMENT_TOKENS):undefined,maxTokens:env.ASSISTANT_MAX_OUTPUT_TOKENS?Number(env.ASSISTANT_MAX_OUTPUT_TOKENS):undefined});
   const encoder=new TextEncoder();let disconnected=false;
   const stream=new ReadableStream<Uint8Array>({async start(controller){
    let success=false,result='failed',calls:UsageCall[]=[],done:AssistantEvent|undefined;
