@@ -162,6 +162,15 @@ describe('assistant v2 model', () => {
     const events=await gather(runAssistantModel(request,{provider:model,promptVersion:'unknown'}));
     expect(fetches).toBe(0);expect(events.at(-1)).toMatchObject({calls:[{failureCode:'INVALID_PROMPT_VERSION'}]});
   });
+  it.each([{attachment:undefined,expected:1200},{attachment:3000,expected:3000},{attachment:9000,expected:3000}])('uses separate attachment output bound $attachment while retaining legacy shared limit',async ({attachment,expected}) => {
+    const outbound:{stream:boolean;max_tokens:number}[]=[];
+    const provider=createAssistantProvider({apiKey:'',baseUrl:'https://example.test',maxTokens:1200,maxAttachmentTokens:attachment,fetch:async(_url,init)=>{
+      const body=JSON.parse(String(init?.body));outbound.push(body);
+      return body.stream?new Response('data: [DONE]\n\n'):Response.json({choices:[{message:{content:'{"attachment":null}'}}]});
+    }});
+    await gather(provider.streamText([]));await provider.generateAttachment([]);
+    expect(outbound.map(call=>({stream:call.stream,max_tokens:call.max_tokens}))).toEqual([{stream:true,max_tokens:1200},{stream:false,max_tokens:expected}]);
+  });
 });
 
 

@@ -97,13 +97,13 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
 }
 
 /** OpenAI-compatible provider. Credential never appears in prompts, events or logs. */
-export function createAssistantProvider(options: { apiKey: string; baseUrl: string; model?: string; maxTokens?: number; maxInputBytes?: number; fetch?: typeof fetch }): AssistantProvider {
+export function createAssistantProvider(options: { apiKey: string; baseUrl: string; model?: string; maxTokens?: number; maxAttachmentTokens?: number; maxInputBytes?: number; fetch?: typeof fetch }): AssistantProvider {
   const send = async (messages: AssistantPromptMessage[], stream: boolean, signal?: AbortSignal) => {
     if(new TextEncoder().encode(JSON.stringify(messages)).byteLength > (options.maxInputBytes ?? 131072)) throw new AssistantProviderError('INVALID_OUTPUT');
     let response: Response;
     try { response = await (options.fetch ?? fetch)(`${options.baseUrl.replace(/\/$/, '')}/chat/completions`, {
       method: 'POST', signal, headers: { Authorization: `Bearer ${options.apiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: options.model ?? 'deepseek-flash', messages, stream, thinking: { type: 'disabled' }, max_tokens: Math.max(1, Math.min(options.maxTokens ?? (stream ? 1600 : 3000), 3000)), ...(stream ? { stream_options: { include_usage: true } } : { response_format: { type: 'json_object' } }) }),
+      body: JSON.stringify({ model: options.model ?? 'deepseek-flash', messages, stream, thinking: { type: 'disabled' }, max_tokens: Math.max(1, Math.min((stream ? options.maxTokens : options.maxAttachmentTokens ?? options.maxTokens) ?? (stream ? 1600 : 3000), 3000)), ...(stream ? { stream_options: { include_usage: true } } : { response_format: { type: 'json_object' } }) }),
     }); } catch { throw new AssistantProviderError(signal?.aborted ? signal.reason instanceof DOMException && signal.reason.name === 'TimeoutError' ? 'TIMEOUT' : 'ABORTED' : 'NETWORK_ERROR'); }
     if (!response.ok) {
       await response.body?.cancel().catch(() => {});
