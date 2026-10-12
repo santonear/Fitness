@@ -2,13 +2,14 @@ import { DatabaseSync } from 'node:sqlite';
 import { readFileSync } from 'node:fs';
 import { afterEach, expect, it, vi } from 'vitest';
 import { assistantAccessStatus, handleAssistant, type AssistantEnv } from '../../src/backend/assistant/route';
+import { AssistantUsageStore } from '../../src/backend/assistant/admission';
 import { initialState, type ControlState } from '../../src/backend/store';
 import { digest } from '../../src/backend/contracts';
 import type { AdminDatabase, AdminStatement } from '../../src/backend/admin/core/contracts';
 import type { AssistantEvent, AssistantRequest } from '../../src/assistant/contracts';
 
 const open: DatabaseSync[] = [];
-afterEach(() => { for (const db of open.splice(0)) db.close(); vi.restoreAllMocks(); });
+afterEach(() => { for (const db of open.splice(0)) db.close(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 const token = 'a'.repeat(64), subject = 'route-test-subject';
 const id = '11111111-1111-4111-8111-111111111111';
 const body: AssistantRequest = {version:'fitness-assistant-v2',requestId:id,conversationId:id,locale:'en',timeZone:'Asia/Shanghai',adultConfirmed:true,messages:[{role:'user',content:'Hello'}]};
@@ -92,3 +93,37 @@ it('V2 access status ignores legacy pending and omits retired monthly counters',
  expect(data).toMatchObject({qualification:'active',sessionValid:true,aiEnabled:true,summaryAvailable:true,assistantV2:true});
  expect(data).not.toHaveProperty('used');expect(data).not.toHaveProperty('reconciliationRequired');
 });
+
+it('runs fallible signal setup before admission and never calls provider on setup failure',async()=>{
+  const {db,env,request}=await setup();let runs=0;
+  vi.spyOn(AbortSignal,'any').mockImplementation(()=>{throw new Error('synthetic setup failure');});
+  const response=await handleAssistant(request(),env,async function*(){runs++;yield complete;});
+  expect(response.status).toBe(503);expect(runs).toBe(0);
+  expect(db.prepare('SELECT count(*) AS count FROM assistant_requests').get()).toMatchObject({count:0});
+  expect(db.prepare('SELECT count(*) AS count FROM assistant_daily').get()).toMatchObject({count:0});
+});
+it('releases admission and records setup failure if Response construction throws before stream handoff',async()=>{
+  const {db,env,request}=await setup();let runs=0;
+  const OriginalResponse=Response;
+  vi.stubGlobal('Response',class extends OriginalResponse {constructor(body?:BodyInit|null,init?:ResponseInit){if(body instanceof ReadableStream)throw new Error('synthetic response setup failure');super(body,init);}});
+  const response=await handleAssistant(request(),env,async function*(){runs++;yield complete;});
+  expect(response.status).toBe(503);expect(runs).toBe(0);
+  expect(db.prepare('SELECT used,active_request,lease_until FROM assistant_daily').get()).toMatchObject({used:0,active_request:null,lease_until:0});
+  expect(db.prepare('SELECT result FROM assistant_requests').get()).toMatchObject({result:'failed'});
+  expect(db.prepare('SELECT stage,input_tokens,output_tokens,result FROM assistant_usage').get()).toMatchObject({stage:'setup',input_tokens:0,output_tokens:0,result:'failed'});
+});
+it('cleans a committed admission receipt whose acknowledgement throws before returning',async()=>{
+  const {db,env,request}=await setup();let runs=0;const admit=AssistantUsageStore.prototype.admit;
+  vi.spyOn(AssistantUsageStore.prototype,'admit').mockImplementation(async function(...args){await admit.apply(this,args);throw new Error('synthetic lost acknowledgement');});
+  const response=await handleAssistant(request(),env,async function*(){runs++;yield complete;});
+  expect(response.status).toBe(503);expect(runs).toBe(0);
+  expect(db.prepare('SELECT active_request,used FROM assistant_daily').get()).toMatchObject({active_request:null,used:0});
+  expect(db.prepare('SELECT result FROM assistant_requests').get()).toMatchObject({result:'failed'});
+});
+it('does not release a lease on an explicit concurrent-request rejection',async()=>{
+  const {db,env,request}=await setup();const store=new AssistantUsageStore(env.ADMIN_DB!);await store.admit(subject,id,'Asia/Shanghai',30,Date.now());
+  const response=await handleAssistant(request(),env,success);expect(response.status).toBe(409);
+  expect(db.prepare('SELECT active_request FROM assistant_daily').get()).toMatchObject({active_request:id});
+  expect(db.prepare('SELECT result FROM assistant_requests').get()).toMatchObject({result:'running'});
+});
+

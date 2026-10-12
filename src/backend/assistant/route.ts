@@ -24,6 +24,7 @@ export async function assistantSubject(request:Request,env:AssistantEnv){
 }
 async function readInput(request:Request){if(!request.headers.get('content-type')?.startsWith('application/json'))throw new AssistantAccessError('INVALID_INPUT',400);const reader=request.body?.getReader();if(!reader)throw new AssistantAccessError('INVALID_INPUT',400);let size=0,text='';const decoder=new TextDecoder();try{while(true){const part=await reader.read();if(part.done)break;size+=part.value.byteLength;if(size>131072){await reader.cancel();throw new AssistantAccessError('INPUT_TOO_LARGE',413)}text+=decoder.decode(part.value,{stream:true})}return JSON.parse(text+decoder.decode())}finally{reader.releaseLock()}}
 export async function handleAssistant(request:Request,env:AssistantEnv,runner=runAssistantModel):Promise<Response>{
+ let releaseSetup:undefined|(()=>Promise<void>),cancelSetup:undefined|(()=>void);
  try{
   if(request.method!=='POST')return json({error:'METHOD_NOT_ALLOWED'},405);
   const url=new URL(request.url);if(url.protocol!=='https:'||request.headers.get('origin')!==url.origin||request.headers.get('sec-fetch-site')==='cross-site')return json({error:'ORIGIN_DENIED'},403);
@@ -37,11 +38,23 @@ export async function handleAssistant(request:Request,env:AssistantEnv,runner=ru
   let promptVersion=ASSISTANT_PROMPT_VERSION;
   const selected=await env.ADMIN_DB.prepare('SELECT version FROM admin_prompt_selection WHERE environment=? AND task=?').bind(env.ADMIN_ENVIRONMENT??'preview','ASSISTANT_CHAT').first<{version:string}>();
   if(selected){if(selected.version!==assistantPromptRegistry.current&&selected.version!==assistantPromptRegistry.previous)throw new AssistantAccessError('MODEL_UNAVAILABLE',503);promptVersion=selected.version}
-  await store.admit(subjectId,input.requestId,input.timeZone,limit,now);
   const abort=new AbortController(),signal=AbortSignal.any([request.signal,abort.signal,AbortSignal.timeout(150000)]);
   const provider=createAssistantProvider({apiKey:env.DEEPSEEK_API_KEY,baseUrl:'https://api.deepseek.com',model:'deepseek-flash',maxAttachmentTokens:env.ASSISTANT_MAX_ATTACHMENT_TOKENS?Number(env.ASSISTANT_MAX_ATTACHMENT_TOKENS):undefined,maxTokens:env.ASSISTANT_MAX_OUTPUT_TOKENS?Number(env.ASSISTANT_MAX_OUTPUT_TOKENS):undefined});
   const encoder=new TextEncoder();let disconnected=false;
+  const releaseOwnedSetup=async()=>{
+   const current=await store.read(subjectId);if(current?.active_request!==input.requestId)return;
+   await store.finish(subjectId,input.requestId,input.context?.task??'CHAT',false,[{stage:'setup',result:'failed',inputTokens:0,outputTokens:0}],assistantPrice,Date.now(),'failed');
+  };
+  try{await store.admit(subjectId,input.requestId,input.timeZone,limit,now)}catch(e){
+   // A write may commit even when its acknowledgement fails. Explicit admission refusals own no lease.
+   if(!(e instanceof AssistantAccessError))releaseSetup=releaseOwnedSetup;
+   throw e;
+  }
+  releaseSetup=releaseOwnedSetup;
+  let begin!:()=>void;const ready=new Promise<void>(resolve=>{begin=resolve});
+  cancelSetup=()=>{disconnected=true;abort.abort();begin()};
   const stream=new ReadableStream<Uint8Array>({async start(controller){
+   await ready;if(disconnected)return;
    let success=false,result='failed',calls:UsageCall[]=[],done:AssistantEvent|undefined;
    const emit=(event:AssistantEvent)=>{if(!disconnected)controller.enqueue(encoder.encode('data: '+JSON.stringify(event)+'\n\n'))};
    try{for await(const event of runner(input,{provider,promptVersion,signal})){
@@ -49,8 +62,9 @@ export async function handleAssistant(request:Request,env:AssistantEnv,runner=ru
    }}catch(e){result=signal.aborted?'cancelled':e instanceof TypeError?'network_failed':'model_failed';if(!disconnected)emit({type:'error',code:result==='network_failed'?'NETWORK_ERROR':'MODEL_UNAVAILABLE'});}
    finally{if(!calls.length)calls=[{stage:'unknown',result}];try{await store.finish(subjectId,input.requestId,input.context?.task??'CHAT',success&&!signal.aborted,calls,assistantPrice,Date.now(),result);if(done&&!disconnected)emit(signal.aborted?{type:'error',code:'REQUEST_CANCELLED'}:done)}catch{if(!disconnected)emit({type:'error',code:'USAGE_UNAVAILABLE'})}if(!disconnected)controller.close()}
   },cancel(){disconnected=true;abort.abort()}});
-  return new Response(stream,{headers:{'Content-Type':'text/event-stream;charset=utf-8','Cache-Control':'no-cache, no-transform','X-Accel-Buffering':'no'}});
- }catch(e){return e instanceof AssistantAccessError?json({error:e.code,...(e.resetAt?{resetAt:new Date(e.resetAt).toISOString()}: {})},e.status):json({error:'SERVICE_UNAVAILABLE'},503)}
+  const response=new Response(stream,{headers:{'Content-Type':'text/event-stream;charset=utf-8','Cache-Control':'no-cache, no-transform','X-Accel-Buffering':'no'}});
+  releaseSetup=undefined;cancelSetup=undefined;begin();return response;
+ }catch(e){cancelSetup?.();if(releaseSetup)try{await releaseSetup()}catch{console.warn('assistant_setup_cleanup_failed')};return e instanceof AssistantAccessError?json({error:e.code,...(e.resetAt?{resetAt:new Date(e.resetAt).toISOString()}: {})},e.status):json({error:'SERVICE_UNAVAILABLE'},503)}
 }
 
 /** V2 qualification reads identity only; legacy budgets/reconciliation never enter this path. */
@@ -71,3 +85,4 @@ export async function assistantAccessStatus(request:Request,env:AssistantEnv){
   return json({qualification,sessionValid:qualification==='active'&&!!session&&!session.revoked,expiresAt:subject.expiresAt,aiEnabled,summaryAvailable:aiEnabled,planningBudgetDisabled:true,assistantV2:true});
  }catch{return json({error:'SERVICE_UNAVAILABLE'},503)}
 }
+
