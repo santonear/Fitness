@@ -24,3 +24,9 @@ test-results-*/
 .secrets/
 src/catalog/generated/
 public/exercise-media/repdb/
+
+# Local agent notes, logs and Worker secrets
+.claude-tmp/
+claudelogs/
+.dev.vars
+.dev.vars.*

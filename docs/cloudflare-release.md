@@ -12,11 +12,28 @@ Worker 名称为 `fitness`，实际稳定地址为 https://fitness.initdevl.work
 
 发布前执行 `npm run check` 和完整浏览器测试，再执行 `npm run deploy:dry-run`。审查通过后 `npm run deploy:cloudflare` 发布已验证的 dist；该命令不隐式构建，避免替换刚验证过的产物。Workers Free 配额适用，不授权升级；当前没有动态 Worker 脚本。
 
-## GitHub 手动发布
+## GitHub 发布流程（2026-10-12 起）
 
-`.github/workflows/deploy-cloudflare.yml` 仅允许从受信任集成分支 `codex/fitness-implementation` 手动触发，不因 UI/UX PR 或普通推送自动发布。作业重新安装锁定依赖，运行类型检查、单元测试、构建和完整浏览器测试，成功后发布同一产物。并发部署串行执行。
+三个工作流，正式环境的发布与回滚都要 Bo 在 GitHub 上批准：
 
-GitHub 环境 `cloudflare-production` 配置 Secrets：`CLOUDFLARE_API_TOKEN`、`CLOUDFLARE_ACCOUNT_ID`。Token 按 Cloudflare 官方 Workers 部署权限创建，只授予目标账号所需权限；凭据不写入代码或 Vite 环境变量。工作流需先进入仓库默认分支，才会显示手动运行入口；修改默认分支或整合集成分支由统筹统一处理。
+| 工作流 | 触发 | 审批 | 步骤 |
+| --- | --- | --- | --- |
+| `deploy-preview.yml`（Publish a Fitness preview） | 任意分支手动运行，选择预览目标 | 无 | 检查配置不含正式 Worker/D1/KV → `npm run check` → 部署预览 |
+| `deploy-cloudflare.yml`（Publish Fitness to Cloudflare） | 只能从 `main` 手动运行 | `cloudflare-production` 环境审批 | 完整 CI（复用 `ci.yml`）→ 审批 → 记录当前线上版本 → D1 迁移（`ADMIN_DB`）→ 部署 → 冒烟测试 |
+| `rollback-production.yml`（Roll back Fitness production） | 只能从 `main` 手动运行，可填版本号和原因 | `cloudflare-production` 环境审批 | 审批 → `wrangler rollback` → 冒烟测试 |
+
+两个正式工作流第一步都会检查 `cloudflare-production` 环境是否设置了必需审批人；没有设置就直接失败，不会进入测试或部署。
+
+回滚只回退 Worker 代码，不回退 D1 迁移；迁移必须保持向后兼容，旧版本代码要能读新表结构。每次正式发布的运行摘要里记录发布前的线上版本号，回滚时可直接填写。
+
+冒烟测试（`tools/release/smoke.mjs`）只读：首页、`/api/v1/features`、未登录访问 `/admin` 不返回 200；不登录、不写数据、不调用模型。
+
+GitHub 环境配置：
+
+- `cloudflare-production`：Required reviewers 设为 Bo；Deployment branches 限定 `main`；Secrets `CLOUDFLARE_API_TOKEN`、`CLOUDFLARE_ACCOUNT_ID`。
+- `cloudflare-preview`：不设审批；Secrets 同名，建议使用只能部署预览 Worker 的独立 Token。
+
+Token 按 Cloudflare 官方 Workers 部署权限创建，只授予目标账号所需权限；凭据不写入代码或 Vite 环境变量。
 
 ## 线上验证与数据迁移
 
