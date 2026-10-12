@@ -4,7 +4,7 @@ async function questions(page: Page) {
   await page.getByRole('button', { name: '想有些力量，不再容易累', exact: true }).click();
   await page.getByRole('button', { name: '继续', exact: true }).click();
   await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
-  await expect(page.getByText('想有些力量，不再容易累', { exact: true })).toBeVisible();
+  await expect(page.locator('.v8-onboarding-recap')).toHaveText('想有些力量，不再容易累');
   await page.getByLabel('你的回答', { exact: true }).fill('每周两次，每次 15 分钟');
   await page.getByRole('button', { name: '继续', exact: true }).click();
   await page.getByRole('button', { name: '在家，只有瑜伽垫', exact: true }).click();
@@ -55,13 +55,14 @@ test('basic mode also requires adulthood and never presents external consent', a
   await expect(page.locator('summary')).toHaveCount(0);
   await expect(page.getByRole('button', { name: '生成新计划' })).toBeDisabled();
   await page.getByRole('button', { name: '上一步', exact: true }).click();
-  await expect(page.getByLabel('你的回答', { exact: true })).toHaveValue('在家，只有瑜伽垫');
+  await expect(page.getByLabel('你的回答', { exact: true })).toHaveValue('');
+  await expect(page.getByLabel('你的回答', { exact: true })).toHaveAttribute('placeholder', '在家，只有瑜伽垫');
 });
 test('English controls, keyboard activation and busy draft prevent writes', async ({ page }) => {
   await page.goto('/tests/e2e/helpers/v8-e-onboarding.html?lang=en');
   await page.getByLabel('Your answer', { exact: true }).fill('Keep my own words');
   await page.getByRole('button', { name: 'Continue', exact: true }).focus(); await page.keyboard.press('Enter');
-  await expect(page.getByText('Keep my own words', { exact: true })).toBeVisible();
+  await expect(page.locator('.v8-onboarding-recap')).toHaveText('Keep my own words');
   await page.goto('/tests/e2e/helpers/v8-e-onboarding.html?draft&busy&lang=en');
   await expect(page.getByRole('button', { name: 'Saving…', exact: true })).toBeDisabled();
   await expect(page.getByLabel('confirm calls')).toHaveText('0');
