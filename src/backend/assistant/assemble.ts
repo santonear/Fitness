@@ -180,6 +180,13 @@ export function assembleAssistantIntent(raw:unknown,request:AssistantRequest):{a
   const scope=namedPlanScope(request),scoped=scope.templates.size>0||scope.items.size>0;
   const changesToApply=intent.changes.filter(change=>!scope.items.size||(change.from&&scope.items.has(exercises.find(e=>[e.id,e.name.zh,e.name.en].some(name=>normal(name)===normal(change.from!)))?.id??''))).map(change=>({...change}));
   if(scope.templates.size)for(const change of changesToApply)if(!change.session)change.session=[...scope.templates][0];
+  const additions=changesToApply.filter(change=>change.op==='add');
+  const singleAddition=!/(?:[2-9二两三四五六七八九])\s*(?:个|项|动作)|\b[2-9]\s+(?:exercises|movements)/i.test(request.messages.at(-1)?.content??'');
+  if(singleAddition&&additions.length){
+   const destination=scope.templates.size?[...scope.templates][0]:[...context.plan.templates].sort((a,b)=>a.estimatedMinutes-b.estimatedMinutes)[0].id;
+   let retained=false;
+   for(let i=changesToApply.length-1;i>=0;i--)if(changesToApply[i].op==='add'){if(retained)changesToApply.splice(i,1);else{changesToApply[i].session=destination;retained=true;}}
+  }
   if(/加.*(?:练腿|腿部|下肢)|add.*(?:leg|lower.body)/i.test(request.messages.at(-1)?.content??'')){
    const safe=lowerBodyAddition(request);
    for(const change of changesToApply)if(change.op==='add'){const choice=resolveAssistantExercise(change.to,candidates);if(!choice||context.plan.templates.some(template=>template.items.some(item=>sameExerciseFamily(exercises.find(e=>e.id===item.exerciseId)!,choice.exercise))))change.to=safe?.code;}
@@ -196,7 +203,7 @@ export function assembleAssistantIntent(raw:unknown,request:AssistantRequest):{a
    if(scope.templates.size&&!scope.templates.has(template.id))continue;
    const filtered=changesToApply.filter(change=>!scope.templates.size||!change.session||scope.templates.has(change.session));
    applyChanges(template,filtered,candidates,new Set(),dropped,context.plan.templates.flatMap(t=>t.items));
-   if(!scoped)coverPatterns(template,candidates);
+   if(!scoped&&!additions.length)coverPatterns(template,candidates);
    if(explicitMinutes&&!scoped)fitDuration(template,proposal.sessionMinutes);else recalculate(template);
    syncTemplateName(template,request.locale);
   }
