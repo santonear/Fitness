@@ -37,6 +37,12 @@ describe('assistant v2 model', () => {
     const events=await collect({...request,context},provider(['invalid',{attachment:null}]));
     expect(events.at(-1)).toMatchObject({success:false,result:'attachment_failed'});
   });
+  it('normalizes a generic plan marker to the actual local adjustment contract',async () => {
+    const model=provider([{attachment}]);model.streamText=async function*(){yield {delta:'A shorter session.<<ATTACHMENT:plan>>',usage};};
+    const events=await collect({...request,context},model);
+    expect(events.some(event=>event.type==='attachment' && event.attachment.type==='today_adjustment')).toBe(true);
+    expect(events.at(-1)).toMatchObject({success:true});
+  });
   it('passes bounded field diagnostics without invalid values into the one attachment retry',async () => {
     const prompts:string[]=[];const model=provider();let call=0;
     model.generateAttachment=async messages=>{prompts.push(JSON.stringify(messages));return {content:call++?{attachment}:{...attachment,template:{...attachment.template,items:[{...attachment.template.items[0],sets:'PRIVATE_INVALID_VALUE'}]}},usage};};

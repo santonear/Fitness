@@ -56,7 +56,11 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
     }
     if (blockedText) throw new AssistantProviderError(blockedText);
     const marker = text.match(/<<ATTACHMENT:(none|plan|today|change|exercise|review)>>\s*$/);
-    if (marker) { attachmentKind = marker[1]; text = text.slice(0, marker.index).trimEnd(); }
+    if (marker) {
+      attachmentKind = marker[1]; text = text.slice(0, marker.index).trimEnd();
+      // The local task defines the applicable card contract; model shorthand cannot change it.
+      if(request.context && ['plan','today','change','review'].includes(attachmentKind)) attachmentKind=({ONBOARD_PLAN:'plan',ADJUST_TODAY:'today',MODIFY_PLAN:'change',PERIOD_REVIEW:'review'} as const)[request.context.task];
+    }
     else if (text.includes('<<ATTACH')) text = text.slice(0, text.indexOf('<<ATTACH')).trimEnd();
     if (!text.trim()) throw new AssistantProviderError('EMPTY_TEXT');
     if (text.length > emitted) yield { type: 'text_delta', delta: text.slice(emitted) };
