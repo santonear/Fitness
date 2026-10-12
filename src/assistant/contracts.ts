@@ -71,7 +71,7 @@ export function applyAssistantPreferences(context: CoachRequest, messages: Assis
     }
     const goal = content.match(/目标(?:改为|改成|是|为|：|:)\s*([^，。；\n]+)|\b(?:my\s+)?goal\s+(?:is|is now|changed to)\s+([^.;\n]+)/i);
     if (goal) copy.profile.goalText = (goal[1] ?? goal[2]).trim();
-    const frequency = content.match(/(?:每周|一周)\s*([1-7一二两三四五六七])\s*次|\b(once|twice|one|two|three|four|five|six|seven|[1-7])\s*(?:times?\s*)?(?:a |per |each )?week\b/i);
+    const frequency = content.match(/(?:每周|一周)\s*([1-7一二两三四五六七])\s*次|\b(once|twice|one|two|three|four|five|six|seven|[1-7])\s*(?:times?\s*)?(?:a |per |each )?week(?:ly)?\b/i);
     let updated = false;
     if (frequency) {
       const raw = (frequency[1] ?? frequency[2]).toLowerCase();
@@ -101,6 +101,7 @@ export function sanitizeAssistantRequest(input: unknown): AssistantRequest {
   }
   return request;
 }
+
 
 
 

@@ -68,7 +68,9 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
     yield { type: 'done', success: false, usage: usage(), calls, promptVersion: version, result: 'failed' };
     return;
   }
-  if (!request.adultConfirmed || attachmentKind === 'none') {
+  const requestedMinutes=request.messages.at(-1)!.content.match(/(\d{1,3})\s*(?:分钟|minutes?|mins?)/i);
+  const belowPlanMinimum=requestedMinutes && Number(requestedMinutes[1])<15;
+  if (!request.adultConfirmed || attachmentKind === 'none' || belowPlanMinimum && ['plan','today','change'].includes(attachmentKind)) {
     yield { type: 'done', success: true, usage: usage(), calls, promptVersion: version, result: proseNormalized ? 'repaired' : 'success' };
     return;
   }

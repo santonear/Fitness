@@ -2,6 +2,14 @@ import { assistantAttachmentSchema, type AssistantRequest, type AssistantAttachm
 import { adaptCoachResponse, coachV8Exercises } from '../../coach/response-adapter';
 import { ZodError } from 'zod';
 import { coachResponseSchema } from '../../coach/contracts';
+import { selectAiExercises } from '../../catalog/ai-catalog';
+
+/** A location is not evidence that any machine or portable equipment is available. */
+export function assistantExercises(request: AssistantRequest) {
+  const catalog=request.context?coachV8Exercises(request.context):selectAiExercises(request.messages.at(-1)!.content);
+  if(request.context?.task==='ONBOARD_PLAN' && (request.context.profile.equipment.length===0 || request.context.profile.equipment.every(value=>/^(?:none)$/i.test(value)||/没有器械|无器械|(?:no|without) equipment/i.test(value)))) return catalog.filter(exercise=>exercise.equipment==='none');
+  return catalog;
+}
 
 export class AttachmentValidationError extends Error {
   constructor(public readonly code: 'ATTACHMENT_SCHEMA'|'ATTACHMENT_IDENTITY'|'ATTACHMENT_CATALOG'|'ATTACHMENT_CONDITIONS'|'ATTACHMENT_LANGUAGE',public readonly feedback:string=code) { super(code); }
@@ -29,7 +37,7 @@ function repairAttachment(raw: unknown, request: AssistantRequest): { attachment
   const value = structuredClone(input && typeof input === 'object' && 'attachment' in input ? input.attachment : input);
   if (!value || typeof value !== 'object') throw new Error('ATTACHMENT_SHAPE');
   let repaired = false;
-  const catalog = request.context ? coachV8Exercises(request.context) : [];
+  const catalog = assistantExercises(request);
   function walk(node: unknown): void {
     if (!node || typeof node !== 'object') return;
     if (Array.isArray(node)) { node.forEach(walk); return; }
@@ -38,6 +46,7 @@ function repairAttachment(raw: unknown, request: AssistantRequest): { attachment
       const name = typeof item.exerciseName === 'string' ? item.exerciseName : typeof item.exerciseId === 'string' ? item.exerciseId : '';
       const matches = catalog.filter(e => Object.values(e.name).some(n => n.toLowerCase() === name.toLowerCase()));
       if (matches.length === 1) { item.exerciseId = matches[0].id; delete item.exerciseName; repaired = true; }
+      else throw new Error('exercise outside supplied catalog');
     }
     for (const [key, min, max] of [['sets', 1, 10], ['reps', 1, 100], ['durationSeconds', 1, 7200], ['loadGrams', 0, 500000], ['estimatedMinutes', 15, 120], ['sessionMinutes', 15, 120], ['weeklyTarget', 1, 7]] as const) {
       if (typeof item[key] === 'number' && Number.isFinite(item[key])) {

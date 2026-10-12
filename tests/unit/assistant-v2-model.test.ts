@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { assistantRequestSchema, sanitizeAssistantRequest, applyAssistantPreferences, type AssistantRequest } from '../../src/assistant/contracts';
 import { runAssistantModel, createAssistantProvider, type AssistantProvider } from '../../src/backend/assistant/model';
 import { assistantPrompt } from '../../src/backend/assistant/prompts';
-import { repairAssistantAttachment } from '../../src/backend/assistant/repair';
+import { repairAssistantAttachment,assistantExercises } from '../../src/backend/assistant/repair';
 import { EXERCISE_IDS, exercises } from '../../src/catalog/exercises';
 import { coachV8Exercises, adaptCoachResponse } from '../../src/coach/response-adapter';
 
@@ -50,10 +50,22 @@ describe('assistant v2 model', () => {
     const {target:_target,template:_template,instruction:_instruction,...common}=context;
     const input={...request,messages:[{role:'user' as const,content}],context:{...common,task:'ONBOARD_PLAN' as const,profile:{goalText:'fitness',weeklyTarget:3,sessionMinutes:40,scheduleOriginalText:'old',place:'home' as const,equipment:['At home without equipment'],adultConfirmed:true as const,cautions:['knee' as const]}}};
     const clean=sanitizeAssistantRequest(input);
-    expect(clean.context).toMatchObject({profile:{place:'gym',equipment:[],cautions:['knee']}});
+    expect(clean.context).toMatchObject({profile:{place:'gym',equipment:[],weeklyTarget:2,cautions:['knee']}});
+    expect(assistantExercises(clean).length).toBeGreaterThan(0);
+    expect(assistantExercises(clean).every(exercise=>exercise.equipment==='none')).toBe(true);
+    expect(clean.context).toMatchObject({profile:{equipment:[]}});
     expect(assistantPrompt(clean,'text').at(-1)).toEqual({role:'user',content});
     const withDumbbells=sanitizeAssistantRequest({...input,messages:[{role:'user',content:'在家，只有哑铃'}]});
     expect(withDumbbells.context).toMatchObject({profile:{place:'home',equipment:['dumbbell'],cautions:['knee']}});
+  });
+  it('supports once weekly and prevents an inapplicable below-minimum plan attachment',async () => {
+    const {target:_target,template:_template,instruction:_instruction,...common}=context;
+    const contextPlan={...common,task:'ONBOARD_PLAN' as const,profile:{goalText:'fitness',weeklyTarget:3,sessionMinutes:40,scheduleOriginalText:'old',place:'gym' as const,equipment:[],adultConfirmed:true as const,cautions:[]}};
+    expect(applyAssistantPreferences(contextPlan,[{role:'user',content:'once weekly'}])).toMatchObject({profile:{weeklyTarget:1}});
+    const model=provider();let attachments=0;model.generateAttachment=async()=>{attachments++;return {content:{attachment:null},usage};};
+    const events=await collect({...request,context,messages:[{role:'user',content:'Only 10 minutes today'}]},model);
+    expect(attachments).toBe(0);expect(events.some(event=>event.type==='attachment_pending')).toBe(false);
+    expect(events.at(-1)).toMatchObject({success:true,calls:[{stage:'text'}]});
   });
   it('marks a mechanically repaired first attachment call in usage records',async () => {
     const candidate=structuredClone(attachment);candidate.template.items[0].sets=200;
