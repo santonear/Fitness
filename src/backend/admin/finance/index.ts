@@ -1,3 +1,5 @@
+import {readFeatureFlags} from '../../feature-config';
+import {assistantUsageReport,assistantUsageCsv,archiveLegacyUsage} from '../../assistant/usage-report';
 import { ledgerMonth } from './month';
 import { z } from 'zod';
 import { D1ControlStore } from '../../d1-store';
@@ -10,6 +12,7 @@ export type FinanceContext = AdminContext & { env: AdminContext['env'] & Finance
 const monthSchema=z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/);
 export async function evaluateFinanceTodos(context:AdminContext) {
   if(!context.env.ADMIN_DB || !context.env.CONTROL_DB) return [];
+  if((await readFeatureFlags(context.env)).aiAssistantV2)return [];
   const state=await new FinanceStore(context.env.ADMIN_DB).read(), config=state.versions.at(-1)?.config??environmentDefaults(context.env);
   const control=await new D1ControlStore(context.env.CONTROL_DB).read();
   const period=ledgerMonth(context.now,context.env.CONTROL_POLICY),budget=control.budgets[period];
@@ -19,6 +22,18 @@ async function handleFinanceInternal(request:Request,context:FinanceContext):Pro
   const url=new URL(request.url), prefix='/api/v1/management/console/finance';
   if(!url.pathname.startsWith(prefix+'/'))return undefined;
   const route=url.pathname.slice(prefix.length+1), db=requireAdminDb(context), store=new FinanceStore(db);
+  if(route==='usage'||route==='usage-export'){
+    if(request.method!=='GET')throw new AdminError('METHOD_NOT_ALLOWED',405);
+    if(!(await readFeatureFlags(context.env)).aiAssistantV2)throw new AdminError('NOT_FOUND',404);
+    const timeZone=url.searchParams.get('timeZone')??'Asia/Shanghai';try{financeLocalDate(context.now,timeZone)}catch{throw new AdminError('INVALID_TIME_ZONE',400)}
+    const month=monthSchema.parse(url.searchParams.get('month')??financeLocalDate(context.now,timeZone).slice(0,7));
+    if(context.env.CONTROL_DB)await archiveLegacyUsage(db,await new D1ControlStore(context.env.CONTROL_DB).read(),context.now);
+    const report=await assistantUsageReport(db,month,timeZone);
+    const user=url.searchParams.get('user'),task=url.searchParams.get('task');
+    if(user||task)report.rows=report.rows.filter(r=>(!user||r.subject_short_id===user)&&(!task||r.task===task));
+    return route==='usage'?adminJson(report):new Response(assistantUsageCsv(report.rows),{headers:{'Content-Type':'text/csv;charset=utf-8','Content-Disposition':`attachment; filename="usage-${month}.csv"`,'Cache-Control':'no-store'}});
+  }
+  if(route==='settle'&&(await readFeatureFlags(context.env)).aiAssistantV2)throw new AdminError('LEGACY_READ_ONLY',409);
   if(request.method==='GET') {
 
     if(route==='config') {const s=await store.read();return adminJson({current:s.versions.at(-1)??{version:0,config:environmentDefaults(context.env)},history:s.versions,dismissedBudgetMonths:s.dismissedBudgetMonths??[],defaults:environmentDefaults(context.env)});}

@@ -1,4 +1,5 @@
 import {BodyProfilePanel} from './BodyProfilePanel';
+import {AssistantPreferencesPanel} from './AssistantPreferencesPanel';
 import {AccessStatusCard} from '../../components/AccessStatusCard';
 import { DeletedPlans } from './DeletedPlans';
 import { planLifecycleCopy } from '../../../i18n/features/plan/lifecycle';
@@ -24,10 +25,12 @@ export function SettingsPage(){const bodyEnabled=useFeature('bodyProfile');const
  <Button onClick={()=>setSection(section==='reminders'?'':'reminders')}>{copy.settingsPage0}</Button>
  <Button onClick={()=>setSection(section==='backup'?'':'backup')}>{copy.settingsPage1}</Button>
  <Button onClick={()=>setSection(section==='privacy'?'':'privacy')}>{copy.settingsPage2}</Button>
+ <Button onClick={()=>setSection(section==='assistantPreferences'?'':'assistantPreferences')}>{locale==='zh'?'芽芽记住的偏好':'Yaya saved preferences'}</Button>
  {(nutritionEnabled||hasNutrition)&&<Button onClick={()=>navigate('/settings/nutrition')}>{lifestyleCopy[locale].nutrition}</Button>}{importEnabled&&<Button onClick={()=>navigate('/settings/import')}>{lifestyleCopy[locale].importActivity}</Button>}
  {planLifecycle&&<Button onClick={()=>setSection(section==='deletedPlans'?'':'deletedPlans')}>{planLifecycleCopy[locale].trash}</Button>}{planLifecycle&&section==='deletedPlans'&&<DeletedPlans/>}
  {(bodyEnabled||data?.profile?.bodyDetails)&&<BodyProfilePanel/>}<AccessStatusCard locale={locale}/><Button onClick={()=>navigate('/trial')}>{copy.trial}</Button>
  <Button onClick={restartPlanning}>{copy.settingsPage3}</Button>
  <label><input type="checkbox" checked={vibration} disabled={!vibrationSupported} onChange={event=>{const value=event.target.checked;try{localStorage.setItem(restVibrationKey,value?'on':'off');setVibration(value);}catch{/* Keep the saved preference unchanged. */}}}/>{copy.restVibration}</label>{!vibrationSupported&&<p>{copy.vibrationUnavailable}</p>}{section==='reminders'&&<ReminderSettings locale={locale}/>}{section==='backup'&&<BackupPanel/>}
  {section==='privacy'&&<section><h2>{copy.settingsPage4}</h2><p>{copy.settingsPage5}</p><p>{operationsCopy[locale].dietPrivacy}</p></section>}
+ {section==='assistantPreferences'&&<AssistantPreferencesPanel locale={locale}/>}
  <SystemNotifications locale={locale}/>{analytics&&<label><input type="checkbox" checked={optedIn} onChange={e=>{try{setAnonymousUsage(e.target.checked);setOptedIn(e.target.checked);}catch{/* No opt-in when storage fails. */}}}/>{operationsCopy[locale].analytics}<p>{operationsCopy[locale].analyticsHint}</p></label>}{errorReports&&<p>{operationsCopy[locale].errorHint}</p>}<Button onClick={()=>navigate('/')}>{t.back}</Button></main>;}

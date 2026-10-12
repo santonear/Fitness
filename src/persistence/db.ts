@@ -1,3 +1,5 @@
+import type {AssistantConversation} from './assistant-conversations';
+import {recoverAssistantSchedule,recoverLegacyPlanSchedules} from './assistant-schedule-migration';
 import {migrateBodyProfile} from './body-profile-migration';
 import type { CoachLedger } from '../domain/coach-reminders';
 import {legacyExerciseFavorites} from './exercise-favorites';
@@ -10,6 +12,7 @@ import { upgradeToV8, type V8Library } from './v8-migration';
 import type { NutritionRecord, ActivityImportReceipt } from '../domain/lifestyle';
 
 export class FitnessDatabase extends Dexie {
+  assistantConversations!: Table<AssistantConversation,string>;
   exerciseFavorites!: Table<{id:string},string>;
   nutritionRecords!: Table<NutritionRecord, string>;
   activityImportReceipts!: Table<ActivityImportReceipt, string>;
@@ -35,6 +38,30 @@ export class FitnessDatabase extends Dexie {
   mediaAssets!: Table<MediaAsset, string>;
   constructor(name: string) {
     super(name);
+    this.on('ready', async vipDb=>{
+      const metadata=vipDb.table<Metadata,string>('metadata');
+      const versions=vipDb.table<V8Library['planVersions'][number],string>('v8PlanVersions');
+      const plans=vipDb.table<V8Library['plans'][number],string>('v8Plans');
+      const conversations=vipDb.table<AssistantConversation,string>('assistantConversations');
+      await vipDb.transaction('rw',metadata,versions,plans,conversations,async()=>{
+        const row=await metadata.toCollection().first();
+        if(!row||row.assistantScheduleRecoveryV2At)return;
+        const recoveredAt=new Date().toISOString();
+        const [allVersions,allPlans,allConversations]=await Promise.all([versions.toArray(),plans.toArray(),conversations.toArray()]);
+        const correctedVersions=recoverAssistantSchedule(allVersions,allConversations,recoveredAt);
+        const correctedPlans=recoverLegacyPlanSchedules(allPlans,allVersions,allConversations,recoveredAt);
+        if(correctedVersions.length)await versions.bulkPut(correctedVersions);
+        if(correctedPlans.length)await plans.bulkPut(correctedPlans);
+        await metadata.put({...row,assistantScheduleRecoveryV2At:recoveredAt});
+      });
+    });
+    this.version(14).stores({}).upgrade(async tx=>{
+      const versions=await tx.table('v8PlanVersions').toArray(),conversations=await tx.table('assistantConversations').toArray();
+      const recovered=recoverAssistantSchedule(versions,conversations,new Date().toISOString());
+      if(recovered.length)await tx.table('v8PlanVersions').bulkPut(recovered);
+      await tx.table('metadata').toCollection().modify((row:Metadata)=>{row.schemaVersion=14;});
+    });
+    this.version(13).stores({assistantConversations:'id,updatedAt'}).upgrade(async tx=>{await tx.table('metadata').toCollection().modify((row:Metadata)=>{row.schemaVersion=13;});});
     this.version(1).stores({ profiles: 'id', bodyWeights: 'id,localDate', metadata: 'localProfileId' });
     this.version(2).stores({
       profiles: 'id', metadata: 'localProfileId', bodyWeights: 'id,localDate',

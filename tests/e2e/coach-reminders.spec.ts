@@ -31,7 +31,12 @@ test('coach lifecycle rejects stale confirmation and retains scheduled task fact
  });expect(result).toEqual({paused:'paused',stale:true,taskStatus:'pending',planStatus:'archived'});
 });
 
-test('user schedule only, default off, restore, changed-time cancellation and daily deduplication',async({page})=>{
+test.describe('reminder sources near UTC midnight',()=>{
+ test.use({timezoneId:'UTC'});
+ test('user schedule only, default off, restore, changed-time cancellation and daily deduplication',async({page})=>{
+ await page.clock.setFixedTime(new Date('2026-10-12T22:45:00Z'));
  await page.goto('/settings');const result=await page.evaluate(async()=>{const p='/tests/e2e/helpers/coach-sources.ts';return(await import(/* @vite-ignore */p)).verifyCoachSources();});
  expect(result).toEqual({defaultOff:true,noAutomaticSources:true,trainingSuppressed:true,userSchedule:true,restoredFacts:true,restoredCancelled:true,preferencesPreserved:true,countPreserved:true,scheduledSource:true,movedCancelled:true,noReplay:true});
+});
+
 });

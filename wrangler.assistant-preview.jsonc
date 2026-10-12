@@ -1,0 +1,59 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "fitness-ai-assistant-preview",
+  "main": "src/backend/fitness-worker.ts",
+  "compatibility_date": "2026-10-05",
+  "workers_dev": true,
+  "preview_urls": false,
+  "vars": {
+    "ADMIN_ACCESS_AUD": "062e97295d5c53acf80cde71b38ddcfe9c76eb522489c4d3c4ebaaaed8196fd6",
+    "ADMIN_ACCESS_ISSUER": "https://tiny-firefly-ed38.cloudflareaccess.com",
+    "ADMIN_EMAIL": "xxgospel@hotmail.com",
+    "CONTROL_MODE": "external",
+    "CONTROL_ORIGINS": "[\"https://fitness-ai-assistant-preview.initdevl.workers.dev\"]",
+    "CONTROL_POLICY": "{\"timeZone\":\"Asia/Shanghai\",\"k\":14,\"budgetLimit\":3000,\"maximumRequestCost\":300,\"allowBoundedPending\":true,\"planningBudgetDisabled\":true,\"requestBounds\":{\"understand\":300,\"generate\":300},\"quotas\":{\"understand\":8,\"generate\":4},\"maxInputBytes\":65536,\"maxConcurrent\":2,\"allowUncertainPlanningPending\":true}",
+    "DEEPSEEK_PRICING_VERIFIED_UNTIL": "2026-10-08T00:00:00Z",
+    "FITNESS_FEATURE_FLAGS": "{\"aiAssistantV2\": true, \"bodyProfile\": true, \"planLifecycle\": true, \"themeDiscovery\": true, \"fontSubset\": true, \"exercisePanel\": true}",
+    "FITNESS_SUPPLIER_DIAGNOSTICS": "errors",
+    "SUPPLIER_PROVIDER": "deepseek",
+    "TURNSTILE_SITE_KEY": "0x4AAAAAAFQG0Iz8JvDHA3mo",
+    "ADMIN_ENVIRONMENT": "preview",
+    "ADMIN_CONSOLE_ENABLED": "true",
+    "ADMIN_PUSH_ENABLED": "false",
+    "ADMIN_ERROR_COLLECTION_ENABLED": "false",
+    "ASSISTANT_MAX_OUTPUT_TOKENS": "1200",
+    "ASSISTANT_MAX_ATTACHMENT_TOKENS": "3000"
+  },
+  "d1_databases": [
+    {
+      "binding": "CONTROL_DB",
+      "database_name": "fitness-ai-assistant-preview-20261012",
+      "database_id": "f2319925-13eb-4a18-a876-fc2ca687f488"
+    },
+    {
+      "binding": "ADMIN_DB",
+      "database_name": "fitness-ai-assistant-preview-20261012",
+      "database_id": "f2319925-13eb-4a18-a876-fc2ca687f488"
+    }
+  ],
+  "observability": {
+    "enabled": false
+  },
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": [
+      "/api/*",
+      "/api",
+      "/admin",
+      "/admin/*"
+    ]
+  },
+  "version_metadata": {
+    "binding": "CF_VERSION_METADATA"
+  },
+  "compatibility_flags": [
+    "global_fetch_strictly_public"
+  ]
+}

@@ -22,11 +22,11 @@ export function basicProposal(profile: CoachProfile, locale = 'zh') {
   if (!profile.adultConfirmed) return undefined;
   const copy = locale === 'en' ? basicEn : basicZh;
   const selection = [basicItems(profile, 0), basicItems(profile, 1)];
-  const selectedTemplates = selection.filter((s,index,all) => s.items.length && !all.slice(0,index).some(previous=>JSON.stringify(previous.items.map(item=>JSON.stringify(item)).sort())===JSON.stringify(s.items.map(item=>JSON.stringify(item)).sort()))).map(({ items }, index) => ({ id: `basic-${index}`, name: String.fromCharCode(65 + index), items, estimatedMinutes: estimatePlannedMinutes(items) }));
+  const selectedTemplates = selection.filter((s,index,all) => s.items.length && !all.slice(0,index).some(previous=>JSON.stringify(previous.items.map(item=>JSON.stringify(item)).sort())===JSON.stringify(s.items.map(item=>JSON.stringify(item)).sort()))).map(({ items }, index) => ({ id: `basic-${index}`, name: String.fromCharCode(65 + index), items, estimatedMinutes: estimatePlannedMinutes(items,profile.sessionMinutes<15?10:15) }));
   const missing = [...new Set(selection.flatMap(s => s.missing))].map(f => copy.families[f as keyof typeof copy.families]).join(' / ');
   const shorter = selectedTemplates.find(template => template.estimatedMinutes < profile.sessionMinutes);
-  return { goalText: profile.goalText, weeklyTarget: profile.weeklyTarget, sessionMinutes: profile.sessionMinutes, scheduleOriginalText: profile.scheduleOriginalText, templates: selectedTemplates,
-    reasons: [profile.scheduleOriginalText || copy.basicReason, [profile.cautions.length ? copy.adapted : copy.basicReason, shorter ? copy.shorter.replace('{minutes}', String(shorter.estimatedMinutes)) : ''].filter(Boolean).join(' '), !selectedTemplates.length ? copy.empty : missing ? copy.missing.replace('{types}', missing) : profile.goalText] as [string, string, string] };
+  return { goalText: profile.goalText, weeklyTarget: profile.weeklyTarget, preferredDays: profile.preferredDays, sessionMinutes: profile.sessionMinutes, scheduleOriginalText: profile.scheduleOriginalText, templates: selectedTemplates,
+    reasons: [locale === 'en' ? `Start with ${profile.weeklyTarget} sessions a week, up to 4 sets per exercise; use the estimated duration shown for each session.` : `每周安排 ${profile.weeklyTarget} 次，每个动作最多 4 组，以训练单显示的估算时长为准。`, [profile.cautions.length ? copy.adapted : copy.basicReason, shorter ? copy.shorter.replace('{minutes}', String(shorter.estimatedMinutes)) : ''].filter(Boolean).join(' '), !selectedTemplates.length ? copy.empty : missing ? copy.missing.replace('{types}', missing) : (locale === 'en' ? `Uses your stated equipment: ${profile.equipment.join(' / ')}. ${/瘦|减脂|减重|lose weight|fat loss|weight loss/i.test(profile.goalText) ? 'Combines strength work with walking where your selected cautions allow.' : 'Alternates basic strength movements across sessions.'}` : `使用你说明的器械：${profile.equipment.join(' / ')}。${/瘦|减脂|减重|lose weight|fat loss|weight loss/i.test(profile.goalText) ? '在已选注意部位允许的范围内，结合力量动作和步行。' : '两份训练单交替安排基础力量动作。'}`)] as [string, string, string] };
 }
 function localDate(timeZone: string) {
   const parts = new Intl.DateTimeFormat('en-US', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date());
@@ -49,8 +49,8 @@ export function createV8Workflow(repo: Repository) {
       return { metadata, state, plan, version, plans, deletedPlans, planReferences: await db.v8PlanReferences.toArray(), workouts, hasFutureLegacyDates, historyVersions, versions: historyVersions.filter(v=>plans.some(p=>p.id===v.planId)), activities: await db.v8Activities.toArray(), profile, active: workouts.find(row => row.status === 'in_progress') };
     });
   }
-  async function propose(profile: CoachProfile): Promise<LocalCandidate> {
-    const local = await db.profiles.toCollection().first(),locale=local?.locale;
+  async function propose(profile: CoachProfile, localeOverride?: 'zh' | 'en'): Promise<LocalCandidate> {
+    const local = await db.profiles.toCollection().first(),locale=localeOverride??local?.locale;
     if(local?.bodyDetails?.values.age!==undefined&&local.bodyDetails.values.age<18)return invalid('ADULT_CONFIRMATION_REQUIRED');
     const proposal = basicProposal(profile, locale);
     if (!proposal) return invalid('BASIC_PLAN_UNAVAILABLE');
@@ -148,7 +148,7 @@ export function createV8Workflow(repo: Repository) {
   async function applyCoachCandidate({ request, response: raw, expectedRevision }: { request: CoachRequest; response: CoachResponse; expectedRevision: number }) {
     const response = adaptCoachResponse(request, raw);
     if (request.task === 'ONBOARD_PLAN' && response.type === 'plan_proposal') {
-      return adopt({ ...response, source: 'ai', expectedRevision, profile: { ...request.profile, confirmedAt: new Date().toISOString() } });
+      return adopt({ ...response, source: 'ai', expectedRevision, profile: { ...request.profile, weeklyTarget:response.proposal.weeklyTarget,preferredDays:response.proposal.preferredDays,sessionMinutes:response.proposal.sessionMinutes,confirmedAt: new Date().toISOString() } });
     }
     if (!('target' in response) || !('target' in request)) return invalid('NO_PLAN_CANDIDATE');
     return repo.write(async () => {
@@ -179,7 +179,7 @@ export function createV8Workflow(repo: Repository) {
       const proposal = response.type === 'change_proposal' ? response.proposal : response.type === 'review_summary' ? response.suggestion?.proposal : undefined;
       if (!proposal) return invalid('NO_PLAN_CANDIDATE');
       const { reasons: _reasons, ...content } = proposal;
-      const next = v8PlanVersionSchema.parse({ ...content, id: crypto.randomUUID(), planId: plan.id, versionNumber: version.versionNumber + 1,
+      const next = v8PlanVersionSchema.parse({ ...content, scheduleOriginalText: version.scheduleOriginalText, id: crypto.randomUUID(), planId: plan.id, versionNumber: version.versionNumber + 1,
         createdAt: new Date().toISOString(), source: 'ai', origin: response.type === 'review_summary' ? 'review_suggestion' : 'coach_change',
         basedOnVersionId: version.id, changeSummary: response.type === 'change_proposal' ? response.changes : [response.type === 'review_summary' ? response.suggestion!.summary : ''] });
       await db.v8PlanVersions.add(next); await db.v8Plans.put({ ...plan, currentVersionId: next.id });
@@ -187,6 +187,14 @@ export function createV8Workflow(repo: Repository) {
       return next;
     }, expectedRevision);
   }
-  return { ...lifecycle, snapshot, propose, adopt, start, recordSet, finish, substitute, applyCoachCandidate };
+  async function undoAppliedCoachVersion({planId,appliedVersionId,priorVersionId,expectedRevision}:{planId:string;appliedVersionId:string;priorVersionId:string;expectedRevision:number}){
+    return repo.write(async()=>{
+      const plan=await db.v8Plans.get(planId),applied=await db.v8PlanVersions.get(appliedVersionId),prior=await db.v8PlanVersions.get(priorVersionId);
+      if(!plan||!applied||!prior||plan.deletedAt||plan.currentVersionId!==appliedVersionId||applied.planId!==planId||prior.planId!==planId||applied.basedOnVersionId!==priorVersionId||Date.now()-Date.parse(applied.createdAt)>10_000)throw new DomainError('CONFLICT','UNDO_WINDOW_EXPIRED');
+      await db.v8Plans.put({...plan,currentVersionId:priorVersionId});
+      return prior;
+    },expectedRevision);
+  }
+  return { ...lifecycle, snapshot, propose, adopt, start, recordSet, finish, substitute, applyCoachCandidate, undoAppliedCoachVersion };
 }
 

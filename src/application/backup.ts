@@ -1,3 +1,4 @@
+import {includeAssistantBackup} from '../persistence/assistant-conversations';
 import {migrateBodyProfile} from '../persistence/body-profile-migration';
 import type { BackupEnvelope, ExerciseSnapshot, ImportReport, PlanVersion, ReplaceConfirmation, SetRecord, ValidatedBackup, WorkoutSession } from '../domain/models';
 import { backupEnvelopeSchema } from '../domain/schemas';
@@ -9,6 +10,7 @@ import { repository, type Repository } from '../persistence/repository';
 import { synchronizeTrainingMemo } from './training-memory';
 import { projectDay } from '../domain/day-date-projection';
 import { prepareV8Migration, writeV8Library } from '../persistence/v8-migration';
+import { recoverAssistantSchedule } from '../persistence/assistant-schedule-migration';
 import Dexie from 'dexie';
 
 // UTF-8 file bytes, not characters. Candidate verified on synthetic desktop data;
@@ -81,13 +83,14 @@ function validateSession(session: WorkoutSession, sets: SetRecord[], versions: M
 }
 
 export function validateBackupEnvelope(value: unknown): BackupEnvelope {
-  if (typeof value === 'object' && value !== null && 'schemaVersion' in value && ![2,3,4,5,6,7,8,9,10].includes(value.schemaVersion as number)) {
-    throw new DomainError('BACKUP_VERSION_UNSUPPORTED', 'Unsupported JSON backup version; versions 2 through 10 are supported');
+  if (typeof value === 'object' && value !== null && 'schemaVersion' in value && ![2,3,4,5,6,7,8,9,10,11,12].includes(value.schemaVersion as number)) {
+    throw new DomainError('BACKUP_VERSION_UNSUPPORTED', 'Unsupported JSON backup version; versions 2 through 12 are supported');
   }
   const parsed = backupEnvelopeSchema.safeParse(value);
   if (!parsed.success) throw new DomainError('BACKUP_INVALID', `Invalid backup: ${parsed.error.message}`);
   const envelope = parsed.data;
   const data = envelope.data;
+  if(envelope.schemaVersion<11&&data.assistantConversations!==undefined)invalid('Assistant conversations require version 11');
   if(envelope.schemaVersion>=10&&!data.exerciseFavorites)invalid('Exercise favorites required');
   if(envelope.schemaVersion<10&&data.exerciseFavorites!==undefined)invalid('Exercise favorites require version 10');
   if(data.exerciseFavorites){distinct(data.exerciseFavorites.map(row=>row.id),'favorite exercise');if(data.exerciseFavorites.some(row=>!knownExerciseIds.has(row.id)))invalid('Unknown favorite exercise');}
@@ -322,8 +325,9 @@ export function createBackupService(repo: Repository) {
       const versions = await repo.db.planVersions.toArray();
       const previousMemo = await repo.db.trainingMemo.get(1);
       return validateBackupEnvelope({
-        format: 'fitness-local', schemaVersion: 10, catalogVersion: 1, exportedAt: new Date().toISOString(),
+        format: 'fitness-local', schemaVersion: 12, catalogVersion: 1, exportedAt: new Date().toISOString(),
         data: {
+          assistantConversations: includeAssistantBackup()?await repo.db.assistantConversations.toArray():[],
           exerciseFavorites: await repo.db.exerciseFavorites.toArray(),
           metadata, profiles: await repo.db.profiles.toArray(), plans: await repo.db.plans.toArray(), planVersions: versions,
           sessions, sets, scheduledWorkouts: await repo.db.scheduledWorkouts.toArray(), bodyWeights: await repo.db.bodyWeights.toArray(),
@@ -367,6 +371,9 @@ export function createBackupService(repo: Repository) {
     const envelope = validateBackupEnvelope(input.envelope);
     checkBackupBytes(new Blob([JSON.stringify(envelope)]).size);
     const v8 = envelope.data.v8 ?? await prepareV8Migration(envelope.data, new Date().toISOString());
+    const recovered = recoverAssistantSchedule(v8.planVersions,envelope.data.assistantConversations??[],new Date().toISOString());
+    const recoveredVersions = new Map(recovered.map(version=>[version.id,version]));
+    const restoredV8 = recovered.length?{...v8,planVersions:v8.planVersions.map(version=>recoveredVersions.get(version.id)??version)}:v8;
     let committedGeneration = 0;
     await repo.write(async () => {
       const before = await repo.readMetadata();
@@ -375,8 +382,9 @@ export function createBackupService(repo: Repository) {
       // Device reminder preferences and suppression ledger are not portable training facts.
       for (const table of repo.db.tables) if (table.name !== 'coachDevice') await table.clear();
       const data = envelope.data;
-      await repo.db.metadata.put({ ...data.metadata, schemaVersion: 12, revision: before.revision, dataRevision: before.dataRevision, restoreGeneration: committedGeneration, importedAt: new Date().toISOString() });
+      await repo.db.metadata.put({ ...data.metadata, schemaVersion: 14, revision: before.revision, dataRevision: before.dataRevision, restoreGeneration: committedGeneration, importedAt: new Date().toISOString() });
       await repo.db.profiles.bulkAdd(data.profiles.map(profile=>migrateBodyProfile(profile,data.guidedStates?.find(row=>row.id==='guided'),new Date().toISOString())));
+      await repo.db.assistantConversations.bulkAdd(data.assistantConversations??[]);
       await repo.db.exerciseFavorites.bulkAdd(data.exerciseFavorites ?? []);
       await repo.db.plans.bulkAdd(data.plans);
       await repo.db.planVersions.bulkAdd(data.planVersions);
@@ -390,7 +398,7 @@ export function createBackupService(repo: Repository) {
       await repo.db.mediaAssets.bulkAdd(data.mediaAssets);
       if (data.guidedStates) await repo.db.guidedStates.bulkAdd(data.guidedStates);
       await repo.db.trainingMemo.put(data.trainingMemo);
-      await writeV8Library(Dexie.currentTransaction!, v8);
+      await writeV8Library(Dexie.currentTransaction!, restoredV8);
       await repo.db.nutritionRecords.bulkAdd(data.nutritionRecords ?? []);
       await repo.db.activityImportReceipts.bulkAdd(data.activityImportReceipts ?? []);
       await synchronizeTrainingMemo(repo);

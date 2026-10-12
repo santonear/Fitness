@@ -1,3 +1,4 @@
+import {useFeature} from '../../useFeature';
 import {useEffect,useState} from 'react';
 import {adminRequest} from '../shared/api';
 import type {FinanceLanguage} from './copy';
@@ -25,8 +26,9 @@ export function statusCards(data:StatusData,language:FinanceLanguage){
 }
 /** aiEnabled must come from the control ledger, never the aiOperations monitoring flag. */
 export function StatusOverview({language='zh',aiEnabled}:{language?:FinanceLanguage;aiEnabled?:boolean}){
+ const assistantV2=useFeature('aiAssistantV2');
  const[data,setData]=useState<StatusData>({}),[loading,setLoading]=useState(true);
  useEffect(()=>{let active=true;const month=new Date().toISOString().slice(0,7);void Promise.allSettled([adminRequest<StatusData['ledger']>(`finance/ledger?month=${month}`),adminRequest<StatusData['config']>('finance/config'),adminRequest<StatusData['todos']>('todos'),adminRequest<StatusData['errors']>('quality/errors'),adminRequest<{aiEnabled:boolean;recoveryRequired:boolean}>('users/status')]).then(([ledger,config,todos,errors,control])=>{if(!active)return;setData({aiEnabled:control.status==='fulfilled'?control.value.aiEnabled:undefined,ledger:ledger.status==='fulfilled'?ledger.value:undefined,config:config.status==='fulfilled'?config.value:undefined,todos:todos.status==='fulfilled'?todos.value:undefined,errors:errors.status==='fulfilled'?errors.value:undefined});setLoading(false)});return()=>{active=false}},[]);
- return <section className="finance-status-overview" aria-label={copy[language].title} aria-busy={loading}>{statusCards({...data,aiEnabled:aiEnabled??data.aiEnabled},language).map(c=><article className="finance-status-item" key={c.id} data-status={c.status}><h2>{c.label}</h2><strong>{loading&&c.id!=='ai'?copy[language].loading:c.value}</strong><p>{c.note}</p></article>)}</section>;
+ return <section className="finance-status-overview" aria-label={copy[language].title} aria-busy={loading}>{statusCards({...data,aiEnabled:aiEnabled??data.aiEnabled},language).filter(c=>!assistantV2||['ai','errors'].includes(c.id)).map(c=><article className="finance-status-item" key={c.id} data-status={c.status}><h2>{c.label}</h2><strong>{loading&&c.id!=='ai'?copy[language].loading:c.value}</strong><p>{c.note}</p></article>)}</section>;
 }
 

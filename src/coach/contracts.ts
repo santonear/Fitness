@@ -6,15 +6,19 @@ const text = z.string().min(1).max(8000);
 const id = z.uuid();
 const count = z.number().int().nonnegative();
 const minutes = z.number().int().min(15).max(120);
+const adjustmentMinutes = z.number().int().min(10).max(120);
+const preferredDays = z.array(z.enum(['mon','tue','wed','thu','fri','sat','sun'])).max(7).optional();
 const target = z.strictObject({ planId: id, versionId: id, revision: count });
 const item = z.strictObject({ exerciseId: exerciseIdSchema, equipment: text, sets: z.number().int().min(1), target: setMetricsSchema });
-export const sessionTemplateSchema = z.strictObject({ id: text, name: text, estimatedMinutes: minutes, items: z.array(item).min(1) });
+export const sessionTemplateSchema = z.strictObject({ id: text, name: text, estimatedMinutes: adjustmentMinutes, items: z.array(item).min(1) });
 export const planProposalSchema = z.strictObject({
   goalText: text, weeklyTarget: z.number().int().min(1).max(7), scheduleOriginalText: z.string().max(8000),
+  preferredDays,
   sessionMinutes: minutes, templates: z.array(sessionTemplateSchema).min(1), reasons: z.tuple([text, text, text]),
 });
 const profile = z.strictObject({
   goalText: text, weeklyTarget: z.number().int().min(1).max(7), sessionMinutes: minutes,
+  preferredDays,
   scheduleOriginalText: text, place: z.enum(['home', 'gym', 'outdoor', 'mixed']), equipment: z.array(text),
   adultConfirmed: z.literal(true), cautions: z.array(z.enum(['knee', 'back', 'shoulder', 'wrist', 'other'])), cautionNote: text.optional(),
 });

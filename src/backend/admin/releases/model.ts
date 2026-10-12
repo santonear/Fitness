@@ -1,3 +1,4 @@
+import {assistantPromptRegistry} from '../../assistant/prompts';
 import { z } from 'zod';
 import { featureNames, type FeatureName } from '../../../domain/feature-flags';
 import { COACH_V8_PROMPT_VERSION, COACH_V8_PREVIOUS_PROMPT_VERSION } from '../../coach-v8-version';
@@ -5,9 +6,9 @@ import type { AdminEnvironment } from '../core/contracts';
 
 export const environmentSchema = z.enum(['preview', 'production']);
 export type ReleaseEnvironment = z.infer<typeof environmentSchema>;
-export const promptTasks = ['ONBOARD_PLAN', 'ADJUST_TODAY', 'MODIFY_PLAN', 'PERIOD_REVIEW'] as const;
-export const registeredPromptVersions = [COACH_V8_PROMPT_VERSION, COACH_V8_PREVIOUS_PROMPT_VERSION] as const;
-export const sensitiveFeatures = new Set<FeatureName>(['bodyProfile', 'systemNotifications', 'aiOperations', 'errorReports', 'anonymousUsage', 'nutrition', 'activityImport']);
+export const promptTasks = ['ONBOARD_PLAN', 'ADJUST_TODAY', 'MODIFY_PLAN', 'PERIOD_REVIEW', 'ASSISTANT_CHAT'] as const;
+export const registeredPromptVersions = [COACH_V8_PROMPT_VERSION, COACH_V8_PREVIOUS_PROMPT_VERSION, assistantPromptRegistry.current, assistantPromptRegistry.previous, assistantPromptRegistry.legacy] as const;
+export const sensitiveFeatures = new Set<FeatureName>(['aiAssistantV2', 'bodyProfile', 'systemNotifications', 'aiOperations', 'errorReports', 'anonymousUsage', 'nutrition', 'activityImport']);
 export const flagChangeSchema = z.object({ name: z.enum(featureNames), environment: environmentSchema, enabled: z.boolean(), confirmed: z.literal(true).optional() }).strict();
 export const promptChangeSchema = z.object({ task: z.enum(promptTasks), environment: environmentSchema, version: z.enum(registeredPromptVersions), confirmed: z.literal(true) }).strict();
 export const rollbackSchema = z.object({ environment: environmentSchema, expectedCurrent: z.string().regex(/^[a-zA-Z0-9._-]{1,80}$/), target: z.string().regex(/^[a-zA-Z0-9._-]{1,80}$/), confirmed: z.literal(true) }).strict();

@@ -3,7 +3,7 @@ import { DomainError } from '../../domain/errors';
 /** Normalized targets shared by base plans and legacy migration; not recorded workout facts. */
 export type DurationTarget = { reps: number } | { durationSeconds: number } | { distanceMeters: number };
 
-export function estimateTrainingMinutes(exercises: readonly { sets: readonly DurationTarget[] }[]): number {
+export function estimateTrainingMinutes(exercises: readonly { sets: readonly DurationTarget[] }[], minimum = 15): number {
   if (!exercises.length || exercises.some(exercise => !exercise.sets.length)) {
     throw new DomainError('INVALID', 'Duration estimation requires exercises and sets');
   }
@@ -16,10 +16,10 @@ export function estimateTrainingMinutes(exercises: readonly { sets: readonly Dur
       seconds += 'reps' in target ? Math.max(20, value * 3) : 'durationSeconds' in target ? value : value / 1.5;
     }
   }
-  return Math.max(15, Math.min(120, Math.ceil(seconds / 300) * 5));
+  return Math.max(minimum, Math.min(120, Math.ceil(seconds / 300) * 5));
 }
 
 /** One estimator for plan cards, drafts and local adjustments. */
-export function estimatePlannedMinutes(items: readonly { sets: number; target: DurationTarget }[]): number {
-  return estimateTrainingMinutes(items.map(item => ({ sets: Array.from({ length: item.sets }, () => item.target) })));
+export function estimatePlannedMinutes(items: readonly { sets: number; target: DurationTarget }[], minimum = 15): number {
+  return estimateTrainingMinutes(items.map(item => ({ sets: Array.from({ length: item.sets }, () => item.target) })), minimum);
 }

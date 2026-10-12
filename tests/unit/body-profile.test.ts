@@ -7,6 +7,14 @@ const now='2026-10-12T00:00:00Z';
 it.each(['男，34岁，167，70公斤','male, 34 years, 167 cm, 70 kg','男，34，167，70'])('parses explicit everyday body details: %s',text=>expect(parseBodyText(text)).toEqual({biologicalSex:'男性',age:34,heightCm:167,weightKg:70}));
 it('does not infer missing facts or clamp invalid values',()=>{expect(parseBodyText('我想增肌')).toEqual({});expect(parseBodyText('女，99岁，260厘米，0公斤')).toEqual({biologicalSex:'女性'});expect(parseBodyText('腰围80厘米')).toEqual({waistCm:80});expect(bodyComplete(parseBodyText('男，34岁'))).toBe(false)});
 it('accepts privacy choice and exact inclusive boundaries',()=>{expect(bodyComplete(parseBodyText('不愿透露，12岁，100厘米，30公斤'))).toBe(true);expect(bodyComplete(parseBodyText('女，70岁，230厘米，300公斤，腰围200厘米'))).toBe(true)});
+it('parses colloquial age, height, jin weight and waist without inventing fields',()=>{
+ expect(parseBodyText('34')).toEqual({age:34});
+ expect(parseBodyText('一米七五')).toEqual({heightCm:175});
+ expect(parseBodyText('1米75')).toEqual({heightCm:175});
+ expect(parseBodyText('164斤')).toEqual({weightKg:82});
+ expect(parseBodyText('腰围92')).toEqual({waistCm:92});
+ expect(parseBodyText('男，34岁，一米七五，164斤，腰围92')).toEqual({biologicalSex:'男性',age:34,heightCm:175,weightKg:82,waistCm:92});
+});
 it('projects legacy answers only once, leaves sources intact and requires confirmation',()=>{
  const profile={id:crypto.randomUUID(),revision:0,createdAt:now,updatedAt:now,locale:'zh' as const,timeZone:'Asia/Shanghai',units:'metric' as const,trainingPreferences:{updatedAt:now,heightCm:170,weightGrams:70000}};
  const guided={...emptyGuidedState(),onboarding:{id:crypto.randomUUID(),step:0,completed:false,updatedAt:now,answers:{age:{status:'answered' as const,value:34},biologicalSex:{status:'answered' as const,value:'男性'}}}};

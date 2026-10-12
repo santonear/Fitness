@@ -8,6 +8,11 @@ import type { ReviewFacts } from '../application/review/contracts';
 type Snapshot = Awaited<ReturnType<ReturnType<typeof createV8Workflow>['snapshot']>>;
 export type CoachRequestInput = { task: CoachRequest['task']; data: Snapshot; conversationId?: string; instruction?: string; templateId?: string;
  profile?: CoachProfile; facts?: ReviewFacts; kind?:'week'|'month'; body?:CoachRequest['body']; history?:string };
+/** Explicit long-term wording takes precedence over a simultaneous reference to today. */
+export const assistantPlanIntentDuringWorkout=(message:string)=>{
+ if(/只改今天|only (?:change )?today/i.test(message)&&!/以后|今后|每次|每周|from now on|every (?:time|week)/i.test(message))return false;
+ return /计划|以后|今后|每次|每周|\bplan\b|\bfrom now on\b|\bevery (?:time|week)\b/i.test(message);
+};
 /** Snapshot contains local versions only; never smuggle optional health fields into it. */
 export function buildCoachRequest(input:CoachRequestInput):CoachRequest|undefined {
  const {data,task}=input;
@@ -28,8 +33,8 @@ export function buildCoachRequest(input:CoachRequestInput):CoachRequest|undefine
  const copy=common.locale==='en'?en:zh;
  const instruction=input.instruction?.trim()||copy.defaultInstruction;
  if(task==='MODIFY_PLAN'){
-  const {goalText,weeklyTarget,scheduleOriginalText,sessionMinutes,templates}=data.version;
-  return coachRequestSchema.parse({...common,task,target,instruction,plan:{goalText,weeklyTarget,scheduleOriginalText,sessionMinutes,templates,reasons:['','',''].map(()=>copy.currentPlan)}});
+  const {goalText,weeklyTarget,preferredDays,scheduleOriginalText,sessionMinutes,templates}=data.version;
+  return coachRequestSchema.parse({...common,task,target,instruction,plan:{goalText,weeklyTarget,preferredDays,scheduleOriginalText,sessionMinutes,templates,reasons:['','',''].map(()=>copy.currentPlan)}});
  }
  const selectedId=input.templateId??data.active?.templateId??data.version.templates[0]?.id;
  const override=data.state?.nextWorkoutOverride;

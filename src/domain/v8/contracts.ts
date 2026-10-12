@@ -17,7 +17,10 @@ export interface PlannedItem { exerciseId: string; equipment: string; sets: numb
 export interface SessionTemplate { id: string; name: string; estimatedMinutes: number; items: PlannedItem[] }
 export interface PlanVersion {
   id: string; planId: string; versionNumber: number; goalText: string; weeklyTarget: number;
+  preferredDays?: ('mon'|'tue'|'wed'|'thu'|'fri'|'sat'|'sun')[];
   scheduleOriginalText: string; sessionMinutes: number; templates: SessionTemplate[];
+  /** Keeps the contaminated chat text when a migration restores the original answer. */
+  scheduleRecovery?: { raw: string; recoveredAt: string };
   createdAt: string; origin: 'onboard' | 'coach_change' | 'review_suggestion' | 'manual' | 'migrated';
   reviewRule?: 'time'|'progression'|'frequency'|'restart'|'discomfort';
   changeSummary: string[]; basedOnVersionId?: string;
@@ -44,6 +47,7 @@ export interface ActivityRecord { id: string; type: 'walk' | 'run' | 'cycle' | '
 export interface ReminderSetting { enabled: boolean; weekdays: number[]; time: string }
 export interface CoachProfile {
   goalText: string; weeklyTarget: number; sessionMinutes: number; scheduleOriginalText: string;
+  preferredDays?: ('mon'|'tue'|'wed'|'thu'|'fri'|'sat'|'sun')[];
   place: 'home' | 'gym' | 'outdoor' | 'mixed'; equipment: string[]; adultConfirmed: boolean;
   cautions: ('knee' | 'back' | 'shoulder' | 'wrist' | 'other')[]; cautionNote?: string; confirmedAt: string;
 }

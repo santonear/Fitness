@@ -56,13 +56,24 @@ function useController() {
   }
   setCoachOpen(true);
  }
+ function refreshCoachContext(next:Awaited<ReturnType<typeof workflow.snapshot>>){
+  if(!coachRequest)return;
+  const task=coachRequest.task==='ONBOARD_PLAN'?'MODIFY_PLAN':coachRequest.task;
+  const currentFacts=reviewKind==='month'?monthFacts:facts;
+  const updated=buildCoachRequest({...optionalCoach,conversationId:coachRequest.conversationId,task,data:next,templateId:coachRequest.task==='ADJUST_TODAY'?coachRequest.template.id:undefined,facts:currentFacts?{...currentFacts,improvements:[...currentFacts.improvements]}:undefined,kind:reviewKind});
+  // Applying a future-plan version does not rewrite an active workout. Keep
+  // the conversation attached to the new plan when its old workout snapshot
+  // can no longer be adjusted safely.
+  setCoachRequest(updated??(task==='ADJUST_TODAY'?buildCoachRequest({...optionalCoach,conversationId:coachRequest.conversationId,task:'MODIFY_PLAN',data:next}):undefined));
+  setCoachRevision(next.metadata.dataRevision);
+ }
  const [workoutValues,setWorkoutValues]=useState<Record<string,number>>({}),[focusIndex,setFocusIndex]=useState(0);
  const [ready,setReady] = useState(false); const draftKey = useRef(''), lock = useRef(false);
  const locale: 'zh'|'en' = data?.profile?.locale === 'en' ? 'en' : 'zh', t = locale === 'zh' ? zh : en;
  const observedCounts=useRef<{plans:number;started:number;completed:number}|undefined>(undefined);
  async function reload() {
   if(isFeatureEnabled('planLifecycle'))await workflow.purgeExpiredPlans();
-  const next = await workflow.snapshot(); setData(next);
+  const next = await workflow.snapshot();
   const counters={plans:next.versions.length,started:next.workouts.length,completed:next.workouts.filter(w=>['complete','partial','not_started'].includes(w.status)).length};
   if(observedCounts.current){for(const [key,event] of [['plans','plan_confirmed'],['started','workout_started'],['completed','workout_completed']] as const){const delta=counters[key]-observedCounts.current[key];if(delta>0)countUsage(event,delta);}}observedCounts.current=counters;
   const review = await createV8DataService(repository).getReviewWorkouts();
@@ -76,6 +87,8 @@ function useController() {
   const today=new Intl.DateTimeFormat('en-CA',{timeZone:input.timeZone,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
   const year=Number(today.find(p=>p.type==='year')!.value),month=Number(today.find(p=>p.type==='month')!.value);
   setMonthFacts(computeMonthFacts({...input,from:new Date(Date.UTC(year,month-1,1)).toISOString().slice(0,10),to:new Date(Date.UTC(year,month,0)).toISOString().slice(0,10)}));
+  // Publish the snapshot only when its assistant/review context is ready.
+  setData(next);
   return next;
  }
  async function run(action: () => Promise<void>) { if(lock.current)return; lock.current=true;setBusy(true);setError('');try{await action();await reload();}catch{reportSafeError('storage');setError(t.saveError);}finally{lock.current=false;setBusy(false);} }
@@ -100,7 +113,7 @@ function useController() {
  const start=(templateId?:string,manualId?:string)=>run(async()=>{const record=await workflow.start(templateId,manualId);setWorkoutValues({});setFocusIndex(0);navigate(`/workout/${record.id}`);});
  const startManual=(ids:string[],selection?:ManualSelection)=>run(async()=>{const record=await workflow.start(undefined,undefined,ids,selection);setWorkoutValues({});setFocusIndex(0);navigate(`/workout/${record.id}`);});
  const restartPlanning=()=>{setStep(0);setCandidate(undefined);setDraftDiscarded(false);navigate('/onboarding');};
- return {restartPlanning,draftDiscarded,setDraftDiscarded,deletedNotice,setDeletedNotice,deletePlan,undoPlan,coachInitialSend,sendHomeCoach,reviewKind,setReviewKind,coachOpen,setCoachOpen,coachRequest,coachRevision,coachTrigger,openCoach,completedWeeks,monthFacts,previousFacts,workoutValues,setWorkoutValues,focusIndex,setFocusIndex,data,facts,answers,setAnswers,step,setStep,candidate,setCandidate,busy,error,locale,t,slots,name,navigate,run,reload,start,startManual,appearance};
+ return {refreshCoachContext,restartPlanning,draftDiscarded,setDraftDiscarded,deletedNotice,setDeletedNotice,deletePlan,undoPlan,coachInitialSend,sendHomeCoach,reviewKind,setReviewKind,coachOpen,setCoachOpen,coachRequest,coachRevision,coachTrigger,openCoach,completedWeeks,monthFacts,previousFacts,workoutValues,setWorkoutValues,focusIndex,setFocusIndex,data,facts,answers,setAnswers,step,setStep,candidate,setCandidate,busy,error,locale,t,slots,name,navigate,run,reload,start,startManual,appearance};
 }
 const Context=createContext<ReturnType<typeof useController>|null>(null);
 export const useMainline=()=>{const value=useContext(Context);if(!value)throw new Error('Missing mainline provider');return value;};

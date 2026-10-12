@@ -86,12 +86,9 @@ export const adaptCoachResponse: AdaptCoachResponse = (input, raw) => {
   if (proposal) {
     validateTemplates(proposal.templates, request);
     if (request.task === 'ONBOARD_PLAN') {
-      requireCondition(proposal.templates.length >= 2 && proposal.templates.length <= 3, 'initial template count');
-      requireCondition(proposal.templates.every(template => template.estimatedMinutes === request.profile.sessionMinutes), 'initial template duration');
+      requireCondition(proposal.templates.length >= 1 && proposal.templates.length <= 3, 'initial template count');
       requireCondition(proposal.goalText === request.profile.goalText &&
-        proposal.scheduleOriginalText === request.profile.scheduleOriginalText &&
-        proposal.weeklyTarget === request.profile.weeklyTarget &&
-        proposal.sessionMinutes === request.profile.sessionMinutes, 'onboarding conditions changed');
+        proposal.scheduleOriginalText === request.profile.scheduleOriginalText, 'onboarding conditions changed');
     }
   }
   return response;

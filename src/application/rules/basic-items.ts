@@ -20,8 +20,8 @@ const choices = [
 export function basicItems(profile: CoachProfile, variant: number): { items: PlannedItem[]; missing: string[] } {
   const text = profile.equipment.join(' ');
   const gear = new Set(['none']);
-  if (/哑铃|dumbbell/i.test(text)) gear.add('dumbbell');
-  if (/弹力带|resistance.band/i.test(text)) gear.add('resistance-band');
+  if (/哑铃|dumbbell/i.test(text) && !/(?:没有|无|没带|不用|不使用)\s*哑铃|(?:no|without|don't have|do not have)\s+(?:any\s+)?dumbbells?/i.test(text)) gear.add('dumbbell');
+  if (/弹力带|resistance.band/i.test(text) && !/(?:没有|无|没带|不用|不使用)\s*(?:哑铃[和或、]\s*)?弹力带|(?:no|without|don't have|do not have)\s+(?:any\s+)?(?:dumbbells?\s+or\s+)?resistance.bands?/i.test(text)) gear.add('resistance-band');
   const pool = choices.flatMap(choice => {
     const exercise = exercises.find(e => e.name.en.toLowerCase() === choice.name.toLowerCase());
     return exercise && gear.has(exercise.equipment) && !profile.cautions.includes('other') && !choice.avoid.some(area => profile.cautions.includes(area as Area)) ? [{ ...choice, exercise }] : [];
@@ -33,8 +33,13 @@ export function basicItems(profile: CoachProfile, variant: number): { items: Pla
     if (options.length) selected.push(options[variant % options.length]); else missing.push(family);
   }
   for (const extra of pool) if (selected.length < 4 && !selected.includes(extra)) selected.push(extra);
+  if (variant % 2 && selected.length > 1) selected.push(selected.shift()!);
   const items: PlannedItem[] = selected.map(({ exercise }) => ({ exerciseId: exercise.id, equipment: exercise.equipment, sets: 2,
     target: exercise.metricType === 'duration' ? { metricType: 'duration', durationSeconds: 20 } : exercise.metricType === 'reps_load' ? { metricType: 'reps_load', reps: 8, loadGrams: 0 } : { metricType: 'reps', reps: 8 } }));
+  if (/瘦|减脂|减重|lose weight|fat loss|weight loss/i.test(profile.goalText) && !profile.cautions.some(area => ['knee','back','other'].includes(area))) {
+    const walking = exercises.find(exercise => exercise.name.en === 'Walking')!;
+    items.push({ exerciseId: walking.id, equipment: walking.equipment, sets: 1, target: { metricType: 'duration_distance', durationSeconds: 300 } });
+  }
   const range = profile.scheduleOriginalText.match(/(\d{2,3})\s*[–—~～至到-]\s*(\d{2,3})\s*(?:分钟|分鐘|minutes?|mins?)/i);
   const ceiling = range ? Math.min(120, Number(range[2])) : profile.sessionMinutes;
   const target = range ? Math.max(Number(range[1]), Math.min(ceiling, profile.sessionMinutes)) : profile.sessionMinutes;
@@ -42,8 +47,8 @@ export function basicItems(profile: CoachProfile, variant: number): { items: Pla
     for (const item of items) item.sets = 1;
     // Bound volume rather than manufacture extra sets to fill a long slot.
     while (estimatePlannedMinutes(items) < target) {
-      const minimum = Math.min(...items.map(item => item.sets));
-      const next = items.find(item => item.sets === minimum && item.sets < 5);
+      const minimum = Math.min(...items.filter(item => !('durationSeconds' in item.target && item.target.durationSeconds === 300)).map(item => item.sets));
+      const next = items.find(item => item.sets === minimum && item.sets < 4 && !('durationSeconds' in item.target && item.target.durationSeconds === 300));
       if (!next) break;
       next.sets++;
       if (estimatePlannedMinutes(items) > ceiling) { next.sets--; break; }

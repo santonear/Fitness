@@ -50,7 +50,6 @@
     "Your goal, in your words",
     "Your availability, in your words",
     "Your space and equipment, in your words",
-    "Age 18 or over",
     "Areas that need care"
   ],
   "draft": "Your first plan",
@@ -66,5 +65,7 @@
   "meters": "{count} metres",
   "kg": "{count} kg",
   "safetyExcluded": "Some exercises were excluded based on the areas you selected.",
-  "editCautions": "Edit areas needing care"
+  "editCautions": "Edit areas needing care",
+  "aiWorking": "Yaya is creating your plan…",
+  "basicHint": "Enable AI for a plan more closely tailored to you."
 }
