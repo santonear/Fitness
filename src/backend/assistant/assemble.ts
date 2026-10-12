@@ -61,7 +61,12 @@ function applyChanges(template:SessionTemplate,changes:Extract<AssistantIntent,{
   if(change.session&&change.session!==template.id&&change.session!==template.name&&change.session!=='今天')continue;
   const index=findExistingItem(template,change.from);
   const to=resolveAssistantExercise(change.to,candidates);
-  if(change.op==='add'&&to&&!template.items.some(item=>item.exerciseId===to.exercise.id)){template.items.push(newItem(to));applied++;}
+  if(change.op==='add'&&to&&!template.items.some(item=>item.exerciseId===to.exercise.id)){
+   const before=estimatePlannedMinutes(template.items),added=newItem(to);
+   template.items.push(added);
+   while(added.sets<4&&estimatePlannedMinutes(template.items)<=before)added.sets++;
+   applied++;
+  }
   else if(change.op==='add'&&!to)dropped.push('unknown_or_unsafe_exercise');
   if(index<0||locked.has(index))continue;
   if(change.op==='replace'&&to){template.items[index]=newItem(to);applied++;}
@@ -107,6 +112,10 @@ export function assembleAssistantIntent(raw:unknown,request:AssistantRequest):{a
   if(intent.params?.minutesPerSession)proposal.sessionMinutes=Math.max(15,intent.params.minutesPerSession);
   let applied=0;
   for(const template of proposal.templates){applied+=applyChanges(template,intent.changes,candidates,new Set(),dropped);coverPatterns(template,candidates);if(intent.params?.minutesPerSession)fitDuration(template,proposal.sessionMinutes);else recalculate(template);}
+  if(intent.changes.some(change=>change.op==='add')&&!intent.params?.minutesPerSession){
+   const lengths=proposal.templates.map(template=>template.estimatedMinutes).sort((a,b)=>a-b);
+   proposal.sessionMinutes=Math.round((lengths[Math.floor((lengths.length-1)/2)]+lengths[Math.ceil((lengths.length-1)/2)])/2);
+  }
   if(intent.changes.length&&!applied&&!intent.params?.daysPerWeek&&!intent.params?.minutesPerSession&&!intent.params?.preferredDays?.length)throw Error('NO_APPLICABLE_CHANGE');
   const changes=intent.changes.map(change=>`${change.op}: ${change.from??''} ${change.to??''}`.trim());
   return {attachment:coachResponseSchema.parse({...identity,type:'change_proposal',target:context.target,proposal,changes:changes.length?changes:['Adjusted the plan.']}),dropped,repaired:dropped.length>0};

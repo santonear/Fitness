@@ -72,6 +72,19 @@ describe('minimal assistant intent assembly',()=>{
   expect(result.attachment?.type).toBe('change_proposal');
   if(result.attachment?.type==='change_proposal')expect(result.attachment.proposal.templates[0].items[0].exerciseId).toBe(safe.exercise.id);
  });
+ it('recalculates plan duration after adding a safe push movement',()=>{
+  const initial=assembleAssistantIntent({kind:'plan_new',params:{}},onboard).attachment;
+  if(initial?.type!=='plan_proposal')throw Error('missing plan');
+  const request={...onboard,context:{...common,messages:[],task:'MODIFY_PLAN' as const,target:{planId:id,versionId:id,revision:0},instruction:'增加推类动作',plan:initial.proposal}} as AssistantRequest;
+  const existing=new Set(initial.proposal.templates.flatMap(template=>template.items.map(item=>item.exerciseId)));
+  const candidate=selectAssistantCandidates(request).find(row=>row.mode==='push'&&!existing.has(row.exercise.id));
+  if(!candidate)throw Error('missing safe push candidate');
+  const changed=assembleAssistantIntent({kind:'plan_modify',changes:[{op:'add',session:initial.proposal.templates[0].id,to:candidate.code}]},request).attachment;
+  if(changed?.type!=='change_proposal')throw Error('missing change');
+  expect(changed.proposal.templates[0].items.length).toBe(initial.proposal.templates[0].items.length+1);
+  expect(changed.proposal.templates[0].estimatedMinutes).toBeGreaterThan(initial.proposal.templates[0].estimatedMinutes);
+  expect(changed.proposal.sessionMinutes).toBeGreaterThanOrEqual(initial.proposal.sessionMinutes);
+ });
  it('rejects a plan change that cannot be applied rather than presenting an unchanged plan',()=>{
   const plan=assembleAssistantIntent({kind:'plan_new',params:{}},onboard).attachment;
   if(plan?.type!=='plan_proposal')throw Error('missing plan');

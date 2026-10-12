@@ -81,6 +81,12 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
     }
     else if (text.includes('<<ATTACH')) text = text.slice(0, text.indexOf('<<ATTACH')).trimEnd();
     if(version==='assistant-v3.0.0'&&attachmentKind==='none'&&/(?:介绍|讲讲|动作要领|怎么做|explain|how to do)/i.test(request.messages.at(-1)?.content??''))attachmentKind='exercise';
+    if(version==='assistant-v3.0.0'&&attachmentKind==='none'&&request.adultConfirmed&&request.context){
+      const latest=request.messages.at(-1)?.content??'';
+      const declined=/(?:不要|先别|不用|撤回|只聊|do not|don't|withdraw|just discuss|no plan)/i.test(latest);
+      if(!declined&&request.context.task==='ONBOARD_PLAN'&&/(?:帮我安排|给我.*(?:计划|全身训练)|help me plan|full.body workout|make a plan)/i.test(latest))attachmentKind='plan';
+      if(!declined&&request.context.task==='ADJUST_TODAY'&&/(?:今天.*(?:缩短|调整|训练)|shorter workout|workout today|adjust today)/i.test(latest))attachmentKind='today';
+    }
     if(foreignLanguage){text=localEnglishReply(request.messages.at(-1)?.content??'');emitted=0;proseNormalized=true;}
     if (!text.trim()) throw new AssistantProviderError('EMPTY_TEXT');
     if (text.length > emitted) yield { type: 'text_delta', delta: text.slice(emitted) };
