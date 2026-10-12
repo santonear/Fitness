@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { coachRequestSchema, coachResponseSchema, type CoachRequest } from '../coach/contracts';
 import { exerciseIdSchema, timeZoneSchema } from '../domain/schemas';
+import { EQUIPMENT, equipmentLabel } from '../catalog/taxonomy';
 
 export const ASSISTANT_VERSION = 'fitness-assistant-v2' as const;
 export const assistantRequestSchema = z.strictObject({
@@ -55,6 +56,19 @@ export function applyAssistantPreferences(context: CoachRequest, messages: Assis
   const digits: Record<string, number> = { '一':1,'二':2,'两':2,'三':3,'四':4,'五':5,'六':6,'七':7,once:1,twice:2,one:1,two:2,three:3,four:4,five:5,six:6,seven:7 };
   for (const message of messages.filter(m => m.role === 'user')) {
     const content = message.content;
+    const positiveMention = (pattern: RegExp) => [...content.matchAll(new RegExp(pattern.source,'gi'))].some(match => !/(?:not|no|without|不是|不在|没有|不用|不要)\s*$/i.test(content.slice(Math.max(0,(match.index ?? 0)-8),match.index)));
+    const places = ([['home', /在家|家里|居家|\bhome\b/],['gym', /健身房|\bgym\b/],['outdoor', /户外|\boutdoors?\b/]] as const).filter(([,pattern])=>positiveMention(pattern)).map(([place])=>place);
+    if(places.length) {
+      const place=places.length>1?'mixed':places[0];
+      // Availability in a previous location cannot be assumed at the newly named location.
+      if(copy.profile.place !== place) copy.profile.equipment=[];
+      copy.profile.place=place;
+    }
+    if(/没有器械|无器械|徒手|\b(?:no|without) equipment\b|\bbodyweight only\b/i.test(content)) copy.profile.equipment=['none'];
+    else {
+      const mentioned=EQUIPMENT.filter(key=>key!=='none' && [equipmentLabel(key,'zh'),equipmentLabel(key,'en')].some(label=>positiveMention(new RegExp(label.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')))));
+      if(mentioned.length) copy.profile.equipment=[...mentioned];
+    }
     const goal = content.match(/目标(?:改为|改成|是|为|：|:)\s*([^，。；\n]+)|\b(?:my\s+)?goal\s+(?:is|is now|changed to)\s+([^.;\n]+)/i);
     if (goal) copy.profile.goalText = (goal[1] ?? goal[2]).trim();
     const frequency = content.match(/(?:每周|一周)\s*([1-7一二两三四五六七])\s*次|\b(once|twice|one|two|three|four|five|six|seven|[1-7])\s*(?:times?\s*)?(?:a |per |each )?week\b/i);
@@ -87,5 +101,6 @@ export function sanitizeAssistantRequest(input: unknown): AssistantRequest {
   }
   return request;
 }
+
 
 

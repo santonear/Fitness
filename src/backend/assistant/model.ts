@@ -1,6 +1,6 @@
 import { sanitizeAssistantRequest, type AssistantCall, type AssistantEvent, type AssistantUsage } from '../../assistant/contracts';
 import { assistantPrompt, ASSISTANT_PROMPT_VERSION, type AssistantPromptMessage } from './prompts';
-import { repairAssistantAttachment } from './repair';
+import { repairAssistantAttachment, AttachmentValidationError } from './repair';
 import { checkCoachLanguage } from '../../application/rules/coach-language';
 
 export interface AssistantProvider {
@@ -8,13 +8,13 @@ export interface AssistantProvider {
   generateAttachment(messages: AssistantPromptMessage[], signal?: AbortSignal): Promise<{ content: unknown; usage?: AssistantUsage }>;
 }
 export type AssistantModelOptions = { provider: AssistantProvider; promptVersion?: string; signal?: AbortSignal };
-export type AssistantProviderFailureCode = 'HTTP_400' | 'HTTP_401' | 'HTTP_403' | 'HTTP_404' | 'HTTP_408' | 'HTTP_422' | 'HTTP_429' | 'HTTP_5XX' | 'HTTP_OTHER' | 'NETWORK_ERROR' | 'TIMEOUT' | 'INVALID_STREAM' | 'INVALID_OUTPUT' | 'ABORTED' | 'VALIDATION_FAILED' | 'COACH_LANGUAGE' | 'EMPTY_TEXT' | 'TEXT_LIMIT' | 'PROMPT_BUILD_FAILED' | 'INVALID_PROMPT_VERSION';
+export type AssistantProviderFailureCode = 'HTTP_400' | 'HTTP_401' | 'HTTP_403' | 'HTTP_404' | 'HTTP_408' | 'HTTP_422' | 'HTTP_429' | 'HTTP_5XX' | 'HTTP_OTHER' | 'NETWORK_ERROR' | 'TIMEOUT' | 'INVALID_STREAM' | 'INVALID_OUTPUT' | 'ABORTED' | 'VALIDATION_FAILED' | 'COACH_LANGUAGE' | 'EMPTY_TEXT' | 'TEXT_LIMIT' | 'PROMPT_BUILD_FAILED' | 'INVALID_PROMPT_VERSION' | AttachmentValidationError['code'];
 export class AssistantProviderError extends Error {
   constructor(public readonly code: AssistantProviderFailureCode) { super(code); }
 }
 function failureCode(error: unknown, signal?: AbortSignal): AssistantProviderFailureCode {
   if (signal?.aborted) return signal.reason instanceof DOMException && signal.reason.name === 'TimeoutError' ? 'TIMEOUT' : 'ABORTED';
-  return error instanceof AssistantProviderError ? error.code : 'VALIDATION_FAILED';
+  return error instanceof AssistantProviderError || error instanceof AttachmentValidationError ? error.code : 'VALIDATION_FAILED';
 }
 function publicFailure(code: AssistantProviderFailureCode) { return code === 'NETWORK_ERROR' ? 'NETWORK_ERROR' : code === 'TIMEOUT' ? 'TIMEOUT' : code === 'ABORTED' ? 'ABORTED' : 'MODEL_UNAVAILABLE'; }
 function buildPrompt(...args: Parameters<typeof assistantPrompt>) {
@@ -73,20 +73,24 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
     return;
   }
   yield { type: 'attachment_pending' };
+  let retryFailure = '';
   for (let attempt = 0; attempt < 2; attempt++) {
     const call: AssistantCall = { stage: 'attachment', result: 'failed' };
     calls.push(call);
     try {
       if (options.signal?.aborted) throw new Error('ABORTED');
-      const generated = await options.provider.generateAttachment(buildPrompt(request, 'attachment', version, text, attempt ? 'ATTACHMENT_VALIDATION_FAILED: use exact schema, catalog, context identity and task' : undefined), options.signal);
+      const generated = await options.provider.generateAttachment(buildPrompt(request, 'attachment', version, text, attempt ? `${retryFailure}: use exact schema, catalog, context identity and task; do not omit requested attachment` : undefined, attachmentKind), options.signal);
       Object.assign(call, generated.usage);
       const checked = repairAssistantAttachment(generated.content, request);
+      const expectedType = ({plan:'plan_proposal',today:'today_adjustment',change:'change_proposal',exercise:'exercise_info',review:'review_summary'} as Record<string,string>)[attachmentKind];
+      if(!checked.attachment || checked.attachment.type !== expectedType) throw new AssistantProviderError('INVALID_OUTPUT');
       call.result = checked.repaired || attempt ? 'repaired' : 'success';
       if (checked.attachment) yield { type: 'attachment', attachment: checked.attachment };
       yield { type: 'done', success: true, usage: usage(), calls, promptVersion: version, result: checked.repaired || attempt || proseNormalized ? 'repaired' : 'success' };
       return;
     } catch (error) {
       call.failureCode = failureCode(error, options.signal);
+      retryFailure = error instanceof AttachmentValidationError ? error.feedback : call.failureCode;
       console.warn('assistant_provider_failure', { stage: 'attachment', code: call.failureCode });
       if (options.signal?.aborted) break;
       if (error instanceof AssistantProviderError && !['INVALID_OUTPUT', 'INVALID_STREAM'].includes(error.code)) break;
@@ -156,3 +160,5 @@ export function createAssistantProvider(options: { apiKey: string; baseUrl: stri
     },
   };
 }
+
+

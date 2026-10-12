@@ -33,6 +33,28 @@ describe('assistant v2 model', () => {
     expect(events.at(-1)).toMatchObject({ success: true, result: 'repaired' });
     expect(events.at(-1)).toMatchObject({calls:[{result:'success'},{result:'failed'},{stage:'attachment',result:'repaired'}]});
   });
+  it('does not report success when promised attachment is replaced with null',async () => {
+    const events=await collect({...request,context},provider(['invalid',{attachment:null}]));
+    expect(events.at(-1)).toMatchObject({success:false,result:'attachment_failed'});
+  });
+  it('passes bounded field diagnostics without invalid values into the one attachment retry',async () => {
+    const prompts:string[]=[];const model=provider();let call=0;
+    model.generateAttachment=async messages=>{prompts.push(JSON.stringify(messages));return {content:call++?{attachment}:{...attachment,template:{...attachment.template,items:[{...attachment.template.items[0],sets:'PRIVATE_INVALID_VALUE'}]}},usage};};
+    const events=await collect({...request,context},model);
+    expect(events.at(-1)).toMatchObject({success:true,result:'repaired'});
+    expect(prompts[1]).toContain('template.items.0.sets');
+    expect(prompts[1]).toContain('expected number');
+    expect(prompts[1]).not.toContain('PRIVATE_INVALID_VALUE');
+  });
+  it.each(['Gym, twice weekly, 20 minutes each. Help me plan','健身房，每周两次，每次20分钟，帮我安排'])('latest place overrides prior home snapshot without inventing equipment: %s',content=>{
+    const {target:_target,template:_template,instruction:_instruction,...common}=context;
+    const input={...request,messages:[{role:'user' as const,content}],context:{...common,task:'ONBOARD_PLAN' as const,profile:{goalText:'fitness',weeklyTarget:3,sessionMinutes:40,scheduleOriginalText:'old',place:'home' as const,equipment:['At home without equipment'],adultConfirmed:true as const,cautions:['knee' as const]}}};
+    const clean=sanitizeAssistantRequest(input);
+    expect(clean.context).toMatchObject({profile:{place:'gym',equipment:[],cautions:['knee']}});
+    expect(assistantPrompt(clean,'text').at(-1)).toEqual({role:'user',content});
+    const withDumbbells=sanitizeAssistantRequest({...input,messages:[{role:'user',content:'在家，只有哑铃'}]});
+    expect(withDumbbells.context).toMatchObject({profile:{place:'home',equipment:['dumbbell'],cautions:['knee']}});
+  });
   it('marks a mechanically repaired first attachment call in usage records',async () => {
     const candidate=structuredClone(attachment);candidate.template.items[0].sets=200;
     const events=await collect({...request,context},provider([{attachment:candidate}]));
@@ -66,7 +88,7 @@ describe('assistant v2 model', () => {
     const input={...request,context:{...context,workoutId:id,history:'PRIVATE_HISTORY'},consent:{body:false,history:false},currentWorkout};
     const clean=sanitizeAssistantRequest(input);
     expect(clean.currentWorkout).toEqual(currentWorkout); expect(clean.context?.history).toBeUndefined();
-    const payload=JSON.parse(assistantPrompt(clean,'text').at(-1)!.content);
+    const payload=JSON.parse(assistantPrompt(clean,'text')[1].content);
     expect(payload.currentWorkout).toEqual(currentWorkout); expect(JSON.stringify(payload)).not.toContain('PRIVATE_');
     expect(assistantRequestSchema.safeParse({...input,currentWorkout:{...currentWorkout,notes:'not permitted'}}).success).toBe(false);
     expect(assistantRequestSchema.safeParse({...input,context}).success).toBe(false);
@@ -76,7 +98,7 @@ describe('assistant v2 model', () => {
     expect(assistantRequestSchema.safeParse({...input,currentWorkout:{...currentWorkout,completedSets:[{itemIndex:0,setIndex:0,exerciseId:EXERCISE_IDS.walking,durationSeconds:60}]}}).success).toBe(true);
     expect(repairAssistantAttachment({...attachment,workoutId:id},clean).attachment?.type).toBe('today_adjustment');
     const altered=structuredClone(attachment);altered.template.items[0].sets=3;
-    expect(()=>repairAssistantAttachment({...altered,workoutId:id},clean)).toThrow('COMPLETED_ITEM_CHANGED');
+    expect(()=>repairAssistantAttachment({...altered,workoutId:id},clean)).toThrow('ATTACHMENT_CONDITIONS');
   });
   it('limits context and enforces user last message', () => {
     expect(assistantRequestSchema.safeParse({ ...request, messages: Array(21).fill(request.messages[0]) }).success).toBe(false);
@@ -172,6 +194,8 @@ describe('assistant v2 model', () => {
     expect(outbound.map(call=>({stream:call.stream,max_tokens:call.max_tokens}))).toEqual([{stream:true,max_tokens:1200},{stream:false,max_tokens:expected}]);
   });
 });
+
+
 
 
 
