@@ -7,6 +7,9 @@ const endpoint = 'https://fitness-ai-assistant-preview.initdevl.workers.dev/api/
 const requested = new URL(process.env.ASSISTANT_EVAL_URL ?? endpoint);
 if (requested.href !== endpoint) throw Error('PREVIEW_ENDPOINT_ONLY');
 const execute = process.argv.includes('--execute');
+// A new explicitly selected code revision starts a separate evaluation, never overwrites prior attempts.
+const evaluationRevision = process.env.ASSISTANT_EVAL_REVISION ?? 'baseline';
+if (!/^[a-zA-Z0-9._-]{1,40}$/.test(evaluationRevision)) throw Error('INVALID_EVALUATION_REVISION');
 const maxScenarios = Number(process.env.ASSISTANT_EVAL_MAX_SCENARIOS ?? 60);
 if (!Number.isInteger(maxScenarios) || maxScenarios < 1 || maxScenarios > 60) throw Error('INVALID_SCENARIO_LIMIT');
 const totalBudgetCny = 5, maxOutputTokens = 1200, maxAttachmentTokens = 3000, maxCalls = 3;
@@ -44,10 +47,11 @@ try {
  let stopReason = 'completed', executed = 0, attemptedThisRun = 0;
  for (const scenario of assistantV2Scenarios) {
   if (execute && attemptedThisRun >= maxScenarios) { stopReason = 'requested-batch-complete'; break; }
-  if (journal.entries.some(entry => entry.scenarioId === scenario.scenarioId)) continue; // No automatic reruns, even failed calls.
+  const journalScenarioId = evaluationRevision === 'baseline' ? scenario.scenarioId : `${scenario.scenarioId}@${evaluationRevision}`;
+  if (journal.entries.some(entry => entry.scenarioId === journalScenarioId)) continue; // No automatic reruns, even failed calls.
   const requestId = randomUUID(), conversationId = randomUUID(), locale = scenario.locale;
   const common = { version: 'fitness-coach-v8', requestId, conversationId, restoreGeneration: 0, inputSnapshot: 'synthetic-eval', sendConfirmation: 'synthetic-fixtures-only', locale, timeZone: 'Asia/Shanghai', adultConfirmed: true, messages: [] };
-  const profile = localProfile({ goalText: locale === 'zh' ? '减脂并保持力量' : 'Fat loss and strength', scheduleOriginalText: locale === 'zh' ? '工作日两次、周末一次，每次40分钟左右' : 'weekdays twice, weekends once, 40 minutes', placeEquipmentText: locale === 'zh' ? '在家，没有器械' : 'At home without equipment', adultConfirmed: true, cautions: [] });
+  const profile = localProfile({ goalText: locale === 'zh' ? '减脂并保持力量' : 'Fat loss and strength', scheduleOriginalText: locale === 'zh' ? '工作日两次、周末一次，每次40分钟左右' : 'weekdays twice, weekends once, 40 minutes', placeEquipmentText: scenario.id === 'plan-modification' ? (locale === 'zh' ? '在家，有哑铃' : 'At home with dumbbells') : (locale === 'zh' ? '在家，没有器械' : 'At home without equipment'), adultConfirmed: true, cautions: [] });
   const { confirmedAt: _confirmedAt, ...wireProfile } = profile;
   const plan = basicProposal(profile, locale), target = { planId: randomUUID(), versionId: randomUUID(), revision: 1 };
   let context: unknown;
@@ -55,16 +59,16 @@ try {
   if (task === 'ONBOARD_PLAN') context = { ...common, task, profile: wireProfile };
   if (task === 'MODIFY_PLAN') context = { ...common, task, target, plan, instruction: scenario.message };
   if (task === 'ADJUST_TODAY') context = { ...common, task, target, template: plan.templates[0], instruction: scenario.message };
-  if (task === 'PERIOD_REVIEW') context = { ...common, task, target, kind: 'week', facts: { from: '2026-10-05', to: '2026-10-11', complete: 0, partial: 0, notStarted: 0, movementCount: 0, missingCount: 0, activityMinutes: 0, trainingSeconds: 0, activityCounts: { walk:0,run:0,cycle:0,swim:0,yoga:0,stairs:0,other:0 }, reasonCounts: { time:0,fatigue:0,discomfort:0,equipment_busy:0,not_today:0,other:0 }, hasBodyWeight: false, incompleteTiming: { weekday: zeroBand(), weekend: zeroBand() }, improvements: [] } };
+  if (task === 'PERIOD_REVIEW') context = { ...common, task, target, kind: 'week', facts: { from: '2026-10-05', to: '2026-10-11', complete: 2, partial: 1, notStarted: 0, movementCount: 3, missingCount: 0, activityMinutes: 0, trainingSeconds: 5400, activityCounts: { walk:0,run:0,cycle:0,swim:0,yoga:0,stairs:0,other:0 }, reasonCounts: { time:0,fatigue:0,discomfort:0,equipment_busy:0,not_today:0,other:0 }, hasBodyWeight: false, incompleteTiming: { weekday: zeroBand(), weekend: zeroBand() }, improvements: [] } };
   const request = assistantRequestSchema.parse({ version: 'fitness-assistant-v2', requestId, conversationId, locale, timeZone: 'Asia/Shanghai', adultConfirmed: !scenario.id.startsWith('minor'), messages: [{ role: 'user', content: scenario.message }], ...(context ? { context } : {}), consent: { body: false, history: false } });
   // Byte fallback tokenization cannot exceed UTF-8 bytes. NUL maximizes JSON escaping of the server's 16000-character text cap.
   const effectiveRequest = sanitizeAssistantRequest(request);
-  const promptBytes = ['text', 'attachment', 'attachment'].map((stage, i) => Buffer.byteLength(JSON.stringify(assistantPrompt(effectiveRequest, stage, ASSISTANT_PROMPT_VERSION, i ? '\0'.repeat(16000) : '', i === 2 ? 'ATTACHMENT_VALIDATION_FAILED: use exact schema, catalog, context identity and task' : undefined)), 'utf8') + 1024);
+  const promptBytes = ['text', 'attachment', 'attachment'].map((stage, i) => Buffer.byteLength(JSON.stringify(assistantPrompt(effectiveRequest, stage, ASSISTANT_PROMPT_VERSION, i ? '\0'.repeat(16000) : '', i === 2 ? '\0'.repeat(1000) : undefined, i ? 'exercise' : undefined)), 'utf8') + 1024);
   const reservedCny = (promptBytes.reduce((sum, bytes) => sum + bytes, 0) * inputPrice + (maxOutputTokens + 2 * maxAttachmentTokens) * outputPrice) / 1e6;
-  const preflight = { scenarioId: scenario.scenarioId, task: task ?? 'chat', promptInputTokenUpperBounds: promptBytes, outputTokensPerCall: [maxOutputTokens, maxAttachmentTokens, maxAttachmentTokens], reservedCny, request };
+  const preflight = { scenarioId: scenario.scenarioId, evaluationRevision, task: task ?? 'chat', promptInputTokenUpperBounds: promptBytes, outputTokensPerCall: [maxOutputTokens, maxAttachmentTokens, maxAttachmentTokens], reservedCny, request };
   if (!execute) { records.push(preflight); continue; }
   if (spent() + reservedCny > totalBudgetCny) { stopReason = 'budget-reservation-would-exceed-5-cny'; break; }
-  const entry: Entry = { scenarioId: scenario.scenarioId, requestId, reservedCny, status: 'reserved' };
+  const entry: Entry = { scenarioId: journalScenarioId, requestId, reservedCny, status: 'reserved' };
   journal.entries.push(entry); attemptedThisRun++; await save(); // Crash or unknown usage retains the complete hold.
   const started = performance.now(); let events: any[] = [], httpStatus: number | undefined;
   try {
