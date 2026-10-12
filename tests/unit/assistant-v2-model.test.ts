@@ -18,14 +18,14 @@ function provider(outputs: unknown[] = [{ attachment: null }]): AssistantProvide
 async function gather<T>(source: AsyncIterable<T>): Promise<T[]> { const result: T[] = []; for await (const value of source) result.push(value); return result; }
 async function collect(input = request, model = provider()) { return gather(runAssistantModel(input, { provider: model, promptVersion:'assistant-v2.1.0' })); }
 describe('assistant v2 model', () => {
-  it('routes an explicit existing-plan replacement to a real card despite a text-only model answer',async()=>{
+  it.each(['none','change'])('routes an explicit replacement and suppresses contradictory text with marker %s',async(marker)=>{
     const plan=basicProposal({goalText:'力量',weeklyTarget:3,sessionMinutes:30,scheduleOriginalText:'每周三次',place:'home',equipment:['none','dumbbell'],adultConfirmed:true,cautions:['knee'],confirmedAt:new Date().toISOString()},'zh');
     if(!plan)throw Error('missing plan');
     const carry=exercises.find(row=>row.name.zh==='哑铃农夫行走');if(!carry)throw Error('missing carry');
     plan.templates[0].items[0]={exerciseId:carry.id,equipment:carry.equipment,sets:2,target:{metricType:'reps_load',reps:8,loadGrams:0}};
     const {template:_template,...common}=context;
     const input:AssistantRequest={...request,messages:[{role:'user',content:'把计划里的农夫行走换掉'}],context:{...common,task:'MODIFY_PLAN',plan,target:context.target}};
-    const model=provider([{kind:'none'}]);model.streamText=async function*(){yield {delta:'计划里没有农夫行走。<<ATTACHMENT:none>>',usage};};
+    const model=provider([{kind:'none'}]);model.streamText=async function*(){yield {delta:`计划里没有农夫行走。<<ATTACHMENT:${marker}>>`,usage};};
     const events=await gather(runAssistantModel(input,{provider:model,promptVersion:'assistant-v3.1.0'}));
     const card=events.find(event=>event.type==='attachment');
     expect(card?.type==='attachment'&&card.attachment.type==='change_proposal'&&card.attachment.proposal.templates[0].items[0].exerciseId!==carry.id).toBe(true);

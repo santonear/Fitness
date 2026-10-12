@@ -109,7 +109,10 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
       if(!declined&&request.context.task==='ADJUST_TODAY'&&/(?:今天.*(?:缩短|调整|训练)|shorter workout|workout today|adjust today)/i.test(latest))attachmentKind='today';
     }
     if(foreignLanguage){text=localEnglishReply(request.messages.at(-1)?.content??'');emitted=0;proseNormalized=true;}
-    if(holdForCard&&/(?:已(?:经)?(?:按|换成|替换成|保存|记住|应用)|我(?:按.+替换|会记住)|一并替换成|(?:I|we)(?:'ve| have)?\s+(?:replaced|saved|remembered|applied))/i.test(text)){
+    if(holdForCard&&['today','change'].includes(attachmentKind)){
+      // A model's prose cannot know the validated diff. The code-generated
+      // summary follows only after assembly, so do not stream a contradictory
+      // denial or an unconfirmed promise before the card exists.
       text=request.locale==='zh'?'我先整理一份可预览的调整。':'I will prepare an adjustment for you to review.';
       proseNormalized=true;
     }
