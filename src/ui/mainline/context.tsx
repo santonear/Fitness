@@ -60,7 +60,11 @@ function useController() {
   if(!coachRequest)return;
   const task=coachRequest.task==='ONBOARD_PLAN'?'MODIFY_PLAN':coachRequest.task;
   const currentFacts=reviewKind==='month'?monthFacts:facts;
-  setCoachRequest(buildCoachRequest({...optionalCoach,conversationId:coachRequest.conversationId,task,data:next,templateId:coachRequest.task==='ADJUST_TODAY'?coachRequest.template.id:undefined,facts:currentFacts?{...currentFacts,improvements:[...currentFacts.improvements]}:undefined,kind:reviewKind}));
+  const updated=buildCoachRequest({...optionalCoach,conversationId:coachRequest.conversationId,task,data:next,templateId:coachRequest.task==='ADJUST_TODAY'?coachRequest.template.id:undefined,facts:currentFacts?{...currentFacts,improvements:[...currentFacts.improvements]}:undefined,kind:reviewKind});
+  // Applying a future-plan version does not rewrite an active workout. Keep
+  // the conversation attached to the new plan when its old workout snapshot
+  // can no longer be adjusted safely.
+  setCoachRequest(updated??(task==='ADJUST_TODAY'?buildCoachRequest({...optionalCoach,conversationId:coachRequest.conversationId,task:'MODIFY_PLAN',data:next}):undefined));
   setCoachRevision(next.metadata.dataRevision);
  }
  const [workoutValues,setWorkoutValues]=useState<Record<string,number>>({}),[focusIndex,setFocusIndex]=useState(0);
