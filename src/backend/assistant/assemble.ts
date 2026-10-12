@@ -1,4 +1,5 @@
 import {diffTemplates} from '../../assistant/template-diff';
+import {sameExerciseFamily} from '../../catalog/exercise-family';
 import { assistantIntentSchema, type AssistantAttachment, type AssistantIntent, type AssistantRequest } from '../../assistant/contracts';
 import { basicProposal } from '../../application/v8-workflow';
 import { estimatePlannedMinutes } from '../../application/rules/duration-estimate';
@@ -103,7 +104,7 @@ function namedPlanScope(request:AssistantRequest){
  }
  return {templates,items};
 }
-function applyChanges(template:SessionTemplate,changes:Extract<AssistantIntent,{kind:'plan_modify'}>['changes'],candidates:Candidate[],locked=new Set<number>(),dropped:string[]=[]){
+function applyChanges(template:SessionTemplate,changes:Extract<AssistantIntent,{kind:'plan_modify'}>['changes'],candidates:Candidate[],locked=new Set<number>(),dropped:string[]=[],existingItems:PlannedItem[]=template.items){
  let applied=0;
  for(const change of changes){
   if(change.session&&change.session!==template.id&&change.session!==template.name&&change.session!=='今天')continue;
@@ -111,8 +112,9 @@ function applyChanges(template:SessionTemplate,changes:Extract<AssistantIntent,{
   const previous=index>=0?exercises.find(row=>row.id===template.items[index].exerciseId):undefined;
   const matched=resolveAssistantExercise(change.to,candidates);
   const replacementModes=previous?assistantMovement(previous)==='carry'?['carry','pull','core']: [assistantMovement(previous)]:[];
-  const to=matched&&matched.exercise.id!==previous?.id?matched:previous?candidates.find(row=>replacementModes.includes(row.mode)&&row.exercise.id!==previous.id&&!template.items.some(item=>item.exerciseId===row.exercise.id)):matched;
-  if(change.op==='add'&&to&&!template.items.some(item=>item.exerciseId===to.exercise.id)){
+  const compatible=(row:Candidate)=>replacementModes.includes(row.mode)&&(assistantMovement(previous!)!=='push'||['chest','shoulders','upper-arms'].includes(catalogMetadata.get(row.exercise.id)?.bodyPart??''))&&!existingItems.some(item=>item.exerciseId!==previous!.id&&sameExerciseFamily(exercises.find(e=>e.id===item.exerciseId)!,row.exercise));
+  const to=previous?(matched&&matched.exercise.id!==previous.id&&compatible(matched)?matched:candidates.find(row=>row.exercise.id!==previous.id&&compatible(row))):matched;
+  if(change.op==='add'&&to&&!existingItems.some(item=>sameExerciseFamily(exercises.find(e=>e.id===item.exerciseId)!,to.exercise))){
    const before=estimatePlannedMinutes(template.items),added=newItem(to);
    template.items.push(added);
    while(added.sets<4&&estimatePlannedMinutes(template.items)<=before)added.sets++;
@@ -180,7 +182,7 @@ export function assembleAssistantIntent(raw:unknown,request:AssistantRequest):{a
   if(scope.templates.size)for(const change of changesToApply)if(!change.session)change.session=[...scope.templates][0];
   if(/加.*(?:练腿|腿部|下肢)|add.*(?:leg|lower.body)/i.test(request.messages.at(-1)?.content??'')){
    const safe=lowerBodyAddition(request);
-   for(const change of changesToApply)if(change.op==='add'&&!resolveAssistantExercise(change.to,candidates)&&safe)change.to=safe.code;
+   for(const change of changesToApply)if(change.op==='add'){const choice=resolveAssistantExercise(change.to,candidates);if(!choice||context.plan.templates.some(template=>template.items.some(item=>sameExerciseFamily(exercises.find(e=>e.id===item.exerciseId)!,choice.exercise))))change.to=safe?.code;}
   }
   for(const inferred of explicitReplacements){
    if(!changesToApply.some(change=>change.op==='replace'&&change.session===inferred.session&&normal(change.from??'')===normal(inferred.from??'')))changesToApply.push(inferred);
@@ -193,7 +195,7 @@ export function assembleAssistantIntent(raw:unknown,request:AssistantRequest):{a
   for(const template of proposal.templates){
    if(scope.templates.size&&!scope.templates.has(template.id))continue;
    const filtered=changesToApply.filter(change=>!scope.templates.size||!change.session||scope.templates.has(change.session));
-   applyChanges(template,filtered,candidates,new Set(),dropped);
+   applyChanges(template,filtered,candidates,new Set(),dropped,context.plan.templates.flatMap(t=>t.items));
    if(!scoped)coverPatterns(template,candidates);
    if(explicitMinutes&&!scoped)fitDuration(template,proposal.sessionMinutes);else recalculate(template);
    syncTemplateName(template,request.locale);

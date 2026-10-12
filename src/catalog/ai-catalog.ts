@@ -53,6 +53,8 @@ export function assistantMovement(exercise: typeof exercises[number]): Assistant
   if(/carry|farmer/.test(name))return 'carry';
   if(/walk|run|cycle|bike|elliptical|cardio|步行|跑步/.test(name))return 'cardio';
   if(/stretch|mobility|yoga|拉伸|瑜伽/.test(name))return 'mobility';
+  if(['upper-legs','lower-legs'].includes(meta?.bodyPart??''))return /calf.raise|提踵/.test(name)?'hinge':/squat|lunge|step.up|leg.press/.test(name)?'squat':'hinge';
+  if(meta?.bodyPart==='core'||/plank|crunch|dead.bug/.test(name))return 'core';
   if(/bridge|deadlift|hip.thrust|hinge|good.morning/.test(name))return 'hinge';
   if(/squat|lunge|step.up|leg.press/.test(name))return 'squat';
   if(/row|pull|chin.up|lat.pulldown/.test(name)||meta?.bodyPart==='back')return 'pull';

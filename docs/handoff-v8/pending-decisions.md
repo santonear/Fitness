@@ -226,3 +226,5 @@ RepDB官方证据：[数据许可证](https://github.com/RepDB/exercise-dataset/
 - 2026-10-13 第三轮第6步（待确认、未实施）：当用户指定的动作不在当前计划中，拟只说明该动作当前未安排，不出修改卡；“以后不安排”是否单独写入长期偏好需要用户确认。拟中文文案：当前计划里没有这个动作。涉及 assemble.ts、model.ts、assistant.ts；本次保持既有 NO_CHANGE 行为，不新增话术。
 
 - 2026-10-13 第三轮：点名训练单与动作时，仅对指定范围执行模型或规则变更，不自动补齐动作模式；未点名训练单而点名动作则覆盖含该动作的全部训练单。差异按动作出现次数对齐，时长不计入动作项数；重复变更文案合并。理由：范围忠实于用户要求，避免删除后位置移动被误识别为替换。文件：assemble.ts、template-diff.ts、AssistantAttachment.tsx。
+
+- 2026-10-13 第四轮动作分类：upper-legs/lower-legs 先于通用 push/pull 名称匹配；提踵归现有 hinge，下肢深蹲类仍为 squat；核心 leg raise 归 core，肩部侧/前平举仍为 push。理由：复用现有模式，不让名称 raise 跨部位误配。文件：ai-catalog.ts、assemble.ts。
