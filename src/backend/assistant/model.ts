@@ -8,7 +8,7 @@ export interface AssistantProvider {
   generateAttachment(messages: AssistantPromptMessage[], signal?: AbortSignal): Promise<{ content: unknown; usage?: AssistantUsage }>;
 }
 export type AssistantModelOptions = { provider: AssistantProvider; promptVersion?: string; signal?: AbortSignal };
-export type AssistantProviderFailureCode = 'HTTP_400' | 'HTTP_401' | 'HTTP_403' | 'HTTP_404' | 'HTTP_408' | 'HTTP_422' | 'HTTP_429' | 'HTTP_5XX' | 'HTTP_OTHER' | 'NETWORK_ERROR' | 'TIMEOUT' | 'INVALID_STREAM' | 'INVALID_OUTPUT' | 'ABORTED' | 'VALIDATION_FAILED';
+export type AssistantProviderFailureCode = 'HTTP_400' | 'HTTP_401' | 'HTTP_403' | 'HTTP_404' | 'HTTP_408' | 'HTTP_422' | 'HTTP_429' | 'HTTP_5XX' | 'HTTP_OTHER' | 'NETWORK_ERROR' | 'TIMEOUT' | 'INVALID_STREAM' | 'INVALID_OUTPUT' | 'ABORTED' | 'VALIDATION_FAILED' | 'COACH_LANGUAGE' | 'EMPTY_TEXT' | 'TEXT_LIMIT' | 'PROMPT_BUILD_FAILED' | 'INVALID_PROMPT_VERSION';
 export class AssistantProviderError extends Error {
   constructor(public readonly code: AssistantProviderFailureCode) { super(code); }
 }
@@ -17,6 +17,10 @@ function failureCode(error: unknown, signal?: AbortSignal): AssistantProviderFai
   return error instanceof AssistantProviderError ? error.code : 'VALIDATION_FAILED';
 }
 function publicFailure(code: AssistantProviderFailureCode) { return code === 'NETWORK_ERROR' ? 'NETWORK_ERROR' : code === 'TIMEOUT' ? 'TIMEOUT' : code === 'ABORTED' ? 'ABORTED' : 'MODEL_UNAVAILABLE'; }
+function buildPrompt(...args: Parameters<typeof assistantPrompt>) {
+  try { return assistantPrompt(...args); }
+  catch(error) { throw new AssistantProviderError(error instanceof Error && error.message === 'INVALID_PROMPT_VERSION' ? 'INVALID_PROMPT_VERSION' : 'PROMPT_BUILD_FAILED'); }
+}
 
 /** No persistence. Admission, charging and local confirmation belong to callers. */
 export async function* runAssistantModel(input: unknown, options: AssistantModelOptions): AsyncGenerator<AssistantEvent> {
@@ -27,29 +31,36 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
   const version = options.promptVersion ?? ASSISTANT_PROMPT_VERSION;
   const calls: AssistantCall[] = [];
   const usage = () => calls.reduce((sum, call) => ({ inputTokens: sum.inputTokens + (call.inputTokens ?? 0), outputTokens: sum.outputTokens + (call.outputTokens ?? 0) }), { inputTokens: 0, outputTokens: 0 });
-  let text = '', emitted = 0, attachmentKind = 'none';
+  let text = '', emitted = 0, attachmentKind = 'none', proseNormalized = false;
+  let blockedText: 'COACH_LANGUAGE' | 'TEXT_LIMIT' | undefined;
   const textCall: AssistantCall = { stage: 'text', result: 'failed' };
   calls.push(textCall);
   try {
-    for await (const chunk of options.provider.streamText(assistantPrompt(request, 'text', version), options.signal)) {
+    for await (const chunk of options.provider.streamText(buildPrompt(request, 'text', version), options.signal)) {
       if (options.signal?.aborted) throw new Error('ABORTED');
       if (chunk.usage) Object.assign(textCall, chunk.usage);
+      // Keep draining this already-started bounded request for final token accounting.
+      // Blocked prose is never emitted, stored or logged, and no new request is made.
+      if (blockedText) continue;
       if (chunk.delta) {
-        if (text.length + chunk.delta.length > 16000) throw new Error('TEXT_LIMIT');
+        if (text.length + chunk.delta.length > 16000) { blockedText='TEXT_LIMIT'; continue; }
         text += chunk.delta;
-        if (checkCoachLanguage(text).length) throw new Error('COACH_LANGUAGE');
+        const normalized = text.replace(/[!！]+/g, request.locale === 'zh' ? '。' : '.').replace(/\p{Extended_Pictographic}|\p{Regional_Indicator}|\u20e3|\uFE0F|\u200D/gu, '');
+        if(normalized !== text) {text=normalized;proseNormalized=true;}
+        if (checkCoachLanguage(text).length) { blockedText='COACH_LANGUAGE'; continue; }
         // Hold the short routing suffix and any partial banned phrase across chunks.
         const markerAt = text.indexOf('<<ATTACHMENT:');
         const safeEnd = Math.max(emitted, Math.min(text.length - 80, markerAt < 0 ? text.length : markerAt));
         if (safeEnd > emitted) { yield { type: 'text_delta', delta: text.slice(emitted, safeEnd) }; emitted = safeEnd; }
       }
     }
+    if (blockedText) throw new AssistantProviderError(blockedText);
     const marker = text.match(/<<ATTACHMENT:(none|plan|today|change|exercise|review)>>\s*$/);
     if (marker) { attachmentKind = marker[1]; text = text.slice(0, marker.index).trimEnd(); }
     else if (text.includes('<<ATTACH')) text = text.slice(0, text.indexOf('<<ATTACH')).trimEnd();
-    if (!text.trim()) throw new Error('EMPTY_TEXT');
+    if (!text.trim()) throw new AssistantProviderError('EMPTY_TEXT');
     if (text.length > emitted) yield { type: 'text_delta', delta: text.slice(emitted) };
-    textCall.result = 'success';
+    textCall.result = proseNormalized ? 'repaired' : 'success';
   } catch (error) {
     textCall.failureCode = failureCode(error, options.signal);
     console.warn('assistant_provider_failure', { stage: 'text', code: textCall.failureCode });
@@ -58,7 +69,7 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
     return;
   }
   if (!request.adultConfirmed || attachmentKind === 'none') {
-    yield { type: 'done', success: true, usage: usage(), calls, promptVersion: version, result: 'success' };
+    yield { type: 'done', success: true, usage: usage(), calls, promptVersion: version, result: proseNormalized ? 'repaired' : 'success' };
     return;
   }
   yield { type: 'attachment_pending' };
@@ -67,12 +78,12 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
     calls.push(call);
     try {
       if (options.signal?.aborted) throw new Error('ABORTED');
-      const generated = await options.provider.generateAttachment(assistantPrompt(request, 'attachment', version, text, attempt ? 'ATTACHMENT_VALIDATION_FAILED: use exact schema, catalog, context identity and task' : undefined), options.signal);
+      const generated = await options.provider.generateAttachment(buildPrompt(request, 'attachment', version, text, attempt ? 'ATTACHMENT_VALIDATION_FAILED: use exact schema, catalog, context identity and task' : undefined), options.signal);
       Object.assign(call, generated.usage);
       const checked = repairAssistantAttachment(generated.content, request);
       call.result = checked.repaired || attempt ? 'repaired' : 'success';
       if (checked.attachment) yield { type: 'attachment', attachment: checked.attachment };
-      yield { type: 'done', success: true, usage: usage(), calls, promptVersion: version, result: checked.repaired || attempt ? 'repaired' : 'success' };
+      yield { type: 'done', success: true, usage: usage(), calls, promptVersion: version, result: checked.repaired || attempt || proseNormalized ? 'repaired' : 'success' };
       return;
     } catch (error) {
       call.failureCode = failureCode(error, options.signal);

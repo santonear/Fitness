@@ -142,6 +142,26 @@ describe('assistant v2 model', () => {
     const invalid=createAssistantProvider({apiKey:'',baseUrl:'https://example.test',fetch:async()=>new Response('data: not-json\n\n')});
     expect((await collect(request,invalid)).at(-1)).toMatchObject({calls:[{failureCode:'INVALID_STREAM'}]});
   });
+  it.each([
+    {prose:'Hello! 👋<<ATTACHMENT:none>>',success:true,code:undefined,result:'repaired'},
+    {prose:'你必须继续。<<ATTACHMENT:none>>',success:false,code:'COACH_LANGUAGE',result:'failed'},
+    {prose:'<<ATTACHMENT:none>>',success:false,code:'EMPTY_TEXT',result:'failed'},
+    {prose:'a'.repeat(16001),success:false,code:'TEXT_LIMIT',result:'failed'},
+  ])('real provider adapter drains terminal usage for $code $result',async ({prose,success,code,result}) => {
+    let fetches=0;
+    const sse=[{choices:[{delta:{content:prose}}]},{choices:[],usage:{prompt_tokens:91,completion_tokens:12}}].map(value=>`data: ${JSON.stringify(value)}\n\n`).join('')+'data: [DONE]\n\n';
+    const model=createAssistantProvider({apiKey:'offline-key',baseUrl:'https://example.test',fetch:async()=>{fetches++;return new Response(sse);}});
+    const events=await collect(request,model);
+    expect(fetches).toBe(1);
+    expect(events.at(-1)).toMatchObject({success,result,usage:{inputTokens:91,outputTokens:12},calls:[{inputTokens:91,outputTokens:12,...(code?{failureCode:code}:{result:'repaired'})}]});
+    const output=events.filter(e=>e.type==='text_delta').map(e=>e.delta).join('');
+    expect(output).toBe(success?'Hello.':'');
+  });
+  it('identifies prompt preflight errors before calling provider',async () => {
+    let fetches=0;const model=createAssistantProvider({apiKey:'',baseUrl:'https://example.test',fetch:async()=>{fetches++;return new Response();}});
+    const events=await gather(runAssistantModel(request,{provider:model,promptVersion:'unknown'}));
+    expect(fetches).toBe(0);expect(events.at(-1)).toMatchObject({calls:[{failureCode:'INVALID_PROMPT_VERSION'}]});
+  });
 });
 
 
