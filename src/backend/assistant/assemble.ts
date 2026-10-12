@@ -2,6 +2,7 @@ import { assistantIntentSchema, type AssistantAttachment, type AssistantIntent, 
 import { basicProposal } from '../../application/v8-workflow';
 import { estimatePlannedMinutes } from '../../application/rules/duration-estimate';
 import { selectAssistantCandidates, assistantMovement } from '../../catalog/ai-catalog';
+import {applicableAssistantCandidates,lowerBodyAddition} from './applicable-candidates';
 import { catalogMetadata } from '../../catalog/registry';
 import { exercises } from '../../catalog/exercises';
 import { coachResponseSchema } from '../../coach/contracts';
@@ -127,7 +128,7 @@ export function assembleAssistantIntent(raw:unknown,request:AssistantRequest):{a
  const parsed=typeof raw==='string'?JSON.parse(raw):raw;
  const value=parsed&&typeof parsed==='object'&&'intent'in parsed?parsed.intent:parsed;
  let intent=assistantIntentSchema.parse(value);
- const context=request.context,candidates=selectAssistantCandidates(request),dropped:string[]=[];
+ const context=request.context,candidates=applicableAssistantCandidates(request),dropped:string[]=[];
  if(!request.adultConfirmed||!context)return {attachment:null,dropped,repaired:false};
  const explicitReplacements=explicitExistingReplacements(request);
  if((intent.kind==='none'||intent.kind==='clarify')&&!explicitReplacements.length)return {attachment:null,dropped,repaired:false};
@@ -140,6 +141,21 @@ export function assembleAssistantIntent(raw:unknown,request:AssistantRequest):{a
    cautions:[...new Set([...context.profile.cautions,...(p.cautionAreas??[]).filter(area=>['knee','back','shoulder','wrist','other'].includes(area))])] as typeof context.profile.cautions};
   const proposal=basicProposal({...profile,confirmedAt:new Date().toISOString()},request.locale);
   if(!proposal||!proposal.templates.length)throw Error('NO_SAFE_PLAN');
+  for(const template of proposal.templates){
+   const used=new Set<string>();
+   template.items=template.items.flatMap(item=>{
+    const original=exercises.find(exercise=>exercise.id===item.exerciseId);
+    const candidate=candidates.find(row=>row.exercise.id===item.exerciseId)
+     ??candidates.find(row=>original&&row.mode===assistantMovement(original)&&!used.has(row.exercise.id));
+    if(!candidate){dropped.push('outside_client_catalog');return [];}
+    used.add(candidate.exercise.id);
+    if(candidate.exercise.id===item.exerciseId)return [item];
+    dropped.push('outside_client_catalog_substituted');
+    return [{...newItem(candidate),sets:item.sets}];
+   });
+   coverPatterns(template,candidates);
+   if(!template.items.length)throw Error('NO_SAFE_PLAN');
+  }
   for(const pick of intent.picks??[]){const candidate=resolveAssistantExercise(pick.code,candidates);if(!candidate){dropped.push('unknown_exercise');continue;}
    const [slot,mode]=pick.slot.split(':');const template=proposal.templates.find(row=>row.id===slot||row.name===slot);
    if(!template){dropped.push('unknown_slot');continue;}
@@ -151,6 +167,10 @@ export function assembleAssistantIntent(raw:unknown,request:AssistantRequest):{a
  }
  if(intent.kind==='plan_modify'&&context.task==='MODIFY_PLAN'){
   const changesToApply=[...intent.changes];
+  if(/加.*(?:练腿|腿部|下肢)|add.*(?:leg|lower.body)/i.test(request.messages.at(-1)?.content??'')){
+   const safe=lowerBodyAddition(request);
+   for(const change of changesToApply)if(change.op==='add'&&!resolveAssistantExercise(change.to,candidates)&&safe)change.to=safe.code;
+  }
   for(const inferred of explicitReplacements){
    if(!changesToApply.some(change=>change.op==='replace'&&change.session===inferred.session&&normal(change.from??'')===normal(inferred.from??'')))changesToApply.push(inferred);
   }
