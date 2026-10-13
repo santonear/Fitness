@@ -4,6 +4,8 @@ import { selectAssistantCandidates } from '../../src/catalog/ai-catalog';
 import type { AssistantRequest } from '../../src/assistant/contracts';
 import { assistantMovement } from '../../src/catalog/ai-catalog';
 import { exercises } from '../../src/catalog/exercises';
+import {applicableAssistantCandidates} from '../../src/backend/assistant/applicable-candidates';
+import {sameExerciseFamily} from '../../src/catalog/exercise-family';
 
 const id='11111111-1111-4111-8111-111111111111';
 const base={version:'fitness-assistant-v2',requestId:id,conversationId:id,locale:'zh',timeZone:'Asia/Shanghai',adultConfirmed:true,messages:[{role:'user',content:'每周三次，每次30分钟'}]} as const;
@@ -64,7 +66,8 @@ describe('minimal assistant intent assembly',()=>{
   if(plan?.type!=='plan_proposal')throw Error('missing plan');
   const original=plan.proposal.templates[0].items[0];
   const modified={...onboard,context:{...common,messages:[],task:'MODIFY_PLAN' as const,target:{planId:id,versionId:id,revision:0},instruction:'换动作',plan:plan.proposal}} as AssistantRequest;
-  const safe=selectAssistantCandidates(modified).find(row=>row.exercise.id!==original.exerciseId);
+  const originalExercise=exercises.find(e=>e.id===original.exerciseId)!;
+  const safe=applicableAssistantCandidates(modified).find(row=>row.exercise.id!==original.exerciseId&&row.mode===assistantMovement(originalExercise)&&!plan.proposal.templates.flatMap(t=>t.items).some(item=>item.exerciseId!==original.exerciseId&&sameExerciseFamily(exercises.find(e=>e.id===item.exerciseId)!,row.exercise)));
   if(!safe)throw Error('missing safe candidate');
   const result=assembleAssistantIntent({kind:'plan_modify',changes:[{session:plan.proposal.templates[0].id,op:'replace',from:original.exerciseId,to:safe.code}]},modified);
   expect(result.attachment?.type).toBe('change_proposal');
@@ -119,7 +122,7 @@ describe('minimal assistant intent assembly',()=>{
   expect(attachment.changes.join(' ')).toMatch(/将.*换成/);
   expect(proposal.reasons.join(' ')).not.toMatch(/Adjusted the plan/);
   const lengths=proposal.templates.map(template=>template.estimatedMinutes).sort((a,b)=>a-b);
-  expect(proposal.sessionMinutes).toBe(Math.round((lengths[0]+lengths[lengths.length-1])/2));
+  expect(proposal.sessionMinutes).toBe(original.proposal.sessionMinutes);
  });
  it.each([{kind:'none' as const},{kind:'plan_modify' as const,changes:[]}])('honors an explicit existing exercise replacement when model returns $kind',intent=>{
   const original=assembleAssistantIntent({kind:'plan_new',params:{}},onboard).attachment;

@@ -69,3 +69,16 @@ test('review assistant waits for its initial facts before becoming available',as
  await page.evaluate(()=>(window as any).releaseReview());
  await page.getByRole('button',{name:'和芽芽聊聊',exact:true}).click();await page.getByRole('dialog').getByRole('textbox').fill('看看本周记录');await page.getByRole('dialog').getByRole('button',{name:'发送',exact:true}).click();await expect(page.getByRole('log').getByText('这次回顾已读取完成。')).toBeVisible();expect(sent.context.task).toBe('PERIOD_REVIEW');expect(sent.context.facts).toBeDefined();
 });
+
+for(const failure of ['STALE_CANDIDATE','TRAINING_CHANGED','Invalid coach response: exercise outside supplied catalog'])test('application error copy '+failure,async({page})=>{
+ await page.route('**/api/v1/assistant/chat',route=>{const q=route.request().postDataJSON().context;return route.fulfill({contentType:'text/event-stream',body:stream({type:'today_adjustment',requestId:q.requestId,restoreGeneration:q.restoreGeneration,mutationAllowed:false,target:q.target,template:{...q.template,items:q.template.items.map((item:any)=>({...item,sets:1}))},summary:'今天每个动作先做一组。'})});});
+ await page.goto('/tests/fixtures/v8-coach/index.html?local-adjust&apply-error='+encodeURIComponent(failure));
+ await page.evaluate(async()=>{const p='/src/application/feature-flags.ts';await(await import(/* @vite-ignore */ p)).refreshFeatureFlags(async()=>Response.json({version:1,flags:{aiAssistantV2:true},expiresAt:Date.now()+60000}));});
+ await page.getByRole('button',{name:'跟芽芽说',exact:true}).click();await page.getByRole('textbox').fill('今天少一点');await page.getByRole('button',{name:'发送',exact:true}).click();await page.getByRole('button',{name:'应用建议',exact:true}).click();
+ await expect(page.getByRole('alert')).toContainText(failure.startsWith('Invalid')?'模型暂时没给出可用结果':'数据已变化');
+});
+for(const width of [390,1440])for(const kind of ['change','today'])test('round3 card '+kind+' '+width,async({page})=>{
+ await page.setViewportSize({width,height:900});await seedMainline(page);
+ await page.route('**/api/v1/assistant/chat',route=>{const q=route.request().postDataJSON().context;const attachment=q.task==='MODIFY_PLAN'?{type:'change_proposal',requestId:q.requestId,restoreGeneration:q.restoreGeneration,mutationAllowed:false,target:q.target,proposal:{...q.plan,templates:q.plan.templates.map((t:any,index:number)=>index?t:{...t,items:t.items.map((item:any,i:number)=>i?item:{...item,sets:1})})},changes:['调整训练量','预计30分钟']}:{type:'today_adjustment',requestId:q.requestId,restoreGeneration:q.restoreGeneration,mutationAllowed:false,target:q.target,template:{...q.template,items:q.template.items.slice(1)},summary:'调整1项 · 预计30分钟'};return route.fulfill({contentType:'text/event-stream',body:stream(attachment)});});
+ await page.goto(kind==='change'?'/plans':'/');await page.getByRole('button',{name:'和芽芽聊聊',exact:true}).click();await page.getByRole('dialog').getByRole('textbox').fill(kind==='change'?'把计划调整一点':'今天少一个动作');await page.getByRole('dialog').getByRole('button',{name:'发送',exact:true}).click();await expect(page.locator('.assistant-diff')).toBeVisible();await page.screenshot({path:'outputs/assistant-round3/qingci-'+kind+'-'+width+'.png'});
+});

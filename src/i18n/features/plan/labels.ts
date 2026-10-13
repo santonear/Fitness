@@ -1,4 +1,11 @@
 import type {PlanVersion,SessionTemplate} from '../../../domain/v8/contracts';
+import {planMessages} from './messages';
+export function estimatedDurationLabel(templates:Pick<SessionTemplate,'estimatedMinutes'>[],locale:'zh'|'en'){
+ const values=templates.map(template=>template.estimatedMinutes);
+ if(!values.length)return planMessages[locale].minutes(0);
+ const min=Math.min(...values),max=Math.max(...values);
+ return min===max?planMessages[locale].minutes(min):`${planMessages[locale].minutes(min)} – ${planMessages[locale].minutes(max)}`;
+}
 export function templateLabel(template:Pick<SessionTemplate,'id'|'name'>,locale:'zh'|'en'):string{
  const duration=template.name.match(/^(\d+)\s*(?:min(?:utes)?|分钟)$/i);
  return duration?`${duration[1]} ${locale==='zh'?'分钟':'min'}`:template.name;

@@ -1,4 +1,4 @@
-import {templateLabel} from '../../../i18n/features/plan/labels';
+import {templateLabel,estimatedDurationLabel} from '../../../i18n/features/plan/labels';
 import type { PlannedItem, PlanVersion } from '../../../domain/v8/contracts';
 import { planMessages, type PlanLanguage } from '../../../i18n/features/plan/messages';
 import { Button, Chip, Row, Sheet } from '../../components/common';
@@ -49,7 +49,7 @@ export function PlanPage({ version, currentVersionId, language, exerciseName, on
     <header><h1 id="plan-title">{t.title}</h1>
       <p className="plan-muted">{t.version(version.versionNumber)} · <time dateTime={version.createdAt}>{new Intl.DateTimeFormat(language, { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(version.createdAt))}</time> · {source}{!current && ` · ${t.readOnly}`}</p>
     </header>
-    <div className="plan-overview"><Sheet><dl className="plan-summary"><dt>{t.goal}</dt><dd>{version.goalText}</dd></dl></Sheet><Sheet><dl className="plan-summary"><dt>{t.rhythm}</dt><dd>{version.preferredDays?.length?preferredDaysLabel(version.preferredDays,language):language==='zh'?`每周 ${version.weeklyTarget} 次`:`${version.weeklyTarget} times a week`}</dd><dd className="plan-muted">{t.minutes(Math.min(...version.templates.map(x=>x.estimatedMinutes)))}{Math.max(...version.templates.map(x=>x.estimatedMinutes))!==Math.min(...version.templates.map(x=>x.estimatedMinutes))?` – ${t.minutes(Math.max(...version.templates.map(x=>x.estimatedMinutes)))}`:''}</dd></dl></Sheet></div>
+    <div className="plan-overview"><Sheet><dl className="plan-summary"><dt>{t.goal}</dt><dd>{version.goalText}</dd></dl></Sheet><Sheet><dl className="plan-summary"><dt>{t.rhythm}</dt><dd>{version.preferredDays?.length?preferredDaysLabel(version.preferredDays,language):language==='zh'?`每周 ${version.weeklyTarget} 次`:`${version.weeklyTarget} times a week`}</dd><dd className="plan-muted">{estimatedDurationLabel(version.templates,language)}</dd></dl></Sheet></div>
     {version.templates.map(template => <section className="plan-session" key={template.id} aria-label={templateLabel(template, language)}>
       <Row><h2>{templateLabel(template, language)}</h2><span className="plan-muted">{t.minutes(template.estimatedMinutes)}</span></Row>
       <div className="plan-items">{template.items.map((item, index) => <Chip key={`${item.exerciseId}-${index}`} selected={false}

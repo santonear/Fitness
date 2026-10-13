@@ -220,3 +220,17 @@ RepDB官方证据：[数据许可证](https://github.com/RepDB/exercise-dataset/
 - 情况：新健康资料功能需受远程开关保护。决定：新增敏感bodyProfile开关，仅预览开启；关闭后停止新增收集，已有资料仍可查看和删除。理由：保持此前敏感功能上线门禁。文件：feature-flags.ts、releases/model.ts、BodyProfilePanel.tsx。
 - 情况：管理员本地日期与账本月份不同。决定：费用和账本都用账本请求明细按管理员时区分日，旧账本不能归日的差额单独展示；本地降级次数只从运营事件补入，不从事件重复累计费用。文件：finance/report.ts、finance/index.ts。
 - 情况：当前用户安全筛选后A/B内容相同。决定：仅合并完全相同的动作与目标组合，保留每周频次，提供编辑注意部位入口。理由：避免伪造训练变化。文件：v8-workflow.ts、PlanDraftPage.tsx。
+
+- 2026-10-13 第三轮：用户未指定时长时保留 sessionMinutes，仅重算训练单 estimatedMinutes。计划修改卡的“分钟/次”和总摘要统一使用 sessionMinutes；单份训练单内仍显示实际预计用时。理由：不把偏好时长与单份训练单估算混为一谈。文件：assemble.ts、AssistantAttachment.tsx。
+
+- 2026-10-13 第三轮第6步（待确认、未实施）：当用户指定的动作不在当前计划中，拟只说明该动作当前未安排，不出修改卡；“以后不安排”是否单独写入长期偏好需要用户确认。拟中文文案：当前计划里没有这个动作。涉及 assemble.ts、model.ts、assistant.ts；本次保持既有 NO_CHANGE 行为，不新增话术。
+
+- 2026-10-13 第三轮：点名训练单与动作时，仅对指定范围执行模型或规则变更，不自动补齐动作模式；未点名训练单而点名动作则覆盖含该动作的全部训练单。差异按动作出现次数对齐，时长不计入动作项数；重复变更文案合并。理由：范围忠实于用户要求，避免删除后位置移动被误识别为替换。文件：assemble.ts、template-diff.ts、AssistantAttachment.tsx。
+
+- 2026-10-13 第四轮动作分类：upper-legs/lower-legs 先于通用 push/pull 名称匹配；提踵归现有 hinge，下肢深蹲类仍为 squat；核心 leg raise 归 core，肩部侧/前平举仍为 push。理由：复用现有模式，不让名称 raise 跨部位误配。文件：ai-catalog.ts、assemble.ts。
+
+- 2026-10-13 第四轮预计时长：卡片与计划页共用 estimatedDurationLabel，按训练单 estimatedMinutes 显示单值或范围；“当前/建议安排”的 sessionMinutes 仍为用户设定值。理由：区分实际预计用时和用户偏好时长。文件：labels.ts、PlanPage.tsx、AssistantAttachment.tsx、assemble.ts。
+
+- 2026-10-13 第四轮第4项（待确认、未实施）：新计划确认后，建议用新确认的场地/器械替换旧器械偏好，保留注意部位、禁用动作等其他偏好；需确认是否保留旧器械偏好的可撤销记录，以及只有本轮明确提供器械时才替换。理由：避免旧“去健身房”与新“在家有哑铃”并存；这是偏好语义变化，本轮不修改偏好。涉及 assistant-preferences.ts、onboarding 与计划应用路径。
+
+- 2026-10-13 第五轮替换训练量：同 metricType 继承原组数和目标，reps_load 仅重置重量为未选择；不同 metricType 保留组数，目标复用 manualTrainingItems 的已有动作选择默认值（次数8，计时20秒），动作目录本身没有逐项默认目标字段，不新增字段或推断用户事实。只在明确指定时长时允许时长适配压缩组数；新增动作维持原逻辑。新增动作是否与原训练量对齐仅作为待定方案，未实施。文件：assemble.ts、manual-items.ts。

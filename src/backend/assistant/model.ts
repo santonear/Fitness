@@ -4,6 +4,8 @@ import { repairAssistantAttachment, AttachmentValidationError } from './repair';
 import { checkCoachLanguage } from '../../application/rules/coach-language';
 import { assembleAssistantIntent } from './assemble';
 import { selectAssistantCandidates, assistantMovement } from '../../catalog/ai-catalog';
+import {applicableAssistantCandidates,lowerBodyAddition} from './applicable-candidates';
+import {adaptCoachResponse} from '../../coach/response-adapter';
 import { getExerciseGuide } from '../../catalog/exercise-guide';
 import { exercises } from '../../catalog/exercises';
 import { ZodError } from 'zod';
@@ -157,6 +159,7 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
         : repairAssistantAttachment(generated.content, request);
       const expectedType = ({plan:'plan_proposal',today:'today_adjustment',change:'change_proposal',exercise:'exercise_info',review:'review_summary'} as Record<string,string>)[attachmentKind];
       if(!checked.attachment || checked.attachment.type !== expectedType) throw new AssistantProviderError('INVALID_OUTPUT');
+      if(isV3&&request.context&&checked.attachment.type!=='exercise_info')adaptCoachResponse(request.context,checked.attachment);
       call.result = checked.repaired || attempt ? 'repaired' : 'success';
       if(checked.attachment){
         if(isV3&&checked.attachment.type==='today_adjustment')yield {type:'text_delta',delta:`\n${checked.attachment.summary}`};
@@ -188,9 +191,9 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
       const addPush=/加.*(?:推|胸)|add.*(?:push|chest)/i.test(latest);
       const addLower=/加.*(?:练腿|腿部|下肢)|add.*(?:leg|lower.body)/i.test(latest);
       const lessEquipment=/少.*器械|less equipment/i.test(latest);
-      const candidateList=selectAssistantCandidates(request);
+      const candidateList=applicableAssistantCandidates(request);
       const plan=task==='MODIFY_PLAN'?request.context.plan:undefined;
-      const addCandidate=(addPush||addLower)&&plan?candidateList.find(row=>(addLower?row.mode==='hinge':row.mode==='push')&&!plan.templates.some(template=>template.items.some(item=>item.exerciseId===row.exercise.id))):undefined;
+      const addCandidate=addLower?lowerBodyAddition(request):addPush&&plan?candidateList.find(row=>row.mode==='push'&&!plan.templates.some(template=>template.items.some(item=>item.exerciseId===row.exercise.id))):undefined;
       const equipped=lessEquipment&&plan?plan.templates.flatMap(template=>template.items.map(item=>({template,item}))).find(({item})=>item.equipment!=='none'):undefined;
       const previous=equipped?exercises.find(row=>row.id===equipped.item.exerciseId):undefined;
       const replacement=previous?candidateList.find(row=>row.mode===assistantMovement(previous)&&row.exercise.equipment==='none'):undefined;
@@ -203,7 +206,7 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
         task==='ADJUST_TODAY'?{kind:'today_adjust',minutes:minutes?Number(minutes[1]):Math.max(10,request.context.template.estimatedMinutes-5),...(/只练上半身|只练上肢|upper.body only/i.test(latest)?{focus:'upper' as const}:{})}:
         task==='MODIFY_PLAN'?{kind:'plan_modify',params:{...(weekValue?{daysPerWeek:weekValue}:{}),...(minutes?{minutesPerSession:Number(minutes[1])}:{})},changes}:
         task==='PERIOD_REVIEW'?{kind:'review',highlights:[]}:null;
-      if(intent){const fallback=assembleAssistantIntent(intent,request);if(fallback.attachment){if(fallback.attachment.type==='today_adjustment')yield {type:'text_delta',delta:`\n${fallback.attachment.summary}`};if(fallback.attachment.type==='change_proposal')yield {type:'text_delta',delta:`\n${fallback.attachment.changes.join(request.locale==='zh'?'；':'; ')}`};yield {type:'attachment',attachment:fallback.attachment};yield {type:'done',success:true,usage:usage(),calls,promptVersion:version,result:'fallback'};return;}}
+      if(intent){const fallback=assembleAssistantIntent(intent,request);if(fallback.attachment){if(fallback.attachment.type!=='exercise_info')adaptCoachResponse(request.context,fallback.attachment);if(fallback.attachment.type==='today_adjustment')yield {type:'text_delta',delta:`\n${fallback.attachment.summary}`};if(fallback.attachment.type==='change_proposal')yield {type:'text_delta',delta:`\n${fallback.attachment.changes.join(request.locale==='zh'?'；':'; ')}`};yield {type:'attachment',attachment:fallback.attachment};yield {type:'done',success:true,usage:usage(),calls,promptVersion:version,result:'fallback'};return;}}
     }catch(error){if(error instanceof Error&&error.message==='NO_APPLICABLE_CHANGE')noChange=true; /* An unsafe fallback must not become an applicable card. */ }
   }
   yield { type: 'attachment_failed', code: noChange ? 'NO_CHANGE' : 'ATTACHMENT_UNAVAILABLE' };
