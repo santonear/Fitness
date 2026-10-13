@@ -1,6 +1,7 @@
 import {estimatedDurationLabel} from '../../i18n/features/plan/labels';
 import {diffTemplates} from '../../assistant/template-diff';
 import {sameExerciseFamily} from '../../catalog/exercise-family';
+import {manualTrainingItems} from '../../application/rules/manual-items';
 import { assistantIntentSchema, type AssistantAttachment, type AssistantIntent, type AssistantRequest } from '../../assistant/contracts';
 import { basicProposal } from '../../application/v8-workflow';
 import { estimatePlannedMinutes } from '../../application/rules/duration-estimate';
@@ -29,6 +30,17 @@ function newItem(candidate:Candidate):PlannedItem{
   exercise.metricType==='reps'?{metricType:'reps' as const,reps:8}:
   exercise.metricType==='duration'?{metricType:'duration' as const,durationSeconds:30}:{metricType:'duration_distance' as const,durationSeconds:300};
  return {exerciseId:exercise.id,equipment:exercise.equipment,sets:2,target};
+}
+function replacementItem(previous:PlannedItem,candidate:Candidate):PlannedItem{
+ const next=newItem(candidate);next.sets=previous.sets;
+ if(previous.target.metricType===candidate.exercise.metricType)next.target=structuredClone(previous.target);
+ else{
+  const defaults=manualTrainingItems([candidate.exercise.id])[0].target;
+  if('reps'in next.target)next.target.reps='reps'in defaults?defaults.reps:8;
+  if('durationSeconds'in next.target)next.target.durationSeconds='durationSeconds'in defaults?defaults.durationSeconds:20;
+ }
+ if(next.target.metricType==='reps_load')next.target.loadGrams=0;
+ return next;
 }
 function coverPatterns(template:SessionTemplate,candidates:Candidate[]){
  const patterns=()=>new Set(template.items.map(item=>{
@@ -123,7 +135,7 @@ function applyChanges(template:SessionTemplate,changes:Extract<AssistantIntent,{
   }
   else if(change.op==='add'&&!to)dropped.push('unknown_or_unsafe_exercise');
   if(index<0||locked.has(index))continue;
-  if(change.op==='replace'&&to&&to.exercise.id!==previous?.id){template.items[index]=newItem(to);applied++;if(change.to&&!matched)dropped.push('unsafe_replacement_substituted');}
+  if(change.op==='replace'&&to&&to.exercise.id!==previous?.id){template.items[index]=replacementItem(template.items[index],to);applied++;if(change.to&&!matched)dropped.push('unsafe_replacement_substituted');}
   else if(change.op==='replace'&&!to)dropped.push('unknown_or_unsafe_exercise');
   if(change.op==='remove'&&template.items.length>1&&(!locked.size||index>Math.max(...locked))){template.items.splice(index,1);applied++;}
   if(change.op==='set_volume'||change.op==='shorten'){
@@ -205,7 +217,7 @@ export function assembleAssistantIntent(raw:unknown,request:AssistantRequest):{a
    const filtered=changesToApply.filter(change=>!scope.templates.size||!change.session||scope.templates.has(change.session));
    applyChanges(template,filtered,candidates,new Set(),dropped,context.plan.templates.flatMap(t=>t.items));
    if(!scoped&&!additions.length)coverPatterns(template,candidates);
-   if(explicitMinutes&&!scoped)fitDuration(template,proposal.sessionMinutes);else recalculate(template);
+   if(explicitMinutes)fitDuration(template,proposal.sessionMinutes);else recalculate(template);
    syncTemplateName(template,request.locale);
   }
   proposal.scheduleOriginalText=context.plan.scheduleOriginalText;
@@ -236,7 +248,7 @@ export function assembleAssistantIntent(raw:unknown,request:AssistantRequest):{a
    }
   }
   const spokenMinutes=latest.match(/(\d{1,3})\s*(?:分钟|minutes?|mins?)/i);
-  const desired=spokenMinutes?Number(spokenMinutes[1]):intent.minutes;
+  const desired=spokenMinutes?Number(spokenMinutes[1]):intent.changes?.some(change=>change.op==='replace')?undefined:intent.minutes;
   if(desired)fitDuration(template,desired);else recalculate(template,10);
   if(desired&&Math.abs(template.estimatedMinutes-desired)>desired*.1)throw Error('NO_APPLICABLE_CHANGE');
   syncTemplateName(template,request.locale);
