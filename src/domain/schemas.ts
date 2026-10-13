@@ -170,7 +170,7 @@ export const v8ActivitySchema = z.strictObject({ id: uuidSchema, type: z.enum(['
 export const v8CoachProfileSchema = z.strictObject({
   goalText: z.string(), weeklyTarget: positive.max(7), sessionMinutes: v8Minutes, scheduleOriginalText: z.string(),
   preferredDays: v8PreferredDays,
-  place: z.enum(['home', 'gym', 'outdoor', 'mixed']), equipment: z.array(z.string()), adultConfirmed: z.boolean(),
+  place: z.enum(['home', 'gym', 'outdoor', 'mixed']), equipment: z.array(z.string()), adultConfirmed: z.boolean(), placeEquipmentOriginalText: z.string().optional(),
   cautions: z.array(z.enum(['knee', 'back', 'shoulder', 'wrist', 'other'])), cautionNote: z.string().optional(), confirmedAt: utcTimestampSchema,
 });
 export const v8StateSchema = z.strictObject({

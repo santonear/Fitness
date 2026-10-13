@@ -2,6 +2,7 @@ import {estimatedDurationLabel} from '../../i18n/features/plan/labels';
 import {diffTemplates} from '../../assistant/template-diff';
 import {sameExerciseFamily} from '../../catalog/exercise-family';
 import {manualTrainingItems} from '../../application/rules/manual-items';
+import {sessionDuration} from '../../application/rules/session-duration';
 import { assistantIntentSchema, type AssistantAttachment, type AssistantIntent, type AssistantRequest } from '../../assistant/contracts';
 import { basicProposal } from '../../application/v8-workflow';
 import { estimatePlannedMinutes } from '../../application/rules/duration-estimate';
@@ -14,15 +15,14 @@ import type { PlannedItem, SessionTemplate } from '../../domain/v8/contracts';
 
 type Candidate = ReturnType<typeof selectAssistantCandidates>[number];
 const normal = (value: string) => value.toLocaleLowerCase().replace(/[\s_\-·]/g,'');
-function distance(a:string,b:string){const row=Array.from({length:b.length+1},(_,i)=>i);for(let i=1;i<=a.length;i++){let last=row[0];row[0]=i;for(let j=1;j<=b.length;j++){const old=row[j];row[j]=Math.min(row[j]+1,row[j-1]+1,last+(a[i-1]===b[j-1]?0:1));last=old;}}return row[b.length];}
 export function resolveAssistantExercise(value:string|undefined,candidates:Candidate[]):Candidate|undefined{
  if(!value)return;
  const code=candidates.find(row=>row.code.toLowerCase()===value.toLowerCase());if(code)return code;
  const input=normal(value);
  const names=(row:Candidate)=>[row.exercise.name.zh,row.exercise.name.en,...catalogMetadata.get(row.exercise.id)?.aliases??[]].map(normal);
  const exact=candidates.filter(row=>names(row).includes(input));if(exact.length===1)return exact[0];
- const ranked=candidates.map(row=>({row,score:Math.min(...names(row).map(name=>distance(input,name)))})).sort((a,b)=>a.score-b.score);
- return ranked[0]&&ranked[0].score<=Math.max(2,Math.floor(input.length/4))&&ranked[0].score<ranked[1]?.score?ranked[0].row:undefined;
+ const contained=candidates.filter(row=>input.length>=2&&names(row).some(name=>name.includes(input)||input.includes(name)));
+ return contained.length===1?contained[0]:undefined;
 }
 function newItem(candidate:Candidate):PlannedItem{
  const exercise=candidate.exercise;
@@ -48,23 +48,27 @@ function coverPatterns(template:SessionTemplate,candidates:Candidate[]){
  }));
  const required=['push','pull','core','lower'] as const;
  for(const mode of required){const current=patterns();const covered=Number(current.has('push'))+Number(current.has('pull'))+Number(current.has('core'))+Number(current.has('squat')||current.has('hinge'));if(covered>=3&&current.has('push'))break;
-  if(mode==='lower'&&(current.has('squat')||current.has('hinge')))continue;
+  if(mode==='lower'&&(current.has('squat')||current.has('hinge')||current.has('lower')))continue;
   if(mode!=='lower'&&current.has(mode))continue;
-  const safe=candidates.find(row=>(mode==='lower'?row.mode==='squat'||row.mode==='hinge':row.mode===mode)&&!template.items.some(item=>item.exerciseId===row.exercise.id));
+  const safe=candidates.find(row=>(mode==='lower'?row.mode==='squat'||row.mode==='hinge'||row.mode==='lower':row.mode===mode)&&!template.items.some(item=>item.exerciseId===row.exercise.id));
   if(safe)template.items.push(newItem(safe));
  }
 }
 function recalculate(template:SessionTemplate,minimum=15){template.estimatedMinutes=estimatePlannedMinutes(template.items,minimum);}
-function fitDuration(template:SessionTemplate,minutes:number){
+function fitDuration(template:SessionTemplate,minutes:number,candidates:Candidate[]=[],locked=new Set<number>()){
  const lower=Math.ceil(minutes*.9),upper=Math.floor(minutes*1.1);
  for(let attempts=0;attempts<100&&estimatePlannedMinutes(template.items,10)>upper;attempts++){
-  const reducible=[...template.items].reverse().find(item=>item.sets>1);
+  const reducible=template.items.filter((item,index)=>item.sets>1&&!locked.has(index)).sort((a,b)=>b.sets-a.sets)[0];
   if(!reducible)break;
   reducible.sets--;
  }
  for(let attempts=0;attempts<100&&estimatePlannedMinutes(template.items,10)<lower;attempts++){
-  const expandable=template.items.find(item=>item.sets<4);
-  if(!expandable)break;
+  const expandable=template.items.filter((item,index)=>item.sets<4&&!locked.has(index)).sort((a,b)=>a.sets-b.sets)[0];
+  if(!expandable){
+   const counts=new Map<string,number>();for(const item of template.items){const exercise=exercises.find(e=>e.id===item.exerciseId);if(exercise){const mode=assistantMovement(exercise);counts.set(mode,(counts.get(mode)??0)+1);}}
+   const extra=candidates.filter(row=>['push','pull','squat','hinge','lower','core','cardio'].includes(row.mode)&&!template.items.some(item=>item.exerciseId===row.exercise.id)).sort((a,b)=>(counts.get(a.mode)??0)-(counts.get(b.mode)??0))[0];
+   if(!extra||template.items.length>=12)break;template.items.push({...newItem(extra),sets:1});continue;
+  }
   expandable.sets++;
  }
  recalculate(template,10);
@@ -85,13 +89,16 @@ function findExistingItem(template:SessionTemplate,value:string|undefined):numbe
  const key=normal(value);
  return template.items.findIndex(item=>{
   const exercise=exercises.find(row=>row.id===item.exerciseId);
-  return !!exercise&&[exercise.id,exercise.name.zh,exercise.name.en,...catalogMetadata.get(exercise.id)?.aliases??[]].some(name=>normal(name)===key);
+  return !!exercise&&[exercise.id,exercise.name.zh,exercise.name.en,...catalogMetadata.get(exercise.id)?.aliases??[]].some(name=>normal(name)===key||key.length>=2&&normal(name).includes(key));
  });
 }
 function explicitExistingReplacements(request:AssistantRequest):Extract<AssistantIntent,{kind:'plan_modify'}>['changes']{
  const context=request.context;
  if(context?.task!=='MODIFY_PLAN')return [];
- const text=normal(request.messages.at(-1)?.content??'');
+ const raw=request.messages.at(-1)?.content??'';
+ const directed=raw.match(/(?:把|将)\s*(.+?)\s*(?:换成|替换为|换为)\s*(.+?)(?:[，。；;]|$)/i)??raw.match(/(?:replace|swap)\s+(.+?)\s+(?:with|for)\s+(.+?)(?:[.;]|$)/i);
+ if(directed){return context.plan.templates.flatMap(template=>{const index=findExistingItem(template,directed[1].trim());return index<0?[]:[{session:template.id,op:'replace' as const,from:template.items[index].exerciseId,to:directed[2].trim()}];});}
+ const text=normal(raw);
  if(!/(换|替换|不要|别安排|移除|replace|remove|swap|avoid)/i.test(text))return [];
  const changes:Extract<AssistantIntent,{kind:'plan_modify'}>['changes']=[];
  const scope=namedPlanScope(request);
@@ -117,7 +124,7 @@ function namedPlanScope(request:AssistantRequest){
  }
  return {templates,items};
 }
-function applyChanges(template:SessionTemplate,changes:Extract<AssistantIntent,{kind:'plan_modify'}>['changes'],candidates:Candidate[],locked=new Set<number>(),dropped:string[]=[],existingItems:PlannedItem[]=template.items){
+function applyChanges(template:SessionTemplate,changes:Extract<AssistantIntent,{kind:'plan_modify'}>['changes'],candidates:Candidate[],locked=new Set<number>(),dropped:string[]=[],existingItems:PlannedItem[]=template.items,explicitTarget=false){
  let applied=0;
  for(const change of changes){
   if(change.session&&change.session!==template.id&&change.session!==template.name&&change.session!=='今天')continue;
@@ -126,7 +133,7 @@ function applyChanges(template:SessionTemplate,changes:Extract<AssistantIntent,{
   const matched=resolveAssistantExercise(change.to,candidates);
   const replacementModes=previous?assistantMovement(previous)==='carry'?['carry','pull','core']: [assistantMovement(previous)]:[];
   const compatible=(row:Candidate)=>replacementModes.includes(row.mode)&&(assistantMovement(previous!)!=='push'||['chest','shoulders','upper-arms'].includes(catalogMetadata.get(row.exercise.id)?.bodyPart??''))&&!existingItems.some(item=>item.exerciseId!==previous!.id&&sameExerciseFamily(exercises.find(e=>e.id===item.exerciseId)!,row.exercise));
-  const to=previous?(matched&&matched.exercise.id!==previous.id&&compatible(matched)?matched:candidates.find(row=>row.exercise.id!==previous.id&&compatible(row))):matched;
+  const to=previous?(matched&&matched.exercise.id!==previous.id&&(explicitTarget||compatible(matched))?matched:explicitTarget&&change.to?undefined:candidates.find(row=>row.exercise.id!==previous.id&&compatible(row))):matched;
   if(change.op==='add'&&to&&!existingItems.some(item=>sameExerciseFamily(exercises.find(e=>e.id===item.exerciseId)!,to.exercise))){
    const before=estimatePlannedMinutes(template.items),added=newItem(to);
    template.items.push(added);
@@ -159,7 +166,7 @@ export function assembleAssistantIntent(raw:unknown,request:AssistantRequest):{a
  if(explicitReplacements.length&&(intent.kind==='none'||intent.kind==='clarify'))intent={kind:'plan_modify',changes:explicitReplacements};
  const identity={requestId:context.requestId,restoreGeneration:context.restoreGeneration,mutationAllowed:false as const};
  if(intent.kind==='plan_new'&&context.task==='ONBOARD_PLAN'){
-  const p=intent.params,profile={...context.profile,weeklyTarget:p.daysPerWeek??context.profile.weeklyTarget,sessionMinutes:p.minutesPerSession??context.profile.sessionMinutes,
+  const p=intent.params,profile={...context.profile,weeklyTarget:p.daysPerWeek??context.profile.weeklyTarget,sessionMinutes:sessionDuration(request.messages.at(-1)?.content??'')??p.minutesPerSession??context.profile.sessionMinutes,
    place:context.profile.place,equipment:context.profile.equipment,
    preferredDays:p.preferredDays?.filter(day=>['mon','tue','wed','thu','fri','sat','sun'].includes(day)) as typeof context.profile.preferredDays??context.profile.preferredDays,
    cautions:[...new Set([...context.profile.cautions,...(p.cautionAreas??[]).filter(area=>['knee','back','shoulder','wrist','other'].includes(area))])] as typeof context.profile.cautions};
@@ -186,14 +193,27 @@ export function assembleAssistantIntent(raw:unknown,request:AssistantRequest):{a
    const index=template.items.findIndex(item=>{const exercise=exercises.find(row=>row.id===item.exerciseId);return exercise&&assistantMovement(exercise)===mode;});
    if(index<0){dropped.push('unknown_pattern');continue;}template.items[index]=newItem(candidate);
   }
-  for(const template of proposal.templates){coverPatterns(template,candidates);recalculate(template);}
+  for(const template of proposal.templates){
+   coverPatterns(template,candidates);
+   if(/瘦|减脂|体脂|fat_loss|fat loss|weight loss/i.test(profile.goalText)||p.goal==='fat_loss'){
+    const cardio=candidates.find(row=>row.mode==='cardio'&&!/run|jump|hop|climber|lunge/i.test(row.exercise.name.en));
+    if(cardio&&!template.items.some(item=>candidates.find(row=>row.exercise.id===item.exerciseId)?.mode==='cardio'))template.items.push(newItem(cardio));
+   }
+   fitDuration(template,profile.sessionMinutes,candidates);
+  }
   return {attachment:coachResponseSchema.parse({...identity,type:'plan_proposal',proposal}),dropped,repaired:dropped.length>0};
  }
  if(intent.kind==='plan_modify'&&context.task==='MODIFY_PLAN'){
   const scope=namedPlanScope(request),scoped=scope.templates.size>0||scope.items.size>0;
-  const changesToApply=intent.changes.filter(change=>!scope.items.size||(change.from&&scope.items.has(exercises.find(e=>[e.id,e.name.zh,e.name.en].some(name=>normal(name)===normal(change.from!)))?.id??''))).map(change=>({...change}));
+  const changesToApply=intent.changes.filter(change=>change.op==='add'||!scope.items.size||context.plan.templates.some(template=>findExistingItem(template,change.from)>=0)).map(change=>({...change}));
+  if(explicitReplacements.some(change=>change.to)){
+   for(let index=changesToApply.length-1;index>=0;index--)if(changesToApply[index].op==='replace'&&!explicitReplacements.some(change=>context.plan.templates.some(template=>template.id===change.session&&findExistingItem(template,change.from)===findExistingItem(template,changesToApply[index].from))))changesToApply.splice(index,1);
+  }
   if(scope.templates.size)for(const change of changesToApply)if(!change.session)change.session=[...scope.templates][0];
   const additions=changesToApply.filter(change=>change.op==='add');
+  const additionName=context.instruction.match(/(?:加|增加|add)\s*(?:一个|one\s+)?\s*(.+?)(?:[。；;]|$)/i)?.[1];
+  const explicitlyAdded=resolveAssistantExercise(additionName,candidates);
+  if(explicitlyAdded)for(const change of additions)change.to=explicitlyAdded.code;
   const singleAddition=!/(?:[2-9二两三四五六七八九])\s*(?:个|项|动作)|\b[2-9]\s+(?:exercises|movements)/i.test(request.messages.at(-1)?.content??'');
   if(singleAddition&&additions.length){
    const destination=scope.templates.size?[...scope.templates][0]:[...context.plan.templates].sort((a,b)=>a.estimatedMinutes-b.estimatedMinutes)[0].id;
@@ -205,19 +225,24 @@ export function assembleAssistantIntent(raw:unknown,request:AssistantRequest):{a
    for(const change of changesToApply)if(change.op==='add'){const choice=resolveAssistantExercise(change.to,candidates);if(!choice||context.plan.templates.some(template=>template.items.some(item=>sameExerciseFamily(exercises.find(e=>e.id===item.exerciseId)!,choice.exercise))))change.to=safe?.code;}
   }
   for(const inferred of explicitReplacements){
-   if(!changesToApply.some(change=>change.op==='replace'&&change.session===inferred.session&&normal(change.from??'')===normal(inferred.from??'')))changesToApply.push(inferred);
+   const existing=changesToApply.find(change=>change.op==='replace'&&(!change.session||change.session===inferred.session)&&context.plan.templates.some(template=>template.id===inferred.session&&findExistingItem(template,change.from)===findExistingItem(template,inferred.from)));
+   if(existing&&inferred.to)existing.to=inferred.to;
+   else if(!existing)changesToApply.push(inferred);
   }
   const proposal=structuredClone(context.plan);
-  const explicitMinutes=/(?:\d+|半|一|二|两|三|四|五|六|七|八|九|十)\s*(?:分钟|minutes?|mins?|小时|hours?)/i.test(request.messages.at(-1)?.content??'')?intent.params?.minutesPerSession:undefined;
+  const explicitMinutes=sessionDuration(context.instruction);
   if(intent.params?.daysPerWeek)proposal.weeklyTarget=intent.params.daysPerWeek;
+  if(intent.params?.daysPerWeek&&proposal.preferredDays&&proposal.preferredDays.length!==proposal.weeklyTarget){
+   const order=['mon','tue','wed','thu','fri','sat','sun'] as const;
+   proposal.preferredDays=[...new Set([...proposal.preferredDays,...order])].slice(0,proposal.weeklyTarget);
+  }
   if(intent.params?.preferredDays)proposal.preferredDays=intent.params.preferredDays.filter(day=>['mon','tue','wed','thu','fri','sat','sun'].includes(day)) as typeof proposal.preferredDays;
   if(explicitMinutes)proposal.sessionMinutes=Math.max(15,explicitMinutes);
   for(const template of proposal.templates){
    if(scope.templates.size&&!scope.templates.has(template.id))continue;
    const filtered=changesToApply.filter(change=>!scope.templates.size||!change.session||scope.templates.has(change.session));
-   applyChanges(template,filtered,candidates,new Set(),dropped,context.plan.templates.flatMap(t=>t.items));
-   if(!scoped&&!additions.length)coverPatterns(template,candidates);
-   if(explicitMinutes)fitDuration(template,proposal.sessionMinutes);else recalculate(template);
+   applyChanges(template,filtered,candidates,new Set(),dropped,context.plan.templates.flatMap(t=>t.items),/(?:换成|替换为|换为|replace.+with|swap.+for)/i.test(context.instruction));
+   if(explicitMinutes)fitDuration(template,proposal.sessionMinutes,candidates);else recalculate(template);
    syncTemplateName(template,request.locale);
   }
   proposal.scheduleOriginalText=context.plan.scheduleOriginalText;
@@ -229,17 +254,27 @@ export function assembleAssistantIntent(raw:unknown,request:AssistantRequest):{a
   if(!changes.length)throw Error('NO_APPLICABLE_CHANGE');
   changes.push(request.locale==='zh'?`预计${estimatedDurationLabel(proposal.templates,request.locale)}`:`About ${estimatedDurationLabel(proposal.templates,request.locale)}`);
   const reason=request.locale==='zh'?'按已确认的场地、器械和注意部位筛选动作。':'Exercises respect the confirmed place, equipment and cautions.';
-  proposal.reasons=[changes[0],changes[1]??reason,request.locale==='zh'?`每次预计约${proposal.sessionMinutes}分钟。`:`About ${proposal.sessionMinutes} minutes per workout.`];
+  proposal.reasons=[changes[0],changes[1]??reason,request.locale==='zh'?`每次预计约${estimatedDurationLabel(proposal.templates,request.locale)}。`:`About ${estimatedDurationLabel(proposal.templates,request.locale)} per workout.`];
   return {attachment:coachResponseSchema.parse({...identity,type:'change_proposal',target:context.target,proposal,changes}),dropped,repaired:dropped.length>0};
  }
  if(intent.kind==='today_adjust'&&context.task==='ADJUST_TODAY'){
   const template=structuredClone(context.template),locked=new Set(request.currentWorkout?.completedSets.map(set=>set.itemIndex)??[]);
   applyChanges(template,intent.changes??[],candidates,locked,dropped);
   const latest=request.messages.at(-1)?.content??'';
+  if(/膝盖.{0,8}(?:疼|痛|不适|受伤|舒服|伤)|knee\s*(?:pain|injury|discomfort)/i.test(latest)){
+   for(let index=0;index<template.items.length;index++){
+    const exercise=exercises.find(row=>row.id===template.items[index].exerciseId);
+    if(!locked.has(index)&&exercise&&/squat|lunge|leg.press|jump|hop|burpee/i.test(exercise.name.en)){
+     const replacement=candidates.find(row=>row.mode==='hinge'&&!template.items.some(item=>item.exerciseId===row.exercise.id));
+     if(replacement)template.items[index]=replacementItem(template.items[index],replacement);
+    }
+   }
+  }
   const focus=intent.focus??(/只练上半身|只练上肢|upper.body only/i.test(latest)?'upper':undefined);
   if(focus&&focus!=='full'){
-   const accepts=(mode:string)=>focus==='upper'?['push','pull','core'].includes(mode):focus==='lower'?['squat','hinge','core'].includes(mode):focus==='core'?mode==='core':mode==='mobility';
-   template.items=template.items.filter((item,index)=>locked.has(index)||accepts(assistantMovement(exercises.find(row=>row.id===item.exerciseId)!)));
+   const accepts=(mode:string)=>focus==='upper'?['push','pull','core'].includes(mode):focus==='lower'?['squat','hinge','lower','core'].includes(mode):focus==='core'?mode==='core':mode==='mobility';
+   const lastCompleted=locked.size?Math.max(...locked):-1;
+   template.items=template.items.filter((item,index)=>index<=lastCompleted||accepts(assistantMovement(exercises.find(row=>row.id===item.exerciseId)!)));
    if(!template.items.length){const safe=candidates.find(row=>accepts(row.mode));if(safe)template.items.push(newItem(safe));}
    for(const mode of focus==='upper'?['push','pull','core']:focus==='lower'?['squat','hinge']:[]){
     if(!template.items.some(item=>assistantMovement(exercises.find(row=>row.id===item.exerciseId)!)===mode)){
@@ -247,14 +282,14 @@ export function assembleAssistantIntent(raw:unknown,request:AssistantRequest):{a
     }
    }
   }
-  const spokenMinutes=latest.match(/(\d{1,3})\s*(?:分钟|minutes?|mins?)/i);
-  const desired=spokenMinutes?Number(spokenMinutes[1]):intent.changes?.some(change=>change.op==='replace')?undefined:intent.minutes;
-  if(desired)fitDuration(template,desired);else recalculate(template,10);
+  const spokenMinutes=sessionDuration(latest);
+  const desired=spokenMinutes??(intent.changes?.some(change=>change.op==='replace')?undefined:intent.minutes);
+  if(desired)fitDuration(template,desired,candidates,locked);else recalculate(template,10);
   if(desired&&Math.abs(template.estimatedMinutes-desired)>desired*.1)throw Error('NO_APPLICABLE_CHANGE');
   syncTemplateName(template,request.locale);
   const changes=templateDiff(context.template,template,request.locale);
   if(!changes.length)throw Error('NO_APPLICABLE_CHANGE');
-  const cautions=/膝盖.{0,8}(?:疼|痛|不适|受伤|舒服|伤)|knee\s*(?:pain|injury|discomfort)/i.test(request.messages.at(-1)?.content??'');
+  const cautions=/膝盖.{0,8}(?:疼|痛|不适|受伤|舒服|伤)|knee\s*(?:pain|injury|discomfort)/i.test(request.messages.at(-1)?.content??'')&&template.items.every(item=>{const exercise=exercises.find(row=>row.id===item.exerciseId);return !!exercise&&!/squat|lunge|leg.press|jump|hop|burpee/i.test(exercise.name.en);});
   const summary=(request.locale==='zh'?`调整${diffTemplates([context.template],[template]).changes.length}项 · 预计${template.estimatedMinutes}分钟`:`${diffTemplates([context.template],[template]).changes.length} changes · about ${template.estimatedMinutes} minutes`)+(cautions?(request.locale==='zh'?' · 已避开加重膝盖负担的动作':' · Avoids high knee-load movements'):'');
   return {attachment:coachResponseSchema.parse({...identity,type:'today_adjustment',target:context.target,workoutId:context.workoutId,template,summary}),dropped,repaired:dropped.length>0};
  }

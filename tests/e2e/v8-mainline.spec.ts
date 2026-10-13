@@ -1,24 +1,25 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { mockActiveCoachAccess } from './helpers/coach-access';
+async function enableAssistant(page:Page){await page.evaluate(async()=>{const path='/src/application/feature-flags.ts';await(await import(/* @vite-ignore */ path)).refreshFeatureFlags(async()=>Response.json({version:1,flags:{aiAssistantV2:true},expiresAt:Date.now()+60000}));});}
 
 test('coach uses explicit send and confirmation before changing a single workout',async({page})=>{
  await mockActiveCoachAccess(page);
- let calls=0;await page.route('**/api/v1/plans/generate',async route=>{calls++;const envelope=route.request().postDataJSON(),request=envelope.coach;
+ let calls=0;await page.route('**/api/v1/assistant/chat',async route=>{calls++;const envelope=route.request().postDataJSON(),request=envelope.context;
   expect(request.body).toBeUndefined();expect(request.history).toBeUndefined();
-  await route.fulfill({json:{requestId:request.requestId,context:{restoreGeneration:request.restoreGeneration,inputDigest:envelope.sendConfirmation},accounting:'settled',result:{requestId:request.requestId,restoreGeneration:request.restoreGeneration,mutationAllowed:false,type:'today_adjustment',target:request.target,template:{...request.template,items:request.template.items.map((i:any)=>({...i,sets:1}))},summary:'本次每个动作一组'}}});
+  await route.fulfill({contentType:'text/event-stream',body:[{type:'text_delta',delta:'本次每个动作一组'},{type:'attachment',attachment:{requestId:request.requestId,restoreGeneration:request.restoreGeneration,mutationAllowed:false,type:'today_adjustment',target:request.target,template:{...request.template,items:request.template.items.map((i:any)=>({...i,sets:1}))},summary:'本次每个动作一组'}},{type:'done',success:true,usage:{inputTokens:1,outputTokens:1},promptVersion:'test'}].map(event=>'data: '+JSON.stringify(event)+'\n\n').join('')});
  });
- await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();await page.getByRole('button',{name:'和芽芽聊聊',exact:true}).click();expect(calls).toBe(0);
- await page.getByRole('dialog').getByRole('textbox',{name:'跟芽芽说'}).fill('今天少一组');await page.getByRole('dialog').getByRole('button',{name:'发送',exact:true}).click();await expect(page.getByText('本次每个动作一组',{exact:true})).toBeVisible();
+ await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();await enableAssistant(page);await page.getByRole('button',{name:'和芽芽聊聊',exact:true}).click();expect(calls).toBe(0);
+ await page.getByRole('dialog').getByRole('textbox').fill('今天少一组');await page.getByRole('dialog').getByRole('button',{name:'发送',exact:true}).click();await expect(page.getByRole('log')).toContainText('本次每个动作一组');await expect(page.locator('.assistant-attachment')).toContainText('1 组');
  const before=await page.evaluate(async()=>{const p='/src/ui/mainline/context.tsx';return(await(await import(/* @vite-ignore */ p)).workflow.snapshot()).state.nextWorkoutOverride;});expect(before).toBeUndefined();
- await page.getByRole('button',{name:'确认应用',exact:true}).click();await expect(page.getByText('已保存',{exact:true})).toBeVisible();await page.keyboard.press('Escape');
+ await page.getByRole('button',{name:'应用建议',exact:true}).click();await expect(page.getByText('已应用',{exact:true})).toBeVisible();await page.keyboard.press('Escape');
  await page.getByRole('button',{name:'开始训练',exact:true}).first().click();await expect(page.getByText('第 1 组，共 1 组',{exact:true})).toBeVisible();expect(calls).toBe(1);
 });
 
 test('home composer opens coach and sends once with optional data excluded',async({page})=>{
  await mockActiveCoachAccess(page);
- let calls=0;await page.route('**/api/v1/plans/generate',async route=>{calls++;const request=route.request().postDataJSON().coach;expect(request.body).toBeUndefined();expect(request.history).toBeUndefined();expect(request.instruction).toBe('今天轻一点');await route.fulfill({status:503,json:{error:'AI_DISABLED'}});});
- await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();
+ let calls=0;await page.route('**/api/v1/assistant/chat',async route=>{calls++;const request=route.request().postDataJSON().context;expect(request.body).toBeUndefined();expect(request.history).toBeUndefined();expect(request.instruction).toBe('今天轻一点');await route.fulfill({status:503,json:{error:'AI_DISABLED'}});});
+ await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();await enableAssistant(page);
  await page.getByRole('textbox',{name:'跟芽芽说'}).fill('今天轻一点');expect(calls).toBe(0);
  await page.getByRole('button',{name:'发送',exact:true}).click();await expect.poll(()=>calls).toBe(1);
  await expect(page.getByRole('dialog')).toBeVisible();await page.keyboard.press('Escape');
@@ -28,12 +29,13 @@ test('home composer opens coach and sends once with optional data excluded',asyn
 test('monthly review sends the visible month instead of the current week',async({page})=>{
  await mockActiveCoachAccess(page);
  let received:any;
- await page.route('**/api/v1/stages/summarize',async route=>{received=route.request().postDataJSON().coach;await route.fulfill({status:503,json:{error:'AI_DISABLED'}});});
+ await page.route('**/api/v1/assistant/chat',async route=>{received=route.request().postDataJSON().context;await route.fulfill({status:503,json:{error:'AI_DISABLED'}});});
  await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();
  await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
  await page.goto('/review');await page.getByRole('button',{name:'本月回顾',exact:true}).click();
+ await enableAssistant(page);
  await page.getByRole('button',{name:'和芽芽聊聊',exact:true}).click();
- await page.getByRole('textbox',{name:'跟芽芽说'}).fill('看看这个月');await page.getByRole('button',{name:'发送',exact:true}).click();
+ await page.getByRole('dialog').getByRole('textbox').fill('看看这个月');await page.getByRole('dialog').getByRole('button',{name:'发送',exact:true}).click();
  await expect.poll(()=>received?.kind).toBe('month');expect(received.facts.from).toMatch(/-01$/);
  expect(received.body).toBeUndefined();expect(received.history).toBeUndefined();
 });
@@ -226,9 +228,9 @@ test('current-week overnight patterns, replacement review and localized names',a
 test('server-revoked access replaces local entitlement and blocks paid requests',async({page})=>{
  let qualification='active',modelCalls=0;
  await page.route('**/api/v1/trial/access-status',route=>route.fulfill({json:{qualification,sessionValid:qualification==='active',expiresAt:Date.now()+86400000,aiEnabled:true,planningBudgetDisabled:true,used:{generate:0},limits:{generate:4}}}));
- await page.route('**/api/v1/plans/generate',route=>{modelCalls++;return route.fulfill({status:500,json:{error:'UNEXPECTED'}})});
+ await page.route('**/api/v1/assistant/chat',route=>{modelCalls++;return route.fulfill({status:500,json:{error:'UNEXPECTED'}})});
  await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();await page.goto('/settings');await expect(page.getByText('AI 资格有效',{exact:true})).toBeVisible();qualification='revoked';await page.getByRole('button',{name:'刷新资格',exact:true}).click();await expect(page.getByText('此浏览器的资格已失效',{exact:true})).toBeVisible();await expect(page.getByRole('link',{name:'恢复领取或申请补发'})).toHaveAttribute('href','/trial');
- await page.goto('/');await page.getByRole('button',{name:'和芽芽聊聊',exact:true}).click();await page.getByRole('dialog').getByRole('textbox',{name:'跟芽芽说'}).fill('今天时间不够');await page.getByRole('dialog').getByRole('button',{name:'发送',exact:true}).click();await expect(page.getByRole('dialog').getByRole('status')).toContainText('现在用的是本地建议 · 资格无效');expect(modelCalls).toBe(0);
+ await page.goto('/');await page.getByRole('button',{name:'和芽芽聊聊',exact:true}).click();await page.getByRole('dialog').getByRole('textbox').fill('今天时间不够');await page.getByRole('dialog').getByRole('button',{name:'发送',exact:true}).click();await expect(page.getByRole('dialog').getByRole('status')).toContainText('现在用的是本地建议 · 资格无效');expect(modelCalls).toBe(0);
 });
 
 test('activities require an explicit type and replanning starts with previous answers',async({page})=>{
@@ -238,7 +240,7 @@ test('activities require an explicit type and replanning starts with previous an
 
 test('favorite exercises roundtrip through a downloaded backup without changing workout facts',async({page})=>{
  await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();await page.goto('/exercises');await page.getByRole('searchbox').fill('自阻力划船');await page.getByRole('button',{name:'收藏 自阻力划船',exact:true}).click();await page.goto('/settings');await page.getByRole('button',{name:'备份恢复',exact:true}).click();const downloaded=page.waitForEvent('download');await page.getByRole('button',{name:'导出 JSON 备份',exact:true}).click();const download=await downloaded;const file=await download.path();expect(file).toBeTruthy();
- const {readFileSync}=await import('node:fs');const envelope=JSON.parse(readFileSync(file!,'utf8'));expect(envelope.schemaVersion).toBe(12);expect(envelope.data.exerciseFavorites).toHaveLength(1);
+ const {readFileSync}=await import('node:fs');const envelope=JSON.parse(readFileSync(file!,'utf8'));expect(envelope.schemaVersion).toBe(13);expect(envelope.data.exerciseFavorites).toHaveLength(1);
  const result=await page.evaluate(async backup=>{const p='/src/persistence/repository.ts',b='/src/application/backup.ts',repo=(await import(/* @vite-ignore */ p)).repository,service=(await import(/* @vite-ignore */ b)).createBackupService(repo);await repo.write(async()=>{await repo.db.exerciseFavorites.clear()});const input=await service.validateBackup(new File([JSON.stringify(backup)],'backup.json'));await service.importBackup(input,{backupExported:true,replacementConfirmed:true,expectedRevision:input.expectedRevision});return {favorites:await repo.db.exerciseFavorites.toArray(),workouts:await repo.db.v8Workouts.toArray()};},envelope);
  expect(result.favorites).toEqual(envelope.data.exerciseFavorites);expect(result.workouts).toEqual(envelope.data.v8.workouts);await page.goto('/exercises');await page.getByLabel('只看已收藏').check();await expect(page.getByRole('button',{name:'自阻力划船',exact:true})).toBeVisible();
 });

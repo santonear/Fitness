@@ -49,6 +49,7 @@ export interface CoachProfile {
   goalText: string; weeklyTarget: number; sessionMinutes: number; scheduleOriginalText: string;
   preferredDays?: ('mon'|'tue'|'wed'|'thu'|'fri'|'sat'|'sun')[];
   place: 'home' | 'gym' | 'outdoor' | 'mixed'; equipment: string[]; adultConfirmed: boolean;
+  placeEquipmentOriginalText?: string;
   cautions: ('knee' | 'back' | 'shoulder' | 'wrist' | 'other')[]; cautionNote?: string; confirmedAt: string;
 }
 export interface VersionTarget { planId: string; versionId: string; revision: number }

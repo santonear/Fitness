@@ -116,27 +116,29 @@ async function seedManual(page: import('@playwright/test').Page) {
 for(const mode of ['success','denied','failure','reject','stale','stale-start'] as const)test(`manual coach ${mode} keeps plan unchanged and requires explicit selection`,async({page})=>{
  let calls=0;
  await page.route('**/api/v1/trial/access-status',route=>route.fulfill({json:{qualification:mode==='denied'?'none':'active',sessionValid:true,expiresAt:Date.now()+3600000,aiEnabled:true,summaryAvailable:true}}));
- await page.route('**/api/v1/plans/generate',async route=>{
-  calls++;if(mode==='failure'){await route.fulfill({status:503,json:{error:'CONTROL_UNAVAILABLE'}});return;}
-  const envelope=route.request().postDataJSON(),r=envelope.coach;
+ await page.route('**/api/v1/features',route=>route.fulfill({json:{version:1,flags:{aiAssistantV2:true},expiresAt:Date.now()+60000}}));
+ await page.route('**/api/v1/assistant/chat',async route=>{
+  calls++;if(mode==='denied'){await route.fulfill({status:403,json:{error:'QUALIFICATION_REQUIRED'}});return;}if(mode==='failure'){await route.fulfill({status:503,json:{error:'CONTROL_UNAVAILABLE'}});return;}
+  const envelope=route.request().postDataJSON(),r=envelope.context;
   expect(r.task).toBe('ONBOARD_PLAN');expect(r.body).toBeUndefined();expect(r.history).toBeUndefined();expect(r.nutrition).toBeUndefined();
   const proposal=await page.evaluate(async profile=>{const path='/src/application/v8-workflow.ts';return(await import(/* @vite-ignore */ path)).basicProposal({...profile,confirmedAt:new Date().toISOString()});},r.profile);
   const exercise=await page.evaluate(async request=>{const path='/src/coach/response-adapter.ts';return(await import(/* @vite-ignore */ path)).coachV8Exercises(request).find((e:any)=>e.metricType==='reps');},r);
   proposal.templates.forEach((t:any)=>{t.estimatedMinutes=r.profile.sessionMinutes;t.items=[{exerciseId:exercise.id,equipment:exercise.equipment,sets:3,target:{metricType:'reps',reps:11}},{exerciseId:exercise.id,equipment:exercise.equipment,sets:1,target:{metricType:'reps',reps:6}}];});
-  await route.fulfill({json:{requestId:r.requestId,context:{restoreGeneration:r.restoreGeneration,inputDigest:envelope.sendConfirmation},accounting:'settled',result:{requestId:r.requestId,restoreGeneration:r.restoreGeneration,mutationAllowed:false,type:'plan_proposal',proposal}}});
+  await route.fulfill({contentType:'text/event-stream',body:[{type:'text_delta',delta:'可以先查看这份训练安排。'},{type:'attachment',attachment:{requestId:r.requestId,restoreGeneration:r.restoreGeneration,mutationAllowed:false,type:'plan_proposal',proposal}},{type:'done',success:true,usage:{inputTokens:1,outputTokens:1},promptVersion:'test'}].map(event=>'data: '+JSON.stringify(event)+'\n\n').join('')});
  });
  await seedManual(page);
  const snapshot=()=>page.evaluate(async()=>{const path='/src/ui/mainline/context.tsx';const s=await(await import(/* @vite-ignore */ path)).workflow.snapshot();return{versions:s.versions,active:s.active};});
  const before=await snapshot();await page.getByRole('button',{name:'芽芽帮配',exact:true}).click();expect(calls).toBe(0);
- await expect(page.getByRole('dialog').getByText('将发送给芽芽',{exact:true})).toBeVisible();
+ await expect(page.getByRole('dialog').getByText('查看发送内容',{exact:true})).toBeVisible();
  if(mode==='reject'){await page.getByRole('dialog').getByRole('button',{name:'关闭',exact:true}).click();expect(calls).toBe(0);expect(await snapshot()).toEqual(before);return;}
- await page.getByRole('dialog').getByRole('textbox',{name:'跟芽芽说'}).fill('搭配本次训练');await page.getByRole('dialog').getByRole('button',{name:'发送',exact:true}).click();
+ await page.getByRole('dialog').getByRole('textbox').fill('搭配本次训练');await page.getByRole('dialog').getByRole('button',{name:'发送',exact:true}).click();
  if(mode==='denied'||mode==='failure'){
+  if(mode==='denied')await expect(page.getByRole('dialog').getByRole('status')).toContainText('现在用的是本地建议 · 资格无效');
   await page.getByRole('dialog').getByRole('button',{name:'使用基础计划',exact:true}).click();expect(calls).toBe(mode==='denied'?0:1);
  }else{
   await expect(page.getByRole('button',{name:'带回手动训练页选择',exact:true})).toBeVisible();
   if(mode==='success')await expect(page.getByRole('dialog').getByText('15 分钟',{exact:true})).toHaveCount(2);
-  if(mode==='success'&&process.env.MANUAL_AI_SCREENSHOTS==='1'){for(const width of [375,1280]){await page.setViewportSize({width,height:900});await page.getByRole('dialog').locator('.coach-panel-content > section').first().scrollIntoViewIfNeeded();await page.screenshot({path:`outputs/mainline-polish/mock-${width}-manual-ai-candidate.png`,animations:'disabled'});}}
+  if(mode==='success'&&process.env.MANUAL_AI_SCREENSHOTS==='1'){for(const width of [375,1280]){await page.setViewportSize({width,height:900});await page.getByRole('dialog').locator('.assistant-attachment').first().scrollIntoViewIfNeeded();await page.screenshot({path:`outputs/mainline-polish/mock-${width}-manual-ai-candidate.png`,animations:'disabled'});}}
   if(mode==='stale'){
    await page.evaluate(async()=>{const path='/src/persistence/repository.ts';const {repository}=await import(/* @vite-ignore */ path);const m=await repository.readMetadata();await repository.db.metadata.put({...m,restoreGeneration:(m.restoreGeneration??0)+1});});
    await expect(page.getByRole('button',{name:'带回手动训练页选择',exact:true})).toHaveCount(0);await expect(page.getByRole('dialog')).toHaveCount(0);expect(await snapshot()).toEqual(before);return;

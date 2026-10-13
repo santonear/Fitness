@@ -52,11 +52,11 @@ test('stale signed Access blocks cleanup and fresh verification resumes the same
 });
 
 test('runtime configuration edits and history restore persist through the real backend',async({page})=>{
-  await page.goto('/admin/settings');const quota=page.getByRole('spinbutton',{name:'计划额度默认值',exact:true});await expect(quota).toHaveValue('4');
-  async function save(value:string){await quota.fill(value);await page.getByRole('button',{name:'查看改动',exact:true}).click();await expect(page.getByRole('dialog')).toContainText(`改后: ${value}`);const response=page.waitForResponse(r=>r.url().endsWith('/finance/config')&&r.request().method()==='POST');await page.getByRole('button',{name:'确认',exact:true}).click();expect((await response).status()).toBe(200);await expect(page.getByRole('dialog')).not.toBeVisible();}
+  await page.goto('/admin/settings');const quota=page.getByRole('spinbutton',{name:'每人每天消息上限',exact:true});await expect(quota).toHaveValue('30');
+  async function save(value:string){await quota.fill(value);await page.getByRole('button',{name:'保存消息上限',exact:true}).click();await expect(page.getByRole('dialog')).toContainText(`改后: ${value}`);const response=page.waitForResponse(r=>r.url().endsWith('/finance/config')&&r.request().method()==='POST');await page.getByRole('button',{name:'确认',exact:true}).click();expect((await response).status()).toBe(200);await expect(page.getByRole('dialog')).not.toBeVisible();}
   await save('9');await expect(page.getByRole('button',{name:'恢复此版本'})).toHaveCount(1);await save('12');await expect(page.getByRole('button',{name:'恢复此版本'})).toHaveCount(2);
   await page.getByRole('button',{name:'恢复此版本'}).first().click();await page.getByRole('button',{name:'确认',exact:true}).click();await expect(quota).toHaveValue('9');
-  const result=await (await page.request.get('/api/v1/management/console/finance/config')).json();expect(result.current.version).toBe(3);expect(result.current.config.quotaGenerate).toBe(9);expect(result.history.map((v:{config:{quotaGenerate:number}})=>v.config.quotaGenerate)).toEqual([9,12,9]);
+  const result=await (await page.request.get('/api/v1/management/console/finance/config')).json();expect(result.current.version).toBe(3);expect(result.current.config.dailyMessageLimit).toBe(9);expect(result.current.config.quotaGenerate).toBe(4);expect(result.history.map((v:{config:{dailyMessageLimit:number}})=>v.config.dailyMessageLimit)).toEqual([9,12,9]);
   await page.reload();await expect(quota).toHaveValue('9');expect((await (await page.request.get('/__test/evidence')).json()).revision).toBe(0);
 });
 
@@ -110,8 +110,8 @@ test('unknown preview restoration retries its original receipt after reopening w
 test('config review lists changed keys only and notification timezone has a readable label',async({page})=>{
  await page.goto('/admin/settings');const zone=page.getByRole('combobox',{name:'时区',exact:true});
  await expect(zone.locator('option:checked')).toContainText('东八区（UTC+8）');await expect(zone).toHaveValue('Asia/Shanghai');
- await page.getByLabel('月预算上限（元）',{exact:true}).fill('45.67');await page.getByRole('button',{name:'查看改动',exact:true}).click();
- await expect(page.getByRole('dialog').locator('dt')).toHaveCount(1);await expect(page.getByRole('dialog')).toContainText('45.67');
+ await page.getByLabel('每人每天消息上限',{exact:true}).fill('60');await page.getByRole('button',{name:'保存消息上限',exact:true}).click();
+ await expect(page.getByRole('dialog').locator('dt')).toHaveCount(1);await expect(page.getByRole('dialog')).toContainText('改后: 60');
  await page.getByRole('dialog').getByRole('button',{name:'取消',exact:true}).click();
 });
 
@@ -172,7 +172,7 @@ test('legacy parity retention removes only expired closed application',async({pa
 });
 test('legacy parity AI switch persists without invoking any model transport',async({page})=>{
  await page.request.post('/__test/parity-fixture',{data:{mode:'ai'}});await page.goto('/admin/settings');
- for(const name of ['开启 AI 服务','关闭 AI 服务']){await page.getByRole('button',{name,exact:true}).click();const response=page.waitForResponse(r=>r.url().endsWith('/console/users/action'));await page.getByRole('button',{name:'确认',exact:true}).click();expect((await response).status()).toBe(200);await expect(page.getByRole('dialog')).not.toBeVisible();expect((await (await page.request.get('/__test/evidence')).json()).aiEnabled).toBe(name==='开启 AI 服务');}
+ for(const name of ['开启','关闭']){await page.getByRole('heading',{name:'芽芽AI助手',exact:true}).locator('..').getByRole('button',{name,exact:true}).click();const response=page.waitForResponse(r=>r.url().endsWith('/console/users/action'));await page.getByRole('button',{name:'确认',exact:true}).click();expect((await response).status()).toBe(200);await expect(page.getByRole('dialog')).not.toBeVisible();expect((await (await page.request.get('/__test/evidence')).json()).aiEnabled).toBe(name==='开启');}
 });
 test('legacy parity audit filter and CSV preserve UTF8 BOM',async({page})=>{
  await page.goto('/admin/applications');await page.getByRole('button',{name:'批准',exact:true}).click();await page.getByRole('button',{name:'确认',exact:true}).click();await expect(page.getByRole('dialog')).not.toBeVisible();await page.goto('/admin/audit');await page.getByLabel('筛选操作').fill('批准申请');await expect(page.getByText(/admin@integration.test.*批准申请.*已完成/)).toBeVisible();
@@ -180,12 +180,12 @@ test('legacy parity audit filter and CSV preserve UTF8 BOM',async({page})=>{
 });
 
 
-test('review evidence yuan input confirms before storing integer fen',async({page})=>{
- await page.goto('/admin/settings');await page.getByLabel('月预算上限（元）',{exact:true}).fill('45.67');await page.getByLabel('单次预留（元）',{exact:true}).fill('2.34');
- await page.getByRole('button',{name:'查看改动',exact:true}).click();await expect(page.getByRole('dialog')).toContainText('¥ 45.67');await expect(page.getByRole('dialog')).toContainText('¥ 2.34');
+test('message limits confirm before saving and preserve the legacy monetary configuration',async({page})=>{
+ await page.goto('/admin/settings');await expect(page.getByLabel('月预算上限（元）',{exact:true})).toHaveCount(0);await expect(page.getByLabel('单次预留（元）',{exact:true})).toHaveCount(0);await page.getByLabel('每人每天消息上限',{exact:true}).fill('60');
+ await page.getByRole('button',{name:'保存消息上限',exact:true}).click();await expect(page.getByRole('dialog')).toContainText('改后: 60');
  const before=await (await page.request.get('/api/v1/management/console/finance/config')).json();expect(before.current.config.monthlyBudgetFen).toBe(3500);
  const response=page.waitForResponse(r=>r.url().endsWith('/finance/config')&&r.request().method()==='POST');await page.getByRole('button',{name:'确认',exact:true}).click();expect((await response).status()).toBe(200);
- const after=await (await page.request.get('/api/v1/management/console/finance/config')).json();expect(after.current.config).toMatchObject({monthlyBudgetFen:4567,reservationFen:234});
+ const after=await (await page.request.get('/api/v1/management/console/finance/config')).json();expect(after.current.config).toMatchObject({dailyMessageLimit:60,monthlyBudgetFen:before.current.config.monthlyBudgetFen,reservationFen:before.current.config.reservationFen});
 });
 test.describe('Shanghai announcement review evidence',()=>{
  test.use({timezoneId:'Asia/Shanghai'});

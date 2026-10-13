@@ -1,4 +1,4 @@
-import { selectAiExercises } from '../catalog/ai-catalog';
+import { selectAiExercises, selectAssistantCandidates } from '../catalog/ai-catalog';
 import { exercises } from '../catalog/exercises';
 import { checkCoachLanguage, type CoachLanguageViolation } from '../application/rules/coach-language';
 import { guidedServiceLimits as limits } from '../domain/guided-limits';
@@ -24,6 +24,13 @@ function bounded(value: unknown, max: number) {
 
 /** Same bounded vocabulary must be supplied to the provider and checked on return. */
 export function coachV8Exercises(request: CoachRequest) {
+  if(request.candidateContext){
+    const candidates=selectAssistantCandidates({version:'fitness-assistant-v2',requestId:request.requestId,conversationId:request.conversationId,locale:request.locale,timeZone:request.timeZone,adultConfirmed:request.adultConfirmed,context:request,preferences:request.candidateContext.preferences,messages:[{role:'user',content:'instruction'in request?request.instruction:(request.messages.at(-1)?.content??(request.task==='ONBOARD_PLAN'?request.profile.goalText:''))}]}).map(row=>row.exercise);
+    const retained=request.task==='ADJUST_TODAY'?request.template.items.map(i=>i.exerciseId):request.task==='MODIFY_PLAN'?request.plan.templates.flatMap(t=>t.items.map(i=>i.exerciseId)):[];
+    requireCondition(new Set(retained).size<=64,'referenced catalog limit');
+    requireCondition(retained.every(id=>exercises.some(exercise=>exercise.id===id)),'unknown referenced exercise');
+    return [...new Map([...candidates,...exercises.filter(e=>retained.includes(e.id))].map(e=>[e.id,e])).values()];
+  }
   const referenced = request.task === 'ADJUST_TODAY' ? request.template.items.map(item => item.exerciseId)
     : request.task === 'MODIFY_PLAN' ? request.plan.templates.flatMap(template => template.items.map(item => item.exerciseId)) : [];
   const ids = new Set(referenced);

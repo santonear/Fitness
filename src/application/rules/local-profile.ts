@@ -1,6 +1,7 @@
 import {bodyValuesSchema,type BodyValues,type BodyField} from '../../domain/body-profile';
 import type { CoachProfile } from '../../domain/v8/contracts';
-import { mapSchedule } from './map-schedule';
+import { sessionDuration } from './session-duration';
+import { EQUIPMENT, equipmentLabel } from '../../catalog/taxonomy';
 
 const counts: Record<string,number> = {一:1,二:2,两:2,三:3,四:4,五:5,六:6,七:7,one:1,two:2,three:3,four:4,five:5,six:6,seven:7,once:1,twice:2};
 const quantity = '(?:[1-7]|[一二两三四五六七]|one|two|three|four|five|six|seven|once|twice)';
@@ -30,10 +31,12 @@ export function weeklyFrequency(text:string):number {
 
 /** Conservative local proposal parameters; original answers remain intact. */
 export function localProfile(answers: { goalText: string; scheduleOriginalText: string; placeEquipmentText: string; adultConfirmed: boolean; cautions: CoachProfile['cautions'] }): CoachProfile {
-  const mapped = mapSchedule(answers.scheduleOriginalText);
-  const single = answers.scheduleOriginalText.match(/(?:^|[^\d])(\d{1,3})\s*(?:分钟|minutes?|mins?)/i);
-  const range = answers.scheduleOriginalText.match(/(\d{1,3})\s*(?:[-–—~～至到]|to)\s*(\d{1,3})\s*(?:分钟|minutes?|mins?)/i);
-  const minutes = range ? Number(range[1]) : Number(single?.[1] ?? 30);
+  const minutes = sessionDuration(answers.scheduleOriginalText) ?? 30;
+  const equipment = EQUIPMENT.filter(key => key !== 'none' && [key, equipmentLabel(key, 'zh'), equipmentLabel(key, 'en')].some(label => {
+    const text=answers.placeEquipmentText.toLowerCase(),at=text.indexOf(label.toLowerCase());
+    return at>=0&&!/(?:没有|没带|不用|不使用|无|\bno\b|without|don't have|do not have)[^,，;；。]*$/i.test(text.slice(0,at));
+  }));
+  if (/健身房|gym|器械都有/i.test(answers.placeEquipmentText) && !equipment.length&&!/没有|无器械|\bno\b|without|don't have|do not have/i.test(answers.placeEquipmentText)) equipment.push('dumbbell', 'barbell', 'flat-bench', 'cable', 'lat-pulldown-machine', 'chest-press-machine', 'stationary-bike');
 
   const places = [ /在家|家里|家中|居家|home/i.test(answers.placeEquipmentText) && 'home', /健身房|gym/i.test(answers.placeEquipmentText) && 'gym', /户外|outdoor/i.test(answers.placeEquipmentText) && 'outdoor' ].filter(Boolean);
   if (!places.length) throw new Error('LOCAL_PLACE_UNRESOLVED');
@@ -41,8 +44,9 @@ export function localProfile(answers: { goalText: string; scheduleOriginalText: 
   return { goalText: answers.goalText, scheduleOriginalText: answers.scheduleOriginalText,
     weeklyTarget: weeklyFrequency(answers.scheduleOriginalText),
     ...(preferredDays.length?{preferredDays}:{}),
-    sessionMinutes: mapped.minutes.status === 'answered' ? mapped.minutes.value : Math.min(120, Math.max(15, minutes)),
-    place: places.length > 1 ? 'mixed' : places[0] as CoachProfile['place'], equipment: [answers.placeEquipmentText],
+    sessionMinutes: minutes,
+    place: places.length > 1 ? 'mixed' : places[0] as CoachProfile['place'], equipment: ['none', ...equipment],
+    placeEquipmentOriginalText: answers.placeEquipmentText,
     adultConfirmed: answers.adultConfirmed, cautions: answers.cautions, confirmedAt: new Date().toISOString() };
 }
 

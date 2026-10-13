@@ -55,6 +55,10 @@ export class FitnessDatabase extends Dexie {
         await metadata.put({...row,assistantScheduleRecoveryV2At:recoveredAt});
       });
     });
+    this.version(15).stores({}).upgrade(async tx=>{
+      // Additive profile metadata only. Existing answers and training facts stay intact.
+      await tx.table('metadata').toCollection().modify((row:Metadata)=>{row.schemaVersion=15;});
+    });
     this.version(14).stores({}).upgrade(async tx=>{
       const versions=await tx.table('v8PlanVersions').toArray(),conversations=await tx.table('assistantConversations').toArray();
       const recovered=recoverAssistantSchedule(versions,conversations,new Date().toISOString());

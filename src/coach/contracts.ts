@@ -23,6 +23,7 @@ const profile = z.strictObject({
   adultConfirmed: z.literal(true), cautions: z.array(z.enum(['knee', 'back', 'shoulder', 'wrist', 'other'])), cautionNote: text.optional(),
 });
 const common = {
+  candidateContext: z.strictObject({ equipment: z.array(z.string()).max(60), cautions: profile.shape.cautions, preferences: z.array(z.strictObject({kind:z.enum(['dislike_exercise','cannot_do','caution_area','preferred_days','equipment']),value:z.union([z.string().max(200),z.array(z.string().max(80)).max(7)])})).max(30).optional() }).optional(),
   version: z.literal('fitness-coach-v8'), requestId: id, conversationId: id, restoreGeneration: count,
   inputSnapshot: z.string().min(1).max(65536), sendConfirmation: z.string().min(1),
   locale: z.enum(['zh', 'en']), timeZone: timeZoneSchema, adultConfirmed: z.literal(true),

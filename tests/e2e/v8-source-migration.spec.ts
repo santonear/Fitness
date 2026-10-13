@@ -32,7 +32,7 @@ for (const fail of [false, true]) test(`database 9 to current ${fail ? 'failure 
       return { rejected, unchanged: facts === await snapshot(current, true), idempotent: after === await snapshot(current), version: current.verno, metadata: (await current.metadata.toCollection().first()).schemaVersion, noInferredSource: (await current.v8PlanVersions.toArray()).every((version: any) => !('source' in version)) };
     } finally { current.close(); await current.delete(); }
   }, { source, fail });
-  expect(result).toEqual(fail ? { rejected: true, unchanged: true, version:9, metadata: 9 } : { rejected: false, unchanged: true, idempotent: true, version:14, metadata:14, noInferredSource: true });
+  expect(result).toEqual(fail ? { rejected: true, unchanged: true, version:9, metadata: 9 } : { rejected: false, unchanged: true, idempotent: true, version:15, metadata:15, noInferredSource: true });
 });
 
 test('optional local and AI sources round-trip without rewriting old records; failed restore is atomic', async ({ page }) => {
@@ -63,5 +63,5 @@ test('optional local and AI sources round-trip without rewriting old records; fa
       return { results, failed, rolledBack, invalidRejected, invalidUnchanged: before === await snapshot() };
     } finally { db.close(); await db.delete(); }
   }, source);
-  expect(result).toEqual({ results: [null,'local','ai'].map(origin => ({ origin, same: true, version:12, metadata:14 })), failed: true, rolledBack: true, invalidRejected: true, invalidUnchanged: true });
+  expect(result).toEqual({ results: [null,'local','ai'].map(origin => ({ origin, same: true, version:13, metadata:15 })), failed: true, rolledBack: true, invalidRejected: true, invalidUnchanged: true });
 });

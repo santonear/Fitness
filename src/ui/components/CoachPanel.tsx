@@ -1,42 +1,29 @@
 import {AssistantPanel} from './AssistantPanel';
-import { EQUIPMENT, equipmentLabel } from '../../catalog/taxonomy';
-import {templateLabel} from '../../i18n/features/plan/labels';
+import {useFeature} from '../useFeature';
 import {useAccessStatus} from '../useAccessStatus';
-import {accessCopy,accessReason,errorAccessReason,type AccessReason} from '../../application/ai-access';
-import { useFeature } from '../useFeature';
-import { repository } from '../../persistence/repository';
-import { nutritionForCoach } from '../../application/nutrition';
-import { lifestyleCopy } from '../../i18n/features/settings/lifestyle';
-import { useEffect, useRef, useState, type RefObject } from 'react';
-import { Button, Composer, MorphPanel } from './common';
-import { CoachVisual } from './CoachVisual';
-import type { CoachVisualState } from './CoachVisual';
-import type { SessionTemplate } from '../../domain/v8/contracts';
-import type { CoachRequest, CoachResponse } from '../../coach/contracts';
-import { approveCoachScope, coachScope, coachScopeFields, coachMessageScope } from '../../coach/consent';
-import { localCoachReply, type LocalReply } from '../../coach/local-fallback';
-import { displayTimeZone, instructionRepeatsLatestMessage } from '../../coach/disclosure-format';
-import { sendCoach } from '../../coach/transport';
-import zh from '../../i18n/features/coach/zh.json';
-import en from '../../i18n/features/coach/en.json';
-import { exercises } from '../../catalog/exercises';
-import { targetText } from './ExerciseTargets';
-import { coachConversationExcerpt } from '../../ai/coach-context';
-
+import {accessCopy} from '../../application/ai-access';
+import type {RefObject} from 'react';
+import type {SessionTemplate} from '../../domain/v8/contracts';
+import type {CoachRequest,CoachResponse} from '../../coach/contracts';
 export type CoachApplication = { request: CoachRequest; response: CoachResponse; expectedRevision: number };
 export type CoachPanelProps = { beforeSend?:(request:CoachRequest)=>Promise<void>; onPreferencesChanged?:()=>Promise<void>; resolveRequest?:(message:string,request:CoachRequest)=>CoachRequest|undefined; rememberOnApply?:boolean; open: boolean; localOnly?: boolean; applyLabel?: string; successLabel?: string; disableNutrition?: boolean; localFallbackOnError?: boolean; templateMinutes?: (template: SessionTemplate) => number; onClose: () => void; request?: CoachRequest; expectedRevision: number;
   initialSend?:{nonce:string;message:string;request:CoachRequest;expectedRevision:number};
   triggerRef?: RefObject<HTMLElement|null>; onLocalPlan?:()=>void; onLocalReview?:()=>void; locale?:'zh'|'en'; unavailableReason?:string; onApply: (candidate: CoachApplication) => Promise<unknown>; onResponse?: (candidate: CoachApplication) => void };
 
-function responseText(response: CoachResponse): string[] {
- switch(response.type){case 'clarify':return [response.question];case 'refused':return [response.reason];case 'plan_proposal':return response.proposal.reasons;case 'change_proposal':return response.changes;case 'today_adjustment':return [response.summary];case 'review_summary':return [response.opening,response.encouragement,response.gap,...response.dataBoundary,...(response.suggestion?[response.suggestion.summary]:[])];}
+export function CoachPanel(props:CoachPanelProps){
+ const enabled=useFeature('aiAssistantV2'),access=useAccessStatus(props.open),locale=props.locale??props.request?.locale??'zh';
+ const invalid=access.status&&(access.status.qualification!=='active'||!access.status.sessionValid),disabled=access.status?.aiEnabled===false;
+ const reason=props.unavailableReason??(invalid?accessCopy[locale].reasons.invalid:!enabled||disabled?accessCopy[locale].reasons.disabled:undefined);
+ return <AssistantPanel {...props} unavailableReason={reason} localOnly={props.localOnly||!enabled||!!invalid||disabled}/>;
 }
-function displayedResponseExcerpt(response:CoachResponse,locale:'zh'|'en',templateMinutes?:CoachPanelProps['templateMinutes']){
- const copy=locale==='en'?en:zh;
- const proposal='proposal' in response?response.proposal:response.type==='review_summary'?response.suggestion?.proposal:undefined;
- const templates=proposal?.templates??(response.type==='today_adjustment'?[response.template]:[]);
- return [...responseText(response),...templates.flatMap(template=>[template.name,`${templateMinutes?.(template)??template.estimatedMinutes} ${copy.minutes}`,...template.items.map(item=>`${exercises.find(e=>e.id===item.exerciseId)?.name[locale]??item.exerciseId} · ${item.sets} ${copy.sets} · ${targetText(item.target,locale)}`)])].join('\n');
-}
+
+import {EQUIPMENT,equipmentLabel} from '../../catalog/taxonomy';
+import {exercises} from '../../catalog/exercises';
+import {lifestyleCopy} from '../../i18n/features/settings/lifestyle';
+import {displayTimeZone,instructionRepeatsLatestMessage} from '../../coach/disclosure-format';
+import {coachScopeFields} from '../../coach/consent';
+import zh from '../../i18n/features/coach/zh.json';
+import en from '../../i18n/features/coach/en.json';
 function readable(value:unknown,copy:typeof zh,locale:'zh'|'en'):string{
  if(value===true)return copy.yes;if(value===false)return copy.no;if(value===null||value===undefined)return copy.empty;
  if(Array.isArray(value))return value.length?value.map(v=>readable(v,copy,locale)).join('；'):copy.empty;
@@ -49,68 +36,3 @@ export function CoachScopeDisclosure({request,locale}:{request:CoachRequest;loca
  const t=locale==='en'?en:zh,lang=locale==='en'?1:0;
  return <details><summary>{t.scope}</summary><p>{t.consent}</p><p>{t.taskNames[request.task]}</p><dl>{Object.entries(request).filter(([key])=>['locale','timeZone','adultConfirmed','profile','body','history','nutrition','messages','template','instruction','plan','kind','facts'].includes(key)).map(([key,value])=><div key={key}><dt>{key==='nutrition'?lifestyleCopy[locale].nutrition:t.fields[key as keyof typeof t.fields]}</dt><dd>{key==='timeZone'?displayTimeZone(String(value),locale):key==='instruction'&&instructionRepeatsLatestMessage(request)?t.sameAsMessage:readable(value,t,lang?'en':'zh')}</dd></div>)}</dl><details><summary>{t.technical}</summary><dl>{coachScopeFields(request).map(field=><div key={field.key}><dt>{t.fields[field.key as keyof typeof t.fields]??field.key}</dt><dd>{field.value}</dd></div>)}</dl></details></details>;
 }
-/** Keep mounted when closed so drafts and reviewed candidates survive panel dismissal. */
-function LegacyCoachPanel({beforeSend,open,onClose,request,expectedRevision,onApply,onResponse,triggerRef:externalTrigger,onLocalPlan,onLocalReview,locale,unavailableReason,initialSend,localOnly,applyLabel,successLabel,disableNutrition,localFallbackOnError,templateMinutes}:CoachPanelProps){
- const [text,setText]=useState(''),[bodyKeys,setBodyKeys]=useState<string[]>([]),[history,setHistory]=useState(false),[state,setState]=useState<CoachVisualState>('idle'),[error,setError]=useState(''),[candidate,setCandidate]=useState<CoachApplication>();
- const nutritionFeature=useFeature('nutrition'); const nutritionEnabled=nutritionFeature&&!disableNutrition; const [dietConsent,setDietConsent]=useState(false),[dietRows,setDietRows]=useState<CoachRequest['nutrition']>();
- useEffect(()=>{let alive=true;setDietConsent(false);setDietRows(undefined);if(open&&nutritionEnabled)void repository.db.nutritionRecords.orderBy('localDate').toArray().then(rows=>{if(alive)setDietRows(nutritionForCoach(rows,true));});return()=>{alive=false;};},[open,nutritionEnabled,request?.restoreGeneration,request?.conversationId]);
- const [requestId,setRequestId]=useState(()=>crypto.randomUUID());
- const [applying,setApplying]=useState(false),applyLock=useRef(false);
- const [conversation,setConversation]=useState<{key:string;messages:CoachRequest['messages'];nutrition?:boolean}>({key:'',messages:[]});
- const consumedInitialSends=useRef(new Set<string>());
- const controller=useRef<AbortController|undefined>(undefined),sequence=useRef(0),triggerRef=useRef<HTMLButtonElement>(null),sending=useRef(false);
- const t=(request?.locale??locale)==='en'?en:zh,lang=(request?.locale??locale)==='en'?1:0;
- const access=useAccessStatus(open);const [fallbackReason,setFallbackReason]=useState<AccessReason>();
- const [noAccess,setNoAccess]=useState(false),[localReply,setLocalReply]=useState<LocalReply>();
- const busy=state==='thinking';
- const conversationKey=`${request?.conversationId??''}:${request?.restoreGeneration??''}`;
- const messages=conversation.key===conversationKey&&(!conversation.nutrition||dietConsent&&nutritionEnabled)?conversation.messages:request?.messages??[];
- const selectedBody=Object.fromEntries(Object.entries(request?.body??{}).filter(([key])=>bodyKeys.includes(key)));
- const preview=request?coachScope({...request,nutrition:nutritionEnabled&&dietRows?.length?dietRows:undefined,body:Object.keys(selectedBody).length?selectedBody:undefined,requestId,...('instruction' in request&&text.trim()?{instruction:text.trim()}:{}),messages:coachConversationExcerpt(text.trim()?[...messages,{role:'user',content:text.trim()}]:messages) as CoachRequest['messages']},bodyKeys.length>0,history,dietConsent&&nutritionEnabled):undefined;
- useEffect(()=>()=>{sequence.current++;controller.current?.abort();},[]);
- useEffect(()=>{sequence.current++;controller.current?.abort();sending.current=false;setState('idle');setCandidate(undefined);setLocalReply(undefined);setNoAccess(false);setBodyKeys([]);setHistory(false);setConversation({key:conversationKey,messages:request?.messages??[]});},[request?.restoreGeneration,request?.conversationId]);
- useEffect(()=>{if(!open||!initialSend||applyLock.current||consumedInitialSends.current.has(initialSend.nonce))return;sequence.current++;controller.current?.abort();sending.current=false;consumedInitialSends.current.add(initialSend.nonce);setText(initialSend.message);setBodyKeys([]);setHistory(false);void send(coachMessageScope(initialSend.request,initialSend.message),initialSend.expectedRevision);},[open,initialSend?.nonce,applying]);
- async function replyLocally(scope:CoachRequest|undefined,revision:number,message:string,serial:number){
-  const profile=(await repository.db.v8State.get('v8').catch(()=>undefined))?.coachProfile;
-  const workout=scope?.task==='ADJUST_TODAY'&&scope.workoutId?await repository.db.v8Workouts.get(scope.workoutId).catch(()=>undefined):undefined;
-  const locked=workout?[...new Set([...workout.sets.map(set=>set.itemIndex),...(workout.substitutions??[]).map(s=>s.itemIndex)])]:undefined;
-  if(serial!==sequence.current)return;
-  const reply=localCoachReply(message,scope,profile,lang?'en':'zh',locked);setLocalReply(reply);setState('replying');
-  if(scope&&reply.response){const next={request:scope,response:reply.response,expectedRevision:revision};setCandidate(next);}else setCandidate(undefined);
- }
- async function send(scope=preview,revision=expectedRevision){
-  if(sending.current||applyLock.current)return;
-  if(localOnly||!request){
-   sending.current=true;const serial=++sequence.current;setError('');setState('thinking');
-   try{await replyLocally(scope,revision,scope?.messages.filter(m=>m.role==='user').at(-1)?.content||text.trim(),serial);}
-   finally{if(serial===sequence.current)sending.current=false;}
-   return;
-  }
-
-  if(!scope||sending.current||applyLock.current)return;sending.current=true;const serial=++sequence.current;const abort=new AbortController();controller.current=abort;setError('');setLocalReply(undefined);setNoAccess(false);setState('thinking');
-  try{await beforeSend?.(scope);const approved=await approveCoachScope(scope);const key=`${approved.conversationId}:${approved.restoreGeneration}`;setConversation({key,messages:approved.messages,nutrition:!!approved.nutrition});const result=await sendCoach(approved,abort.signal);if(serial!==sequence.current)return;
-   setConversation({key,messages:coachConversationExcerpt([...approved.messages,{role:'assistant',content:displayedResponseExcerpt(result.response,approved.locale,templateMinutes)}]) as CoachRequest['messages'],nutrition:!!approved.nutrition});
-   const next={request:approved,response:result.response,expectedRevision:revision};setCandidate(next);setState('replying');onResponse?.(next);
-  }catch(e){if(serial!==sequence.current)return;setState('idle');if(e instanceof Error&&e.message==='BODY_DETAILS_CHANGED'){setBodyKeys([]);setError(t.bodyChanged);return;}setFallbackReason(errorAccessReason(e));const denied=e instanceof Error&&['QUALIFICATION_REQUIRED','SUBJECT_EXPIRED','AI_DISABLED','INDIVIDUAL_QUOTA_EXHAUSTED','GLOBAL_BUDGET_EXHAUSTED','DAILY_USAGE_FALLBACK','DAILY_USAGE_LIMIT'].includes(e.message);setNoAccess(denied);if(!abort.signal.aborted){setError(denied?t.qualification:t.offline);await replyLocally(scope,revision,scope.messages.filter(m=>m.role==='user').at(-1)?.content??text,serial);}}finally{if(serial===sequence.current){sending.current=false;setRequestId(crypto.randomUUID());}}
- }
- async function apply(){if(!candidate||busy||applyLock.current)return;applyLock.current=true;setApplying(true);setError('');try{await onApply(candidate);setState('success');}catch{setError(t.stale);}finally{applyLock.current=false;setApplying(false);}}
- const proposal=candidate&&('proposal' in candidate.response?candidate.response.proposal:candidate.response.type==='review_summary'?candidate.response.suggestion?.proposal:undefined);
- const templates=proposal?.templates??(candidate?.response.type==='today_adjustment'?[candidate.response.template]:[]);
- const localReason=fallbackReason??(access.status?accessReason(access.status,request?.task):access.failed?'connection':undefined);
- const canApply=candidate&&(['plan_proposal','change_proposal','today_adjustment'].includes(candidate.response.type)||candidate.response.type==='review_summary'&&candidate.response.suggestion);
- return <MorphPanel open={open} onClose={onClose} triggerRef={externalTrigger??triggerRef} title={t.title} closeLabel={t.close}>
-  <div className="coach-panel-content">
-  <CoachVisual state={state}/><div aria-live="polite">{busy?t.thinking:state==='success'?(successLabel??t.saved):''}</div>
-  {!request&&<p>{unavailableReason??t.unavailable}</p>}
-  {(!request||noAccess||localFallbackOnError&&!!error)&&<>{onLocalPlan&&<Button onClick={onLocalPlan}>{t.localPlan}</Button>}{onLocalReview&&!localReply?.review&&<Button onClick={onLocalReview}>{t.localReview}</Button>}</>}
-  {localReply&&!candidate&&<section>{localReply.lines.map((line,index)=><p key={index}>{line}</p>)}{localReply.review&&onLocalReview&&<Button onClick={onLocalReview}>{t.localReview}</Button>}</section>}
-  {candidate&&<section>{(localReply?.lines??responseText(candidate.response)).map((line,index)=><p key={index}>{line}</p>)}{templates.map(template=><section key={template.id}><h3>{templateLabel(template,lang?'en':'zh')}</h3><p>{templateMinutes?.(template)??template.estimatedMinutes} {t.minutes}</p><ul>{template.items.map((item,index)=><li key={index}>{exercises.find(e=>e.id===item.exerciseId)?.name[lang?'en':'zh']??item.exerciseId} · {item.sets} {t.sets} · {targetText(item.target,lang?'en':'zh')}</li>)}</ul></section>)}{canApply&&state!=='success'&&<Button disabled={applying} onClick={()=>void apply()}>{applyLabel??t.apply}</Button>}</section>}
-  {preview&&<><>{nutritionEnabled&&!!dietRows?.length&&<label><input type="checkbox" checked={dietConsent} disabled={busy||applying} onChange={e=>setDietConsent(e.target.checked)}/>{lifestyleCopy[lang?'en':'zh'].dietConsent}</label>}{request?.body&&Object.keys(request.body).length>0&&<fieldset disabled={busy||applying}><legend>{t.body}</legend>{Object.entries(request.body).map(([key,value])=><label key={key}><input type="checkbox" checked={bodyKeys.includes(key)} onChange={e=>setBodyKeys(keys=>e.target.checked?[...keys,key]:keys.filter(k=>k!==key))}/>{t.detailLabels[key as keyof typeof t.detailLabels]??key} · {readable(value,t,lang?'en':'zh')}</label>)}<p>{t.bodySource}</p></fieldset>}{request?.history&&<label><input type="checkbox" checked={history} disabled={busy||applying} onChange={e=>setHistory(e.target.checked)}/>{t.history}</label>}</>
-   <CoachScopeDisclosure request={preview} locale={lang?'en':'zh'}/>
-   <Composer value={text} onChange={setText} onSend={()=>void send()} label={t.input} sendLabel={t.send} busy={busy} disabled={busy||applying}/></>}
-  {!preview&&<Composer value={text} onChange={setText} onSend={()=>void send()} label={t.input} sendLabel={t.send} busy={busy} disabled={busy||applying}/>}
-  {access.status&&accessReason(access.status,request?.task)==='invalid'&&<p>{accessCopy[lang?'en':'zh'].invalid} · <a href="/trial">{accessCopy[lang?'en':'zh'].restore}</a></p>}{busy&&<Button onClick={()=>{sequence.current++;controller.current?.abort();sending.current=false;setState('idle');}}>{t.cancel}</Button>}{error&&(!localReply||error===t.stale)&&<p role="alert">{error}</p>}{localReply&&<p role="status">{accessCopy[lang?'en':'zh'].local}{localReason&&` · ${accessCopy[lang?'en':'zh'].reasons[localReason]}`}</p>}
-  </div></MorphPanel>;
-}
-
-export function CoachPanel(props:CoachPanelProps){const enabled=useFeature('aiAssistantV2');return enabled?<AssistantPanel {...props}/>:<LegacyCoachPanel {...props}/>;}
