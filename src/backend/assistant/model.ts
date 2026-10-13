@@ -59,11 +59,14 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
   let text = '', emitted = 0, attachmentKind = 'none', proseNormalized = false, foreignLanguage = false;
   const holdForCard=isV3&&!!request.context&&['ADJUST_TODAY','MODIFY_PLAN'].includes(request.context.task);
   let blockedText: 'COACH_LANGUAGE' | 'TEXT_LIMIT' | undefined;
-  const textCall: AssistantCall = { stage: 'text', result: 'failed' };
+  let textCall: AssistantCall = { stage: 'text', result: 'failed' };
   calls.push(textCall);
   try {
     const textPrompt=buildPrompt(request, 'text', version);
-    for await (const chunk of options.provider.streamText(textPrompt, options.signal)) {
+    const sentPrefix={value:''};
+    for(let attempt=0;attempt<2;attempt++){
+    const retryPrompt=attempt?[...textPrompt,{role:'system' as const,content:'Rewrite the answer using the existing neutral language rules. Remove prohibited pressure or judgment wording. Preserve the already delivered prefix exactly: '+sentPrefix.value}]:textPrompt;
+    for await (const chunk of options.provider.streamText(retryPrompt, options.signal)) {
       if (options.signal?.aborted) throw new Error('ABORTED');
       if (chunk.usage) Object.assign(textCall, chunk.usage);
       // Keep draining this already-started bounded request for final token accounting.
@@ -79,8 +82,17 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
         // Hold the short routing suffix and any partial banned phrase across chunks.
         const markerAt = text.indexOf('<<ATTACHMENT:');
         const safeEnd = Math.max(emitted, Math.min(text.length - 80, markerAt < 0 ? text.length : markerAt));
-        if (!foreignLanguage&&!holdForCard&&safeEnd > emitted) { yield { type: 'text_delta', delta: text.slice(emitted, safeEnd) }; emitted = safeEnd; }
+        if (!attempt&&!foreignLanguage&&!holdForCard&&safeEnd > emitted) { yield { type: 'text_delta', delta: text.slice(emitted, safeEnd) }; emitted = safeEnd; }
       }
+    }
+    if(blockedText==='COACH_LANGUAGE'&&!attempt&&!options.signal?.aborted){
+      textCall.failureCode='COACH_LANGUAGE';
+      if(textCall.inputTokens===undefined||textCall.outputTokens===undefined)Object.assign(textCall,estimatedUsage(textPrompt,text));
+      sentPrefix.value=text.slice(0,emitted);text='';blockedText=undefined;foreignLanguage=false;
+      textCall={stage:'text',result:'failed'};calls.push(textCall);proseNormalized=true;continue;
+    }
+    if(attempt&&sentPrefix.value&&!text.startsWith(sentPrefix.value))blockedText='COACH_LANGUAGE';
+    break;
     }
     if (blockedText) throw new AssistantProviderError(blockedText);
     const marker = text.match(/<<ATTACHMENT:(none|plan|today|change|exercise|review)>>\s*$/);
@@ -100,13 +112,6 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
     if(isV3&&attachmentKind==='none'&&request.adultConfirmed&&request.context){
       const latest=request.messages.at(-1)?.content??'';
       const declined=/(?:不要|先别|不用|撤回|只聊|do not|don't|withdraw|just discuss|no plan)/i.test(latest);
-      if(request.context.task==='MODIFY_PLAN'&&/(?:换掉|替换|换成|别安排|以后.*(?:换|不要)|replace|swap|remove|avoid)/i.test(latest)){
-        // A free-text denial cannot override an explicit request to replace an
-        // exercise already present in the supplied plan. Assembly verifies it.
-        attachmentKind='change';
-        text=request.locale==='zh'?'我先整理一份可预览的调整。':'I will prepare an adjustment for you to review.';
-        emitted=0;proseNormalized=true;
-      }
       if(!declined&&request.context.task==='ONBOARD_PLAN'&&/(?:帮我安排|给我.*(?:计划|全身训练)|help me plan|full.body workout|make a plan|一三五|周[一二三四五六日].*周[一二三四五六日]|(?:Mon|Monday).*(?:Wed|Wednesday).*(?:Fri|Friday))/i.test(latest))attachmentKind='plan';
       if(!declined&&request.context.task==='ADJUST_TODAY'&&/(?:今天.*(?:缩短|调整|训练)|shorter workout|workout today|adjust today)/i.test(latest))attachmentKind='today';
     }
@@ -198,10 +203,12 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
       const previous=equipped?exercises.find(row=>row.id===equipped.item.exerciseId):undefined;
       const replacement=previous?candidateList.find(row=>row.mode===assistantMovement(previous)&&row.exercise.equipment==='none'):undefined;
       const named=plan?.templates.flatMap(template=>template.items.map(item=>({template,item,exercise:exercises.find(row=>row.id===item.exerciseId)}))).find(row=>row.exercise&&[row.exercise.name.zh,row.exercise.name.en].some(name=>latest.toLocaleLowerCase().includes(name.toLocaleLowerCase())));
+      const volume=latest.match(/(.+?)\s*(?:加|增加)\s*([一二两三四1-4])\s*组/);
+      const volumeItem=volume&&plan?.templates.flatMap(template=>template.items.map(item=>({template,item,exercise:exercises.find(row=>row.id===item.exerciseId)}))).find(row=>row.exercise&&row.exercise.name.zh.includes(volume[1].replace(/^(?:把|给)/,'').trim()));
       const carrying=plan?.templates.flatMap(template=>template.items.map(item=>({template,item,exercise:exercises.find(row=>row.id===item.exerciseId)}))).find(row=>row.exercise&&assistantMovement(row.exercise)==='carry');
-      const unwanted=named??(/农夫行走|farmer.*carry/i.test(latest)?carrying:undefined);
+      const unwanted=/(?:换|替换|不要|别安排|remove|replace|swap|avoid)/i.test(latest)?named??(/农夫行走|farmer.*carry/i.test(latest)?carrying:undefined):undefined;
       const safeReplacement=unwanted?.exercise?candidateList.find(row=>(assistantMovement(unwanted.exercise!)==='carry'?['carry','pull','core']:[assistantMovement(unwanted.exercise!)]).includes(row.mode)&&row.exercise.id!==unwanted.item.exerciseId&&!plan?.templates.some(template=>template.items.some(item=>item.exerciseId===row.exercise.id))):undefined;
-      const changes=[...(addCandidate&&plan?[{op:'add' as const,session:plan.templates[0].id,to:addCandidate.code}]:[]),...(equipped&&replacement?[{op:'replace' as const,session:equipped.template.id,from:equipped.item.exerciseId,to:replacement.code}]:[]),...(unwanted&&safeReplacement?[{op:'replace' as const,session:unwanted.template.id,from:unwanted.item.exerciseId,to:safeReplacement.code}]:[])];
+      const changes=[...(volumeItem?[{op:'set_volume' as const,session:volumeItem.template.id,from:volumeItem.item.exerciseId,sets:Math.min(4,volumeItem.item.sets+({'一':1,'二':2,'两':2,'三':3,'四':4}[volume![2]]??Number(volume![2])))}]:[]),...(addCandidate&&plan?[{op:'add' as const,session:plan.templates[0].id,to:addCandidate.code}]:[]),...(equipped&&replacement?[{op:'replace' as const,session:equipped.template.id,from:equipped.item.exerciseId,to:replacement.code}]:[]),...(unwanted&&safeReplacement?[{op:'replace' as const,session:unwanted.template.id,from:unwanted.item.exerciseId,to:safeReplacement.code}]:[])];
       const intent=task==='ONBOARD_PLAN'?{kind:'plan_new',params:{...(minutes?{minutesPerSession:Number(minutes[1])}:{}),...(weekValue?{daysPerWeek:weekValue}:{})}}:
         task==='ADJUST_TODAY'?{kind:'today_adjust',minutes:minutes?Number(minutes[1]):Math.max(10,request.context.template.estimatedMinutes-5),...(/只练上半身|只练上肢|upper.body only/i.test(latest)?{focus:'upper' as const}:{})}:
         task==='MODIFY_PLAN'?{kind:'plan_modify',params:{...(weekValue?{daysPerWeek:weekValue}:{}),...(minutes?{minutesPerSession:Number(minutes[1])}:{})},changes}:
@@ -273,5 +280,3 @@ export function createAssistantProvider(options: { apiKey: string; baseUrl: stri
     },
   };
 }
-
-

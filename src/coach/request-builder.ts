@@ -10,7 +10,7 @@ export type CoachRequestInput = { task: CoachRequest['task']; data: Snapshot; co
  profile?: CoachProfile; facts?: ReviewFacts; kind?:'week'|'month'; body?:CoachRequest['body']; history?:string };
 /** Explicit long-term wording takes precedence over a simultaneous reference to today. */
 export const assistantPlanIntentDuringWorkout=(message:string)=>{
- if(/只改今天|only (?:change )?today/i.test(message)&&!/以后|今后|每次|每周|from now on|every (?:time|week)/i.test(message))return false;
+ if(/今天|这次|\btoday\b|this (?:time|workout|session)/i.test(message)&&!/以后|今后|每次|每周|from now on|every (?:time|week)/i.test(message))return false;
  return /计划|以后|今后|每次|每周|\bplan\b|\bfrom now on\b|\bevery (?:time|week)\b/i.test(message);
 };
 /** Snapshot contains local versions only; never smuggle optional health fields into it. */
@@ -20,9 +20,10 @@ export function buildCoachRequest(input:CoachRequestInput):CoachRequest|undefine
  if(!profile?.adultConfirmed||data.profile?.bodyDetails?.values.age!==undefined&&data.profile.bodyDetails.values.age<18)return;
  const revision=data.metadata.dataRevision,generation=data.metadata.restoreGeneration??0;
  const common={version:'fitness-coach-v8',requestId:crypto.randomUUID(),conversationId:input.conversationId??crypto.randomUUID(),restoreGeneration:generation,
+  candidateContext:{equipment:profile.equipment,cautions:profile.cautions},
   inputSnapshot:JSON.stringify({revision,generation,versionId:data.version?.id}),sendConfirmation:'preview',locale:data.profile?.locale??'zh',timeZone:data.profile?.timeZone??'Asia/Shanghai',adultConfirmed:true,messages:[],...(input.body?{body:input.body}:{}),...(input.history?{history:input.history}:{})};
  if(task==='ONBOARD_PLAN'){
-  const {confirmedAt:_confirmedAt,...sharedProfile}=profile;
+  const {confirmedAt:_confirmedAt,placeEquipmentOriginalText:_original,...sharedProfile}=profile;
   return coachRequestSchema.parse({...common,task,profile:sharedProfile});
  }
  if(!data.plan||!data.version)return;

@@ -48,8 +48,8 @@ test('fresh mainline: duration, local coach, exercise guide, bottom pause, finis
  await page.locator('button.v8-draft-exercise').first().click();await expect(page.getByRole('dialog')).toContainText('常见错误');await shot(page,'draft-guide');await page.getByRole('dialog').getByRole('button',{name:'关闭',exact:true}).click();
  await page.getByRole('button',{name:'就用这份计划'}).click();await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
  await page.getByRole('button',{name:'和芽芽聊聊',exact:true}).first().click();
- await page.getByRole('dialog').getByRole('textbox',{name:'跟芽芽说'}).fill('膝盖不适');await page.getByRole('dialog').getByRole('button',{name:'发送',exact:true}).click();
- await expect(page.getByText('如果疼痛明显或持续，先休息，并请专业人士看看',{exact:true})).toBeVisible();await expect(page.getByRole('dialog')).toContainText('蚌式');await expect(page.getByRole('dialog')).toContainText('现在用的是本地建议');await expect(page.getByRole('dialog')).not.toContainText('芽芽暂时连不上');await shot(page,'coach-local-pain');
+ await page.getByRole('dialog').getByRole('textbox').fill('膝盖不适');await page.getByRole('dialog').getByRole('button',{name:'发送',exact:true}).click();
+ await expect(page.getByRole('log')).toContainText('如果疼痛明显或持续，先休息，并请专业人士看看');await expect(page.getByRole('dialog')).toContainText('蚌式');await expect(page.getByRole('dialog')).toContainText('现在用的是本地建议');await expect(page.getByRole('dialog')).not.toContainText('芽芽暂时连不上');await shot(page,'coach-local-pain');
  await page.getByRole('dialog').getByRole('button',{name:'关闭',exact:true}).click();
  await page.getByRole('button',{name:'开始训练',exact:true}).click();
  await expect(page.locator('.exercise-guide-points li')).toHaveCount(2);await expect(page.locator('.exercise-guide-open img')).toBeVisible();

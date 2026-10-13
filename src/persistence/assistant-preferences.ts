@@ -19,7 +19,7 @@ export function confirmedPreferenceChanges(request:CoachRequest,response:CoachRe
  if(proposal.preferredDays?.length&&(request.task==='ONBOARD_PLAN'||request.task==='MODIFY_PLAN'&&JSON.stringify(proposal.preferredDays)!==JSON.stringify(request.plan.preferredDays)))result.push({kind:'preferred_days',value:proposal.preferredDays});
  if(request.task==='ONBOARD_PLAN'){
   for(const caution of request.profile.cautions)result.push({kind:'caution_area',value:caution});
-  if(request.profile.equipment.length)result.push({kind:'equipment',value:request.profile.equipment});
+  for(let index=0;index<request.profile.equipment.length;index+=7)result.push({kind:'equipment',value:request.profile.equipment.slice(index,index+7)});
  }
  if(/(?:不能跳|不跳|避免跳|can't jump|cannot jump|no jumping)/i.test(userMessage))result.push({kind:'cannot_do',value:'jumping'});
  const avoidCarry=/(?:以后|今后|往后|再也|以后都).{0,18}(?:别|不要|不再|不能|避免).{0,12}(?:农夫行走|负重行走)|(?:don't|do not|never|avoid|no more).{0,25}(?:farmer.?s? walk|farmer.?s? carry|walking carry)/i.test(userMessage);

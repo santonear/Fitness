@@ -31,7 +31,7 @@ describe('round4 movement and single family-safe addition',()=>{
  it('never classifies lower limb exercises as upper push or pull',()=>{
   for(const e of exercises.filter(e=>['upper-legs','lower-legs'].includes(catalogMetadata.get(e.id)?.bodyPart??'')))expect(assistantMovement(e),e.name.en).not.toMatch(/push|pull/);
  });
- it.each([{pattern:/calf.raise/i,mode:'hinge'},{pattern:/lateral.raise/i,mode:'push'},{pattern:/front.raise/i,mode:'push'},{pattern:/leg.raise/i,mode:'core'}])('checks raise classifications $mode',({pattern,mode})=>{
+ it.each([{pattern:/calf.raise/i,mode:'lower'},{pattern:/lateral.raise/i,mode:'push'},{pattern:/front.raise/i,mode:'push'},{pattern:/leg.raise/i,mode:'core'}])('checks raise classifications $mode',({pattern,mode})=>{
   const rows=exercises.filter(e=>pattern.test(e.name.en));expect(rows.length).toBeGreaterThan(0);
   for(const e of rows){const part=catalogMetadata.get(e.id)?.bodyPart;if(mode==='core'&&part!=='core')continue;expect(assistantMovement(e),e.name.en).toBe(mode);}
  });

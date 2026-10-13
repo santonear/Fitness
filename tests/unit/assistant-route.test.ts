@@ -9,6 +9,8 @@ describe('assistant request routing during a workout',()=>{
   ['Replace this in my plan',true],
   ['今天只练上半身，30分钟',false],
   ['这次换个动作',false],
+  ['今天不想按计划练，只练20分钟',false],
+  ['Today I do not want to follow the plan, just 20 minutes',false],
   ['只改今天这次训练，不改整体计划',false],
  ])('%s routes to plan: %s',(message,plan)=>{
   expect(assistantPlanIntentDuringWorkout(message)).toBe(plan);

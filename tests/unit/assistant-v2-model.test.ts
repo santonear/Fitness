@@ -28,8 +28,14 @@ describe('assistant v2 model', () => {
     const model=provider([{kind:'none'}]);model.streamText=async function*(){yield {delta:`计划里没有农夫行走。<<ATTACHMENT:${marker}>>`,usage};};
     const events=await gather(runAssistantModel(input,{provider:model,promptVersion:'assistant-v3.1.0'}));
     const card=events.find(event=>event.type==='attachment');
-    expect(card?.type==='attachment'&&card.attachment.type==='change_proposal'&&card.attachment.proposal.templates[0].items[0].exerciseId!==carry.id).toBe(true);
-    expect(events.filter(event=>event.type==='text_delta').map(event=>event.delta).join('')).not.toContain('没有农夫行走');
+    if(marker==='none'){
+      expect(card).toBeUndefined();
+      expect(events.filter(event=>event.type==='text_delta').map(event=>event.delta).join('')).toContain('没有农夫行走');
+      expect(events.at(-1)).toMatchObject({success:true,calls:[{stage:'text'}]});
+    }else{
+      expect(card?.type==='attachment'&&card.attachment.type==='change_proposal'&&card.attachment.proposal.templates[0].items[0].exerciseId!==carry.id).toBe(true);
+      expect(events.filter(event=>event.type==='text_delta').map(event=>event.delta).join('')).not.toContain('没有农夫行走');
+    }
   });
   it('falls back to a knee-conscious lower-body addition without reusing excluded carries',async()=>{
     const plan=basicProposal({goalText:'力量',weeklyTarget:3,sessionMinutes:30,scheduleOriginalText:'每周三次',place:'home',equipment:['none','dumbbell'],adultConfirmed:true,cautions:['knee'],confirmedAt:new Date().toISOString()},'zh');
@@ -286,8 +292,9 @@ describe('assistant v2 model', () => {
     const sse=[{choices:[{delta:{content:prose}}]},{choices:[],usage:{prompt_tokens:91,completion_tokens:12}}].map(value=>`data: ${JSON.stringify(value)}\n\n`).join('')+'data: [DONE]\n\n';
     const model=createAssistantProvider({apiKey:'offline-key',baseUrl:'https://example.test',fetch:async()=>{fetches++;return new Response(sse);}});
     const events=await collect(request,model);
-    expect(fetches).toBe(1);
-    expect(events.at(-1)).toMatchObject({success,result,usage:{inputTokens:91,outputTokens:12},calls:[{inputTokens:91,outputTokens:12,...(code?{failureCode:code}:{result:'repaired'})}]});
+    const attempts=code==='COACH_LANGUAGE'?2:1;
+    expect(fetches).toBe(attempts);
+    expect(events.at(-1)).toMatchObject({success,result,usage:{inputTokens:91*attempts,outputTokens:12*attempts},calls:Array.from({length:attempts},()=>({inputTokens:91,outputTokens:12,...(code?{failureCode:code}:{result:'repaired'})}))});
     const output=events.filter(e=>e.type==='text_delta').map(e=>e.delta).join('');
     expect(output).toBe(success?'Hello.':'');
   });
@@ -306,9 +313,3 @@ describe('assistant v2 model', () => {
     expect(outbound.map(call=>({stream:call.stream,max_tokens:call.max_tokens}))).toEqual([{stream:true,max_tokens:1200},{stream:false,max_tokens:expected}]);
   });
 });
-
-
-
-
-
-

@@ -22,7 +22,12 @@ export function basicProposal(profile: CoachProfile, locale = 'zh') {
   if (!profile.adultConfirmed) return undefined;
   const copy = locale === 'en' ? basicEn : basicZh;
   const selection = [basicItems(profile, 0), basicItems(profile, 1)];
-  const selectedTemplates = selection.filter((s,index,all) => s.items.length && !all.slice(0,index).some(previous=>JSON.stringify(previous.items.map(item=>JSON.stringify(item)).sort())===JSON.stringify(s.items.map(item=>JSON.stringify(item)).sort()))).map(({ items }, index) => ({ id: `basic-${index}`, name: String.fromCharCode(65 + index), items, estimatedMinutes: estimatePlannedMinutes(items,profile.sessionMinutes<15?10:15) }));
+  const selectedTemplates = selection.filter((s,index,all) => {
+    if(!s.items.length)return false;
+    if(profile.weeklyTarget>=3)return true;
+    const content=(items:typeof s.items)=>{const rows=items.map(item=>JSON.stringify(item));return JSON.stringify(items.length<4?rows.sort():rows);};
+    return !all.slice(0,index).some(previous=>content(previous.items)===content(s.items));
+  }).map(({ items }, index) => ({ id: `basic-${index}`, name: String.fromCharCode(65 + index), items, estimatedMinutes: estimatePlannedMinutes(items,profile.sessionMinutes<15?10:15) }));
   const missing = [...new Set(selection.flatMap(s => s.missing))].map(f => copy.families[f as keyof typeof copy.families]).join(' / ');
   const shorter = selectedTemplates.find(template => template.estimatedMinutes < profile.sessionMinutes);
   return { goalText: profile.goalText, weeklyTarget: profile.weeklyTarget, preferredDays: profile.preferredDays, sessionMinutes: profile.sessionMinutes, scheduleOriginalText: profile.scheduleOriginalText, templates: selectedTemplates,
@@ -197,4 +202,3 @@ export function createV8Workflow(repo: Repository) {
   }
   return { ...lifecycle, snapshot, propose, adopt, start, recordSet, finish, substitute, applyCoachCandidate, undoAppliedCoachVersion };
 }
-

@@ -44,13 +44,17 @@ export function guidedAiExercises(request: GuidedDialogueRequest) {
   return selectAiExercises(`${request.scope.goal} ${request.confirmedSummary}`, request.scope.conditions, request.refinement);
 }
 
-export type AssistantMovement = 'push'|'pull'|'squat'|'hinge'|'core'|'carry'|'cardio'|'mobility';
+export type AssistantMovement = 'push'|'pull'|'squat'|'hinge'|'lower'|'core'|'carry'|'cardio'|'mobility';
 const jumpPattern = /jump|hop|burpee|跳|跃/i;
 const deepKneePattern = /squat|lunge|leg.press|deep.knee|深蹲|弓步|腿举/i;
 /** Deterministic labels for the small model vocabulary, not a medical assessment. */
 export function assistantMovement(exercise: typeof exercises[number]): AssistantMovement {
   const meta=catalogMetadata.get(exercise.id), name=`${exercise.name.en} ${meta?.slug ?? ''}`.toLowerCase();
   if(/carry|farmer/.test(name))return 'carry';
+  if(/clam|calf.raise|hip.abduct|hip.adduct/.test(name))return 'lower';
+  if(/mountain.climber/.test(name))return 'cardio';
+  if(meta?.bodyPart==='core'||/plank|crunch|dead.bug/.test(name))return 'core';
+  if(/bicep.*curl|curl.*bicep|\bcurl\b/.test(name)&&!['upper-legs','lower-legs'].includes(meta?.bodyPart??''))return 'pull';
   if(/walk|run|cycle|bike|elliptical|cardio|步行|跑步/.test(name))return 'cardio';
   if(/stretch|mobility|yoga|拉伸|瑜伽/.test(name))return 'mobility';
   if(['upper-legs','lower-legs'].includes(meta?.bodyPart??''))return /calf.raise|提踵/.test(name)?'hinge':/squat|lunge|step.up|leg.press/.test(name)?'squat':'hinge';
@@ -66,12 +70,13 @@ export function selectAssistantCandidates(request: AssistantRequest) {
   const context=request.context, profile=context?.task==='ONBOARD_PLAN'?context.profile:undefined;
   const equipment=profile?.equipment??(context?.task==='MODIFY_PLAN'?context.plan.templates.flatMap(template=>template.items.map(item=>item.equipment)):
     context?.task==='ADJUST_TODAY'?context.template.items.map(item=>item.equipment):[]);
-  const allowed=new Set(['none',...equipment]);
+  const preferences=request.preferences??context?.candidateContext?.preferences??[];
+  const allowed=new Set(['none',...equipment,...context?.candidateContext?.equipment??[],...preferences.filter(pref=>pref.kind==='equipment').flatMap(pref=>Array.isArray(pref.value)?pref.value:[pref.value])]);
   const words=request.messages.at(-1)?.content??'';
-  const cautions=new Set([...profile?.cautions??[],...(request.preferences??[]).filter(pref=>pref.kind==='caution_area').flatMap(pref=>Array.isArray(pref.value)?pref.value:[pref.value])]);
+  const cautions=new Set([...profile?.cautions??[],...context?.candidateContext?.cautions??[],...preferences.filter(pref=>pref.kind==='caution_area').flatMap(pref=>Array.isArray(pref.value)?pref.value:[pref.value])]);
   if(/膝盖.{0,8}(?:疼|痛|不适|受伤|舒服|伤)|knee\s*(?:pain|injury|discomfort)/i.test(words))cautions.add('knee');
   const avoidJump=/不能跳|不要跳|不跳|no jumping|avoid jumping/i.test(words)||(request.preferences??[]).some(pref=>pref.kind==='cannot_do'&&/jump|跳/i.test(String(pref.value)));
-  const disliked=new Set((request.preferences??[]).filter(pref=>pref.kind==='dislike_exercise').flatMap(pref=>Array.isArray(pref.value)?pref.value:[pref.value]).map(normal=>normal.toLowerCase()));
+  const disliked=new Set(preferences.filter(pref=>pref.kind==='dislike_exercise').flatMap(pref=>Array.isArray(pref.value)?pref.value:[pref.value]).map(normal=>normal.toLowerCase()));
   const avoidWalkingCarry=(request.preferences??[]).some(pref=>pref.kind==='cannot_do'&&/walking_carry|负重行走/i.test(String(pref.value)))||/以后.*(?:别|不要|不再).*农夫行走|avoid.*farmer.*carry/i.test(words);
   const pool=exercises.filter(exercise=>{
     if(context&& !allowed.has(exercise.equipment))return false;
@@ -82,11 +87,15 @@ export function selectAssistantCandidates(request: AssistantRequest) {
     if(cautions.has('knee')&&deepKneePattern.test(name))return false;
     if(cautions.has('wrist')&&/push.up|plank|dip/.test(name))return false;
     if(cautions.has('shoulder')&&/overhead|shoulder.press|pull.up/.test(name))return false;
+    if(cautions.has('back')&&/deadlift|good.morning|bent.over|back.extension|barbell.squat/.test(name))return false;
     return true;
   });
   const groups=new Map<AssistantMovement,typeof pool>();
   for(const exercise of pool){const mode=assistantMovement(exercise),list=groups.get(mode)??[];list.push(exercise);groups.set(mode,list);}
-  const selected:typeof pool=[];
+  const originalIds=new Set(context?.task==='MODIFY_PLAN'?context.plan.templates.flatMap(t=>t.items.map(i=>i.exerciseId)):context?.task==='ADJUST_TODAY'?context.template.items.map(i=>i.exerciseId):[]);
+  const named=pool.filter(exercise=>[exercise.name.zh,exercise.name.en,...catalogMetadata.get(exercise.id)?.aliases??[]].some(name=>name.length>=2&&words.toLowerCase().includes(name.toLowerCase())));
+  const selected:typeof pool=[...new Map([...named,...pool.filter(exercise=>originalIds.has(exercise.id))].map(exercise=>[exercise.id,exercise])).values()].slice(0,60);
+  for(const [mode,list] of groups)groups.set(mode,list.filter(exercise=>!selected.some(row=>row.id===exercise.id)));
   // Round robin keeps common movement patterns available within a bounded prompt.
   while(selected.length<60&&[...groups.values()].some(list=>list.length))for(const list of groups.values()){
     const exercise=list.shift();if(exercise)selected.push(exercise);if(selected.length===60)break;

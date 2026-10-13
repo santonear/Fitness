@@ -3,6 +3,7 @@ import { coachRequestSchema, coachResponseSchema, type CoachRequest } from '../c
 import { exerciseIdSchema, timeZoneSchema } from '../domain/schemas';
 import { EQUIPMENT, equipmentLabel } from '../catalog/taxonomy';
 import { preferredTrainingDays } from '../application/rules/local-profile';
+import { sessionDuration } from '../application/rules/session-duration';
 
 export const ASSISTANT_VERSION = 'fitness-assistant-v2' as const;
 export const assistantRequestSchema = z.strictObject({
@@ -11,7 +12,7 @@ export const assistantRequestSchema = z.strictObject({
   messages: z.array(z.strictObject({ role: z.enum(['user', 'assistant']), content: z.string().min(1).max(4000) })).min(1).max(20),
   context: coachRequestSchema.optional(),
   preferences: z.array(z.strictObject({kind:z.enum(['dislike_exercise','cannot_do','caution_area','preferred_days','equipment']),value:z.union([z.string().max(200),z.array(z.string().max(80)).max(7)])})).max(30).optional(),
-  consent: z.strictObject({ body: z.boolean(), history: z.boolean() }).optional(),
+  consent: z.strictObject({ body: z.boolean(), history: z.boolean(), nutrition:z.boolean().optional() }).optional(),
   currentWorkout: z.strictObject({
     completedSets: z.array(z.strictObject({
       itemIndex: z.number().int().min(0).max(999), setIndex: z.number().int().min(0).max(999), exerciseId: exerciseIdSchema,
@@ -106,12 +107,8 @@ export function applyAssistantPreferences(context: CoachRequest, messages: Assis
       const raw = (frequency[1] ?? frequency[2]).toLowerCase();
       copy.profile.weeklyTarget = digits[raw] ?? Number(raw);
     }
-    for (const match of content.matchAll(/\b(\d{1,3})\s*(?:分钟|minutes?|mins?)\b|(?<zh>\d{1,3})\s*分钟/gi)) {
-      const prefix = content.slice(Math.max(0, (match.index ?? 0) - 12), match.index);
-      if (/(?:not|不是|不要|别|非)[^,，。;；]*$/i.test(prefix)) continue;
-      const minutes = Number(match[1] ?? match.groups?.zh);
-      if (minutes >= 15 && minutes <= 120) copy.profile.sessionMinutes = minutes;
-    }
+    const minutes = sessionDuration(content);
+    if (minutes !== undefined) copy.profile.sessionMinutes = minutes;
     // A chat instruction is not the user's original onboarding answer.
     // Keep the original words intact; structured fields carry the adjustment.
   }
@@ -125,13 +122,10 @@ export function sanitizeAssistantRequest(input: unknown): AssistantRequest {
   if (request.context) {
     request.context = applyAssistantPreferences(request.context, request.messages);
     if (!request.consent?.body) delete request.context.body;
-    if (!request.consent?.history) { delete request.context.history; delete request.context.nutrition; }
+    if (!request.consent?.history) delete request.context.history;
+    if(request.consent?.nutrition===false||!request.consent?.history&&request.consent?.nutrition!==true)delete request.context.nutrition;
     request.context.messages = [];
     request.context.locale = request.locale;
   }
   return request;
 }
-
-
-
-

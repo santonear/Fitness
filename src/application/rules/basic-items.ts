@@ -36,7 +36,7 @@ export function basicItems(profile: CoachProfile, variant: number): { items: Pla
   if (variant % 2 && selected.length > 1) selected.push(selected.shift()!);
   const items: PlannedItem[] = selected.map(({ exercise }) => ({ exerciseId: exercise.id, equipment: exercise.equipment, sets: 2,
     target: exercise.metricType === 'duration' ? { metricType: 'duration', durationSeconds: 20 } : exercise.metricType === 'reps_load' ? { metricType: 'reps_load', reps: 8, loadGrams: 0 } : { metricType: 'reps', reps: 8 } }));
-  if (/瘦|减脂|减重|lose weight|fat loss|weight loss/i.test(profile.goalText) && !profile.cautions.some(area => ['knee','back','other'].includes(area))) {
+  if (/瘦|减脂|体脂|fat_loss|减重|lose weight|fat loss|weight loss/i.test(profile.goalText) && !profile.cautions.includes('other')) {
     const walking = exercises.find(exercise => exercise.name.en === 'Walking')!;
     items.push({ exerciseId: walking.id, equipment: walking.equipment, sets: 1, target: { metricType: 'duration_distance', durationSeconds: 300 } });
   }
@@ -49,7 +49,13 @@ export function basicItems(profile: CoachProfile, variant: number): { items: Pla
     while (estimatePlannedMinutes(items) < target) {
       const minimum = Math.min(...items.filter(item => !('durationSeconds' in item.target && item.target.durationSeconds === 300)).map(item => item.sets));
       const next = items.find(item => item.sets === minimum && item.sets < 4 && !('durationSeconds' in item.target && item.target.durationSeconds === 300));
-      if (!next) break;
+      if (!next) {
+        const extra=pool.find(choice=>!items.some(item=>item.exerciseId===choice.exercise.id));
+        if(!extra)break;
+        const exercise=extra.exercise;
+        items.push({exerciseId:exercise.id,equipment:exercise.equipment,sets:1,target:exercise.metricType==='duration'?{metricType:'duration',durationSeconds:20}:exercise.metricType==='reps_load'?{metricType:'reps_load',reps:8,loadGrams:0}:{metricType:'reps',reps:8}});
+        continue;
+      }
       next.sets++;
       if (estimatePlannedMinutes(items) > ceiling) { next.sets--; break; }
     }

@@ -234,3 +234,14 @@ RepDB官方证据：[数据许可证](https://github.com/RepDB/exercise-dataset/
 - 2026-10-13 第四轮第4项（待确认、未实施）：新计划确认后，建议用新确认的场地/器械替换旧器械偏好，保留注意部位、禁用动作等其他偏好；需确认是否保留旧器械偏好的可撤销记录，以及只有本轮明确提供器械时才替换。理由：避免旧“去健身房”与新“在家有哑铃”并存；这是偏好语义变化，本轮不修改偏好。涉及 assistant-preferences.ts、onboarding 与计划应用路径。
 
 - 2026-10-13 第五轮替换训练量：同 metricType 继承原组数和目标，reps_load 仅重置重量为未选择；不同 metricType 保留组数，目标复用 manualTrainingItems 的已有动作选择默认值（次数8，计时20秒），动作目录本身没有逐项默认目标字段，不新增字段或推断用户事实。只在明确指定时长时允许时长适配压缩组数；新增动作维持原逻辑。新增动作是否与原训练量对齐仅作为待定方案，未实施。文件：assemble.ts、manual-items.ts。
+
+## 2026-10-13 第六轮
+- 情况：客户端与服务端各有独立候选表。决定：新增可选 candidateContext（器械、注意部位及已确认偏好），双方调用同一个纯筛选函数，优先点名和已有动作；客户端不接受服务端自报的任意ID。理由：保持安全校验且允许真实可用动作。文件：coach/contracts.ts、request-builder.ts、response-adapter.ts、ai-catalog.ts、AssistantPanel.tsx。
+- 情况：器械原话曾当作编号。决定：稳定编号与 placeEquipmentOriginalText 分存；新增数据库15（只更新元数据）、envelope13，接受2–12旧备份。理由：原话可恢复，不重写旧训练、计划、体重。文件：local-profile.ts、contracts.ts、schemas.ts、db.ts、backup.ts、profile.ts。
+- 情况：提踵、蚌式开合被归为髋铰链。决定：新增内部 lower 模式，肱二头弯举为 pull、自行车式卷腹为 core；未改变持久计划字段。理由：修复动作分类，不让下肢误匹配为上肢。文件：ai-catalog.ts、assemble.ts。
+- 情况：只练上半身会移动已完成项。决定：保留最后一个已完成项之前的位置，不改已完成项；仅裁剪其后的未完成项，时长适配也不改锁定项。理由：不改训练事实、不绕过下标校验。文件：assemble.ts。
+- 情况：旧后台设置可重新开启四个旧任务。决定：设置只留一张芽芽AI助手卡（开关、带说明的提示词、每日上限）；旧表和接口类型保留可读，网关停止旧coach载荷；开关关闭仍使用现代面板的本地建议。文件：AssistantSettingsCard.tsx、AdminShell.tsx、FinancePages.tsx、CoachPanel.tsx、fitness-worker.ts。
+- 情况：旧测试要求模型标记none也强制出卡、违禁回复只调用一次、提踵为hinge。决定：保留这些测试场景，按本轮明确要求改为严格校验不出卡并保留原文、仅重试一次且累加两次用量、正确lower模式；没有删测试或降低安全检查。
+- 已批准话术：已完成的动作不能修改，请保留它们后再调整。／这次训练已变化，请重新生成建议。／资料或计划已变化，请重新查看建议。及等义英文。仅应用错误提示使用。
+- 第六轮补充：保留逐项身体资料同意与独立饮食开关，默认不发送；撤回饮食后不外发此前相关对话，但不删除本地聊天。对话仅新增可选 bodyFields、请求仅新增可选 nutrition，同一PR同步生产者和调用方。手动候选只预览、不提前写偏好，避免开始训练前版本失效。涉及 AssistantPanel.tsx、assistant/contracts.ts、assistant-conversations.ts、ManualPage.tsx。
+- 已批准保存失败提示：这次应用尚未确认，请重试。及等义英文。不自动重新调用模型。数据库15升级后不支持旧数据库14客户端直接降级；预览回滚采用关闭 aiAssistantV2，保留新客户端的本地建议和数据兼容。生产未修改。
