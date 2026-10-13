@@ -133,7 +133,8 @@ for(const mode of ['success','denied','failure','reject','stale','stale-start'] 
  if(mode==='reject'){await page.getByRole('dialog').getByRole('button',{name:'关闭',exact:true}).click();expect(calls).toBe(0);expect(await snapshot()).toEqual(before);return;}
  await page.getByRole('dialog').getByRole('textbox').fill('搭配本次训练');await page.getByRole('dialog').getByRole('button',{name:'发送',exact:true}).click();
  if(mode==='denied'||mode==='failure'){
-  await page.getByRole('dialog').getByRole('button',{name:'使用基础计划',exact:true}).click();expect(calls).toBe(1);
+  if(mode==='denied')await expect(page.getByRole('dialog').getByRole('status')).toContainText('现在用的是本地建议 · 资格无效');
+  await page.getByRole('dialog').getByRole('button',{name:'使用基础计划',exact:true}).click();expect(calls).toBe(mode==='denied'?0:1);
  }else{
   await expect(page.getByRole('button',{name:'带回手动训练页选择',exact:true})).toBeVisible();
   if(mode==='success')await expect(page.getByRole('dialog').getByText('15 分钟',{exact:true})).toHaveCount(2);
