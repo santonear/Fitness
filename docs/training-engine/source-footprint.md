@@ -12,7 +12,7 @@
 
 ## M3 后格式化源码
 
-总行数：15563；共107个文件。测试、generated和规则数据均未混入。
+总行数：15569；共107个文件。测试、generated和规则数据均未混入。
 
 | 阶段 | 格式化行数 |
 |---|---:|
@@ -23,7 +23,7 @@
 | dose | 1970 |
 | gates | 1524 |
 | fill | 216 |
-| fit | 1184 |
+| fit | 1187 |
 | independent validation | 353 |
 | improve | 285 |
 | pipeline | 405 |
@@ -33,7 +33,7 @@
 | score | 1694 |
 | skeleton | 334 |
 | structure | 163 |
-| validation | 375 |
+| validation | 378 |
 
 超过1500行的阶段列入后续架构简化评审：dose 1970行；gates 1524行；progression 3116行；score 1694行。该评审不阻塞此次交付。
 
@@ -81,7 +81,7 @@
 | src/engine/fit/finalize.ts | 97 |
 | src/engine/fit/fitting.ts | 360 |
 | src/engine/fit/item-order.ts | 13 |
-| src/engine/fit/refill-proposals.ts | 161 |
+| src/engine/fit/refill-proposals.ts | 164 |
 | src/engine/fit/refill.ts | 42 |
 | src/engine/fit/requirements.ts | 92 |
 | src/engine/fit/types.ts | 3 |
@@ -145,7 +145,7 @@
 | src/engine/source-warmup.ts | 6 |
 | src/engine/structure.ts | 163 |
 | src/engine/validation/cardio-duration.ts | 209 |
-| src/engine/validation/refill-capacity.ts | 166 |
+| src/engine/validation/refill-capacity.ts | 169 |
 
 ## 单独列账（不计入引擎源码）
 
@@ -153,5 +153,5 @@
 |---|---:|---:|---:|
 | src/engine/generated | 4 | 4 | 1284839 |
 | tests/training-engine | 85 | 35771 | 1305438 |
-| tests/unit/engine | 113 | 6376 | 537106 |
+| tests/unit/engine | 114 | 6438 | 539158 |
 | data/training-engine | 24 | 60967 | 1088748 |

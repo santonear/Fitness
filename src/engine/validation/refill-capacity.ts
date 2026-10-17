@@ -58,7 +58,10 @@ export function independentRefillWitness(
     const max =
       e.mobility_type === "static"
         ? r.get("dose.stretch").reps_per_muscle[1]
-        : e.default_dose[p.level]?.sets?.[1];
+        : ["main", "accessory"].includes(item.prescription?.block ?? "") &&
+            ["strength", "isometric", "power"].includes(e.modality)
+          ? r.get("duration.fit.bounds").sets_per_exercise_max[p.level]
+          : e.default_dose[p.level]?.sets?.[1];
     const fitsBlock = (next: Template) => {
       if (!boundary) return true;
       const block = item.prescription!.block,

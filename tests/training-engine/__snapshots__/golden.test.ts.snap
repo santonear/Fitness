@@ -13260,7 +13260,7 @@ exports[`20 explicit synthetic golden profiles > mobility6x90 1`] = `
       "perRule": [
         {
           "id": "safety.session.warmup_cooldown",
-          "satisfaction": 0.4733333333333334,
+          "satisfaction": 0.47,
           "weight": 1,
         },
         {
@@ -13275,7 +13275,7 @@ exports[`20 explicit synthetic golden profiles > mobility6x90 1`] = `
         },
         {
           "id": "goal.params.mobility",
-          "satisfaction": 0.8217544706405135,
+          "satisfaction": 0.8217974078356199,
           "weight": 3,
         },
         {
@@ -13290,7 +13290,7 @@ exports[`20 explicit synthetic golden profiles > mobility6x90 1`] = `
         },
         {
           "id": "session.warmup.general",
-          "satisfaction": 0.11481481481481481,
+          "satisfaction": 0.1111111111111111,
           "weight": 2,
         },
         {
@@ -13349,14 +13349,14 @@ exports[`20 explicit synthetic golden profiles > mobility6x90 1`] = `
           "weight": 4,
         },
       ],
-      "score": 0.799423208038153,
+      "score": 0.7991110924747582,
       "status": "limited",
     },
     "sessionMinutes": 90,
     "templates": [
       {
         "estimatedMinutes": 89,
-        "estimatedSeconds": 5324,
+        "estimatedSeconds": 5322,
         "id": "day-179a701c",
         "items": [
           {
@@ -13383,7 +13383,7 @@ exports[`20 explicit synthetic golden profiles > mobility6x90 1`] = `
             },
             "sets": 2,
             "target": {
-              "durationSeconds": 47,
+              "durationSeconds": 45,
               "metricType": "duration",
             },
           },
@@ -13750,7 +13750,7 @@ exports[`20 explicit synthetic golden profiles > mobility6x90 1`] = `
               "setupSeconds": 5,
               "structure": "straight",
             },
-            "sets": 2,
+            "sets": 4,
             "target": {
               "durationSeconds": 45,
               "metricType": "duration",
@@ -13909,7 +13909,7 @@ exports[`20 explicit synthetic golden profiles > mobility6x90 1`] = `
             },
             "sets": 4,
             "target": {
-              "durationSeconds": 120,
+              "durationSeconds": 48,
               "metricType": "duration",
             },
           },
@@ -18918,7 +18918,7 @@ exports[`20 explicit synthetic golden profiles > mobility6x90 1`] = `
       },
       {
         "details": {
-          "quality": 0.7867578051996554,
+          "quality": 0.7864457038925959,
         },
         "note": "round 1",
         "reason": "legal local quality gain",
@@ -19905,7 +19905,7 @@ exports[`20 explicit synthetic golden profiles > mobility6x90 1`] = `
       },
       {
         "details": {
-          "quality": 0.793185793061467,
+          "quality": 0.7928736917544074,
         },
         "note": "round 2",
         "reason": "legal local quality gain",
@@ -20892,7 +20892,7 @@ exports[`20 explicit synthetic golden profiles > mobility6x90 1`] = `
       },
       {
         "details": {
-          "quality": 0.799423208038153,
+          "quality": 0.7991110924747582,
         },
         "note": "round 3",
         "reason": "legal local quality gain",

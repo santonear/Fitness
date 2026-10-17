@@ -39,6 +39,7 @@ it('meets all requested quality gates for every eligible plan while reporting he
  expect(report.timingBreakdown.nonShortWithin10Rate).toBeGreaterThanOrEqual(.90);
  expect(report.timingBreakdown.shortageFraction).toBeLessThanOrEqual(.05);
  expect(report.timingBreakdown.below50Count).toBe(0);
+ expect(report.timingBreakdown.extremeBelow50Count).toBe(0);
  expect(report.coverageRate).toBeGreaterThanOrEqual(.95);
  expect(report.noticeOverflow).toBe(0);
  expect(report.hardCoverageComplete).toBe(true);
