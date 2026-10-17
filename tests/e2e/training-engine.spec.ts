@@ -4,6 +4,10 @@ import {expect,test,type Page} from '@playwright/test';
 import {readFile} from 'node:fs/promises';
 import type {SetFact,SetFeedbackEvent} from '../../src/domain/v8/contracts';
 
+// This file is also discovered by the shared suite: retain the dedicated
+// suite's budget for real IndexedDB histories and multi-theme screenshots.
+test.setTimeout(120000);
+
 async function localFeatures(page:Page){
  await page.route('**/api/v1/features',route=>route.fulfill({json:{version:1,flags:{trainingEngine:true,aiAssistantV2:false,bodyProfile:false},expiresAt:Date.now()+3600000}}));
  await page.route('**/api/v1/trial/access-status',route=>route.fulfill({json:{qualification:'none',sessionValid:false,aiEnabled:false}}));

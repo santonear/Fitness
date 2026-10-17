@@ -2,12 +2,12 @@ import {readFileSync} from 'node:fs';
 import {test,expect,type Page} from '@playwright/test';
 async function snapshot(page:Page){return page.evaluate(async()=>{const path='/tests/e2e/helpers/b-safety-seed.ts';return(await import(/* @vite-ignore */path)).safetySnapshot();});}
 async function seed(page:Page,kind:'pregnant'|'postpartum'|'general'|'older'|'power'){return page.evaluate(async kind=>{const path='/tests/e2e/helpers/b-safety-seed.ts';return(await import(/* @vite-ignore */path)).seedSafety(kind);},kind);}
-test.beforeEach(async({page})=>{
+test.beforeEach(async({page,baseURL})=>{
  // Offline synthetic feature responses; all model endpoints are blocked locally.
  await page.route('**/api/**',route=>route.fulfill({status:403,json:{error:'offline browser verification'}}));
  await page.route('**/api/v1/features',route=>route.fulfill({json:{version:1,flags:{trainingEngine:true,aiAssistantV2:false,bodyProfile:false},expiresAt:Date.parse('2026-10-17T12:00:00Z')}}));
  await page.route('**/api/v1/trial/access-status',route=>route.fulfill({json:{qualification:'none',sessionValid:false,aiEnabled:false}}));
- await page.route(/^https?:\/\/(?!127\.0\.0\.1:5417)/,route=>route.abort());
+ await page.route(url=>/^https?:$/.test(url.protocol)&&url.origin!==new URL(baseURL!).origin,route=>route.abort());
  await page.clock.setFixedTime(new Date('2026-10-17T10:00:00Z'));await page.goto('/');
 });
 test('pregnancy stop persists through refresh, ends active session and preserves completed sets',async({page})=>{

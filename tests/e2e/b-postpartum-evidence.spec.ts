@@ -1,9 +1,9 @@
 import {test,expect} from '@playwright/test';
-test('urgent UI interrupts thirteen actual IndexedDB negative dates and refresh retains the new evidence boundary',async({page})=>{
+test('urgent UI interrupts thirteen actual IndexedDB negative dates and refresh retains the new evidence boundary',async({page,baseURL})=>{
  await page.route('**/api/**',route=>route.fulfill({status:403,json:{error:'offline local safety verification'}}));
  await page.route('**/api/v1/features',route=>route.fulfill({json:{version:1,flags:{trainingEngine:true,aiAssistantV2:false,bodyProfile:false},expiresAt:Date.parse('2026-11-01T00:00:00Z')}}));
  await page.route('**/api/v1/trial/access-status',route=>route.fulfill({json:{qualification:'none',sessionValid:false,aiEnabled:false}}));
- await page.route(/^https?:\/\/(?!127\.0\.0\.1:5419)/,route=>route.abort());
+ await page.route(url=>/^https?:$/.test(url.protocol)&&url.origin!==new URL(baseURL!).origin,route=>route.abort());
  await page.clock.setFixedTime(new Date('2026-10-01T02:00:00Z'));await page.goto('/');
  const seeded=await page.evaluate(async()=>{const path='/tests/e2e/helpers/b-safety-seed.ts';return(await import(/* @vite-ignore */path)).seedSafety('postpartum');});
  await page.goto('/workout/'+seeded.workoutId);await page.getByText('出现以下情况请立即停止',{exact:true}).first().click();await page.getByRole('button',{name:'漏尿',exact:true}).click();
