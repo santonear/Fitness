@@ -1,3 +1,6 @@
+import {InitialCautionScreen} from '../settings/InitialCautionScreen';
+import {EngineProfileEditor} from '../settings/EngineProfileEditor';
+import type {EngineProfileFields} from '../../../application/engine-profile';
 import {BodyConversation} from './BodyConversation';
 import {bodyCopy} from '../../../i18n/features/onboarding/body';
 import {bodyComplete,type BodyValues} from '../../../domain/body-profile';
@@ -11,12 +14,12 @@ import { Button, Chip } from '../../components/common';
 import './onboarding.css';
 
 /** Uninterpreted answers. The integration layer resolves them before any model request. */
-export type OnboardingAnswers = Pick<CoachProfile, 'goalText' | 'scheduleOriginalText' | 'adultConfirmed' | 'cautions'> & {
+export type OnboardingAnswers = Pick<CoachProfile, 'goalText' | 'scheduleOriginalText' | 'adultConfirmed' | 'cautions'> & EngineProfileFields & {
   placeEquipmentText: string; body?: BodyValues; bodyText?: string;
   safetyAnswered?: boolean;
 };
 export interface OnboardingPageProps {
-  locale: V8Locale; step: 0 | 1 | 2 | 3 | 4; bodyEnabled?: boolean; answers: OnboardingAnswers;
+  engineEnabled?:boolean; locale: V8Locale; step: 0 | 1 | 2 | 3 | 4; bodyEnabled?: boolean; answers: OnboardingAnswers;
   slots: Pick<ThemeSlots, 'BrandMark' | 'AiLine' | 'Suggestions'>;
   mode: 'ai' | 'basic'; busy?: boolean; error?: string;
   onChange: (answers: OnboardingAnswers) => void; onStep: (step: 0 | 1 | 2 | 3 | 4) => void;
@@ -27,11 +30,12 @@ const fields = ['goalText', 'scheduleOriginalText', 'placeEquipmentText'] as con
 export function cautionsFromGoal(goal:string):CoachProfile['cautions'] {
   return /(?:膝(?:盖|关节)|knee).{0,12}(?:伤|疼|痛|不适|受过伤|injur|pain|hurt)|(?:伤|疼|痛|不适|injur|pain|hurt).{0,12}(?:膝(?:盖|关节)|knee)/i.test(goal)?['knee']:[];
 }
-export function OnboardingPage({ locale, step, answers, slots, mode, bodyEnabled = false, busy = false, error, onChange, onStep, onGenerate, onManual }: OnboardingPageProps) {
+export function OnboardingPage({ engineEnabled=false, locale, step, answers, slots, mode, bodyEnabled = false, busy = false, error, onChange, onStep, onGenerate, onManual }: OnboardingPageProps) {
   const t = locale === 'zh' ? zh : en, bt=bodyCopy[locale],bodyStep=bodyEnabled&&step===1,questionStep=bodyEnabled&&step>1?step-1:step,lastStep=bodyEnabled?4:3;
   const id = useId(), heading = useRef<HTMLHeadingElement>(null),[draftText,setDraftText]=useState('');
   useEffect(() => { heading.current?.focus();setDraftText(''); }, [step]);
-  const complete = fields.every(field => answers[field].trim().length > 0)&&(!bodyEnabled||bodyComplete(answers.body??{}));
+  const engineComplete=!engineEnabled||!!answers.healthStorageConsent&&!!answers.screening?.completedAt&&!!answers.population&&!!answers.birthYearMonth;
+  const complete = engineComplete&&fields.every(field => answers[field].trim().length > 0)&&(!bodyEnabled||bodyComplete(answers.body??{}));
   const question = bodyStep?bt.title:questionStep < 3 ? t.questions[questionStep] : t.safety;
   const key = fields[Math.min(questionStep, 2)];
   const updateText = (text: string) => {setDraftText(text);onChange({ ...answers, [key]: text });};
@@ -51,11 +55,11 @@ export function OnboardingPage({ locale, step, answers, slots, mode, bodyEnabled
         <textarea id={id} value={draftText} placeholder={answers[key]||undefined} disabled={busy} maxLength={8000} onChange={event => updateText(event.target.value)} rows={3} />
         <slots.Suggestions label={t.suggestions} options={t.answers[questionStep].map((label, i) => ({ id: String(i), label }))} disabled={busy} onSelect={value => { const text = t.answers[questionStep][Number(value)]; if (text !== undefined) updateText(text); }} />
       </> : <>
-        <label className="v8-onboarding-adult"><input type="checkbox" checked={answers.adultConfirmed} disabled={busy || bodyEnabled&&answers.body?.age!==undefined&&answers.body.age<18} onChange={event => onChange({ ...answers, adultConfirmed: event.target.checked })} />{t.adult}</label>
+        {engineEnabled&&<EngineProfileEditor ageYears={answers.body?.age} locale={locale} value={answers} onChange={fields=>onChange({...answers,...fields,...(!fields.healthStorageConsent?{healthStorageConsent:undefined,screening:undefined,population:undefined,birthYearMonth:undefined,painState:undefined,powerOneRm:undefined,postpartumRisk:undefined}: {})})}/>}<label className="v8-onboarding-adult"><input type="checkbox" checked={answers.adultConfirmed} disabled={busy || bodyEnabled&&answers.body?.age!==undefined&&answers.body.age<18} onChange={event => onChange({ ...answers, adultConfirmed: event.target.checked })} />{t.adult}</label>
         <fieldset disabled={busy}><legend>{t.cautions}</legend><div className="v8-onboarding-choices">
           <Chip selected={answers.safetyAnswered !== false && answers.cautions.length === 0} disabled={busy} onClick={() => onChange({ ...answers, cautions: [], safetyAnswered: true })}>{t.parts.none}</Chip>
           {(['knee', 'back', 'shoulder', 'wrist', 'other'] as const).map(part => <Chip key={part} selected={answers.cautions.includes(part)} disabled={busy} onClick={() => onChange({ ...answers, safetyAnswered: true, cautions: answers.cautions.includes(part) ? answers.cautions.filter(value => value !== part) : [...answers.cautions, part] })}>{t.parts[part]}</Chip>)}
-        </div></fieldset>
+        </div>{engineEnabled&&<InitialCautionScreen locale={locale} value={answers} onChange={fields=>onChange({...answers,...fields})}/>}</fieldset>
         {!answers.adultConfirmed && <p>{t.minor}</p>}
         {mode === 'ai' ? <details><summary>{t.consent}</summary><dl>{sendFields.map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl></details> : <><p>{t.basic}</p><p>{t.basicHint}</p></>}
       </>}

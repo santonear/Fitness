@@ -1,0 +1,393 @@
+# 第 1 章 安全边界与筛查 —— 机器规则 v0.1（2026-10-14）
+# 与 ch01-safety.md 一一对应。状态字段：activity_status, clearance_state, max_intensity, plan_lock
+
+- id: safety.scope.age_min
+  chapter: 1
+  type: gate
+  value: {age_min_years: 18, below_min_action: no_plan, show_copy: safety.copy.under_18, skippable: false}
+  evidence: C
+  sources: [E01:WHO20, E05:Riebe2015]
+  note: 工程选择，待教练审核；证据库只覆盖成人
+
+- id: safety.copy.under_18
+  chapter: 1
+  type: copy
+  zh: 本应用的训练计划只面向 18 岁及以上的成年人。未满 18 岁的朋友，建议在体育老师、教练或家长的指导下参加适合你年龄的运动。
+  en: Our training plans are designed for adults aged 18 and over. If you're under 18, please exercise with guidance from a PE teacher, coach or parent.
+  evidence: C
+  sources: [E01:WHO20]
+  note: 工程选择，待教练审核
+
+- id: safety.screen.parq
+  chapter: 1
+  type: gate
+  value:
+    required_before_first_plan: true
+    skippable: false
+    parq_questions:
+      - doctor_diagnosed_heart_condition_or_high_bp
+      - chest_pain_rest_daily_or_activity
+      - dizziness_balance_loss_or_unconscious_past_12m
+      - other_chronic_condition
+      - prescribed_meds_chronic_condition
+      - bone_joint_soft_tissue_problem_past_12m
+      - doctor_said_supervised_only
+    extra_questions:
+      - cmr_symptoms            # 见 safety.screen.cmr_symptoms
+      - pregnant_or_postpartum_12m
+      - acute_illness_or_fever
+      - activity_status         # 见 safety.screen.activity_status
+      - resting_bp_known
+      - resting_bp_ge_160_90
+    any_parq_yes: {clearance_state: required, then: safety.clearance.matrix}
+    any_symptom_yes: {clearance_state: required, then: safety.clearance.matrix}
+    follow_up_questionnaire: false   # 不复刻 PAR-Q+ 分病种追问，任何“是”即需许可
+  evidence: A
+  sources: [E01:PARQ23, E01:PARQ25, E01:RIEBE15, E05:Riebe2015]
+  note: 任何“是”直接需许可，比 PAR-Q+ 追问更保守
+
+- id: safety.screen.activity_status
+  chapter: 1
+  type: default
+  value:
+    active_if_all: {months_min: 3, days_per_week_min: 3, minutes_per_session_min: 30, intensity_min: moderate, planned: true}
+    otherwise: inactive
+    unsure: inactive
+  evidence: A
+  sources: [E01:RIEBE15, E01:OEP]
+  note: OEP 为二手来源（待核实）
+
+- id: safety.screen.cmr_symptoms
+  chapter: 1
+  type: trigger
+  value:
+    symptoms:
+      - chest_neck_jaw_arm_pain_or_discomfort
+      - dyspnea_at_rest_or_mild_exertion
+      - dizziness_or_syncope
+      - orthopnea_or_nocturnal_dyspnea
+      - ankle_edema
+      - palpitations_or_tachycardia
+      - intermittent_claudication
+      - known_heart_murmur
+      - unusual_fatigue_or_breathlessness_usual_activity
+    any_yes: symptomatic
+    ask_at: [onboarding, rescreen]
+  evidence: A
+  sources: [E01:RIEBE15, E01:OEP, E05:ACE2018]
+  note: 清单经二手来源确认（待核实），只记录有无不解读
+
+- id: safety.clearance.matrix
+  chapter: 1
+  type: gate
+  value:
+    evaluate_in_order: true
+    steps:
+      - when: {any_of: [parq_chest_pain, parq_syncope_12m, symptomatic]}
+        set: {clearance_state: hard_stop, plan_lock: true}
+      - when: {known_cmr_disease: true, activity_status: inactive}
+        set: {clearance_state: required, plan_lock: true}
+      - when: {known_cmr_disease: true, activity_status: active, symptomatic: false}
+        set: {clearance_state: required, plan_lock: false, max_intensity: moderate, max_rpe_0_10: 6, hiit: locked}
+      - when: {any_other_parq_yes: true}
+        set: {clearance_state: required, plan_lock: false, mode: safety.clearance.restricted_mode}
+      - when: default
+        set: {clearance_state: none_needed, plan_lock: false}
+        max_intensity_by_activity: {inactive: moderate, active: vigorous}
+    known_cmr_disease_includes: [cardiovascular, diabetes_type1, diabetes_type2, renal]
+    pregnant_or_postpartum: route_to_module
+  evidence: A
+  sources: [E01:RIEBE15, E01:FRANK20, E05:Riebe2015, E05:ACE2018, E01:PARQ23]
+  note: 不活跃且有已知疾病者由“建议许可”改为强制锁定
+
+- id: safety.clearance.hard_stop
+  chapter: 1
+  type: gate
+  value:
+    generate_plan: false
+    plan_lock: true
+    allow_gentle_mobility: false   # 待产品与专业顾问决定
+    show_copy: safety.copy.clearance_needed
+    unlock_via: safety.clearance.confirm
+  evidence: A
+  sources: [E01:RIEBE15, E01:PARQ23]
+  note: 硬停止期间是否开放轻柔活动度内容待决
+
+- id: safety.clearance.restricted_mode
+  chapter: 1
+  type: limit
+  value:
+    max_rpe_0_10: 5
+    max_intensity: light_moderate
+    exclude_modality: [plyometric, power]
+    exclude_flags: [jumping, valsalva_prone]
+    hiit: locked
+    max_effort_tests: false
+    failure_sets: false
+    session_banner_copy: safety.copy.clearance_needed
+    suggested_start: {days_per_week: [3, 5], minutes_per_session: [20, 60], components: [aerobic, strength], build_toward_min_week: 150}
+  evidence: C
+  sources: [E01:PARQ23, E01:RIEBE15, E01:CDC-INT]
+  note: 工程选择；证据给 RPE 4–5，取 5
+
+- id: safety.clearance.confirm
+  chapter: 1
+  type: gate
+  value:
+    method: self_attestation
+    attested_intensity_options: [moderate, vigorous]
+    record: [date, attested_intensity]
+    max_intensity_le_attested: true
+    valid_months_max: 12
+    app_grants_clearance: false
+  evidence: A
+  sources: [E01:PARQ23, E01:PARQ25, E01:RIEBE15]
+  note: 应用只记录用户确认，从不自称放行
+
+- id: safety.copy.clearance_needed
+  chapter: 1
+  type: copy
+  zh: 根据你的回答，开始（或加大）运动前，建议先咨询医生或合格的运动专业人员。这不代表你不能运动——大多数人在专业人士确认后都可以安全地动起来。确认后回到这里，我们会为你安排合适的计划。
+  en: Based on your answers, please check with a doctor or qualified exercise professional before starting or stepping up exercise. This doesn't mean you can't be active—most people can exercise safely once they've been checked. Come back after that and we'll set up a suitable plan.
+  evidence: A
+  sources: [E01:PARQ23, E01:RIEBE15]
+
+- id: safety.screen.temporary_illness
+  chapter: 1
+  type: trigger
+  value:
+    on: acute_illness_or_fever
+    set: {mode: pause}
+    schedule_sessions: false
+    count_as_missed: false
+    resume_on: user_reports_recovered
+    resume_rules: return_after_break   # 由进阶/停训回归章节定义
+    show_copy: safety.copy.illness_pause
+  evidence: A
+  sources: [E01:PARQ23, E01:PARQ25]
+
+- id: safety.copy.illness_pause
+  chapter: 1
+  type: copy
+  zh: 身体不舒服时先好好休息。等感觉恢复了再告诉我们，我们会帮你从合适的强度重新开始。
+  en: Rest up while you're unwell. Let us know when you feel better and we'll help you restart at the right level.
+  evidence: A
+  sources: [E01:PARQ23]
+
+- id: safety.screen.pregnancy_route
+  chapter: 1
+  type: trigger
+  applies:
+    population: [pregnant, postpartum]
+  value:
+    on: [pregnant, postpartum_12m]
+    skip_rule: safety.clearance.matrix
+    skip_rule_path: {deferred: true, note: 'v2 澄清：专项与通用取更严，v1不以专项许可代替通用心代谢疾病许可或跳过实际症状阻断。'}
+    route_to: [pregnancy_module, postpartum_module]
+    advise_provider_check: true
+  evidence: A
+  sources: [E01:PARQ23, E05:Mottola2019, E05:ACOG804]
+  note: ACOG804 为二手来源（待核实）
+
+- id: safety.hypertension.limits
+  chapter: 1
+  type: limit
+  value:
+    when_any: [resting_bp_ge_160_90, resting_bp_unknown, hypertension_uncontrolled]
+    persists_after_clearance: true
+    exclude_flags: [valsalva_prone]
+    min_reps_per_set: 8
+    max_rpe_0_10: 7
+    isometric_max_holds: false
+    lift_when: user_reports_bp_controlled
+  evidence: C
+  sources: [E05:Fragala2019, E01:PARQ23, E05:Riebe2015]
+  note: 工程选择；NSCA 数值来自二手总结（待核实）
+
+- id: safety.unlock.vigorous
+  chapter: 1
+  type: gate
+  value:
+    start_max_intensity: {inactive: moderate, active_none_needed: vigorous}
+    unlock_vigorous_after_regular_weeks: {inactive: 8}
+    requires_no_symptoms: true
+    new_symptom_action: reevaluate_hard_stop
+    hiit_gate: hiit.gate.unlock
+    rejected_alternatives: {weeks: [4, 8]}
+  evidence: C
+  sources: [E01:RIEBE15, E01:FRANK20, E01:PAG18]
+  note: 工程选择，待教练审核；证据给 4–8 周取 8
+
+- id: safety.unlock.regular_week
+  chapter: 1
+  type: default
+  value:
+    sessions_completed_min: 2
+    completion_rate_min: 0.8
+    no_symptom_reports: true
+    non_qualifying_week: not_counted
+    reset_after_consecutive_non_qualifying_weeks: 2
+  evidence: C
+  sources: [E01:RIEBE15, E01:OEP]
+  note: 工程选择，待教练审核；证据库无此定义
+
+- id: safety.age45.vigorous_advisory
+  chapter: 1
+  type: gate
+  value:
+    age_min_years: 45
+    when_any: [activity_status_inactive, self_report_rarely_vigorous]
+    before_first: [vigorous, hiit, max_effort]
+    show_copy: safety.copy.age45_advisory
+    require_ack: true
+    ack_once: true
+    re_ask_on: rescreen
+  evidence: A
+  sources: [E01:PARQ23, E01:PARQ25]
+
+- id: safety.copy.age45_advisory
+  chapter: 1
+  type: copy
+  zh: 接下来的训练强度较高。如果你 45 岁以上、平时很少做这么累的运动，建议先咨询医生或合格的运动专业人员。确认没问题后再继续；感觉不对随时停下。
+  en: The next session is high intensity. If you're over 45 and not used to exercise this hard, we recommend checking with a doctor or qualified exercise professional first. Continue once you're comfortable, and stop any time something feels wrong.
+  evidence: A
+  sources: [E01:PARQ23]
+
+- id: safety.session.warmup_cooldown
+  chapter: 1
+  type: limit
+  value:
+    applies_to_session_types: [aerobic_moderate_plus, hiit, circuit]
+    warmup_min_minutes: 5
+    cooldown_min_minutes: 5
+    other_sessions: duration.block.warmup_cooldown
+    combine: max
+  evidence: C
+  sources: [E01:FRANK20]
+  note: 5 分钟为惯例取值，指南未给时长
+
+- id: safety.stop.button
+  chapter: 1
+  type: trigger
+  value:
+    visible: whole_session
+    cardiac_symptoms: [chest_pressure_or_pain, radiating_pain, disproportionate_breathlessness, dizziness_or_near_faint, palpitations_or_irregular_heartbeat, cold_sweat_or_nausea]
+    on_cardiac_symptom: {end_session: true, show_copy: safety.copy.stop_emergency, plan_lock: true, unlock_via: safety.clearance.confirm}
+    on_other_discomfort: {end_exercise: true, prompt_rest: true, allow_end_session: true, pain_rules: pain_module}
+    offer_continue_if_resolved: false
+  evidence: A
+  sources: [E01:RIEBE15, E01:FRANK20, E01:Healthline, E05:Riebe2015]
+  note: Healthline 为二手来源（待核实）；不判断症状原因
+
+- id: safety.copy.stop_symptoms
+  chapter: 1
+  type: copy
+  zh: 出现以下任何情况，请立即停止训练：胸口发紧、压迫、疼痛或胀满感；疼痛放射到手臂、背部、颈部、下颌或上腹；与用力程度不相称的气短；头晕、眼前发黑或快要晕倒；心慌、心跳不规律或漏跳感；出冷汗或恶心。
+  en: "Stop exercising right away if you notice: chest tightness, pressure, pain or fullness; pain spreading to your arm, back, neck, jaw or stomach; shortness of breath out of proportion to the effort; dizziness, light-headedness or feeling faint; a racing, irregular or skipping heartbeat; a cold sweat or nausea."
+  evidence: A
+  sources: [E01:FRANK20, E01:RIEBE15, E01:Healthline]
+  note: Healthline 为二手来源（待核实）
+
+- id: safety.copy.stop_emergency
+  chapter: 1
+  type: copy
+  zh: 请立即停止运动，坐下或躺下休息。如果胸部不适持续超过几分钟、休息后不缓解，或出现晕倒，请马上拨打急救电话（中国大陆 120）。在医生确认之前，我们会暂停你的训练计划。
+  en: Stop exercising now and sit or lie down. If chest discomfort lasts more than a few minutes, doesn't ease with rest, or you faint, call your local emergency number right away. We'll pause your training plan until a doctor has checked you.
+  value: {emergency_number_by_region: {CN: "120"}, localize: true}
+  evidence: A
+  sources: [E01:Healthline, E01:FRANK20]
+  note: 急救号码需按地区配置；Healthline 待核实
+
+- id: safety.copy.disclaimer
+  chapter: 1
+  type: copy
+  zh: 运动对绝大多数人是安全的，好处远大于风险。本应用提供一般健身指导，不是医疗器械，不能诊断或治疗任何疾病，也不能代替医生的意见。
+  en: Exercise is safe for most people, and the benefits far outweigh the risks. This app offers general fitness guidance. It is not a medical device, can't diagnose or treat any condition, and doesn't replace advice from your doctor.
+  evidence: A
+  sources: [E01:PAG18, E01:UKCMO, E01:RIEBE15]
+
+- id: safety.rescreen.interval
+  chapter: 1
+  type: trigger
+  value:
+    interval_months: 12
+    block_training_until_done: true
+    also_on: [new_diagnosis, new_medication, new_symptom, pregnancy, childbirth]
+    reevaluate_with: safety.clearance.matrix
+    attestation_expires_months: 12
+    keep_training_history: true
+  evidence: A
+  sources: [E01:PARQ23, E01:PARQ25, E01:RIEBE15, E05:Riebe2015]
+
+- id: safety.copy.cmr_chest_neck_jaw_arm_pain_or_discomfort
+  chapter: 1
+  type: copy
+  zh: 胸部、颈部、下颌或手臂的疼痛或不适
+  en: Pain or discomfort in the chest, neck, jaw or arms
+  evidence: A
+  sources: [E01:RIEBE15, E01:OEP, E05:ACE2018]
+
+- id: safety.copy.screening_required
+  chapter: 1
+  type: copy
+  zh: 请先完成运动前自查，再生成训练计划。
+  en: Complete the pre-exercise screening before generating a training plan.
+  evidence: C
+  sources: [E01:PARQ23]
+  note: v2操作提示；仅说明既有必填自查流程，不推断未知答案或健康状况。
+- id: safety.copy.cmr_dyspnea_at_rest_or_mild_exertion
+  chapter: 1
+  type: copy
+  zh: 休息或轻微用力时异常气短
+  en: Unusual breathlessness at rest or with mild exertion
+  evidence: A
+  sources: [E01:RIEBE15, E01:OEP, E05:ACE2018]
+- id: safety.copy.cmr_dizziness_or_syncope
+  chapter: 1
+  type: copy
+  zh: 头晕或晕厥
+  en: Dizziness or fainting
+  evidence: A
+  sources: [E01:RIEBE15, E01:OEP, E05:ACE2018]
+- id: safety.copy.cmr_orthopnea_or_nocturnal_dyspnea
+  chapter: 1
+  type: copy
+  zh: 平躺时气短或夜间憋醒
+  en: Breathlessness when lying down or waking at night short of breath
+  evidence: A
+  sources: [E01:RIEBE15, E01:OEP, E05:ACE2018]
+- id: safety.copy.cmr_ankle_edema
+  chapter: 1
+  type: copy
+  zh: 脚踝肿胀
+  en: Swollen ankles
+  evidence: A
+  sources: [E01:RIEBE15, E01:OEP, E05:ACE2018]
+- id: safety.copy.cmr_palpitations_or_tachycardia
+  chapter: 1
+  type: copy
+  zh: 心悸或心跳过快
+  en: Palpitations or a rapid heartbeat
+  evidence: A
+  sources: [E01:RIEBE15, E01:OEP, E05:ACE2018]
+- id: safety.copy.cmr_intermittent_claudication
+  chapter: 1
+  type: copy
+  zh: 走路时小腿疼、休息后缓解
+  en: Calf pain when walking that eases with rest
+  evidence: A
+  sources: [E01:RIEBE15, E01:OEP, E05:ACE2018]
+- id: safety.copy.cmr_known_heart_murmur
+  chapter: 1
+  type: copy
+  zh: 已知心脏杂音
+  en: Known heart murmur
+  evidence: A
+  sources: [E01:RIEBE15, E01:OEP, E05:ACE2018]
+- id: safety.copy.cmr_unusual_fatigue_or_breathlessness_usual_activity
+  chapter: 1
+  type: copy
+  zh: 日常活动中异常疲劳或气短
+  en: Unusual fatigue or breathlessness during usual daily activity
+  evidence: A
+  sources: [E01:RIEBE15, E01:OEP, E05:ACE2018]

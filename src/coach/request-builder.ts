@@ -1,3 +1,6 @@
+import {toEngineProfile} from '../application/engine-profile';
+import {isFeatureEnabled} from '../application/feature-flags';
+import type {FeatureName} from '../domain/feature-flags';
 import zh from '../i18n/features/coach/zh.json';
 import en from '../i18n/features/coach/en.json';
 import type { createV8Workflow } from '../application/v8-workflow';
@@ -19,11 +22,14 @@ export function buildCoachRequest(input:CoachRequestInput):CoachRequest|undefine
  const profile=input.profile??data.state?.coachProfile;
  if(!profile?.adultConfirmed||data.profile?.bodyDetails?.values.age!==undefined&&data.profile.bodyDetails.values.age<18)return;
  const revision=data.metadata.dataRevision,generation=data.metadata.restoreGeneration??0;
- const common={version:'fitness-coach-v8',requestId:crypto.randomUUID(),conversationId:input.conversationId??crypto.randomUUID(),restoreGeneration:generation,
+ const engineEnabled=isFeatureEnabled('trainingEngine' as FeatureName);
+ const engineProfile=engineEnabled?toEngineProfile(profile,{asOfDate:new Intl.DateTimeFormat('en-CA',{timeZone:data.profile?.timeZone??'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()),timeZone:data.profile?.timeZone,locale:data.profile?.locale,history:data.workouts,notes:[],ageYears:data.profile?.bodyDetails?.values.age}):undefined;
+ const common={...(engineEnabled?{trainingEngine:true,engineProfile}:{}),version:'fitness-coach-v8',requestId:crypto.randomUUID(),conversationId:input.conversationId??crypto.randomUUID(),restoreGeneration:generation,
   candidateContext:{equipment:profile.equipment,cautions:profile.cautions},
   inputSnapshot:JSON.stringify({revision,generation,versionId:data.version?.id}),sendConfirmation:'preview',locale:data.profile?.locale??'zh',timeZone:data.profile?.timeZone??'Asia/Shanghai',adultConfirmed:true,messages:[],...(input.body?{body:input.body}:{}),...(input.history?{history:input.history}:{})};
  if(task==='ONBOARD_PLAN'){
-  const {confirmedAt:_confirmedAt,placeEquipmentOriginalText:_original,...sharedProfile}=profile;
+  const {goalText,weeklyTarget,sessionMinutes,scheduleOriginalText,preferredDays,place,equipment,adultConfirmed,cautions,cautionNote}=profile;
+  const sharedProfile={goalText,weeklyTarget,sessionMinutes,scheduleOriginalText,preferredDays,place,equipment,adultConfirmed,cautions,cautionNote};
   return coachRequestSchema.parse({...common,task,profile:sharedProfile});
  }
  if(!data.plan||!data.version)return;

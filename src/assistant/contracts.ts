@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import {engineHealthScope} from '../coach/engine-health';
 import { coachRequestSchema, coachResponseSchema, type CoachRequest } from '../coach/contracts';
 import { exerciseIdSchema, timeZoneSchema } from '../domain/schemas';
 import { EQUIPMENT, equipmentLabel } from '../catalog/taxonomy';
@@ -11,8 +12,9 @@ export const assistantRequestSchema = z.strictObject({
   locale: z.enum(['zh', 'en']), timeZone: timeZoneSchema, adultConfirmed: z.boolean(),
   messages: z.array(z.strictObject({ role: z.enum(['user', 'assistant']), content: z.string().min(1).max(4000) })).min(1).max(20),
   context: coachRequestSchema.optional(),
+  engineCandidateIds:z.array(exerciseIdSchema).max(60).optional(),
   preferences: z.array(z.strictObject({kind:z.enum(['dislike_exercise','cannot_do','caution_area','preferred_days','equipment']),value:z.union([z.string().max(200),z.array(z.string().max(80)).max(7)])})).max(30).optional(),
-  consent: z.strictObject({ body: z.boolean(), history: z.boolean(), nutrition:z.boolean().optional() }).optional(),
+  consent: z.strictObject({ body: z.boolean(), history: z.boolean(), health:z.boolean().optional(), nutrition:z.boolean().optional() }).optional(),
   currentWorkout: z.strictObject({
     completedSets: z.array(z.strictObject({
       itemIndex: z.number().int().min(0).max(999), setIndex: z.number().int().min(0).max(999), exerciseId: exerciseIdSchema,
@@ -63,6 +65,7 @@ export type AssistantAttachment = z.infer<typeof assistantAttachmentSchema>;
 export type AssistantUsage = { inputTokens: number; outputTokens: number; usageEstimated?: boolean };
 export type AssistantCall = Partial<AssistantUsage> & { stage: 'text' | 'attachment'; result: 'success' | 'repaired' | 'failed'; failureCode?: string; failureDetail?: string };
 export type AssistantEvent =
+  | { type: 'engine_intent';version:'fitness-engine-intent-v1';intent:AssistantIntent }
   | { type: 'text_delta'; delta: string }
   | { type: 'attachment_pending' }
   | { type: 'attachment'; attachment: AssistantAttachment }
@@ -120,7 +123,7 @@ export function sanitizeAssistantRequest(input: unknown): AssistantRequest {
   const request = assistantRequestSchema.parse(input);
   request.locale = inferAssistantLocale(request.messages.at(-1)!.content, request.locale);
   if (request.context) {
-    request.context = applyAssistantPreferences(request.context, request.messages);
+    request.context = engineHealthScope(applyAssistantPreferences(request.context, request.messages),request.consent?.health===true);
     if (!request.consent?.body) delete request.context.body;
     if (!request.consent?.history) delete request.context.history;
     if(request.consent?.nutrition===false||!request.consent?.history&&request.consent?.nutrition!==true)delete request.context.nutrition;

@@ -1,0 +1,197 @@
+{
+  "id": "engine-e6f7daee-2",
+  "name": "活动度训练",
+  "estimatedMinutes": 20,
+  "items": [
+    {
+      "exerciseId": "3e92f9f9-9844-52ab-8a4e-102d420cd45d",
+      "equipment": "none",
+      "sets": 1,
+      "target": {
+        "metricType": "duration",
+        "durationSeconds": 290
+      },
+      "prescription": {
+        "pattern": "cardio_cyclic",
+        "block": "warmup",
+        "rir": [
+          2,
+          3
+        ],
+        "restSeconds": 105,
+        "structure": "straight",
+        "perSide": false,
+        "setupSeconds": 5,
+        "secondsPerRep": 1,
+        "targetRpe": [
+          4,
+          4
+        ]
+      }
+    },
+    {
+      "exerciseId": "9ab0d29f-9494-52b3-8430-31f1f4f42b5f",
+      "equipment": "none",
+      "sets": 2,
+      "target": {
+        "metricType": "duration",
+        "durationSeconds": 30
+      },
+      "prescription": {
+        "pattern": "mobility",
+        "block": "mobility",
+        "rir": [
+          2,
+          3
+        ],
+        "restSeconds": 0,
+        "structure": "straight",
+        "perSide": false,
+        "setupSeconds": 5,
+        "secondsPerRep": 3.5
+      }
+    },
+    {
+      "exerciseId": "3ddedf9e-566a-5171-8221-07b6108780e1",
+      "equipment": "flat-bench",
+      "sets": 3,
+      "target": {
+        "metricType": "duration",
+        "durationSeconds": 30
+      },
+      "prescription": {
+        "pattern": "mobility",
+        "block": "mobility",
+        "rir": [
+          2,
+          3
+        ],
+        "restSeconds": 0,
+        "structure": "straight",
+        "perSide": false,
+        "setupSeconds": 5,
+        "secondsPerRep": 3.5
+      }
+    },
+    {
+      "exerciseId": "519d21de-a1d7-5ee8-850f-5220a41faf3f",
+      "equipment": "none",
+      "sets": 2,
+      "target": {
+        "metricType": "duration",
+        "durationSeconds": 30
+      },
+      "prescription": {
+        "pattern": "mobility",
+        "block": "mobility",
+        "rir": [
+          2,
+          3
+        ],
+        "restSeconds": 0,
+        "structure": "straight",
+        "perSide": false,
+        "setupSeconds": 5,
+        "secondsPerRep": 3.5
+      }
+    },
+    {
+      "exerciseId": "a5b7e125-ebd6-50e5-8cf0-14d095d183ef",
+      "equipment": "none",
+      "sets": 1,
+      "target": {
+        "metricType": "duration",
+        "durationSeconds": 75
+      },
+      "prescription": {
+        "pattern": "cardio_cyclic",
+        "block": "conditioning",
+        "rir": [
+          2,
+          3
+        ],
+        "restSeconds": 105,
+        "structure": "straight",
+        "perSide": false,
+        "setupSeconds": 5,
+        "secondsPerRep": 3,
+        "targetRpe": [
+          5,
+          6
+        ]
+      }
+    },
+    {
+      "exerciseId": "9ab4007b-4404-5576-8bed-9f0641cdbecf",
+      "equipment": "none",
+      "sets": 1,
+      "target": {
+        "metricType": "duration",
+        "durationSeconds": 290
+      },
+      "prescription": {
+        "pattern": "cardio_cyclic",
+        "block": "cooldown",
+        "rir": [
+          2,
+          3
+        ],
+        "restSeconds": 105,
+        "structure": "straight",
+        "perSide": false,
+        "setupSeconds": 5,
+        "secondsPerRep": 3.5,
+        "targetRpe": [
+          4,
+          4
+        ]
+      }
+    },
+    {
+      "exerciseId": "057c92b6-84e8-563e-8a2a-4361e307729b",
+      "equipment": "resistance-band",
+      "sets": 2,
+      "target": {
+        "metricType": "duration",
+        "durationSeconds": 30
+      },
+      "prescription": {
+        "pattern": "mobility",
+        "block": "mobility",
+        "rir": [
+          2,
+          3
+        ],
+        "restSeconds": 0,
+        "structure": "straight",
+        "perSide": true,
+        "setupSeconds": 15,
+        "secondsPerRep": 3.5
+      }
+    },
+    {
+      "exerciseId": "b8bac2d3-df95-5323-83d5-42d32fd061ff",
+      "equipment": "resistance-band",
+      "sets": 2,
+      "target": {
+        "metricType": "duration",
+        "durationSeconds": 30
+      },
+      "prescription": {
+        "pattern": "mobility",
+        "block": "mobility",
+        "rir": [
+          2,
+          3
+        ],
+        "restSeconds": 0,
+        "structure": "straight",
+        "perSide": true,
+        "setupSeconds": 15,
+        "secondsPerRep": 3.5
+      }
+    }
+  ],
+  "estimatedSeconds": 1180,
+  "targetMinutes": 20
+}

@@ -1,0 +1,1799 @@
+{
+  "source": "User supplied original V2 rule-severity.yaml",
+  "sha256": "17572b23368f48d8965e25dd5e6ebc97d958a2c561ff1dcece78dd57a7e9a21c",
+  "rules": [
+    {
+      "id": "meta.id.convention",
+      "type": "limit",
+      "severity": "meta"
+    },
+    {
+      "id": "meta.conflict.precedence",
+      "type": "default",
+      "severity": "meta"
+    },
+    {
+      "id": "meta.manual.version",
+      "type": "default",
+      "severity": "meta"
+    },
+    {
+      "id": "safety.scope.age_min",
+      "type": "gate",
+      "severity": "hard"
+    },
+    {
+      "id": "safety.copy.under_18",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "safety.screen.parq",
+      "type": "gate",
+      "severity": "hard"
+    },
+    {
+      "id": "safety.screen.activity_status",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "safety.screen.cmr_symptoms",
+      "type": "trigger",
+      "severity": "hard"
+    },
+    {
+      "id": "safety.clearance.matrix",
+      "type": "gate",
+      "severity": "hard"
+    },
+    {
+      "id": "safety.clearance.hard_stop",
+      "type": "gate",
+      "severity": "hard"
+    },
+    {
+      "id": "safety.clearance.restricted_mode",
+      "type": "limit",
+      "severity": "hard"
+    },
+    {
+      "id": "safety.clearance.confirm",
+      "type": "gate",
+      "severity": "hard"
+    },
+    {
+      "id": "safety.copy.clearance_needed",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "safety.screen.temporary_illness",
+      "type": "trigger",
+      "severity": "hard"
+    },
+    {
+      "id": "safety.copy.illness_pause",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "safety.screen.pregnancy_route",
+      "type": "trigger",
+      "severity": "hard"
+    },
+    {
+      "id": "safety.hypertension.limits",
+      "type": "limit",
+      "severity": "hard"
+    },
+    {
+      "id": "safety.unlock.vigorous",
+      "type": "gate",
+      "severity": "hard"
+    },
+    {
+      "id": "safety.unlock.regular_week",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "safety.age45.vigorous_advisory",
+      "type": "gate",
+      "severity": "hard"
+    },
+    {
+      "id": "safety.copy.age45_advisory",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "safety.session.warmup_cooldown",
+      "type": "limit",
+      "severity": "target",
+      "weight": 1
+    },
+    {
+      "id": "safety.stop.button",
+      "type": "trigger",
+      "severity": "hard"
+    },
+    {
+      "id": "safety.copy.stop_symptoms",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "safety.copy.stop_emergency",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "safety.copy.disclaimer",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "safety.rescreen.interval",
+      "type": "trigger",
+      "severity": "hard"
+    },
+    {
+      "id": "goal.floor.all",
+      "type": "gate",
+      "severity": "target",
+      "weight": 3
+    },
+    {
+      "id": "goal.aerobic.baseline",
+      "type": "default",
+      "severity": "target",
+      "weight": 1
+    },
+    {
+      "id": "goal.params.start_moving",
+      "type": "default",
+      "severity": "target",
+      "weight": 3
+    },
+    {
+      "id": "goal.params.health",
+      "type": "default",
+      "severity": "target",
+      "weight": 3
+    },
+    {
+      "id": "goal.params.fat_loss",
+      "type": "default",
+      "severity": "target",
+      "weight": 3
+    },
+    {
+      "id": "goal.params.muscle",
+      "type": "default",
+      "severity": "target",
+      "weight": 3
+    },
+    {
+      "id": "goal.params.strength",
+      "type": "default",
+      "severity": "target",
+      "weight": 3
+    },
+    {
+      "id": "goal.strength.beginner_rep_gate",
+      "type": "gate",
+      "severity": "hard"
+    },
+    {
+      "id": "goal.params.mobility",
+      "type": "default",
+      "severity": "target",
+      "weight": 3
+    },
+    {
+      "id": "goal.rir.level_override",
+      "type": "limit",
+      "severity": "mechanic"
+    },
+    {
+      "id": "goal.interference.guard",
+      "type": "limit",
+      "severity": "target",
+      "weight": 1
+    },
+    {
+      "id": "goal.aerobic.daily_life_credit",
+      "type": "default",
+      "severity": "advice"
+    },
+    {
+      "id": "goal.select.single_primary",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "goal.fat_loss.copy_spot_reduction",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "goal.fat_loss.copy_expectation",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "goal.start_moving.copy_intro",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "week.days.allocation",
+      "type": "formula",
+      "severity": "mechanic"
+    },
+    {
+      "id": "week.template.rt1",
+      "type": "template",
+      "severity": "mechanic"
+    },
+    {
+      "id": "week.template.rt2",
+      "type": "template",
+      "severity": "mechanic"
+    },
+    {
+      "id": "week.template.rt3",
+      "type": "template",
+      "severity": "mechanic"
+    },
+    {
+      "id": "week.template.rt4",
+      "type": "template",
+      "severity": "mechanic"
+    },
+    {
+      "id": "week.template.rt5",
+      "type": "template",
+      "severity": "mechanic"
+    },
+    {
+      "id": "week.template.rt6",
+      "type": "template",
+      "severity": "mechanic"
+    },
+    {
+      "id": "week.day.fb_a",
+      "type": "template",
+      "severity": "mechanic"
+    },
+    {
+      "id": "week.day.fb_b",
+      "type": "template",
+      "severity": "mechanic"
+    },
+    {
+      "id": "week.day.fb_c",
+      "type": "template",
+      "severity": "mechanic"
+    },
+    {
+      "id": "week.day.u1",
+      "type": "template",
+      "severity": "mechanic"
+    },
+    {
+      "id": "week.day.u2",
+      "type": "template",
+      "severity": "mechanic"
+    },
+    {
+      "id": "week.day.l1",
+      "type": "template",
+      "severity": "mechanic"
+    },
+    {
+      "id": "week.day.l2",
+      "type": "template",
+      "severity": "mechanic"
+    },
+    {
+      "id": "week.day.push",
+      "type": "template",
+      "severity": "mechanic"
+    },
+    {
+      "id": "week.day.pull",
+      "type": "template",
+      "severity": "mechanic"
+    },
+    {
+      "id": "week.day.legs",
+      "type": "template",
+      "severity": "mechanic"
+    },
+    {
+      "id": "week.day.aerobic",
+      "type": "template",
+      "severity": "mechanic"
+    },
+    {
+      "id": "week.day.mobility",
+      "type": "template",
+      "severity": "mechanic"
+    },
+    {
+      "id": "week.coverage.patterns",
+      "type": "gate",
+      "severity": "target",
+      "weight": 4
+    },
+    {
+      "id": "week.frequency.per_muscle",
+      "type": "formula",
+      "severity": "target",
+      "weight": 1
+    },
+    {
+      "id": "week.recovery.spacing",
+      "type": "limit",
+      "severity": "target",
+      "weight": 1
+    },
+    {
+      "id": "week.recovery.light_day",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "week.schedule.user_days",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "week.missed_session",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "week.one_day.copy",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "session.durations.allowed",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "session.time.model",
+      "type": "formula",
+      "severity": "mechanic"
+    },
+    {
+      "id": "session.order.blocks",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "session.template.min10",
+      "type": "template",
+      "severity": "mechanic"
+    },
+    {
+      "id": "session.template.min20",
+      "type": "template",
+      "severity": "mechanic"
+    },
+    {
+      "id": "session.template.min30",
+      "type": "template",
+      "severity": "mechanic"
+    },
+    {
+      "id": "session.template.min45",
+      "type": "template",
+      "severity": "mechanic"
+    },
+    {
+      "id": "session.template.min60",
+      "type": "template",
+      "severity": "mechanic"
+    },
+    {
+      "id": "session.template.min90",
+      "type": "template",
+      "severity": "mechanic"
+    },
+    {
+      "id": "session.warmup.general",
+      "type": "default",
+      "severity": "target",
+      "weight": 2
+    },
+    {
+      "id": "session.warmup.dynamic",
+      "type": "default",
+      "severity": "target",
+      "weight": 1
+    },
+    {
+      "id": "session.warmup.ramp_sets",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "session.warmup.balance_older",
+      "type": "default",
+      "severity": "target",
+      "weight": 1
+    },
+    {
+      "id": "session.warmup.no_long_static",
+      "type": "limit",
+      "severity": "target",
+      "weight": 1
+    },
+    {
+      "id": "session.superset.when",
+      "type": "gate",
+      "severity": "mechanic"
+    },
+    {
+      "id": "session.superset.pairing",
+      "type": "gate",
+      "severity": "mechanic"
+    },
+    {
+      "id": "session.superset.rest",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "session.conditioning.slot",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "session.cooldown.stretch",
+      "type": "default",
+      "severity": "target",
+      "weight": 1
+    },
+    {
+      "id": "session.fit.algorithm",
+      "type": "formula",
+      "severity": "mechanic"
+    },
+    {
+      "id": "dose.level.definition",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "dose.muscle_groups",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "dose.volume.fractional",
+      "type": "formula",
+      "severity": "mechanic"
+    },
+    {
+      "id": "dose.sets_week.beginner",
+      "type": "limit",
+      "severity": "target",
+      "weight": 3
+    },
+    {
+      "id": "dose.sets_week.intermediate",
+      "type": "limit",
+      "severity": "target",
+      "weight": 3
+    },
+    {
+      "id": "dose.sets_week.goal_matrix",
+      "type": "default",
+      "severity": "target",
+      "weight": 1
+    },
+    {
+      "id": "dose.sets_session.cap",
+      "type": "limit",
+      "severity": "hard"
+    },
+    {
+      "id": "dose.sets_exercise",
+      "type": "limit",
+      "severity": "target",
+      "weight": 1
+    },
+    {
+      "id": "dose.reps.bounds",
+      "type": "limit",
+      "severity": "hard"
+    },
+    {
+      "id": "dose.reps.by_class",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "dose.load.pct_1rm",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "dose.load.initial_selection",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "dose.rir.targets",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "dose.rir.calibration",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "dose.rest.table",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "dose.tempo",
+      "type": "limit",
+      "severity": "mechanic"
+    },
+    {
+      "id": "dose.isometric",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "dose.stretch",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "dose.intensity_techniques",
+      "type": "gate",
+      "severity": "hard"
+    },
+    {
+      "id": "dose.power",
+      "type": "gate",
+      "severity": "hard"
+    },
+    {
+      "id": "select.pipeline",
+      "type": "formula",
+      "severity": "mechanic"
+    },
+    {
+      "id": "select.use_tag.slot_match",
+      "type": "gate",
+      "severity": "mechanic"
+    },
+    {
+      "id": "select.pattern.match",
+      "type": "gate",
+      "severity": "mechanic"
+    },
+    {
+      "id": "select.difficulty.window",
+      "type": "limit",
+      "severity": "mechanic"
+    },
+    {
+      "id": "select.rank",
+      "type": "formula",
+      "severity": "mechanic"
+    },
+    {
+      "id": "select.unilateral.weekly",
+      "type": "gate",
+      "severity": "target",
+      "weight": 1
+    },
+    {
+      "id": "order.sort_key",
+      "type": "formula",
+      "severity": "mechanic"
+    },
+    {
+      "id": "balance.week.pull_push",
+      "type": "limit",
+      "severity": "target",
+      "weight": 2
+    },
+    {
+      "id": "balance.week.hinge_knee",
+      "type": "limit",
+      "severity": "target",
+      "weight": 2
+    },
+    {
+      "id": "balance.week.core_three",
+      "type": "gate",
+      "severity": "target",
+      "weight": 2
+    },
+    {
+      "id": "balance.week.carry_ground",
+      "type": "gate",
+      "severity": "advice"
+    },
+    {
+      "id": "variety.no_repeat",
+      "type": "limit",
+      "severity": "hard"
+    },
+    {
+      "id": "variety.rotation",
+      "type": "default",
+      "severity": "target",
+      "weight": 1
+    },
+    {
+      "id": "equipment.downgrade",
+      "type": "substitute",
+      "severity": "mechanic"
+    },
+    {
+      "id": "select.fallback.chain",
+      "type": "substitute",
+      "severity": "mechanic"
+    },
+    {
+      "id": "equipment.pull_gap",
+      "type": "trigger",
+      "severity": "advice"
+    },
+    {
+      "id": "equipment.pull_gap_copy",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "equipment.strength_bodyweight_copy",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "equipment.catalog_gap_report",
+      "type": "trigger",
+      "severity": "advice"
+    },
+    {
+      "id": "progression.model.default",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "progression.double.trigger",
+      "type": "trigger",
+      "severity": "mechanic"
+    },
+    {
+      "id": "progression.load.increment",
+      "type": "formula",
+      "severity": "mechanic"
+    },
+    {
+      "id": "progression.fixed_load.order",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "progression.stall.reset",
+      "type": "trigger",
+      "severity": "mechanic"
+    },
+    {
+      "id": "progression.change.priority",
+      "type": "formula",
+      "severity": "mechanic"
+    },
+    {
+      "id": "progression.autoreg.input",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "progression.autoreg.rir",
+      "type": "formula",
+      "severity": "mechanic"
+    },
+    {
+      "id": "ladder.step.up",
+      "type": "trigger",
+      "severity": "mechanic"
+    },
+    {
+      "id": "ladder.step.missing",
+      "type": "substitute",
+      "severity": "mechanic"
+    },
+    {
+      "id": "ladder.step.down",
+      "type": "trigger",
+      "severity": "mechanic"
+    },
+    {
+      "id": "ladder.gate.barbell",
+      "type": "gate",
+      "severity": "hard"
+    },
+    {
+      "id": "volume.week.increase",
+      "type": "formula",
+      "severity": "advice"
+    },
+    {
+      "id": "deload.checkin.inputs",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "deload.copy.checkin",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "deload.trigger.reactive",
+      "type": "trigger",
+      "severity": "mechanic"
+    },
+    {
+      "id": "deload.trigger.scheduled",
+      "type": "trigger",
+      "severity": "advice"
+    },
+    {
+      "id": "deload.dose.prescription",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "deload.new_user.easy_days",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "progression.new.week_caps",
+      "type": "limit",
+      "severity": "hard"
+    },
+    {
+      "id": "progression.new.weekly_sets",
+      "type": "limit",
+      "severity": "target",
+      "weight": 1
+    },
+    {
+      "id": "progression.new.exclusions",
+      "type": "exclude",
+      "severity": "hard"
+    },
+    {
+      "id": "progression.new.load_step",
+      "type": "limit",
+      "severity": "hard"
+    },
+    {
+      "id": "progression.doms.copy",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "progression.doms.referral",
+      "type": "trigger",
+      "severity": "mechanic"
+    },
+    {
+      "id": "progression.return.classify",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "progression.return.short",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "progression.return.mid",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "progression.return.long",
+      "type": "formula",
+      "severity": "mechanic"
+    },
+    {
+      "id": "progression.return.bodyweight",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "progression.return.first_session_cap",
+      "type": "limit",
+      "severity": "hard"
+    },
+    {
+      "id": "progression.return.new_user_phase",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "progression.missed.state",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "progression.copy.feedback",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "progression.feedback.too_easy",
+      "type": "trigger",
+      "severity": "mechanic"
+    },
+    {
+      "id": "progression.feedback.too_hard",
+      "type": "trigger",
+      "severity": "mechanic"
+    },
+    {
+      "id": "progression.feedback.pain",
+      "type": "trigger",
+      "severity": "mechanic"
+    },
+    {
+      "id": "aerobic.target.weekly",
+      "type": "default",
+      "severity": "target",
+      "weight": 1
+    },
+    {
+      "id": "aerobic.bout.any_length",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "aerobic.progression.ramp",
+      "type": "limit",
+      "severity": "advice"
+    },
+    {
+      "id": "aerobic.copy.every_minute",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "aerobic.modality.any_counts",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "aerobic.intensity.talk_test",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "aerobic.intensity.rpe_scale",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "aerobic.intensity.mets",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "aerobic.intensity.hrmax",
+      "type": "formula",
+      "severity": "mechanic"
+    },
+    {
+      "id": "hiit.gate.unlock",
+      "type": "gate",
+      "severity": "hard"
+    },
+    {
+      "id": "hiit.dose.default",
+      "type": "template",
+      "severity": "mechanic"
+    },
+    {
+      "id": "hiit.credit.minutes",
+      "type": "formula",
+      "severity": "mechanic"
+    },
+    {
+      "id": "aerobic.snack.option",
+      "type": "template",
+      "severity": "advice"
+    },
+    {
+      "id": "steps.target.daily",
+      "type": "default",
+      "severity": "advice"
+    },
+    {
+      "id": "steps.progression.increment",
+      "type": "limit",
+      "severity": "advice"
+    },
+    {
+      "id": "steps.credit.mvpa",
+      "type": "limit",
+      "severity": "advice"
+    },
+    {
+      "id": "fatloss.plan.structure",
+      "type": "template",
+      "severity": "mechanic"
+    },
+    {
+      "id": "fatloss.expectation.copy",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "fatloss.spot_reduction.ban",
+      "type": "limit",
+      "severity": "hard"
+    },
+    {
+      "id": "fatloss.copy.spot_reduction",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "fatloss.hiit.optional",
+      "type": "default",
+      "severity": "advice"
+    },
+    {
+      "id": "sedentary.break.nudge",
+      "type": "default",
+      "severity": "advice"
+    },
+    {
+      "id": "sedentary.high_sitting.target",
+      "type": "trigger",
+      "severity": "advice"
+    },
+    {
+      "id": "caution.activation",
+      "type": "gate",
+      "severity": "hard"
+    },
+    {
+      "id": "caution.knee.filter",
+      "type": "exclude",
+      "severity": "hard"
+    },
+    {
+      "id": "caution.knee.substitute",
+      "type": "substitute",
+      "severity": "hard"
+    },
+    {
+      "id": "caution.back.filter",
+      "type": "exclude",
+      "severity": "hard"
+    },
+    {
+      "id": "caution.back.keep_active",
+      "type": "limit",
+      "severity": "target",
+      "weight": 1
+    },
+    {
+      "id": "caution.back.substitute",
+      "type": "substitute",
+      "severity": "hard"
+    },
+    {
+      "id": "caution.shoulder.filter",
+      "type": "exclude",
+      "severity": "hard"
+    },
+    {
+      "id": "caution.shoulder.substitute",
+      "type": "substitute",
+      "severity": "hard"
+    },
+    {
+      "id": "caution.wrist.filter",
+      "type": "exclude",
+      "severity": "hard"
+    },
+    {
+      "id": "caution.wrist.substitute",
+      "type": "substitute",
+      "severity": "hard"
+    },
+    {
+      "id": "caution.substitute.priority",
+      "type": "formula",
+      "severity": "mechanic"
+    },
+    {
+      "id": "caution.multiple",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "pain.prompt",
+      "type": "trigger",
+      "severity": "hard"
+    },
+    {
+      "id": "pain.rule",
+      "type": "trigger",
+      "severity": "hard"
+    },
+    {
+      "id": "pain.repeat_referral",
+      "type": "trigger",
+      "severity": "hard"
+    },
+    {
+      "id": "pain.copy",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "caution.progression",
+      "type": "limit",
+      "severity": "hard"
+    },
+    {
+      "id": "caution.level_down",
+      "type": "trigger",
+      "severity": "hard"
+    },
+    {
+      "id": "redflag.screen",
+      "type": "trigger",
+      "severity": "hard"
+    },
+    {
+      "id": "redflag.joint_any",
+      "type": "gate",
+      "severity": "hard"
+    },
+    {
+      "id": "redflag.back",
+      "type": "gate",
+      "severity": "hard"
+    },
+    {
+      "id": "redflag.shoulder",
+      "type": "gate",
+      "severity": "hard"
+    },
+    {
+      "id": "redflag.copy",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "redflag.after_clearance",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "caution.copy.labels",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "caution.never",
+      "type": "limit",
+      "severity": "hard"
+    },
+    {
+      "id": "older.activation",
+      "type": "gate",
+      "severity": "hard"
+    },
+    {
+      "id": "older.screen.general",
+      "type": "gate",
+      "severity": "hard"
+    },
+    {
+      "id": "older.screen.falls",
+      "type": "gate",
+      "severity": "hard"
+    },
+    {
+      "id": "older.screen.copy",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "older.hypertension",
+      "type": "exclude",
+      "severity": "hard"
+    },
+    {
+      "id": "older.week.aerobic",
+      "type": "limit",
+      "severity": "target",
+      "weight": 1
+    },
+    {
+      "id": "older.week.strength",
+      "type": "limit",
+      "severity": "target",
+      "weight": 1
+    },
+    {
+      "id": "older.week.multicomponent",
+      "type": "limit",
+      "severity": "target",
+      "weight": 1
+    },
+    {
+      "id": "older.week.flexibility",
+      "type": "default",
+      "severity": "target",
+      "weight": 1
+    },
+    {
+      "id": "older.template.balance_required",
+      "type": "limit",
+      "severity": "target",
+      "weight": 5
+    },
+    {
+      "id": "older.program_horizon",
+      "type": "default",
+      "severity": "advice"
+    },
+    {
+      "id": "older.intensity.aerobic",
+      "type": "limit",
+      "severity": "hard"
+    },
+    {
+      "id": "older.strength.dose",
+      "type": "limit",
+      "severity": "hard"
+    },
+    {
+      "id": "older.strength.progression",
+      "type": "limit",
+      "severity": "hard"
+    },
+    {
+      "id": "older.strength.low_start",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "older.exclude.base",
+      "type": "exclude",
+      "severity": "hard"
+    },
+    {
+      "id": "older.exclude.balance_cautious",
+      "type": "exclude",
+      "severity": "hard"
+    },
+    {
+      "id": "older.balance.progression",
+      "type": "formula",
+      "severity": "mechanic"
+    },
+    {
+      "id": "older.power.gate",
+      "type": "gate",
+      "severity": "hard"
+    },
+    {
+      "id": "older.floor.transitions",
+      "type": "exclude",
+      "severity": "hard"
+    },
+    {
+      "id": "older.floor.copy",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "older.bone",
+      "type": "gate",
+      "severity": "hard"
+    },
+    {
+      "id": "older.return_after_break",
+      "type": "limit",
+      "severity": "hard"
+    },
+    {
+      "id": "older.stop.trigger",
+      "type": "trigger",
+      "severity": "hard"
+    },
+    {
+      "id": "older.stop.copy",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "older.never",
+      "type": "limit",
+      "severity": "hard"
+    },
+    {
+      "id": "pregnancy.activation",
+      "type": "gate",
+      "severity": "hard"
+    },
+    {
+      "id": "pregnancy.gate.provider",
+      "type": "gate",
+      "severity": "hard"
+    },
+    {
+      "id": "pregnancy.gate.absolute",
+      "type": "gate",
+      "severity": "hard"
+    },
+    {
+      "id": "pregnancy.gate.relative",
+      "type": "gate",
+      "severity": "hard"
+    },
+    {
+      "id": "pregnancy.gate.copy",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "pregnancy.reconfirm",
+      "type": "trigger",
+      "severity": "hard"
+    },
+    {
+      "id": "pregnancy.precedence",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "pregnancy.exclude.supine",
+      "type": "exclude",
+      "severity": "hard"
+    },
+    {
+      "id": "pregnancy.supine_symptom",
+      "type": "trigger",
+      "severity": "hard"
+    },
+    {
+      "id": "pregnancy.exclude.prone",
+      "type": "exclude",
+      "severity": "hard"
+    },
+    {
+      "id": "pregnancy.exclude.impact",
+      "type": "exclude",
+      "severity": "hard"
+    },
+    {
+      "id": "pregnancy.exclude.fall_risk",
+      "type": "exclude",
+      "severity": "hard"
+    },
+    {
+      "id": "pregnancy.exclude.valsalva",
+      "type": "exclude",
+      "severity": "hard"
+    },
+    {
+      "id": "pregnancy.exclude.abdominal_flexion",
+      "type": "exclude",
+      "severity": "hard"
+    },
+    {
+      "id": "pregnancy.substitute",
+      "type": "substitute",
+      "severity": "hard"
+    },
+    {
+      "id": "pregnancy.intensity",
+      "type": "limit",
+      "severity": "hard"
+    },
+    {
+      "id": "pregnancy.hiit",
+      "type": "gate",
+      "severity": "hard"
+    },
+    {
+      "id": "pregnancy.week.target",
+      "type": "limit",
+      "severity": "target",
+      "weight": 1
+    },
+    {
+      "id": "pregnancy.pelvic_floor",
+      "type": "trigger",
+      "severity": "hard"
+    },
+    {
+      "id": "pregnancy.environment",
+      "type": "exclude",
+      "severity": "hard"
+    },
+    {
+      "id": "pregnancy.stop.trigger",
+      "type": "trigger",
+      "severity": "hard"
+    },
+    {
+      "id": "pregnancy.stop.copy",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "pregnancy.never",
+      "type": "limit",
+      "severity": "hard"
+    },
+    {
+      "id": "pregnancy.end",
+      "type": "trigger",
+      "severity": "hard"
+    },
+    {
+      "id": "postpartum.activation",
+      "type": "gate",
+      "severity": "hard"
+    },
+    {
+      "id": "postpartum.gate.pre_check",
+      "type": "gate",
+      "severity": "hard"
+    },
+    {
+      "id": "postpartum.gate.clearance",
+      "type": "gate",
+      "severity": "hard"
+    },
+    {
+      "id": "postpartum.gate.caesarean",
+      "type": "gate",
+      "severity": "hard"
+    },
+    {
+      "id": "postpartum.phase.boundaries",
+      "type": "formula",
+      "severity": "mechanic"
+    },
+    {
+      "id": "postpartum.phase1",
+      "type": "template",
+      "severity": "mechanic"
+    },
+    {
+      "id": "postpartum.exclude.pre_phase3",
+      "type": "exclude",
+      "severity": "hard"
+    },
+    {
+      "id": "postpartum.phase2",
+      "type": "template",
+      "severity": "mechanic"
+    },
+    {
+      "id": "postpartum.phase3",
+      "type": "template",
+      "severity": "mechanic"
+    },
+    {
+      "id": "postpartum.running.readiness",
+      "type": "gate",
+      "severity": "hard"
+    },
+    {
+      "id": "postpartum.running.copy",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "postpartum.risk_modifiers",
+      "type": "limit",
+      "severity": "hard"
+    },
+    {
+      "id": "postpartum.breastfeeding",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "postpartum.doming",
+      "type": "substitute",
+      "severity": "hard"
+    },
+    {
+      "id": "postpartum.symptom_regression",
+      "type": "trigger",
+      "severity": "hard"
+    },
+    {
+      "id": "postpartum.referral_signs",
+      "type": "trigger",
+      "severity": "hard"
+    },
+    {
+      "id": "postpartum.urgent",
+      "type": "trigger",
+      "severity": "hard"
+    },
+    {
+      "id": "postpartum.copy.warning",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "postpartum.copy.urgent",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "postpartum.weekly_target",
+      "type": "limit",
+      "severity": "target",
+      "weight": 1
+    },
+    {
+      "id": "postpartum.pelvic_floor",
+      "type": "trigger",
+      "severity": "hard"
+    },
+    {
+      "id": "postpartum.physio_offer",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "postpartum.module_end",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "postpartum.never",
+      "type": "limit",
+      "severity": "hard"
+    },
+    {
+      "id": "duration.rep.seconds",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "duration.set.overhead",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "duration.unilateral.multiplier",
+      "type": "formula",
+      "severity": "mechanic"
+    },
+    {
+      "id": "duration.set.work_time",
+      "type": "formula",
+      "severity": "mechanic"
+    },
+    {
+      "id": "duration.rest.straight",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "duration.rest.block",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "duration.transition.setup",
+      "type": "formula",
+      "severity": "mechanic"
+    },
+    {
+      "id": "duration.ramp.sets",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "duration.block.warmup_cooldown",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "duration.block.cardio",
+      "type": "formula",
+      "severity": "mechanic"
+    },
+    {
+      "id": "duration.block.mobility",
+      "type": "formula",
+      "severity": "mechanic"
+    },
+    {
+      "id": "duration.session.total",
+      "type": "formula",
+      "severity": "mechanic"
+    },
+    {
+      "id": "duration.capacity.table",
+      "type": "template",
+      "severity": "mechanic"
+    },
+    {
+      "id": "duration.fit.tolerance",
+      "type": "limit",
+      "severity": "target",
+      "weight": 4
+    },
+    {
+      "id": "duration.fit.bounds",
+      "type": "limit",
+      "severity": "hard"
+    },
+    {
+      "id": "duration.fit.algorithm",
+      "type": "default",
+      "severity": "mechanic"
+    },
+    {
+      "id": "duration.copy.over_time",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "duration.calibrate.personal",
+      "type": "trigger",
+      "severity": "mechanic"
+    },
+    {
+      "id": "meta.copy.load_light",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "meta.copy.load_medium",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "meta.copy.operation_replace",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "meta.copy.operation_remove",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "meta.copy.operation_add",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "meta.copy.operation_volume",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "meta.copy.operation_duration",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "meta.copy.progression_adjusted",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "assistant.copy.engine_noop",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "safety.copy.parq_1",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "safety.copy.parq_2",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "safety.copy.parq_3",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "safety.copy.parq_4",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "safety.copy.parq_5",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "safety.copy.parq_6",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "safety.copy.parq_7",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "safety.copy.local_health_consent",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "safety.copy.send_health",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "engine.copy.limited",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "engine.copy.unavailable",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "redflag.copy.question_pain_after_fall_or_impact",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "redflag.copy.question_cannot_bear_weight_or_use_limb",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "redflag.copy.question_joint_hot_red_swollen_or_with_fever",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "redflag.copy.question_locking_or_giving_way",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "redflag.copy.question_unexplained_night_or_rest_pain",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "redflag.copy.question_visible_deformity",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "redflag.copy.question_numbness_tingling_or_weakness_spreading_into_limb",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "redflag.copy.question_numbness_groin_or_buttocks",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "redflag.copy.question_new_bladder_or_bowel_problem",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "redflag.copy.question_progressive_leg_weakness",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "redflag.copy.question_back_pain_with_fever_or_unwell",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "redflag.copy.question_back_pain_with_cancer_history",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "redflag.copy.question_unexplained_weight_loss",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "redflag.copy.question_back_pain_after_significant_trauma",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "redflag.copy.question_severe_constant_pain_unrelated_to_movement",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "redflag.copy.question_shoulder_pain_with_chest_pain",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "redflag.copy.question_shoulder_pain_with_breathlessness",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "redflag.copy.confirm_professional_seen",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "preferences.copy.avoid_floor_work",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "preferences.copy.avoid_overhead",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "preferences.copy.avoid_kneeling",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "redflag.copy.question_sudden_loss_of_arm_movement_after_injury",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "session.copy.short_stretch_target",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "session.copy.safety_stretch_unavailable",
+      "type": "copy",
+      "severity": "copy"
+    },
+    {
+      "id": "session.copy.short_health_shares",
+      "type": "copy",
+      "severity": "copy"
+    }
+  ]
+}

@@ -1,0 +1,427 @@
+# rules-ch12.yaml — 第 12 章 产后
+# 与 ch12-postpartum.md 一一对应。条件表达式约定见 rules-ch09.yaml 文件头 / ch09 第 0 节。
+# 本章全部规则上线前须医生、助产士或盆底物理治疗师审核（professional_review: true）。
+# 跑步时间线与准入清单来自专家共识（Goom 2019，C 级）；ACOG 804 仅有二手摘要，列入 unverified。
+
+- id: postpartum.activation
+  chapter: 12
+  type: gate
+  value:
+    trigger: {any: [{user: postpartum, is: true}, {user: birth_reported, is: true}]}
+    set_population: postpartum
+    ask: [weeks_since_birth, delivery, perineal_trauma, postnatal_check_done, postnatal_cleared]
+    delivery_enum: [vaginal, assisted, caesarean]
+  evidence: C
+  professional_review: true
+  sources: [E05:WHO2020, E05:Goom2019]
+  note: 询问产后周数与分娩方式（顺产/器械助产/剖宫产）及会阴损伤
+
+- id: postpartum.gate.pre_check
+  chapter: 12
+  type: gate
+  applies: {population: [postpartum]}
+  value:
+    when: {user: postnatal_cleared, is: false}
+    routine_check_week_default: 6
+    routine_check_week_range: {min: 6, max: 8}
+    allow_only: postpartum.phase1
+    copy:
+      zh: 恭喜你！在正式开始训练前，请先和医生或助产士确认身体恢复情况（通常在产后 6–8 周的复查时）。在那之前，我们只安排步行、盆底肌提醒和轻柔的活动。
+      en: Congratulations! Before starting training, please check your recovery with your doctor or midwife, usually at your 6–8 week postnatal check. Until then, we'll keep to walking, pelvic floor reminders and gentle movement.
+  evidence: A
+  professional_review: true
+  sources: [E05:WHO2020, E05:ACOG804, E05:Goom2019]
+  unverified: [E05:ACOG804]
+  note: 产后复查时间因国家而异（英国 6–8 周）；未确认获准前只给阶段 1
+
+- id: postpartum.gate.clearance
+  chapter: 12
+  type: gate
+  applies: {population: [postpartum]}
+  value:
+    phase2_and_above_require: {user: postnatal_cleared, is: true}
+    ask_copy:
+      zh: 产后复查时，医生或助产士是否已经确认你可以开始运动？
+      en: At your postnatal check, did your doctor or midwife confirm you can start exercising?
+  evidence: A
+  professional_review: true
+  sources: [E05:WHO2020, E05:Goom2019]
+  note: 未确认获准，按周数到了也停在阶段 1
+
+- id: postpartum.gate.caesarean
+  chapter: 12
+  type: gate
+  applies: {population: [postpartum]}
+  value:
+    when: {all: [{user: delivery, eq: caesarean}, {user: postnatal_cleared, is: false}]}
+    allow_only_if:
+      any:
+        - {field: slug, in: [walking]}
+        - {field: id, eq: 83cb6674-515a-52cc-8ff4-b74c33f5da5a}
+    candidate_fallback:
+      exercise_id: 83cb6674-515a-52cc-8ff4-b74c33f5da5a
+      primary_if: {field: slug, in: [walking]}
+    reminders_allowed: [pelvic_floor_reminder]
+  evidence: A
+  professional_review: true
+  sources: [E05:WHO2020, "USER:training-engine-v2:slow-walking-in-place-fallback"]
+  note: "剖宫产后，确认获准前除步行外不安排任何训练；用户批准的唯一原地慢走替代动作仅在本gate.when匹配且原步行完整hard候选池为空时启用，复用原步行剂量、轻强度、谈话、进度及停止规则；不含高抬腿、快走或负重变式。"
+
+- id: postpartum.phase.boundaries
+  chapter: 12
+  type: formula
+  applies: {population: [postpartum]}
+  value:
+    base_weeks: {phase1: [0, 6], phase2: [6, 12], phase3_from: 12}
+    buffer_weeks_if:
+      when: {any: [{user: delivery, eq: caesarean}, {user: perineal_trauma, is: true}]}
+      range: {min: 2, max: 4}
+      default: 4
+    shifted_weeks: {phase2_from: "6 + buffer", phase3_from: "12 + buffer"}
+    phase: min(phase_by_weeks, phase_by_gates)
+  evidence: C
+  professional_review: true
+  sources: [E05:Goom2019, E05:WHO2020]
+  note: 缓冲取 4 周为工程选择；阶段同时受周数和关卡限制，取较低者
+
+- id: postpartum.phase1
+  chapter: 12
+  type: template
+  applies: {population: [postpartum]}
+  value:
+    content: [walking, pelvic_floor_reminder, breathing, gentle_mobility]
+    allow_only_if:
+      any:
+        - {field: slug, in: [walking]}
+        - all:
+            - {field: modality, eq: mobility}
+            - {field: difficulty, eq: 1}
+            - {field: impact, eq: 0}
+            - {not: {flag: [balance_demand, high_fall_risk, unstable_surface]}}
+            - {not: {position: inverted}}
+    walking_progression: by_comfort_week_to_week
+    walking_intensity_ref: {rule_id: aerobic.intensity.rpe_scale, field: light_max}
+    minutes_target: none
+  evidence: C
+  professional_review: true
+  sources: [E05:Goom2019, E05:ACOG804, E05:DHSC2022]
+  unverified: [E05:ACOG804]
+  note: 0–6 周：步行、盆底、呼吸、轻柔活动；不设分钟目标（工程选择）
+
+- id: postpartum.exclude.pre_phase3
+  chapter: 12
+  type: exclude
+  applies: {population: [postpartum]}
+  value:
+    when: {user: postpartum_phase, lt: 3}
+    exclude_if:
+      any:
+        - {flag: [jumping, running, valsalva_prone, heavy_axial_load, loaded_spinal_flexion, high_fall_risk, unstable_surface]}
+        - {field: impact, gte: 2}
+        - {field: modality, in: [plyometric, power]}
+        - all:
+            - {field: impact, eq: 1}
+            - {field: primary_pattern, eq: cardio_cyclic}
+            - {not: {field: slug, in: [walking, incline-treadmill-walk, stair-climber]}}
+  evidence: C
+  professional_review: true
+  sources: [E05:Goom2019]
+  note: 12 周前不跑不跳、不做憋气大重量和负重屈曲
+
+- id: postpartum.phase2
+  chapter: 12
+  type: template
+  applies: {population: [postpartum]}
+  value:
+    requires: {all: [{user: postnatal_cleared, is: true}, {user: postpartum_phase, eq: 2}]}
+    aerobic_prefer: [stationary-bike, elliptical-trainer, walking, incline-treadmill-walk]
+    swimming_allowed_if: {all: [{user: lochia_stopped, is: true}, {user: wounds_healed, is: true}]}
+    strength_days_per_week: 2
+    strength_load: bodyweight_to_light
+    strength_limits: {difficulty_max: 2, rir_min: 3}
+    filters: [postpartum.exclude.pre_phase3]
+    catalog_gaps: [swimming]
+  evidence: C
+  professional_review: true
+  sources: [E05:Goom2019, E05:WHO2020, E05:DHSC2022]
+  note: 难度≤2、RIR≥3 为工程选择
+
+- id: postpartum.phase3
+  chapter: 12
+  type: template
+  applies: {population: [postpartum]}
+  value:
+    requires: {all: [{user: postnatal_cleared, is: true}, {user: postpartum_phase, eq: 3}]}
+    strength: general_progression_rules_starting_light
+    lifted_exclusions: [valsalva_prone, heavy_axial_load, loaded_spinal_flexion]
+    still_locked_until_gate: [running, jumping, impact_2, plyometric, hiit]
+    gate: postpartum.running.readiness
+  evidence: C
+  professional_review: true
+  sources: [E05:Goom2019]
+  note: 12 周起力量按通用规则从轻起步；跑跳另需准入清单
+
+- id: postpartum.running.readiness
+  chapter: 12
+  type: gate
+  applies: {population: [postpartum]}
+  value:
+    requires_phase: 3
+    checklist_all_pass_without: [pain, heaviness, dragging, leakage]
+    checklist:
+      - {test: walk, minutes: 30}
+      - {test: single_leg_balance, seconds: 10, per_side: true}
+      - {test: single_leg_squat, reps: 10, per_side: true}
+      - {test: jog_on_the_spot, minutes: 1}
+      - {test: forward_bounds, reps: 10}
+      - {test: hop_on_one_leg, reps: 10, per_side: true}
+      - {test: running_man, reps: 10, per_side: true}
+    on_pass_unlock_if: {any: [{flag: [running, jumping]}, {field: impact, gte: 2}, {field: modality, eq: plyometric}]}
+    on_fail: {keep_locked: true, recheck_after_weeks: 2, show_copy: postpartum.physio_offer}
+    strength_targets_guide_not_gate:
+      - {exercise: single_leg_calf_raise, reps: 20}
+      - {exercise: single_leg_bridge, reps: 20}
+      - {exercise: single_leg_sit_to_stand, reps: 20}
+      - {exercise: side_lying_hip_abduction, reps: 20}
+    typical_return_months: {min: 3, max: 6}
+  evidence: C
+  professional_review: true
+  sources: [E05:Goom2019]
+  note: 专家共识；2 周后复测为工程选择；力量目标只作参考
+
+- id: postpartum.running.copy
+  chapter: 12
+  type: copy
+  value:
+    intro:
+      zh: 想恢复跑步和跳跃？先做下面这几项自测。每一项都要做到不痛、没有下坠或沉重感、没有漏尿，才算通过。
+      en: Want to get back to running and jumping? Try these self-checks first. Each one counts only if there's no pain, no heaviness or dragging, and no leaking.
+    items_zh: [连续步行 30 分钟, 单腿站立 10 秒（每侧）, 单腿蹲 10 次（每侧）, 原地慢跑 1 分钟, 向前跳 10 次, 单腿跳 10 次（每侧）, 交替跨步跳（running man）10 次（每侧）]
+    items_en: [Walk for 30 minutes, Stand on one leg for 10 seconds (each side), Single-leg squat 10 times (each side), Jog on the spot for 1 minute, Jump forward 10 times, Hop on one leg 10 times (each side), Running man 10 times (each side)]
+    pass:
+      zh: 全部通过了，可以开始循序渐进地恢复跑步。大多数人在产后 3–6 个月回到跑步。
+      en: You've passed every check, so you can start easing back into running. Most women return to running 3–6 months after birth.
+    fail:
+      zh: 有一项还没通过也很正常。我们先继续力量和低冲击训练，2 周后再试。也可以请盆底物理治疗师帮你看一看。
+      en: It's normal not to pass every check yet. We'll keep going with strength and low-impact work and try again in 2 weeks. A pelvic health physiotherapist can also help.
+  evidence: C
+  professional_review: true
+  sources: [E05:Goom2019]
+  note: 自测为用户自报，应用不评估结果是否「正常」
+
+- id: postpartum.risk_modifiers
+  chapter: 12
+  type: limit
+  applies: {population: [postpartum]}
+  value:
+    modifiers:
+      - under_3_months_postpartum
+      - caesarean_or_perineal_trauma
+      - breastfeeding
+      - bmi_over_30
+      - poor_sleep
+      - hypermobility
+      - preexisting_pelvic_floor_or_lumbopelvic_problem
+      - low_energy_availability
+      - psychological_drive_to_overexercise
+    when_any:
+      progression_rate: lower_bound_of_general_rules
+      before_running_gate_show: postpartum.physio_offer
+  evidence: C
+  professional_review: true
+  sources: [E05:Goom2019]
+  note: 这些因素会放慢恢复；具体放慢方式为工程选择
+
+- id: postpartum.breastfeeding
+  chapter: 12
+  type: copy
+  applies: {population: [postpartum]}
+  value:
+    tip:
+      zh: 如果你在哺乳，运动前先喂奶或吸奶会更舒服。运动一般不会影响奶量。
+      en: If you're breastfeeding, feeding or expressing before exercise can feel more comfortable. Exercise doesn't usually affect milk supply.
+  evidence: A
+  professional_review: true
+  sources: [E05:ACOG804]
+  unverified: [E05:ACOG804]
+  note: 仅来自 ACOG 二手摘要
+
+- id: postpartum.doming
+  chapter: 12
+  type: substitute
+  applies: {population: [postpartum]}
+  value:
+    when: {user: abdominal_doming_reported, is: true}
+    exclude_if: {any: [{field: primary_pattern, eq: trunk_flexion}, {flag: loaded_spinal_flexion}]}
+    to_slugs: [cable-pallof-press, bird-dog, side-lying-hip-abduction]
+    cue: exhale_led_bracing
+    label_forbidden_zh: [腹直肌分离治疗, 修复, 闭合]
+    copy:
+      zh: 做腹部动作时如果肚子中间鼓起来，我们先换成更温和的版本，用力时记得呼气。也可以请盆底物理治疗师看一看。
+      en: If the middle of your tummy bulges during ab exercises, we'll switch to gentler versions. Breathe out as you push. A pelvic health physiotherapist can also take a look.
+  evidence: C
+  professional_review: true
+  sources: [E05:Goom2019, E05:Beamish2025]
+  unverified: [E05:Beamish2025]
+  note: 不称为腹直肌分离治疗，不测量间距
+
+- id: postpartum.symptom_regression
+  chapter: 12
+  type: trigger
+  applies: {population: [postpartum]}
+  value:
+    when: {user: session_symptoms, contains_any: [leakage, heaviness, dragging, pain, bleeding]}
+    action:
+      - regress_one_phase
+      - exclude_if: {any: [{field: impact, gte: 1}, {flag: [valsalva_prone, heavy_axial_load]}]}
+      - show_copy_postpartum.copy.warning
+    no_auto_progress_until:
+      any:
+        - {user: professional_seen_confirmed, is: true}
+        - {user: symptom_free_consecutive_weeks, gte: 2}
+  evidence: C
+  professional_review: true
+  sources: [E05:Goom2019, E05:Woodley2020]
+  note: 回退一阶段；2 周无症状或已就诊才恢复进阶（工程选择）
+
+- id: postpartum.referral_signs
+  chapter: 12
+  type: trigger
+  applies: {population: [postpartum]}
+  value:
+    ask_at: [each_phase_transition, running_readiness_check, weekly_checkin]
+    items:
+      - urinary_or_faecal_leakage_or_urgency
+      - heaviness_pressure_bulge_or_dragging
+      - pain_with_intercourse
+      - obstructed_defecation
+      - abdominal_separation_with_doming_or_poor_function
+      - lumbopelvic_pain
+      - vaginal_bleeding_beyond_8_weeks_not_period
+    any_yes: [run_postpartum.symptom_regression, show_copy_postpartum.copy.warning]
+  evidence: C
+  professional_review: true
+  sources: [E05:Goom2019]
+  note: 盆底功能问题信号需专业评估，不由应用处理
+
+- id: postpartum.urgent
+  chapter: 12
+  type: trigger
+  applies: {population: [postpartum]}
+  value:
+    items: [heavy_bleeding, fever, wound_hot_red_or_oozing, calf_pain_or_swelling, chest_pain, breathlessness]
+    action: [end_session_now, show_copy_postpartum.copy.urgent, block_all_training_until_professional_seen]
+  evidence: C
+  professional_review: true
+  sources: [E05:Goom2019, E05:WHO2020, E01:FRANK20]
+  note: 紧急信号清单来自证据库建议文案，待专业核实
+
+- id: postpartum.copy.warning
+  chapter: 12
+  type: copy
+  value:
+    warning:
+      zh: 漏尿、下坠或沉重感、盆腔或腹部疼痛，或者出血又出现或一直不停，都不是需要硬撑的情况。先暂停跑跳和大重量，并和你的全科医生、助产士或盆底物理治疗师谈一谈。
+      en: Leaking, a feeling of heaviness or dragging, pelvic or tummy pain, or bleeding that comes back or won't stop aren't things to push through. Pause running, jumping and heavy lifting, and speak to your GP, midwife or a pelvic health physiotherapist.
+    regressed:
+      zh: 我们已把计划调回上一阶段。等你看过专业人士，或连续 2 周没有这些症状，再继续往前。
+      en: We've moved your plan back a stage. We'll move forward again once you've seen a professional or had 2 weeks without these symptoms.
+  evidence: C
+  professional_review: true
+  sources: [E05:Goom2019]
+  note: 普通警示：暂停冲击与重负荷并转介
+
+- id: postpartum.copy.urgent
+  chapter: 12
+  type: copy
+  value:
+    urgent:
+      zh: 大量出血、发烧、伤口红肿发热或渗液、小腿疼痛或肿胀、胸痛或呼吸困难，请尽快就医，不要等待。
+      en: Heavy bleeding, a fever, a wound that's hot, red or oozing, calf pain or swelling, chest pain or breathlessness need prompt medical care. Please don't wait.
+    chest_emergency:
+      zh: 如果胸痛或呼吸困难在休息几分钟后仍没有缓解，请立即拨打急救电话。
+      en: If chest pain or breathlessness doesn't ease after a few minutes' rest, call emergency services now.
+    paused:
+      zh: 训练计划已暂停，等你确认看过医生后再继续。
+      en: Your plan is paused until you confirm you've seen a doctor.
+  evidence: C
+  professional_review: true
+  sources: [E05:Goom2019, E01:FRANK20, E01:Healthline]
+  unverified: [E01:Healthline]
+  note: 紧急警示：尽快就医；胸痛另给急救指引
+
+- id: postpartum.weekly_target
+  chapter: 12
+  type: limit
+  applies: {population: [postpartum]}
+  value:
+    moderate_min_week_min: 150
+    strength_days_per_week: 2
+    restart: gradual
+    minutes_target_applies_from_phase: 2
+    pelvic_floor: daily_from_as_soon_as_possible
+  evidence: A
+  professional_review: true
+  sources: [E05:WHO2020, E05:DHSC2022]
+  note: 阶段 1 不设分钟目标，从阶段 2 起逐步爬升（工程选择）
+
+- id: postpartum.pelvic_floor
+  chapter: 12
+  type: trigger
+  applies: {population: [postpartum]}
+  value:
+    reminder: daily
+    start: as_soon_as_possible_after_birth
+    copy:
+      zh: 今天记得做盆底肌练习。如果不确定动作对不对，或者有漏尿，请找助产士或盆底物理治疗师帮忙。
+      en: Remember your pelvic floor exercises today. If you're not sure you're doing them right, or you have any leaking, ask a midwife or pelvic health physiotherapist.
+    leakage_route: postpartum.referral_signs
+    app_does_not_prescribe_protocol: true
+  evidence: B
+  professional_review: true
+  sources: [E05:WHO2020, E05:DHSC2022, E05:Woodley2020, E05:ACOG804]
+  unverified: [E05:ACOG804]
+  note: 提醒合理；已有漏尿须专业评估，应用不做盆底治疗方案
+
+- id: postpartum.physio_offer
+  chapter: 12
+  type: copy
+  applies: {population: [postpartum]}
+  value:
+    show_from_week: 6
+    offer:
+      zh: 产后 6 周起，可以考虑请盆底物理治疗师做一次评估，帮你更放心地恢复训练。
+      en: From 6 weeks after birth, you might consider a pelvic health physiotherapy assessment to help you return to exercise with confidence.
+  evidence: C
+  professional_review: true
+  sources: [E05:Goom2019]
+  note: 只做建议，不是准入条件
+
+- id: postpartum.module_end
+  chapter: 12
+  type: default
+  applies: {population: [postpartum]}
+  value:
+    module_active_until_week: 52
+    after: general_rules
+    keep_running_gate_if_not_passed: true
+  evidence: C
+  sources: [E05:DHSC2022, E05:Goom2019]
+  note: 工程选择，待教练审核；对应英国指南「产后至 12 个月」
+
+- id: postpartum.never
+  chapter: 12
+  type: limit
+  value:
+    never:
+      - diagnose_or_measure_diastasis_or_prolapse
+      - prescribe_pelvic_floor_rehabilitation_protocol
+      - promise_to_close_the_gap
+      - label_core_work_as_diastasis_treatment
+      - encourage_pushing_through_leakage_heaviness_pain_or_bleeding
+      - judge_whether_self_check_results_are_normal
+  evidence: C
+  professional_review: true
+  sources: [E05:Goom2019, E05:Beamish2025]
+  unverified: [E05:Beamish2025]
+  note: 应用不诊断、不测量、不做盆底康复

@@ -1,0 +1,351 @@
+# 第 5 章 训练剂量 —— 机器规则
+# 与 ch05-dose.md 一一对应。
+# 组数一律为"分数组"（fractional sets）；秒数为单侧时长（per_side 动作两侧各做一次）。
+
+- id: dose.level.definition
+  chapter: 5
+  type: default
+  value:
+    beginner: { consistent_training_months_lt: 6 }
+    intermediate: { consistent_training_months_gte: 6 }
+    advanced_opt_in: { consistent_training_months_gte: 24, engine_level: intermediate, unlocks: [use_skill, difficulty_5] }
+    unknown_history: beginner
+  evidence: C
+  sources: [E02:Pelland2024, E04:S8]
+  note: 枚举只有新手/中级；>2 年视为中级，进阶功能需主动开启
+
+- id: dose.muscle_groups
+  chapter: 5
+  type: default
+  value:
+    target_groups: [chest, back, shoulders, quads, glutes, hamstrings]
+    cap_only_groups: [biceps, triceps, calves, core]
+    tracked_no_target: [forearms, lower_back, hip_flexors, adductors, tibialis]
+    catalog_map:
+      pectoralis-major: chest
+      latissimus-dorsi: back
+      rhomboids: back
+      trapezius: back
+      middle-trapezius: back
+      lower-trapezius: back
+      teres-major: back
+      anterior-deltoid: shoulders
+      lateral-deltoid: shoulders
+      posterior-deltoid: shoulders
+      biceps-brachii: biceps
+      brachialis: biceps
+      brachioradialis: biceps
+      triceps-brachii: triceps
+      quadriceps: quads
+      gluteus-maximus: glutes
+      gluteus-medius: glutes
+      abductors: glutes
+      hamstrings: hamstrings
+      gastrocnemius: calves
+      soleus: calves
+      rectus-abdominis: core
+      obliques: core
+      transverse-abdominis: core
+      quadratus-lumborum: core
+      erector-spinae: lower_back
+      forearm-flexors: forearms
+      forearm-extensors: forearms
+      hip-flexors: hip_flexors
+      adductors: adductors
+      tibialis-anterior: tibialis
+    unmapped_muscle: { action: tracked_no_target, review: true }
+  evidence: C
+  sources: [E02:Pelland2024, E01:WHO20]
+  note: 工程选择，待教练审核；手臂小腿核心只设上限不设下限
+
+- id: dose.volume.fractional
+  chapter: 5
+  type: formula
+  value:
+    per_set_credit:
+      primaryMuscles: 1.0
+      secondaryMuscles: 0.5
+      muscle_in_both_lists: 1.0
+      multiple_catalog_muscles_same_group: "max credit, not sum"
+    set_effort_multiplier: { rir_0_to_3: 1.0, rir_4: 0.5, rir_5_plus: 0.0 }
+    extended_set_multiplier: { drop_set: 1.5, rest_pause: 1.5 }
+    excluded_modalities: [mobility, cardio]
+    excluded_patterns: [jump_land, throw_upper, cardio_cyclic, mobility, balance]
+    pattern_fallback_if_no_muscles:
+      squat: { quads: 1.0, glutes: 0.5 }
+      lunge: { quads: 1.0, glutes: 0.5 }
+      hinge: { glutes: 1.0, hamstrings: 0.5 }
+      push_horizontal: { chest: 1.0, triceps: 0.5, shoulders: 0.5 }
+      push_vertical: { shoulders: 1.0, triceps: 0.5 }
+      pull_horizontal: { back: 1.0, biceps: 0.5, shoulders: 0.5 }
+      pull_vertical: { back: 1.0, biceps: 0.5 }
+      carry: { core: 0.5, forearms: 0.5 }
+      anti_extension: { core: 1.0 }
+      anti_rotation: { core: 1.0 }
+      anti_lateral_flexion: { core: 1.0 }
+      rotation: { core: 1.0 }
+      trunk_flexion: { core: 1.0 }
+      locomotion_ground: { core: 0.5, shoulders: 0.5 }
+      olympic: { glutes: 0.5, quads: 0.5, back: 0.5 }
+  evidence: B
+  sources: [E02:Pelland2024, E04:S28, E02:Currier2026]
+  note: 直接 1、协同 0.5 的计数拟合最好；RIR 4 记半组为工程选择
+
+- id: dose.sets_week.beginner
+  chapter: 5
+  type: limit
+  applies:
+    level: [beginner]
+  value: {"floor":4,"default_min":6,"default_max":10,"ceiling":12,"unit":"sets_per_muscle_per_week","lower_bound_priority":"target","time_budget_priority":"hard"}
+  evidence: B
+  sources: [E02:Pelland2024, E02:Schoenfeld2017-volume, E02:Iversen2021]
+  note: "约 4 组为最低有效剂量；新手默认取 8；v2 调整：每周训练量下限为target，时间不足按时间优先，不因下限未达生成空计划。"
+
+- id: dose.sets_week.intermediate
+  chapter: 5
+  type: limit
+  applies:
+    level: [intermediate]
+  value: {"floor":6,"default_min":10,"default_max":16,"ceiling":20,"opt_in_specialization_ceiling":25,"unit":"sets_per_muscle_per_week","lower_bound_priority":"target","time_budget_priority":"hard"}
+  evidence: B
+  sources: [E02:Pelland2024, E02:Baz-Valle2022, E02:Currier2026, E04:S13]
+  note: "自动编排不超过 20；25 只用于主动选择的专项期；v2 调整：每周训练量下限为target，时间不足按时间优先，不因下限未达生成空计划。"
+
+- id: dose.sets_week.goal_matrix
+  chapter: 5
+  type: default
+  value:
+    unit: sets_per_muscle_per_week
+    start_moving: { beginner: { start: 2, max: 4 }, intermediate: { start: 4, max: 6 } }
+    health:       { beginner: { start: 6, max: 10 }, intermediate: { start: 8, max: 10 } }
+    fat_loss:     { beginner: { start: 8, max: 12 }, intermediate: { start: 10, max: 12 } }
+    muscle:       { beginner: { start: 10, max: 12 }, intermediate: { start: 12, max: 20 } }
+    strength:     { beginner: { start: 6, max: 10 }, intermediate: { start: 8, max: 12 } }
+    mobility:     { beginner: { start: 4, max: 8 }, intermediate: { start: 6, max: 8 } }
+    resolve: "start/max = goal range clipped by level floor/ceiling; start_moving may go below level floor"
+    overridden_by: [progression.new.week_caps, progression.new.weekly_sets]
+    lower_bound_priority: "target"
+    time_budget_priority: "hard"
+  evidence: C
+  sources: [E03:ACSM-2026, E02:Pelland2024, E04:S8]
+  note: "工程选择；目标区间与水平区间取交集；v2 调整：每周训练量下限为target，时间不足按时间优先，不因下限未达生成空计划。"
+
+- id: dose.sets_session.cap
+  chapter: 5
+  type: limit
+  value:
+    per_muscle_fractional_sets_max: { beginner: 8, intermediate: 10 }
+    strength_main_lift_direct_sets_max: 3
+    split_rule: "if weekly target exceeds cap * exposures, add exposure (week.frequency.per_muscle)"
+  evidence: C
+  sources: [E02:Remmert2025, E03:Remmert-2025, E04:S8]
+  note: 单次约 11 个分数组后收益不可测；预印本，取保守值
+
+- id: dose.sets_exercise
+  chapter: 5
+  type: limit
+  value:
+    min: 2
+    max: { beginner: 3, intermediate: 4 }
+    exempt_min: [session_10_min, new_user_week_1, start_moving]
+    strength_main_lift: [2, 3]
+  evidence: A
+  sources: [E03:ACSM-2026, E02:Currier2026]
+  note: 健康成人每动作至少 2 组
+
+- id: dose.reps.bounds
+  chapter: 5
+  type: limit
+  value:
+    default_range: [6, 15]
+    bodyweight_or_fixed_load_max: 30
+    absolute_max: 30
+    min: { beginner: 6, intermediate: 3 }
+    beginner_min_reps_le_6_unlock_weeks: 12
+    singles_doubles: { allowed: false, note: advanced_opt_in_only }
+  evidence: C
+  sources: [E02:Lopez2021, E02:Iversen2021, E02:Currier2026]
+  note: 超过 30 次 RIR 估计变差且耗时
+
+- id: dose.reps.by_class
+  chapter: 5
+  type: default
+  value:
+    compound_main: { beginner: [8, 12], intermediate: [6, 12] }
+    isolation_accessory: { beginner: [10, 15], intermediate: [10, 20] }
+    bodyweight_ladder: { beginner: [6, 15], intermediate: [6, 15], progress_via: ladder }
+    unilateral_bodyweight: { beginner: [6, 12], intermediate: [8, 12] }
+    power: { beginner: null, intermediate: [2, 5] }
+    goal_override_ref: goal.params
+  evidence: C
+  sources: [E02:Ratamess2009, E02:Iversen2021, E04:S3]
+  note: 与动作标注 default_dose 对齐；目标区间优先
+
+- id: dose.load.pct_1rm
+  chapter: 5
+  type: default
+  value:
+    use_only_if_1rm_estimate_known: true
+    novice_8_12_reps: [60, 70]
+    strength_main: [80, 90]
+    hypertrophy_any: { range: [30, 100], requires_rir_max: 3 }
+    power: [30, 70]
+    default_method: rir_based
+  evidence: A
+  sources: [E02:Currier2026, E02:Ratamess2009, E02:Lopez2021]
+  note: 引擎默认按 RIR 选重量；%1RM 仅作参考
+
+- id: dose.load.initial_selection
+  chapter: 5
+  type: default
+  value:
+    loadable_first_exposure: "choose load the user expects to lift for rep_max + 3 reps (≈RIR 3)"
+    first_set_check: { if_logged_rir_gte: 5, action: "count as warm-up set, +10% next set" }
+    bodyweight_start_step: { beginner: "lowest ladder step with difficulty 2", intermediate: "ladder step with difficulty 3" }
+    no_history_default_level: beginner
+  evidence: C
+  sources: [E02:Helms2016, E04:S8]
+  note: 工程选择，待教练审核；首次宁轻勿重
+
+- id: dose.rir.targets
+  chapter: 5
+  type: default
+  value:
+    beginner: [2, 3]
+    intermediate: [1, 2]
+    isolation_or_machine_last_set: { level: [intermediate], rir: [0, 1] }
+    heavy_compound_flag_heavy_axial_load: [1, 3]
+    bounds: [0, 4]
+    rpe_equivalent: "RPE = 10 - RIR"
+    older_adult_min: 2
+    goal_override_ref: goal.rir.level_override
+  evidence: B
+  sources: [E02:Grgic2022, E02:Refalo2023, E02:Robinson2024, E02:Currier2026, E02:Zourdos2016]
+  note: 不必力竭；1–2 RIR 是效果与疲劳的较好折中
+
+- id: dose.rir.calibration
+  chapter: 5
+  type: default
+  applies:
+    level: [beginner]
+  value:
+    weeks: [1, 4]
+    times: 1
+    exercise_filter: { nsca_class: isolation, joint_load_max_any: 1, exclude_flags: [heavy_axial_load, valsalva_prone, overhead_load] }
+    excluded_populations: [older_adult, pregnant, postpartum]
+    to: technical_failure
+    prefer_reps_max: 12
+    early_rir_logs_noise_sd_reps: 1.5
+  evidence: C
+  sources: [E02:Halperin2021, E02:Helms2016]
+  note: 在安全的孤立动作上做一次到技术力竭，校准 RIR 感觉
+
+- id: dose.rest.table
+  chapter: 5
+  type: default
+  value:
+    unit: seconds
+    heavy_compound_reps_le_6: { default: [120, 180], bounds: [90, 240] }
+    other_compound: { default: [90, 120], bounds: [60, 180] }
+    isolation: { default: [60, 90], bounds: [45, 120] }
+    intermediate_strength_main: { min: 150 }
+    beginner_any: { default: [60, 120] }
+    superset_ref: session.superset.rest
+    isometric_core: { default: [30, 60] }
+  evidence: B
+  sources: [E02:Grgic2018-rest, E02:Singer2024, E02:Currier2026, E02:Ratamess2009]
+  note: 未训练者 60–120 秒足够；休息长短对一般人群影响小
+
+- id: dose.tempo
+  chapter: 5
+  type: limit
+  value:
+    rep_duration_s: { min: 2, max: 8 }
+    eccentric_s: { default: [2, 3], new_user_weeks_1_4_max: 3 }
+    super_slow_rep_s_min_forbidden: 10
+    power_concentric: maximal_intended_speed
+  evidence: B
+  sources: [E02:Schoenfeld2015, E02:Currier2026, E04:S15]
+  note: 每次 0.5–8 秒效果相近；超慢（≥10 秒）较差
+
+- id: dose.isometric
+  chapter: 5
+  type: default
+  value:
+    beginner: { sets: [2, 3], hold_s: [15, 30] }
+    intermediate: { sets: [3, 3], hold_s: [30, 60] }
+    hold_s_max: 60
+    progression: { add_s_per_session: 5, at_hold_s_max_and_rir_gte: 1, then: ladder_step_up }
+    cue: normal_breathing_no_breath_hold
+  evidence: C
+  sources: [E04:S23, E04:S22]
+  note: 工程选择，待教练审核；60 秒封顶后改升阶梯
+
+- id: dose.stretch
+  chapter: 5
+  type: default
+  value:
+    hold_s: { default: 30, range: [10, 30], older_adult: [30, 60] }
+    reps_per_muscle: [2, 4]
+    total_s_per_muscle_per_session: 60
+    days_per_week: { min: 2, recommended: 7 }
+    mobility_goal_min_per_region_per_week: 5
+    intensity: mild_tightness_no_pain
+    pnf_optional: { contract_s: [3, 6], contract_pct_max: [20, 75], assisted_stretch_s: [10, 30] }
+  evidence: A
+  sources: [E03:Garber-2011, E01:GARBER11, E03:Thomas-2018]
+  note: 每肌群累计约 60 秒；每天做更有效
+
+- id: dose.intensity_techniques
+  chapter: 5
+  type: gate
+  applies:
+    level: [intermediate]
+  value:
+    allowed: [drop_set, rest_pause]
+    exercise_filter: { nsca_class: isolation, or_equipment: [machine, cable] }
+    forbidden_flags: [heavy_axial_load, valsalva_prone]
+    max_per_session_per_muscle: 1
+    counts_as_sets: 1.5
+  evidence: C
+  sources: [E02:Krzysztofik2019, E02:Iversen2021]
+  note: 只用于中级的孤立/器械动作；不用于杠铃复合动作
+
+- id: dose.power
+  chapter: 5
+  type: gate
+  applies:
+    level: [intermediate]
+  value:
+    load_pct_1rm: [30, 70]
+    # v2 澄清：按顺序匹配；未知1RM绝不推算公斤数或要求测最大重量。
+    load_branches:
+      bodyweight: {equipment_required_only: [none], percentage_required: false}
+      known_1rm: {evidence_sources: [user_record, reliable_estimate], load_pct_1rm: [30, 70]}
+      unknown_1rm:
+        load_bands: [light, medium]
+        default_band: light
+        rir_min: 3
+        numeric_load_allowed: false
+        stop_copy: dose.power.copy.speed_stop
+    exclude_difficulty_min: 5
+    exclude_flags: [skill]
+    total_reps_per_exercise_max: 24
+    sets: [3, 5]
+    reps: [2, 5]
+    rir: [2, 3]
+    rest_ref: dose.rest.table.heavy_compound_reps_le_6
+    patterns: [jump_land, throw_upper, olympic]
+    beginner: excluded
+  evidence: A
+  sources: [E02:Currier2026, E03:ACSM-2026]
+  note: 爆发力：中低负荷、尽力快、每动作总次数 ≤24
+
+- id: dose.power.copy.speed_stop
+  chapter: 5
+  type: copy
+  zh: 发力时速度明显变慢就停下这一组，宁可轻一点、快一点。
+  en: Stop the set when your speed clearly slows down. Lighter and faster beats heavier and slower.
+  evidence: C
+  sources: [E03:ACSM-2026]
+  note: v2 新增；用户2026-10-17裁定并批准双语文案

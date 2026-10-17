@@ -1,0 +1,246 @@
+[
+  {
+    "id": "d16325d9-fc00-4c41-88a1-000000000001",
+    "slug": "native-goblet-squat",
+    "primary_pattern": "squat",
+    "secondary_patterns": [],
+    "modality": "strength",
+    "laterality": "bilateral",
+    "nsca_class": "compound",
+    "plane": "sagittal",
+    "difficulty": 2,
+    "joint_load": {
+      "knee": 2,
+      "back": 1,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 1,
+      "ankle": 1
+    },
+    "impact": 0,
+    "noise": 1,
+    "space": "small",
+    "position": [
+      "standing"
+    ],
+    "flags": [
+      "deep_knee_flexion"
+    ],
+    "use": [
+      "main"
+    ],
+    "ladder": {
+      "id": "squat",
+      "step": 8
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": [
+          8,
+          12
+        ],
+        "seconds": null,
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          3,
+          4
+        ],
+        "reps": [
+          6,
+          12
+        ],
+        "seconds": null,
+        "rir": [
+          1,
+          2
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 15,
+      "s_per_rep": 3.5,
+      "per_side": false
+    },
+    "confidence": "high",
+    "review": false,
+    "equipment_required": [
+      "dumbbell"
+    ],
+    "equipment_alternatives": {},
+    "schema": "v0.2",
+    "source": "native"
+  },
+  {
+    "id": "d16325d9-fc00-4c41-88a1-000000000003",
+    "slug": "native-bodyweight-squat",
+    "primary_pattern": "squat",
+    "secondary_patterns": [],
+    "modality": "strength",
+    "laterality": "bilateral",
+    "nsca_class": "compound",
+    "plane": "sagittal",
+    "difficulty": 2,
+    "joint_load": {
+      "knee": 1,
+      "back": 0,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 1,
+      "ankle": 1
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "small",
+    "position": [
+      "standing"
+    ],
+    "flags": [],
+    "use": [
+      "main",
+      "warmup"
+    ],
+    "ladder": {
+      "id": "squat",
+      "step": 5
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": [
+          6,
+          15
+        ],
+        "seconds": null,
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          3,
+          4
+        ],
+        "reps": [
+          10,
+          20
+        ],
+        "seconds": null,
+        "rir": [
+          1,
+          2
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": 3,
+      "per_side": false
+    },
+    "confidence": "high",
+    "review": false,
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "schema": "v0.2",
+    "source": "native"
+  },
+  {
+    "id": "d16325d9-fc00-4c41-88a1-000000000005",
+    "slug": "native-self-resisted-row",
+    "primary_pattern": "pull_horizontal",
+    "secondary_patterns": [],
+    "modality": "strength",
+    "laterality": "alternating",
+    "nsca_class": "compound",
+    "plane": "transverse",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 0,
+      "back": 1,
+      "shoulder": 1,
+      "wrist": 1,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "small",
+    "position": [
+      "standing"
+    ],
+    "flags": [],
+    "use": [
+      "accessory",
+      "warmup"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": [
+          10,
+          15
+        ],
+        "seconds": null,
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": [
+          10,
+          20
+        ],
+        "seconds": null,
+        "rir": [
+          1,
+          2
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 15,
+      "s_per_rep": 3.5,
+      "per_side": false
+    },
+    "confidence": "high",
+    "review": false,
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "schema": "v0.2",
+    "note": "Native light self-resistance; never select with back, shoulder or wrist caution.",
+    "excluded_cautions": [
+      "back",
+      "shoulder",
+      "wrist"
+    ],
+    "source": "native"
+  }
+]

@@ -1,7 +1,8 @@
-import { sanitizeAssistantRequest, type AssistantCall, type AssistantEvent, type AssistantUsage } from '../../assistant/contracts';
-import { assistantPrompt, ASSISTANT_PROMPT_VERSION, type AssistantPromptMessage } from './prompts';
+import { assistantIntentSchema, sanitizeAssistantRequest, type AssistantCall, type AssistantEvent, type AssistantUsage } from '../../assistant/contracts';
+import { assistantPrompt, ASSISTANT_PROMPT_VERSION, ENGINE_ASSISTANT_PROMPT_VERSION, type AssistantPromptMessage } from './prompts';
 import { repairAssistantAttachment, AttachmentValidationError } from './repair';
 import { checkCoachLanguage } from '../../application/rules/coach-language';
+import {prohibitedTrainingClaims} from '../../application/rules/training-claims';
 import { assembleAssistantIntent } from './assemble';
 import { selectAssistantCandidates, assistantMovement } from '../../catalog/ai-catalog';
 import {applicableAssistantCandidates,lowerBodyAddition} from './applicable-candidates';
@@ -52,7 +53,8 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
   // Account confirmation never overrides a disclosed minor age in the conversation.
   const minor = request.messages.filter(m => m.role === 'user').some(m => /(?:我(?:今年)?\s*(?:[1-9]|1[0-7])\s*岁|\bI(?:'m| am)\s+(?:[1-9]|1[0-7])\s*(?:years? old)?\b)/i.test(m.content));
   if (minor) request.adultConfirmed = false;
-  const version = options.promptVersion ?? ASSISTANT_PROMPT_VERSION;
+  const version = options.promptVersion ?? (request.context?.trainingEngine?ENGINE_ASSISTANT_PROMPT_VERSION:ASSISTANT_PROMPT_VERSION);
+  if(!!request.context?.trainingEngine!==(version===ENGINE_ASSISTANT_PROMPT_VERSION))throw new AssistantProviderError('INVALID_PROMPT_VERSION');
   const isV3=version.startsWith('assistant-v3.');
   const calls: AssistantCall[] = [];
   const usage = () => calls.reduce((sum, call) => ({ inputTokens: sum.inputTokens + (call.inputTokens ?? 0), outputTokens: sum.outputTokens + (call.outputTokens ?? 0),usageEstimated:sum.usageEstimated||!!call.usageEstimated }), { inputTokens: 0, outputTokens: 0,usageEstimated:false });
@@ -78,7 +80,7 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
         if(request.locale==='en'&&[...text.matchAll(/[\u3400-\u9fff]/gu)].length>=4)foreignLanguage=true;
         const normalized = text.replace(/[!！]+/g, request.locale === 'zh' ? '。' : '.').replace(/\p{Extended_Pictographic}|\p{Regional_Indicator}|\u20e3|\uFE0F|\u200D/gu, '');
         if(normalized !== text) {text=normalized;proseNormalized=true;}
-        if (checkCoachLanguage(text).length) { blockedText='COACH_LANGUAGE'; continue; }
+        if (checkCoachLanguage(text).length||prohibitedTrainingClaims(text).length) { blockedText='COACH_LANGUAGE'; continue; }
         // Hold the short routing suffix and any partial banned phrase across chunks.
         const markerAt = text.indexOf('<<ATTACHMENT:');
         const safeEnd = Math.max(emitted, Math.min(text.length - 80, markerAt < 0 ? text.length : markerAt));
@@ -159,11 +161,21 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
       const attachmentPrompt=buildPrompt(request, 'attachment', version, text, retryHint, attachmentKind);
       const generated = await options.provider.generateAttachment(attachmentPrompt, options.signal);
       Object.assign(call, generated.usage??estimatedUsage(attachmentPrompt,JSON.stringify(generated.content??'')));
+      if(isV3&&request.context?.trainingEngine){
+       const raw=typeof generated.content==='string'?JSON.parse(generated.content):generated.content;
+       const intent=assistantIntentSchema.parse(raw&&typeof raw==='object'&&'intent' in raw?raw.intent:raw);
+       if(prohibitedTrainingClaims(JSON.stringify(intent)).length)throw new AssistantProviderError('COACH_LANGUAGE');
+       if(intent.kind==='none'||intent.kind==='clarify')throw new Error('NO_APPLICABLE_CHANGE');
+       call.result=attempt?'repaired':'success';
+       yield {type:'engine_intent',version:'fitness-engine-intent-v1',intent};
+       yield {type:'done',success:true,usage:usage(),calls,promptVersion:version,result:call.result};return;
+      }
       const checked = isV3
         ? assembleAssistantIntent(generated.content, request)
         : repairAssistantAttachment(generated.content, request);
       const expectedType = ({plan:'plan_proposal',today:'today_adjustment',change:'change_proposal',exercise:'exercise_info',review:'review_summary'} as Record<string,string>)[attachmentKind];
       if(!checked.attachment || checked.attachment.type !== expectedType) throw new AssistantProviderError('INVALID_OUTPUT');
+      if(prohibitedTrainingClaims(JSON.stringify(checked.attachment)).length)throw new AssistantProviderError('COACH_LANGUAGE');
       if(isV3&&request.context&&checked.attachment.type!=='exercise_info')adaptCoachResponse(request.context,checked.attachment);
       call.result = checked.repaired || attempt ? 'repaired' : 'success';
       if(checked.attachment){
@@ -186,7 +198,7 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
       if (error instanceof AssistantProviderError && !['INVALID_OUTPUT', 'INVALID_STREAM'].includes(error.code)) break;
     }
   }
-  if(isV3 && request.context){
+  if(isV3 && request.context&&!request.context.trainingEngine){
     try{
       const latest=request.messages.at(-1)!.content;
       const minutes=latest.match(/(\d{1,3})\s*(?:分钟|minutes?|mins?)/i);

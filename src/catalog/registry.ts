@@ -1,9 +1,11 @@
 import registry from './generated/registry.json' with { type: 'json' };
 import { EXERCISE_IDS } from './exercise-ids';
+import {customCatalog,customExerciseIds} from './custom-exercises';
+import {catalogCorrections} from './corrections';
 
 // Provider metadata stays outside training snapshots and user backups.
-export const catalogMetadata = new Map(registry.map(row => [row.id, row]));
-export const knownExerciseIds = new Set([...Object.values(EXERCISE_IDS), ...registry.map(row => row.id)]);
+export const catalogMetadata = new Map([...registry,...customCatalog.map(row=>({id:row.id,slug:row.slug,metricType:row.metricType,aliases:[row.name.zh,row.name.en],bodyPart:row.bodyPart,primaryMuscles:row.primaryMuscles,secondaryMuscles:row.secondaryMuscles,media:{} as Record<string,string>}))].map(row => [row.id, row]));
+export const knownExerciseIds = new Set([...Object.values(EXERCISE_IDS), ...registry.map(row => row.id),...customExerciseIds]);
 export function exerciseBodyPart(id: string): string {
   if (id === EXERCISE_IDS.gobletSquat || id === EXERCISE_IDS.bodyweightSquat) return 'legs';
   if (id === EXERCISE_IDS.walking) return 'cardio';
@@ -15,6 +17,11 @@ export function exerciseBodyPart(id: string): string {
   return meta?.bodyPart ?? '';
 }
 export async function loadExerciseDetails(id: string) {
+  const custom=customCatalog.find(row=>row.id===id);
+  if(custom)return {...custom,steps:custom.steps.en,cautions:custom.cautions.en,media:{},source:{provider:'fitness-original'}};
   const data = await import('./generated/details.json');
-  return data.entries.find(row => row.id === id);
+  const row=data.entries.find(row => row.id === id);
+  if(!row)return undefined;
+  const correction=catalogCorrections[row.slug];
+  return {...row,...(correction?.equipment?{equipment:correction.equipment}:{}),...(correction?.name?{name:correction.name}:{}),...(correction?.steps?{steps:correction.steps.en}:{})};
 }

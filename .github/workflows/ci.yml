@@ -29,7 +29,9 @@ jobs:
       - run: npm ci
       - run: node --test tools/v8/check.test.mjs
       - run: node tools/v8/check.mjs
+      # Functional correctness only; engine:perf is a separate informational command.
       - run: npm run check
+      - run: npm run engine:check
       - run: node tools/check-coach-client-boundary.mjs
       - name: Collect all browser suites before installing browsers
         run: |
@@ -38,6 +40,7 @@ jobs:
           npx playwright test --list --config tests/e2e/v8-mainline.config.ts > /dev/null
           npx playwright test --list --config tests/e2e/v8-plan-review.config.ts > /dev/null
           npx playwright test --list --config playwright.v8-coach.config.ts > /dev/null
+          npx playwright test --list --config tests/e2e/training-engine.config.ts > /dev/null
 
   browser-main:
     needs: checks
@@ -53,6 +56,7 @@ jobs:
           package-manager-cache: false
       - run: npm ci
       - run: npm run catalog:prepare
+      - run: npm run engine:prepare
       - run: npx playwright install --with-deps chromium webkit
       - run: npm run test:e2e
       - run: npx playwright test --config tests/e2e/followup-finish.config.ts
@@ -72,12 +76,14 @@ jobs:
           package-manager-cache: false
       - run: npm ci
       - run: npm run catalog:prepare
+      - run: npm run engine:prepare
       - run: npx playwright install --with-deps chromium webkit
       - run: npx playwright test --config playwright.trial.config.ts
       - run: npx playwright test --config tests/e2e/v8-mainline.config.ts
       - run: npx playwright test --config tests/e2e/mainline-polish.config.ts
       - run: npx playwright test --config tests/e2e/v8-plan-review.config.ts
       - run: npx playwright test --config playwright.v8-coach.config.ts
+      - run: npx playwright test --config tests/e2e/training-engine.config.ts
 
   browser-admin:
     needs: checks
@@ -93,6 +99,7 @@ jobs:
           package-manager-cache: false
       - run: npm ci
       - run: npm run catalog:prepare
+      - run: npm run engine:prepare
       - run: npx playwright install --with-deps chromium
       - run: npx playwright test --config tests/admin/integration.playwright.config.ts
       - run: npx playwright test --config tests/admin/releases-ui.config.ts

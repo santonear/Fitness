@@ -1,0 +1,13 @@
+{
+  "sourceCommit": "0165768d37bcee81492c62f8b9ed0a573dd11521",
+  "browser": "153.0.8010.12",
+  "fixture": "v8-main-pre-engine.json",
+  "sha256": "eea1a65df9773eed6e004d05f1fc103eebe731ef218d5f4e89d1d0c798eb3deb",
+  "bytes": 9748,
+  "synthetic": true,
+  "generator": "tests/fixtures/legacy-backups/generate-v8-main-pre-engine.mjs",
+  "inputMethod": "Actual baseline UI: body conversation, local plan adoption, one completed set, finish, appended weight, settings JSON download. No database writes or hand-authored fixture data.",
+  "network": "All API requests intercepted locally; external origins aborted; no model request attempted; cost 0",
+  "screen": "375x844 desktop Chromium proxy",
+  "recordedAt": "2026-10-15T10:06:06.312Z"
+}

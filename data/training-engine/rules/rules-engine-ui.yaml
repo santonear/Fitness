@@ -1,0 +1,492 @@
+# Non-clinical product labels authorized by the Training Engine implementation task.
+# The 306 supplied rules remain unchanged.
+- id: meta.copy.load_light
+  chapter: 0
+  type: copy
+  zh: 轻重量
+  en: Light weight
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: 产品标签；不改变任何训练阈值。
+
+- id: meta.copy.load_medium
+  chapter: 0
+  type: copy
+  zh: 中等重量
+  en: Moderate weight
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: 产品标签；不改变任何训练阈值。
+
+- id: meta.copy.operation_replace
+  chapter: 0
+  type: copy
+  zh: '替换 {count} 项'
+  en: 'Replaced {count}'
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: 产品操作摘要；不改变训练阈值或提供新健康建议。
+
+- id: meta.copy.operation_remove
+  chapter: 0
+  type: copy
+  zh: '删除 {count} 项'
+  en: 'Removed {count}'
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: 产品操作摘要；不改变训练阈值或提供新健康建议。
+
+- id: meta.copy.operation_add
+  chapter: 0
+  type: copy
+  zh: '新增 {count} 项'
+  en: 'Added {count}'
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: 产品操作摘要；不改变训练阈值或提供新健康建议。
+
+- id: meta.copy.operation_volume
+  chapter: 0
+  type: copy
+  zh: '调整 {count} 项'
+  en: 'Adjusted {count}'
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: 产品操作摘要；不改变训练阈值或提供新健康建议。
+
+- id: meta.copy.operation_duration
+  chapter: 0
+  type: copy
+  zh: '预计 {minutes} 分钟'
+  en: 'About {minutes} minutes'
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: 产品操作摘要；不改变训练阈值或提供新健康建议。
+
+- id: meta.copy.progression_adjusted
+  chapter: 0
+  type: copy
+  zh: '下次训练目标已调整'
+  en: 'Next workout target adjusted'
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: 产品操作摘要；不改变训练阈值或提供新健康建议。
+
+- id: assistant.copy.engine_noop
+  chapter: 0
+  type: copy
+  zh: 这次没能生成调整，点重试
+  en: No adjustment was generated this time. Tap to retry.
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: 实施任务明确提供的无调整提示，不增加健康建议。
+
+- id: safety.copy.parq_1
+  chapter: 0
+  type: copy
+  zh: "医生是否说过你有心脏问题或高血压"
+  en: "Has a doctor told you that you have a heart condition or high blood pressure?"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: 用户2026-10-15批准；自查中文采用已提供手册原句，英文等义。
+
+- id: safety.copy.parq_2
+  chapter: 0
+  type: copy
+  zh: "休息时、日常活动时或运动时是否胸痛"
+  en: "Do you have chest pain at rest, during daily activity or during exercise?"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: 用户2026-10-15批准；自查中文采用已提供手册原句，英文等义。
+
+- id: safety.copy.parq_3
+  chapter: 0
+  type: copy
+  zh: "过去 12 个月是否因头晕失去平衡或失去意识（因呼吸过快导致的头晕除外）"
+  en: "In the last 12 months, have you lost balance because of dizziness or lost consciousness (excluding dizziness from overbreathing)?"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: 用户2026-10-15批准；自查中文采用已提供手册原句，英文等义。
+
+- id: safety.copy.parq_4
+  chapter: 0
+  type: copy
+  zh: "是否被诊断过其他慢性疾病"
+  en: "Have you been diagnosed with another chronic condition?"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: 用户2026-10-15批准；自查中文采用已提供手册原句，英文等义。
+
+- id: safety.copy.parq_5
+  chapter: 0
+  type: copy
+  zh: "是否在为慢性疾病服用处方药"
+  en: "Are you taking prescription medicine for a chronic condition?"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: 用户2026-10-15批准；自查中文采用已提供手册原句，英文等义。
+
+- id: safety.copy.parq_6
+  chapter: 0
+  type: copy
+  zh: "现在（或过去 12 个月内）是否有骨骼、关节或软组织问题，可能因活动增加而加重"
+  en: "Do you currently, or have you in the last 12 months, had a bone, joint or soft tissue problem that more activity could make worse?"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: 用户2026-10-15批准；自查中文采用已提供手册原句，英文等义。
+
+- id: safety.copy.parq_7
+  chapter: 0
+  type: copy
+  zh: "医生是否说过你只能在医学监督下运动"
+  en: "Has a doctor told you to exercise only under medical supervision?"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: 用户2026-10-15批准；自查中文采用已提供手册原句，英文等义。
+
+- id: safety.copy.local_health_consent
+  chapter: 0
+  type: copy
+  zh: "同意将运动前自查与孕产资料仅保存在本机"
+  en: "Allow screening and pregnancy/postpartum information to be stored on this device"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: 用户2026-10-15批准；自查中文采用已提供手册原句，英文等义。
+
+- id: safety.copy.send_health
+  chapter: 0
+  type: copy
+  zh: "发送运动前自查与孕产资料"
+  en: "Send screening and pregnancy/postpartum information"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: 用户2026-10-15批准；自查中文采用已提供手册原句，英文等义。
+
+- id: engine.copy.limited
+  chapter: 0
+  type: copy
+  zh: "受限"
+  en: "Limited"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: 用户2026-10-15批准；自查中文采用已提供手册原句，英文等义。
+
+- id: engine.copy.unavailable
+  chapter: 0
+  type: copy
+  zh: "无可用安全方案"
+  en: "No safe plan available"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: 用户2026-10-15批准；自查中文采用已提供手册原句，英文等义。
+
+- id: redflag.copy.question_pain_after_fall_or_impact
+  chapter: 9
+  type: copy
+  zh: "跌倒或撞击后是否出现疼痛？"
+  en: "Did the pain start after a fall or impact?"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  professional_review: true
+  note: 用户2026-10-15批准的原规则条件双语问题；不改变处置规则，临床内容仍待专业核验。
+
+- id: redflag.copy.question_cannot_bear_weight_or_use_limb
+  chapter: 9
+  type: copy
+  zh: "是否无法承重或无法使用这个肢体？"
+  en: "Are you unable to bear weight or use this limb?"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  professional_review: true
+  note: 用户2026-10-15批准的原规则条件双语问题；不改变处置规则，临床内容仍待专业核验。
+
+- id: redflag.copy.question_joint_hot_red_swollen_or_with_fever
+  chapter: 9
+  type: copy
+  zh: "关节是否发热、发红、肿胀，或同时发烧？"
+  en: "Is the joint hot, red or swollen, or do you also have a fever?"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  professional_review: true
+  note: 用户2026-10-15批准的原规则条件双语问题；不改变处置规则，临床内容仍待专业核验。
+
+- id: redflag.copy.question_locking_or_giving_way
+  chapter: 9
+  type: copy
+  zh: "关节是否卡住或突然失去支撑？"
+  en: "Does the joint lock or suddenly give way?"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  professional_review: true
+  note: 用户2026-10-15批准的原规则条件双语问题；不改变处置规则，临床内容仍待专业核验。
+
+- id: redflag.copy.question_unexplained_night_or_rest_pain
+  chapter: 9
+  type: copy
+  zh: "夜间或休息时是否有原因不明的疼痛？"
+  en: "Do you have unexplained pain at night or at rest?"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  professional_review: true
+  note: 用户2026-10-15批准的原规则条件双语问题；不改变处置规则，临床内容仍待专业核验。
+
+- id: redflag.copy.question_visible_deformity
+  chapter: 9
+  type: copy
+  zh: "这个部位是否出现肉眼可见的变形？"
+  en: "Is there a visible deformity in this area?"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  professional_review: true
+  note: 用户2026-10-15批准的原规则条件双语问题；不改变处置规则，临床内容仍待专业核验。
+
+- id: redflag.copy.question_numbness_tingling_or_weakness_spreading_into_limb
+  chapter: 9
+  type: copy
+  zh: "麻木、刺痛或无力是否向手臂或腿扩散？"
+  en: "Is numbness, tingling or weakness spreading into an arm or leg?"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  professional_review: true
+  note: 用户2026-10-15批准的原规则条件双语问题；不改变处置规则，临床内容仍待专业核验。
+
+- id: redflag.copy.question_numbness_groin_or_buttocks
+  chapter: 9
+  type: copy
+  zh: "腹股沟或臀部周围是否发麻？"
+  en: "Do you have numbness around the groin or buttocks?"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  professional_review: true
+  note: 用户2026-10-15批准的原规则条件双语问题；不改变处置规则，临床内容仍待专业核验。
+
+- id: redflag.copy.question_new_bladder_or_bowel_problem
+  chapter: 9
+  type: copy
+  zh: "是否新出现大小便控制问题？"
+  en: "Have you developed a new bladder or bowel control problem?"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  professional_review: true
+  note: 用户2026-10-15批准的原规则条件双语问题；不改变处置规则，临床内容仍待专业核验。
+
+- id: redflag.copy.question_progressive_leg_weakness
+  chapter: 9
+  type: copy
+  zh: "腿部无力是否在持续加重？"
+  en: "Is weakness in your legs getting progressively worse?"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  professional_review: true
+  note: 用户2026-10-15批准的原规则条件双语问题；不改变处置规则，临床内容仍待专业核验。
+
+- id: redflag.copy.question_back_pain_with_fever_or_unwell
+  chapter: 9
+  type: copy
+  zh: "腰背痛是否伴随发烧或全身不适？"
+  en: "Does the back pain come with fever or feeling unwell?"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  professional_review: true
+  note: 用户2026-10-15批准的原规则条件双语问题；不改变处置规则，临床内容仍待专业核验。
+
+- id: redflag.copy.question_back_pain_with_cancer_history
+  chapter: 9
+  type: copy
+  zh: "是否有癌症病史并出现腰背痛？"
+  en: "Do you have back pain and a history of cancer?"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  professional_review: true
+  note: 用户2026-10-15批准的原规则条件双语问题；不改变处置规则，临床内容仍待专业核验。
+
+- id: redflag.copy.question_unexplained_weight_loss
+  chapter: 9
+  type: copy
+  zh: "是否出现原因不明的体重下降？"
+  en: "Have you had unexplained weight loss?"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  professional_review: true
+  note: 用户2026-10-15批准的原规则条件双语问题；不改变处置规则，临床内容仍待专业核验。
+
+- id: redflag.copy.question_back_pain_after_significant_trauma
+  chapter: 9
+  type: copy
+  zh: "腰背痛是否发生在明显外伤之后？"
+  en: "Did the back pain start after significant trauma?"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  professional_review: true
+  note: 用户2026-10-15批准的原规则条件双语问题；不改变处置规则，临床内容仍待专业核验。
+
+- id: redflag.copy.question_severe_constant_pain_unrelated_to_movement
+  chapter: 9
+  type: copy
+  zh: "是否有与动作无关的持续剧烈疼痛？"
+  en: "Do you have severe, constant pain unrelated to movement?"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  professional_review: true
+  note: 用户2026-10-15批准的原规则条件双语问题；不改变处置规则，临床内容仍待专业核验。
+
+- id: redflag.copy.question_shoulder_pain_with_chest_pain
+  chapter: 9
+  type: copy
+  zh: "肩痛是否同时伴有胸痛？"
+  en: "Does the shoulder pain come with chest pain?"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  professional_review: true
+  note: 用户2026-10-15批准的原规则条件双语问题；不改变处置规则，临床内容仍待专业核验。
+
+- id: redflag.copy.question_shoulder_pain_with_breathlessness
+  chapter: 9
+  type: copy
+  zh: "肩痛是否同时伴有气促？"
+  en: "Does the shoulder pain come with breathlessness?"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  professional_review: true
+  note: 用户2026-10-15批准的原规则条件双语问题；不改变处置规则，临床内容仍待专业核验。
+
+- id: redflag.copy.confirm_professional_seen
+  chapter: 9
+  type: copy
+  zh: "我已就医，并已确认可以恢复运动"
+  en: "I have seen a medical professional and confirmed that I can resume exercise."
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  professional_review: true
+  note: 用户2026-10-15明确批准的主动确认文案；不自动解除暂停或取消原有恢复限制。
+
+- id: preferences.copy.avoid_floor_work
+  chapter: 6
+  type: copy
+  zh: "避免地面动作"
+  en: "Avoid floor exercises"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: 已授权偏好字段的操作标签；不增加健康建议或限制规则。
+
+- id: preferences.copy.avoid_overhead
+  chapter: 6
+  type: copy
+  zh: "避免过头动作"
+  en: "Avoid overhead exercises"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: 已授权偏好字段的操作标签；不增加健康建议或限制规则。
+
+- id: preferences.copy.avoid_kneeling
+  chapter: 6
+  type: copy
+  zh: "避免跪姿"
+  en: "Avoid kneeling"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: 已授权偏好字段的操作标签；不增加健康建议或限制规则。
+
+- id: redflag.copy.question_sudden_loss_of_arm_movement_after_injury
+  chapter: 9
+  type: copy
+  zh: "受伤后是否突然无法活动手臂？"
+  en: "Have you suddenly been unable to move your arm after an injury?"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  professional_review: true
+  note: 用户2026-10-15批准的原规则条件双语问题；不改变处置规则，临床内容仍待专业核验。
+
+- id: session.copy.short_stretch_target
+  chapter: 4
+  type: copy
+  zh: "时间有限，这次优先拉伸主项肌群，部分肌群未达到默认拉伸目标。"
+  en: "With limited time, this workout prioritizes stretching the main muscle groups; some groups are below the default stretching target."
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: 用户2026-10-15明确批准的短时安排说明及等义英文；不改变保持时间、组数或热身冷身安全下限。
+
+- id: session.copy.safety_stretch_unavailable
+  chapter: 4
+  type: copy
+  zh: "这次没有安排部分主项肌群的拉伸，因为当前动作库没有符合你安全条件的选项。"
+  en: "Some main muscle groups are not stretched this time because the current exercise library has no options that meet your safety requirements."
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: 用户2026-10-16批准的孕期安全优先与默认拉伸目录缺口说明；独立重算目录，保持真实安全下限及合法剂量。
+
+- id: session.copy.short_health_shares
+  chapter: 2
+  type: copy
+  zh: "本次实际安排：抗阻 {resistance}%、有氧 {aerobic}%。默认目标是两者各占45%–55%，这份短课尚未达到该占比。"
+  en: "Actual allocation: resistance {resistance}%, aerobic {aerobic}%. The default target is 45%–55% for each; this short plan has not reached that balance."
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: 用户2026-10-16明确批准的定量说明及等义英文；仅限已批准健康2天20分钟且其他硬检查通过的受限结果。
+
+# v2 新增：用户确认完整硬候选池为空时单列环境受限，不伪造健康阻断。
+- id: engine.copy.target_volume
+  chapter: 0
+  type: copy
+  zh: 有几个部位本周练得偏少。时间允许的话，加一天或每次多练 10 分钟会更均衡。
+  en: A few muscle groups get less work than recommended this week. If you have time, adding a day or 10 more minutes per session would balance things out.
+  evidence: C
+  sources: [user:training-engine-v2-parallel-20261016]
+  note: v2 新增；用户逐字批准的目标未达说明，不改变硬限制。
+- id: engine.copy.target_aerobic
+  chapter: 0
+  type: copy
+  zh: 本周的有氧时间还不够。平时多走走也算数，每次 10 分钟就有帮助。
+  en: Cardio time is below this week’s target. Everyday walking counts too, and even 10 minutes at a time helps.
+  evidence: C
+  sources: [user:training-engine-v2-parallel-20261016]
+  note: v2 新增；用户逐字批准。
+- id: engine.copy.target_coverage
+  chapter: 0
+  type: copy
+  zh: 受时间或器械所限，有些动作类型这周没能安排上。
+  en: Because of time or equipment limits, some movement types aren’t covered this week.
+  evidence: C
+  sources: [user:training-engine-v2-parallel-20261016]
+  note: v2 新增；用户逐字批准。
+- id: engine.copy.target_spacing
+  chapter: 0
+  type: copy
+  zh: 有两次力量训练离得比较近。如果练完还很酸，可以把其中一次换成轻松活动。
+  en: Two strength sessions are close together. If you’re still sore, swap one for some light activity.
+  evidence: C
+  sources: [user:training-engine-v2-parallel-20261016]
+  note: v2 新增；用户逐字批准。
+- id: engine.copy.target_balance
+  chapter: 0
+  type: copy
+  zh: 可训练的日子少于 3 天，所以每次训练都尽量安排了平衡练习。
+  en: With fewer than 3 training days, we’ve included balance practice in each session where possible.
+  evidence: C
+  sources: [user:training-engine-v2-parallel-20261016]
+  note: v2 新增；用户逐字批准，仅适用少于3天情形。
+- id: engine.copy.environment_limited
+  chapter: 0
+  type: copy
+  zh: 当前条件下没有可安排的动作，请修改场地条件
+  en: No exercises can be arranged under the current conditions. Please update your space settings.
+  evidence: C
+  sources: [user:training-engine-v2-parallel-20261016]
+  note: v2 新增；用户已确认环境受限说明，不改变孕产或空间硬规则。
+
+- id: engine.copy.environment_balance
+  chapter: 0
+  type: copy
+  zh: 平衡练习需要一个能扶的地方，比如墙、椅背或桌边。家里有的话，点这里告诉芽芽，就能把平衡练习加回来。
+  en: Balance practice needs something to hold on to, like a wall, chair back or table edge. If you have one, tap here to let Yaya know and we’ll add balance practice back in.
+  evidence: C
+  sources: [user:training-engine-v2-parallel-20261016]
+  note: v2 新增；用户批准必需动作类型无合法候选时保留环境受限草案，不假定器械或标为合格。
+- id: engine.copy.environment_type
+  chapter: 0
+  type: copy
+  zh: 你当前的器械或场地下，暂时安排不了「{类型}」。修改器械或场地后可以加回来。
+  en: With your current equipment or space, we can’t include {type} yet. Update your equipment or space to add it back.
+  evidence: C
+  sources: [user:training-engine-v2-parallel-20261016]
+  note: v2 新增；用户逐字批准的通用环境受限说明。

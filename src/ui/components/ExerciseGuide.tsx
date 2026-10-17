@@ -19,7 +19,7 @@ export function ExerciseGuideImage({id,locale}:{id:string;locale:Locale}) {
 }
 export function ExerciseGuideAttribution({id,locale}:{id:string;locale:Locale}) {
  const media=getExerciseGuide(id,locale).media;
- return media?.attribution.includes('RepDB')?<RepDBAttribution/>:media?.attribution?<small>{media.attribution==='Fitness original illustration'?(locale==='zh'?zh:en).original:media.attribution}</small>:null;
+ return media?.attribution.includes('RepDB')?<RepDBAttribution/>:media?.attribution?<small>{media.attribution==='Fitness original movement-pattern symbol'?(locale==='zh'?'动作模式图标（非姿势示范）':'Movement-pattern icon (not a technique demonstration)'):media.attribution==='Fitness original illustration'?(locale==='zh'?zh:en).original:media.attribution}</small>:null;
 }
 export function ExerciseGuidePanel({id,locale,open,onClose,triggerRef}:{id?:string;locale:Locale;open:boolean;onClose:()=>void;triggerRef:RefObject<HTMLElement|null>}) {
  const guide=id?getExerciseGuide(id,locale):undefined,copy=locale==='zh'?zh:en;

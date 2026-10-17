@@ -1,0 +1,64 @@
+{
+  "goal": "mobility",
+  "level": "intermediate",
+  "trainingAgeWeeks": 103,
+  "daysPerWeek": 6,
+  "sessionMinutes": 85,
+  "equipment": [
+    "none",
+    "dumbbell"
+  ],
+  "place": "home",
+  "constraints": {
+    "noJump": false,
+    "quiet": true,
+    "space": "small"
+  },
+  "cautions": [
+    "knee",
+    "back",
+    "shoulder",
+    "wrist",
+    "other"
+  ],
+  "population": {
+    "kind": "older_adult",
+    "fallsAnswers": [
+      false,
+      false,
+      true,
+      false
+    ],
+    "balanceCautious": false,
+    "walkingAid": false
+  },
+  "screening": {
+    "parqAllNo": true,
+    "parqAnswers": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "knownCondition": false,
+    "knownCmrDisease": false,
+    "symptoms": false,
+    "activityStatus": "inactive",
+    "restingBp": "known_below_threshold",
+    "acuteIllness": false,
+    "completedAt": "2026-10-01T00:00:00Z",
+    "lastScreenedAt": "2026-10-01T00:00:00Z"
+  },
+  "preferences": {
+    "excludedExerciseIds": [],
+    "cannotDo": [
+      "walking_carry"
+    ]
+  },
+  "birthYearMonth": "1956-06",
+  "asOfDate": "2026-10-15",
+  "locale": "zh"
+}

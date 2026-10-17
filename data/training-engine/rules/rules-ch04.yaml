@@ -1,0 +1,378 @@
+# 第 4 章 单次训练结构与时间分配 —— 机器规则
+# 与 ch04-session-structure.md 一一对应。
+# 时长模板中的槽位：
+#   block    ∈ {warmup, power, main, accessory, core, conditioning, cooldown}
+#   use      = 动作必须带有的 use 标签（任一即可）
+#   pattern  = 固定动作模式列表；或 from_pos = 从当日日模板（第 3 章）按位置取模式
+#   example_fb_a = 当日为全身 A 时实际取到的模式（仅供审核阅读）
+#   structure ∈ {straight, superset, circuit, continuous, intervals, holds}
+#   sets / rounds 按水平给区间；minutes 为时间预算
+#   variants 按目标替换某个槽位
+
+- id: session.durations.allowed
+  chapter: 4
+  type: default
+  value:
+    minutes: [10, 20, 30, 45, 60, 90]
+    snap: down_to_nearest
+    min90_requires_level: [intermediate]
+    min90_beginner_fallback: 60
+  evidence: C
+  sources: [E02:Iversen2021, E03:Iversen-2021]
+  note: 用户可选时长取最接近且不超出的档位
+
+- id: session.time.model
+  chapter: 4
+  type: formula
+  value:
+    set_seconds: "reps * s_per_rep + 10"
+    s_per_rep_default: 3.5
+    s_per_rep_by_kind: { bodyweight: 3.0, machine: 3.0, heavy_barbell: 4.0, slow_eccentric: 5.0 }
+    per_side_multiplier: 2
+    timed_set_seconds: "seconds * (2 if per_side else 1) + 10"
+    transition_s: { dumbbell_or_machine: 60, barbell: 120, within_superset: 15 }
+    setup_s_source: exercise.time.setup_s
+    rest_source: dose.rest.table
+    recalibrate_after_sessions: 3
+    recalibrate_method: "replace defaults with user's median logged set, rest and transition times"
+  evidence: C
+  sources: [E02:Paz2017, E02:Schoenfeld2015, E02:Currier2026]
+  note: 工程默认值；用户记 2–3 次后用个人实测替换
+
+- id: session.order.blocks
+  chapter: 4
+  type: default
+  value:
+    block_order: [warmup, power, main, accessory, core, conditioning, cooldown]
+    power_block_only_if: { level: [intermediate], not_new_user_weeks_1_4: true }
+    conditioning_after_resistance: true
+    exception_conditioning_first: { primary_goal_endurance: true }   # 本产品无耐力目标，保留
+  evidence: B
+  sources: [E03:Eddens-2018, E03:Nunes-2021, E03:NSCA-Hoffman]
+  note: 力量在前、有氧在后；爆发练习放最前
+
+- id: session.template.min10
+  chapter: 4
+  type: template
+  value:
+    minutes: 10
+    working_sets: [6, 8]
+    exercises: [3, 4]
+    general_warmup: false
+    slots:
+      - { slot: WU1, block: warmup, use: [warmup], pattern: [mobility], seconds: [30, 45] }
+      - { slot: WU2, block: warmup, use: [warmup], pattern: from_next_slot, ramp: bodyweight_or_light_1_set, seconds: [15, 30] }
+      - { slot: C1, block: main, structure: circuit, use: [main, accessory], from_pos: [main_1, main_2, acc_1, main_3], example_fb_a: [squat, push_horizontal, hinge, pull_horizontal], rounds: { beginner: [2, 2], intermediate: [2, 3] }, rest_after_round_s: 60, minutes: 8 }
+      - { slot: CD1, block: cooldown, use: [cooldown], pattern: [mobility], seconds: [0, 60], optional: true }
+    overflow_rule: "drop acc_1 from C1"
+  evidence: C
+  sources: [E03:Iversen-2021, E02:Iversen2021, E03:Rodriguez-2026]
+  note: 不做一般热身；4 动作循环 2 轮
+
+- id: session.template.min20
+  chapter: 4
+  type: template
+  value:
+    minutes: 20
+    working_sets: [9, 14]
+    exercises: [5, 5]
+    general_warmup: false
+    slots:
+      - { slot: WU1, block: warmup, use: [warmup], pattern: [mobility], seconds: [60, 90] }
+      - { slot: WU2, block: warmup, use: [warmup], pattern: from_slot_SS1_first, ramp: 1_set, seconds: [60, 90] }
+      - { slot: SS1, block: main, structure: superset, use: [main], from_pos: [main_1, main_2], example_fb_a: [squat, push_horizontal], rounds: { beginner: [2, 3], intermediate: [3, 3] }, minutes: 7 }
+      - { slot: SS2, block: main, structure: superset, use: [main, accessory], from_pos: [acc_1, main_3], example_fb_a: [hinge, pull_horizontal], rounds: { beginner: [2, 3], intermediate: [3, 3] }, minutes: 7 }
+      - { slot: K1, block: core, structure: straight, use: [accessory], from_pos: [core_1], example_fb_a: [anti_extension], sets: [1, 2], minutes: 2 }
+      - { slot: CD1, block: cooldown, use: [cooldown], pattern: [mobility], seconds: [45, 60] }
+  evidence: C
+  sources: [E03:Iversen-2021, E02:Zhang2025, E02:Paz2017]
+  note: 两组上下肢超级组 + 核心
+
+- id: session.template.min30
+  chapter: 4
+  type: template
+  value:
+    minutes: 30
+    working_sets: [12, 16]
+    exercises: [5, 6]
+    slots:
+      - { slot: WU1, block: warmup, use: [warmup], pattern: [cardio_cyclic], intensity_rpe: [3, 4], seconds: [60, 120] }
+      - { slot: WU2, block: warmup, use: [warmup], pattern: [mobility], seconds: [60, 90] }
+      - { slot: WU3, block: warmup, use: [warmup], pattern: from_slot_M1, ramp: 2_sets, seconds: [90, 120] }
+      - { slot: M1, block: main, structure: straight, use: [main], from_pos: [main_1], example_fb_a: [squat], sets: { beginner: [2, 3], intermediate: [3, 3] }, minutes: 7 }
+      - { slot: SS1, block: main, structure: superset, use: [main], from_pos: [main_2, main_3], example_fb_a: [push_horizontal, pull_horizontal], rounds: { beginner: [2, 3], intermediate: [3, 3] }, minutes: 9 }
+      - { slot: SS2, block: accessory, structure: superset, use: [accessory, main], from_pos: [acc_1, core_1], example_fb_a: [hinge, anti_extension], rounds: [2, 3], minutes: 7 }
+      - { slot: CD1, block: cooldown, use: [cooldown], pattern: [mobility], minutes: 2 }
+    variants:
+      fat_loss:
+        replace: { SS2: { slot: CN1, block: conditioning, structure: intervals, use: [conditioning], pattern: [cardio_cyclic, carry, locomotion_ground], minutes: [6, 8] } }
+        dropped_positions_rechecked_by: week.coverage.patterns
+  evidence: C
+  sources: [E03:Iversen-2021, E02:Iversen2021, E03:Ribeiro-2021]
+  note: 新手默认时长；减脂把辅助对换成 6–8 分钟间歇
+
+- id: session.template.min45
+  chapter: 4
+  type: template
+  value:
+    minutes: 45
+    working_sets: [16, 22]
+    exercises: [6, 8]
+    slots:
+      - { slot: WU1, block: warmup, use: [warmup], pattern: [cardio_cyclic], intensity_rpe: [3, 4], seconds: [90, 180] }
+      - { slot: WU2, block: warmup, use: [warmup], pattern: [mobility], seconds: [60, 90] }
+      - { slot: WU3, block: warmup, use: [warmup], pattern: from_slot_M1, ramp: 2_sets, seconds: [90, 120] }
+      - { slot: M1, block: main, structure: straight, use: [main], from_pos: [main_1], example_fb_a: [squat], sets: { beginner: [2, 3], intermediate: [3, 4] }, minutes: 7 }
+      - { slot: M2, block: main, structure: straight, use: [main], from_pos: [main_2], example_fb_a: [push_horizontal], ramp: 0_to_1_set, sets: { beginner: [2, 3], intermediate: [3, 4] }, minutes: 7 }
+      - { slot: SS1, block: main, structure: superset, use: [main, accessory], from_pos: [main_3, acc_1], example_fb_a: [pull_horizontal, hinge], rounds: { beginner: [2, 3], intermediate: [3, 3] }, minutes: 9 }
+      - { slot: SS2, block: accessory, structure: superset, use: [accessory], from_pos: [acc_2, core_1], example_fb_a: [pull_vertical, anti_extension], rounds: [2, 3], minutes: 6 }
+      - { slot: X1, block: accessory, structure: superset, use: [accessory], from_pos: [acc_3, acc_4], example_fb_a: [isolation_lower, isolation_upper], rounds: [2, 3], minutes: 8 }
+      - { slot: CD1, block: cooldown, use: [cooldown], pattern: [mobility], minutes: 3 }
+    variants:
+      fat_loss: { replace: { X1: { slot: CN1, block: conditioning, structure: intervals, use: [conditioning], pattern: [cardio_cyclic, carry, locomotion_ground], minutes: 8 } } }
+      health: { replace: { X1: { slot: CN1, block: conditioning, structure: continuous, use: [conditioning], pattern: [cardio_cyclic], minutes: 8 } } }
+      start_moving: { replace: { X1: { slot: CN1, block: conditioning, structure: continuous, use: [conditioning], pattern: [cardio_cyclic], minutes: 8, intensity: moderate } } }
+      mobility: { replace: { X1: { slot: CD2, block: cooldown, use: [cooldown], pattern: [mobility], minutes: 8 } } }
+  evidence: C
+  sources: [E03:Iversen-2021, E02:Iversen2021, E03:Ribeiro-2021]
+  note: 中级默认；最后 8 分钟按目标给体能、辅助或柔韧
+
+- id: session.template.min60
+  chapter: 4
+  type: template
+  value:
+    minutes: 60
+    working_sets: [20, 26]
+    exercises: [7, 9]
+    slots:
+      - { slot: WU1, block: warmup, use: [warmup], pattern: [cardio_cyclic], intensity_rpe: [3, 4], seconds: [120, 180] }
+      - { slot: WU2, block: warmup, use: [warmup], pattern: [mobility], seconds: [90, 120] }
+      - { slot: WU3, block: warmup, use: [warmup], pattern: from_slot_M1, ramp: 2_sets, seconds: [120, 150] }
+      - { slot: M1, block: main, structure: straight, use: [main], from_pos: [main_1], example_fb_a: [squat], sets: { beginner: [3, 3], intermediate: [3, 4] }, minutes: 10 }
+      - { slot: M2, block: main, structure: straight, use: [main], from_pos: [main_2], example_fb_a: [push_horizontal], ramp: 0_to_1_set, sets: { beginner: [3, 3], intermediate: [3, 4] }, minutes: 10 }
+      - { slot: SS1, block: main, structure: superset, use: [main, accessory], from_pos: [main_3, acc_1], example_fb_a: [pull_horizontal, hinge], rounds: [3, 3], minutes: 10 }
+      - { slot: SS2, block: accessory, structure: superset, use: [accessory], from_pos: [acc_2, acc_3], example_fb_a: [pull_vertical, isolation_lower], rounds: [2, 3], minutes: 6 }
+      - { slot: SS3, block: core, structure: superset, use: [accessory], from_pos: [acc_4, core_1], example_fb_a: [isolation_upper, anti_extension], rounds: [2, 3], minutes: 6 }
+      - { slot: X1, block: core, structure: superset, use: [accessory, conditioning], from_pos: [core_2, carry_1], example_fb_a: [anti_lateral_flexion, carry], rounds: [2, 3], minutes: 8 }
+      - { slot: CD1, block: cooldown, use: [cooldown], pattern: [mobility], minutes: 4 }
+    variants:
+      fat_loss: { replace: { X1: { slot: CN1, block: conditioning, structure: intervals, use: [conditioning], pattern: [cardio_cyclic, carry, locomotion_ground], minutes: 8 } } }
+      health: { replace: { X1: { slot: CN1, block: conditioning, structure: continuous, use: [conditioning], pattern: [cardio_cyclic], minutes: 8 } } }
+      start_moving: { replace: { X1: { slot: CN1, block: conditioning, structure: continuous, use: [conditioning], pattern: [cardio_cyclic], minutes: 8, intensity: moderate } } }
+      mobility: { replace: { X1: null }, extend: { CD1: { minutes: 10 } }, trim: { M1: { minutes: 8 } } }
+      strength: { rest_main_s: [120, 180], trim: { SS3: null }, extend: { M1: { minutes: 12 }, M2: { minutes: 12 } }, replace: { X1: { slot: X1, from_pos: [core_1, carry_1] } } }
+  evidence: C
+  sources: [E03:Iversen-2021, E02:Iversen2021, E02:Grgic2018-rest]
+  note: 力量目标延长主项休息并去掉一个辅助对
+
+- id: session.template.min90
+  chapter: 4
+  type: template
+  applies:
+    level: [intermediate]
+  value:
+    minutes: 90
+    working_sets: [28, 34]
+    exercises: [9, 11]
+    slots:
+      - { slot: WU1, block: warmup, use: [warmup], pattern: [cardio_cyclic], intensity_rpe: [3, 4], seconds: [180, 240] }
+      - { slot: WU2, block: warmup, use: [warmup], pattern: [mobility], seconds: [120, 150] }
+      - { slot: WU3, block: warmup, use: [warmup], pattern: from_slot_M1, ramp: 2_sets, seconds: [150, 180] }
+      - { slot: M1, block: main, structure: straight, use: [main], from_pos: [main_1], example_fb_a: [squat], sets: [3, 4], minutes: 10 }
+      - { slot: M2, block: main, structure: straight, use: [main], from_pos: [main_2], example_fb_a: [push_horizontal], ramp: 0_to_1_set, sets: [3, 4], minutes: 10 }
+      - { slot: M3, block: main, structure: straight, use: [main], from_pos: [main_3], example_fb_a: [pull_horizontal], ramp: 0_to_1_set, sets: [3, 4], minutes: 10 }
+      - { slot: SS1, block: accessory, structure: superset, use: [accessory, main], from_pos: [acc_1, acc_2], example_fb_a: [hinge, pull_vertical], rounds: [3, 3], minutes: 8 }
+      - { slot: SS2, block: accessory, structure: superset, use: [accessory], from_pos: [acc_3, acc_4], example_fb_a: [isolation_lower, isolation_upper], rounds: [3, 3], minutes: 8 }
+      - { slot: SS3, block: core, structure: superset, use: [accessory], from_pos: [core_1, core_2], example_fb_a: [anti_extension, anti_lateral_flexion], rounds: [2, 3], minutes: 5 }
+      - { slot: K1, block: core, structure: straight, use: [conditioning, accessory], from_pos: [carry_1], example_fb_a: [carry], sets: [2, 3], minutes: 4 }
+      - { slot: CN1, block: conditioning, structure: continuous_or_intervals, use: [conditioning], pattern: [cardio_cyclic], minutes: [15, 20] }
+      - { slot: CD1, block: cooldown, use: [cooldown], pattern: [mobility], minutes: [5, 8] }
+    per_muscle_session_cap_ref: dose.sets_session.cap
+    over_cap_action: "move excess sets to CN1 or CD1 time"
+    warn_if_working_sets_over: 30
+  evidence: C
+  sources: [E03:Iversen-2021, E02:Remmert2025, E02:Iversen2021]
+  note: 仅中级；单次每肌群超上限后改加有氧或柔韧
+
+- id: session.warmup.general
+  chapter: 4
+  type: default
+  value:
+    include_when: { session_minutes_min: 30, or_user_reports_cold: true }
+    pattern: [cardio_cyclic]
+    use: [warmup]
+    intensity_rpe: [3, 4]
+    exclude_flags: [jumping]
+    seconds_by_duration: { "10": 0, "20": 0, "30": [60, 120], "45": [90, 180], "60": [120, 180], "90": [180, 240] }
+  evidence: C
+  sources: [E03:Fradkin-2010, E03:McGowan-2015, E03:Boullosa-2026, E02:Iversen2021]
+  note: 一般热身证据不一；只在 ≥30 分钟课或环境冷时做
+
+- id: session.warmup.dynamic
+  chapter: 4
+  type: default
+  value:
+    pattern: [mobility]
+    use: [warmup]
+    seconds: [30, 90]
+    exercises: [1, 3]
+    match: "mobility exercises whose bodyPart or primaryMuscles overlap today's main and accessory slots"
+    dynamic_only: true
+  evidence: B
+  sources: [E03:Behm-2016, E03:Boullosa-2026]
+  note: 动态拉伸约提升表现 1.3%
+
+- id: session.warmup.ramp_sets
+  chapter: 4
+  type: default
+  value:
+    first_loaded_compound: { sets: 2, scheme: [{ pct_working_load: 50, reps: 8 }, { pct_working_load: 75, reps: 3 }] }
+    later_compounds: { sets: [0, 1], scheme: [{ pct_working_load: 60, reps: 5 }] }
+    bodyweight_main: { sets: 1, method: "ladder step -1, or same exercise at 50% of target reps", target_rep_fraction: 0.5 }
+    isolation: { sets: 0 }
+    counted_as_working_set: false
+  evidence: B
+  sources: [E03:Ribeiro-2021, E03:Iversen-2021]
+  note: 专项热身组对力量表现帮助最大；第二组用 60% 为工程选择
+
+- id: session.warmup.balance_older
+  chapter: 4
+  type: default
+  applies:
+    population: [older_adult]
+  value:
+    add_slot: { block: warmup, pattern: [balance], use: [warmup], seconds: [60, 120] }
+    min_session_minutes: 20
+    counts_toward_balance_days: true
+  evidence: C
+  sources: [E01:WHO20, E01:GARBER11]
+  note: 工程选择，待教练审核；平衡练习可并入力量课
+
+- id: session.warmup.no_long_static
+  chapter: 4
+  type: limit
+  value:
+    pre_training_static_hold_s_per_muscle_max: 59
+    short_static_allowed_s_max: 30
+    short_static_requires_followup: dynamic
+    warmup_slot_requires_use: warmup
+    long_static_and_mobility_blocks_to: [cooldown, mobility_day]
+  evidence: B
+  sources: [E03:Behm-2016]
+  note: 练前每肌群静态拉伸 ≥60 秒使表现约降 4.6%
+
+- id: session.superset.when
+  chapter: 4
+  type: gate
+  value:
+    default_structure_by_minutes:
+      "10": circuit
+      "20": superset
+      "30": "M1 straight; rest superset"
+      "45": "M1-M2 straight; rest superset"
+      "60": "M1-M2 straight; rest superset"
+      "90": "M1-M3 straight; accessories superset"
+    circuit_allowed: { session_minutes_max: 20, or_block: conditioning, exercises: [3, 4] }
+    strength_goal_main_lifts: straight
+    straight_sets_if_user_prefers: true
+    same_muscle_superset: { allowed_only_as: finisher, level: [intermediate] }
+  evidence: B
+  sources: [E02:Zhang2025, E02:Paz2017, E02:Iversen2021, E02:Krzysztofik2019]
+  note: 超级组省时且总量不降；力量目标的主项用常规组
+
+- id: session.superset.pairing
+  chapter: 4
+  type: gate
+  value:
+    allowed_pairs:
+      - [lower_body, upper_body]
+      - [push, pull]
+      - [any_strength, core]
+      - [isolation_upper, isolation_lower]
+    groups:
+      lower_body: [squat, lunge, hinge, isolation_lower]
+      upper_body: [push_horizontal, push_vertical, pull_horizontal, pull_vertical, isolation_upper]
+      push: [push_horizontal, push_vertical]
+      pull: [pull_horizontal, pull_vertical]
+      core: [anti_extension, anti_rotation, anti_lateral_flexion, rotation, trunk_flexion]
+    forbidden_if:
+      both_flag: [grip_intensive]
+      both_joint_load_min: { back: 2 }
+      same_primary_pattern: true
+      same_ladder_id: true
+      both_setup_s_min: 60
+      either_flag_when_goal_strength: [heavy_axial_load, valsalva_prone]
+      different_space_large: true
+      core_member_joint_load_min_with_back_loaded_partner: { back: 2 }
+    fallback_order:
+      - "swap the second member with the next unused day position that forms an allowed pair (core_1, core_2 first)"
+      - "run both as straight sets with dose.rest.table"
+  evidence: C
+  sources: [E03:NSCA-Hoffman, E02:Zhang2025, E02:Iversen2021]
+  note: 对抗肌配对可多做次数；同肌群配对会降低总量
+
+- id: session.superset.rest
+  chapter: 4
+  type: default
+  value:
+    within_pair_transition_s: 15
+    after_pair_s: { default: [60, 90] }
+    each_muscle_effective_rest_s: [120, 180]
+    circuit_rest_after_round_s: 60
+    circuit_within_round_transition_s: 15
+  evidence: B
+  sources: [E02:Zhang2025, E02:Paz2017, E02:Singer2024]
+  note: 配对后休息 60–90 秒，每个肌群实际休息约 2–3 分钟
+
+- id: session.conditioning.slot
+  chapter: 4
+  type: default
+  value:
+    use: [conditioning]
+    pattern_priority: [cardio_cyclic, carry, locomotion_ground]
+    jump_land_allowed_if: { level: [intermediate], not_excluded_by_other_rules: true }
+    default_structure: { health: continuous, start_moving: continuous, fat_loss: intervals, muscle: continuous, strength: continuous }
+    continuous_intensity: { rpe: [5, 6], talk_test: can_talk_not_sing }
+    intervals_default: { work_s: [20, 60], rest_ratio_min: 1.0, rpe: [7, 8] }
+    hiit_requires_gate: true
+    counts_toward_aerobic_minutes: true
+  evidence: C
+  sources: [E01:WHO20, E01:PAG18, E01:FRANK20]
+  note: 间歇默认 RPE 7–8；HIIT 需先解锁
+
+- id: session.cooldown.stretch
+  chapter: 4
+  type: default
+  value:
+    use: [cooldown]
+    pattern: [mobility]
+    one_stretch_per_main_muscle_trained: true
+    dose: { default: { sets: 2, hold_s: 30 }, older_adult: { sets: 2, hold_s: [30, 60] } }
+    total_s_per_muscle_target: 60
+    priority_when_time_short: "muscles trained in M1, M2, M3 first"
+    mobility_goal_minutes: [8, 10]
+    exempt_when_session_minutes_max: 20
+    short_fallback: {"exercises":1,"hold_s":[30,60]}
+  evidence: A
+  sources: [E03:Garber-2011, E01:GARBER11]
+  note: "每肌群累计约 60 秒；时间不够时先拉主项肌群；v2 调整：20分钟以内免除放松拉伸；其他课放不下时以1个30–60秒拉伸替代；此项为target。"
+
+- id: session.fit.algorithm
+  chapter: 4
+  type: formula
+  value:
+    steps:
+      - "subtract warm-up and cool-down time from session minutes"
+      - "allocate main slots (M*) first using session.time.model"
+      - "fill superset/accessory slots in template order until time runs out"
+      - "if estimated time exceeds budget by >2 min: remove rounds from last accessory slot, then drop that slot"
+    if_weekly_target_unmet_apply_in_order:
+      - add_session_per_week_if_user_allows
+      - convert_straight_sets_to_pairs
+      - shorten_isolation_rest_to_60s
+      - accept_lower_volume_if_at_or_above_floor
+    weekly_floor_sets_per_muscle: 4
+    floor_exempt_goals: [start_moving]
+  evidence: C
+  sources: [E02:Iversen2021, E02:Currier2026]
+  note: 先排主项，再按顺序填辅助；不够时依次补救

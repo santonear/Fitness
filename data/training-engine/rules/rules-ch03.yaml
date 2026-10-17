@@ -1,0 +1,441 @@
+# 第 3 章 每周结构 —— 机器规则
+# 与 ch03-weekly-structure.md 一一对应。
+# 日模板（week.day.*）给出"位置 → 动作模式"的有序清单；第 4 章的时长模板按位置名取用。
+# 位置词表（固定）：main_1 main_2 main_3 acc_1 acc_2 acc_3 acc_4 core_1 core_2 carry_1
+#   pattern 为列表时表示"任选其一，按列表顺序优先"；use 为该位置允许的动作 use 标签。
+#   prefer 为软偏好（排序加分），不满足不淘汰。
+# rt_days = 本周力量训练天数（见 week.days.allocation）。
+
+- id: week.days.allocation
+  chapter: 3
+  type: formula
+  value:
+    rt_days: "min(days_available, goal.rt_sessions_week.max, phase_cap)"
+    rt_days_floor: "min(days_available, goal.rt_sessions_week.min)"
+    phase_cap_ref: progression.new.week_caps      # 新手第 1 周 2 次等
+    other_days_type:
+      start_moving: aerobic
+      health: [aerobic, mobility]                  # 交替，先有氧
+      fat_loss: aerobic
+      muscle: [aerobic, mobility]
+      strength: [aerobic, mobility]
+      mobility: mobility
+    rest_days_min_per_week: 1
+  evidence: C
+  sources: [E03:ACSM-2026, E03:NSCA-Hoffman, E04:S8]
+  note: 先按目标定力量天数，多出的天给有氧或柔韧
+
+- id: week.template.rt1
+  chapter: 3
+  type: template
+  value:
+    rt_days: 1
+    split: full_body
+    rotation: [[fb_c]]
+    weekday_default: [wed]
+    companion_copy: week.one_day.copy
+  evidence: B
+  sources: [E03:ACSM-2026, E02:Schoenfeld2019, E03:Rodriguez-2026]
+  note: 低于指南底线；等量时每周 1 次仍有增肌效果
+
+- id: week.template.rt2
+  chapter: 3
+  type: template
+  value:
+    rt_days: 2
+    split: full_body_ab
+    rotation: [[fb_a, fb_b]]
+    min_hours_between_sessions: 48
+    weekday_default: [mon, thu]
+  evidence: B
+  sources: [E03:Ramos-Campo-2024, E03:ACSM-2026, E03:Garber-2011]
+  note: 每肌群 2 次/周的最小方案
+
+- id: week.template.rt3
+  chapter: 3
+  type: template
+  value:
+    rt_days: 3
+    split: full_body_ab
+    rotation: [[fb_a, fb_b, fb_a], [fb_b, fb_a, fb_b]]   # 单周用第 1 组，双周用第 2 组
+    min_hours_between_sessions: 48
+    weekday_default: [mon, wed, fri]
+  evidence: B
+  sources: [E03:Ramos-Campo-2024, E03:Garber-2011, E02:Ratamess2009]
+  note: 经典新手方案；A/B 隔周交替
+
+- id: week.template.rt4
+  chapter: 3
+  type: template
+  value:
+    rt_days: 4
+    variants:
+      - when: { session_minutes_min: 45 }
+        split: upper_lower
+        rotation: [[u1, l1, u2, l2]]
+        weekday_default: [mon, tue, thu, fri]
+      - when: { session_minutes_max: 44 }
+        split: full_body_ab
+        rotation: [[fb_a, fb_b, fb_a, fb_b]]
+        weekday_default: [mon, tue, thu, fri]
+        consecutive_day_rule: week.recovery.light_day
+  evidence: B
+  sources: [E03:Ramos-Campo-2024, E02:Schoenfeld2019, E03:NSCA-Hoffman]
+  note: 等量时分化与全身效果相同；短课用全身 A/B
+
+- id: week.template.rt5
+  chapter: 3
+  type: template
+  applies:
+    goal: [muscle]
+  value:
+    rt_days: 5
+    session_minutes_min: 45
+    split: upper_lower_plus_full_body
+    rotation: [[u1, l1, u2, l2, fb_c]]
+    weekday_default: [mon, tue, thu, fri, sat]
+    consecutive_day_rule: week.recovery.light_day
+    fallback_if_short_sessions: { rotation: [[fb_a, fb_b, fb_c, fb_a, fb_b]] }
+  evidence: C
+  sources: [E03:Ramos-Campo-2024, E02:Schoenfeld2019, E03:NSCA-Hoffman]
+  note: 只有增肌目标会排到 5 个力量日；第 5 天为全身课
+
+- id: week.template.rt6
+  chapter: 3
+  type: template
+  applies:
+    goal: [muscle]
+    level: [intermediate]
+  value:
+    rt_days: 6
+    opt_in_required: true
+    session_minutes_min: 45
+    variants:
+      - split: push_pull_legs
+        rotation: [[push, pull, legs, push, pull, legs]]
+        weekday_default: [mon, tue, wed, thu, fri, sat]
+      - split: upper_lower_x3
+        rotation: [[u1, l1, u2, l2, u1, l1]]
+        weekday_default: [mon, tue, wed, thu, fri, sat]
+    default_variant: push_pull_legs
+    not_eligible_fallback: { rt_days: 4, other_days: [aerobic, mobility] }
+  evidence: C
+  sources: [E03:NSCA-Hoffman, E02:Pelland2024, E03:ACSM-2026]
+  note: 仅中级增肌且主动选择；否则 4 力量日 + 2 有氧/柔韧
+
+- id: week.day.fb_a
+  chapter: 3
+  type: template
+  value:
+    focus: full_body
+    slots:
+      - { pos: main_1, pattern: [squat], use: [main], prefer: { laterality: bilateral, nsca_class: compound } }
+      - { pos: main_2, pattern: [push_horizontal], use: [main] }
+      - { pos: main_3, pattern: [pull_horizontal], use: [main] }
+      - { pos: acc_1, pattern: [hinge], use: [main, accessory], prefer: { joint_load_max: { back: 1 } } }
+      - { pos: acc_2, pattern: [pull_vertical], use: [accessory, main] }
+      - { pos: acc_3, pattern: [isolation_lower], use: [accessory] }
+      - { pos: acc_4, pattern: [isolation_upper], use: [accessory] }
+      - { pos: core_1, pattern: [anti_extension], use: [accessory] }
+      - { pos: core_2, pattern: [anti_lateral_flexion], use: [accessory] }
+      - { pos: carry_1, pattern: [carry, locomotion_ground], use: [conditioning, accessory] }
+  evidence: C
+  sources: [E03:Garber-2011, E04:S21, E04:S25]
+  note: 全身 A：蹲 + 水平推拉 + 髋铰链辅助
+
+- id: week.day.fb_b
+  chapter: 3
+  type: template
+  value:
+    focus: full_body
+    slots:
+      - { pos: main_1, pattern: [hinge], use: [main], prefer: { nsca_class: compound } }
+      - { pos: main_2, pattern: [push_vertical], use: [main] }
+      - { pos: main_3, pattern: [pull_vertical], use: [main] }
+      - { pos: acc_1, pattern: [lunge], use: [main, accessory] }
+      - { pos: acc_2, pattern: [pull_horizontal], use: [accessory, main] }
+      - { pos: acc_3, pattern: [isolation_upper], use: [accessory] }
+      - { pos: acc_4, pattern: [isolation_lower], use: [accessory] }
+      - { pos: core_1, pattern: [anti_rotation], use: [accessory] }
+      - { pos: core_2, pattern: [trunk_flexion, rotation], use: [accessory] }
+      - { pos: carry_1, pattern: [carry, locomotion_ground], use: [conditioning, accessory] }
+  evidence: C
+  sources: [E03:Garber-2011, E04:S21, E04:S25]
+  note: 全身 B：髋铰链 + 垂直推拉 + 单腿
+
+- id: week.day.fb_c
+  chapter: 3
+  type: template
+  value:
+    focus: full_body
+    slots:
+      - { pos: main_1, pattern: [squat], use: [main] }
+      - { pos: main_2, pattern: [pull_horizontal], use: [main] }
+      - { pos: main_3, pattern: [push_horizontal], use: [main] }
+      - { pos: acc_1, pattern: [hinge], use: [main, accessory] }
+      - { pos: acc_2, pattern: [pull_vertical], use: [accessory, main] }
+      - { pos: acc_3, pattern: [push_vertical], use: [accessory, main] }
+      - { pos: acc_4, pattern: [lunge], use: [accessory, main] }
+      - { pos: core_1, pattern: [anti_extension], use: [accessory] }
+      - { pos: core_2, pattern: [anti_rotation, anti_lateral_flexion], use: [accessory] }
+      - { pos: carry_1, pattern: [carry, locomotion_ground], use: [conditioning, accessory] }
+  evidence: C
+  sources: [E03:Iversen-2021, E04:S21]
+  note: 单日全身课：短课只用前 4 个位置也能覆盖蹲铰推拉
+
+- id: week.day.u1
+  chapter: 3
+  type: template
+  value:
+    focus: upper
+    slots:
+      - { pos: main_1, pattern: [push_horizontal], use: [main] }
+      - { pos: main_2, pattern: [pull_horizontal], use: [main] }
+      - { pos: main_3, pattern: [push_vertical], use: [main, accessory] }
+      - { pos: acc_1, pattern: [pull_vertical], use: [main, accessory] }
+      - { pos: acc_2, pattern: [pull_horizontal], use: [accessory], prefer: { joint_load_max: { back: 0 } } }
+      - { pos: acc_3, pattern: [isolation_upper], use: [accessory] }
+      - { pos: acc_4, pattern: [isolation_upper], use: [accessory] }
+      - { pos: core_1, pattern: [anti_rotation], use: [accessory] }
+      - { pos: core_2, pattern: [anti_lateral_flexion], use: [accessory] }
+      - { pos: carry_1, pattern: [carry], use: [conditioning, accessory] }
+  evidence: C
+  sources: [E03:NSCA-Hoffman, E04:S25]
+  note: 上肢 1：水平为主；拉类位置多于推类
+
+- id: week.day.u2
+  chapter: 3
+  type: template
+  value:
+    focus: upper
+    slots:
+      - { pos: main_1, pattern: [push_vertical], use: [main] }
+      - { pos: main_2, pattern: [pull_vertical], use: [main] }
+      - { pos: main_3, pattern: [push_horizontal], use: [main, accessory] }
+      - { pos: acc_1, pattern: [pull_horizontal], use: [main, accessory] }
+      - { pos: acc_2, pattern: [pull_horizontal], use: [accessory], prefer: { joint_load_max: { back: 0 } } }
+      - { pos: acc_3, pattern: [isolation_upper], use: [accessory] }
+      - { pos: acc_4, pattern: [isolation_upper], use: [accessory] }
+      - { pos: core_1, pattern: [anti_extension], use: [accessory] }
+      - { pos: core_2, pattern: [rotation, trunk_flexion], use: [accessory] }
+      - { pos: carry_1, pattern: [carry], use: [conditioning, accessory] }
+  evidence: C
+  sources: [E03:NSCA-Hoffman, E04:S25]
+  note: 上肢 2：垂直为主
+
+- id: week.day.l1
+  chapter: 3
+  type: template
+  value:
+    focus: lower
+    slots:
+      - { pos: main_1, pattern: [squat], use: [main] }
+      - { pos: main_2, pattern: [hinge], use: [main] }
+      - { pos: main_3, pattern: [lunge], use: [main, accessory] }
+      - { pos: acc_1, pattern: [isolation_lower], use: [accessory] }
+      - { pos: acc_2, pattern: [isolation_lower], use: [accessory] }
+      - { pos: core_1, pattern: [anti_extension], use: [accessory] }
+      - { pos: core_2, pattern: [anti_lateral_flexion], use: [accessory] }
+      - { pos: carry_1, pattern: [carry, locomotion_ground], use: [conditioning, accessory] }
+  evidence: C
+  sources: [E03:NSCA-Hoffman, E04:S25]
+  note: 下肢 1：蹲为主
+
+- id: week.day.l2
+  chapter: 3
+  type: template
+  value:
+    focus: lower
+    slots:
+      - { pos: main_1, pattern: [hinge], use: [main] }
+      - { pos: main_2, pattern: [lunge], use: [main, accessory] }
+      - { pos: main_3, pattern: [squat], use: [main, accessory], prefer: { joint_load_max: { back: 1 } } }
+      - { pos: acc_1, pattern: [isolation_lower], use: [accessory] }
+      - { pos: acc_2, pattern: [isolation_lower], use: [accessory] }
+      - { pos: core_1, pattern: [anti_rotation], use: [accessory] }
+      - { pos: core_2, pattern: [trunk_flexion, rotation], use: [accessory] }
+      - { pos: carry_1, pattern: [carry, locomotion_ground], use: [conditioning, accessory] }
+  evidence: C
+  sources: [E03:NSCA-Hoffman, E04:S25]
+  note: 下肢 2：髋铰链为主
+
+- id: week.day.push
+  chapter: 3
+  type: template
+  value:
+    focus: push
+    slots:
+      - { pos: main_1, pattern: [push_horizontal], use: [main] }
+      - { pos: main_2, pattern: [push_vertical], use: [main] }
+      - { pos: main_3, pattern: [push_horizontal], use: [main, accessory] }
+      - { pos: acc_1, pattern: [isolation_upper], use: [accessory] }
+      - { pos: acc_2, pattern: [isolation_upper], use: [accessory] }
+      - { pos: acc_3, pattern: [pull_horizontal], use: [accessory], prefer: { joint_load_max: { back: 0 } } }
+      - { pos: core_1, pattern: [anti_extension], use: [accessory] }
+      - { pos: core_2, pattern: [anti_lateral_flexion], use: [accessory] }
+  evidence: C
+  sources: [E03:NSCA-Hoffman]
+  note: 推日；末尾加一个轻量水平拉维持推拉平衡
+
+- id: week.day.pull
+  chapter: 3
+  type: template
+  value:
+    focus: pull
+    slots:
+      - { pos: main_1, pattern: [pull_vertical], use: [main] }
+      - { pos: main_2, pattern: [pull_horizontal], use: [main] }
+      - { pos: main_3, pattern: [pull_vertical, pull_horizontal], use: [main, accessory] }
+      - { pos: acc_1, pattern: [pull_horizontal], use: [accessory] }
+      - { pos: acc_2, pattern: [isolation_upper], use: [accessory] }
+      - { pos: acc_3, pattern: [isolation_upper], use: [accessory] }
+      - { pos: core_1, pattern: [anti_rotation], use: [accessory] }
+      - { pos: carry_1, pattern: [carry], use: [conditioning, accessory] }
+  evidence: C
+  sources: [E03:NSCA-Hoffman]
+  note: 拉日
+
+- id: week.day.legs
+  chapter: 3
+  type: template
+  value:
+    focus: lower
+    slots:
+      - { pos: main_1, pattern: [squat], use: [main] }
+      - { pos: main_2, pattern: [hinge], use: [main] }
+      - { pos: main_3, pattern: [lunge], use: [main, accessory] }
+      - { pos: acc_1, pattern: [isolation_lower], use: [accessory] }
+      - { pos: acc_2, pattern: [isolation_lower], use: [accessory] }
+      - { pos: core_1, pattern: [anti_lateral_flexion], use: [accessory] }
+      - { pos: core_2, pattern: [trunk_flexion, rotation], use: [accessory] }
+  evidence: C
+  sources: [E03:NSCA-Hoffman]
+  note: 腿日
+
+- id: week.day.aerobic
+  chapter: 3
+  type: template
+  value:
+    focus: aerobic
+    slots:
+      - { pos: warmup, pattern: [cardio_cyclic], use: [warmup], seconds: [180, 300] }
+      - { pos: main_aerobic, pattern: [cardio_cyclic], use: [conditioning], minutes: "weekly_aerobic_target_remaining / aerobic_days_remaining", minutes_min: 10, minutes_max: 60, intensity: moderate }
+      - { pos: cooldown, pattern: [mobility], use: [cooldown], seconds: [120, 300] }
+  evidence: C
+  sources: [E01:WHO20, E01:PAG18]
+  note: 有氧日：把本周剩余有氧分钟平均分配
+
+- id: week.day.mobility
+  chapter: 3
+  type: template
+  value:
+    focus: mobility
+    minutes: [10, 20]
+    slots:
+      - { pos: mob_1, pattern: [mobility], use: [warmup, cooldown], target: lower_body }
+      - { pos: mob_2, pattern: [mobility], use: [warmup, cooldown], target: upper_body }
+      - { pos: mob_3, pattern: [mobility], use: [cooldown], target: trunk }
+      - { pos: balance_1, pattern: [balance], use: [warmup], applies_population: [older_adult] }
+    seconds_per_region_min: 60
+    counts_toward_rt_volume: false
+  evidence: B
+  sources: [E03:Thomas-2018, E03:Garber-2011]
+  note: 柔韧日：每部位 ≥60 秒，不计力量组数
+
+- id: week.coverage.patterns
+  chapter: 3
+  type: gate
+  value:
+    applies_when: { rt_days_min: 2 }
+    weekly_min_exposures:
+      knee_dominant: { patterns: [squat, lunge], min: 2 }
+      hip_dominant: { patterns: [hinge], min: 2 }
+      push: { patterns: [push_horizontal, push_vertical], min: 2 }
+      pull: { patterns: [pull_horizontal, pull_vertical], min: 2 }
+      each_once: [squat, hinge, lunge, push_horizontal, push_vertical, pull_horizontal, pull_vertical]
+      core_or_carry: { patterns: [anti_extension, anti_rotation, anti_lateral_flexion, carry], min: 1 }
+    count_only_slots_actually_scheduled: true
+    on_fail: promote_missing_pattern_to_next_free_acc_slot
+  evidence: C
+  sources: [E03:Garber-2011, E04:S25, E04:S21]
+  note: 实际排进课里的才算；缺的模式顶替下一个空闲辅助位
+
+- id: week.frequency.per_muscle
+  chapter: 3
+  type: formula
+  value:
+    default_exposures_per_week: 2
+    min: 1
+    max: 4
+    one_allowed_when: { rt_days_max: 1 }
+    exposures_needed: "max(2, ceil(weekly_sets_target / per_session_cap))"
+    per_session_cap_ref: dose.sets_session.cap
+    if_exposures_needed_gt_rt_days: { action: cap_weekly_sets, to: "rt_days * per_session_cap" }
+  evidence: B
+  sources: [E02:Schoenfeld2019, E02:Pelland2024, E03:ACSM-2026, E02:Remmert2025]
+  note: 频率主要用来分摊组数；等量时频率对增肌影响很小
+
+- id: week.recovery.spacing
+  chapter: 3
+  type: limit
+  value:
+    same_muscle_heavy_min_hours: 48
+    same_primary_pattern_main_slot_consecutive_days: false
+    applies_to_slots: [main_1, main_2, main_3]
+    on_conflict: week.recovery.light_day
+    consecutive_days_allowed: true
+    score_by_gap: true
+  evidence: A
+  sources: [E03:Garber-2011, E01:GARBER11]
+  note: "同一肌群重训练间隔 ≥48 小时；v2 调整：原48小时间隔为target；用户只选连续日期时允许，按实际间隔偏差扣分。"
+
+- id: week.recovery.light_day
+  chapter: 3
+  type: default
+  value:
+    trigger: "a main slot pattern repeats from the previous calendar day"
+    sets_per_exercise_delta: -1
+    sets_per_exercise_min: 1
+    rir_delta: 1
+    no_ramp_to_heavy: true
+  evidence: C
+  sources: [E03:Garber-2011, E04:S8]
+  note: 工程选择，待教练审核；连续两天练同模式时第二天轻
+
+- id: week.schedule.user_days
+  chapter: 3
+  type: default
+  value:
+    assign_order: "fill rt sessions on user-chosen weekdays maximizing min gap; then aerobic/mobility on remaining chosen days"
+    tie_break: earliest_weekday
+    hiit_rules: { consecutive_days: false, hours_before_heavy_lower_min: 24, sessions_week_max: 2 }
+    hard_aerobic_same_day_as_rt: { order: rt_first, suggest_gap_hours_for_strength: 3 }
+  evidence: B
+  sources: [E03:Schumann-2022, E03:Eddens-2018, E01:WHO20]
+  note: 先排力量日并拉开间隔；高强度间歇不连天
+
+- id: week.missed_session
+  chapter: 3
+  type: default
+  value:
+    move_sets_to_remaining_sessions: true
+    per_session_cap_ref: dose.sets_session.cap
+    respect: [week.recovery.spacing]
+    double_session_same_day: false
+    drop_if_no_room: true
+    gap_days_continue_as_planned_max: 7
+    gap_over_7_days_ref: progression.return.classify
+  evidence: B
+  sources: [E03:ACSM-2026, E02:Schoenfeld2019, E02:Remmert2025]
+  note: 结果取决于周总量；挪组不超单次上限，放不下就放弃
+
+- id: week.one_day.copy
+  chapter: 3
+  type: copy
+  value:
+    trigger: { rt_days: 1 }
+  zh: 每周 1 次力量训练也有用。如果可以，再加一天，或者每天做 2 次 5 分钟的小练习、多走走路，效果会更好。
+  en: One strength session a week still helps. If you can, add a second day, or do two 5-minute exercise snacks a day and walk more.
+  evidence: B
+  sources: [E03:Rodriguez-2026, E03:ACSM-2026]
+  note: 运动小零食可改善心肺适能

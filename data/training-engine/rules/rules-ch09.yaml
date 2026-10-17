@@ -1,0 +1,594 @@
+# rules-ch09.yaml — 第 9 章 关节注意时的替换与疼痛规则（膝 / 腰 / 肩 / 腕）
+# 与 ch09-joint-cautions.md 一一对应（id 相同）。
+#
+# ── 条件表达式约定（第 9–12 章通用，详见 ch09 第 0 节）────────────────────
+# 动作条件（对动作标注记录求值，字段名见 annotation-rubric.md）：
+#   {field: <路径>, <op>: <值>}   路径如 joint_load.knee / impact / difficulty / modality /
+#                                 primary_pattern / space / slug；op ∈ eq ne gt gte lt lte in not_in
+#   {flag: <名> 或 [名, ...]}     flags 含其中任一
+#   {position: <名> 或 [名, ...]} position 含其中任一
+#   {use: <名> 或 [名, ...]}      use 含其中任一
+# 用户条件（对用户状态求值）：
+#   {user: <路径>, <op>: <值>}    op 另含 contains（列表字段包含某值）、is（布尔）
+# 组合：{any: [...]}  {all: [...]}  {not: {...}}
+# 动作：exclude_if（排除）· deprioritize_if + score_multiplier（降权）· allow_only_if（白名单）
+# 用户状态字段表见 ch09 第 0 节；新增或改名须同步四章。
+# 同一用户命中多个模块时，所有 exclude_if 取并集；替换动作必须同时通过全部过滤。
+# ─────────────────────────────────────────────────────────────────────────
+
+- id: caution.activation
+  chapter: 9
+  type: gate
+  value:
+    trigger: {user: caution_selfreport, contains_any: [knee, back, shoulder, wrist]}
+    on_activate:
+      set_level: 1
+      level_range: {min: 0, max: 2}
+      run_in_order: [redflag.screen, caution.<joint>.filter, caution.<joint>.substitute, pain.rule]
+    ui_label_zh: {knee: 膝盖需要注意, back: 腰背需要注意, shoulder: 肩部需要注意, wrist: 手腕需要注意}
+    ui_label_en: {knee: Go easy on knees, back: Go easy on lower back, shoulder: Go easy on shoulders, wrist: Go easy on wrists}
+  evidence: C
+  sources: [E05:Bannuru2019, E05:NICE_NG59]
+  unverified: [E05:NICE_NG59]
+  note: 用户自述，不是诊断；等级 0=未开启，1=默认，2=疼痛规则升级后
+
+- id: caution.knee.filter
+  chapter: 9
+  type: exclude
+  applies: {caution: [knee]}
+  value:
+    level_1:
+      exclude_if:
+        any:
+          - {field: joint_load.knee, gte: 3}
+          - {flag: [jumping, running, deep_knee_flexion, kneeling_on_knee]}
+          - {field: impact, gte: 2}
+          - {field: modality, eq: plyometric}
+      deprioritize_if: {field: joint_load.knee, eq: 2}
+      score_multiplier: 0.5
+    level_2:
+      exclude_if:
+        any:
+          - {field: joint_load.knee, gte: 2}
+          - {flag: [jumping, running, deep_knee_flexion, kneeling_on_knee]}
+          - {field: impact, gte: 1}
+          - {field: modality, eq: plyometric}
+      deprioritize_if: {field: joint_load.knee, eq: 1}
+      score_multiplier: 0.5
+  evidence: C
+  sources: [E05:Bannuru2019, E05:Kolasinski2020, E05:Hartmann2013]
+  note: 缩短幅度是舒适性选择，不代表深蹲有害；0.5 降权系数为工程选择，待教练审核
+
+- id: caution.knee.substitute
+  chapter: 9
+  type: substitute
+  applies: {caution: [knee]}
+  value:
+    pick: first_available_passing_all_filters
+    by_pattern:
+      squat:
+        - {slug: box-squat, cue: comfortable_box_height}
+        - {slug: bodyweight-squat, cue: partial_range_or_tempo}
+        - {slug: stability-ball-wall-squat, cue: partial_range}
+        - {slug: leg-press, cue: limited_range}
+        - {slug: wall-sit, dose: {seconds: {min: 20, max: 45}}}
+      lunge:
+        - {slug: step-ups, cue: low_box}
+        - {slug: box-squat, cue: comfortable_box_height}
+      hinge:
+        - {slug: glute-bridge}
+        - {slug: hip-thrust}
+      isolation_lower:
+        - {slug: leg-curl}
+        - {slug: seated-leg-curl}
+      cardio_cyclic:
+        - {slug: stationary-bike}
+        - {slug: elliptical-trainer}
+        - {slug: walking}
+        - {activity: swimming, catalog_gap: true}
+    catalog_gaps: [spanish_squat_isometric, swimming]
+  evidence: C
+  sources: [E05:Bannuru2019, E05:Kolasinski2020]
+  note: 骨关节炎指南未发现最优运动类型，顺序只按舒适度与器材，尊重用户偏好
+
+- id: caution.back.filter
+  chapter: 9
+  type: exclude
+  applies: {caution: [back]}
+  value:
+    level_1:
+      exclude_if:
+        any:
+          - {field: joint_load.back, gte: 3}
+          - {flag: [loaded_spinal_flexion, loaded_spinal_rotation, heavy_axial_load]}
+          - {field: impact, gte: 2}
+      deprioritize_if:
+        any:
+          - {field: joint_load.back, eq: 2}
+          - {flag: valsalva_prone}
+      score_multiplier: 0.5
+    level_2:
+      exclude_if:
+        any:
+          - {field: joint_load.back, gte: 2}
+          - {flag: [loaded_spinal_flexion, loaded_spinal_rotation, heavy_axial_load, valsalva_prone]}
+          - {field: impact, gte: 2}
+      deprioritize_if: {field: joint_load.back, eq: 1}
+      score_multiplier: 0.5
+  evidence: C
+  sources: [E05:NICE_NG59]
+  unverified: [E05:NICE_NG59]
+  note: 过滤阈值为工程选择；指南只支持「保持活动、以运动为主」的方向
+
+- id: caution.back.keep_active
+  chapter: 9
+  type: limit
+  applies: {caution: [back]}
+  value:
+    min_sessions_per_week: unchanged
+    aerobic_minutes_target: unchanged
+    forbid_copy_keywords_zh: [卧床休息, 完全休息, 静养]
+  evidence: A
+  sources: [E05:NICE_NG59]
+  unverified: [E05:NICE_NG59]
+  note: 腰背注意不减少训练次数和有氧目标，只换动作；不开「休息」处方
+
+- id: caution.back.substitute
+  chapter: 9
+  type: substitute
+  applies: {caution: [back]}
+  value:
+    pick: first_available_passing_all_filters
+    by_pattern:
+      squat:
+        - {slug: goblet-squat}
+        - {slug: box-squat}
+      hinge:
+        - {slug: kettlebell-deadlift, cue: from_blocks_raised_start}
+        - {slug: glute-bridge}
+      pull_horizontal:
+        - {slug: chest-supported-db-row}
+        - {slug: one-arm-seated-cable-row}
+        - {slug: one-arm-kettlebell-row, cue: bench_supported}
+      core:
+        - {slug: bird-dog}
+        - {slug: side-plank}
+        - {slug: dead-bug, unless: {user: population, eq: pregnant}}
+      cardio_cyclic:
+        - {slug: walking}
+        - {slug: stationary-bike}
+    catalog_gaps: [trap_bar_deadlift]
+  evidence: C
+  sources: [E05:NICE_NG59]
+  unverified: [E05:NICE_NG59]
+  note: 孕期规则优先，孕 13 周起 dead-bug 由第 11 章排除
+
+- id: caution.shoulder.filter
+  chapter: 9
+  type: exclude
+  applies: {caution: [shoulder]}
+  value:
+    level_1:
+      exclude_if:
+        any:
+          - {field: joint_load.shoulder, gte: 3}
+          - {flag: overhead_load}
+          - {position: inverted}
+          - {use: skill}
+      deprioritize_if: {field: joint_load.shoulder, eq: 2}
+      score_multiplier: 0.5
+      modify:
+        - when: {field: primary_pattern, in: [push_horizontal, push_vertical]}
+          sets_delta: -1
+          sets_min: 1
+    level_2:
+      exclude_if:
+        any:
+          - {field: joint_load.shoulder, gte: 2}
+          - {flag: overhead_load}
+          - {position: [inverted, hanging]}
+          - {use: skill}
+      deprioritize_if: {field: joint_load.shoulder, eq: 1}
+      score_multiplier: 0.5
+  evidence: C
+  sources: [E05:Somerset]
+  unverified: [E05:Somerset]
+  note: 颈后推/双杠臂屈伸/直立划船/倒立按标注为肩 3 级而被排除；减 1 组为工程选择
+
+- id: caution.shoulder.substitute
+  chapter: 9
+  type: substitute
+  applies: {caution: [shoulder]}
+  value:
+    pick: first_available_passing_all_filters
+    by_pattern:
+      push_vertical:
+        - {slug: landmine-press}
+        - {slug: incline-db-press}
+      push_horizontal:
+        - {slug: landmine-press}
+        - {slug: incline-db-press}
+        - {slug: db-bench-press, cue: neutral_grip}
+        - {slug: dumbbell-floor-press}
+        - {slug: kettlebell-floor-press}
+        - {slug: incline-push-ups, cue: reduced_depth}
+    all_presses_fail_pain_rule:
+      drop_patterns_this_session: [push_horizontal, push_vertical]
+      fill_with:
+        - {slug: face-pull}
+        - {slug: chest-supported-db-row}
+        - {slug: seated-cable-row}
+    catalog_gaps: [neutral_grip_db_press]
+  evidence: C
+  sources: [E05:Somerset]
+  unverified: [E05:Somerset]
+  note: 降低平面、收窄握距、换哑铃/地雷管、缩短幅度；都不行就以拉代推
+
+- id: caution.wrist.filter
+  chapter: 9
+  type: exclude
+  applies: {caution: [wrist]}
+  value:
+    level_1:
+      exclude_if:
+        any:
+          - {field: joint_load.wrist, gte: 3}
+          - all:
+              - {flag: wrist_extension_loaded}
+              - not:
+                  all:
+                    - {field: primary_pattern, in: [push_horizontal, anti_extension]}
+                    - {position: prone}
+                    - {user: equipment, contains_any: [dumbbells, pushup_handles]}
+      deprioritize_if: {field: joint_load.wrist, eq: 2}
+      score_multiplier: 0.5
+      modify:
+        - when: {all: [{flag: wrist_extension_loaded}, {position: prone}]}
+          cue: neutral_wrist_on_handles
+    level_2:
+      exclude_if:
+        any:
+          - {field: joint_load.wrist, gte: 2}
+          - {flag: wrist_extension_loaded}
+      deprioritize_if: {field: joint_load.wrist, eq: 1}
+      score_multiplier: 0.5
+  evidence: C
+  sources: [E05:Polovinets2018]
+  note: 有哑铃或俯卧撑支架时，俯卧撑/平板可握住做以保持手腕中立
+
+- id: caution.wrist.substitute
+  chapter: 9
+  type: substitute
+  applies: {caution: [wrist]}
+  value:
+    pick: first_available_passing_all_filters
+    by_pattern:
+      push_horizontal:
+        - {slug: push-up, cue: neutral_wrist_on_handles, requires_equipment_any: [dumbbells, pushup_handles]}
+        - {slug: incline-push-ups, cue: neutral_wrist_on_handles}
+        - {slug: chest-press-machine}
+      anti_extension:
+        - {slug: plank}
+      isolation_upper:
+        - {slug: hammer-curl}
+        - {slug: ez-bar-curl}
+      squat:
+        - {slug: goblet-squat, replaces: front_rack}
+    catalog_gaps: [fist_pushup, forearm_plank_explicit]
+  evidence: C
+  sources: [E05:Polovinets2018]
+  note: 目录中 plank 为前臂支撑（腕负荷 0）；握拳俯卧撑目录缺失
+
+- id: caution.substitute.priority
+  chapter: 9
+  type: formula
+  value:
+    candidate_pool:
+      all:
+        - same: primary_pattern
+        - passes: all_active_filters
+        - {field: difficulty, lte: original.difficulty}
+    rank_order:
+      - joint_table_order_with_user_equipment
+      - same_ladder_lower_step
+      - lowest_joint_load_for_flagged_joint
+      - smallest_difficulty_gap
+      - user_preference
+    if_no_candidate: drop_slot_and_keep_weekly_pattern_coverage_elsewhere
+  evidence: C
+  sources: [E05:Bannuru2019, E05:Kolasinski2020]
+  note: 工程选择，待教练审核；替换动作难度永不高于原动作
+
+- id: caution.multiple
+  chapter: 9
+  type: default
+  value:
+    combine_filters: union
+    level_per_joint: independent
+    population_modules_override: [pregnancy, postpartum, older_adult]
+  evidence: C
+  sources: [E05:Bannuru2019]
+  note: 工程选择，待教练审核；多个部位同时注意时排除条件取并集
+
+- id: pain.prompt
+  chapter: 9
+  type: trigger
+  applies: {caution: [knee, back, shoulder, wrist]}
+  value:
+    ask_after_each_set_if: {field: joint_load.<flagged_joint>, gte: 1}
+    scale: {min: 0, max: 10, unit: pain_nrs}
+    next_session_checkin: [pain_lasted_to_next_morning, pain_or_stiffness_worse_than_last_week]
+  evidence: C
+  sources: [E05:Silbernagel2007]
+  unverified: [E05:Silbernagel2007]
+  note: 每组后问 0–10 疼痛；下次开练前问晨起与逐周变化
+
+- id: pain.rule
+  chapter: 9
+  type: trigger
+  applies: {caution: [knee, back, shoulder, wrist]}
+  value:
+    bands:
+      - when: {all: [{user: pain.current, lte: 3}, {user: pain.settles_after_set, is: true}]}
+        action: continue
+      - when: {all: [{user: pain.current, gte: 4}, {user: pain.current, lte: 5}]}
+        action: stop_exercise_use_next_substitute
+      - when: {any: [{user: pain.current, gt: 5}, {user: pain.lasted_to_next_morning, is: true}, {user: pain.worse_week_on_week, is: true}]}
+        action: drop_pattern
+        drop_pattern_sessions: 2
+        drop_pattern_scope: current_and_next  # 用户2026-10-15确认
+        caution_level_delta: 1
+    no_caution_user:
+      when: {user: pain.current, gte: 4}
+      action: offer_caution_activation
+  evidence: C
+  professional_review: true
+  sources: [E05:Silbernagel2007]
+  unverified: [E05:Silbernagel2007]
+  note: 阈值为工程选择，参考肌腱病疼痛监测模型（<5/10），比原模型更保守
+
+- id: pain.repeat_referral
+  chapter: 9
+  type: trigger
+  applies: {caution: [knee, back, shoulder, wrist]}
+  value:
+    when: {user: pain.drop_pattern_events_same_joint, gte: 2}
+    action: [show_copy_pain.copy.referral, run_redflag.screen]
+    lock_progression_until: user_confirms_professional_seen
+  evidence: C
+  professional_review: true
+  sources: [E05:Silbernagel2007]
+  unverified: [E05:Silbernagel2007]
+  note: 同一部位第 2 次触发「去掉动作模式」即提示就医（非紧急）
+
+- id: pain.copy
+  chapter: 9
+  type: copy
+  value:
+    stop_exercise:
+      zh: 这个动作先停一下，我们换一个更舒服的版本。
+      en: Let's stop this one and switch to a version that feels better.
+    drop_pattern:
+      zh: 本次和下次训练先不安排这类动作
+      en: We will leave this type of movement out of this workout and the next one.
+    referral:
+      zh: 这个部位已经第二次明显不舒服了。建议你找医生或物理治疗师看一看，确认之后再继续加量。
+      en: This is the second time this area has flared up. Please check in with a doctor or physiotherapist before we increase your training again.
+    shorter_range:
+      zh: 幅度小一点通常更舒服，按你觉得舒适的深度来做就好。
+      en: A shorter range is often more comfortable. Go only as deep as feels okay.
+  evidence: C
+  sources: [E05:Silbernagel2007, E05:Hartmann2013]
+  unverified: [E05:Silbernagel2007]
+  note: 文案不说病名、不解释原因
+
+- id: caution.progression
+  deferred: true
+  chapter: 9
+  type: limit
+  applies: {caution: [knee, back, shoulder, wrist]}
+  value:
+    hold_load_until: {user: pain.consecutive_sessions_lte_3, gte: 2}
+    progression_order: [volume, load]
+    rom_restore_step: {deferred: true, note: "v1 不实现：缺少测量基准与真实记录", degrees: {min: 10, max: 15}, or_box_height_steps: 1}
+    ladder_step_up_requires: {user: pain.consecutive_sessions_lte_3, gte: 2}
+  evidence: C
+  sources: [E05:Silbernagel2007]
+  unverified: [E05:Silbernagel2007]
+  note: "v2 澄清：原幅度／箱高恢复路径v1不实现，缺少测量基准与真实记录。负荷与阶梯门禁由caution.progression_gate继续严格执行，旧字段保留可读。"
+
+- id: caution.level_down
+  chapter: 9
+  type: trigger
+  applies: {caution: [knee, back, shoulder, wrist]}
+  value:
+    from_level: 2
+    to_level: 1
+    when: {all: [{user: pain.consecutive_sessions_lte_3, gte: 4}, {user: pain.lasted_to_next_morning, is: false}]}
+    level_1_to_0: user_manual_only_after_redflag_screen_negative
+  evidence: C
+  sources: [E05:Silbernagel2007]
+  unverified: [E05:Silbernagel2007]
+  note: 工程选择，待教练审核；证据库未给降级条件
+
+- id: redflag.screen
+  chapter: 9
+  type: trigger
+  value:
+    ask_when: [caution_activation, pain_rule_drop_pattern, in_session_something_wrong_button, rescreen_12_months, user_updates_health]
+    rescreen_interval_months: 12
+    lists: [redflag.joint_any, redflag.back, redflag.shoulder]
+    any_yes: block_training_and_route_by_tier
+  evidence: C
+  professional_review: true
+  sources: [E05:NICE_NG59, E05:Riebe2015, E01:PARQ23]
+  unverified: [E05:NICE_NG59]
+  note: 12 个月复查为工程选择；红旗清单为一般临床共识
+
+- id: redflag.joint_any
+  chapter: 9
+  type: gate
+  applies: {caution: [knee, back, shoulder, wrist]}
+  value:
+    items:
+      - pain_after_fall_or_impact
+      - cannot_bear_weight_or_use_limb
+      - joint_hot_red_swollen_or_with_fever
+      - locking_or_giving_way
+      - unexplained_night_or_rest_pain
+      - visible_deformity
+      - numbness_tingling_or_weakness_spreading_into_limb
+    tier: prompt_medical
+    action: [end_session, block_all_training, show_copy_redflag.copy.prompt_medical]
+    unlock: user_confirms_professional_seen
+  evidence: C
+  professional_review: true
+  sources: [E05:NICE_NG59]
+  unverified: [E05:NICE_NG59]
+  note: 清单为一般临床共识，未对照原始红旗指南，待专业核实
+
+- id: redflag.back
+  chapter: 9
+  type: gate
+  applies: {caution: [back]}
+  value:
+    emergency_items:
+      - numbness_groin_or_buttocks
+      - new_bladder_or_bowel_problem
+      - progressive_leg_weakness
+    emergency_action: [end_session, block_all_training, show_copy_redflag.copy.emergency_back]
+    urgent_items:
+      - back_pain_with_fever_or_unwell
+      - back_pain_with_cancer_history
+      - unexplained_weight_loss
+      - back_pain_after_significant_trauma
+      - severe_constant_pain_unrelated_to_movement
+    urgent_action: [end_session, block_all_training, show_copy_redflag.copy.prompt_medical]
+    unlock: user_confirms_professional_seen
+  evidence: A
+  professional_review: true
+  sources: [E05:NICE_NG59]
+  unverified: [E05:NICE_NG59]
+  note: 前三项为马尾综合征特征，属急症；具体清单待专业核实
+
+- id: redflag.shoulder
+  chapter: 9
+  type: gate
+  applies: {caution: [shoulder]}
+  value:
+    cardiac_route_items: [shoulder_pain_with_chest_pain, shoulder_pain_with_breathlessness]
+    cardiac_action: [end_session, block_all_training, show_copy_redflag.copy.cardiac]
+    prompt_medical_items: [sudden_loss_of_arm_movement_after_injury]
+    prompt_medical_action: [end_session, block_all_training, show_copy_redflag.copy.prompt_medical]
+    unlock: user_confirms_professional_seen
+  evidence: C
+  professional_review: true
+  sources: [E05:NICE_NG59, E01:FRANK20, E01:Healthline]
+  unverified: [E01:Healthline]
+  note: 肩痛伴胸痛或气促按心脏警示处理
+
+- id: redflag.copy
+  chapter: 9
+  type: copy
+  value:
+    prompt_medical:
+      zh: 你提到的情况需要先请医生看一看。训练计划先暂停，请尽快预约就诊。看过医生后回到这里确认，我们会从轻松的内容重新开始。
+      en: What you've described needs a doctor's opinion first. Your plan is paused. Please book an appointment soon, then come back and confirm, and we'll restart gently.
+    emergency_back:
+      zh: 腹股沟或臀部周围发麻、新出现的大小便控制问题，或腿越来越没力气，需要立即去急诊。请不要等待。
+      en: Numbness around the groin or buttocks, new bladder or bowel problems, or legs getting weaker need emergency care now. Please don't wait.
+    cardiac:
+      zh: 请立即停止运动并坐下休息。如果胸口不适或呼吸困难在休息后几分钟内没有缓解，请马上拨打当地急救电话。
+      en: Stop now and sit down. If chest discomfort or breathlessness doesn't ease within a few minutes of rest, call emergency services.
+    paused_banner:
+      zh: 训练计划已暂停，等你确认看过医生后再继续。
+      en: Your plan is paused until you confirm you've seen a health professional.
+  evidence: C
+  professional_review: true
+  sources: [E05:NICE_NG59, E01:FRANK20, E01:Healthline]
+  unverified: [E05:NICE_NG59, E01:Healthline]
+  note: 上线前须由医疗专业人员审核措辞与急救指引
+
+- id: redflag.after_clearance
+  chapter: 9
+  type: default
+  value:
+    resume_caution_level: 2
+    resume_intensity: light_to_moderate
+    follow_professional_advice_text: true
+  evidence: C
+  professional_review: true
+  sources: [E05:Riebe2015]
+  note: 工程选择，待教练审核；就诊后从 2 级注意、轻中强度恢复
+
+- id: caution.copy.labels
+  chapter: 9
+  type: copy
+  value:
+    substituted:
+      zh: 已为你换成对这个部位更友好的版本。
+      en: We've swapped in a version that's easier on this area.
+    back_keep_moving:
+      zh: 保持活动通常比完全休息更有帮助。今天的动作已为你调整过。
+      en: Staying active usually helps more than complete rest. Today's moves have been adjusted for you.
+    wrist_neutral:
+      zh: 这个动作请握住哑铃或俯卧撑支架来做，让手腕保持笔直。
+      en: Hold dumbbells or push-up handles for this one so your wrists stay straight.
+    comfortable_box_height:
+      zh: 坐到舒适高度
+      en: Sit down to a comfortable height.
+    partial_range_or_tempo:
+      zh: 部分幅度或慢节奏自重深蹲
+      en: Bodyweight squats with a partial range or a slow tempo.
+    limited_range:
+      zh: 限幅腿举
+      en: Leg press with a limited range of motion.
+    low_box:
+      zh: 低箱踏步
+      en: Step-ups onto a low box.
+    from_blocks_raised_start:
+      zh: 从垫高处起
+      en: Start from a raised surface.
+    bench_supported:
+      zh: 凳上支撑
+      en: Supported on a bench.
+    neutral_grip:
+      zh: 对握哑铃卧推
+      en: Dumbbell bench press with a neutral grip.
+    reduced_depth:
+      zh: 减小幅度的上斜俯卧撑
+      en: Incline push-ups with a reduced range of motion.
+    forbidden_terms_zh: [康复, 治疗, 疗程, 诊断, 髌股, 半月板, 椎间盘突出, 肩袖撕裂, 腱鞘炎]
+  evidence: C
+  sources: [E05:NICE_NG59, E05:Polovinets2018]
+  unverified: [E05:NICE_NG59]
+  note: 界面只说「需要注意」，不出现病名或治疗用语
+
+- id: caution.never
+  chapter: 9
+  type: limit
+  value:
+    never:
+      - name_a_diagnosis
+      - label_session_as_rehab_or_treatment
+      - prescribe_condition_protocol
+      - advise_complete_rest_for_back
+      - encourage_training_through_red_flags
+      - interpret_cause_of_symptoms
+  evidence: A
+  sources: [E05:NICE_NG59]
+  unverified: [E05:NICE_NG59]
+  note: 应用不诊断、不治疗、不做康复
+
+- id: caution.progression_gate
+  chapter: 9
+  type: limit
+  applies: {caution: [knee, back, shoulder, wrist]}
+  value:
+    hold_load_until: {user: pain.consecutive_sessions_lte_3, gte: 2}
+    progression_order: [volume, load]
+    ladder_step_up_requires: {user: pain.consecutive_sessions_lte_3, gte: 2}
+  evidence: C
+  sources: [E05:Silbernagel2007, INTERNAL:codex-prompt-training-engine]
+  unverified: [E05:Silbernagel2007]
+  note: "v2 澄清：从原caution.progression独立保留的硬门禁；不包含已延期的自动幅度／箱高恢复。"

@@ -1,0 +1,303 @@
+# 第 6 章 动作选择、顺序与均衡 —— 机器规则
+# 与 ch06-selection-order.md 一一对应。字段名与《动作标注标准 v0.1》一致：
+# primary_pattern / secondary_patterns / difficulty / use / ladder{id,step} / flags / joint_load / nsca_class / laterality / modality / time.setup_s
+# equipment 取自动作库原始字段（如 none, dumbbell, resistance-band, loop-band, pull-up-bar）。
+
+- id: select.pipeline
+  chapter: 6
+  type: formula
+  value:
+    steps:
+      - hard_excludes            # 人群、部位注意、新手前 4 周排除项（其他章节）
+      - equipment_available
+      - space_and_noise          # space ≤ 用户空间；noise ≤ 用户噪音上限
+      - use_tag_match            # select.use_tag.slot_match
+      - pattern_match            # select.pattern.match
+      - difficulty_window        # select.difficulty.window
+      - ladder_continuity        # 已在用的阶梯沿用当前 step
+      - variety_filter           # variety.*
+      - rank_and_tie_break       # select.rank
+    empty_result_fallback_ref: select.fallback.chain
+  evidence: C
+  sources: [E03:ACSM-2026, E04:S8]
+  note: 确定性筛选顺序：先硬排除，再软排序
+
+- id: select.use_tag.slot_match
+  chapter: 6
+  type: gate
+  value:
+    slot_use_must_intersect_exercise_use: true
+    main_slot_requires: { use: [main], nsca_class: [compound, power] }
+    accessory_slot_requires: { use: [accessory, main] }
+    warmup_slot_requires: { use: [warmup] }
+    cooldown_slot_requires: { use: [cooldown] }
+    conditioning_slot_requires: { use: [conditioning] }
+    skill_use_requires: advanced_opt_in
+  evidence: C
+  sources: [E04:S19, E03:NSCA-Hoffman]
+  note: 动作必须带有槽位要求的 use 标签
+
+- id: select.pattern.match
+  chapter: 6
+  type: gate
+  value:
+    match_order: [primary_pattern, secondary_patterns]
+    secondary_allowed_for: [accessory, core, conditioning]
+    main_requires_primary: true
+    list_pattern_slot: "try patterns in listed order; first non-empty wins"
+  evidence: C
+  sources: [E04:S21, E04:S25]
+  note: 主项只认主要模式；辅助位可用次要模式补位
+
+- id: select.difficulty.window
+  chapter: 6
+  type: limit
+  value:
+    beginner: { target: 2, min: 1, max: 3 }
+    intermediate: { target: 3, min: 2, max: 4 }
+    advanced_opt_in: { target: 4, min: 2, max: 5 }
+    new_user_caps_ref: progression.new.week_caps
+    difficulty_5_or_use_skill: advanced_opt_in_only
+    warmup_cooldown_max: 2
+    ladder_overrides_target: true
+  evidence: C
+  sources: [E04:S8, E04:S20, E04:S27]
+  note: 难度窗口按水平；已在阶梯中的动作按阶梯 step 走
+
+- id: select.rank
+  chapter: 6
+  type: formula
+  value:
+    sort_keys_in_order:
+      - "abs(difficulty - target_difficulty) asc"
+      - "main slots: laterality == bilateral first; nsca_class == compound first"
+      - "confidence: high > medium > low"
+      - "review == false first"
+      - "sum(joint_load) asc"
+      - "time.setup_s asc"
+      - "id asc"
+    deterministic: true
+  evidence: C
+  sources: [E03:Iversen-2021, E03:Kassiano-2025]
+  note: 难度贴近、双侧复合、置信高、关节负荷低者优先
+
+- id: select.unilateral.weekly
+  chapter: 6
+  type: gate
+  value:
+    min_unilateral_lower_exercises_per_week: 1
+    patterns: [lunge]
+    or_laterality: unilateral
+    applies_when: { rt_days_min: 1 }
+  evidence: B
+  sources: [E03:Kassiano-2025, E03:ACSM-2026]
+  note: 单侧训练提高单侧任务力量，并有交叉迁移效应
+
+- id: order.sort_key
+  chapter: 6
+  type: formula
+  value:
+    rank:
+      1: { patterns: [jump_land, throw_upper, olympic], or_modality: [plyometric, power] }
+      2: { goal: strength, user_priority_lift: true }
+      3: { nsca_class: compound, laterality: bilateral, region: lower }
+      4: { nsca_class: compound, region: upper }
+      5: { nsca_class: compound, laterality: [unilateral, alternating] }
+      6: { nsca_class: isolation }
+      7: { patterns: [anti_extension, anti_rotation, anti_lateral_flexion, rotation, trunk_flexion, carry, locomotion_ground] }
+      8: { block: conditioning }
+      9: { modality: mobility, block: cooldown }
+    within_rank: "difficulty desc (higher technique first), then template slot order"
+    superset_members_keep_template_position: true
+    muscle_goal_exception: { lagging_muscle_isolation_may_move_to_rank: 3 }
+  evidence: B
+  sources: [E03:Nunes-2021, E03:Simao-2012, E03:NSCA-Hoffman, E04:S19]
+  note: 先做的动作力量进步更多；顺序不影响增肌
+
+- id: balance.week.pull_push
+  chapter: 6
+  type: limit
+  value:
+    ratio: "weekly_pull_sets / weekly_push_sets"
+    pull_patterns: [pull_horizontal, pull_vertical]
+    push_patterns: [push_horizontal, push_vertical]
+    count: direct_sets_by_primary_pattern
+    min: 1.0
+    max: 1.5
+    on_below_min: ["add 1 set to existing pull accessory", "swap last push accessory for pull_horizontal"]
+    suspended_when: equipment.pull_gap
+  evidence: C
+  sources: [E03:NSCA-Hoffman, E04:S25]
+  note: 从业者共识，无原始研究；作软规则
+
+- id: balance.week.hinge_knee
+  chapter: 6
+  type: limit
+  value:
+    ratio: "weekly_hinge_sets / weekly_(squat+lunge)_sets"
+    min: 0.7
+    max: 1.3
+    on_out_of_range: "move 1 accessory set between hinge and lunge slots"
+  evidence: C
+  sources: [E03:NSCA-Hoffman, E04:S25]
+  note: 髋主导与膝主导组数大致相当
+
+- id: balance.week.core_three
+  chapter: 6
+  type: gate
+  value:
+    rt_days_min_3: { required_each: [anti_extension, anti_rotation, anti_lateral_flexion] }
+    rt_days_1_2: { required: [anti_extension], required_one_of: [anti_rotation, anti_lateral_flexion] }
+    optional: [rotation, trunk_flexion]
+    count_secondary_patterns: true
+  evidence: C
+  sources: [E04:S25, E04:S21]
+  note: 核心以"抗"类为主；屈体和旋转为可选
+
+- id: balance.week.carry_ground
+  chapter: 6
+  type: gate
+  value:
+    min_per_week: 1
+    patterns: [carry, locomotion_ground]
+    prefer: carry
+    no_external_load_fallback: locomotion_ground
+    applies_when: {"rt_days_min":2,"requires_available_candidate":true}
+    skip_when_unavailable: true
+    notice_when_skipped: false
+  evidence: C
+  sources: [E04:S22, E04:S24, E04:S25]
+  note: "每周至少一次负重行走或爬行等地面动作；v2 调整：只在器械及完整硬筛选允许该类动作且力量日不少于2天时尝试；缺少候选跳过、不提示，作为advice不扣分。"
+
+- id: variety.no_repeat
+  chapter: 6
+  type: limit
+  value:
+    same_exercise_id_per_session_max: 1
+    same_ladder_id_per_session_max: 1
+    same_exercise_two_days_in_row: false
+    adjacent_day_scope:
+      restricted_modalities: [strength, power, plyometric]
+      exempt_modalities: [mobility]
+      isometric:
+        modality: isometric
+        exempt_facts: {primary_pattern: balance, nsca_class: none, balance.mode: static}
+      cardio:
+        modality: cardio
+        max_rpe_source: {rule_id: aerobic.intensity.rpe_scale, path: moderate.1}
+        excluded_training_styles: [hiit]
+        excluded_flags: [hiit]
+      unknown_facts: restrict
+    ab_days_prefer_different_exercise_per_pattern: true
+    ramp_sets_exempt: true
+  evidence: C
+  sources: [E04:S8]
+  note: "课内动作和阶梯不重复；用户最新裁定隔天仅限制力量、爆发及负重等长。无独立负重事实的等长保守限制，仅已核实纯平衡静站免除；灵活拉伸免除。有氧须明确RPE不高于来源中强度上限且非HIIT才免除，未知强度不免除。当前目录没有独立呼吸/盆底modality或真实谈话测试字段，不从名称或指导文案推断。"
+
+- id: variety.rotation
+  chapter: 6
+  type: default
+  value:
+    main_lifts_fixed_weeks: { min: 4, max: 8 }
+    rotate_main_at: block_end_or_deload
+    accessories_rotate: { every_weeks: 4, or_on_user_request: true }
+    keep_if_progressing: true
+    swap_on_user_dislike: immediate
+  evidence: C
+  sources: [E03:NSCA-Hoffman, E04:S8]
+  note: 主项固定 4–8 周便于衡量进步；辅助可轮换
+
+- id: equipment.downgrade
+  chapter: 6
+  type: substitute
+  value:
+    order_within_pattern: [barbell, dumbbell_or_kettlebell, machine_or_cable, band, bodyweight]
+    keep: [primary_pattern, slot_use]
+    difficulty_tolerance: 1
+    outcome_penalty_general_goals: none
+    strength_goal_lower_bodyweight_only:
+      prefer: [lunge_ladder_progressions, tempo, high_reps_near_failure]
+      copy_ref: equipment.strength_bodyweight_copy
+  evidence: A
+  sources: [E03:ACSM-2026, E03:Lopes-2019, E03:Iversen-2021]
+  note: 自由重量、器械、弹力带、自重之间替换对一般目标无损
+
+- id: select.fallback.chain
+  chapter: 6
+  type: substitute
+  value:
+    on_empty_candidate_list:
+      - "relax difficulty window by ±1"
+      - "allow secondary_patterns match (accessory/core slots only)"
+      - "equipment.downgrade next tier"
+      - "use adjacent pattern: squat<->lunge, push_horizontal<->push_vertical, pull_horizontal<->pull_vertical, anti_* among themselves"
+      - "leave slot empty and give its time to the next slot; log coverage gap"
+    never_relax: [hard_excludes, use_skill_gate]
+  evidence: C
+  sources: [E04:S8, E03:ACSM-2026]
+  note: 工程选择；任何情况下不放宽安全排除
+
+- id: equipment.pull_gap
+  chapter: 6
+  type: trigger
+  value:
+    condition: "no catalog exercise with primary_pattern in [pull_horizontal, pull_vertical] passes filters for the user's equipment"
+    typical_case: { equipment: [none] }
+    catalog_note: "v0.1 catalog has 0 pull exercises with equipment none; band pulls: band-pull-apart (warmup/accessory), band-assisted-pull-ups (needs pull-up-bar)"
+    actions:
+      - "fill pull slots with: band pull if available, else secondary-pattern pull, else next unused core_or_hinge position"
+      - "keep push volume at goal start value (no weekly ramp on push) while gap persists"
+      - "suspend balance.week.pull_push"
+      - "show equipment.pull_gap_copy once per week until equipment updated, max 4 times"
+    clear_when: user_adds_equipment_in [resistance-band, loop-band, pull-up-bar, suspension-trainer, dumbbell, kettlebell]
+  evidence: C
+  sources: [E03:Lopes-2019, E03:ACSM-2026, E03:NSCA-Hoffman]
+  note: 居家无器械时缺少拉类动作；不削减推，提示补弹力带
+
+- id: equipment.pull_gap_copy
+  chapter: 6
+  type: copy
+  value:
+    trigger: equipment.pull_gap
+  zh: 没有器械时，"拉"类动作（练背）很难安排。一根带门扣的弹力带就能补上划船和下拉，效果和器械训练相近。要添加到你的器材清单吗？
+  en: Without equipment, it's hard to train pulling (your back). A resistance band with a door anchor covers rows and pulldowns, with results similar to machines. Add one to your equipment list?
+  evidence: B
+  sources: [E03:Lopes-2019, E03:ACSM-2026]
+  note: 弹力带与常规器械的力量增益相近
+
+- id: equipment.strength_bodyweight_copy
+  chapter: 6
+  type: copy
+  applies:
+    goal: [strength]
+  value:
+    trigger: "goal == strength and no loadable lower-body equipment"
+  zh: 只用自重练腿，力量进步可能较早停滞。我们会用单腿动作、放慢节奏和接近力竭的高次数来继续加难度；有条件时加一对哑铃或壶铃会更好。
+  en: With bodyweight only, leg strength may plateau sooner. We'll keep progressing with single-leg moves, slower tempo and high reps near failure; adding dumbbells or a kettlebell will help.
+  evidence: C
+  sources: [E03:Iversen-2021]
+  note: 自重下肢训练证据少，重负荷下肢需常规器械
+
+- id: equipment.catalog_gap_report
+  chapter: 6
+  type: trigger
+  value:
+    check: "per pattern, count exercises with equipment in [none, resistance-band, loop-band] and use ∋ main|accessory"
+    threshold_min: 4
+    current_known_gaps_v0_1: [pull_horizontal, pull_vertical, carry, anti_rotation, rotation, locomotion_ground]
+    action: report_to_content_team
+  evidence: C
+  sources: [E03:ACSM-2026]
+  note: 工程选择；居家覆盖不足的模式列给内容团队补库
+
+# v2 调整：用户收尾提示词第 1.1 节；可扶物与可用空间大小独立。
+- id: environment.household_support
+  chapter: 6
+  type: default
+  value:
+    default_places: [home, mixed, gym]
+    equipment: [wall, chair, counter]
+    space_independent: true
+  evidence: C
+  sources: ["USER:training-engine-v2-finish:1.1"]
+  note: "v2 调整；householdSupport 未指定时按 default_places 决定，其他场所默认 false；mat 不取消默认值。显式 false 只取消隐含器械，不抹除用户实际已登记的器械。counter 只指可持续扶持的稳固桌边或台面；墙的 chair/counter 替代仅登记于三个既有支撑平衡动作。"

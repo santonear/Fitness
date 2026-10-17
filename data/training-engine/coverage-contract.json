@@ -1,0 +1,19 @@
+{
+  "source": "INTERNAL:codex-prompt-training-engine:L1.5",
+  "minimumPerCell": 2,
+  "difficultyMaximum": 3,
+  "beginnerDifficultyMaximum": 2,
+  "pregnancyWeek": 20,
+  "patterns": ["squat", "lunge", "hinge", "push_horizontal", "push_vertical", "pull_horizontal", "pull_vertical", "anti_extension", "anti_rotation", "anti_lateral_flexion", "carry", "balance", "cardio_cyclic"],
+  "scenarios": [
+    {"id":"bodyweight","label":"徒手","equipment":["none"]},
+    {"id":"bands","label":"徒手+弹力带","equipment":["none","resistance-band","loop-band"]},
+    {"id":"home","label":"居家哑铃+弹力带+凳","equipment":["none","dumbbell","resistance-band","loop-band","flat-bench"]}
+  ],
+  "restrictions": ["unrestricted", "knee", "back", "shoulder", "wrist", "quiet", "pregnancy", "beginner"],
+  "allowedZero": [{"pattern":"push_vertical","restriction":"shoulder","reason":"caution.shoulder.substitute"}],
+  "carryEquivalentAuthorized": true,
+  "carryEquivalentPatterns": ["carry", "locomotion_ground"],
+  "carryEquivalentSourceRuleId": "balance.week.carry_ground",
+  "carryEquivalentDecision": "User approved carry_or_ground coverage; raw carry counts remain separate. Only primary carry or locomotion_ground qualifies."
+}

@@ -1,3 +1,15 @@
+import {computeExerciseEvidence} from '../../src/application/review/evidence';
+import {readFileSync} from 'node:fs';
+import type {Transaction} from 'dexie';
+import {validateBackupEnvelope} from '../../src/application/backup';
+import {prepareV8Migration,writeV8Library} from '../../src/persistence/v8-migration';
+import {projectLegacyWorkouts} from '../../src/domain/v8/legacy-workouts';
+import {computeWeekFacts} from '../../src/application/review/compute';
+import {mapSchedule} from '../../src/application/rules/map-schedule';
+import {localProfile} from '../../src/application/rules/local-profile';
+import {basicProposal} from '../../src/application/v8-workflow';
+import {adaptCoachResponse,coachV8Exercises} from '../../src/coach/response-adapter';
+import type {CoachRequest} from '../../src/coach/contracts';
 import { describe, expect, it } from 'vitest';
 import { coachRequestSchema, coachResponseSchema, planProposalSchema, reviewFactsSchema } from '../../src/coach/contracts';
 import { v8Routes } from '../../src/ui/routes.contract';
@@ -63,9 +75,34 @@ describe('V8 wave 0 contracts', () => {
     expect(new Set(v8Routes.map(r => r.path)).size).toBe(v8Routes.length);
     for (const route of v8Routes) expect(v8Namespaces).toContain(route.namespace);
   });
-  it.todo('B: migration preserves old facts, rolls back failures, and is idempotent');
-  it.todo('C: not_started is excluded from training counts and progression');
-  it.todo('C: map duration ranges to their smallest legal value; preserve original words');
-  it.todo('C: base plan uses 15/20-minute original request without coercing to 30');
-  it.todo('D: reject stale restore generation, mismatched identity and task');
+  it('B: migration preserves old facts, rolls back failures, and is idempotent',async()=>{
+    const source=validateBackupEnvelope(JSON.parse(readFileSync(new URL('../fixtures/legacy-backups/v71-coach-plan.json',import.meta.url),'utf8'))).data,before=structuredClone(source),at='2026-10-10T00:00:00.000Z';
+    const migrated=await prepareV8Migration(source,at);expect(await prepareV8Migration(source,at)).toEqual(migrated);expect(source).toEqual(before);
+    expect(migrated.plans.length).toBeGreaterThan(0);expect(migrated.planVersions.every(row=>row.origin==='migrated'&&source.planVersions.some(original=>original.id===row.basedOnVersionId))).toBe(true);
+    const projected=projectLegacyWorkouts(source.sessions,source.sets);expect(projected.map(row=>row.id)).toEqual(source.sessions.map(row=>row.id));expect(source.sessions).toEqual(before.sessions);expect(source.sets).toEqual(before.sets);
+    // Transaction adapter fault injection only: real IndexedDB rollback is separately covered by the existing migration browser suite.
+    const committed:Record<string,unknown[]>={legacyFacts:structuredClone(source.sessions)},original=structuredClone(committed),attempted:string[]=[];
+    async function atomicWrite(fail:boolean){const draft=structuredClone(committed),tx={table:(name:string)=>({bulkAdd:async(rows:unknown[])=>{attempted.push(name);if(fail&&name==='v8PlanVersions')throw Error('injected migration write failure');draft[name]=structuredClone(rows);},add:async(row:unknown)=>{attempted.push(name);draft[name]=[structuredClone(row)];}})} as unknown as Transaction;await writeV8Library(tx,migrated);Object.assign(committed,draft);}
+    await expect(atomicWrite(true)).rejects.toThrow('injected migration write failure');expect(attempted).toEqual(['v8Plans','v8PlanVersions']);expect(committed).toEqual(original);
+    await atomicWrite(false);expect(committed.v8Plans).toEqual(migrated.plans);expect(committed.v8State).toEqual([migrated.state]);expect(committed.legacyFacts).toEqual(before.sessions);
+  });
+  it('C: not_started is excluded from training counts and progression',()=>{
+    const record=(id:string,status:WorkoutRecord['status'],date:string,reps:number):WorkoutRecord=>({id,status,planVersionId:'plan',startedAt:date+'T06:00:00Z',endedAt:date+'T06:30:00Z',localDate:date,timeZone:'Asia/Shanghai',plannedSetCount:1,sets:[{exerciseId:'squat',itemIndex:0,setIndex:0,reps,completedAt:date+'T06:01:00Z'}]});
+    const result=computeWeekFacts({from:'2026-10-05',to:'2026-10-11',timeZone:'Asia/Shanghai',weeklyTarget:3,workouts:[record('previous','complete','2026-10-01',8),record('actual','partial','2026-10-06',10),record('not-started','not_started','2026-10-07',100)],activities:[],bodyWeights:[]});
+    expect(result).toMatchObject({complete:0,partial:1,notStarted:1,movementCount:1,trainingSeconds:1800});expect(result.improvements).toEqual([{exerciseId:'squat',metric:'reps',previous:8,current:10}]);
+    const easy:WorkoutRecord={...record('easy-zero','not_started','2026-10-07',100),feedback:{feel:'easy',reasons:[]},plannedExercises:[{exerciseId:'squat',itemIndex:0,plannedSetCount:1}]};expect(computeExerciseEvidence(easy).easyCompletedExerciseIds).toEqual([]);expect(computeExerciseEvidence({...easy,status:'partial'}).easyCompletedExerciseIds).toEqual(['squat']);
+  });
+  it('C: map duration ranges to their smallest legal value; preserve original words',()=>{
+    for(const originalText of ['  每次25到45分钟  ','30 minutes to 45 minutes','0.5–1 hour'])expect(mapSchedule(originalText)).toEqual({originalText,minutes:{status:'answered',value:30},startTime:{status:'skipped'}});
+    expect(mapSchedule('20分钟').minutes).toEqual({status:'skipped'});
+  });
+  it('C: base plan uses 15/20-minute original request without coercing to 30',()=>{
+    for(const minutes of [15,20]){const originalText=`每周2次，每次${minutes}分钟`,profile=localProfile({goalText:'活动',scheduleOriginalText:originalText,placeEquipmentText:'在家，无器械',adultConfirmed:true,cautions:[]}),proposal=basicProposal(profile)!;expect(profile.sessionMinutes).toBe(minutes);expect(proposal.sessionMinutes).toBe(minutes);expect(proposal.scheduleOriginalText).toBe(originalText);expect(proposal.templates).toHaveLength(2);for(const template of proposal.templates){expect(template.items.length).toBeGreaterThanOrEqual(4);expect(template.estimatedMinutes).toBeLessThanOrEqual(minutes);}expect(planProposalSchema.safeParse(proposal).success).toBe(true);}
+  });
+  it('D: reject stale restore generation, mismatched identity and task',()=>{
+    const profile={goalText:'活动',weeklyTarget:2,sessionMinutes:20,scheduleOriginalText:'20分钟',place:'home' as const,equipment:[],adultConfirmed:true as const,cautions:[]},request:CoachRequest={version:'fitness-coach-v8',requestId:identity.requestId,conversationId:identity.requestId,restoreGeneration:2,inputSnapshot:'revision:4',sendConfirmation:'confirmed',locale:'zh',timeZone:'Asia/Shanghai',adultConfirmed:true,messages:[],task:'ONBOARD_PLAN',profile},response={...identity,restoreGeneration:2,type:'plan_proposal',proposal:{goalText:profile.goalText,weeklyTarget:profile.weeklyTarget,sessionMinutes:profile.sessionMinutes,scheduleOriginalText:profile.scheduleOriginalText,templates:[{id:'A',name:'A',estimatedMinutes:20,items:[{exerciseId:coachV8Exercises(request).find(exercise=>exercise.metricType==='reps')!.id,equipment:'none',sets:2,target:{metricType:'reps' as const,reps:8}}]}],reasons:['a','b','c']}};
+    expect(adaptCoachResponse(request,response)).toEqual(response);
+    for(const patch of [{restoreGeneration:1},{requestId:'22222222-2222-4222-8222-222222222222'}])expect(()=>adaptCoachResponse(request,{...response,...patch})).toThrow();
+    const wrongTask={...identity,restoreGeneration:2,type:'today_adjustment',target:{planId:identity.requestId,versionId:identity.requestId,revision:4},template:response.proposal.templates[0],summary:'调整'};expect(coachResponseSchema.safeParse(wrongTask).success).toBe(true);expect(()=>adaptCoachResponse(request,wrongTask)).toThrow();
+  });
 });

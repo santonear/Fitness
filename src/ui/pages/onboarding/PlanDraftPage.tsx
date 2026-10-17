@@ -1,3 +1,5 @@
+import {EnginePlanNotices} from '../../components/EnginePlanNotices';
+import type {EnginePlan} from '../../../engine/contracts';
 import {templateLabel} from '../../../i18n/features/plan/labels';
 import { planLifecycleCopy } from '../../../i18n/features/plan/lifecycle';
 import type { CoachResponse } from '../../../coach/contracts';
@@ -16,7 +18,7 @@ import './onboarding.css';
 
 export type OnboardingProposal = Extract<CoachResponse, { type: 'plan_proposal' }>;
 export interface PlanDraftPageProps {
-  locale: V8Locale; candidate: OnboardingProposal & {profile?:{place?:string}}; basic?: boolean; busy?: boolean; error?: string;
+  locale: V8Locale; candidate: OnboardingProposal & {profile?:{place?:string};enginePlan?:EnginePlan}; basic?: boolean; busy?: boolean; error?: string;
   slots: Pick<ThemeSlots, 'BrandMark' | 'AiLine'>;
   exerciseText: (exerciseId: string) => { name: string; instructions: string };
   /** Parent must revalidate candidate identity, version and restore generation before writing. */
@@ -31,15 +33,16 @@ export function PlanDraftPage({ locale, candidate, basic = false, busy = false, 
     <header><slots.BrandMark label={t.brand} />{basic && <span>{t.basic}</span>}</header>
     <section className="v8-onboarding-conversation">
       <slots.AiLine><h1>{t.draft}</h1></slots.AiLine>
-      {basic && <p>{t.basicHint}</p>}
+      {basic && <p>{t.basicHint}</p>}{candidate.enginePlan&&<EnginePlanNotices plan={candidate.enginePlan} locale={locale}/>}
       <p>{plan.goalText}</p><p>{count(t.weekly, plan.weeklyTarget)}</p>
       {plan.templates.map(template => <section key={template.id} className="v8-draft-template"><h2>{templateLabel(template,locale)}</h2><p>{count(t.minutes, template.estimatedMinutes)}</p>
         {template.items.map((item, index) => { const text = exerciseText(item.exerciseId), target = item.target; return <button type="button" className="v8-draft-exercise" key={`${item.exerciseId}-${index}`} onClick={event=>{trigger.current=event.currentTarget;setDetail(item.exerciseId);}}><strong>{text.name}</strong><span>{count(t.sets, item.sets)}</span>
-          <span>{(EQUIPMENT as readonly string[]).includes(item.equipment) ? equipmentLabel(item.equipment, locale) : item.equipment}</span><span>{'reps' in target && count(t.reps, target.reps)}{'loadGrams' in target && ` · ${target.loadGrams>0?count(t.kg, target.loadGrams / 1000):guideCopy.chooseLoad}`}{'durationSeconds' in target && count(t.seconds, target.durationSeconds)}{'distanceMeters' in target && target.distanceMeters !== undefined && !(candidate.profile?.place==='home'&&item.exerciseId===EXERCISE_IDS.walking) && ` · ${count(t.meters, target.distanceMeters)}`}</span>
+          <span>{(EQUIPMENT as readonly string[]).includes(item.equipment) ? equipmentLabel(item.equipment, locale) : item.equipment}</span><span>{'reps' in target && count(t.reps, target.reps)}{'loadGrams' in target && ` · ${target.loadGrams>0?count(t.kg, target.loadGrams / 1000):item.prescription?.loadDescription?.[locale]??guideCopy.chooseLoad}`}{'durationSeconds' in target && count(t.seconds, target.durationSeconds)}{'distanceMeters' in target && target.distanceMeters !== undefined && !(candidate.profile?.place==='home'&&item.exerciseId===EXERCISE_IDS.walking) && ` · ${count(t.meters, target.distanceMeters)}`}</span>
+          {item.prescription?.safetyCue&&<span>{item.prescription.loadDescription?.[locale]} · {item.prescription.safetyCue[locale]}</span>}
         </button>; })}
       </section>)}
       {onEditCautions&&<aside><p>{t.safetyExcluded}</p><Button onClick={onEditCautions}>{t.editCautions}</Button></aside>}
-      <section><h2>{t.why}</h2><ul>{plan.reasons.map((reason, i) => <li key={i}>{reason}</li>)}</ul></section>
+      <section><h2>{t.why}</h2><ul>{[...new Set(plan.reasons)].map((reason, i) => <li key={i}>{reason}</li>)}</ul></section>
       {error && <p role="alert">{error}</p>}
       <footer className="v8-draft-actions"><Button variant="primary" disabled={busy || !plan.templates.length} onClick={() => { if (!busy && plan.templates.length) onConfirm(candidate); }}>{busy ? t.saving : t.accept}</Button><Button disabled={busy} onClick={onDiscuss}>{t.change}</Button>{onDiscard&&<Button disabled={busy} onClick={onDiscard}>{planLifecycleCopy[locale].discard}</Button>}</footer>
     </section>

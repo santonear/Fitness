@@ -23,6 +23,7 @@ test-results-*/
 .cache/
 .secrets/
 src/catalog/generated/
+src/engine/generated/exercise-index.json
 public/exercise-media/repdb/
 
 # Local agent notes, logs and Worker secrets
