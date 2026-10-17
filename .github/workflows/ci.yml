@@ -112,6 +112,23 @@ jobs:
       - run: npx playwright test --config tests/e2e/mainline-polish.config.ts
       - run: npx playwright test --config tests/e2e/v8-plan-review.config.ts
       - run: npx playwright test --config playwright.v8-coach.config.ts
+
+  browser-engine:
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci
+      - run: npm run catalog:prepare
+      - run: npm run engine:prepare
+      - run: npx playwright install --with-deps chromium
       - run: npx playwright test --config tests/e2e/training-engine.config.ts
 
   browser-admin:
@@ -137,7 +154,7 @@ jobs:
   # Preserve the existing required check name and fail closed if any group fails.
   verify:
     if: always()
-    needs: [checks, browser-main, browser-followup, browser-flows, browser-admin]
+    needs: [checks, browser-main, browser-followup, browser-flows, browser-engine, browser-admin]
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
@@ -147,5 +164,6 @@ jobs:
           MAIN: ${{ needs.browser-main.result }}
           FOLLOWUP: ${{ needs.browser-followup.result }}
           FLOWS: ${{ needs.browser-flows.result }}
+          ENGINE: ${{ needs.browser-engine.result }}
           ADMIN: ${{ needs.browser-admin.result }}
-        run: test "$CHECKS" = success && test "$MAIN" = success && test "$FOLLOWUP" = success && test "$FLOWS" = success && test "$ADMIN" = success
+        run: test "$CHECKS" = success && test "$MAIN" = success && test "$FOLLOWUP" = success && test "$FLOWS" = success && test "$ENGINE" = success && test "$ADMIN" = success
