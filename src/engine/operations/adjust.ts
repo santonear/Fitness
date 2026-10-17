@@ -10,7 +10,7 @@ import type { SessionTemplate } from "../../domain/v8/contracts";
 import { Rules, stableString } from "../data";
 import { prescribe, assignDose } from "../dose";
 import { createContext } from "../pipeline";
-import { candidatesFor } from "../candidates";
+import { candidatesFor, isHardEligible } from "../candidates";
 
 import { fillSlots } from "../fill";
 import { fitDuration, estimateSeconds } from "../fit";
@@ -49,6 +49,7 @@ export function adjust(
     if (
       locked.has(n) ||
       (e &&
+        isHardEligible(e, profile, ctx.gate, ctx) &&
         !avoid.has(e.primary_pattern) &&
         (!focus || focus.includes(e.primary_pattern)))
     )
