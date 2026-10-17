@@ -1,3 +1,4 @@
+import {Rules} from '../../src/engine/data';
 import {baseProfile} from '../../tools/eval/training-engine-profiles';
 import {expect,test,type Page} from '@playwright/test';
 import {readFile} from 'node:fs/promises';
@@ -46,15 +47,14 @@ async function setupSyntheticMobilityTempo(page:Page){
  page.on('pageerror',error=>errors.push(error.message));
  await page.route('**/api/**',route=>{if(/assistant|coach|chat|completion/i.test(new URL(route.request().url()).pathname))modelAttempts.push(route.request().url());return route.fulfill({status:503,json:{error:'LOCAL_OFFLINE_TEMPO_TEST'}});});
  await localFeatures(page);await page.clock.setFixedTime(new Date('2026-06-11T03:00:00.000Z'));await page.goto('/manual');await expect(page.getByRole('searchbox')).toBeVisible();
- const legacySynthetic=JSON.parse(await readFile(new URL('../unit/engine/fixtures/v1-surplus-inputs.json',import.meta.url),'utf8')).find((row:{index:number})=>row.index===84).profile;
- // This is an explicit healthy synthetic fixture, not a migration default for real records.
- // Preserve its workload facts while supplying every current source CMR/red-flag answer.
- const synthetic=baseProfile({...legacySynthetic,screening:{...baseProfile().screening,...legacySynthetic.screening}});
+ // Canonical source30: explicit synthetic preference for the unit-tested bodyweight squat slot.
+ const rules=new Rules(),bodyweightSquat=rules.data.exercises.find(exercise=>exercise.slug==='bodyweight-squat')!;
+ const synthetic=baseProfile({goal:'mobility',level:'intermediate',trainingAgeWeeks:18,daysPerWeek:6,sessionMinutes:30,preferences:{excludedExerciseIds:rules.data.exercises.filter(exercise=>exercise.primary_pattern==='squat'&&exercise.id!==bodyweightSquat.id).map(exercise=>exercise.id),cannotDo:[]}});
  // Build the synthetic training-age fact through the real workflow, never a fabricated engine plan.
  await page.evaluate(async source=>{
   const paths=['/src/ui/mainline/context.tsx','/src/application/rules/local-profile.ts','/src/catalog/exercise-ids.ts'];
   const [context,local,catalog]=await Promise.all(paths.map(path=>import(/* @vite-ignore */path))),at=new Date().toISOString();
-  const coach={...local.localProfile({...source,goalText:'合成柔韧验证',scheduleOriginalText:'每周6次，每次63分钟',placeEquipmentText:'在家，无器械',adultConfirmed:true,healthStorageConsent:{acceptedAt:at}}),screening:{...source.screening,completedAt:at,lastScreenedAt:at,redFlagReview:{...source.screening.redFlagReview,requiredAt:at,answeredAt:at}}};
+  const coach={...local.localProfile({...source,goalText:'合成柔韧验证',scheduleOriginalText:'每周6次，每次30分钟',placeEquipmentText:'在家，无器械',adultConfirmed:true,healthStorageConsent:{acceptedAt:at}}),screening:{...source.screening,completedAt:at,lastScreenedAt:at,redFlagReview:source.screening.redFlagReview?{...source.screening.redFlagReview,requiredAt:at,answeredAt:at}:undefined}};
   await context.workflow.adopt(await context.workflow.propose(coach,'zh'));
   const record=await context.workflow.start(undefined,catalog.EXERCISE_IDS.bodyweightSquat);await context.workflow.recordSet(record.id,0,0,{reps:8});await context.workflow.finish(record.id,{reasons:[]});
  },synthetic);
@@ -67,7 +67,7 @@ async function setupSyntheticMobilityTempo(page:Page){
    await page.evaluate(async({source,screen})=>{
     const paths=['/src/ui/mainline/context.tsx','/src/catalog/exercise-ids.ts'];
     const [context,catalog]=await Promise.all(paths.map(path=>import(/* @vite-ignore */path))),at=new Date().toISOString();
-    if(screen){const snapshot=await context.workflow.snapshot();await context.workflow.saveEngineSettings({...snapshot.state.coachProfile,screening:{...source.screening,completedAt:at,lastScreenedAt:at,redFlagReview:{...source.screening.redFlagReview,requiredAt:at,answeredAt:at}}},snapshot.metadata.dataRevision);}
+    if(screen){const snapshot=await context.workflow.snapshot();await context.workflow.saveEngineSettings({...snapshot.state.coachProfile,screening:{...source.screening,completedAt:at,lastScreenedAt:at,redFlagReview:source.screening.redFlagReview?{...source.screening.redFlagReview,requiredAt:at,answeredAt:at}:undefined}},snapshot.metadata.dataRevision);}
     const record=await context.workflow.start(undefined,catalog.EXERCISE_IDS.bodyweightSquat);
     for(const exercise of record.plannedExercises)for(let set=0;set<exercise.plannedSetCount;set++)await context.workflow.recordSet(record.id,exercise.itemIndex,set,{reps:8});
     await context.workflow.finish(record.id,{reasons:[]});
@@ -82,21 +82,26 @@ async function setupSyntheticMobilityTempo(page:Page){
  const identity=await page.evaluate(async source=>{
   const paths=['/src/ui/mainline/context.tsx','/src/application/rules/local-profile.ts','/src/application/engine-profile.ts','/src/engine/source-warmup.ts','/src/engine/data.ts','/src/catalog/exercises.ts'];
   const [context,local,mapping,duration,data,catalog]=await Promise.all(paths.map(path=>import(/* @vite-ignore */path))),snapshot=await context.workflow.snapshot(),at=new Date().toISOString();
-  const coach=local.localProfile({...source,goalText:'合成柔韧验证',scheduleOriginalText:'每周6次，每次63分钟',placeEquipmentText:'在家，无器械',adultConfirmed:true,healthStorageConsent:{acceptedAt:at},screening:{...source.screening,completedAt:at,lastScreenedAt:at,redFlagReview:{...source.screening.redFlagReview,requiredAt:at,answeredAt:at}}});
+  const coach=local.localProfile({...source,goalText:'合成柔韧验证',scheduleOriginalText:'每周6次，每次30分钟',placeEquipmentText:'在家，无器械',adultConfirmed:true,healthStorageConsent:{acceptedAt:at},screening:{...source.screening,completedAt:at,lastScreenedAt:at,redFlagReview:source.screening.redFlagReview?{...source.screening.redFlagReview,requiredAt:at,answeredAt:at}:undefined}});
   const mapped=mapping.toEngineProfile(coach,{asOfDate:'2026-10-15',timeZone:snapshot.profile.timeZone,locale:'zh',history:snapshot.workouts,screeningEvidenceEvents:snapshot.state?.screeningEvidenceEvents});
   if(mapped?.trainingAgeWeeks!==18)throw Error('Synthetic workflow history must replay eighteen weeks');
   let candidate;try{candidate=await context.workflow.propose(coach,'zh',{trainingEngine:true});}catch(error){throw Error(JSON.stringify({stage:'real_workflow_propose',quality:(error as {plan?:{quality:unknown}}).plan?.quality,message:String(error)}));}
   if(candidate.enginePlan?.quality?.status!=='ready')throw Error(JSON.stringify({stage:'real_mobility_readiness',quality:candidate.enginePlan?.quality,gates:candidate.enginePlan?.gates,trace:candidate.enginePlan?.trace,mapped,history:snapshot.workouts.map((row:{id:string;startedAt:string;endedAt?:string;status:string})=>({id:row.id,startedAt:row.startedAt,endedAt:row.endedAt,status:row.status})),screeningEvidenceEvents:snapshot.state?.screeningEvidenceEvents}));
-  const template=candidate.enginePlan.templates[0],ramp=duration.sourceWarmupRamps(template,mapped,new data.Rules()).find((row:{kind:string})=>row.kind==='bodyweight_main');
+  const template=candidate.enginePlan.templates[0],ramp=duration.sourceWarmupRamps(template,mapped,new data.Rules()).find((row:{kind:string;itemIndex:number;seconds:number})=>row.kind==='bodyweight_main'&&template.items[row.itemIndex].prescription?.warmupSeconds===row.seconds);
   if(!ramp||!template.items[ramp.itemIndex].prescription?.tempo)throw Error('A genuine bodyweight ramp with source tempo is required');
   await context.workflow.adopt(candidate);
   const preview=await context.workflow.nextTargetPreview(template.id);
   if(preview.blocked){const path='/src/engine/index.ts',engine=await import(/* @vite-ignore */path),projection=engine.nextTargets(snapshot.workouts,candidate.enginePlan,mapped,{templateId:template.id});throw Error(JSON.stringify({stage:'actual_next_preview',notices:preview.notices,gates:projection.gates,issues:engine.validatePlan(projection.value,mapped,{progression:{baseline:candidate.enginePlan,history:snapshot.workouts,templateId:template.id}})}));}
-  return {name:catalog.exercises.find((exercise:{id:string})=>exercise.id===ramp.exerciseId).name.zh,exerciseId:ramp.exerciseId,profile:mapped};
+  const projected=preview.template;if(!projected)throw Error('Real source30 preview must provide its template');
+  const projectedRamps=duration.sourceWarmupRamps(projected,mapped,new data.Rules()),actual=projectedRamps.find((row:{kind:string;itemIndex:number;seconds:number})=>row.kind==='bodyweight_main'&&projected.items[row.itemIndex].prescription?.warmupSeconds===row.seconds&&projected.items[row.itemIndex].prescription?.tempo);
+  const unauthenticated=projectedRamps.find((row:{kind:string;itemIndex:number;seconds:number})=>row.kind==='bodyweight_main'&&projected.items[row.itemIndex].prescription?.warmupSeconds!==row.seconds);
+  if(!actual||!unauthenticated)throw Error(JSON.stringify({stage:'source30_authentication',projected,projectedRamps}));
+  const name=(id:string)=>catalog.exercises.find((exercise:{id:string})=>exercise.id===id).name.zh;
+  return {name:name(actual.exerciseId),exerciseId:actual.exerciseId,unauthenticatedName:name(unauthenticated.exerciseId),profile:mapped};
  },synthetic);
  return {identity,errors,modelAttempts};
 }
-test('synthetic mobility84 Next renders fixed tempo and preserves it in downloaded backup',async({page},info)=>{
+test('synthetic source30 preferred-squat Next renders fixed tempo and preserves it in downloaded backup',async({page},info)=>{
  const {identity,errors,modelAttempts}=await setupSyntheticMobilityTempo(page);
  await page.goto('/');await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
  const phase=/≈3 \/ ≈1 \/ 0 秒/;
@@ -105,13 +110,14 @@ test('synthetic mobility84 Next renders fixed tempo and preserves it in download
   const detail=page.locator('details').filter({has:page.locator('summary').filter({hasText:identity.name})}).first();await expect(detail).toHaveCount(1);await detail.locator('summary').click();
   await expect(detail.getByText('离心 / 向心 / 停顿',{exact:true}).first()).toBeVisible();await expect(detail.getByText(phase).last()).toBeVisible();
   const warm=detail.getByRole('region',{name:'专项热身组',exact:true});await expect(warm).toBeVisible();await expect(warm.getByText(phase)).toBeVisible();
+  const unauthenticated=page.locator('details').filter({has:page.locator('summary').filter({hasText:identity.unauthenticatedName})}).first();await expect(unauthenticated).toHaveCount(1);await expect(unauthenticated.getByRole('region',{name:'专项热身组',exact:true,includeHidden:true})).toHaveCount(0);
   for(const width of [375,1280]){await page.setViewportSize({width,height:844});await page.screenshot({path:info.outputPath(`tempo-next-${theme}-${width}.png`),fullPage:true,animations:'disabled'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);}
  }
  await page.goto('/settings');await page.getByRole('button',{name:'备份恢复',exact:true}).click();const pending=page.waitForEvent('download');await page.getByRole('button',{name:'导出 JSON 备份',exact:true}).click();const backupPath=info.outputPath('synthetic-mobility-tempo-backup.json');await(await pending).saveAs(backupPath);
  const backup=JSON.parse(await readFile(backupPath,'utf8'));expect(namedValues(backup,'tempo')).toContainEqual({eccentricSeconds:3,concentricSeconds:1,pauseSeconds:0});expect(namedValues(backup,'enginePlan').length).toBeGreaterThan(0);expect(errors).toEqual([]);expect(modelAttempts).toEqual([]);
  await info.attach('synthetic-mobility-tempo-scope',{body:JSON.stringify({scope:'synthetic workflow, desktop Chromium viewports; not onboarding or phone hardware',identity,errors,modelAttempts},null,2),contentType:'application/json'});
 });
-test('synthetic mobility84 workout renders authenticated fixed tempo after real start',async({page},info)=>{
+test('synthetic source30 preferred-squat workout renders authenticated fixed tempo after real start',async({page},info)=>{
  const {identity,errors,modelAttempts}=await setupSyntheticMobilityTempo(page),phase=/≈3 \/ ≈1 \/ 0 秒/;
  await page.goto('/');await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
  await page.getByRole('button',{name:'开始训练',exact:true}).click();await expect(page).toHaveURL(/workout\//);const activeUrl=page.url();
@@ -119,6 +125,7 @@ test('synthetic mobility84 workout renders authenticated fixed tempo after real 
   await page.goto('/settings/appearance');await page.getByRole('button',{name:label,exact:true}).click();await page.goto(activeUrl);await page.locator('.v8-capsules').getByRole('button',{name:identity.name,exact:true}).click();
   await expect(page.getByRole('heading',{name:identity.name,exact:true})).toBeVisible();await expect(page.getByText(phase).last()).toBeVisible();await expect(page.getByRole('region',{name:'专项热身组',exact:true}).getByText(phase)).toBeVisible();
   for(const width of [375,1280]){await page.setViewportSize({width,height:844});await page.screenshot({path:info.outputPath(`tempo-workout-${theme}-${width}.png`),fullPage:true,animations:'disabled'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);}
+  await page.locator('.v8-capsules').getByRole('button',{name:identity.unauthenticatedName,exact:true}).click();await expect(page.getByRole('heading',{name:identity.unauthenticatedName,exact:true})).toBeVisible();await expect(page.getByRole('region',{name:'专项热身组',exact:true})).toHaveCount(0);
  }
  expect(errors).toEqual([]);expect(modelAttempts).toEqual([]);
  await info.attach('synthetic-mobility-workout-scope',{body:JSON.stringify({scope:'synthetic workflow, desktop Chromium viewports; not onboarding or phone hardware',identity,errors,modelAttempts},null,2),contentType:'application/json'});
@@ -126,6 +133,8 @@ test('synthetic mobility84 workout renders authenticated fixed tempo after real 
 async function openSourceWarmup(page:Page){
  const region=page.getByRole('region',{name:'专项热身组',exact:true,includeHidden:true}).filter({hasText:/(?:50|75)%/}).first();
  const details=page.locator('details').filter({has:region}).first();
+ const templateCount=await page.evaluate(async()=>{const path='/src/ui/mainline/context.tsx';return(await(await import(/* @vite-ignore */path)).workflow.snapshot()).version.templates.length;});
+ for(let attempt=0;attempt<templateCount&&await region.count()===0;attempt++){await page.getByRole('button',{name:'换一份',exact:true}).click();await expect(page.getByRole('button',{name:'开始训练',exact:true})).toBeEnabled();}
  await expect(details).toHaveCount(1);
  if(await details.getAttribute('open')===null)await details.locator('summary').click();
  await expect(region).toBeVisible();
@@ -142,7 +151,24 @@ test('actual screening UI generates deterministic local drafts and preserves eng
  const saved=await page.evaluate(async()=>{const path='/src/ui/mainline/context.tsx';const data=await(await import(/* @vite-ignore */path)).workflow.snapshot();return {screening:data.state.coachProfile?.screening,birth:data.state.coachProfile?.birthYearMonth,engine:!!data.version?.enginePlan};});
  expect(saved.birth).toBe('1991-06');expect(saved.screening?.parqAnswers).toEqual(Array(7).fill(false));expect(saved.screening?.completedAt).toBeTruthy();expect(saved.engine).toBe(true);
  // Explicit synthetic user-recorded loads make percentage ramps meaningful; no plan is fabricated.
- await page.evaluate(async()=>{const path='/src/ui/mainline/context.tsx',context=await import(/* @vite-ignore */path),snapshot=await context.workflow.snapshot(),coach={...snapshot.state.coachProfile,equipmentLoadsKg:{dumbbell:5,'resistance-band':5}};await context.workflow.saveEngineSettings(coach,snapshot.metadata.dataRevision);await context.workflow.adopt(await context.workflow.propose(coach,'zh',{trainingEngine:true}));});
+ const syntheticLoadedHistory=await page.evaluate(async()=>{
+  const paths=['/src/ui/mainline/context.tsx','/src/engine/source-warmup.ts','/src/application/engine-profile.ts','/src/engine/data.ts'];
+  const [context,warmup,mapping,data]=await Promise.all(paths.map(path=>import(/* @vite-ignore */path))),snapshot=await context.workflow.snapshot(),coach={...snapshot.state.coachProfile,equipmentLoadsKg:{dumbbell:5,'resistance-band':5}};
+  await context.workflow.saveEngineSettings(coach,snapshot.metadata.dataRevision);await context.workflow.adopt(await context.workflow.propose(coach,'zh',{trainingEngine:true}));
+  const adopted=await context.workflow.snapshot(),template=adopted.version.templates[0],record=await context.workflow.start(template.id);
+  // Every fact below is synthetic, appended through the same workflow as user input.
+  for(const [itemIndex,item]of record.templateSnapshot.items.entries())for(let setIndex=0;setIndex<item.sets;setIndex++){
+   const values='reps'in item.target?{reps:15,...('loadGrams'in item.target?{loadGrams:item.target.loadGrams}:{})}:{durationSeconds:item.target.durationSeconds};
+   await context.workflow.recordSet(record.id,itemIndex,setIndex,values);
+   await context.workflow.appendSetFeedback(record.id,{id:crypto.randomUUID(),exerciseId:item.exerciseId,itemIndex,setIndex,createdAt:new Date().toISOString(),effort:'too_light',rir:4});
+  }
+  const finished=await context.workflow.finish(record.id,{reasons:[]});if(finished.status!=='complete')throw Error('Synthetic loaded workout must actually be complete');
+  const current=await context.workflow.snapshot(),projected=await context.workflow.nextTargetPreview(template.id),profile=mapping.toEngineProfile(current.state.coachProfile,{asOfDate:'2026-10-15',timeZone:current.profile.timeZone,locale:'zh',history:current.workouts,screeningEvidenceEvents:current.state.screeningEvidenceEvents});
+  const authenticated=projected.template&&warmup.sourceWarmupRamps(projected.template,profile,new data.Rules()).find((ramp:{kind:string;itemIndex:number;seconds:number})=>ramp.kind==='first_loaded_compound'&&projected.template.items[ramp.itemIndex].prescription?.warmupSeconds===ramp.seconds);
+  if(projected.blocked||!authenticated)throw Error(JSON.stringify({stage:'real_loaded_progression',projected,profile}));
+  return {scope:'synthetic complete workout through workflow; no direct plan or metadata writes',recordId:record.id,templateId:template.id,authenticated};
+ });
+ await info.attach('synthetic-loaded-progression',{body:JSON.stringify(syntheticLoadedHistory,null,2),contentType:'application/json'});
  await page.goto('/');
  await openSourceWarmup(page);
  for(const [theme,label]of [['qingci','青瓷'],['liubai','留白'],['jingshe','静奢'],['zhuangse','撞色']]){
@@ -153,6 +179,17 @@ test('actual screening UI generates deterministic local drafts and preserves eng
  await page.getByRole('button',{name:'和芽芽聊聊',exact:true}).first().click();
  const adjustment=page.getByRole('dialog',{name:'芽芽',exact:true});
  await adjustment.getByRole('button',{name:'只练上肢',exact:true}).click();
+ const localAdjustment=await page.evaluate(async templateId=>{
+  const paths=['/src/ui/mainline/context.tsx','/src/coach/request-builder.ts','/src/application/engine-plan.ts'];
+  const [context,builder,adapter]=await Promise.all(paths.map(path=>import(/* @vite-ignore */path))),snapshot=await context.workflow.snapshot(),request=builder.buildCoachRequest({task:'ADJUST_TODAY',data:snapshot,templateId});
+  if(!request?.engineProfile)throw Error('Current local adjustment request must contain its mapped profile');
+  return {scope:'actual persisted synthetic workout and current local request',request,upper:adapter.engineAction(request,request.engineProfile,{kind:'adjust',request:{focus:'upper'}}),shorter:adapter.engineAction(request,request.engineProfile,{kind:'adjust',request:{minutes:30}})};
+ },syntheticLoadedHistory.templateId);
+ await info.attach('actual-local-adjustment-diagnostic',{body:JSON.stringify(localAdjustment,null,2),contentType:'application/json'});
+ // This45-minute upper-only request cannot satisfy the source duration boundary; keep its safe no-op.
+ expect(localAdjustment.upper.noop).toBe(true);await expect(adjustment.getByRole('alert')).toBeVisible();await expect(adjustment.locator('.assistant-attachment')).toHaveCount(0);
+ // A separate source-legal30-minute local request must still produce an actionable attachment.
+ expect(localAdjustment.shorter.noop).toBe(false);await adjustment.getByRole('combobox',{name:'分钟',exact:true}).selectOption('30');await adjustment.getByRole('button',{name:'缩短到所选时长',exact:true}).click();
  await expect(adjustment.locator('.assistant-attachment')).toBeVisible();
  await expect(adjustment.getByRole('button',{name:'应用建议',exact:true})).toBeVisible();
  await adjustment.getByRole('button',{name:'关闭',exact:true}).click();

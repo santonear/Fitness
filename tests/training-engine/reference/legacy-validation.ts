@@ -26,7 +26,6 @@ import {
   sourceWarmupRamps,
   sourceConditioningSlot,
   blockSeconds,
-  circuitBudgetConflict,
   cooldownCapSeconds,
   readLegacySourceTarget,
   estimatedSeconds,

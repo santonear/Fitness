@@ -332,22 +332,3 @@ export function sourceConditioningSlot(
 export function sourcePhase(p: EngineProfile, r: Rules) {
   return safety(p, r).phase;
 }
-
-export function circuitBudgetConflict(
-  p: EngineProfile,
-  r: Rules,
-  s: SafetyState,
-): boolean {
-  if (s.phase === 1) return false;
-  const recipe = r.get(
-      `session.template.min${durationTier(p.sessionMinutes, p, r)}`,
-    ),
-    safety = r.get("safety.session.warmup_cooldown");
-  return (
-    safety.applies_to_session_types.includes("circuit") &&
-    recipe.slots.some(
-      (slot: { structure?: string }) => slot.structure === "circuit",
-    ) &&
-    p.sessionMinutes <= safety.warmup_min_minutes + safety.cooldown_min_minutes
-  );
-}

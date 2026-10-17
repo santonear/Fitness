@@ -314,4 +314,147 @@
 
 .cache/m3-unused-summary.json使用TypeScript5.9.3审计101文件：258 referenced、87 protected-review-only、3 tests-only-reference-candidate。工具未列出零引用项，但不能据此宣称无未使用代码或M3未引用清理全部完成。weeklyElapsedAllocation的10处测试引用支持周耗时断言及V1参考；sourceConditioningSlot的2处测试引用包含legacy validator实际调用；circuitBudgetConflict仅被该参考导入、没有实际调用，明确待清理，不声称行为覆盖。静态引用不等于运行时可达性。
 
-冻结统计101文件/14751格式化行；dose1969、gates1524、progression3135、score1694超过阶段1500行目标，列后续简化评审遗留，不以压行、删除类型或注释处理。测试、generated及规则数据另列。
+冻结统计101文件/14751格式化行；dose1969、gates1524、progression3135、score1694超过阶段1500行目标，列后续简化评审遗留，不以压行、删除类型或注释处理。测试、generated及规则数据另列。## M3 后格式化源码
+
+总行数：14732；共101个文件。测试、generated和规则数据均未混入。
+
+| 阶段 | 格式化行数 |
+|---|---:|
+| candidates | 583 |
+| checkHard | 1263 |
+| contracts | 741 |
+| data | 427 |
+| dose | 1969 |
+| gates | 1524 |
+| fill | 216 |
+| fit | 878 |
+| independent validation | 353 |
+| improve | 285 |
+| pipeline | 362 |
+| notices | 166 |
+| operations | 663 |
+| progression | 3116 |
+| score | 1694 |
+| skeleton | 330 |
+| structure | 162 |
+
+超过1500行的阶段列入后续架构简化评审：dose 1969行；gates 1524行；progression 3116行；score 1694行。该评审不阻塞此次交付。
+
+| 文件 | 格式化行数 |
+|---|---:|
+| src/engine/candidates.ts | 144 |
+| src/engine/candidates/caution-substitutions.ts | 111 |
+| src/engine/candidates/eligibility.ts | 328 |
+| src/engine/checkHard/coverage.ts | 129 |
+| src/engine/checkHard/eligibility.ts | 230 |
+| src/engine/checkHard/item-context.ts | 28 |
+| src/engine/checkHard/item-dose.ts | 257 |
+| src/engine/checkHard/item-structure.ts | 281 |
+| src/engine/contracts.ts | 18 |
+| src/engine/contracts/api.ts | 127 |
+| src/engine/contracts/pipeline.ts | 125 |
+| src/engine/contracts/plan.ts | 164 |
+| src/engine/contracts/profile.ts | 307 |
+| src/engine/data.ts | 400 |
+| src/engine/dose.ts | 21 |
+| src/engine/dose/assign.ts | 113 |
+| src/engine/dose/budget.ts | 72 |
+| src/engine/dose/capacity-types.ts | 31 |
+| src/engine/dose/capacity.ts | 328 |
+| src/engine/dose/floor-order.ts | 147 |
+| src/engine/dose/limits.ts | 59 |
+| src/engine/dose/prescribe.ts | 266 |
+| src/engine/dose/rep-ranges.ts | 117 |
+| src/engine/dose/roles.ts | 94 |
+| src/engine/dose/transforms.ts | 59 |
+| src/engine/dose/types.ts | 12 |
+| src/engine/dose/volume.ts | 68 |
+| src/engine/dose/warmup-fold.ts | 63 |
+| src/engine/dose/warmup-identity.ts | 26 |
+| src/engine/dose/warmup-realize.ts | 182 |
+| src/engine/dose/warmup-source.ts | 201 |
+| src/engine/environment.ts | 185 |
+| src/engine/equipment.ts | 27 |
+| src/engine/fill.ts | 216 |
+| src/engine/fit.ts | 4 |
+| src/engine/fit/elapsed-time.ts | 236 |
+| src/engine/fit/estimate.ts | 109 |
+| src/engine/fit/finalize.ts | 27 |
+| src/engine/fit/fitting.ts | 394 |
+| src/engine/fit/item-order.ts | 13 |
+| src/engine/fit/requirements.ts | 92 |
+| src/engine/fit/types.ts | 3 |
+| src/engine/gates.ts | 63 |
+| src/engine/gates/population-limits.ts | 129 |
+| src/engine/gates/redflag-review.ts | 197 |
+| src/engine/gates/state.ts | 343 |
+| src/engine/gates/strength-scoring-population.ts | 120 |
+| src/engine/gates/strength-scoring.ts | 389 |
+| src/engine/hard-checks.ts | 338 |
+| src/engine/history-checks.ts | 353 |
+| src/engine/improve.ts | 285 |
+| src/engine/index.ts | 86 |
+| src/engine/notices.ts | 166 |
+| src/engine/operations.ts | 4 |
+| src/engine/operations/adjust.ts | 150 |
+| src/engine/operations/modify.ts | 133 |
+| src/engine/operations/result.ts | 72 |
+| src/engine/operations/shared.ts | 95 |
+| src/engine/operations/substitute.ts | 209 |
+| src/engine/pipeline.ts | 276 |
+| src/engine/postpartum-risk.ts | 98 |
+| src/engine/power.ts | 104 |
+| src/engine/progression.ts | 400 |
+| src/engine/progression/confirmed-pain.ts | 239 |
+| src/engine/progression/fatigue.ts | 77 |
+| src/engine/progression/feedback.ts | 93 |
+| src/engine/progression/finalize.ts | 70 |
+| src/engine/progression/item-actions.ts | 106 |
+| src/engine/progression/legacy-blocks.ts | 352 |
+| src/engine/progression/legacy-candidates.ts | 247 |
+| src/engine/progression/legacy-cooldown-ensure.ts | 231 |
+| src/engine/progression/legacy-cooldown-plan.ts | 388 |
+| src/engine/progression/legacy-cooldown.ts | 163 |
+| src/engine/progression/legacy-target.ts | 334 |
+| src/engine/progression/legacy-warmup.ts | 191 |
+| src/engine/progression/load-step.ts | 81 |
+| src/engine/progression/recovery-guards.ts | 116 |
+| src/engine/progression/schedule.ts | 28 |
+| src/engine/score.ts | 80 |
+| src/engine/score/batch-helpers.ts | 103 |
+| src/engine/score/evaluate.ts | 54 |
+| src/engine/score/facts.ts | 191 |
+| src/engine/score/goal-items.ts | 105 |
+| src/engine/score/helpers.ts | 81 |
+| src/engine/score/marginal.ts | 217 |
+| src/engine/score/math.ts | 21 |
+| src/engine/score/registry.ts | 179 |
+| src/engine/score/targets-01.ts | 58 |
+| src/engine/score/targets-02.ts | 8 |
+| src/engine/score/targets-03.ts | 68 |
+| src/engine/score/targets-04.ts | 158 |
+| src/engine/score/targets-05.ts | 60 |
+| src/engine/score/targets-06.ts | 72 |
+| src/engine/score/targets-07.ts | 29 |
+| src/engine/score/targets-08.ts | 33 |
+| src/engine/score/targets-09.ts | 58 |
+| src/engine/score/targets-10.ts | 27 |
+| src/engine/score/types.ts | 92 |
+| src/engine/skeleton.ts | 330 |
+| src/engine/source-warmup.ts | 6 |
+| src/engine/structure.ts | 162 |
+
+## 单独列账（不计入引擎源码）
+
+| 目录 | 文件数 | 存盘物理行数 | 字节数 |
+|---|---:|---:|---:|
+| src/engine/generated | 4 | 4 | 1282668 |
+| tests/training-engine | 85 | 30239 | 1146791 |
+| tests/unit/engine | 102 | 5204 | 491974 |
+| data/training-engine | 24 | 60972 | 1087735 |
+
+## 最终未引用清理与一致性证据
+
+TypeScript 5.9.3 LanguageService.findReferences + AST 审计覆盖101个源码文件：258项有引用、87项公开类型/注册表等需人工保护项、2项仅测试引用。weeklyElapsedAllocation有10处真实测试引用，sourceConditioningSlot有2处引用并被V1测试参考实际调用。仅导入而未调用的circuitBudgetConflict及其唯一测试导入已删除；未据此声称静态工具能证明运行时可达性。测试断言没有删除。
+
+删除后的golden20、固定80和177问题画像与M3快照逐字节一致（.cache/regression-after-unused-cleanup-manifest.json），变更/增删索引均为空。标准格式化最终总数14732行、101文件，所有单文件不超过400行；progression3116，其他阶段见上表。该纯死代码清理不覆盖或重贴此前2200全量证据的源指纹；新提交由CI重新执行功能诊断。250ms及阶段超过1500行的架构简化留待后续，不继续调优。

@@ -515,3 +515,13 @@ Latest user ruling supersedes prior performance stop:219–305ms/79s accepted; n
 .cache/m3-unused-summary.json 的 TypeScript5.9.3 引用审计覆盖101文件：258 referenced、87 protected-review-only、3 tests-only-reference-candidate。工具未列出零引用项，但不能据此宣称无未使用代码或 M3 未引用清理全部完成。三项保留理由：weeklyElapsedAllocation 支持真实周耗时测试断言及 V1 参考；sourceConditioningSlot 由 test-only legacy validator 实际消费；circuitBudgetConflict 仅被该参考导入、没有实际调用，明确列为仅导入、待清理的 V1 参考遗留，不能冒充行为覆盖。静态引用审计不证明运行时可达性。
 
 标准格式化源码为101文件/14751行，测试、generated、规则数据另列。dose1969、gates1524、progression3135、score1694超过阶段1500行目标，留待后续架构简化评审，不阻塞本轮交付，也不靠压行或删类型/注释消除数字。逐文件统计及引用边界见 source-footprint.md。
+
+### 草稿与预览复查（2026-10-17）
+
+草稿PR #61，净变更分支codex/training-engine-v2，main基线0165768；原342提交历史留在codex/training-engine。预览Worker fitness-ai-assistant-preview，版本b984ec68-c5d3-4793-8d6f-aa774cb0f918；首页/health/features均200，trainingEngine开启，生产未动。
+
+浏览器6项主流程及环境受限1项均已通过（受影响项定向复跑，未重复已通过项）。修复仅为测试与来源场景一致：完整20项自查、真实训练史和阴性筛查、真实训练反馈后认证的热身、无认证理论热身不显示的负例。默认热身机制不是必须显示的硬承诺；45分钟仅上肢因时长安全拒绝仍有断言，随后用真实30分钟缩短操作保留建议卡片正向证据。没有恢复重复热身或放宽时长。
+
+删除circuitBudgetConflict及唯一无调用导入后，20/80/177输出仍逐字节相同；非诊断单测3262通过、29项既有未执行，类型通过。最终源码101文件14732行，单文件均≤400。最后一次2200完整证据仍保留原指纹；该纯死代码删除的最新指纹由远程CI独立验证，不伪装复用旧指纹。
+
+预览11场景第一轮8项达到脚本覆盖范围、3项脚本待校正（旧0.85门槛、训练中本地操作入口）；全部为隔离合成资料+真实应用服务准备+发布UI，不冒充完整新用户UI，模型外发0。待重跑失败项和人工核对截图后再汇总，不能声明11项完整通过。
