@@ -63,6 +63,12 @@ test('font rollout loads local compact faces and returns to original tokens on r
  const font=()=>page.evaluate(()=>getComputedStyle(document.documentElement).getPropertyValue('--f-body'));
  expect(await font()).not.toContain('Compact');
  await enable(page,{fontSubset:true});await expect.poll(font).toContain('Noto Sans SC Compact');
- expect(await page.evaluate(async()=>{await document.fonts.load('300 16px "Noto Sans SC Compact"','训练');await document.fonts.load('400 20px "Noto Serif SC Compact"','训练');return document.fonts.check('300 16px "Noto Sans SC Compact"','训练')&&document.fonts.check('400 20px "Noto Serif SC Compact"','训练');})).toBe(true);
+ await expect.poll(()=>page.evaluate(async()=>{
+  const sans=await document.fonts.load('300 16px "Noto Sans SC Compact"','训练');
+  const serif=await document.fonts.load('400 20px "Noto Serif SC Compact"','训练');
+  // Require real registered faces, not an empty load/fallback result. WebKit
+  // can finish a font load before its FontFaceSet check reflects style updates.
+  return sans.length>0&&serif.length>0&&[...sans,...serif].every(face=>face.status==='loaded')&&document.fonts.check('300 16px "Noto Sans SC Compact"','训练')&&document.fonts.check('400 20px "Noto Serif SC Compact"','训练');
+ })).toBe(true);
  await enable(page,{fontSubset:false});await expect.poll(font).not.toContain('Compact');
 });
