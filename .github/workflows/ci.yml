@@ -29,14 +29,11 @@ jobs:
       - run: npm ci
       - run: node --test tools/v8/check.test.mjs
       - run: node tools/v8/check.mjs
-      # Compute the full receipt outside Vitest's nested subprocess. The original
-      # diagnostic tests still verify the receipt's exact source/input hashes and
-      # execute every safety/quality assertion in npm run check.
-      - run: npm run catalog:prepare
-      - run: npm run engine:prepare
-      - run: npm run engine:full
-      # Functional correctness only; engine:perf is a separate informational command.
-      - run: npm run check
+      # Same functional group as tools/training-engine/test.mjs. The complete
+      # diagnostic group runs in engine-audit, and verify requires both jobs.
+      - run: npm run typecheck
+      - run: npm test -- --exclude tests/training-engine/diagnostic.test.ts
+      - run: npm run build
       - run: npm run engine:check
       - run: node tools/check-coach-client-boundary.mjs
       - name: Collect all browser suites before installing browsers
@@ -47,6 +44,25 @@ jobs:
           npx playwright test --list --config tests/e2e/v8-plan-review.config.ts > /dev/null
           npx playwright test --list --config playwright.v8-coach.config.ts > /dev/null
           npx playwright test --list --config tests/e2e/training-engine.config.ts > /dev/null
+
+  engine-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci
+      - run: npm run catalog:prepare
+      - run: npm run engine:prepare
+      # Build a fresh receipt outside Vitest, on this same source/input/runtime.
+      # Original diagnostic assertions and their timeout remain unchanged.
+      - run: npm run engine:full
+      - run: npm test -- tests/training-engine/diagnostic.test.ts
 
   browser-main:
     needs: checks
@@ -160,16 +176,17 @@ jobs:
   # Preserve the existing required check name and fail closed if any group fails.
   verify:
     if: always()
-    needs: [checks, browser-main, browser-followup, browser-flows, browser-engine, browser-admin]
+    needs: [checks, engine-audit, browser-main, browser-followup, browser-flows, browser-engine, browser-admin]
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
       - name: Require all checks
         env:
           CHECKS: ${{ needs.checks.result }}
+          AUDIT: ${{ needs.engine-audit.result }}
           MAIN: ${{ needs.browser-main.result }}
           FOLLOWUP: ${{ needs.browser-followup.result }}
           FLOWS: ${{ needs.browser-flows.result }}
           ENGINE: ${{ needs.browser-engine.result }}
           ADMIN: ${{ needs.browser-admin.result }}
-        run: test "$CHECKS" = success && test "$MAIN" = success && test "$FOLLOWUP" = success && test "$FLOWS" = success && test "$ENGINE" = success && test "$ADMIN" = success
+        run: test "$CHECKS" = success && test "$AUDIT" = success && test "$MAIN" = success && test "$FOLLOWUP" = success && test "$FLOWS" = success && test "$ENGINE" = success && test "$ADMIN" = success
