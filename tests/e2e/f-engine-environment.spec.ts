@@ -9,7 +9,7 @@ test('actual onboarding applies an environment plan and starts and the settings 
  const questions=page.getByRole('group',{name:'PAR-Q+',exact:true}).getByRole('combobox');await expect(questions).toHaveCount(20);
  for(let index=0;index<18;index++)await questions.nth(index).selectOption('false');
  await questions.nth(18).selectOption('active');await questions.nth(19).selectOption('known_below_threshold');
- await page.getByRole('combobox',{name:/孕期 \/ 产后状态/}).selectOption('older_adult');
+ await page.getByRole('combobox',{name:/孕期 \/ 产后状态/}).selectOption('general');await expect(page.getByRole('combobox',{name:/孕期 \/ 产后状态/}).getByRole('option',{name:/65|及以上/})).toHaveCount(0);
  const falls=page.getByRole('group',{name:'为了把平衡练习安排得更稳妥，想先问你 4 个简单的问题。',exact:true}).getByRole('combobox');await expect(falls).toHaveCount(4);
  for(let index=0;index<4;index++)await falls.nth(index).selectOption(index===1?'true':'false');
  await page.getByRole('checkbox',{name:'不能跳',exact:true}).check();await page.getByRole('checkbox',{name:'保持安静',exact:true}).check();
