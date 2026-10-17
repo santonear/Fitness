@@ -46,6 +46,11 @@ jobs:
     needs: checks
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, webkit]
+        shard: [1, 2]
     steps:
       - uses: actions/checkout@v7
         with:
@@ -58,7 +63,31 @@ jobs:
       - run: npm run catalog:prepare
       - run: npm run engine:prepare
       - run: npx playwright install --with-deps chromium webkit
-      - run: npm run test:e2e
+      # Execute every existing test once; independent runners keep the job deadline unchanged.
+      - run: npm run test:e2e -- --project=${{ matrix.browser }} --shard=${{ matrix.shard }}/2 --workers=2 --reporter=line
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-main-${{ matrix.browser }}-${{ matrix.shard }}
+          path: test-results/
+          retention-days: 3
+
+  browser-followup:
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci
+      - run: npm run catalog:prepare
+      - run: npm run engine:prepare
+      - run: npx playwright install --with-deps chromium webkit
       - run: npx playwright test --config tests/e2e/followup-finish.config.ts
       - run: npm run build && npx playwright test --config followup-pwa.config.ts
 
@@ -108,7 +137,7 @@ jobs:
   # Preserve the existing required check name and fail closed if any group fails.
   verify:
     if: always()
-    needs: [checks, browser-main, browser-flows, browser-admin]
+    needs: [checks, browser-main, browser-followup, browser-flows, browser-admin]
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
@@ -116,6 +145,7 @@ jobs:
         env:
           CHECKS: ${{ needs.checks.result }}
           MAIN: ${{ needs.browser-main.result }}
+          FOLLOWUP: ${{ needs.browser-followup.result }}
           FLOWS: ${{ needs.browser-flows.result }}
           ADMIN: ${{ needs.browser-admin.result }}
-        run: test "$CHECKS" = success && test "$MAIN" = success && test "$FLOWS" = success && test "$ADMIN" = success
+        run: test "$CHECKS" = success && test "$MAIN" = success && test "$FOLLOWUP" = success && test "$FLOWS" = success && test "$ADMIN" = success
