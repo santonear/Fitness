@@ -1,0 +1,653 @@
+# 第 7 章 进阶、减量与新手/停训恢复 —— 机器规则
+# 与 ch07-progression.md 一一对应（37 条）。
+# 字段名与《动作标注标准 v0.1》一致：primary_pattern / nsca_class / modality / flags / use / difficulty / ladder{id,step}。
+# experience 枚举由 progression.return.classify 定义：new, trained, returning_short, returning_mid, returning_long。
+# 百分比字段（*_pct）为相对变化或相对停训前的比例；重量一律向下取到用户可用的档位。
+
+# ---------- 7.1 进阶模型与双重进阶 ----------
+
+- id: progression.model.default
+  chapter: 7
+  type: default
+  value:
+    loadable: double_progression
+    bodyweight: [reps, ladder_step]
+    isometric_ref: dose.isometric
+    formal_periodization_required: false
+    strength_goal_rep_ranges_ref: goal.params.strength
+  evidence: A
+  sources: [E04:S1, E04:S2, E04:S8, E04:S4]
+  unverified: [E04:S4]
+  note: 逐步加负荷是主变量；一般用户不需要正式周期化
+
+- id: progression.double.trigger
+  chapter: 7
+  type: trigger
+  value:
+    rep_range_ref: [dose.reps.by_class, goal.params]
+    target_rir_ref: dose.rir.targets
+    condition: all_working_sets_reach_rep_max
+    logged_rir_gte: target_rir_min
+    consecutive_sessions: 2
+    fast_track: { level: beginner, from_week: 5, all_sets_logged_rir_gte: 2, consecutive_sessions: 1 }
+    after_increase_reps_target: rep_min
+    new_user_weeks_1_4_ref: progression.new.load_step
+  evidence: A
+  sources: [E04:S3, E02:Ratamess2009, E04:S8]
+  note: 连续 2 次课为 A（ACSM 2009，历史依据）；RIR 门槛与快速通道为 C
+
+- id: progression.load.increment
+  chapter: 7
+  type: formula
+  value:
+    lower_compound:
+      match: { primary_pattern: [squat, lunge, hinge, carry], nsca_class: compound }
+      pct: 5
+      min_kg: 2.5
+    upper_compound:
+      match: { primary_pattern: [push_horizontal, push_vertical, pull_horizontal, pull_vertical], nsca_class: compound }
+      pct: 2.5
+      min_kg: 1
+    isolation_or_loaded_core: { pct: 2, or: smallest_available_step }
+    rounding: down_to_available_load
+    max_step_pct: 10
+    smallest_available_step_exceeds_max:
+      action: take_smallest_step
+      next_session_reps_target: rep_min
+      next_session_rir_delta: 1
+      if_first_set_below_rep_min: { revert_to_previous_load: true, then_ref: progression.fixed_load.order }
+    older_adult_ref: older.strength.progression
+    rejected_alternatives: { upper_compound_pct: [2.5, 5], upper_min_kg: [1, 2.5] }
+  evidence: A
+  sources: [E04:S3, E02:Ratamess2009, E04:S8]
+  note: 2–10% 与 10% 上限为 A；各类具体幅度与大跳档处理为 C
+
+- id: progression.fixed_load.order
+  chapter: 7
+  type: default
+  value:
+    applies_when: [bodyweight, single_load_available, large_jump_failed]
+    order:
+      - { step: add_reps, max_reps_per_set: 30, ref: dose.reps.bounds }
+      - { step: slow_eccentric, eccentric_s: 3, ref: dose.tempo }
+      - { step: ladder_step_up, ref: ladder.step.up }
+    no_ladder: { action: same_primary_pattern_difficulty_plus, delta: 1, ref: select.pipeline }
+  evidence: C
+  sources: [E02:Iversen2021, E02:Currier2026, E04:S8]
+  note: 工程选择，待教练审核；家用固定重量的进阶顺序
+
+- id: progression.stall.reset
+  chapter: 7
+  type: trigger
+  value:
+    when: { working_set_reps_below: rep_min, same_load: true, consecutive_sessions: 2 }
+    load_change_pct: -10
+    reps_target: rep_min
+    bodyweight_ladder_ref: ladder.step.down
+    deload_signal: { min_stalled_exercises: 3, window: calendar_week, counts_as_flag: performance_drop }
+    rejected_alternatives: { load_change_pct: [-5, -10] }
+  evidence: C
+  sources: [E04:S8]
+  note: 证据给 5–10%，取 10%（降得更多更保守）
+
+- id: progression.change.priority
+  chapter: 7
+  type: formula
+  value:
+    max_changes_per_exercise_per_session: 1
+    order:
+      - pain            # progression.feedback.pain, pain.rule
+      - user_feedback   # progression.feedback.too_hard / too_easy
+      - stall           # progression.stall.reset, ladder.step.down
+      - autoreg         # progression.autoreg.rir
+      - progress        # progression.double.trigger, ladder.step.up
+    blocked_during: { deload_week: [progress], return_ramp: [progress] }
+    never_exceed: [progression.new.week_caps, population_module, caution_and_pain]
+  evidence: C
+  sources: [INTERNAL:rulebook-spec, E04:S8]
+  note: 工程选择；先减后加，每动作每次课只调一次
+
+# ---------- 7.2 按 RIR 自动调节 ----------
+
+- id: progression.autoreg.input
+  chapter: 7
+  type: default
+  value:
+    rir_source: last_working_set
+    inferred_rir_if_not_logged:
+      reached_rep_max_and_tapped_easy: target_rir_max_plus_2
+      completed_as_planned_no_feedback: target_rir   # 视为偏差 0
+      missed_planned_reps: 0
+    new_user_weeks_1_4: { ignore_abs_deviation_lte: 1 }
+  evidence: C
+  sources: [E04:S5, E02:Halperin2021, E02:Helms2016]
+  note: 工程选择，待教练审核；新手早期 ±1 视为估计误差
+
+- id: progression.autoreg.rir
+  chapter: 7
+  type: formula
+  value:
+    deviation: "logged_rir - target_rir_max if logged > max; logged_rir - target_rir_min if logged < min; else 0"
+    next_session_load_change_pct:
+      - { deviation_gte: 2, pct: 5 }
+      - { deviation_eq: 1, pct: 2.5 }
+      - { deviation_eq: -1, pct: -2.5 }
+      - { deviation_lte: -2, pct: -10 }
+    intra_session: { direction: down_only, deviation_lte: -2, next_set_pct: -10 }
+    max_step_pct: 10
+    rounding: down_to_available_load
+    conflict_ref: progression.change.priority
+    rejected_alternatives: { deviation_lte_minus_2_pct: [-5, -10] }
+  evidence: C
+  sources: [E04:S5, E04:S6, E02:Zourdos2016, E02:Helms2016]
+  unverified: [E04:S6]
+  note: 方向有 B 级证据；具体百分比为工程选择
+
+# ---------- 7.3 难度阶梯 ----------
+
+- id: ladder.step.up
+  chapter: 7
+  type: trigger
+  value:
+    ladders: [push_h, push_v, squat, lunge, hinge, pull_v, pull_h, core_ae, core_lat]
+    same_ladder_only: true
+    when: { working_sets_gte: 3, reps: rep_max, last_set_rir_gte: 1, consecutive_sessions: 2 }
+    if_prescribed_sets_lt_3: all_working_sets_reach_rep_max
+    rep_max_source: current_prescription
+    evidence_default_rep_max_if_unset: { bodyweight: 12, unilateral: 8 }
+    step_delta: 1
+    max_difficulty_jump: 1
+    must_pass: [select.difficulty.window, progression.new.week_caps, caution.progression]
+    new_step_reps_target: rep_min
+  evidence: C
+  sources: [E04:S9, E04:S26, E04:S27, E04:S8]
+  unverified: [E04:S9, E04:S27]
+  note: 单项试验与实验室研究支持；按 ch00 定义为 C
+
+- id: ladder.step.missing
+  chapter: 7
+  type: substitute
+  value:
+    when: next_step_absent_or_filtered
+    fallback: next_available_higher_step
+    max_difficulty_jump: 1
+    otherwise: { hold_step: true, then_ref: progression.fixed_load.order }
+  evidence: C
+  sources: [E04:S8, E04:S20]
+  note: 工程选择；跳级不得使难度骤增
+
+- id: ladder.step.down
+  chapter: 7
+  type: trigger
+  value:
+    triggers:
+      - { first_working_set_reps_lt: 5 }
+      - { working_set_reps_below: rep_min, consecutive_sessions: 2 }
+      - user_feedback_too_hard
+      - pain_rule_substitute
+    step_delta: -1
+    at_lowest_step: { sets_delta: -1, reps_target: rep_min }
+    reps_target: rep_min
+  evidence: C
+  sources: [E04:S8, E04:S9]
+  unverified: [E04:S9]
+  note: 首组 <5 次来自证据默认 rep_min；5 次至 rep_min 间按停滞处理
+
+- id: ladder.gate.barbell
+  chapter: 7
+  type: gate
+  value:
+    gated_flags: [heavy_axial_load]
+    unlock_requires: { same_ladder_lower_difficulty_supported_or_goblet_or_dumbbell: true, sessions_at_target_reps: 2 }
+    skill_or_difficulty_5_requires: advanced_opt_in
+    advanced_opt_in_ref: dose.level.definition
+  evidence: C
+  sources: [E04:S8, E04:S19, E04:S20]
+  note: 先在支撑版或高脚杯版建立动作模式再上杠铃
+
+# ---------- 7.4 每周容量递增 ----------
+
+- id: volume.week.increase
+  chapter: 7
+  type: formula
+  value:
+    starts_after: progression.new.weekly_sets
+    evaluate: end_of_week_per_muscle
+    conditions: [all_planned_sessions_done, no_fatigue_flags, soreness_resolved_before_next_session]
+    increment_sets_per_muscle_week:
+      beginner: 1
+      intermediate: { performance_improved: 2, performance_held: 1 }
+    performance_improved: "≥1 exercise gained reps or load and no exercise regressed"
+    else: hold
+    cap: "min(dose.sets_week.goal_matrix.max, level ceiling)"
+    auto_program_absolute_max: 20
+    after_deload: reset_to_goal_start
+  evidence: C
+  sources: [E02:Currier2026, E02:Pelland2024, E04:S13, E04:S8, E04:S28]
+  unverified: [E02:Pelland2024, E04:S28]
+  note: 工程选择，待教练审核；证据给 +1–2 组/周
+
+# ---------- 7.5 减量 ----------
+
+- id: deload.checkin.inputs
+  chapter: 7
+  type: default
+  value:
+    when: pre_session
+    skippable: true
+    retain_days: 10
+    fields:
+      energy_motivation: { scale: [1, 5] }
+      poor_sleep_nights_since_last_session: { type: integer, min: 0 }
+      soreness_resolved: boolean
+      new_or_worse_joint_pain: boolean
+    skipped_question_counts_as_flag: false
+    auto_inputs: [progression.feedback.pain, performance_log]
+    copy_ref: deload.copy.checkin
+  evidence: C
+  sources: [E04:S8, E04:S10]
+  note: 4 个是/否或打分问题，可跳过
+
+- id: deload.copy.checkin
+  chapter: 7
+  type: copy
+  zh:
+    - 今天的精力和训练意愿怎么样？（1 很差 – 5 很好）
+    - 上次训练后，有几晚没睡好？
+    - 上次训练的肌肉酸痛消了吗？
+    - 有没有新出现或变得更重的关节疼痛？
+  en:
+    - How are your energy and motivation today? (1 very low – 5 very high)
+    - Since your last workout, how many nights did you sleep badly?
+    - Has the muscle soreness from your last workout gone?
+    - Do you have any new or worse joint pain?
+  evidence: C
+  sources: [E04:S8]
+  note: 工程选择，待教练审核；不用医学术语
+
+- id: deload.trigger.reactive
+  chapter: 7
+  type: trigger
+  value:
+    window_days: 10
+    min_flags: 2
+    heavy_when_flags_gte: 3
+    flags:
+      performance_drop:
+        any:
+          - { distinct_exercises_gte: 2, rep_drop_gte: 1, same_load: true, vs: previous_session }
+          - { missed_planned_load_exercises_gte: 2 }
+          - { stalls_same_week_gte: 3, ref: progression.stall.reset }
+      low_energy_motivation: { score_lte: 2, occurrences_gte: 2 }
+      poor_sleep: { nights_sum_gte: 3 }
+      joint_pain:
+        any: [checkin_new_or_worse_true, { in_session_pain_gte: 4 }, pain_worse_week_on_week]
+        also_route: pain.rule
+    new_user_months_0_3_ref: deload.new_user.easy_days
+    rejected_alternatives: { window_days: [7, 10] }
+  evidence: C
+  sources: [E04:S8, E04:S10, E04:S11]
+  unverified: [E04:S11]
+  note: 证据窗口 7–10 天，取 10 天更易触发
+
+- id: deload.trigger.scheduled
+  chapter: 7
+  type: trigger
+  value:
+    offer_after_training_weeks: { default: 6, high_volume: 4 }
+    high_volume_when_any_muscle_sets_week_gt: 16
+    training_week: calendar_week_with_gte_1_rt_session
+    count_from: [last_deload, program_start, return_ramp_end]
+    duration_weeks: 1
+    skippable_if_no_flags_days: 10
+    reoffer_after_skip_weeks: 2
+    new_user_no_scheduled_first_training_weeks: 12
+    rejected_alternatives: { high_volume_weeks: [4, 5] }
+  evidence: C
+  sources: [E04:S10, E04:S11, E04:S13]
+  unverified: [E04:S11]
+  note: 工程选择，待教练审核；4–8 周一次仅为惯例
+
+- id: deload.dose.prescription
+  chapter: 7
+  type: default
+  value:
+    duration_days: 7
+    scope: resistance_training
+    keep: [exercises, frequency, load, ladder_step]
+    set_reduction_pct: { light: 30, moderate: 50, heavy: 70 }
+    default: moderate
+    light_when: { scheduled: true, flags_lte: 1 }
+    heavy_when_flags_gte: 3
+    rounding: floor
+    min_sets_per_exercise: 1
+    rir_min: 3
+    user_alternative: { keep_sets: true, load_change_pct: -10, rir_min: 3 }
+    hiit_during_deload: replace_with_moderate_aerobic_same_minutes
+    after:
+      resume_load: last_successful
+      double_progression_counter: reset
+      weekly_sets: reset_to_goal_start
+    full_rest_week_default: false
+  evidence: C
+  sources: [E04:S10, E04:S11, E04:S12]
+  unverified: [E04:S11]
+  note: 减量=减组数保留主项；HIIT 改中等与计数清零为工程选择
+
+- id: deload.new_user.easy_days
+  chapter: 7
+  type: default
+  applies:
+    experience: [new]
+  value:
+    applies_training_months_lt: 3
+    full_deload_week: false
+    extra_rest_days_before_next_session: 1
+    max_days_without_rt: 3
+    next_session_dose: { set_reduction_pct: 50, rir_min: 3 }
+    then: resume_plan
+  evidence: C
+  sources: [E04:S11, E04:S8]
+  unverified: [E04:S11]
+  note: 证据给 1–3 天轻松或休息；具体做法为工程选择
+
+# ---------- 7.6 新手与久坐用户：前 4 周 ----------
+
+- id: progression.new.week_caps
+  chapter: 7
+  type: limit
+  applies:
+    experience: [new]
+  value:
+    week_definition: "7-day periods from first completed session"
+    week_1: { rt_sessions_max: 2, sets_per_exercise: [1, 2], exercises_per_session: [4, 6], rir_min: 3, to_failure: false, difficulty_max: 2 }
+    week_2:
+      rt_sessions: [2, 3]
+      three_sessions_requires: [week_1_both_sessions_done, no_progression.doms.referral, days_available_gte_3]
+      three_sessions_path: { deferred: true, note: 'v2 澄清：v1不以自我声明或缺失历史放行第三课；保留两次力量训练，待完整首周与DOMS证据链后启用。' }
+      sets_per_exercise: 2
+      rir_min: 3
+      difficulty_max: 2
+    week_3_4: { rt_sessions_max: 3, sets_per_exercise: [2, 3], rir: [2, 3], difficulty_max: 3 }
+    eccentric_s_max: 3
+    tempo_ref: dose.tempo
+    rir_calibration_ref: dose.rir.calibration
+    rir_calibration_allowed_weeks: [3, 4]
+    also_apply: [safety.unlock.vigorous, aerobic.progression.ramp]
+  evidence: C
+  sources: [E04:S3, E02:Ratamess2009, E04:S15]
+  note: 保守综合，无荟萃分析；第 2 周 3 次的条件为工程选择
+
+- id: progression.new.weekly_sets
+  chapter: 7
+  type: limit
+  applies:
+    experience: [new]
+  value:
+    unit: sets_per_muscle_per_week
+    week_1_max: "min(goal_start, 6)"
+    week_1_min: 4  # 用户2026-10-15批准：独立新手下限，逐周按weekly_increase_max增加且不超过通用目标下限
+    weekly_increase_max: 2
+    goal_max_ref: dose.sets_week.goal_matrix
+    through_week_4_max: 10
+    from_week_5_ref: volume.week.increase
+  evidence: C
+  sources: [E04:S14, E02:Pelland2024, E02:Iversen2021]
+  unverified: [E04:S14, E02:Pelland2024]
+  note: 4–6 组起步，每周 +≤2，第 4 周前 ≤10
+
+- id: progression.new.exclusions
+  chapter: 7
+  type: exclude
+  applies:
+    experience: [new]
+  value:
+    weeks: [1, 4]
+    exclude_modality: [plyometric]
+    exclude_flags: [jumping, valsalva_prone, heavy_axial_load]
+    exclude_use: [skill]
+    rejected_alternatives: { plyometric_difficulty_max: 2 }
+  evidence: C
+  sources: [E04:S3, E04:S8, E04:S19]
+  note: 证据只排除难度 >2 的跳跃，此处全部排除更保守
+
+- id: progression.new.load_step
+  chapter: 7
+  type: limit
+  applies:
+    experience: [new]
+  value:
+    weeks: [1, 4]
+    progress_every_session: true
+    allowed_steps:
+      - { add_reps_per_set: [1, 2] }
+      - { when: all_working_sets_reach_rep_max, add_load: smallest_available_step }
+    autoreg_direction: down_only
+    rep_ranges_ref: dose.reps.by_class
+    low_rep_unlock_ref: dose.reps.bounds
+  evidence: C
+  sources: [E04:S8, E04:S3]
+  note: 每组 +1–2 次为工程选择，待教练审核
+
+- id: progression.doms.copy
+  chapter: 7
+  type: copy
+  applies:
+    experience: [new, returning_mid, returning_long]
+  value: { show_weeks: [1, 2], when: post_session }
+  zh: 训练后一两天肌肉酸痛很常见，通常几天内会减轻。轻松走走、正常活动往往有帮助。
+  en: Muscle soreness a day or two after training is common and usually eases within a few days. Light walking and normal activity often help.
+  evidence: C
+  sources: [E04:S15]
+  note: 普通酸痛不应吓退新手
+
+- id: progression.doms.referral
+  chapter: 7
+  type: trigger
+  value:
+    any_user_reports: [severe_muscle_swelling, very_dark_urine, severe_soreness_with_marked_weakness]
+    action: [pause_plan, show_copy]
+    urgency: same_day
+    lock_until: user_confirms_clinician_seen
+  zh: 如果肌肉肿得厉害、尿色变得很深（像浓茶或可乐），或者酸痛剧烈、明显没力气，请先停止训练，今天就去医院看看。确认看过医生后再回来继续。
+  en: If your muscles are badly swollen, your urine turns very dark (like strong tea or cola), or the soreness is severe with clear weakness, stop training and see a doctor today. Come back once you have been checked.
+  evidence: C
+  professional_review: true
+  sources: [E04:S15]
+  note: 上线前需专业审核；不判断原因，只提示当天就医
+
+# ---------- 7.7 停训后回归 ----------
+
+- id: progression.return.classify
+  chapter: 7
+  type: default
+  value:
+    basis: days_since_last_completed_rt_session
+    classes:
+      new: { any: [never_trained, prior_consistent_training_months_lt_3, prior_loads_unknown] }
+      trained: { gap_days_max: 7 }
+      returning_short: { gap_days_min: 8, gap_weeks_max: 4 }
+      returning_mid: { gap_weeks_gt: 4, gap_weeks_max: 12 }
+      returning_long: { gap_weeks_gt: 12 }
+    older_adult_thresholds_ref: older.return_after_break
+    illness_pause_days_count: true
+    illness_ref: safety.screen.temporary_illness
+    level_ref: dose.level.definition
+    break_counts_as_training_months: false
+  evidence: C
+  sources: [E04:S16, E04:S17, E04:S18]
+  unverified: [E04:S16, E04:S17, E04:S18]
+  note: 4 周阈值有荟萃分析支持；7 天与 12 周分界为工程选择
+
+- id: progression.return.short
+  chapter: 7
+  type: default
+  applies:
+    experience: [returning_short]
+  value:
+    base: last_working_load_before_break
+    ramp_weeks: 2
+    week_1: { load_pct: 90, volume_pct: 100 }
+    week_2: { load_pct: 100, volume_pct: 100 }
+  evidence: C
+  sources: [E04:S16, E04:S17]
+  unverified: [E04:S16, E04:S17]
+  note: 短停训后最大力量基本保留
+
+- id: progression.return.mid
+  chapter: 7
+  type: default
+  applies:
+    experience: [returning_mid]
+  value:
+    base: last_working_load_and_weekly_sets_before_break
+    ramp_weeks: 3
+    ramp: linear
+    load_pct_by_week: [80, 90, 100]
+    volume_pct_by_week: [60, 80, 100]
+    rejected_alternatives: { start_volume_pct: [60, 70], ramp_weeks: [2, 3] }
+  evidence: C
+  sources: [E04:S16, E04:S18, E04:S17]
+  unverified: [E04:S16, E04:S18, E04:S17]
+  note: 容量与恢复期均取证据保守端
+
+- id: progression.return.long
+  chapter: 7
+  type: formula
+  applies:
+    experience: [returning_long]
+  value:
+    base: last_working_load_and_weekly_sets_before_break
+    start: { load_pct: 60, volume_pct: 50 }
+    ramp_weeks: "clamp(ceil(weeks_off * 0.5), 4, 8)"
+    week_k_pct: "start + (100 - start) * (k - 1) / (ramp_weeks - 1)"
+    ramp: linear
+    rejected_alternatives: { start_load_pct: [60, 70] }
+  evidence: C
+  sources: [E04:S17, E04:S18, E04:S16]
+  unverified: [E04:S17, E04:S18, E04:S16]
+  note: 恢复期约为停训时间的一半，限制 4–8 周
+
+- id: progression.return.bodyweight
+  chapter: 7
+  type: default
+  applies:
+    experience: [returning_short, returning_mid, returning_long]
+  value:
+    applies_to: [ladder_exercises, non_percent_loadable]
+    week_1_step_delta: { returning_short: 0, returning_mid: -1, returning_long: -1 }
+    week_1_reps_target: rep_min
+    max_step_during_ramp: pre_break_step
+    first_session_rir_min: 3
+    ramp_pct_is_cap: true
+    adjustments_during_ramp: down_only_above_cap
+    rounding: down_to_available_load
+  evidence: C
+  sources: [E04:S17, E04:S8]
+  unverified: [E04:S17]
+  note: 工程选择，待教练审核；以降一级对应负荷回退
+
+- id: progression.return.first_session_cap
+  chapter: 7
+  type: limit
+  applies:
+    experience: [returning_short, returning_mid, returning_long]
+  value:
+    first_session_load_lt_previous_best: true
+    first_session_sets_lt_previous_best: true
+    bodyweight: { step_lte_previous_best: true, if_same_step_reps_lt_previous_best: true }
+  evidence: C
+  sources: [E04:S8, E04:S17]
+  unverified: [E04:S17]
+  note: 回归首课负荷与组数都低于既往最佳
+
+- id: progression.return.new_user_phase
+  chapter: 7
+  type: default
+  applies:
+    experience: [new]
+  value:
+    applies_during_weeks: [1, 4]
+    gap_days_8_to_28: repeat_caps_of_last_fully_completed_week
+    gap_days_gt_28: restart_week_1
+  evidence: C
+  sources: [E04:S16, E04:S3]
+  unverified: [E04:S16]
+  note: 工程选择，待教练审核；新手无既往负荷可回退
+
+# ---------- 7.8 错过训练 ----------
+
+- id: progression.missed.state
+  chapter: 7
+  type: default
+  value:
+    within_week_redistribution_ref: week.missed_session
+    missed_session_counts_as_failed: false
+    missed_session_counts_as_stall: false
+    consecutive_session_counters: { preserved_if_gap_days_max: 7, count: completed_sessions_only }
+    gap_days_max_continue_same_load: 7
+    gap_over_7_days_ref: progression.return.classify
+    after_illness_pause_first_session: { ref: week.recovery.light_day, sets_per_exercise_delta: -1, rir_delta: 1 }
+  evidence: C
+  sources: [E02:Schoenfeld2019, E02:Currier2026, E04:S16]
+  unverified: [E04:S16]
+  note: 工程选择，待教练审核；错过不算失败，病后首课轻松日
+
+# ---------- 7.9 用户反馈覆盖默认值 ----------
+
+- id: progression.copy.feedback
+  chapter: 7
+  type: copy
+  value: { per_exercise_buttons: [too_easy, too_hard, pain], post_session_button: session_too_tiring }
+  zh: { too_easy: 太简单, too_hard: 太难, pain: 疼痛, session_too_tiring: 今天整体太累了 }
+  en: { too_easy: Too easy, too_hard: Too hard, pain: Pain, session_too_tiring: Today was too tiring overall }
+  evidence: C
+  sources: [E04:S8]
+  note: 工程选择；一键反馈弥补未记录 RIR
+
+- id: progression.feedback.too_easy
+  chapter: 7
+  type: trigger
+  value:
+    loadable: { treat_as_rir_deviation: 2, next_session_load_pct: 5, max_step_pct: 10 }
+    bodyweight_ladder: { step_delta: 1, must_pass: [ladder.step.missing, select.difficulty.window, progression.new.week_caps] }
+    max_changes_per_exercise_per_session: 1
+    new_user_weeks_1_4: { load: smallest_available_step, step_delta_max: 1, difficulty_cap_ref: progression.new.week_caps }
+    return_ramp: { not_above_week_pct_cap: true }
+  evidence: C
+  sources: [E04:S8, E04:S9]
+  unverified: [E04:S9]
+  note: 反馈可覆盖默认起点，每次只动一步
+
+- id: progression.feedback.too_hard
+  chapter: 7
+  type: trigger
+  value:
+    loadable: { next_session_load_pct: -10 }
+    bodyweight_ladder: { step_delta: -1, at_lowest_step: { sets_delta: -1 } }
+    reps_target: rep_min
+    session_too_tiring:
+      next_session: week.recovery.light_day
+      log_as: { energy_motivation: 2 }
+      counts_toward: deload.trigger.reactive.low_energy_motivation
+  evidence: C
+  sources: [E04:S8, E04:S11]
+  unverified: [E04:S11]
+  note: 做不动时降一步；整节课太累记为一次低精力
+
+- id: progression.feedback.pain
+  chapter: 7
+  type: trigger
+  value:
+    first_question: joint_pain_or_muscle_soreness
+    muscle_soreness: [show_progression.doms.copy, check_progression.doms.referral]
+    joint_pain:
+      scale_ref: pain.prompt
+      route: pain.rule
+      deload_flag_when_pain_gte: 4
+      freeze_progression_until: { pain_lte: 3, consecutive_sessions: 2 }
+      freeze_ref: caution.progression
+    warning_symptoms_precedence: safety.copy.stop_symptoms
+  evidence: C
+  sources: [E04:S8, E04:S10]
+  note: 工程选择，待教练审核；不在疼痛中进阶，不判断原因

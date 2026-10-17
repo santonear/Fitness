@@ -1,0 +1,163 @@
+{
+  "sourceCommit": "e538643eb1d4402fdff06c6373cf0ec862618fb9",
+  "browser": "153.0.8010.12",
+  "scope": "Actual UI file validation/double confirmation/import; actual IndexedDB; UI JSON re-export; independent portable-fact comparisons. Synthetic local browser; no model calls.",
+  "results": [
+    {
+      "name": "followup-preview-v9.json",
+      "status": "passed",
+      "schemaVersion": 15,
+      "databaseVersion": 17,
+      "workouts": 1,
+      "reexportSha256": "f923b36b8f74cbd8e45ea379880f4bc58d202df6f3dbd0811debb9c3afae99ba",
+      "inputSha256": "fb3fcdcfb4a62824e4bfce7b14b1f8038156b124adf066fc97202f6a1caa474f"
+    },
+    {
+      "name": "pr52-before-plan-delete.json",
+      "status": "passed",
+      "schemaVersion": 15,
+      "databaseVersion": 17,
+      "workouts": 1,
+      "reexportSha256": "344dd9906576eeef1bae1999bab5d2c5f61505866ceca225f1e234b0619aa123",
+      "inputSha256": "5bbc6780120e0a41d048070e4c980198a49a40aba756cb2719d9631aa857f726"
+    },
+    {
+      "name": "v5-onboarding-restored.json",
+      "status": "passed",
+      "schemaVersion": 15,
+      "databaseVersion": 17,
+      "workouts": 0,
+      "reexportSha256": "6b96bff6d89c0b934cc7be10e174069a569c47b8c4a4e2df4f20545b3b2335ed",
+      "inputSha256": "5402e6090ea4aff513cff824c4e589e9d24668213c994e772c085de7220f0da1"
+    },
+    {
+      "name": "v5-onboarding.json",
+      "status": "passed",
+      "schemaVersion": 15,
+      "databaseVersion": 17,
+      "workouts": 0,
+      "reexportSha256": "35fc8002b124d4239a52937c915775b514580c09c771abe6c976ab8a67dd8668",
+      "inputSha256": "f0f5d227a94dc329c81f503503748d54b084223c325d230ee4cb6a946a0fdfb3"
+    },
+    {
+      "name": "v5-plans-weight.json",
+      "status": "passed",
+      "schemaVersion": 15,
+      "databaseVersion": 17,
+      "workouts": 0,
+      "reexportSha256": "85c48506a52ff7da53f4941b31222e0c1fe4c5c3c3daea91bac7fee42e714320",
+      "inputSha256": "2c53b87fe333f7cba552c5b46ff3a242e925f40ac60359936c7b3aed6a67a1bb"
+    },
+    {
+      "name": "v5-pre-restore.json",
+      "status": "passed",
+      "schemaVersion": 15,
+      "databaseVersion": 17,
+      "workouts": 0,
+      "reexportSha256": "7f2b7711346883ba414bc4c9e8c5728f6846c81bc830439285770a8792e17027",
+      "inputSha256": "bd51302baf73dcde4fba198b434bccd65e237d033461020b1db9a06a75f20acd"
+    },
+    {
+      "name": "v62-onboarding-restored.json",
+      "status": "passed",
+      "schemaVersion": 15,
+      "databaseVersion": 17,
+      "workouts": 0,
+      "reexportSha256": "1899fc7c46494bd6c6c99bbc14e409b4bf64607fff7f1345f148e22f6f378f41",
+      "inputSha256": "bd322c7f3c35520997ee1a4856c71152371557c8539b03044f55ef0beb3fb902"
+    },
+    {
+      "name": "v62-onboarding.json",
+      "status": "passed",
+      "schemaVersion": 15,
+      "databaseVersion": 17,
+      "workouts": 0,
+      "reexportSha256": "75e187f0cb2414e382098a1e5ef0bd91100f2828dbad890bf65fe5b1efdc2ab8",
+      "inputSha256": "35354120f9b19450fec38a12a59c34af120998fdcb47c16f68e22dcf6238eeb1"
+    },
+    {
+      "name": "v62-plans-weight.json",
+      "status": "passed",
+      "schemaVersion": 15,
+      "databaseVersion": 17,
+      "workouts": 0,
+      "reexportSha256": "d17fec545b7ab39a8d551b4b30079170040f09b2b251304d63e73ec9fc817aca",
+      "inputSha256": "c7a4fcb9ecbbede3c753b0da4211094961f9cac4f22d5dfaa5df84d7bac9a54d"
+    },
+    {
+      "name": "v62-pre-restore.json",
+      "status": "passed",
+      "schemaVersion": 15,
+      "databaseVersion": 17,
+      "workouts": 0,
+      "reexportSha256": "b786aa362fc26f78ec147d1bdd99832a301177d32d2dc5fe6fb25242bf8ea7ea",
+      "inputSha256": "f99a712fd14f40dc13f4530f9dcd90c9ed498babc059f4531388f650dfd9d297"
+    },
+    {
+      "name": "v71-coach-plan.json",
+      "status": "passed",
+      "schemaVersion": 15,
+      "databaseVersion": 17,
+      "workouts": 0,
+      "reexportSha256": "18e208da251f753e260ef84d691fd653ae07e1ba23606906f4827aa906bdb1f5",
+      "inputSha256": "b02b2e0fb9c0d772d1f238443d9fdb15d164a48d866f5f0e6de5842569702892"
+    },
+    {
+      "name": "v71-onboarding-restored.json",
+      "status": "passed",
+      "schemaVersion": 15,
+      "databaseVersion": 17,
+      "workouts": 0,
+      "reexportSha256": "f403a0f84a54ede36ea4c718751290eec09d50c55112b17818d871f0a453af45",
+      "inputSha256": "381fbfcc9517cacb9a4c7269cf8d49c0f4a9638ea254c7e68c2353f9db22733f"
+    },
+    {
+      "name": "v71-onboarding.json",
+      "status": "passed",
+      "schemaVersion": 15,
+      "databaseVersion": 17,
+      "workouts": 0,
+      "reexportSha256": "533f5e9cb5c810de7e73105069747c890dbcdc28c3524b5608d6dddf0fdf88b6",
+      "inputSha256": "ed8deedef0b19b4736c4d48ecb21621dd373ec906565fceca5d2af51fa1a1f94"
+    },
+    {
+      "name": "v71-plans-weight.json",
+      "status": "passed",
+      "schemaVersion": 15,
+      "databaseVersion": 17,
+      "workouts": 0,
+      "reexportSha256": "70fd7ff4c6d7d866fc6e437b3fd13eaf95fc9494db10e512589b13c2d6b11173",
+      "inputSha256": "24a45bf57489f87f8892cf0710bd4541e4c966d927283f09ddde515c2516dc5b"
+    },
+    {
+      "name": "v71-pre-restore.json",
+      "status": "passed",
+      "schemaVersion": 15,
+      "databaseVersion": 17,
+      "workouts": 0,
+      "reexportSha256": "b6d5030d0dcb72e816666a7c9adf594066c5029ba35d7f631da5eef554db0332",
+      "inputSha256": "245385e033be9fa59dd457ccf3047d3eaef153d4e715b5c8ee968e3e3c765bb7"
+    },
+    {
+      "name": "v8-main-pre-engine.json",
+      "status": "passed",
+      "schemaVersion": 15,
+      "databaseVersion": 17,
+      "workouts": 1,
+      "reexportSha256": "bb2109e2b47ac2abc66101de03c7c544da7479d28167dcd279cad1ec93d68a1a",
+      "inputSha256": "eea1a65df9773eed6e004d05f1fc103eebe731ef218d5f4e89d1d0c798eb3deb"
+    },
+    {
+      "name": "v807-mainline.json",
+      "status": "passed",
+      "schemaVersion": 15,
+      "databaseVersion": 17,
+      "workouts": 1,
+      "reexportSha256": "8d39315c936dc78d229c91a01d4d4a9bc7fdb23fa0b54c8ad7269913ee56dd3f",
+      "inputSha256": "f97d549d6fb71e2e04eb49903a222fa6768b8c5b739eac631c1ed07bca2e79d9"
+    }
+  ],
+  "errors": [],
+  "modelAttempts": [],
+  "generator": "tests/e2e/verify-legacy-engine-backups.mjs"
+}

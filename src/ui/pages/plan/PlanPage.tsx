@@ -26,7 +26,8 @@ export function itemTarget(item: PlannedItem, language: PlanLanguage, hideDistan
     : target.metricType === 'reps' ? t.reps(target.reps)
     : target.metricType === 'duration' ? t.seconds(target.durationSeconds)
     : `${t.seconds(target.durationSeconds)}${hideDistance||target.distanceMeters === undefined ? '' : ` · ${t.meters(target.distanceMeters)}`}`;
-  return `${t.sets(item.sets)} · ${value}`;
+  const relative=item.prescription?.safetyCue?` · ${item.prescription.loadDescription?.[language]??''} · ${item.prescription.safetyCue[language]}`:'';
+  return `${t.sets(item.sets)} · ${value}${relative}`;
 }
 
 export {templateLabel} from '../../../i18n/features/plan/labels';

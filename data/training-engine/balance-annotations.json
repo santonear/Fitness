@@ -1,0 +1,130 @@
+[
+  {
+    "slug": "dancer-pose",
+    "balance": {
+      "base": "single_leg",
+      "mode": "static",
+      "hand_support": false
+    },
+    "sourcePath": "src/catalog/generated/details.json",
+    "stepIndexes": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "stepsSha256": "ff30bce0d973628caffe82ed37a7a513b8a7b4d52f0ca8e1116dd6bf164e7a7b"
+  },
+  {
+    "slug": "eagle-pose",
+    "balance": {
+      "base": "single_leg",
+      "mode": "static",
+      "hand_support": false
+    },
+    "sourcePath": "src/catalog/generated/details.json",
+    "stepIndexes": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "stepsSha256": "89363e9cf7664c0e7d0c9059de61bb7eae3fad63055c42d0a526fc8a49193ed0"
+  },
+  {
+    "slug": "half-moon-pose",
+    "balance": {
+      "base": "single_leg",
+      "mode": "static",
+      "hand_support": true
+    },
+    "sourcePath": "src/catalog/generated/details.json",
+    "stepIndexes": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "stepsSha256": "605e90ee226eff4a235c2befdd0405f38e396080f3ada7a5263e36d898ae9f6c"
+  },
+  {
+    "slug": "tree-pose",
+    "balance": {
+      "base": "single_leg",
+      "mode": "static",
+      "hand_support": false
+    },
+    "sourcePath": "src/catalog/generated/details.json",
+    "stepIndexes": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "stepsSha256": "58383068660464c2de18ea21d441ac7225a2eeffae93e532adeb4cd4fff209a7"
+  },
+  {
+    "slug": "heel-to-toe-walk",
+    "balance": {
+      "base": "narrow",
+      "mode": "dynamic",
+      "hand_support": false
+    },
+    "sourcePath": "src/catalog/generated/details.json",
+    "stepIndexes": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "stepsSha256": "0cd30d2308f252cbbc5e159b6abdb5df8738b0213c1bfbf85e7e4d43a2f35d14"
+  },
+  {
+    "slug": "custom-wall-supported-single-leg-stand",
+    "balance": {
+      "base": "single_leg",
+      "mode": "static",
+      "hand_support": true
+    },
+    "sourcePath": "src/catalog/custom-exercises.json",
+    "stepIndexes": [
+      0,
+      1
+    ],
+    "stepsSha256": "6dd95b5b1ca75bc4fc0c04d2af267b10548fc138535af2fdbef24a561bc6e1bc"
+  },
+  {
+    "slug": "custom-supported-tandem-stand",
+    "balance": {
+      "base": "tandem",
+      "mode": "static",
+      "hand_support": true
+    },
+    "sourcePath": "src/catalog/custom-exercises.json",
+    "stepIndexes": [
+      0,
+      1
+    ],
+    "stepsSha256": "4004c8e13d50b4408ac1aece116e6a21c8ea5ad6e27d911ad7dd073369c40968"
+  },
+  {
+    "slug": "custom-supported-wide-static-stand",
+    "balance": {
+      "base": "wide",
+      "mode": "static",
+      "hand_support": true
+    },
+    "sourcePath": "src/catalog/custom-exercises.json",
+    "stepIndexes": [
+      0,
+      1
+    ],
+    "stepsSha256": "7767d7e30e56c4d69d87f039f3b29131074674739e499b89780bb2a4beebfe6f"
+  }
+]

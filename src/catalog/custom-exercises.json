@@ -1,0 +1,1745 @@
+[
+  {
+    "id": "e309250b-5101-53ca-8b66-6a72adacff34",
+    "slug": "custom-standing-self-row",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "站姿自阻力划船",
+      "en": "Standing self-resisted row"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "reps",
+    "allowedMetrics": [
+      "reps"
+    ],
+    "steps": {
+      "zh": [
+        "一手握住对侧前臂，双脚站稳。",
+        "活动侧肘向后拉，另一手提供轻微阻力，然后交换侧。"
+      ],
+      "en": [
+        "Hold the opposite forearm and stand steadily.",
+        "Draw the working elbow back against gentle resistance from the other hand, then switch sides."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "latissimus-dorsi",
+      "rhomboids"
+    ],
+    "secondaryMuscles": [
+      "biceps-brachii",
+      "posterior-deltoid"
+    ],
+    "bodyPart": "back",
+    "pattern": "pull_horizontal"
+  },
+  {
+    "id": "2ae67103-c243-5bb3-88d5-72a626a3fb07",
+    "slug": "custom-kneeling-knuckle-push-up",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "跪姿握拳俯卧撑",
+      "en": "Kneeling knuckle push-up"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "reps",
+    "allowedMetrics": [
+      "reps"
+    ],
+    "steps": {
+      "zh": [
+        "在舒适防滑的地面上双膝着地，双手轻握拳，手腕保持笔直。",
+        "屈肘缓慢下降到可控幅度，再推回起点；拳面不舒服就停止。"
+      ],
+      "en": [
+        "Kneel on a comfortable non-slip surface with gently closed fists and straight wrists.",
+        "Bend the elbows to lower through a controlled range, then press back up; stop if your knuckles are uncomfortable."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "pectoralis-major"
+    ],
+    "secondaryMuscles": [
+      "triceps-brachii",
+      "anterior-deltoid"
+    ],
+    "bodyPart": "chest",
+    "pattern": "push_horizontal"
+  },
+  {
+    "id": "56a14f4c-839d-598a-8c37-8d52f01e17a8",
+    "slug": "custom-standing-self-row-hold",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "站姿自阻力划船保持",
+      "en": "Standing self-resisted row hold"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "双脚站稳，一手握住对侧手腕。",
+        "保持活动侧肘贴近身体并向后用力，对侧手抵住不让移动。"
+      ],
+      "en": [
+        "Stand steadily and hold the opposite wrist.",
+        "Keep the working elbow near your side and pull back while the other hand prevents movement."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "latissimus-dorsi",
+      "rhomboids"
+    ],
+    "secondaryMuscles": [
+      "biceps-brachii",
+      "posterior-deltoid"
+    ],
+    "bodyPart": "back",
+    "pattern": "pull_horizontal"
+  },
+  {
+    "id": "e0951491-94bd-5e4b-8cdf-5abc67d9bee2",
+    "slug": "custom-standing-cross-press-brace",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "站姿交叉推压抗旋",
+      "en": "Standing cross-press brace"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "reps",
+    "allowedMetrics": [
+      "reps"
+    ],
+    "steps": {
+      "zh": [
+        "双脚站稳，一手抵在对侧前臂，双肘放在胸前。",
+        "一侧向外推、另一侧抵住，保持胸口与骨盆朝前，再换方向。"
+      ],
+      "en": [
+        "Stand steadily with one hand against the opposite forearm and both elbows in front of your chest.",
+        "Press outwards as the other arm resists, keeping chest and pelvis facing forwards; reverse directions."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "obliques",
+      "transverse-abdominis"
+    ],
+    "secondaryMuscles": [],
+    "bodyPart": "core",
+    "pattern": "anti_rotation"
+  },
+  {
+    "id": "e0b3a5bd-4c9d-5249-83e1-816ff305a08b",
+    "slug": "custom-band-self-anchored-row",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "坐姿脚绕弹力带划船",
+      "en": "Seated foot-anchored band row"
+    },
+    "category": "strength",
+    "equipment": "resistance-band",
+    "metricType": "reps",
+    "allowedMetrics": [
+      "reps"
+    ],
+    "steps": {
+      "zh": [
+        "坐稳，将完好的弹力带绕过双脚中部，双手握住两端。",
+        "肘向后拉，保持躯干稳定，再缓慢伸臂。"
+      ],
+      "en": [
+        "Sit steadily with an intact band around the middle of both feet and hold its ends.",
+        "Draw your elbows back without rocking your torso, then extend slowly."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "latissimus-dorsi",
+      "rhomboids"
+    ],
+    "secondaryMuscles": [
+      "biceps-brachii",
+      "posterior-deltoid"
+    ],
+    "bodyPart": "back",
+    "pattern": "pull_horizontal"
+  },
+  {
+    "id": "7c1ac9d8-2327-56d0-8809-bedb89052062",
+    "slug": "custom-self-resisted-pulldown",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "自阻力单臂下拉",
+      "en": "Self-resisted single-arm pulldown"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "reps",
+    "allowedMetrics": [
+      "reps"
+    ],
+    "steps": {
+      "zh": [
+        "一侧手臂抬至舒适高度，另一手轻握其前臂。",
+        "活动侧肘向下靠近身体，另一手提供向上的轻阻力。"
+      ],
+      "en": [
+        "Raise one arm to a comfortable height and hold its forearm with the other hand.",
+        "Draw the working elbow down towards your side against gentle upward resistance."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "latissimus-dorsi"
+    ],
+    "secondaryMuscles": [
+      "biceps-brachii"
+    ],
+    "bodyPart": "back",
+    "pattern": "pull_vertical"
+  },
+  {
+    "id": "5f49f6d0-7fc0-544a-844d-8f1f00d243cf",
+    "slug": "custom-self-resisted-pulldown-hold",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "自阻力下拉保持",
+      "en": "Self-resisted pulldown hold"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "一侧肘弯曲抬至舒适高度，另一手托住前臂。",
+        "活动侧尝试向下拉，对侧手抵住不让移动，保持自然呼吸。"
+      ],
+      "en": [
+        "Raise a bent elbow to a comfortable height and support the forearm with the other hand.",
+        "Try to pull down while the other hand prevents movement; breathe normally."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "latissimus-dorsi"
+    ],
+    "secondaryMuscles": [
+      "biceps-brachii"
+    ],
+    "bodyPart": "back",
+    "pattern": "pull_vertical"
+  },
+  {
+    "id": "9f7c1d5a-5f1e-598c-88fd-ef2a83a3a981",
+    "slug": "custom-band-high-pulldown",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "高位弹力带下拉",
+      "en": "High anchored band pulldown"
+    },
+    "category": "strength",
+    "equipment": "resistance-band",
+    "metricType": "reps",
+    "allowedMetrics": [
+      "reps"
+    ],
+    "steps": {
+      "zh": [
+        "将完好的弹力带固定在已确认牢固的高位固定点。",
+        "站稳后将双肘拉向身体两侧，再缓慢还原。"
+      ],
+      "en": [
+        "Attach an intact band to a high anchor you have checked is secure.",
+        "Stand steadily, draw your elbows down beside your torso, and return slowly."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "latissimus-dorsi"
+    ],
+    "secondaryMuscles": [
+      "biceps-brachii"
+    ],
+    "bodyPart": "back",
+    "pattern": "pull_vertical"
+  },
+  {
+    "id": "85b27729-fb5f-5406-8cb2-29306d951a60",
+    "slug": "custom-backpack-suitcase-walk",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "背包单手提物行走",
+      "en": "Backpack suitcase walk"
+    },
+    "category": "strength",
+    "equipment": "backpack",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "单手提起装有少量物品并扣好的背包，站直。",
+        "在平坦通畅的短路线缓慢行走，换手重复。"
+      ],
+      "en": [
+        "Hold a closed backpack containing a light load in one hand and stand tall.",
+        "Walk slowly along a short clear level route, then change hands."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "obliques"
+    ],
+    "secondaryMuscles": [
+      "forearm-flexors"
+    ],
+    "bodyPart": "core",
+    "pattern": "carry"
+  },
+  {
+    "id": "36cb78ba-060d-59f7-8f7a-ded946f7a052",
+    "slug": "custom-bottle-farmer-walk",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "双手水瓶提物行走",
+      "en": "Water-bottle farmer walk"
+    },
+    "category": "strength",
+    "equipment": "water-bottles",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "双手各提一个封好的水瓶，双臂自然垂下。",
+        "保持身体直立，沿通畅路线缓慢行走。"
+      ],
+      "en": [
+        "Hold a sealed water bottle in each hand with your arms by your sides.",
+        "Stay upright and walk slowly along a clear route."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "obliques"
+    ],
+    "secondaryMuscles": [
+      "forearm-flexors"
+    ],
+    "bodyPart": "core",
+    "pattern": "carry"
+  },
+  {
+    "id": "6b35deb1-017a-5956-8d42-2cc52c465546",
+    "slug": "custom-wall-supported-shallow-stepback",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "扶墙浅幅后撤步",
+      "en": "Wall-supported shallow step-back"
+    },
+    "category": "bodyweight",
+    "equipment": "wall",
+    "metricType": "reps",
+    "allowedMetrics": [
+      "reps"
+    ],
+    "steps": {
+      "zh": [
+        "一手轻扶稳固墙面，双脚前后分开。",
+        "后脚退一小步，双膝仅弯到舒适浅幅，再回到起点。"
+      ],
+      "en": [
+        "Rest one hand on a solid wall and take a staggered stance.",
+        "Step one foot back a short distance, bend both knees through a comfortable shallow range, and return."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "quadriceps",
+      "gluteus-maximus"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "bodyPart": "legs",
+    "pattern": "lunge"
+  },
+  {
+    "id": "dc4bab89-e5e8-58dc-8315-f845cc62d5ac",
+    "slug": "custom-shallow-split-squat",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "浅幅分腿蹲",
+      "en": "Shallow split squat"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "reps",
+    "allowedMetrics": [
+      "reps"
+    ],
+    "steps": {
+      "zh": [
+        "双脚前后错开，站距以能稳定站住为准。",
+        "双膝缓慢微弯，再伸直回到起点，左右换位。"
+      ],
+      "en": [
+        "Stand with one foot forward and one back in a stable stance.",
+        "Bend both knees slightly and slowly, then straighten; switch the leading foot."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "quadriceps",
+      "gluteus-maximus"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "bodyPart": "legs",
+    "pattern": "lunge"
+  },
+  {
+    "id": "44e07d20-b451-59fe-8345-c6e5ea948643",
+    "slug": "custom-supported-low-step-up",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "扶椅低台阶上步",
+      "en": "Supported low step-up"
+    },
+    "category": "strength",
+    "equipment": "box-or-step",
+    "metricType": "reps",
+    "allowedMetrics": [
+      "reps"
+    ],
+    "steps": {
+      "zh": [
+        "将稳固椅子放在固定低台阶旁，一手扶住椅背。",
+        "一脚踩上台阶，平稳站起，再缓慢退回地面。"
+      ],
+      "en": [
+        "Place a stable chair beside a fixed low step and hold its back.",
+        "Step up with one foot, rise steadily, and lower back to the floor slowly."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "quadriceps",
+      "gluteus-maximus"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "bodyPart": "legs",
+    "pattern": "lunge"
+  },
+  {
+    "id": "4cfe1b0c-271a-5b9d-8635-7f87630ae44a",
+    "slug": "custom-chair-sit-to-stand",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "坐站起立",
+      "en": "Chair sit-to-stand"
+    },
+    "category": "bodyweight",
+    "equipment": "chair",
+    "metricType": "reps",
+    "allowedMetrics": [
+      "reps"
+    ],
+    "steps": {
+      "zh": [
+        "坐在靠墙的稳固椅子前沿，双脚踩稳。",
+        "身体稍向前倾后站起，再缓慢坐回。"
+      ],
+      "en": [
+        "Sit near the front of a stable chair placed against a wall, feet planted.",
+        "Lean slightly forward to stand, then sit down slowly."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "quadriceps",
+      "gluteus-maximus"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "bodyPart": "legs",
+    "pattern": "squat"
+  },
+  {
+    "id": "76e886a9-6094-5673-8837-283f854121a6",
+    "slug": "custom-high-wall-sit",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "高位靠墙静蹲",
+      "en": "High wall sit"
+    },
+    "category": "bodyweight",
+    "equipment": "wall",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "背部轻靠墙，双脚向前移至站稳的位置。",
+        "沿墙小幅下滑，在浅蹲位置保持，再缓慢站直。"
+      ],
+      "en": [
+        "Rest your back against a wall and move your feet forward to a stable position.",
+        "Slide down a short distance, hold a shallow squat, and rise slowly."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "quadriceps",
+      "gluteus-maximus"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "bodyPart": "legs",
+    "pattern": "squat"
+  },
+  {
+    "id": "2949ad45-b236-5fee-8b81-ba8851cc0146",
+    "slug": "custom-standing-self-antirotation",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "站姿自阻力抗旋保持",
+      "en": "Standing self-resisted anti-rotation hold"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "双脚站稳，双手在胸前相扣，肘部微弯。",
+        "一手尝试横向拉，另一手抵住，保持胸口朝前，再换方向。"
+      ],
+      "en": [
+        "Stand steadily with your hands clasped in front of your chest and elbows soft.",
+        "Pull sideways with one hand while the other resists; keep your chest facing forward, then reverse."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "obliques",
+      "transverse-abdominis"
+    ],
+    "secondaryMuscles": [],
+    "bodyPart": "core",
+    "pattern": "anti_rotation"
+  },
+  {
+    "id": "e0970209-6057-56dc-8193-06cf29e1a520",
+    "slug": "custom-wall-antirotation-press",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "侧向扶墙抗旋推",
+      "en": "Side-on wall anti-rotation press"
+    },
+    "category": "bodyweight",
+    "equipment": "wall",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "侧身站在墙旁，靠墙侧前臂轻贴墙，双脚站稳。",
+        "前臂轻推墙面，躯干保持朝前，不跟着转动，再换侧。"
+      ],
+      "en": [
+        "Stand side-on beside a wall with the nearer forearm against it and feet steady.",
+        "Press gently into the wall while keeping your torso facing forward, then change sides."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "obliques",
+      "transverse-abdominis"
+    ],
+    "secondaryMuscles": [],
+    "bodyPart": "core",
+    "pattern": "anti_rotation"
+  },
+  {
+    "id": "63dd8ff9-5994-5916-8fa6-3f347b3898b0",
+    "slug": "custom-kneeling-side-bridge",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "跪姿侧桥",
+      "en": "Kneeling side bridge"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "侧卧，双膝弯曲，以一侧前臂支撑。",
+        "抬起髋部，让肩、髋与膝大致连成一直线，再缓慢放下。"
+      ],
+      "en": [
+        "Lie on your side with knees bent and one forearm supporting you.",
+        "Lift your hips so shoulder, hip and knee roughly align, then lower slowly."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "obliques"
+    ],
+    "secondaryMuscles": [],
+    "bodyPart": "core",
+    "pattern": "anti_lateral_flexion"
+  },
+  {
+    "id": "bb96ec5f-31cc-5af0-832c-f9ac2d1b22d1",
+    "slug": "custom-standing-side-resistance-hold",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "站姿自阻力侧向保持",
+      "en": "Standing self-resisted side hold"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "双脚站稳，一手轻压同侧大腿外侧。",
+        "手尝试向外推、大腿轻轻抵住，保持躯干直立，再换侧。"
+      ],
+      "en": [
+        "Stand steadily with one hand against the outside of the same-side thigh.",
+        "Press outward with the hand as the thigh gently resists; keep your torso upright, then switch sides."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "obliques"
+    ],
+    "secondaryMuscles": [],
+    "bodyPart": "core",
+    "pattern": "anti_lateral_flexion"
+  },
+  {
+    "id": "b3469727-3bd6-5826-85f9-28d5efc1a2ca",
+    "slug": "custom-self-resisted-overhead-press",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "自阻力单臂上推",
+      "en": "Self-resisted single-arm overhead press"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "reps",
+    "allowedMetrics": [
+      "reps"
+    ],
+    "steps": {
+      "zh": [
+        "一侧手放在肩旁，另一手轻压其前臂。",
+        "活动侧手臂向上推到舒适高度，另一手提供很轻的阻力。"
+      ],
+      "en": [
+        "Place one hand beside your shoulder and the other lightly on its forearm.",
+        "Press the working arm upwards to a comfortable height against very light resistance."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "anterior-deltoid"
+    ],
+    "secondaryMuscles": [
+      "triceps-brachii"
+    ],
+    "bodyPart": "shoulders",
+    "pattern": "push_vertical"
+  },
+  {
+    "id": "0941a9bd-2bb8-58a1-8ead-4431daba8952",
+    "slug": "custom-seated-self-overhead-press",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "坐姿自阻力上推",
+      "en": "Seated self-resisted overhead press"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "reps",
+    "allowedMetrics": [
+      "reps"
+    ],
+    "steps": {
+      "zh": [
+        "在舒适的地面上坐稳，一侧手放在肩旁，另一手轻抵其前臂。",
+        "活动侧向上推到舒适高度，对侧只给轻阻力，身体不后仰。"
+      ],
+      "en": [
+        "Sit steadily on a comfortable floor with one hand beside your shoulder and the other lightly against its forearm.",
+        "Press upwards to a comfortable height against gentle resistance without leaning back."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "anterior-deltoid"
+    ],
+    "secondaryMuscles": [
+      "triceps-brachii"
+    ],
+    "bodyPart": "shoulders",
+    "pattern": "push_vertical"
+  },
+  {
+    "id": "56692b0e-64cb-5fe4-8a49-6d57c6ccc437",
+    "slug": "custom-forearm-wall-push",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "前臂撑墙推",
+      "en": "Forearm wall push"
+    },
+    "category": "bodyweight",
+    "equipment": "wall",
+    "metricType": "reps",
+    "allowedMetrics": [
+      "reps"
+    ],
+    "steps": {
+      "zh": [
+        "面对墙站稳，双前臂贴墙，双脚稍向后退。",
+        "身体保持一条直线靠近墙面，再以前臂轻推回起点。"
+      ],
+      "en": [
+        "Face a wall with both forearms against it and take a small step back.",
+        "Keep your body aligned as you lean towards the wall, then push gently back through your forearms."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "pectoralis-major"
+    ],
+    "secondaryMuscles": [
+      "triceps-brachii",
+      "anterior-deltoid"
+    ],
+    "bodyPart": "chest",
+    "pattern": "push_horizontal"
+  },
+  {
+    "id": "3488272c-79af-5b0e-8bd9-eb58e0fbc453",
+    "slug": "custom-self-resisted-chest-press",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "自阻力单臂前推",
+      "en": "Self-resisted single-arm chest press"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "reps",
+    "allowedMetrics": [
+      "reps"
+    ],
+    "steps": {
+      "zh": [
+        "一侧肘弯曲置于胸前，另一手抵住其前臂。",
+        "活动侧向前伸臂，对侧提供轻阻力，身体不转动。"
+      ],
+      "en": [
+        "Bend one elbow in front of your chest and resist its forearm with the other hand.",
+        "Extend the working arm forwards against light resistance without twisting your body."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "pectoralis-major"
+    ],
+    "secondaryMuscles": [
+      "triceps-brachii",
+      "anterior-deltoid"
+    ],
+    "bodyPart": "chest",
+    "pattern": "push_horizontal"
+  },
+  {
+    "id": "9ab4007b-4404-5576-8bed-9f0641cdbecf",
+    "slug": "custom-quiet-march",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "安静原地踏步",
+      "en": "Quiet march in place"
+    },
+    "category": "cardio",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "双脚站稳，双臂自然摆动。",
+        "交替轻抬双脚并轻放回原地，保持能正常呼吸的节奏。"
+      ],
+      "en": [
+        "Stand steadily with a natural arm swing.",
+        "Alternate gently lifting each foot and placing it softly back down at a comfortable pace."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "secondaryMuscles": [],
+    "bodyPart": "cardio",
+    "pattern": "cardio_cyclic"
+  },
+  {
+    "id": "e4e81141-14e6-5f72-8b8f-5e19e3cb709a",
+    "slug": "custom-step-jack",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "无跳跃踏步开合",
+      "en": "Step jack without jumping"
+    },
+    "category": "cardio",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "双脚并拢站稳，双臂自然垂下。",
+        "一脚向侧方轻迈并抬臂到舒适高度，收回后换脚，全程不跳。"
+      ],
+      "en": [
+        "Stand with feet together and arms relaxed.",
+        "Step one foot sideways while raising your arms comfortably, return, and switch feet without jumping."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "secondaryMuscles": [],
+    "bodyPart": "cardio",
+    "pattern": "cardio_cyclic"
+  },
+  {
+    "id": "9f2b36bf-e604-5671-8113-573d74a04132",
+    "slug": "custom-quiet-shadow-boxing",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "站姿轻空拳",
+      "en": "Gentle standing shadow boxing"
+    },
+    "category": "cardio",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "双脚略宽于髋，双手放在胸前。",
+        "左右交替轻轻向前出拳，肘部不锁死，双脚不跳动。"
+      ],
+      "en": [
+        "Stand with feet slightly wider than your hips and hands near your chest.",
+        "Alternate gentle forward punches without locking your elbows or bouncing your feet."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "secondaryMuscles": [],
+    "bodyPart": "cardio",
+    "pattern": "cardio_cyclic"
+  },
+  {
+    "id": "bf4bc395-9395-57dd-8a5f-188ad063d783",
+    "slug": "custom-seated-march",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "坐姿踏步",
+      "en": "Seated march"
+    },
+    "category": "cardio",
+    "equipment": "chair",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "坐在稳固椅子上，双脚踩地，身体直立。",
+        "交替轻抬一侧膝盖，再轻放脚掌，保持平稳节奏。"
+      ],
+      "en": [
+        "Sit upright on a stable chair with both feet on the floor.",
+        "Alternate gently lifting each knee and setting the foot down softly at a steady pace."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "secondaryMuscles": [],
+    "bodyPart": "cardio",
+    "pattern": "cardio_cyclic"
+  },
+  {
+    "id": "b6a3104a-bb84-50d8-8721-14b2822bbb7c",
+    "slug": "custom-wall-supported-single-leg-stand",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "扶墙单腿站",
+      "en": "Wall-supported single-leg stand"
+    },
+    "category": "bodyweight",
+    "equipment": "wall",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "侧身靠近墙，一手始终轻扶墙面。",
+        "一脚轻离地面，在有支撑的情况下保持站稳，再换脚。"
+      ],
+      "en": [
+        "Stand beside a wall with one hand in contact throughout.",
+        "Lift one foot slightly and hold a steady supported stance, then switch feet."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "gastrocnemius"
+    ],
+    "secondaryMuscles": [],
+    "bodyPart": "legs",
+    "pattern": "balance"
+  },
+  {
+    "id": "ce553625-eca7-5c17-81fa-1999900a7e21",
+    "slug": "custom-supported-tandem-stand",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "扶墙前后脚站立",
+      "en": "Wall-supported tandem stand"
+    },
+    "category": "bodyweight",
+    "equipment": "wall",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "一手扶墙，将一脚放在另一脚前方，站距以稳定为准。",
+        "目视前方，保持站稳，再交换前后脚。"
+      ],
+      "en": [
+        "Hold a wall and place one foot in front of the other at a spacing you can control.",
+        "Look ahead and hold steadily, then swap the front foot."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "gastrocnemius"
+    ],
+    "secondaryMuscles": [],
+    "bodyPart": "legs",
+    "pattern": "balance"
+  },
+  {
+    "id": "42a33bad-4563-5b3a-89f0-89d76f6a5383",
+    "slug": "custom-supported-heel-raise",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "扶墙提踵平衡",
+      "en": "Wall-supported heel raise"
+    },
+    "category": "bodyweight",
+    "equipment": "wall",
+    "metricType": "reps",
+    "allowedMetrics": [
+      "reps"
+    ],
+    "steps": {
+      "zh": [
+        "面对墙站稳，双手轻扶墙面。",
+        "双脚跟缓慢抬起，再缓慢落地，重心保持平稳。"
+      ],
+      "en": [
+        "Face a wall with both hands resting lightly on it.",
+        "Raise both heels slowly and lower them with control while keeping your balance."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "gastrocnemius"
+    ],
+    "secondaryMuscles": [],
+    "bodyPart": "legs",
+    "pattern": "balance"
+  },
+  {
+    "id": "124e183e-1f04-5f06-8e2d-d4dadc9413d8",
+    "slug": "custom-wall-plank",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "斜靠墙平板支撑",
+      "en": "Wall plank"
+    },
+    "category": "bodyweight",
+    "equipment": "wall",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "双前臂贴墙，双脚后退到可控的位置。",
+        "保持头、躯干与腿大致成直线，腹部轻收，持续自然呼吸。"
+      ],
+      "en": [
+        "Place your forearms on a wall and step back to a position you can control.",
+        "Keep your head, torso and legs roughly aligned, gently brace, and breathe normally."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "rectus-abdominis",
+      "transverse-abdominis"
+    ],
+    "secondaryMuscles": [],
+    "bodyPart": "core",
+    "pattern": "anti_extension"
+  },
+  {
+    "id": "3af7d9a0-edf4-5f27-8b2d-10066ef4b693",
+    "slug": "custom-standing-self-antileaning",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "站姿前推抗伸展保持",
+      "en": "Standing forward-press brace"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "双脚站稳，双手在胸前相抵。",
+        "双手轻轻互推并向前伸出少许，保持肋骨与骨盆稳定，不后仰。"
+      ],
+      "en": [
+        "Stand steadily with your hands pressing against each other in front of your chest.",
+        "Gently press and reach forward a little while keeping ribs and pelvis steady without leaning back."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "rectus-abdominis",
+      "transverse-abdominis"
+    ],
+    "secondaryMuscles": [],
+    "bodyPart": "core",
+    "pattern": "anti_extension"
+  },
+  {
+    "id": "b8f89f42-2607-557f-8e2f-4be56f0f65a7",
+    "slug": "custom-slow-bear-step",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "慢速熊式小步移动",
+      "en": "Slow short bear steps"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "双手与脚尖撑地，双膝悬空靠近地面。",
+        "交替移动对侧手脚一小步，保持背部稳定，不追求速度。"
+      ],
+      "en": [
+        "Support yourself on hands and toes with knees hovering close to the floor.",
+        "Move opposite hand and foot a short step at a time, keeping your back steady without rushing."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "rectus-abdominis"
+    ],
+    "secondaryMuscles": [
+      "anterior-deltoid"
+    ],
+    "bodyPart": "core",
+    "pattern": "locomotion_ground"
+  },
+  {
+    "id": "28641172-b3f1-5895-8864-d2af61cbebfd",
+    "slug": "custom-forearm-ground-step",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "前臂支撑小步移动",
+      "en": "Forearm-supported ground steps"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "以前臂和脚尖支撑，双脚稍分开。",
+        "交替将一侧前臂与脚向前挪动很小一步，保持躯干稳定。"
+      ],
+      "en": [
+        "Support yourself on forearms and toes with feet slightly apart.",
+        "Alternate moving a forearm and foot a very short step forwards while keeping your torso steady."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "rectus-abdominis"
+    ],
+    "secondaryMuscles": [
+      "anterior-deltoid"
+    ],
+    "bodyPart": "core",
+    "pattern": "locomotion_ground"
+  },
+  {
+    "id": "7308de98-c530-5da4-811f-71c9d5986e1b",
+    "slug": "custom-kneeling-forearm-crawl",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "跪姿前臂小步爬行",
+      "en": "Kneeling forearm crawl"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "在舒适防滑的地面以前臂和双膝支撑，双手放松，手腕不承重。",
+        "交替将一侧前臂与对侧膝盖向前挪动一小步，保持躯干稳定，缓慢移动。"
+      ],
+      "en": [
+        "Support yourself on forearms and knees on a comfortable non-slip floor, with hands relaxed and no weight through the wrists.",
+        "Move one forearm and the opposite knee a short step forwards, alternating slowly while keeping your torso steady."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "rectus-abdominis"
+    ],
+    "secondaryMuscles": [
+      "anterior-deltoid"
+    ],
+    "bodyPart": "core",
+    "pattern": "locomotion_ground"
+  },
+  {
+    "id": "5e763766-ee3e-56b0-8b68-69bed38b8381",
+    "slug": "custom-wall-side-brace",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "站姿扶墙侧向保持",
+      "en": "Standing wall side brace"
+    },
+    "category": "bodyweight",
+    "equipment": "wall",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "侧身靠近墙，一侧前臂贴墙，双脚站稳。",
+        "身体轻轻向墙倾斜并用前臂抵住，保持躯干笔直，再换侧。"
+      ],
+      "en": [
+        "Stand side-on near a wall with one forearm on it and feet steady.",
+        "Lean gently towards the wall and resist through the forearm, keeping your torso straight; switch sides."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "obliques"
+    ],
+    "secondaryMuscles": [],
+    "bodyPart": "core",
+    "pattern": "anti_lateral_flexion"
+  },
+  {
+    "id": "3c19cd42-91c7-5443-882b-bc59ca264279",
+    "slug": "custom-seated-self-resisted-leg-curl",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "坐姿自阻力屈膝",
+      "en": "Seated self-resisted leg curl"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "在舒适地面坐稳，双腿在身前弯曲，一只脚踝轻抵另一脚踝前方。",
+        "活动侧尝试向后勾脚跟，另一只脚轻轻抵住，让膝后侧缓慢用力，再换侧。"
+      ],
+      "en": [
+        "Sit steadily on a comfortable floor with knees bent and one ankle lightly in front of the other.",
+        "Try to draw the working heel back as the other foot gently resists, then switch sides."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "secondaryMuscles": [
+      "gastrocnemius"
+    ],
+    "bodyPart": "legs",
+    "pattern": "isolation_lower"
+  },
+  {
+    "id": "10820d67-fcdf-529a-8206-48ef97954658",
+    "slug": "custom-standing-heel-drag-hold",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "站姿脚跟后拉保持",
+      "en": "Standing heel-drag hold"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "双脚前后错开站稳，前脚脚跟踩实，膝盖保持微弯。",
+        "前脚尝试沿地面向后拉，但脚跟不实际移动，保持骨盆不动，再换脚。"
+      ],
+      "en": [
+        "Stand steadily in a staggered stance with the front heel planted and knee slightly bent.",
+        "Try to drag that heel backwards without moving it or your pelvis, then switch feet."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "secondaryMuscles": [
+      "gastrocnemius"
+    ],
+    "bodyPart": "legs",
+    "pattern": "isolation_lower"
+  },
+  {
+    "id": "894c5044-1af6-596e-8628-2fa8b7522f0f",
+    "slug": "custom-standing-upper-back-stretch",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "站姿上背拉伸",
+      "en": "Standing upper-back stretch"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "站直，双手在身前相扣，手臂抬至约肩高。",
+        "下巴轻向胸前收，双手向前伸，让上背轻轻圆起，肩胛向两侧分开。",
+        "保持 15–30 秒后放松，重复 2–4 次。"
+      ],
+      "en": [
+        "Stand upright and link your hands in front of you, with your arms near shoulder level.",
+        "Ease your chin down and reach away from your body, rounding the upper back and spreading the shoulder blades.",
+        "Stay for 15–30 seconds, release, and complete 2–4 repetitions."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "如出现疼痛，减小幅度或停止。"
+      ],
+      "en": [
+        "Ease off or stop if pain develops."
+      ]
+    },
+    "primaryMuscles": [
+      "rhomboids"
+    ],
+    "secondaryMuscles": [],
+    "bodyPart": "back",
+    "pattern": "mobility",
+    "contentSource": {
+      "url": "https://myhealth.alberta.ca/health/AfterCareInformation/pages/conditions.aspx?hwid=zp4447",
+      "title": "Healthy Upper Back: Exercises",
+      "section": "Lower neck and upper back (rhomboid) stretch"
+    }
+  },
+  {
+    "id": "47562b7f-d0ad-54a9-8383-b83547a80282",
+    "slug": "custom-supported-wide-static-stand",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "扶稳固支撑物宽站距静态站立",
+      "en": "Supported wide-stance static stand"
+    },
+    "category": "bodyweight",
+    "equipment": "wall",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "站在稳固墙面、椅背或台面旁，双脚以宽站距着地，手始终轻扶支撑物。",
+        "保持双脚着地和身体站稳，目视前方，自然呼吸；不抬脚、不踮脚、不踏步。"
+      ],
+      "en": [
+        "Stand beside a solid wall, stable chair back or sturdy counter with both feet on the floor in a wide stance. Keep a hand in contact with the support throughout.",
+        "Keep both feet grounded and hold a steady standing position while looking ahead and breathing naturally. Do not lift a foot, raise your heels or step."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "保持自然呼吸，只使用能够稳定控制的幅度和轻阻力。",
+        "出现不舒服或支撑不稳时停止；使用前检查器械和固定点。"
+      ],
+      "en": [
+        "Breathe normally and use only a range and light resistance you can control.",
+        "Stop if uncomfortable or unstable; check equipment and anchors before use."
+      ]
+    },
+    "primaryMuscles": [
+      "gastrocnemius"
+    ],
+    "secondaryMuscles": [],
+    "bodyPart": "legs",
+    "pattern": "balance",
+    "contentSource": "older.balance.progression stage 1; user approved supported wide static stand"
+  },
+  {
+    "id": "83cb6674-515a-52cc-8ff4-b74c33f5da5a",
+    "slug": "custom-slow-walking-in-place",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "原地慢走",
+      "en": "Slow walking in place"
+    },
+    "category": "cardio",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "慢慢原地踏步，脚轻轻离地，膝盖不用抬高，手臂自然摆动。需要的话可以扶着墙或椅背。"
+      ],
+      "en": [
+        "Step slowly in place, lifting your feet just off the floor. No need to raise your knees high; let your arms swing naturally. Hold a wall or chair back if you like."
+      ]
+    },
+    "cautions": {
+      "zh": [],
+      "en": []
+    },
+    "primaryMuscles": [],
+    "secondaryMuscles": [],
+    "bodyPart": "cardio",
+    "pattern": "cardio_cyclic",
+    "contentSource": "User-approved product decision: slow walking in place, low-intensity walking locomotion; coach review pending. ACOG Exercise After Pregnancy and Committee Opinion 804 are general postpartum background only, not specific endorsement of this action or uncleared cesarean exercise. https://www.acog.org/womens-health/faqs/exercise-after-pregnancy https://www.acog.org/clinical/clinical-guidance/committee-opinion/articles/2020/04/physical-activity-and-exercise-during-pregnancy-and-the-postpartum-period"
+  }
+]

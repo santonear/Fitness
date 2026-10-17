@@ -1,3 +1,5 @@
+import {hasHouseholdSupport} from '../engine/equipment';
+import {DATABASE_VERSION} from '../domain/storage-version';
 import type {AssistantConversation} from './assistant-conversations';
 import {recoverAssistantSchedule,recoverLegacyPlanSchedules} from './assistant-schedule-migration';
 import {migrateBodyProfile} from './body-profile-migration';
@@ -10,8 +12,10 @@ import { localDateSchema, timeZoneSchema } from '../domain/schemas';
 import type { LocalProfile, Metadata, BodyWeightObservation, Plan, PlanVersion, WorkoutSession, SetRecord, ScheduledWorkout, TrainingMemo, AiMemoryNote, TimerState, MediaAsset } from '../domain/models';
 import { upgradeToV8, type V8Library } from './v8-migration';
 import type { NutritionRecord, ActivityImportReceipt } from '../domain/lifestyle';
+import type {TrainingCheckinRow} from '../application/training-checkin';
 
 export class FitnessDatabase extends Dexie {
+  trainingCheckins!: Table<TrainingCheckinRow,string>;
   assistantConversations!: Table<AssistantConversation,string>;
   exerciseFavorites!: Table<{id:string},string>;
   nutritionRecords!: Table<NutritionRecord, string>;
@@ -39,6 +43,7 @@ export class FitnessDatabase extends Dexie {
   constructor(name: string) {
     super(name);
     this.on('ready', async vipDb=>{
+      await vipDb.table('trainingCheckins').where('expiresAt').belowOrEqual(new Date().toISOString()).delete();
       const metadata=vipDb.table<Metadata,string>('metadata');
       const versions=vipDb.table<V8Library['planVersions'][number],string>('v8PlanVersions');
       const plans=vipDb.table<V8Library['plans'][number],string>('v8Plans');
@@ -54,6 +59,21 @@ export class FitnessDatabase extends Dexie {
         if(correctedPlans.length)await plans.bulkPut(correctedPlans);
         await metadata.put({...row,assistantScheduleRecoveryV2At:recoveredAt});
       });
+    });
+    this.version(DATABASE_VERSION).stores({}).upgrade(async tx=>{
+      // Additive safety evidence: absent legacy answers remain unknown; no event is inferred.
+      await tx.table('metadata').toCollection().modify((row:Metadata)=>{row.schemaVersion=DATABASE_VERSION;});
+    });
+    this.version(18).stores({}).upgrade(async tx=>{
+      await tx.table('v8State').toCollection().modify((row:V8Library['state'])=>{if(row.coachProfile&&row.coachProfile.householdSupport===undefined)row.coachProfile.householdSupport=hasHouseholdSupport(row.coachProfile);});
+      await tx.table('metadata').toCollection().modify((row:Metadata)=>{row.schemaVersion=DATABASE_VERSION;});
+    });
+    this.version(17).stores({trainingCheckins:'id,expiresAt'}).upgrade(async tx=>{
+      await tx.table('metadata').toCollection().modify((row:Metadata)=>{row.schemaVersion=17;});
+    });
+    this.version(16).stores({}).upgrade(async tx=>{
+      // Add optional engine metadata and append-only feedback, leaving stored facts untouched.
+      await tx.table('metadata').toCollection().modify((row:Metadata)=>{row.schemaVersion=16;});
     });
     this.version(15).stores({}).upgrade(async tx=>{
       // Additive profile metadata only. Existing answers and training facts stay intact.

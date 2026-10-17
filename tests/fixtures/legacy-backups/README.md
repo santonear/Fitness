@@ -21,3 +21,11 @@ V7.1 芽芽计划使用独立生成模式：`node tests/fixtures/legacy-backups/
 ## V8.0.7 上一发布版样本
 
 `generate-v807.mjs` 在隔离检出 `492b9f7d762b319edd1e3e59350c9fb10b8ee6c3` 的实际界面中完成成年引导、基础计划确认、一组训练及部分完成反馈，然后经设置导出。`v807-mainline.json` 是实际下载结果，`v807-manifest.json` 保存来源、哈希和覆盖范围；没有直接写数据库、手写备份或模型调用。
+
+## Training Engine 之前的正式 main 样本
+
+`v8-main-pre-engine.json` 来自正式 main `0165768d37bcee81492c62f8b9ed0a573dd11521` 的隔离检出。`generate-v8-main-pre-engine.mjs` 在 5420 端口的真实界面填写合成身体资料、采用本地计划、完成一组训练并结束、追加体重，再经设置下载 JSON。没有直接写数据库、手写备份内容或模型请求；来源、浏览器和下载文件哈希见同名 manifest。
+
+生成前需启动该固定检出的 Vite 服务，准备相同提交的目录生成素材与本地 Chromium。再从测试工作树执行 `node tests/fixtures/legacy-backups/generate-v8-main-pre-engine.mjs`。脚本拒绝其他基线提交，拦截全部 API 并阻断外部来源；模型费用为零。重新生成会产生新的 UUID 和文件哈希。
+
+`verify-legacy-engine-backups.mjs` 对新版 5421 服务执行真实恢复：每份独立浏览器上下文，通过文件预检、下载现库及双重确认写入 IndexedDB，然后通过界面重新导出。17 份样本全部通过；原有计划、组、日程、体重和已有 V8 训练事实逐项核对，数据库版本 17、备份版本 15，临时自查表为空且不进入备份。`v8-main-pre-engine.restore-manifest.json` 固定本次来源提交、17 个输入与重导出哈希。此证据是合成本地桌面 Chromium 恢复验证，不是手机性能、真实用户数据或模型质量验收。

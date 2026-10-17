@@ -1,12 +1,13 @@
 import {sanitizeAssistantRequest,type AssistantEvent} from '../../assistant/contracts';
 import {runAssistantModel,createAssistantProvider} from './model';
-import {ASSISTANT_PROMPT_VERSION,assistantPromptRegistry} from './prompts';
+import {ASSISTANT_PROMPT_VERSION,selectAssistantPromptVersion} from './prompts';
 import {AssistantAccessError,AssistantUsageStore,type UsageCall} from './admission';
 import {D1ControlStore} from '../d1-store';
 import {digest} from '../contracts';
 import {FinanceStore} from '../admin/finance/runtime';
 import {archiveLegacyUsage} from './usage-report';
 import type {DeepSeekWorkerEnv} from '../deepseek-worker';
+import {readFeatureFlags} from '../feature-config';
 import type {FeatureConfigEnv} from '../feature-config';
 export type AssistantEnv=DeepSeekWorkerEnv&FeatureConfigEnv&{ASSISTANT_MAX_OUTPUT_TOKENS?:string;ASSISTANT_MAX_ATTACHMENT_TOKENS?:string};
 // Official pricing verified 2026-10-12: uncached peak CNY 2 / 8 per million. Display estimate, never admission.
@@ -29,6 +30,7 @@ export async function handleAssistant(request:Request,env:AssistantEnv,runner=ru
   if(request.method!=='POST')return json({error:'METHOD_NOT_ALLOWED'},405);
   const url=new URL(request.url);if(url.protocol!=='https:'||request.headers.get('origin')!==url.origin||request.headers.get('sec-fetch-site')==='cross-site')return json({error:'ORIGIN_DENIED'},403);
   let input;try{input=sanitizeAssistantRequest(await readInput(request))}catch(e){if(e instanceof AssistantAccessError)throw e;throw new AssistantAccessError('INVALID_INPUT',400)}
+  if(input.context?.trainingEngine&&!(await readFeatureFlags(env) as Record<string,boolean>).trainingEngine)throw new AssistantAccessError('AI_DISABLED',503);
   const {subjectId,state}=await assistantSubject(request,env);
   if(!env.ADMIN_DB||!env.DEEPSEEK_API_KEY)throw new AssistantAccessError('MODEL_UNAVAILABLE',503);
   const config=(await new FinanceStore(env.ADMIN_DB).read()).versions.at(-1)?.config;
@@ -37,7 +39,7 @@ export async function handleAssistant(request:Request,env:AssistantEnv,runner=ru
   await archiveLegacyUsage(env.ADMIN_DB,state,now);
   let promptVersion=ASSISTANT_PROMPT_VERSION;
   const selected=await env.ADMIN_DB.prepare('SELECT version FROM admin_prompt_selection WHERE environment=? AND task=?').bind(env.ADMIN_ENVIRONMENT??'preview','ASSISTANT_CHAT').first<{version:string}>();
-  if(selected){if(selected.version!==assistantPromptRegistry.current&&selected.version!==assistantPromptRegistry.previous&&selected.version!==assistantPromptRegistry.legacy)throw new AssistantAccessError('MODEL_UNAVAILABLE',503);promptVersion=selected.version}
+  try{promptVersion=selectAssistantPromptVersion(input.context?.trainingEngine===true,selected?.version)}catch{throw new AssistantAccessError('MODEL_UNAVAILABLE',503)}
   const abort=new AbortController(),signal=AbortSignal.any([request.signal,abort.signal,AbortSignal.timeout(150000)]);
   const provider=createAssistantProvider({apiKey:env.DEEPSEEK_API_KEY,baseUrl:'https://api.deepseek.com',model:'deepseek-flash',maxAttachmentTokens:env.ASSISTANT_MAX_ATTACHMENT_TOKENS?Number(env.ASSISTANT_MAX_ATTACHMENT_TOKENS):undefined,maxTokens:env.ASSISTANT_MAX_OUTPUT_TOKENS?Number(env.ASSISTANT_MAX_OUTPUT_TOKENS):undefined});
   const encoder=new TextEncoder();let disconnected=false;

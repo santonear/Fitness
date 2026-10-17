@@ -1,0 +1,44 @@
+{
+  "urinary_or_faecal_leakage_or_urgency": {
+    "sourceRuleId": "postpartum.referral_signs",
+    "source": "docs/training-engine/rulebook/ch12-postpartum.md:167",
+    "zh": "漏尿、漏便或尿急",
+    "en": "Urinary or faecal leakage, or urgency"
+  },
+  "heaviness_pressure_bulge_or_dragging": {
+    "sourceRuleId": "postpartum.referral_signs",
+    "source": "docs/training-engine/rulebook/ch12-postpartum.md:167",
+    "zh": "沉重、压迫、膨出或下坠感",
+    "en": "Heaviness, pressure, bulging or dragging"
+  },
+  "pain_with_intercourse": {
+    "sourceRuleId": "postpartum.referral_signs",
+    "source": "docs/training-engine/rulebook/ch12-postpartum.md:167",
+    "zh": "性交痛",
+    "en": "Pain with intercourse"
+  },
+  "obstructed_defecation": {
+    "sourceRuleId": "postpartum.referral_signs",
+    "source": "docs/training-engine/rulebook/ch12-postpartum.md:167",
+    "zh": "排便困难",
+    "en": "Difficulty emptying your bowel"
+  },
+  "abdominal_separation_with_doming_or_poor_function": {
+    "sourceRuleId": "postpartum.referral_signs",
+    "source": "docs/training-engine/rulebook/ch12-postpartum.md:167",
+    "zh": "腹部分离伴鼓起或功能差",
+    "en": "Abdominal separation with doming or poor function"
+  },
+  "lumbopelvic_pain": {
+    "sourceRuleId": "postpartum.referral_signs",
+    "source": "docs/training-engine/rulebook/ch12-postpartum.md:167",
+    "zh": "腰盆部疼痛",
+    "en": "Lower-back or pelvic pain"
+  },
+  "vaginal_bleeding_beyond_8_weeks_not_period": {
+    "sourceRuleId": "postpartum.referral_signs",
+    "source": "docs/training-engine/rulebook/ch12-postpartum.md:167",
+    "zh": "产后 8 周以后与月经无关的阴道出血",
+    "en": "Vaginal bleeding more than 8 weeks after birth that is not a period"
+  }
+}

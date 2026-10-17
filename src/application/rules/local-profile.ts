@@ -1,3 +1,4 @@
+import type {EngineProfileFields} from '../engine-profile';
 import {bodyValuesSchema,type BodyValues,type BodyField} from '../../domain/body-profile';
 import type { CoachProfile } from '../../domain/v8/contracts';
 import { sessionDuration } from './session-duration';
@@ -30,7 +31,7 @@ export function weeklyFrequency(text:string):number {
 }
 
 /** Conservative local proposal parameters; original answers remain intact. */
-export function localProfile(answers: { goalText: string; scheduleOriginalText: string; placeEquipmentText: string; adultConfirmed: boolean; cautions: CoachProfile['cautions'] }): CoachProfile {
+export function localProfile(answers: { goalText: string; scheduleOriginalText: string; placeEquipmentText: string; adultConfirmed: boolean; cautions: CoachProfile['cautions'] } & EngineProfileFields): CoachProfile & EngineProfileFields {
   const minutes = sessionDuration(answers.scheduleOriginalText) ?? 30;
   const equipment = EQUIPMENT.filter(key => key !== 'none' && [key, equipmentLabel(key, 'zh'), equipmentLabel(key, 'en')].some(label => {
     const text=answers.placeEquipmentText.toLowerCase(),at=text.indexOf(label.toLowerCase());
@@ -41,7 +42,8 @@ export function localProfile(answers: { goalText: string; scheduleOriginalText: 
   const places = [ /在家|家里|家中|居家|home/i.test(answers.placeEquipmentText) && 'home', /健身房|gym/i.test(answers.placeEquipmentText) && 'gym', /户外|outdoor/i.test(answers.placeEquipmentText) && 'outdoor' ].filter(Boolean);
   if (!places.length) throw new Error('LOCAL_PLACE_UNRESOLVED');
   const preferredDays=preferredTrainingDays(answers.scheduleOriginalText);
-  return { goalText: answers.goalText, scheduleOriginalText: answers.scheduleOriginalText,
+  const {goal,level,constraints,population,screening,preferences,birthYearMonth,equipmentLoadsKg,painState,healthStorageConsent}=answers;
+  return { ...Object.fromEntries(Object.entries({goal,level,constraints,population,screening,preferences,birthYearMonth,equipmentLoadsKg,painState,healthStorageConsent}).filter(([,value])=>value!==undefined)), goalText: answers.goalText, scheduleOriginalText: answers.scheduleOriginalText,
     weeklyTarget: weeklyFrequency(answers.scheduleOriginalText),
     ...(preferredDays.length?{preferredDays}:{}),
     sessionMinutes: minutes,

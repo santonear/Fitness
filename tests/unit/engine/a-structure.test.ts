@@ -1,0 +1,1641 @@
+import {describe,it,expect} from 'vitest';
+import {runGates} from '../../../src/engine/gates';
+import {safety} from '../../../src/engine/gates/strength-scoring';
+import {buildWeek} from '../../../src/engine/structure';
+import {buildSlots} from '../../../src/engine/skeleton';
+import {checkHard} from '../../../src/engine/hard-checks';
+import {scorePlan} from '../../../src/engine/score';
+import {Rules,age} from '../../../src/engine/data';
+import {typicalProfiles,fixtureProfile,planFixture} from './fixtures';
+import type {EngineProfile} from '../../../src/engine/contracts';
+const rules=new Rules();
+const profile=(patch:Partial<EngineProfile>={}):EngineProfile=>({...fixtureProfile,...patch});
+describe('A source weekly structure',()=>{
+ it('captures the ten typical structures',()=>expect(typicalProfiles.map(p=>{const gate=runGates(p);return {status:gate.status,days:buildWeek(p,gate).days.map(d=>({kind:d.kind,weekday:d.weekday,balance:d.balanceRequired,slots:buildSlots(d,p,d.minutes).map(s=>[s.role,s.patterns,s.optional])}))};})).toMatchInlineSnapshot(`
+   [
+     {
+       "days": [
+         {
+           "balance": false,
+           "kind": "full",
+           "slots": [
+             [
+               "warmup",
+               [
+                 "cardio_cyclic",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "squat",
+               ],
+               true,
+             ],
+             [
+               "main",
+               [
+                 "squat",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "push_horizontal",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "pull_horizontal",
+               ],
+               false,
+             ],
+             [
+               "accessory",
+               [
+                 "hinge",
+               ],
+               true,
+             ],
+             [
+               "accessory",
+               [
+                 "anti_extension",
+               ],
+               true,
+             ],
+             [
+               "cooldown",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+           ],
+           "weekday": "mon",
+         },
+         {
+           "balance": false,
+           "kind": "full",
+           "slots": [
+             [
+               "warmup",
+               [
+                 "cardio_cyclic",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "hinge",
+               ],
+               true,
+             ],
+             [
+               "main",
+               [
+                 "hinge",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "push_vertical",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "pull_vertical",
+               ],
+               false,
+             ],
+             [
+               "accessory",
+               [
+                 "lunge",
+               ],
+               true,
+             ],
+             [
+               "accessory",
+               [
+                 "anti_rotation",
+               ],
+               true,
+             ],
+             [
+               "cooldown",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+           ],
+           "weekday": "wed",
+         },
+         {
+           "balance": false,
+           "kind": "full",
+           "slots": [
+             [
+               "warmup",
+               [
+                 "cardio_cyclic",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "squat",
+               ],
+               true,
+             ],
+             [
+               "main",
+               [
+                 "squat",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "push_horizontal",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "pull_horizontal",
+               ],
+               false,
+             ],
+             [
+               "accessory",
+               [
+                 "hinge",
+               ],
+               true,
+             ],
+             [
+               "accessory",
+               [
+                 "anti_extension",
+               ],
+               true,
+             ],
+             [
+               "cooldown",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+           ],
+           "weekday": "fri",
+         },
+       ],
+       "status": "restricted",
+     },
+     {
+       "days": [
+         {
+           "balance": false,
+           "kind": "full",
+           "slots": [
+             [
+               "warmup",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "squat",
+               ],
+               true,
+             ],
+             [
+               "main",
+               [
+                 "squat",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "pull_horizontal",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "hinge",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "push_horizontal",
+               ],
+               false,
+             ],
+             [
+               "accessory",
+               [
+                 "anti_extension",
+               ],
+               true,
+             ],
+           ],
+           "weekday": "wed",
+         },
+       ],
+       "status": "restricted",
+     },
+     {
+       "days": [
+         {
+           "balance": false,
+           "kind": "full",
+           "slots": [
+             [
+               "warmup",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "squat",
+               ],
+               true,
+             ],
+             [
+               "main",
+               [
+                 "squat",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "push_horizontal",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "hinge",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "pull_horizontal",
+               ],
+               false,
+             ],
+             [
+               "accessory",
+               [
+                 "anti_extension",
+               ],
+               true,
+             ],
+           ],
+           "weekday": "mon",
+         },
+         {
+           "balance": false,
+           "kind": "full",
+           "slots": [
+             [
+               "warmup",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "hinge",
+               ],
+               true,
+             ],
+             [
+               "main",
+               [
+                 "hinge",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "push_vertical",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "lunge",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "pull_vertical",
+               ],
+               false,
+             ],
+             [
+               "accessory",
+               [
+                 "anti_rotation",
+               ],
+               true,
+             ],
+           ],
+           "weekday": "thu",
+         },
+       ],
+       "status": "restricted",
+     },
+     {
+       "days": [
+         {
+           "balance": false,
+           "kind": "upper",
+           "slots": [
+             [
+               "warmup",
+               [
+                 "cardio_cyclic",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "push_horizontal",
+               ],
+               true,
+             ],
+             [
+               "main",
+               [
+                 "push_horizontal",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "pull_horizontal",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "push_vertical",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "pull_vertical",
+               ],
+               false,
+             ],
+             [
+               "accessory",
+               [
+                 "pull_horizontal",
+               ],
+               true,
+             ],
+             [
+               "accessory",
+               [
+                 "anti_rotation",
+               ],
+               true,
+             ],
+             [
+               "accessory",
+               [
+                 "isolation_upper",
+               ],
+               true,
+             ],
+             [
+               "accessory",
+               [
+                 "isolation_upper",
+               ],
+               true,
+             ],
+             [
+               "cooldown",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+           ],
+           "weekday": "mon",
+         },
+         {
+           "balance": false,
+           "kind": "lower",
+           "slots": [
+             [
+               "warmup",
+               [
+                 "cardio_cyclic",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "squat",
+               ],
+               true,
+             ],
+             [
+               "main",
+               [
+                 "squat",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "hinge",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "lunge",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "isolation_lower",
+               ],
+               false,
+             ],
+             [
+               "accessory",
+               [
+                 "isolation_lower",
+               ],
+               true,
+             ],
+             [
+               "accessory",
+               [
+                 "anti_extension",
+               ],
+               true,
+             ],
+             [
+               "cooldown",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+           ],
+           "weekday": "tue",
+         },
+         {
+           "balance": false,
+           "kind": "upper",
+           "slots": [
+             [
+               "warmup",
+               [
+                 "cardio_cyclic",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "push_vertical",
+               ],
+               true,
+             ],
+             [
+               "main",
+               [
+                 "push_vertical",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "pull_vertical",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "push_horizontal",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "pull_horizontal",
+               ],
+               false,
+             ],
+             [
+               "accessory",
+               [
+                 "pull_horizontal",
+               ],
+               true,
+             ],
+             [
+               "accessory",
+               [
+                 "anti_extension",
+               ],
+               true,
+             ],
+             [
+               "accessory",
+               [
+                 "isolation_upper",
+               ],
+               true,
+             ],
+             [
+               "accessory",
+               [
+                 "isolation_upper",
+               ],
+               true,
+             ],
+             [
+               "cooldown",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+           ],
+           "weekday": "thu",
+         },
+         {
+           "balance": false,
+           "kind": "lower",
+           "slots": [
+             [
+               "warmup",
+               [
+                 "cardio_cyclic",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "hinge",
+               ],
+               true,
+             ],
+             [
+               "main",
+               [
+                 "hinge",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "lunge",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "squat",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "isolation_lower",
+               ],
+               false,
+             ],
+             [
+               "accessory",
+               [
+                 "isolation_lower",
+               ],
+               true,
+             ],
+             [
+               "accessory",
+               [
+                 "anti_rotation",
+               ],
+               true,
+             ],
+             [
+               "cooldown",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+           ],
+           "weekday": "fri",
+         },
+       ],
+       "status": "restricted",
+     },
+     {
+       "days": [
+         {
+           "balance": false,
+           "kind": "full",
+           "slots": [
+             [
+               "warmup",
+               [
+                 "cardio_cyclic",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "squat",
+               ],
+               true,
+             ],
+             [
+               "main",
+               [
+                 "squat",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "push_horizontal",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "pull_horizontal",
+               ],
+               false,
+             ],
+             [
+               "accessory",
+               [
+                 "hinge",
+               ],
+               true,
+             ],
+             [
+               "accessory",
+               [
+                 "anti_extension",
+               ],
+               true,
+             ],
+             [
+               "cooldown",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+           ],
+           "weekday": "mon",
+         },
+         {
+           "balance": false,
+           "kind": "full",
+           "slots": [
+             [
+               "warmup",
+               [
+                 "cardio_cyclic",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "hinge",
+               ],
+               true,
+             ],
+             [
+               "main",
+               [
+                 "hinge",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "push_vertical",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "pull_vertical",
+               ],
+               false,
+             ],
+             [
+               "accessory",
+               [
+                 "lunge",
+               ],
+               true,
+             ],
+             [
+               "accessory",
+               [
+                 "anti_rotation",
+               ],
+               true,
+             ],
+             [
+               "cooldown",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+           ],
+           "weekday": "wed",
+         },
+         {
+           "balance": false,
+           "kind": "full",
+           "slots": [
+             [
+               "warmup",
+               [
+                 "cardio_cyclic",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "squat",
+               ],
+               true,
+             ],
+             [
+               "main",
+               [
+                 "squat",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "push_horizontal",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "pull_horizontal",
+               ],
+               false,
+             ],
+             [
+               "accessory",
+               [
+                 "hinge",
+               ],
+               true,
+             ],
+             [
+               "accessory",
+               [
+                 "anti_extension",
+               ],
+               true,
+             ],
+             [
+               "cooldown",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+           ],
+           "weekday": "fri",
+         },
+       ],
+       "status": "restricted",
+     },
+     {
+       "days": [
+         {
+           "balance": false,
+           "kind": "full",
+           "slots": [
+             [
+               "warmup",
+               [
+                 "cardio_cyclic",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "squat",
+               ],
+               true,
+             ],
+             [
+               "main",
+               [
+                 "squat",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "push_horizontal",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "pull_horizontal",
+               ],
+               false,
+             ],
+             [
+               "accessory",
+               [
+                 "hinge",
+               ],
+               true,
+             ],
+             [
+               "accessory",
+               [
+                 "anti_extension",
+               ],
+               true,
+             ],
+             [
+               "cooldown",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+           ],
+           "weekday": "mon",
+         },
+         {
+           "balance": false,
+           "kind": "full",
+           "slots": [
+             [
+               "warmup",
+               [
+                 "cardio_cyclic",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "hinge",
+               ],
+               true,
+             ],
+             [
+               "main",
+               [
+                 "hinge",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "push_vertical",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "pull_vertical",
+               ],
+               false,
+             ],
+             [
+               "accessory",
+               [
+                 "lunge",
+               ],
+               true,
+             ],
+             [
+               "accessory",
+               [
+                 "anti_rotation",
+               ],
+               true,
+             ],
+             [
+               "cooldown",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+           ],
+           "weekday": "thu",
+         },
+         {
+           "balance": false,
+           "kind": "mobility",
+           "slots": [
+             [
+               "mobility",
+               [
+                 "mobility",
+               ],
+               false,
+             ],
+             [
+               "mobility",
+               [
+                 "mobility",
+               ],
+               false,
+             ],
+             [
+               "mobility",
+               [
+                 "mobility",
+               ],
+               false,
+             ],
+           ],
+           "weekday": "tue",
+         },
+       ],
+       "status": "restricted",
+     },
+     {
+       "days": [
+         {
+           "balance": false,
+           "kind": "full",
+           "slots": [
+             [
+               "warmup",
+               [
+                 "cardio_cyclic",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "squat",
+               ],
+               true,
+             ],
+             [
+               "main",
+               [
+                 "squat",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "push_horizontal",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "pull_horizontal",
+               ],
+               false,
+             ],
+             [
+               "accessory",
+               [
+                 "hinge",
+               ],
+               true,
+             ],
+             [
+               "accessory",
+               [
+                 "anti_extension",
+               ],
+               true,
+             ],
+             [
+               "cooldown",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+           ],
+           "weekday": "mon",
+         },
+         {
+           "balance": false,
+           "kind": "full",
+           "slots": [
+             [
+               "warmup",
+               [
+                 "cardio_cyclic",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "hinge",
+               ],
+               true,
+             ],
+             [
+               "main",
+               [
+                 "hinge",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "push_vertical",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "pull_vertical",
+               ],
+               false,
+             ],
+             [
+               "accessory",
+               [
+                 "lunge",
+               ],
+               true,
+             ],
+             [
+               "accessory",
+               [
+                 "anti_rotation",
+               ],
+               true,
+             ],
+             [
+               "cooldown",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+           ],
+           "weekday": "thu",
+         },
+         {
+           "balance": false,
+           "kind": "aerobic",
+           "slots": [
+             [
+               "warmup",
+               [
+                 "cardio_cyclic",
+               ],
+               true,
+             ],
+             [
+               "conditioning",
+               [
+                 "cardio_cyclic",
+               ],
+               false,
+             ],
+             [
+               "cooldown",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+           ],
+           "weekday": "tue",
+         },
+       ],
+       "status": "restricted",
+     },
+     {
+       "days": [
+         {
+           "balance": false,
+           "kind": "early_postpartum",
+           "slots": [
+             [
+               "conditioning",
+               [
+                 "cardio_cyclic",
+               ],
+               false,
+             ],
+           ],
+           "weekday": "mon",
+         },
+         {
+           "balance": false,
+           "kind": "early_postpartum",
+           "slots": [
+             [
+               "conditioning",
+               [
+                 "cardio_cyclic",
+               ],
+               false,
+             ],
+           ],
+           "weekday": "wed",
+         },
+         {
+           "balance": false,
+           "kind": "early_postpartum",
+           "slots": [
+             [
+               "conditioning",
+               [
+                 "cardio_cyclic",
+               ],
+               false,
+             ],
+           ],
+           "weekday": "fri",
+         },
+       ],
+       "status": "restricted",
+     },
+     {
+       "days": [
+         {
+           "balance": true,
+           "kind": "full",
+           "slots": [
+             [
+               "warmup",
+               [
+                 "cardio_cyclic",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "squat",
+               ],
+               true,
+             ],
+             [
+               "main",
+               [
+                 "squat",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "push_horizontal",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "pull_horizontal",
+               ],
+               false,
+             ],
+             [
+               "accessory",
+               [
+                 "hinge",
+               ],
+               true,
+             ],
+             [
+               "accessory",
+               [
+                 "anti_extension",
+               ],
+               true,
+             ],
+             [
+               "balance",
+               [
+                 "balance",
+               ],
+               false,
+             ],
+             [
+               "cooldown",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+           ],
+           "weekday": "mon",
+         },
+         {
+           "balance": true,
+           "kind": "full",
+           "slots": [
+             [
+               "warmup",
+               [
+                 "cardio_cyclic",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "hinge",
+               ],
+               true,
+             ],
+             [
+               "main",
+               [
+                 "hinge",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "push_vertical",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "pull_vertical",
+               ],
+               false,
+             ],
+             [
+               "accessory",
+               [
+                 "lunge",
+               ],
+               true,
+             ],
+             [
+               "accessory",
+               [
+                 "anti_rotation",
+               ],
+               true,
+             ],
+             [
+               "balance",
+               [
+                 "balance",
+               ],
+               false,
+             ],
+             [
+               "cooldown",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+           ],
+           "weekday": "wed",
+         },
+         {
+           "balance": true,
+           "kind": "full",
+           "slots": [
+             [
+               "warmup",
+               [
+                 "cardio_cyclic",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "squat",
+               ],
+               true,
+             ],
+             [
+               "main",
+               [
+                 "squat",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "push_horizontal",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "pull_horizontal",
+               ],
+               false,
+             ],
+             [
+               "accessory",
+               [
+                 "hinge",
+               ],
+               true,
+             ],
+             [
+               "accessory",
+               [
+                 "anti_extension",
+               ],
+               true,
+             ],
+             [
+               "balance",
+               [
+                 "balance",
+               ],
+               false,
+             ],
+             [
+               "cooldown",
+               [
+                 "mobility",
+               ],
+               true,
+             ],
+           ],
+           "weekday": "fri",
+         },
+       ],
+       "status": "restricted",
+     },
+     {
+       "days": [],
+       "status": "blocked",
+     },
+   ]
+ `));
+ it.each(typicalProfiles)('always has a required slot unless medically blocked',p=>{const gate=runGates(p);for(const day of buildWeek(p,gate).days)expect(buildSlots(day,p,p.sessionMinutes).some(s=>!s.optional)).toBe(true);});
+ it('preserves consecutive preferred dates and emits only local trace',()=>{const p=profile({daysPerWeek:2,preferredDays:['tue','wed']});const gate=runGates(p),week=buildWeek(p,gate);expect(week.days.map(d=>d.weekday)).toEqual(['tue','wed']);expect(week.trace.some(t=>t.ruleId.startsWith('safety.'))).toBe(false);});
+ it('uses full body for one day and upper/lower for experienced four-day muscle',()=>{const one=profile({daysPerWeek:1});expect(buildWeek(one,runGates(one)).days[0].kind).toBe('full');const four=profile({daysPerWeek:4,sessionMinutes:45,goal:'muscle',trainingAgeWeeks:20});expect(buildWeek(four,runGates(four)).days.map(d=>d.kind)).toEqual(['upper','lower','upper','lower']);});
+ it.each([1,2,3,4,5,6])('older balance respects %i available days',daysPerWeek=>{const p=profile({daysPerWeek,birthYearMonth:'1956-06',population:{kind:'older_adult',fallsAnswers:[false,false,false,false]}});const week=buildWeek(p,runGates(p));expect(week.days.filter(d=>d.balanceRequired)).toHaveLength(Math.min(daysPerWeek,3));const missing=planFixture(),gate=runGates(p);expect(checkHard(missing,p,gate,rules).some(issue=>issue.code==='balance_days')).toBe(daysPerWeek>=3);expect(scorePlan(missing,p,rules).perRule.find(row=>row.id==='older.template.balance_required')?.satisfaction).toBe(0);expect(week.trace).toContainEqual(expect.objectContaining({ruleId:'older.week.multicomponent',reason:daysPerWeek>=3?'weekly_balance_hard':'each_session_balance_target'}));for(const day of week.days.filter(d=>d.balanceRequired)){const balance=buildSlots(day,p,p.sessionMinutes).find(s=>s.patterns.includes('balance'));expect(balance).toBeDefined();expect(balance!.optional).toBe(false);}});
+ it.each([10,15,20])('omits cooldown at %i minutes',minutes=>{const p=profile({sessionMinutes:minutes});const day=buildWeek(p,runGates(p)).days[0];expect(buildSlots(day,p,minutes).some(s=>s.role==='cooldown')).toBe(false);});
+ it('uses nearest source duration and main-before-accessory priority',()=>{const p=profile({sessionMinutes:40});const day=buildWeek(p,runGates(p)).days[0],slots=buildSlots(day,p,40);expect(slots.some(s=>s.sourceRuleId==='session.template.min45')).toBe(true);expect(slots.find(s=>s.role==='main')!.priority).toBeGreaterThan(slots.find(s=>s.role==='accessory')!.priority);});
+});
+describe('A medical gate migration',()=>{
+ it.each(typicalProfiles)('retains every existing medical decision',p=>{const before=safety(p,rules),after=runGates(p,rules);// Every legacy decision, notice and user fact remains individually enforced; new evidence gates are audited separately.
+ expect(after.reasons).toEqual(expect.arrayContaining(before.gates));expect(after.notices).toEqual(expect.arrayContaining(before.notices));expect(Object.fromEntries(Object.keys(before.user).map(key=>[key,after.restrictions.user[key]]))).toEqual(before.user);
+ expect(after.restrictions.maxRpe).toBeLessThanOrEqual(before.maxRpe);expect(after.restrictions.rirMin).toBeGreaterThanOrEqual(before.rirMin);expect(after.restrictions.population).toBe(before.population);expect(after.restrictions.phase).toBe(before.phase);
+ const advisory=rules.get('safety.age45.vigorous_advisory'),required=(age(p)??0)>=advisory.age_min_years&&(p.screening.activityStatus==='inactive'||p.screening.rarelyVigorous!==false),legacyIds=new Set(before.gates.map(row=>row.ruleId));
+ const addedIds=['safety.screen.cmr_symptoms','hiit.gate.unlock',...(required?['safety.age45.vigorous_advisory']:[]),...(p.screening.activityStatus==='inactive'?['safety.unlock.vigorous']:[])];expect(after.reasons.filter(row=>!legacyIds.has(row.ruleId)).map(row=>row.ruleId).sort()).toEqual(addedIds.sort());
+ expect(after.reasons).toContainEqual({ruleId:'safety.screen.cmr_symptoms',status:'pass',reason:'cmr_answers_complete'});expect(after.reasons).toContainEqual({ruleId:'hiit.gate.unlock',status:'restricted',reason:'source_unlock_evidence_missing'});
+ expect(after.restrictions.user.hiit_unlocked).toBe(false);expect(after.restrictions.user.age45_advisory_required).toBe(required);expect(after.restrictions.user.age45_advisory_acked).toBe(!required);expect(after.restrictions.user.balance_stage).toBe(rules.get('older.balance.progression').stages[0].stage);
+ expect(Object.keys(after.restrictions.user).sort()).toEqual([...Object.keys(before.user),'hiit_unlocked','age45_advisory_required','age45_advisory_acked','balance_stage'].sort());expect(after.notices.map(row=>row.code).sort()).toEqual([...new Set([...before.notices.map(row=>row.code),...(required?[advisory.show_copy]:[])])].sort());
+ if(required)expect(after.reasons).toContainEqual(expect.objectContaining({ruleId:'safety.age45.vigorous_advisory',status:'restricted'}));});
+ it('requires explicit complete screening and valid caller dates',()=>{for(const patch of [{ageYears:undefined,birthYearMonth:undefined},{asOfDate:undefined},{screening:{...fixtureProfile.screening,parqAnswers:undefined}},{screening:{...fixtureProfile.screening,completedAt:'2099-01-01',lastScreenedAt:'2099-01-01'}}])expect(runGates(profile(patch)).status).toBe('blocked');expect(runGates(fixtureProfile).status).not.toBe('blocked');});
+ it('blocks pregnancy without clearance and never relaxes phase-one caesarean due to space',()=>{const p=profile({population:{kind:'pregnant',week:20,providerCleared:false,contraindicationsConfirmedNone:true,lastScreenedWeek:20}});expect(runGates(p).status).toBe('blocked');const early=profile({population:{kind:'postpartum',weeksSinceBirth:6,delivery:'cesarean',cleared:false},constraints:{quiet:true,noJump:true,space:'mat'}});const gate=runGates(early);expect(gate.status).toBe('restricted');expect(gate.restrictions.phase).toBe(1);expect(buildWeek(early,gate).days.every(d=>d.kind==='early_postpartum')).toBe(true);});
+ it('exposes second trimester exclusions and intensity cap',()=>{const p=typicalProfiles[6],gate=runGates(p);expect(gate.restrictions.excludePositions).toEqual(expect.arrayContaining(['supine','prone']));expect(gate.restrictions.maxIntensity).toBeLessThanOrEqual(rules.get('pregnancy.intensity').rpe_0_10.max);});
+ it('requires current explicit red-flag review after repeat pain',()=>{const p=profile({painState:[{pattern:'hinge',remainingSessions:1,repeatEvents:rules.get('pain.repeat_referral').when.gte}]});expect(runGates(p).reasons).toContainEqual(expect.objectContaining({ruleId:'redflag.screen',status:'blocked'}));});
+});
+
+
+describe('A hard medical boundaries',()=>{
+ it.each([
+  ['symptoms',{symptoms:true},'blocked'],
+  ['acute illness',{acuteIllness:true},'blocked'],
+  ['inactive CMR',{knownCmrDisease:true,activityStatus:'inactive'},'blocked'],
+  ['active CMR',{knownCmrDisease:true,activityStatus:'active'},'restricted'],
+  ['unknown BP',{restingBp:'unknown'},'restricted'],
+  ['stale screening',{completedAt:'2020-01-01'},'blocked'],
+ ] as const)('%s retains its medical route',(_name,screening,status)=>expect(runGates(profile({screening:{...fixtureProfile.screening,...screening}})).status).toBe(status));
+ it('rejects missing fall answers but accepts explicit negative answers',()=>{const older=profile({population:{kind:'older_adult'},birthYearMonth:'1956-06'});expect(runGates(older).status).toBe('blocked');expect(runGates({...older,population:{kind:'older_adult',fallsAnswers:[false,false,false,false]}}).status).not.toBe('blocked');});
+ it('postpartum buffer uses authored boundaries and caesarean delay',()=>{const boundaries=rules.get('postpartum.phase.boundaries');const weeksSinceBirth=boundaries.base_weeks.phase2[0];const vaginal=profile({population:{kind:'postpartum',weeksSinceBirth,delivery:'vaginal',cleared:true}}),caesarean=profile({population:{kind:'postpartum',weeksSinceBirth,delivery:'cesarean',cleared:true}});expect(runGates(vaginal).restrictions.phase).toBe(2);expect(runGates(caesarean).restrictions.phase).toBe(1);});
+});
+
+describe('A explicit new source evidence gates preserve both sides',()=>{
+ it('requires all nine explicit CMR answers and blocks a real positive even when the legacy aggregate is false',()=>{const keys=rules.get('safety.screen.cmr_symptoms').symptoms as string[];expect(keys).toHaveLength(9);for(const key of keys){const missing=structuredClone(fixtureProfile);delete missing.screening.cmrSymptoms![key];expect(runGates(missing).reasons).toContainEqual(expect.objectContaining({ruleId:'safety.screen.cmr_symptoms',status:'blocked'}));const positive=structuredClone(fixtureProfile);positive.screening.cmrSymptoms![key]=true;expect(positive.screening.symptoms).toBe(false);expect(runGates(positive).reasons).toContainEqual(expect.objectContaining({ruleId:'safety.clearance.hard_stop',status:'blocked'}));}expect(runGates(fixtureProfile).reasons).toContainEqual(expect.objectContaining({ruleId:'safety.screen.cmr_symptoms',status:'pass'}));});
+ it('does not substitute training age for HIIT activity evidence and unlocks only with both source thresholds',()=>{const required=rules.get('hiit.gate.unlock').all_of,threshold=(key:string)=>required.find((row:Record<string,unknown>)=>key in row)[key],p=profile({trainingAgeWeeks:100});expect(runGates(p).restrictions.user.hiit_unlocked).toBe(false);const ready={...p,screening:{...p.screening,activityEvidence:{consecutiveRegularWeeks:threshold('consecutive_regular_weeks_min'),noSymptomReportsWeeks:threshold('no_symptom_reports_weeks')}}};expect(runGates(ready).restrictions.user.hiit_unlocked).toBe(true);for(const key of ['consecutiveRegularWeeks','noSymptomReportsWeeks'] as const){const insufficient=structuredClone(ready);insufficient.screening.activityEvidence[key]--;expect(runGates(insufficient).restrictions.user.hiit_unlocked).toBe(false);}});
+ it('keeps age45 vigorous locked until acknowledgement of the current completed screening',()=>{const p=profile({birthYearMonth:'1970-01',screening:{...fixtureProfile.screening,activityEvidence:{consecutiveRegularWeeks:8,noSymptomReportsWeeks:8}}}),before=runGates(p);expect(before.restrictions.user.age45_advisory_required).toBe(true);expect(before.restrictions.user.hiit_unlocked).toBe(false);const acknowledged={...p,screening:{...p.screening,age45AdvisoryAck:{screenedAt:p.screening.completedAt!,acknowledgedAt:'2026-10-02T00:00:00.000Z'}}};expect(runGates(acknowledged).restrictions.user.age45_advisory_acked).toBe(true);expect(runGates(acknowledged).restrictions.user.hiit_unlocked).toBe(true);acknowledged.screening.age45AdvisoryAck.screenedAt='2026-09-01T00:00:00.000Z';expect(runGates(acknowledged).restrictions.user.hiit_unlocked).toBe(false);});
+});

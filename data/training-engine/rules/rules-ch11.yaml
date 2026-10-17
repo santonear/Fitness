@@ -1,0 +1,496 @@
+# rules-ch11.yaml — 第 11 章 孕期
+# 与 ch11-pregnancy.md 一一对应。条件表达式约定见 rules-ch09.yaml 文件头 / ch09 第 0 节。
+# 本章全部规则上线前须产科医护或具资质的孕产运动专业人员审核（professional_review: true）。
+# 孕期规则优先于本手册其他章节；冲突时以本章为准。
+# E05:ACOG804 原文未能打开，内容来自三份一致的二手摘要，凡引用均列入 unverified。
+
+- id: pregnancy.activation
+  chapter: 11
+  type: gate
+  value:
+    trigger: {user: pregnant, is: true}
+    set_population: pregnant
+    ask: [gestation_week_or_due_date]
+    if_week_unknown_assume_week: 13
+    then: [pregnancy.gate.provider, pregnancy.gate.absolute, pregnancy.gate.relative]
+  evidence: C
+  professional_review: true
+  sources: [E05:Mottola2018, E01:PARQ23]
+  note: 孕周未知时按≥13 周的更严格规则处理（工程选择）
+
+- id: pregnancy.gate.provider
+  chapter: 11
+  type: gate
+  applies: {population: [pregnant]}
+  value:
+    require_confirm: provider_said_no_reason_to_avoid_exercise
+    if_not_confirmed: block_plan_show_copy_pregnancy.gate.copy.ask_provider
+  evidence: A
+  professional_review: true
+  sources: [E05:Mottola2018, E05:ACOG804]
+  unverified: [E05:ACOG804]
+  note: 必须明确确认产检医生或助产士没有说过不能运动
+
+- id: pregnancy.gate.absolute
+  chapter: 11
+  type: gate
+  applies: {population: [pregnant]}
+  value:
+    items:
+      - ruptured_membranes
+      - preterm_labour
+      - unexplained_persistent_vaginal_bleeding
+      - placenta_praevia_after_26_weeks
+      - pre_eclampsia
+      - incompetent_cervix
+      - fetal_growth_restriction
+      - high_order_multiples
+      - uncontrolled_type1_diabetes_hypertension_or_thyroid_disease
+      - other_serious_cardiovascular_respiratory_or_systemic_disorder
+    any_yes: block_plan_show_copy_pregnancy.gate.copy.absolute_yes
+    conservative_choices:
+      placenta_praevia_cutoff_week: 26
+      fetal_growth_restriction_as: absolute
+  evidence: A
+  professional_review: true
+  sources: [E05:Mottola2018, E05:ACOG804]
+  unverified: [E05:ACOG804]
+  note: 两指南分歧时取更严格者（前置胎盘 26 周、胎儿生长受限按绝对）
+
+- id: pregnancy.gate.relative
+  chapter: 11
+  type: gate
+  applies: {population: [pregnant]}
+  value:
+    items_canada:
+      - recurrent_pregnancy_loss
+      - history_of_spontaneous_preterm_birth
+      - gestational_hypertension
+      - mild_moderate_cardiovascular_or_respiratory_disease
+      - symptomatic_anaemia
+      - malnutrition_or_eating_disorder
+      - twin_pregnancy_after_28_weeks
+      - other_significant_medical_condition
+    items_acog_unverified:
+      - extreme_underweight_or_overweight
+      - heavy_smoking
+      - poorly_controlled_seizure_disorder
+      - unevaluated_arrhythmia
+      - orthopaedic_limitations
+    any_yes:
+      require_confirm: provider_approved_exercise_with_this_condition
+      until_confirmed: block_plan_show_copy_pregnancy.gate.copy.relative_yes
+  evidence: A
+  professional_review: true
+  sources: [E05:Mottola2018, E05:ACOG804]
+  unverified: [E05:ACOG804]
+  note: ACOG 增补项仅来自二手摘要，待核实
+
+- id: pregnancy.gate.copy
+  chapter: 11
+  type: copy
+  value:
+    intro:
+      zh: 孕期保持活动对大多数准妈妈有好处。不过有些情况需要先听医生或助产士的意见，所以先请你确认几件事。
+      en: Staying active is good for most pregnant women. Some situations need your doctor's or midwife's advice first, so please confirm a few things.
+    provider_question:
+      zh: 你的产检医生或助产士有没有说过你不适合运动？
+      en: Has your doctor or midwife told you not to exercise?
+    absolute_list_zh:
+      - 破水，或者有液体从阴道流出
+      - 出现早产迹象（还没到预产期就有规律宫缩）
+      - 原因不明、持续不断的阴道出血
+      - 孕 26 周以后，医生说胎盘位置偏低（前置胎盘）
+      - 医生诊断的子痫前期
+      - 医生说你的宫颈机能不全
+      - 医生说宝宝生长偏慢（胎儿生长受限）
+      - 怀了三胞胎或更多
+      - 没有控制好的 1 型糖尿病、高血压或甲状腺疾病
+      - 其他严重的心脏、肺部或全身性疾病
+    absolute_list_en:
+      - Your waters have broken, or fluid is leaking from your vagina
+      - Signs of early (preterm) labour
+      - Unexplained vaginal bleeding that keeps happening
+      - Low-lying placenta (placenta praevia) after 26 weeks
+      - Pre-eclampsia diagnosed by your doctor
+      - Your doctor has said your cervix is weak (incompetent cervix)
+      - Your doctor has said your baby is not growing as expected
+      - Expecting triplets or more
+      - Type 1 diabetes, high blood pressure or thyroid disease that isn't under control
+      - Another serious heart, lung or whole-body condition
+    relative_list_zh:
+      - 反复流产史
+      - 曾经自然早产
+      - 孕期血压升高（妊娠期高血压）
+      - 轻到中度的心脏或肺部疾病
+      - 有症状的贫血（比如经常乏力、头晕）
+      - 营养不良或进食障碍
+      - 孕 28 周以后的双胎妊娠
+      - 其他明显的健康问题
+      - 体重明显过低或过高（待核实）
+      - 大量吸烟（待核实）
+      - 控制不佳的癫痫（待核实）
+      - 未经检查的心律不齐（待核实）
+      - 骨骼或关节方面的限制（待核实）
+    relative_list_en:
+      - Repeated miscarriages
+      - A previous spontaneous preterm birth
+      - High blood pressure in pregnancy (gestational hypertension)
+      - Mild or moderate heart or lung disease
+      - Anaemia with symptoms such as tiredness or dizziness
+      - Malnutrition or an eating disorder
+      - Twins after 28 weeks
+      - Another significant health condition
+      - Very low or very high body weight (to verify)
+      - Heavy smoking (to verify)
+      - Poorly controlled epilepsy (to verify)
+      - An irregular heartbeat that hasn't been checked (to verify)
+      - Bone or joint limitations (to verify)
+    ask_provider:
+      zh: 在开始之前，请先向你的产检医生或助产士确认可以运动。确认后回来告诉我们，我们再为你安排。
+      en: Before you start, please check with your doctor or midwife that exercise is okay for you. Come back once you've checked and we'll set up your plan.
+    absolute_yes:
+      zh: 根据你的回答，现在不适合由我们为你安排训练。请和你的产检医生或助产士谈一谈，听取适合你的建议。
+      en: Based on your answers, we can't set up a training plan for you right now. Please talk to your doctor or midwife about what's right for you.
+    relative_yes:
+      zh: 你提到的情况需要医生或助产士先确认你可以运动。确认后回来告诉我们，我们再为你安排。
+      en: What you've mentioned needs your doctor or midwife to confirm exercise is okay. Let us know once they have, and we'll set up your plan.
+    app_limit:
+      zh: 我们无法判断你的具体情况是否适合运动。到孕 13 周和 28 周时，我们会再请你确认一次。
+      en: We can't judge whether your situation is suitable for exercise. We'll ask you to confirm again at 13 and 28 weeks.
+  evidence: A
+  professional_review: true
+  sources: [E05:Mottola2018, E05:ACOG804]
+  unverified: [E05:ACOG804]
+  note: 通俗措辞须经产科专业人员审核；不使用「已获许可」类医学判断措辞
+
+- id: pregnancy.reconfirm
+  chapter: 11
+  type: trigger
+  applies: {population: [pregnant]}
+  value:
+    full_reconfirm_at_weeks: [13, 28]
+    ask_placenta_praevia_item_at_week: 26
+    also_when: [user_updates_health, user_reports_stop_signal_resolved]
+    on_reconfirm_fail: block_plan
+  evidence: A
+  professional_review: true
+  sources: [E05:Mottola2018, E05:ACOG804]
+  unverified: [E05:ACOG804]
+  note: 每个孕期阶段重新确认；26 周单独问前置胎盘为工程选择
+
+- id: pregnancy.precedence
+  chapter: 11
+  type: default
+  value:
+    module_priority: [pregnancy, caution, older_adult, general]
+    caution_substitutes_must_pass_pregnancy_filters: true
+  evidence: C
+  sources: [E05:Mottola2018]
+  note: 工程选择，待教练审核；例如腰背替换表中的死虫式在 13 周起被排除
+
+- id: pregnancy.exclude.supine
+  chapter: 11
+  type: exclude
+  applies: {population: [pregnant]}
+  value:
+    when: {user: gestation_week, gte: 13}
+    exclude_if: {position: supine}
+  evidence: A
+  professional_review: true
+  sources: [E05:WHO2020, E05:ACOG804, E05:Mottola2018, E05:Mottola2019]
+  unverified: [E05:ACOG804]
+  note: WHO 孕早期后、ACOG 约 20 周；取 13 周，更保守
+
+- id: pregnancy.supine_symptom
+  chapter: 11
+  type: trigger
+  applies: {population: [pregnant]}
+  value:
+    when: {user: symptom_in_supine, in: [lightheaded, nausea, unwell]}
+    action: [change_position_now, exclude_supine_from_now]
+    copy:
+      zh: 平躺时如果觉得头晕、恶心或不舒服，请马上换成侧躺或坐姿。之后我们不再安排平躺的动作。
+      en: If lying on your back makes you feel lightheaded, sick or unwell, switch to lying on your side or sitting up. We won't schedule lying-on-your-back moves from now on.
+  evidence: A
+  professional_review: true
+  sources: [E05:Mottola2018]
+  note: 任何孕周适用
+
+- id: pregnancy.exclude.prone
+  chapter: 11
+  type: exclude
+  applies: {population: [pregnant]}
+  value:
+    when: {any: [{user: gestation_week, gte: 13}, {user: prone_uncomfortable, is: true}]}
+    exclude_if: {position: prone}
+  evidence: C
+  professional_review: true
+  sources: [E05:Mottola2018]
+  note: 证据只说孕肚不适时排除；13 周为工程选择，待专业审核
+
+- id: pregnancy.exclude.impact
+  chapter: 11
+  type: exclude
+  applies: {population: [pregnant]}
+  value:
+    exclude_if:
+      any:
+        - {flag: jumping}
+        - {field: modality, eq: plyometric}
+        - {field: primary_pattern, eq: jump_land}
+        - all:
+            - {field: impact, gte: 2}
+            - not:
+                all:
+                  - {flag: running}
+                  - {not: {flag: jumping}}
+                  - {user: prepregnancy_running, is: true}
+                  - {user: running_comfortable_and_provider_agrees, is: true}
+  evidence: A
+  professional_review: true
+  sources: [E05:Mottola2018, E05:ACOG804]
+  unverified: [E05:ACOG804]
+  note: 孕前已跑步者确认舒适且医护同意可保留跑步；跳跃对所有孕妇排除（更保守）
+
+- id: pregnancy.exclude.fall_risk
+  chapter: 11
+  type: exclude
+  applies: {population: [pregnant]}
+  value:
+    exclude_if:
+      any:
+        - {flag: [high_fall_risk, unstable_surface]}
+        - {position: inverted}
+        - all:
+            - {flag: balance_demand}
+            - {user: gestation_week, gte: 28}
+    modify:
+      - when: {all: [{flag: balance_demand}, {user: gestation_week, gte: 13}]}
+        cue: hold_wall_or_chair
+  evidence: A
+  professional_review: true
+  sources: [E05:Mottola2018, E05:ACOG804]
+  unverified: [E05:ACOG804]
+  note: 平衡随孕期变化；13 周起扶墙、28 周起排除 balance_demand 为工程选择
+
+- id: pregnancy.exclude.valsalva
+  chapter: 11
+  type: exclude
+  applies: {population: [pregnant]}
+  value:
+    exclude_if: {flag: [valsalva_prone, heavy_axial_load]}
+    modify:
+      rir_min: 3
+      cue: exhale_on_effort_no_breath_hold
+  evidence: C
+  professional_review: true
+  sources: [E05:Mottola2018]
+  note: 未找到指南级证据，属预防性共识；RIR≥3 为工程选择
+
+- id: pregnancy.exclude.abdominal_flexion
+  chapter: 11
+  type: exclude
+  applies: {population: [pregnant]}
+  value:
+    when: {user: gestation_week, gte: 13}
+    exclude_if:
+      any:
+        - {field: primary_pattern, eq: trunk_flexion}
+        - {flag: loaded_spinal_flexion}
+  evidence: C
+  professional_review: true
+  sources: [E05:WHO2020, E05:Mottola2018]
+  note: 孕早期后不做仰卧起坐、卷腹，与仰卧排除一致
+
+- id: pregnancy.substitute
+  chapter: 11
+  type: substitute
+  applies: {population: [pregnant]}
+  value:
+    pick: first_available_passing_all_filters
+    map:
+      - {from_pattern: push_horizontal, from_position: supine, to_slugs: [incline-db-press, smith-machine-incline-bench-press, chest-press-machine]}
+      - {from_pattern: pull_horizontal, from_position: prone, to_slugs: [one-arm-seated-cable-row, seated-cable-row]}
+      - {from_pattern: trunk_flexion, to_slugs: [cable-pallof-press, side-plank, bird-dog]}
+      - {from_pattern: anti_extension, from_position: [supine, prone], to_slugs: [cable-pallof-press, bird-dog, wall-push-ups]}
+      - {from_pattern: hinge, from_position: supine, to_slugs: [plate-loaded-glute-drive, banded-romanian-deadlift, kettlebell-deadlift]}
+      - {from_pattern: isolation_lower, from_position: prone, to_slugs: [seated-leg-curl]}
+      - {from_pattern: mobility, from_position: supine, to_slugs: [seated-forward-fold, bench-figure-4-glute-stretch]}
+    catalog_gaps: [incline_or_wall_dead_bug, incline_plank]
+  evidence: C
+  professional_review: true
+  sources: [E05:Mottola2018, E05:WHO2020]
+  note: 上斜代平躺卧推、侧卧或站姿核心代卷腹、靠墙/上斜代死虫式
+
+- id: pregnancy.intensity
+  chapter: 11
+  type: limit
+  applies: {population: [pregnant]}
+  value:
+    max_intensity: moderate
+    talk_test: can_talk_not_sing
+    rpe_0_10: {min: 5, max: 6}
+    rpe_6_20: {min: 13, max: 14}
+    strength_rir_min: 3
+  evidence: A
+  professional_review: true
+  sources: [E05:Mottola2018, E05:ACOG804, E01:CDC-INT]
+  unverified: [E05:ACOG804]
+  note: 力量 RIR≥3 为工程选择
+
+- id: pregnancy.hiit
+  chapter: 11
+  type: gate
+  deferred: true
+  applies: {population: [pregnant]}
+  value:
+    default: locked
+    unlock_when:
+      all:
+        - {user: prepregnancy_regular_vigorous_training, is: true}
+        - {user: provider_approved_higher_intensity, is: true}
+    if_unlocked:
+      work_interval_s_max: 30
+      recovery: until_talk_test_passes
+      sessions_per_week_max: 1
+  evidence: C
+  professional_review: true
+  sources: [E05:Mottola2018, E05:ACOG804]
+  unverified: [E05:ACOG804]
+  note: v1 不实现，见 v2 澄清；孕期hiit.gate.unlock始终锁定。本条不参与生成或校验。
+
+- id: pregnancy.copy.hiit_deferred
+  chapter: 11
+  type: copy
+  zh: 本版本孕期不提供高强度间歇训练。孕前已有规律高强度训练的用户，可在医护同意下自行安排；应用内提供中等强度的有氧和力量训练。
+  en: This version doesn’t offer high-intensity interval training during pregnancy. If you trained at high intensity regularly before pregnancy, you can arrange it yourself with your care provider’s approval; the app provides moderate-intensity cardio and strength training.
+  evidence: C
+  sources: [E05:Mottola2018]
+  note: v2澄清；用户2026-10-17批准。仅已有孕前规律高强度勾选项为true时可显示，不新增入口，至多一次并计入三条提示上限。
+
+- id: pregnancy.week.target
+  chapter: 11
+  type: limit
+  applies: {population: [pregnant]}
+  value:
+    moderate_min_week_min: 150
+    days_per_week_min: 3
+    daily_activity_encouraged: true
+    combine: [aerobic, resistance]
+    strength_days_per_week_default: 2
+    acog_daily_suggestion_min: {min: 20, max: 30}
+    previously_inactive: ramp_from_below_target
+  evidence: A
+  professional_review: true
+  sources: [E05:Mottola2018, E05:WHO2020, E05:ACOG804, E01:WHO20]
+  unverified: [E05:ACOG804]
+  note: 力量 2 天沿用成人通用规则；ACOG 每天 20–30 分钟待核实
+
+- id: pregnancy.pelvic_floor
+  chapter: 11
+  type: trigger
+  applies: {population: [pregnant]}
+  value:
+    reminder: daily
+    copy:
+      zh: 今天别忘了做盆底肌练习。如果还不确定怎么做，可以请产检医生、助产士或盆底物理治疗师教你。
+      en: Remember your pelvic floor exercises today. If you're not sure how to do them, ask your doctor, midwife or a pelvic health physiotherapist to show you.
+    app_does_not_teach_technique: true
+  evidence: A
+  professional_review: true
+  sources: [E05:Mottola2018, E05:WHO2020, E05:Woodley2020]
+  note: 产前盆底训练可能降低孕晚期尿失禁风险；技术由专业人士教
+
+- id: pregnancy.environment
+  chapter: 11
+  type: exclude
+  applies: {population: [pregnant]}
+  value:
+    content_blacklist: [hot_yoga, hot_pilates, contact_sports, off_road_cycling, horse_riding, skiing, gymnastics, scuba_diving, skydiving]
+    catalog_filter: null
+    warnings: [heat_humidity, altitude_not_acclimatised, hydration]
+    copy:
+      heat:
+        zh: 天气炎热或潮湿时，请选择凉爽通风的地方运动，随时补水。觉得太热或不舒服就停下来休息。
+        en: In hot or humid weather, exercise somewhere cool and well ventilated, and drink regularly. If you feel too hot or unwell, stop and rest.
+      altitude:
+        zh: 在还没适应的高海拔地区，请不要做剧烈运动。
+        en: Avoid strenuous exercise at high altitude if you're not used to it.
+  evidence: A
+  professional_review: true
+  sources: [E05:Mottola2018, E05:ACOG804]
+  unverified: [E05:ACOG804]
+  note: 动作库无对应字段，用内容黑名单加环境提示
+
+- id: pregnancy.stop.trigger
+  chapter: 11
+  type: trigger
+  applies: {population: [pregnant]}
+  value:
+    items:
+      - vaginal_bleeding
+      - regular_painful_contractions
+      - fluid_leaking_from_vagina
+      - breathlessness_persisting_at_rest_or_before_exertion
+      - chest_pain
+      - dizziness_or_faintness_not_resolving_with_rest
+      - headache
+      - muscle_weakness_affecting_balance
+      - calf_pain_or_swelling
+      - abdominal_pain
+    action: [end_session_now, show_copy_pregnancy.stop.copy.stop, block_all_training_until_provider_contacted]
+    chest_pain_also: show_copy_pregnancy.stop.copy.chest_emergency
+  evidence: A
+  professional_review: true
+  sources: [E05:Mottola2018, E05:ACOG804, E01:FRANK20]
+  unverified: [E05:ACOG804]
+  note: 加拿大与 ACOG 清单合并；应用不解读原因
+
+- id: pregnancy.stop.copy
+  chapter: 11
+  type: copy
+  value:
+    stop:
+      zh: 请现在停止运动，并联系你的产检医生或助产士，如果你出现：阴道出血、有液体流出、规律的疼痛宫缩、胸痛、休息后仍不缓解的头晕或要晕倒、运动前就呼吸费力或休息后仍气喘、头痛、小腿疼痛或肿胀、腹痛，或者腿没力气、站不稳。
+      en: Stop exercising now and contact your doctor or midwife if you have vaginal bleeding, fluid leaking, regular painful contractions, chest pain, dizziness or faintness that doesn't settle with rest, breathlessness before exercise or that doesn't ease afterwards, a headache, calf pain or swelling, tummy pain, or weakness that affects your balance.
+    chest_emergency:
+      zh: 如果胸痛或呼吸困难在休息几分钟后仍没有缓解，请立即拨打急救电话。
+      en: If chest pain or breathlessness doesn't ease after a few minutes' rest, call emergency services now.
+    paused:
+      zh: 训练计划先暂停。联系过医生或助产士后回来确认，你的计划会一直保留。
+      en: Your plan is paused. Once you've spoken to your doctor or midwife, come back and confirm. Your plan will be waiting.
+  evidence: A
+  professional_review: true
+  sources: [E05:Mottola2018, E05:ACOG804, E01:FRANK20, E01:Healthline]
+  unverified: [E05:ACOG804, E01:Healthline]
+  note: 上线前须产科专业人员审核措辞
+
+- id: pregnancy.never
+  chapter: 11
+  type: limit
+  value:
+    never:
+      - judge_whether_a_complication_is_compatible_with_exercise
+      - interpret_symptoms
+      - suggest_exercise_to_induce_labour
+      - suggest_exercise_to_treat_gestational_diabetes
+      - generate_plan_before_gate_completed
+      - encourage_continuing_after_stop_signal
+      - use_wording_implying_app_gives_medical_clearance
+  evidence: A
+  professional_review: true
+  sources: [E05:Mottola2018, E05:ACOG804]
+  unverified: [E05:ACOG804]
+  note: 这些都属于产科医疗判断
+
+- id: pregnancy.end
+  chapter: 11
+  type: trigger
+  applies: {population: [pregnant]}
+  value:
+    when: {user: birth_reported, is: true}
+    action: [set_population_postpartum, set_postpartum_week_0, run_postpartum.activation]
+  evidence: C
+  sources: [E05:WHO2020, E05:Goom2019]
+  note: 用户报告分娩后切换到第 12 章产后模块

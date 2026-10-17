@@ -1,0 +1,10 @@
+import {verifyObservedGoalShares} from './v2-quality-observation';
+import {scorePlan} from '../../src/engine/score';
+import {expect,it} from 'vitest';
+import {generatePlan,validatePlan} from '../../src/engine';
+import {Rules} from '../../src/engine/data';
+import {goldenProfiles} from '../../tools/eval/training-engine-profiles';
+import {externalIssues} from '../../tools/eval/training-engine-invariants';
+import {independentElapsedAllocation} from '../unit/engine/reference/training-engine-goal-share';
+import {actualBlockSeconds,independentWarmupAudit,independentlyApplicableSessionTypes} from '../unit/engine/reference/training-engine-session-time';
+it('retains the exact gym fixture hard checks and independently observes share and safety targets',()=>{const p=goldenProfiles.find(f=>f.id==='gym-intermediate-muscle4x45')!.profile,before=structuredClone(p),r=new Rules(),plan=generatePlan(p);expect(plan.gates.some(gate=>gate.status==='restricted')).toBe(true);expect(plan.quality?.status).toBe('limited');expect(plan.templates).toHaveLength(p.daysPerWeek);expect(plan.templates.every(t=>t.items.some(i=>i.prescription?.block==='main'&&r.byExercise.get(i.exerciseId)?.modality==='strength'))).toBe(true);expect(validatePlan(plan,p).filter(i=>i.severity==='error')).toEqual([]);expect(externalIssues(plan,p)).toEqual([]);const {allocation:elapsed}=verifyObservedGoalShares(plan,p,r);expect(elapsed.resistance+elapsed.aerobic+elapsed.mobility+elapsed.other+elapsed.unallocated).toBeCloseTo(elapsed.total,6);let applicable=0;for(const t of plan.templates)if(independentlyApplicableSessionTypes(t,p).length){applicable++;const warmup=independentWarmupAudit(t,p);expect(warmup.seconds).toBeGreaterThanOrEqual(0);if(warmup.seconds<r.get('safety.session.warmup_cooldown').warmup_min_minutes*60||actualBlockSeconds(t,'cooldown')<r.get('safety.session.warmup_cooldown').cooldown_min_minutes*60)expect(scorePlan(plan,p,r).perRule.find(row=>row.id==='safety.session.warmup_cooldown')!.satisfaction).toBeLessThan(1);}expect(applicable).toBe(plan.templates.filter(t=>independentlyApplicableSessionTypes(t,p).length).length);expect(p).toEqual(before);});
