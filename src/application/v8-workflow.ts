@@ -1,4 +1,4 @@
-import {engineReplacementIds} from './engine-replacement-candidates';
+import {replacementCandidateIds} from './engine-replacement-candidates';
 import {createCautionSafety} from './caution-safety';
 import {createPostpartumReferral,requestedPostpartumPhase,needsPostpartumReferralCheck} from './postpartum-referral';
 import {createBirthReport} from './birth-report';
@@ -286,7 +286,7 @@ export function createV8Workflow(repo: Repository) {
   }
   async function replacementCandidates(){
     const state=await db.v8State.get('v8');
-    return engineReplacementIds(state?.coachProfile?await mappedEngineProfile(state.coachProfile):undefined);
+    return replacementCandidateIds(state?.coachProfile?await mappedEngineProfile(state.coachProfile):undefined,state?.coachProfile,isFeatureEnabled('trainingEngine'));
   }
   async function substitute(id: string, itemIndex: number, exerciseId: string, reason: 'discomfort' | 'other') {
     return repo.write(async () => {

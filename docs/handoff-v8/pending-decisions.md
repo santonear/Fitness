@@ -377,3 +377,10 @@ RepDB官方证据：[数据许可证](https://github.com/RepDB/exercise-dataset/
 - 决定：保留动作库原始单段及所有字词，展示层按句子切成最多三条；不补写健康建议。目录数量断言按两项已批准新增动作精确更新，不降低637来源动作或1126图片校验。
 - 理由：同时保留批准内容、来源形状和现有可用性要求，避免为通过测试改写话术。
 - 涉及文件：src/catalog/exercise-guide.ts、tests/catalog/exercise-guide.test.ts、tests/domain/repdb-catalog.test.ts。
+
+### 2026-10-18：关闭引擎时的旧换动作兼容
+- 情况：CI旧版四步初见流程关闭trainingEngine且未收集新版自查；无条件完整准入使换动作列表为空。
+- 决定：仅在引擎关闭且无任何新版健康事实时，复用原基础计划的保守候选子集；完整或部分健康资料、引擎开启场景继续严格过滤并在保存前复核。
+- 理由：保留功能关闭/回滚的既有行为，不伪造七题答案，不放开新引擎临床边界；不提供未核实的新动作候选。
+- 涉及文件：src/application/engine-replacement-candidates.ts、src/application/v8-workflow.ts、tests/unit/replacement-feature-off.test.ts。
+- 验证：原CI浏览器用例不变通过；开启引擎非法换动作仍拒绝；11项定向单测及3331项完整功能测试通过。无新增话术。
