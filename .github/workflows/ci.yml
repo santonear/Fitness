@@ -56,6 +56,7 @@ jobs:
           package-manager-cache: false
       - run: npm ci
       - run: npm run catalog:prepare
+      - run: npm run engine:prepare
       - run: npx playwright install --with-deps chromium webkit
       - run: npm run test:e2e
       - run: npx playwright test --config tests/e2e/followup-finish.config.ts
@@ -75,6 +76,7 @@ jobs:
           package-manager-cache: false
       - run: npm ci
       - run: npm run catalog:prepare
+      - run: npm run engine:prepare
       - run: npx playwright install --with-deps chromium webkit
       - run: npx playwright test --config playwright.trial.config.ts
       - run: npx playwright test --config tests/e2e/v8-mainline.config.ts
@@ -97,6 +99,7 @@ jobs:
           package-manager-cache: false
       - run: npm ci
       - run: npm run catalog:prepare
+      - run: npm run engine:prepare
       - run: npx playwright install --with-deps chromium
       - run: npx playwright test --config tests/admin/integration.playwright.config.ts
       - run: npx playwright test --config tests/admin/releases-ui.config.ts
