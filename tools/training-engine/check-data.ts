@@ -6,7 +6,13 @@ import {compileAnnotations,validateAnnotations} from './compile-annotations.ts';
 const rules=await compileRules();
 // Includes approved screening/power/pregnancy copy and household-support source data.
 // This inventory count does not represent hard-rule implementation coverage.
-assert.equal(rules.rules.filter(rule=>!rule.sources.includes('INTERNAL:codex-prompt-training-engine')).length,327);
+const previewApprovedIds=new Set(['duration.cardio.cap','session.copy.intentional_short']);
+const externalRules=rules.rules.filter(rule=>!rule.sources.includes('INTERNAL:codex-prompt-training-engine'));
+assert.equal(externalRules.filter(rule=>!previewApprovedIds.has(rule.id)).length,327);
+assert.equal(externalRules.length,329);
+for(const id of previewApprovedIds)assert.equal(externalRules.filter(rule=>rule.id===id).length,1);
+assert.equal(rules.rules.find(rule=>rule.id==='duration.cardio.cap')?.severity,'mechanic');
+assert.equal(rules.rules.find(rule=>rule.id==='session.copy.intentional_short')?.severity,'copy');
 assert.equal(rules.copy['meta.copy.load_light'].zh,'轻重量');
 const parqZh=['医生是否说过你有心脏问题或高血压','休息时、日常活动时或运动时是否胸痛','过去 12 个月是否因头晕失去平衡或失去意识（因呼吸过快导致的头晕除外）','是否被诊断过其他慢性疾病','是否在为慢性疾病服用处方药','现在（或过去 12 个月内）是否有骨骼、关节或软组织问题，可能因活动增加而加重','医生是否说过你只能在医学监督下运动'];
 assert.deepEqual(parqZh.map((_,index)=>rules.copy[`safety.copy.parq_${index+1}`].zh),parqZh);

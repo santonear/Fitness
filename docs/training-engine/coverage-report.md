@@ -2,7 +2,7 @@
 
 由 `node tools/training-engine/coverage.ts` 生成。逐项使用完整器械及替代品、主要动作模式和机器规则排除条件。没有自动假定墙、椅子、桌子、门扣或固定点可用。瑜伽垫为可选项。
 
-来源动作 637；本地动作 3；原创补充 41；总计 681。规则版本 c7ce150248baefb44d7b1bce37291c4834c3b5d59a769305898810bf332fcacb。
+来源动作 637；本地动作 3；原创补充 41；总计 681。规则版本 93a286602cbc5140dd4dddf6bc3d81233e7d863f1ec4e529338ac5dae411f1b2。
 
 ## 徒手
 
@@ -22,7 +22,7 @@
 | anti_lateral_flexion | 6 | 5 | 6 | 6 | 5 | 6 | 6 | 2 |
 | carry | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 | balance | 5 | 5 | 5 | 5 | 5 | 5 | 5 | 2 |
-| cardio_cyclic | 11 | 8 | 8 | 11 | 9 | 5 | 8 | 10 |
+| cardio_cyclic | 11 | 6 | 6 | 11 | 9 | 5 | 6 | 10 |
 
 已批准 carry_or_ground 闸门数量：{"unrestricted":4,"knee":3,"back":4,"shoulder":4,"wrist":2,"quiet":4,"pregnancy":4,"beginner":3}。只合计主要模式 carry 与 locomotion_ground，不计抗侧屈等其他模式。
 
@@ -44,7 +44,7 @@
 | anti_lateral_flexion | 6 | 5 | 6 | 6 | 5 | 6 | 6 | 2 |
 | carry | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 | balance | 5 | 5 | 5 | 5 | 5 | 5 | 5 | 2 |
-| cardio_cyclic | 11 | 8 | 8 | 11 | 9 | 5 | 8 | 10 |
+| cardio_cyclic | 11 | 6 | 6 | 11 | 9 | 5 | 6 | 10 |
 
 已批准 carry_or_ground 闸门数量：{"unrestricted":4,"knee":3,"back":4,"shoulder":4,"wrist":2,"quiet":4,"pregnancy":4,"beginner":3}。只合计主要模式 carry 与 locomotion_ground，不计抗侧屈等其他模式。
 
@@ -66,7 +66,7 @@
 | anti_lateral_flexion | 7 | 6 | 7 | 7 | 6 | 7 | 7 | 3 |
 | carry | 5 | 5 | 5 | 3 | 5 | 3 | 5 | 2 |
 | balance | 5 | 5 | 5 | 5 | 5 | 5 | 5 | 2 |
-| cardio_cyclic | 11 | 8 | 8 | 11 | 9 | 5 | 8 | 10 |
+| cardio_cyclic | 11 | 6 | 6 | 11 | 9 | 5 | 6 | 10 |
 
 已批准 carry_or_ground 闸门数量：{"unrestricted":9,"knee":8,"back":9,"shoulder":7,"wrist":7,"quiet":7,"pregnancy":9,"beginner":5}。只合计主要模式 carry 与 locomotion_ground，不计抗侧屈等其他模式。
 

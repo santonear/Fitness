@@ -254,3 +254,25 @@
   evidence: C
   sources: [E02:Iversen2021, E02:Paz2017]
   note: 工程选择；只改估算，不改处方
+
+- id: duration.cardio.cap
+  chapter: 13
+  type: limit
+  value:
+    explicit_low_intensity_slugs: [walking, custom-quiet-march, custom-seated-march, custom-slow-walking-in-place]
+    low_intensity: {required_flag: low_intensity, impact: 0, max_work_seconds: 600}
+    other_max_work_seconds: 300
+    work_formula: sets * durationSeconds * per_side_multiplier
+    aggregate_by: exerciseId
+    specialized_caps: []
+    shortage: {lower_ratio: 0.8, require_exhausted_safe_capacity: true}
+    refill:
+      order: [existing_sets, missing_patterns, low_intensity, warmup_cooldown]
+      require_all_hard_rules: true
+      low_intensity_uses_own_dose_limits: true
+      intro_weekly_sets_apply_to: [strength, power, isometric]
+      shortage_population_fraction_max: 0.05
+      shortage_session_ratio_min: 0.5
+  evidence: C
+  sources: ["USER:training-engine-preview:2026-10-18"]
+  note: 用户批准；明确命名的四类低强度移动优先适用600秒，不改写其impact事实；其他动作须同时满足low_intensity及impact0；整条动作工作时间上限含组数及单侧，专项更低上限优先；同课动作不重复，不通过虚减目标时长达标。

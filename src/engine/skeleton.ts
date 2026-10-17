@@ -210,7 +210,7 @@ export function buildSlots(
         ),
         preferred =
           groups[
-            days.findIndex((value) => value.id === day.id) % groups.length
+            days.findIndex((value) => day.weekday ? value.weekday === day.weekday : value.index === day.index) % groups.length
           ] ?? all,
         pool = legal.filter((e) => preferred.includes(e.primary_pattern)),
         patterns = [

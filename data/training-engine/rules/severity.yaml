@@ -1185,3 +1185,10 @@ rules:
 - id: caution.progression_gate
   type: limit
   severity: hard
+
+- id: duration.cardio.cap
+  type: limit
+  severity: mechanic
+- id: session.copy.intentional_short
+  type: copy
+  severity: copy

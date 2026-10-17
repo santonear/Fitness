@@ -50,7 +50,7 @@ describe('training engine feedback and prescription UI',()=>{
   expect(back).not.toContain('aria-pressed="true"');
  });
  it('keeps all optional pre-training and source pain follow-up answers unknown',()=>{
-  const html=renderToStaticMarkup(createElement(TrainingCheckinFields,{answers:{},locale:'zh',disabled:false,onChange:()=>{}}));
+  const html=renderToStaticMarkup(createElement(TrainingCheckinFields,{answers:{},locale:'zh',disabled:false,onChange:()=>{},workouts:[{id:'closed',templateId:'closed',startedAt:'2026-10-14T00:00:00Z',endedAt:'2026-10-14T01:00:00Z',localDate:'2026-10-14',timeZone:'UTC',status:'complete',plannedSetCount:1,sets:[fact]}]}));
   for(let index=0;index<4;index++)expect(html).toContain(engineCopy(`deload.copy.checkin.${index}`,'zh').replaceAll('&','&amp;'));
   expect(html.match(/value="" selected=""/g)).toHaveLength(5);
   expect(html).toContain('value=""');expect(html).not.toContain('value="false" selected');
@@ -91,7 +91,7 @@ describe('training engine feedback and prescription UI',()=>{
  });
  it('shows relative load, prescription rest, tempo and RIR without inventing kilogram values',()=>{
   const html=renderToStaticMarkup(createElement(PrescriptionDetails,{prescription,locale:'zh'}));
-  expect(html).toContain('轻负荷');expect(html).toContain('75');expect(html).toContain('每次用时');expect(html).toContain('4');expect(html).toContain('3–4');expect(html).not.toContain('0 公斤');
+  expect(html).toContain('轻负荷');expect(html).toContain('1 分钟 15 秒');expect(html).toContain('每次用时');expect(html).toContain('4');expect(html).toContain('3–4');expect(html).not.toContain('0 公斤');
   expect(renderToStaticMarkup(createElement(PrescriptionDetails,{locale:'zh'}))).toBe('');
  });
  it('keeps the start control disabled until the matching engine preview has arrived',()=>{

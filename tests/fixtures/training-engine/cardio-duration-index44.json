@@ -1,0 +1,67 @@
+{
+  "provenance": "Synthetic fixed80 index44 profile; safe-capacity differential regression.",
+  "profile": {
+    "goal": "start_moving",
+    "level": "beginner",
+    "trainingAgeWeeks": 102,
+    "daysPerWeek": 5,
+    "sessionMinutes": 45,
+    "equipment": [
+      "none",
+      "dumbbell"
+    ],
+    "place": "home",
+    "constraints": {
+      "noJump": true,
+      "quiet": false,
+      "space": "large"
+    },
+    "cautions": [],
+    "population": {
+      "kind": "general"
+    },
+    "screening": {
+      "parqAllNo": true,
+      "parqAnswers": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "knownCondition": false,
+      "knownCmrDisease": false,
+      "symptoms": false,
+      "cmrSymptoms": {
+        "chest_neck_jaw_arm_pain_or_discomfort": false,
+        "dyspnea_at_rest_or_mild_exertion": false,
+        "dizziness_or_syncope": false,
+        "orthopnea_or_nocturnal_dyspnea": false,
+        "ankle_edema": false,
+        "palpitations_or_tachycardia": false,
+        "intermittent_claudication": false,
+        "known_heart_murmur": false,
+        "unusual_fatigue_or_breathlessness_usual_activity": false
+      },
+      "activityStatus": "active",
+      "restingBp": "known_below_threshold",
+      "acuteIllness": false,
+      "completedAt": "2026-10-01T00:00:00.000Z",
+      "lastScreenedAt": "2026-10-01T00:00:00.000Z"
+    },
+    "preferences": {
+      "excludedExerciseIds": [],
+      "cannotDo": [
+        "walking_carry",
+        "jumping",
+        "overhead",
+        "kneeling"
+      ]
+    },
+    "birthYearMonth": "1991-06",
+    "asOfDate": "2026-10-15",
+    "locale": "zh"
+  }
+}

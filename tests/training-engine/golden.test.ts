@@ -19,6 +19,7 @@ describe('20 explicit synthetic golden profiles',()=>{
   engineProfileSchema.parse(fixture.profile);
   const plan=generatePlan(fixture.profile),issues=validatePlan(plan,fixture.profile);
   enginePlanSchema.parse(plan);
+  expect(issues.filter(issue=>issue.severity==='error')).toEqual([]);
   expect(externalIssues(plan,fixture.profile)).toEqual([]);
   expect(generatePlan(fixture.profile)).toEqual(plan);
   if(fixture.expectedBlocked){expect(plan.gates.some(gate=>gate.status==='blocked')).toBe(true);expect(plan.templates).toEqual([]);}

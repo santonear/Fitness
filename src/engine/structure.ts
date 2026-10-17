@@ -11,6 +11,7 @@ export function buildWeek(
   profile: EngineProfile,
   gate: GateOutcome,
   rules = new Rules(),
+  identitySeed?: string,
 ): WeekSkeleton {
   const trace: WeekSkeleton["trace"] = [];
   if (gate.status === "blocked") return { days: [], trace };
@@ -115,7 +116,7 @@ export function buildWeek(
               ? source
               : "full";
     return {
-      id: "day-" + hash([profile, index]),
+      id: "day-" + hash([identitySeed ?? profile, index]),
       index,
       kind,
       minutes: p.sessionMinutes,

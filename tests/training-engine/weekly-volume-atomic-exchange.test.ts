@@ -1,3 +1,4 @@
+import {assertBoundedDuration} from '../unit/engine/assert-bounded-duration';
 import {legacySampledProfile} from './v1-inputs';
 import {baseProfile} from '../../tools/eval/training-engine-profiles';
 import {expect,it} from 'vitest';
@@ -25,5 +26,5 @@ it('does not add a supplement when the original source exercise cap leaves no sl
  const rules=new Rules(data),profile=baseProfile({...legacySampledProfile(63),screening:baseProfile().screening}),plan=generatePlan(profile,{rules});expect(plan.templates).toHaveLength(profile.daysPerWeek);expect(plan.templates[0].items.length).toBeGreaterThan(0);expect(plan.templates.flatMap(t=>t.items).filter(i=>['main','accessory'].includes(i.prescription?.block??'')).length).toBeGreaterThan(0);
  expect(plan.templates.every(template=>template.items.filter(item=>['main','accessory'].includes(item.prescription?.block??'')).length<=4)).toBe(true);
  expect(rules.get('progression.new.week_caps').week_1.exercises_per_session[1]).toBe(4);
- expect(checkHard(plan,profile,runGates(profile,rules),rules)).toEqual([]);const measured=scorePlan(plan,profile,rules).perRule.find(row=>row.id==='dose.sets_week.goal_matrix');expect(measured).toBeDefined();expect(measured!.satisfaction).toBeLessThan(1);
+ assertBoundedDuration(plan,profile,rules);const measured=scorePlan(plan,profile,rules).perRule.find(row=>row.id==='dose.sets_week.goal_matrix');expect(measured).toBeDefined();expect(measured!.satisfaction).toBeLessThan(1);
 });

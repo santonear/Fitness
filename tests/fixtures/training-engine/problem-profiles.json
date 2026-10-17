@@ -203,7 +203,8 @@
         "asOfDate": "2026-10-15",
         "locale": "zh"
       },
-      "profileHash": "edebee3c"
+      "profileHash": "edebee3c",
+      "generationSeed": "6dbf59e8"
     },
     {
       "index": 559,
@@ -344,7 +345,8 @@
         "asOfDate": "2026-10-15",
         "locale": "zh"
       },
-      "profileHash": "9130793d"
+      "profileHash": "9130793d",
+      "generationSeed": "1c142767"
     },
     {
       "index": 875,
@@ -469,7 +471,8 @@
         "asOfDate": "2026-10-15",
         "locale": "zh"
       },
-      "profileHash": "5afe10c5"
+      "profileHash": "5afe10c5",
+      "generationSeed": "56e4a748"
     },
     {
       "index": 959,
@@ -606,7 +609,8 @@
         "asOfDate": "2026-10-15",
         "locale": "zh"
       },
-      "profileHash": "82a57c32"
+      "profileHash": "82a57c32",
+      "generationSeed": "92243545"
     },
     {
       "index": 967,
@@ -735,7 +739,8 @@
         "asOfDate": "2026-10-15",
         "locale": "zh"
       },
-      "profileHash": "c684894e"
+      "profileHash": "c684894e",
+      "generationSeed": "5686a251"
     },
     {
       "index": 1775,
@@ -841,7 +846,8 @@
         "asOfDate": "2026-10-15",
         "locale": "zh"
       },
-      "profileHash": "bfa8e09e"
+      "profileHash": "bfa8e09e",
+      "generationSeed": "af6b56c5"
     },
     {
       "index": 1829,
@@ -982,7 +988,8 @@
         "asOfDate": "2026-10-15",
         "locale": "zh"
       },
-      "profileHash": "d94a50a9"
+      "profileHash": "d94a50a9",
+      "generationSeed": "5994caa0"
     }
   ]
 }

@@ -1,3 +1,4 @@
+import {assertBoundedDuration} from './assert-bounded-duration';
 import { expect, it } from "vitest";
 import { enginePlanSchema } from "../../../src/engine/contracts";
 import { createContext, generatePlan } from "../../../src/engine/pipeline";
@@ -22,7 +23,7 @@ it.each(typicalProfiles.map((profile, index) => ({ profile, index })))(
       expect(plan.gates.some((g) => g.status === "blocked")).toBe(true);
     } else {
       expect(plan.templates).toHaveLength(profile.daysPerWeek);
-      expect(checkHard(plan, profile, ctx.gate)).toEqual([]);
+      assertBoundedDuration(plan,profile,ctx.rules);
     }
     expect(plan.notices.length).toBeLessThanOrEqual(3);
     const rows = plan.quality?.perRule ?? [],

@@ -23,12 +23,13 @@ it('pins all original351 grading rows and only the explicitly approved deferred 
  const original=doc.rules.filter((rule:{id:string})=>ids.has(rule.id));expect(original).toHaveLength(351);
  for(const row of baseline.rules){const current=original.find((r:{id:string})=>r.id===row.id);expect(current,row.id).toEqual({...row,...(deferred.has(row.id)?{severity:'mechanic'}:{})});}
  expect(original.reduce((all:Record<string,number>,rule:{severity:string})=>({...all,[rule.severity]:(all[rule.severity]??0)+1}),{})).toEqual({hard:93,target:38,advice:15,mechanic:123,copy:79,meta:3});
- const additions=doc.rules.filter((rule:{id:string})=>!ids.has(rule.id));expect(additions).toHaveLength(22);expect(new Set(doc.rules.map((rule:{id:string})=>rule.id)).size).toBe(373);
+ const additions=doc.rules.filter((rule:{id:string})=>!ids.has(rule.id));expect(additions).toHaveLength(24);expect(new Set(doc.rules.map((rule:{id:string})=>rule.id)).size).toBe(375);
+ expect(additions.filter((rule:{id:string})=>['duration.cardio.cap','session.copy.intentional_short'].includes(rule.id))).toEqual([{id:'duration.cardio.cap',type:'limit',severity:'mechanic'},{id:'session.copy.intentional_short',type:'copy',severity:'copy'}]);
  expect(additions.filter((rule:{severity:string})=>rule.severity==='hard')).toEqual([{id:'caution.progression_gate',type:'limit',severity:'hard'}]);expect(Object.keys(doc.overrides)).toHaveLength(9);
 });
 it('retains grading in both compiled artifacts and stores hard/target duration separately',async()=>{
  const full=JSON.parse(await readFile('src/engine/generated/rules.json','utf8')),runtime=JSON.parse(await readFile('src/engine/generated/rules-runtime.json','utf8'));
- expect(full.rules).toHaveLength(373);expect(runtime.rulesVersion).toBe(full.rulesVersion);
+ expect(full.rules).toHaveLength(375);expect(runtime.rulesVersion).toBe(full.rulesVersion);
  for(const rule of full.rules){expect(rule.severity).toBeTruthy();expect(runtime.rules.find((r:{id:string})=>r.id===rule.id)).toMatchObject({severity:rule.severity,...(rule.severity==='target'?{weight:rule.weight}:{})});}
  const get=(id:string)=>full.rules.find((r:{id:string})=>r.id===id);
  expect(get('duration.fit.bounds')).toMatchObject({severity:'hard',value:{duration_band:[0.8,1.2],min10_duration_seconds:[480,840]}});

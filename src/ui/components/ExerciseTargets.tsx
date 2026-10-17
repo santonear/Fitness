@@ -1,13 +1,18 @@
 import type { ExerciseSnapshot, Locale, SetMetrics } from '../../domain/models';
 import { exercises } from '../../catalog/exercises';
 
+export function durationText(seconds:number,locale:Locale,exact=false){
+ if(seconds>60&&exact)return `${Math.floor(seconds/60)} ${locale==='zh'?'分钟':'min'}${seconds%60?` ${seconds%60} ${locale==='zh'?'秒':'s'}`:''}`;
+ return seconds>60?`${locale==='zh'?'约 ':'about '}${Math.round(seconds/60)} ${locale==='zh'?'分钟':'min'}`:`${seconds} ${locale==='zh'?'秒':'s'}`;
+}
+
 export function targetText(target: SetMetrics, locale: Locale, hideDistance = false) {
   const zh=locale==='zh';
   switch (target.metricType) {
     case 'reps_load': return `${target.reps} ${zh ? '次' : 'reps'} · ${target.loadGrams>0?`${target.loadGrams / 1000} ${zh?'公斤':'kg'}`:(zh?'选择你的重量':'Choose your weight')}`;
     case 'reps': return `${target.reps} ${locale === 'zh' ? '次' : 'reps'}`;
-    case 'duration': return `${target.durationSeconds} ${zh?'秒':'s'}`;
-    case 'duration_distance': return `${target.durationSeconds} ${zh?'秒':'s'}${hideDistance||target.distanceMeters===undefined?'':` · ${target.distanceMeters} ${zh?'米':'m'}`}`;
+    case 'duration': return durationText(target.durationSeconds,locale);
+    case 'duration_distance': return `${durationText(target.durationSeconds,locale)}${hideDistance||target.distanceMeters===undefined?'':` · ${target.distanceMeters} ${zh?'米':'m'}`}`;
   }
 }
 

@@ -53,7 +53,7 @@ it.each(['light','missing_rpe','zero_actual'] as const)('credits actual explicit
  expect(aerobicScore(plan)).toBeGreaterThan(0);expect(aerobicScore(bad)).toBe(0);expect(targets(bad)).toEqual(targets(plan));if(mode==='zero_actual')expect(validatePlan(bad,p).some(i=>i.severity==='error')).toBe(true);
 });
 it('keeps weekly MVPA credit independent of how the same real work is distributed',()=>{
- const copy=structuredClone(plan),items=copy.templates.flatMap(t=>t.items).filter(i=>i.prescription?.block==='conditioning'&&r.byExercise.get(i.exerciseId)?.modality==='cardio'&&'durationSeconds'in i.target);expect(items.length).toBeGreaterThan(1);
+ const copy=structuredClone(plan),items=copy.templates.flatMap(t=>t.items).filter(i=>i.prescription?.block==='conditioning'&&r.byExercise.get(i.exerciseId)?.modality==='cardio'&&'durationSeconds'in i.target&&(i.prescription.targetRpe?.[0]??0)>=r.get('aerobic.intensity.rpe_scale').moderate[0]);expect(items.length).toBeGreaterThan(1);
  const total=items.reduce((n,i)=>n+('durationSeconds'in i.target?i.sets*i.target.durationSeconds*(i.prescription?.perSide||r.byExercise.get(i.exerciseId)!.time.per_side?r.get('session.time.model').per_side_multiplier:1):0),0);
  for(const i of items)i.target={metricType:'duration',durationSeconds:0};items[0].sets=1;items[0].prescription!.perSide=false;items[0].target={metricType:'duration',durationSeconds:total};expect(aerobicScore(copy)).toBe(aerobicScore(plan));expect(validatePlan(copy,p).some(i=>i.code==='duration_tolerance')).toBe(true);
 });

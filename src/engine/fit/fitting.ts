@@ -1,3 +1,5 @@
+import { cardioWorkCap, capCardioItems } from "./cardio-cap";
+import { fillSafeBudget } from "./refill";
 import { finalizeFit } from "./finalize";
 import { type SessionDraft, type PipelineContext } from "../contracts";
 import { insertBeforeCooldown } from "./item-order";
@@ -46,7 +48,7 @@ export function fitDuration(
               next,
             ],
           },
-          violations = checkHard(plan, p, ctx.gate, r).filter(
+          violations = checkHard(plan, p, ctx.gate, r, true).filter(
             (e) =>
               e.severity === "error" &&
               !["duration_tolerance", "balance_days"].includes(e.code),
@@ -57,6 +59,7 @@ export function fitDuration(
       }
       return false;
     };
+  out = capCardioItems(out, p, r, ctx.gate, locked);
   const week = newWeek(p, r),
     cap = Math.min(
       bounds.sets_per_exercise_max[p.level],
@@ -273,44 +276,7 @@ export function fitDuration(
         accept(next);
       }
   }
-  if (!ctx.focus && estimateSeconds(out, r) < T * band[0]) {
-    const slot = {
-        id: "fit-fill",
-        role: "conditioning" as const,
-        patterns: ["cardio_cyclic" as const],
-        priority: 0,
-        optional: true,
-        sourceRuleId: "duration.fit.algorithm",
-      },
-      pool = candidatesFor(slot, p, ctx.gate, {
-        ...ctx,
-        usedIds: new Set(out.items.map((i) => i.exerciseId)),
-        usedLadders: new Set(),
-      });
-    const e = pool.find(
-      (e) =>
-        e.modality === "cardio" &&
-        e.use.includes("conditioning") &&
-        ["duration", "duration_distance"].includes(e.metricType),
-    );
-    if (e) {
-      const next = structuredClone(out),
-        item = prescribe(e, p, r, ctx.gate.restrictions, "conditioning", 1);
-      if ("durationSeconds" in item.target) {
-        item.target.durationSeconds = Math.max(
-          1,
-          Math.round(
-            (T - estimateSeconds(out, r)) /
-              (e.time.per_side
-                ? r.get("session.time.model").per_side_multiplier
-                : 1),
-          ),
-        );
-        insertBeforeCooldown(next, item);
-        accept(next);
-      }
-    }
-  }
+  fillSafeBudget(() => out, T, ctx, locked, accept);
   // Source timed ranges constrain holds; continuous aerobic work may fill the remaining budget.
   for (let n = 0; n < out.items.length; n++) {
     const i = out.items[n],
@@ -334,7 +300,7 @@ export function fitDuration(
               : r.get("dose.stretch").hold_s.range
             : e.modality === "cardio" &&
                 i.prescription?.block === "conditioning"
-              ? [1, Infinity]
+              ? [1, cardioWorkCap(e, p, r, ctx.gate) / (i.sets * side)]
               : e.default_dose[p.level]?.seconds;
     if (!range) continue;
     item.target.durationSeconds = Math.max(

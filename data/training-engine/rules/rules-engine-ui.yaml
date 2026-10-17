@@ -400,8 +400,8 @@
 - id: session.copy.short_stretch_target
   chapter: 4
   type: copy
-  zh: "时间有限，这次优先拉伸主项肌群，部分肌群未达到默认拉伸目标。"
-  en: "With limited time, this workout prioritizes stretching the main muscle groups; some groups are below the default stretching target."
+  zh: 时间有限，这次先拉伸主要练到的部位。
+  en: Time is limited, so this session stretches the main muscles you trained first.
   evidence: C
   sources: [INTERNAL:codex-prompt-training-engine]
   note: 用户2026-10-15明确批准的短时安排说明及等义英文；不改变保持时间、组数或热身冷身安全下限。
@@ -490,3 +490,12 @@
   evidence: C
   sources: [user:training-engine-v2-parallel-20261016]
   note: v2 新增；用户逐字批准的通用环境受限说明。
+
+- id: session.copy.intentional_short
+  chapter: 13
+  type: copy
+  zh: "这次安排比你预留的时间短，先按这份练就好。"
+  en: "This session is shorter than the time you set aside. Just follow this plan for now."
+  evidence: C
+  sources: ["USER:training-engine-preview:2026-10-18"]
+  note: 用户逐句批准；仅用于实际不足且安全容量已核验的短课，不放宽任何其他安全条件。

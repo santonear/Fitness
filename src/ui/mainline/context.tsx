@@ -1,3 +1,4 @@
+import {equipmentLabel,EXERCISE_PLACES} from '../../catalog/taxonomy';
 import { useFeature } from '../useFeature';
 import { isFeatureEnabled } from '../../application/feature-flags';
 import { countUsage, reportSafeError } from '../../application/monitoring-client';
@@ -98,7 +99,7 @@ function useController() {
   draftKey.current=`fitness-v8-draft:${next.metadata.localProfileId}:${next.metadata.restoreGeneration??0}`;
   const legacy=await repository.db.guidedStates.get('guided');
   if(legacy?.onboarding?.answers)setAnswers(backfillOnboarding(legacy.onboarding.answers,next.profile?.locale==='en'?'en':'zh'));
-  if(next.state?.coachProfile){const p=next.state.coachProfile;setAnswers({goalText:p.goalText,scheduleOriginalText:p.scheduleOriginalText,placeEquipmentText:[p.place,...p.equipment].join(' · '),adultConfirmed:p.adultConfirmed,cautions:p.cautions});}
+  if(next.state?.coachProfile){const p=next.state.coachProfile;setAnswers({goalText:p.goalText,scheduleOriginalText:p.scheduleOriginalText,placeEquipmentText:[EXERCISE_PLACES[p.place]?.[locale==='zh'?0:1]??p.place,...p.equipment.map(key=>equipmentLabel(key,locale))].join(' · '),adultConfirmed:p.adultConfirmed,cautions:p.cautions});}
   try{const saved=JSON.parse(localStorage.getItem(draftKey.current)??'null');if(saved?.answers && ['goalText','scheduleOriginalText','placeEquipmentText'].every(k=>typeof saved.answers[k]==='string') && typeof saved.answers.adultConfirmed==='boolean' && Array.isArray(saved.answers.cautions)){if(next.profile?.bodyDetails&&(!saved.updatedAt||saved.updatedAt<next.profile.bodyDetails.updatedAt)){saved.answers.body=next.profile.bodyDetails.values;saved.answers.bodyText=''}setAnswers(saved.answers);if([0,1,2,3,4].includes(saved.step))setStep(saved.step);}}catch{/* Preserve unknown raw draft. */}
   setAnswers(previous=>({...previous,body:previous.body??next.profile?.bodyDetails?.values}));
   setReady(true);

@@ -1,3 +1,4 @@
+import { capCardioItems } from "./fit/cardio-cap";
 import type {
   EnginePlan,
   EngineProfile,
@@ -56,8 +57,44 @@ export function createContext(
   variant = 0,
   rules = new Rules(),
 ): PipelineContext {
-  const profileHash = hash([profile, variant]),
-    gate = runGates(profile, rules);
+  // Medical checks always receive the original evidence, including exact times.
+  const gate = runGates(profile, rules);
+  const screening = profile.screening;
+  const present = (value: string | undefined) =>
+    value === undefined ? undefined : true;
+  const seedProfile = {
+    ...profile,
+    screening: {
+      ...screening,
+      completedAt: present(screening.completedAt),
+      lastScreenedAt: present(screening.lastScreenedAt),
+      ...(screening.redFlagReview
+        ? {
+            redFlagReview: {
+              ...screening.redFlagReview,
+              requiredAt: present(screening.redFlagReview.requiredAt),
+              answeredAt: present(screening.redFlagReview.answeredAt),
+              professionalSeenAt: present(
+                screening.redFlagReview.professionalSeenAt,
+              ),
+            },
+          }
+        : {}),
+      ...(screening.age45AdvisoryAck
+        ? {
+            age45AdvisoryAck: {
+              acknowledgedAt: present(
+                screening.age45AdvisoryAck.acknowledgedAt,
+              ),
+              screenedAt: present(screening.age45AdvisoryAck.screenedAt),
+            },
+          }
+        : {}),
+    },
+  };
+  // Audit clock differences cannot shuffle equivalent plans. Real time-sensitive
+  // gate outcomes still distinguish expired or incorrectly ordered evidence.
+  const profileHash = hash([seedProfile, variant, gate.status, gate.reasons]);
   let index = 0;
   return {
     profile,
@@ -110,7 +147,7 @@ export function generatePlan(
   opts: { variant?: number; rules?: Rules } = {},
 ): EnginePlan {
   const ctx = createContext(profile, opts.variant ?? 0, opts.rules),
-    week = buildWeek(profile, ctx.gate, ctx.rules),
+    week = buildWeek(profile, ctx.gate, ctx.rules, ctx.profileHash),
     scorer: Scorer = createGenerationScorer();
   ctx.trace.push(...week.trace);
   ctx.volumeBudget = allocateVolumeBudget(
@@ -149,10 +186,16 @@ export function generatePlan(
       draft = fillSlots(slots, ctx, scorer);
     draft.id = day.id;
     draft.weekday = day.weekday;
-    const dosed = foldGeneratedBodyweightWarmup(
-      assignDose(draft, profile, ctx.gate, ctx.rules, ctx),
+    const dosed = capCardioItems(
+      foldGeneratedBodyweightWarmup(
+        assignDose(draft, profile, ctx.gate, ctx.rules, ctx),
+        profile,
+        ctx.rules,
+      ),
       profile,
       ctx.rules,
+      ctx.gate,
+      new Set(),
     );
     const seconds = untargeted ? estimateSeconds(dosed, ctx.rules) : undefined,
       fitted = untargeted

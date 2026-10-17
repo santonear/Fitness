@@ -1,3 +1,4 @@
+import { checkHard } from "./hard-checks";
 import type {
   EngineNotice,
   GateOutcome,
@@ -35,6 +36,13 @@ export function buildNotices(
       },
     });
   };
+  if (
+    ctx.plan &&
+    checkHard(ctx.plan, ctx.profile, ctx.gate, ctx.rules).some(
+      (issue) => issue.code === "intentional_short",
+    )
+  )
+    add("session.copy.intentional_short", 99);
   const plan = ctx.plan,
     items = plan?.templates.flatMap((t) => t.items) ?? [],
     owned = new Set([

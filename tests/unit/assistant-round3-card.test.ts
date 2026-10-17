@@ -46,3 +46,11 @@ describe('round 3 card presentation',()=>{
   if(card?.type==='today_adjustment')expect(renderToStaticMarkup(createElement(AssistantAttachment,{candidate:{request:context,response:card,expectedRevision:0},locale:'zh'}))).toContain('调整 1 项');
  });
 });
+ it('keeps the unchanged expansion aligned with visible identity when only audit metadata or day id changes',()=>{
+  const input=request('看看计划'),context=input.context!;if(context.task!=='MODIFY_PLAN')throw Error('Expected modify request');
+  const before=context.plan;before.templates[0].items[0].prescription={pattern:'squat',block:'main',rir:[4,4],restSeconds:90,sourcePosition:'old'};
+  const proposal=structuredClone(before);proposal.templates[0].id='same-visible-day-new-id';proposal.templates[0].items[0].prescription!.sourcePosition='new';
+  const html=renderToStaticMarkup(createElement(AssistantAttachment,{locale:'zh',candidate:{request:context,response:{type:'change_proposal',requestId:id,restoreGeneration:0,mutationAllowed:false,target:context.target,proposal,changes:[]},expectedRevision:0}}));
+  const count=before.templates.reduce((n,t)=>n+t.items.length,0);
+  expect(html).toContain(`其余 ${count} 个动作不变`);expect((html.match(/<li>/g)??[])).toHaveLength(count);expect(html).not.toContain('data-change=');
+ });

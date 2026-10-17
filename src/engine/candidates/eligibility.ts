@@ -169,6 +169,7 @@ function computeEligibility(e: Exercise, ctx: SelectionContext): boolean {
   if (
     (p.constraints.noJump || p.preferences.cannotDo.includes("jumping")) &&
     (e.flags.includes("jumping") ||
+      e.flags.includes("running") ||
       e.modality === "plyometric" ||
       e.primary_pattern === "jump_land")
   )

@@ -1,3 +1,4 @@
+import {engineReplacementIds} from './engine-replacement-candidates';
 import {createCautionSafety} from './caution-safety';
 import {createPostpartumReferral,requestedPostpartumPhase,needsPostpartumReferralCheck} from './postpartum-referral';
 import {createBirthReport} from './birth-report';
@@ -283,6 +284,10 @@ export function createV8Workflow(repo: Repository) {
       await db.v8Workouts.put(next); return next;
     });
   }
+  async function replacementCandidates(){
+    const state=await db.v8State.get('v8');
+    return engineReplacementIds(state?.coachProfile?await mappedEngineProfile(state.coachProfile):undefined);
+  }
   async function substitute(id: string, itemIndex: number, exerciseId: string, reason: 'discomfort' | 'other') {
     return repo.write(async () => {
       const record = await db.v8Workouts.get(id);
@@ -294,6 +299,7 @@ export function createV8Workflow(repo: Repository) {
       const previous = record.substitutions?.filter(s => s.itemIndex === itemIndex).at(-1)?.toExerciseId ?? item.exerciseId;
       if (previous === exerciseId) return;
       // Past sets and original target snapshots remain immutable; only future sets use the replacement.
+      if(!(await replacementCandidates()).includes(exerciseId))return invalid('INVALID_EXERCISE');
       await db.v8Workouts.put(v8WorkoutSchema.parse({ ...record, substitutions: [...record.substitutions ?? [], { fromExerciseId: previous, toExerciseId: exerciseId, itemIndex, reason, createdAt: new Date().toISOString() }] }));
     });
   }
@@ -359,5 +365,5 @@ export function createV8Workflow(repo: Repository) {
     },expectedRevision);
   }
   const pain=createTrainingPain(repo);
-  return {reviewCaution:caution.review,reportCautionMorning:caution.reportMorning,reconcileCaution:caution.reconcile,reportPostpartumReferral:postpartumReferral.report,reportBirth:birth.report,reportPregnancyStop:pregnancy.reportStop,reportPregnancySupine:pregnancy.reportSupine,confirmPregnancyProviderContacted:pregnancy.confirmProviderContacted,reportOlderFall:createOlderSafety(repo).report,answerOlderFall:createOlderSafety(repo).answer,confirmOlderFallProfessionalSeen:createOlderSafety(repo).confirmProfessionalSeen,reportCardiacSymptoms:cardiac.report,confirmCardiacClearance:cardiac.confirmClearance,reportPostpartumSymptoms:postpartum.report,confirmPostpartumProfessionalSeen:postpartum.confirmProfessionalSeen, ...lifecycle, snapshot, propose, adopt, saveEngineSettings, start, recordSet, finish, substitute, nextTargetPreview,saveTrainingCheckin:checkins.save,pendingTrainingCheckin:checkins.pending, painFeedbackPreview:pain.preview,applyPainFeedback:pain.apply,completePastPainReview:pain.completePastReview,confirmPainProfessionalSeen:pain.confirmProfessionalSeen,appendSetFeedback:createTrainingFeedback(repo).append, applyCoachCandidate, undoAppliedCoachVersion };
+  return {reviewCaution:caution.review,reportCautionMorning:caution.reportMorning,reconcileCaution:caution.reconcile,reportPostpartumReferral:postpartumReferral.report,reportBirth:birth.report,reportPregnancyStop:pregnancy.reportStop,reportPregnancySupine:pregnancy.reportSupine,confirmPregnancyProviderContacted:pregnancy.confirmProviderContacted,reportOlderFall:createOlderSafety(repo).report,answerOlderFall:createOlderSafety(repo).answer,confirmOlderFallProfessionalSeen:createOlderSafety(repo).confirmProfessionalSeen,reportCardiacSymptoms:cardiac.report,confirmCardiacClearance:cardiac.confirmClearance,reportPostpartumSymptoms:postpartum.report,confirmPostpartumProfessionalSeen:postpartum.confirmProfessionalSeen, ...lifecycle, replacementCandidates, snapshot, propose, adopt, saveEngineSettings, start, recordSet, finish, substitute, nextTargetPreview,saveTrainingCheckin:checkins.save,pendingTrainingCheckin:checkins.pending, painFeedbackPreview:pain.preview,applyPainFeedback:pain.apply,completePastPainReview:pain.completePastReview,confirmPainProfessionalSeen:pain.confirmProfessionalSeen,appendSetFeedback:createTrainingFeedback(repo).append, applyCoachCandidate, undoAppliedCoachVersion };
 }

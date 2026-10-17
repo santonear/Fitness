@@ -1,3 +1,7 @@
+import {refillProposals} from '../../src/engine/fit/refill-proposals';
+import {checkHard} from '../../src/engine/hard-checks';
+import {runGates} from '../../src/engine/gates';
+import {refreshWarmupRamps} from '../../src/engine/source-warmup';
 import {verifyObservedGoalShares} from './v2-quality-observation';
 import {scorePlan} from '../../src/engine/score';
 import {expect,it} from 'vitest';
@@ -27,7 +31,12 @@ it('keeps the quiet input within actual duration and reports share targets witho
 it('rejects actual overtime even when every increased working repetition remains within the source range',()=>{
  const p=goldenProfiles.find(f=>f.id==='quiet-bodyweight-2x20')!.profile,original=generatePlan(p),plan=structuredClone(original),t=plan.templates[0],range=r.get('goal.params.health').reps;let increased=0;
  for(const item of t.items)if(['main','accessory'].includes(item.prescription?.block??'')&&'reps'in item.target){if(item.target.reps<range.max)increased++;item.target.reps=range.max;}
- expect(increased).toBeGreaterThan(0);const high=(t.targetMinutes??p.sessionMinutes)*60*r.get('duration.fit.bounds').duration_band[1],cardio=prescribe(r.data.exercises.find(e=>e.slug==='custom-quiet-march')!,p,r,safety(p,r),'conditioning',1);cardio.target={metricType:'duration',durationSeconds:Math.max(1,Math.ceil(high-estimateSeconds(t,r)+1))};const index=t.items.findIndex(i=>i.prescription?.block==='cooldown');t.items.splice(index<0?t.items.length:index,0,cardio);t.estimatedSeconds=independentElapsedAllocation({templates:[t]}).total;t.estimatedMinutes=Math.ceil(t.estimatedSeconds/60);
+ expect(increased).toBeGreaterThan(0);Object.assign(t,refreshWarmupRamps(t,p,r));const high=(t.targetMinutes??p.sessionMinutes)*60*r.get('duration.fit.bounds').duration_band[1];
+ for(let pass=0;estimateSeconds(t,r)<=high&&pass<100;pass++){
+  const proposal=[...refillProposals(t,p,runGates(p,r),r,'low_intensity')].find(next=>estimateSeconds(next,r)>estimateSeconds(t,r)&&!checkHard({...plan,templates:plan.templates.map(row=>row.id===t.id?next:row)},p,runGates(p,r),r,true).some(issue=>issue.severity==='error'));
+  expect(proposal,'fixture needs one actual hard-safe overtime construction').toBeDefined();if(!proposal)break;t.items=proposal.items;
+ }
+t.estimatedSeconds=independentElapsedAllocation({templates:[t]}).total;t.estimatedMinutes=Math.ceil(t.estimatedSeconds/60);
  expect(t.estimatedSeconds).toBeGreaterThan(high);expect(estimateSeconds(t,r)).toBe(t.estimatedSeconds);expect(independentDurationIssues(plan,p).some(i=>i.code==='duration_tolerance'&&i.templateId===t.id)).toBe(true);
  const hard=validatePlan(plan,p).filter(i=>i.severity==='error');expect(hard.some(i=>i.code==='duration_tolerance'&&i.templateId===t.id)).toBe(true);expect(hard.filter(i=>!['duration_tolerance','goal_time_share','goal_time_share_joint'].includes(i.code))).toEqual([]);
  const reassessed=modifyPlan(plan,p,[]).value;expect(reassessed.quality?.status).toBe('unavailable');expect(reassessed.quality?.issues.some(i=>i.code==='duration_tolerance')).toBe(true);expect(validatePlan(original,p).some(i=>i.code==='duration_tolerance')).toBe(false);

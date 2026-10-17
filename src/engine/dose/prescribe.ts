@@ -1,3 +1,4 @@
+import { ownedEquipment } from "../equipment";
 import { type Exercise, Rules, midpoint, stretchHoldRange } from "../data";
 import { type EngineProfile, type EnginePrescription } from "../contracts";
 import { type SafetyState } from "../gates/strength-scoring";
@@ -31,7 +32,7 @@ export function prescribe(
     sets = Math.min(sets, goal.main_lift.sets_per_session[1]);
   if (p.goal === "start_moving" && ["main", "accessory"].includes(block))
     sets = Math.min(sets, goal.sets_per_exercise.max);
-  if (week)
+  if (week && ["strength", "isometric", "power"].includes(e.modality))
     sets = Math.min(
       sets,
       Array.isArray(week.sets_per_exercise)
@@ -247,14 +248,14 @@ export function prescribe(
     }
   if (power) sets = Math.max(power.sets[0], Math.min(sets, power.sets[1]));
   if (!power && (block === "cooldown" || block === "warmup")) sets = 1;
-  const required = e.equipment_required[0],
+  const owned = ownedEquipment(p),
+    required = e.equipment_required[0],
     equipment = !required
       ? "none"
-      : p.equipment.includes(required as EngineProfile["equipment"][number]) ||
-          required === "none"
+      : owned.has(required) || required === "none"
         ? required
         : ((e.equipment_alternatives[required] ?? []).find((k) =>
-            p.equipment.includes(k as EngineProfile["equipment"][number]),
+            owned.has(k),
           ) ?? required);
   return {
     exerciseId: e.id,

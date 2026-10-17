@@ -1,0 +1,97 @@
+{
+  "provenance": "Synthetic full2200 index827 source-profile; postpartum readiness capacity proof regression.",
+  "profile": {
+    "goal": "fat_loss",
+    "level": "intermediate",
+    "trainingAgeWeeks": 104,
+    "daysPerWeek": 5,
+    "sessionMinutes": 40,
+    "equipment": [
+      "none",
+      "resistance-band",
+      "loop-band"
+    ],
+    "place": "home",
+    "constraints": {
+      "noJump": false,
+      "quiet": false,
+      "space": "small"
+    },
+    "cautions": [
+      "wrist"
+    ],
+    "population": {
+      "kind": "postpartum",
+      "weeksSinceBirth": 34,
+      "delivery": "vaginal",
+      "cleared": true,
+      "postnatalCheckDone": true
+    },
+    "screening": {
+      "parqAllNo": true,
+      "parqAnswers": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "knownCondition": true,
+      "knownCmrDisease": true,
+      "symptoms": false,
+      "cmrSymptoms": {
+        "chest_neck_jaw_arm_pain_or_discomfort": false,
+        "dyspnea_at_rest_or_mild_exertion": false,
+        "dizziness_or_syncope": false,
+        "orthopnea_or_nocturnal_dyspnea": false,
+        "ankle_edema": false,
+        "palpitations_or_tachycardia": false,
+        "intermittent_claudication": false,
+        "known_heart_murmur": false,
+        "unusual_fatigue_or_breathlessness_usual_activity": false
+      },
+      "activityStatus": "active",
+      "restingBp": "known_below_threshold",
+      "acuteIllness": false,
+      "completedAt": "2026-10-01T00:00:00.000Z",
+      "lastScreenedAt": "2026-10-01T00:00:00.000Z",
+      "redFlagReview": {
+        "requiredAt": "2026-10-01T00:00:00.000Z",
+        "answeredAt": "2026-10-01T00:00:00.000Z",
+        "areas": [
+          "wrist"
+        ],
+        "questionKeys": [
+          "pain_after_fall_or_impact",
+          "cannot_bear_weight_or_use_limb",
+          "joint_hot_red_swollen_or_with_fever",
+          "locking_or_giving_way",
+          "unexplained_night_or_rest_pain",
+          "visible_deformity",
+          "numbness_tingling_or_weakness_spreading_into_limb"
+        ],
+        "answers": {
+          "pain_after_fall_or_impact": false,
+          "cannot_bear_weight_or_use_limb": false,
+          "joint_hot_red_swollen_or_with_fever": false,
+          "locking_or_giving_way": false,
+          "unexplained_night_or_rest_pain": false,
+          "visible_deformity": false,
+          "numbness_tingling_or_weakness_spreading_into_limb": false
+        }
+      }
+    },
+    "preferences": {
+      "excludedExerciseIds": [],
+      "cannotDo": [
+        "floor_work",
+        "kneeling"
+      ]
+    },
+    "birthYearMonth": "1991-06",
+    "asOfDate": "2026-10-15",
+    "locale": "zh"
+  }
+}

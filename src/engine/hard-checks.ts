@@ -1,3 +1,7 @@
+import {
+  checkCardioCaps,
+  exhaustedSafeCapacity,
+} from "./checkHard/cardio-duration";
 import { checkItemStructure } from "./checkHard/item-structure";
 import { checkItemDose } from "./checkHard/item-dose";
 
@@ -26,6 +30,7 @@ export function checkHard(
   p: EngineProfile,
   g: GateOutcome,
   r = new Rules(),
+  skipDuration = false,
 ): HardViolation[] {
   const errors: HardViolation[] = [],
     add = (
@@ -107,6 +112,7 @@ export function checkHard(
           );
     }
   for (const t of plan.templates) {
+    checkCardioCaps(t, p, g, r, add);
     if (
       !engineTemplateSchema.shape.targetMinutes.safeParse(t.targetMinutes)
         .success
@@ -261,17 +267,51 @@ export function checkHard(
       high = exception?.[1] ?? target * 60 * bounds.duration_band[1],
       seconds = estimatedSeconds(t, r);
     if (
+      !skipDuration &&
       !(
         g.restrictions.population === "postpartum" && g.restrictions.phase === 1
-      ) &&
-      (!Number.isFinite(seconds) || seconds < low || seconds > high)
-    )
-      add(
-        "duration_tolerance",
-        "duration.fit.bounds",
-        "duration outside source hard bounds",
-        t.id,
-      );
+      )
+    ) {
+      const short = Number.isFinite(seconds) && seconds < low;
+      const belowReportingBand =
+        Number.isFinite(seconds) &&
+        seconds < target * 60 * r.get("duration.fit.tolerance").band[0];
+      const exhausted =
+        belowReportingBand &&
+        !checkHard(plan, p, g, r, true).some(
+          (issue) => issue.severity === "error",
+        ) &&
+        exhaustedSafeCapacity(t, p, g, r, (proposal) => {
+          const candidate = structuredClone(plan),
+            template = candidate.templates.find((row) => row.id === t.id)!;
+          template.items = proposal.items;
+          const proposedSeconds = estimatedSeconds(template, r);
+          if (
+            proposedSeconds > high ||
+            Math.abs(proposedSeconds - target * 60) >=
+              Math.abs(seconds - target * 60)
+          )
+            return false;
+          return !checkHard(candidate, p, g, r, true).some(
+            (issue) => issue.severity === "error",
+          );
+        });
+      if (!Number.isFinite(seconds) || seconds > high || (short && !exhausted))
+        add(
+          "duration_tolerance",
+          "duration.fit.bounds",
+          "duration outside source hard bounds",
+          t.id,
+        );
+      else if (belowReportingBand && exhausted)
+        errors.push({
+          code: "intentional_short",
+          ruleId: "duration.cardio.cap",
+          severity: "warning",
+          templateId: t.id,
+          reason: "actual bounded safe workload cannot fill declared duration",
+        });
+    }
   }
   if (intro) {
     const v = r.get("progression.new.weekly_sets"),

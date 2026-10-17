@@ -9,5 +9,5 @@ export function engineDisplayNotices(value:{notices:EngineNotice[];gates?:GateRe
  });
  const seen=new Set<string>();
  const environment=value.notices.filter(notice=>notice.code.startsWith('engine.copy.environment_'));
- return [...gates,...environment,...value.notices].filter(notice=>{const key=notice.copyPath??notice.code;if(seen.has(key))return false;seen.add(key);return true;}).slice(0,3);
+ return [...gates,...environment,...value.notices].filter(notice=>{const key=notice.message.zh.trim()+'|'+notice.message.en.trim();if(seen.has(key))return false;seen.add(key);return true;}).slice(0,3);
 }

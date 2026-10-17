@@ -40,7 +40,7 @@ export function independentlyPossibleIds(profile:EngineProfile,sourceRules:Rules
   if(profile.preferences.excludedExerciseIds.includes(exercise.id)||exercise.excluded_cautions?.some(caution=>profile.cautions.includes(caution as EngineProfile['cautions'][number])))return false;
   const equipmentOk=exercise.equipment_required.every(required=>['none','yoga-mat-optional'].includes(required)||available.has(required as EngineProfile['equipment'][number])||(exercise.equipment_alternatives[required]??[]).some(alternative=>available.has(alternative as EngineProfile['equipment'][number])));
   if(!equipmentOk||spaces.indexOf(exercise.space)>spaces.indexOf(profile.constraints.space)||profile.constraints.quiet&&exercise.noise>0)return false;
-  if((profile.constraints.noJump||cannot.includes('jumping'))&&(exercise.flags.includes('jumping')||exercise.modality==='plyometric'||exercise.primary_pattern==='jump_land'))return false;
+  if((profile.constraints.noJump||cannot.includes('jumping'))&&(exercise.flags.some(flag=>['jumping','running'].includes(flag))||exercise.modality==='plyometric'||exercise.primary_pattern==='jump_land'))return false;
   if(cannot.includes('walking_carry')&&exercise.primary_pattern==='carry'||cannot.includes('overhead')&&exercise.flags.includes('overhead_load')||cannot.includes('kneeling')&&exercise.position.some(value=>['kneeling','quadruped'].includes(value)))return false;
   const floor=exercise.requires_floor_transition??(matches(rules.get('older.floor.transitions').floor_based_if,exercise,{})||exercise.position.includes('quadruped')||exercise.position.includes('plank')&&!exercise.position.some(value=>['standing','seated'].includes(value)));
   if(cannot.includes('floor_work')&&floor||exercise.difficulty>=5||exercise.use.includes('skill')||profile.painState?.some(state=>state.pattern===exercise.primary_pattern&&state.remainingSessions>0))return false;
@@ -60,6 +60,7 @@ export function independentlyPossibleIds(profile:EngineProfile,sourceRules:Rules
    if(pop.boneFlag&&matches(rules.get('older.bone').until_clearance_exclude_if,exercise,olderUser))return false;
   }
   if(profile.population.kind==='pregnant')for(const rule of rules.data.rules.filter(rule=>rule.id.startsWith('pregnancy.exclude.'))){const value=rule.value!;if((!value.when||matches(value.when,exercise,user))&&matches(value.exclude_if,exercise,user))return false;}
+  if(profile.population.kind==='postpartum'&&!profile.population.readinessChecklistPassed&&matches(rules.get('postpartum.running.readiness').on_pass_unlock_if,exercise,user))return false;
   if(phase===1){const pop=profile.population,rule=pop.kind==='postpartum'&&pop.delivery==='cesarean'&&!pop.cleared?'postpartum.gate.caesarean':'postpartum.phase1';if(!matches(rules.get(rule).allow_only_if,exercise,user))return false;}
   return true;
  });

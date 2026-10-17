@@ -10,10 +10,10 @@ const profile=engineProfileSchema.parse(structuredClone(fixed.profiles[0].profil
 function setup(rules=new Rules()){
  const plan=generatePlan(profile),template=structuredClone(plan.templates[0]);
  const draft:SessionDraft={...template,slots:template.items.map((item,index)=>({id:item.prescription?.sourcePosition??`test-${index}`,role:item.prescription!.block,patterns:[item.prescription!.pattern],priority:1,optional:false,sourceRuleId:'duration.fit.algorithm'}))};
- const balance=draft.items.findIndex(i=>i.prescription?.block==='balance'),ctx=createContext(profile,0,rules);ctx.plan=structuredClone(plan);ctx.lockedItemIndexes=draft.items.flatMap((_,n)=>n===balance?[]:[n]);return {plan,draft,balance,ctx};
+ const balance=draft.items.findIndex(i=>i.prescription?.block==='balance'),ctx=createContext(profile,0,rules);draft.items[balance].prescription!.restSeconds+=3;ctx.plan=structuredClone(plan);ctx.lockedItemIndexes=draft.items.flatMap((_,n)=>n===balance?[]:[n]);return {plan,draft,balance,ctx};
 }
 it('reduces balance sets to its source minimum while retaining hold, rest and the action',()=>{
- const {draft,balance,ctx}=setup(),original=structuredClone(draft.items[balance]);draft.items[balance].sets=3;const before=structuredClone(draft),out=fitDuration(draft,10,ctx),item=out.items[balance],range=ctx.rules.byExercise.get(item.exerciseId)!.default_dose[profile.level]!.sets;
+ const {draft,balance,ctx}=setup(),original=structuredClone(draft.items[balance]);draft.items[balance].sets=3;expect(estimateSeconds(draft,ctx.rules)).toBeGreaterThan(ctx.rules.get('duration.fit.bounds').min10_duration_seconds[1]);const before=structuredClone(draft),out=fitDuration(draft,10,ctx),item=out.items[balance],range=ctx.rules.byExercise.get(item.exerciseId)!.default_dose[profile.level]!.sets;
  expect(item.sets).toBe(range[0]);expect(item).toEqual({...original,sets:range[0]});expect(out.items.length).toBe(draft.items.length);expect(draft).toEqual(before);expect(checkHard({...ctx.plan!,templates:[out]},profile,ctx.gate,ctx.rules).filter(i=>i.severity==='error')).toEqual([]);
  const again=fitDuration(out,10,ctx);expect(again.items[balance].sets).toBe(range[0]);
 });

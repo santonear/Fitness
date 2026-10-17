@@ -35,7 +35,10 @@ it('meets all requested quality gates for every eligible plan while reporting he
  expect(report.scoreUnmeasured).toBe(0);
  expect(report.qualityMedian).toBeGreaterThanOrEqual(.75);
  expect(report.qualityP10).toBeGreaterThanOrEqual(.55);
- expect(report.within10Rate).toBeGreaterThanOrEqual(.90);
+ expect(report.within10Rate).not.toBeNull(); // Retain the original denominator in the report.
+ expect(report.timingBreakdown.nonShortWithin10Rate).toBeGreaterThanOrEqual(.90);
+ expect(report.timingBreakdown.shortageFraction).toBeLessThanOrEqual(.05);
+ expect(report.timingBreakdown.below50Count).toBe(0);
  expect(report.coverageRate).toBeGreaterThanOrEqual(.95);
  expect(report.noticeOverflow).toBe(0);
  expect(report.hardCoverageComplete).toBe(true);

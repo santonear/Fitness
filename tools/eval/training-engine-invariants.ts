@@ -1,3 +1,5 @@
+import {independentCardioDurationIssues} from '../../src/engine/validation/cardio-duration';
+import {independentlyPossibleIds} from './training-engine-quality';
 import {enginePlanSchema,type EnginePlan,type EngineProfile,type ValidationIssue} from '../../src/engine/contracts';
 import {independentEquipment,independentBalanceEnvironmentConstraint} from './training-engine-quality';
 import {Rules} from '../../src/engine/data';
@@ -18,7 +20,7 @@ export function externalIssues(plan:EnginePlan,profile:EngineProfile,rules:Rules
   const exercise=facts.get(item.exerciseId);if(!exercise){add('unknown_exercise','select.pipeline',item.exerciseId,template.id,itemIndex);continue;}
   for(const required of exercise.equipment_required)if(required!=='none'&&required!=='yoga-mat-optional'&&!available.has(required)&&!(exercise.equipment_alternatives[required]??[]).some(value=>available.has(value)))add('equipment_mismatch','select.pipeline',`${exercise.slug} requires ${required}`,template.id,itemIndex);
   if(profile.constraints.quiet&&exercise.noise>0)add('noise_violation','select.pipeline',exercise.slug,template.id,itemIndex);
-  if(profile.constraints.noJump&&exercise.flags.includes('jumping'))add('jump_violation','select.pipeline',exercise.slug,template.id,itemIndex);
+  if(profile.constraints.noJump&&exercise.flags.some(flag=>['jumping','running'].includes(flag)))add('jump_violation','select.pipeline',exercise.slug,template.id,itemIndex);
   if(spaces.indexOf(exercise.space)>spaces.indexOf(profile.constraints.space))add('space_violation','select.pipeline',exercise.slug,template.id,itemIndex);
   if(profile.preferences.excludedExerciseIds.includes(exercise.id))add('excluded_preference','select.pipeline',exercise.slug,template.id,itemIndex);
   const groundPosition=exercise.position.some(position=>['supine','prone','plank','quadruped','kneeling','side_lying'].includes(position));
@@ -31,5 +33,6 @@ export function externalIssues(plan:EnginePlan,profile:EngineProfile,rules:Rules
  const balanceRule=rules.byId.get('older.template.balance_required'),exception=balanceRule?.value?.environment_exception;
  const marked=exception&&(plan.quality?.issues?.some(issue=>issue.ruleId===balanceRule!.id&&issue.code===exception.warning_code)||plan.quality?.environmentConstraints?.some(claim=>claim.ruleId===balanceRule!.id));
  if(marked&&!independentBalanceEnvironmentConstraint(profile,rules))add('unverified_environment_exception',balanceRule!.id,'current source-scoped environment proof failed');
+ issues.push(...independentCardioDurationIssues(plan,profile,rules,independentlyPossibleIds(profile,rules)));
  return issues;
 }

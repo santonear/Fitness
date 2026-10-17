@@ -12,35 +12,37 @@
 
 ## M3 后格式化源码
 
-总行数：14733；共101个文件。测试、generated和规则数据均未混入。
+总行数：15563；共107个文件。测试、generated和规则数据均未混入。
 
 | 阶段 | 格式化行数 |
 |---|---:|
-| candidates | 583 |
-| checkHard | 1263 |
+| candidates | 584 |
+| checkHard | 1354 |
 | contracts | 741 |
 | data | 427 |
-| dose | 1969 |
+| dose | 1970 |
 | gates | 1524 |
 | fill | 216 |
-| fit | 878 |
+| fit | 1184 |
 | independent validation | 353 |
 | improve | 285 |
-| pipeline | 362 |
-| notices | 166 |
+| pipeline | 405 |
+| notices | 174 |
 | operations | 664 |
 | progression | 3116 |
 | score | 1694 |
-| skeleton | 330 |
-| structure | 162 |
+| skeleton | 334 |
+| structure | 163 |
+| validation | 375 |
 
-超过1500行的阶段列入后续架构简化评审：dose 1969行；gates 1524行；progression 3116行；score 1694行。该评审不阻塞此次交付。
+超过1500行的阶段列入后续架构简化评审：dose 1970行；gates 1524行；progression 3116行；score 1694行。该评审不阻塞此次交付。
 
 | 文件 | 格式化行数 |
 |---|---:|
 | src/engine/candidates.ts | 144 |
 | src/engine/candidates/caution-substitutions.ts | 111 |
-| src/engine/candidates/eligibility.ts | 328 |
+| src/engine/candidates/eligibility.ts | 329 |
+| src/engine/checkHard/cardio-duration.ts | 51 |
 | src/engine/checkHard/coverage.ts | 129 |
 | src/engine/checkHard/eligibility.ts | 230 |
 | src/engine/checkHard/item-context.ts | 28 |
@@ -59,7 +61,7 @@
 | src/engine/dose/capacity.ts | 328 |
 | src/engine/dose/floor-order.ts | 147 |
 | src/engine/dose/limits.ts | 59 |
-| src/engine/dose/prescribe.ts | 266 |
+| src/engine/dose/prescribe.ts | 267 |
 | src/engine/dose/rep-ranges.ts | 117 |
 | src/engine/dose/roles.ts | 94 |
 | src/engine/dose/transforms.ts | 59 |
@@ -73,11 +75,14 @@
 | src/engine/equipment.ts | 27 |
 | src/engine/fill.ts | 216 |
 | src/engine/fit.ts | 4 |
+| src/engine/fit/cardio-cap.ts | 67 |
 | src/engine/fit/elapsed-time.ts | 236 |
 | src/engine/fit/estimate.ts | 109 |
-| src/engine/fit/finalize.ts | 27 |
-| src/engine/fit/fitting.ts | 394 |
+| src/engine/fit/finalize.ts | 97 |
+| src/engine/fit/fitting.ts | 360 |
 | src/engine/fit/item-order.ts | 13 |
+| src/engine/fit/refill-proposals.ts | 161 |
+| src/engine/fit/refill.ts | 42 |
 | src/engine/fit/requirements.ts | 92 |
 | src/engine/fit/types.ts | 3 |
 | src/engine/gates.ts | 63 |
@@ -86,18 +91,18 @@
 | src/engine/gates/state.ts | 343 |
 | src/engine/gates/strength-scoring-population.ts | 120 |
 | src/engine/gates/strength-scoring.ts | 389 |
-| src/engine/hard-checks.ts | 338 |
+| src/engine/hard-checks.ts | 378 |
 | src/engine/history-checks.ts | 353 |
 | src/engine/improve.ts | 285 |
 | src/engine/index.ts | 86 |
-| src/engine/notices.ts | 166 |
+| src/engine/notices.ts | 174 |
 | src/engine/operations.ts | 4 |
 | src/engine/operations/adjust.ts | 151 |
 | src/engine/operations/modify.ts | 133 |
 | src/engine/operations/result.ts | 72 |
 | src/engine/operations/shared.ts | 95 |
 | src/engine/operations/substitute.ts | 209 |
-| src/engine/pipeline.ts | 276 |
+| src/engine/pipeline.ts | 319 |
 | src/engine/postpartum-risk.ts | 98 |
 | src/engine/power.ts | 104 |
 | src/engine/progression.ts | 400 |
@@ -136,21 +141,17 @@
 | src/engine/score/targets-09.ts | 58 |
 | src/engine/score/targets-10.ts | 27 |
 | src/engine/score/types.ts | 92 |
-| src/engine/skeleton.ts | 330 |
+| src/engine/skeleton.ts | 334 |
 | src/engine/source-warmup.ts | 6 |
-| src/engine/structure.ts | 162 |
+| src/engine/structure.ts | 163 |
+| src/engine/validation/cardio-duration.ts | 209 |
+| src/engine/validation/refill-capacity.ts | 166 |
 
 ## 单独列账（不计入引擎源码）
 
 | 目录 | 文件数 | 存盘物理行数 | 字节数 |
 |---|---:|---:|---:|
-| src/engine/generated | 4 | 4 | 1282668 |
-| tests/training-engine | 85 | 30239 | 1146791 |
-| tests/unit/engine | 103 | 5239 | 493991 |
-| data/training-engine | 24 | 60972 | 1087735 |
-
-## 最终引用审计与输出边界
-
-TypeScript5.9.3引用审计覆盖101文件：无静态引用者circuitBudgetConflict及唯一无调用import已删除；两个仅测试引用的纯函数仍有实际测试消费者。公开类型与动态注册表单列人工保护，不据静态引用证明运行时可达性。20/80/177在删除前后逐字节一致。新增注意部位重新筛选修复只影响adjust，不改变generatePlan输出；三组再次逐字节一致。该修复补3个正反例，无硬规则、权重或门槛变化；未知红旗和已完成锁定仍拒绝不安全调整。
-
-阶段行数与能力来源对应而非互斥的逐需求归因：gates/checkHard承载新增真实筛查与人群安全；dose/fit承载可行训练量、固定节奏和逐训练单时长；progression保留历史兼容、疼痛与负荷门禁；contracts与operations承载类型契约和安全调整；score承载既定连续评分。这些需求共享代码，不能把阶段总数冒充互不重叠的逐需求增量。原main没有src/engine，新增净行数见本表；四个超1500阶段留待后续简化评审。
+| src/engine/generated | 4 | 4 | 1284839 |
+| tests/training-engine | 85 | 35771 | 1305438 |
+| tests/unit/engine | 113 | 6376 | 537106 |
+| data/training-engine | 24 | 60967 | 1088748 |

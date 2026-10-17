@@ -3,13 +3,12 @@ import {Rules} from '../../../src/engine/data';
 import {checkHard} from '../../../src/engine/hard-checks';
 import {runGates} from '../../../src/engine/gates';
 import {baseProfile} from '../../../tools/eval/training-engine-profiles';
-import {planFixture} from './fixtures';
+import {boundedCardioPlanFixture as planFixture} from './bounded-cardio-fixture';
 const rules=new Rules();
 function inspect(weeks:number,reps:number,restSeconds:number){
- const profile=baseProfile({goal:'health',level:'beginner',trainingAgeWeeks:weeks,daysPerWeek:1,constraints:{noJump:false,quiet:false,space:'large'}}),plan=planFixture();
+ const profile=baseProfile({goal:'health',level:'beginner',trainingAgeWeeks:weeks,sessionMinutes:10,daysPerWeek:1,constraints:{noJump:false,quiet:false,space:'large'}}),plan=planFixture();
  const e=rules.data.exercises.find(e=>e.slug==='bodyweight-squat')!;
  expect(e.nsca_class).toBe('compound');
- plan.templates[0].items[0].target={metricType:'duration',durationSeconds:1500};
  plan.templates[0].items.unshift({exerciseId:e.id,equipment:'none',sets:2,target:{metricType:'reps',reps},prescription:{pattern:e.primary_pattern,block:'main',rir:[3,3],restSeconds,secondsPerRep:3,structure:'straight'}});
  return checkHard(plan,profile,runGates(profile,rules),rules);
 }

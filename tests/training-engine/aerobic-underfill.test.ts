@@ -5,7 +5,7 @@ import {prescribe} from '../../src/engine/dose';
 import {runGates} from '../../src/engine/gates';
 import {baseProfile} from '../../tools/eval/training-engine-profiles';
 import type {PipelineContext,SessionDraft} from '../../src/engine/contracts';
-const r=new Rules(),p=baseProfile({goal:'health',equipment:['none'],daysPerWeek:2,sessionMinutes:30});
+const r=new Rules(),p=baseProfile({goal:'health',equipment:['none'],daysPerWeek:2,sessionMinutes:30,preferences:{...baseProfile().preferences,excludedExerciseIds:r.data.exercises.filter(e=>e.modality!=='cardio'&&e.slug!=='bodyweight-squat'&&e.slug!=='cat-cow').map(e=>e.id)}});
 function context(profile=p,lockedItemIndexes:number[]=[]):PipelineContext{return {profile,gate:runGates(profile,r),rules:r,variant:0,profileHash:'underfill-test',rng:()=>0,trace:[],usedIds:new Set(),usedLadders:new Set(),lockedItemIndexes};}
 function fixture(profile=p):SessionDraft{const e=r.data.exercises.find(e=>e.slug==='bodyweight-squat')!,i=prescribe(e,profile,r,runGates(profile,r).restrictions,'main',2);return{id:'underfill',name:'hand source dose',estimatedMinutes:5,slots:[],items:[i]};}
 it('adds eligible real conditioning without requiring an obsolete factory trace or hard target blocks',()=>{const input=fixture(),before=structuredClone(input),ctx=context(),out=fitDuration(input,p.sessionMinutes,ctx),item=out.items.find(i=>i.prescription?.block==='conditioning')!;expect(item).toBeDefined();expect(r.byExercise.get(item.exerciseId)?.modality).toBe('cardio');expect(estimateSeconds(out,r)).toBeCloseTo(out.estimatedSeconds!,6);expect(Math.abs(estimateSeconds(out,r)-p.sessionMinutes*60)).toBeLessThan(Math.abs(estimateSeconds(input,r)-p.sessionMinutes*60));expect(input).toEqual(before);});

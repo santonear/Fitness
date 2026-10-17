@@ -6,11 +6,12 @@ import {
   retainLastHardSafe,
 } from "../../../src/engine/pipeline";
 import { baseProfile } from "../../../tools/eval/training-engine-profiles";
-import { planFixture } from "./fixtures";
+import { boundedCardioPlanFixture as planFixture } from "./bounded-cardio-fixture";
 import { applicableEnginePlan } from "../../../src/engine/environment";
 
 const profile = baseProfile({
   daysPerWeek: 1,
+  sessionMinutes: 10,
   constraints: { noJump: false, quiet: false, space: "large" },
 });
 

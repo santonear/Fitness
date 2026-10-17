@@ -691,8 +691,7 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "box-or-step",
-    "chair"
+    "box-or-step"
    ]
   },
   "schema": "v0.2"
@@ -1082,7 +1081,6 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "chair",
     "box-or-step"
    ]
   },
@@ -1651,7 +1649,6 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "chair",
     "box-or-step"
    ]
   },
@@ -1975,7 +1972,6 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "chair",
     "box-or-step"
    ]
   },
@@ -2056,7 +2052,6 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "chair",
     "box-or-step"
    ]
   },
@@ -2136,7 +2131,6 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "chair",
     "box-or-step"
    ]
   },
@@ -2212,7 +2206,6 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "chair",
     "box-or-step"
    ]
   },
@@ -2290,7 +2283,6 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "chair",
     "box-or-step"
    ]
   },
@@ -2610,8 +2602,7 @@
   ],
   "equipment_alternatives": {
    "box-or-step": [
-    "flat-bench",
-    "chair"
+    "flat-bench"
    ]
   },
   "catalog_issue": null,
@@ -2699,7 +2690,6 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "chair",
     "box-or-step"
    ]
   },
@@ -4107,8 +4097,7 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "box-or-step",
-    "chair"
+    "box-or-step"
    ]
   },
   "schema": "v0.2"
@@ -6044,8 +6033,7 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "box-or-step",
-    "chair"
+    "box-or-step"
    ]
   },
   "schema": "v0.2"
@@ -6290,7 +6278,6 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "chair",
     "box-or-step"
    ]
   },
@@ -6455,8 +6442,7 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "box-or-step",
-    "chair"
+    "box-or-step"
    ]
   },
   "schema": "v0.2"
@@ -9468,7 +9454,6 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "chair",
     "box-or-step"
    ]
   },
@@ -9548,7 +9533,6 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "chair",
     "box-or-step"
    ]
   },
@@ -17192,7 +17176,6 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "chair",
     "box-or-step"
    ]
   },
@@ -17276,7 +17259,6 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "chair",
     "box-or-step"
    ]
   },
@@ -17510,7 +17492,6 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "chair",
     "box-or-step"
    ]
   },
@@ -18711,8 +18692,7 @@
   ],
   "equipment_alternatives": {
    "box-or-step": [
-    "flat-bench",
-    "chair"
+    "flat-bench"
    ]
   },
   "catalog_issue": null,
@@ -19843,8 +19823,7 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "box-or-step",
-    "chair"
+    "box-or-step"
    ]
   },
   "catalog_issue": null,
@@ -33659,13 +33638,15 @@
    "hip": 0,
    "ankle": 1
   },
-  "impact": 1,
-  "noise": 1,
+  "impact": 2,
+  "noise": 2,
   "space": "small",
   "position": [
    "standing"
   ],
-  "flags": [],
+  "flags": [
+   "running"
+  ],
   "use": [
    "warmup",
    "conditioning"
@@ -33711,7 +33692,8 @@
    "none"
   ],
   "equipment_alternatives": {},
-  "schema": "v0.2"
+  "schema": "v0.2",
+  "note": "Source describes quick alternating running contacts; no silent or no-flight variant is inferred."
  },
  {
   "id": "b9bb5b78-59d5-5605-8969-91334db716c7",
@@ -33731,13 +33713,15 @@
    "hip": 1,
    "ankle": 2
   },
-  "impact": 1,
-  "noise": 1,
+  "impact": 2,
+  "noise": 2,
   "space": "small",
   "position": [
    "standing"
   ],
-  "flags": [],
+  "flags": [
+   "running"
+  ],
   "use": [
    "warmup",
    "conditioning"
@@ -33779,7 +33763,7 @@
   },
   "confidence": "medium",
   "review": false,
-  "note": "In-place, no flight phase assumed; impact 1, no running flag",
+  "note": "Source describes quick alternating running contacts; no silent or no-flight variant is inferred.",
   "equipment_required": [
    "none"
   ],
@@ -35894,7 +35878,6 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "chair",
     "box-or-step"
    ]
   },
@@ -36141,8 +36124,7 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "box-or-step",
-    "chair"
+    "box-or-step"
    ]
   },
   "schema": "v0.2"
@@ -37461,8 +37443,7 @@
   ],
   "equipment_alternatives": {
    "box-or-step": [
-    "flat-bench",
-    "chair"
+    "flat-bench"
    ]
   },
   "catalog_issue": null,
@@ -38738,7 +38719,6 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "chair",
     "box-or-step"
    ]
   },
@@ -38821,7 +38801,6 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "chair",
     "box-or-step"
    ]
   },
@@ -38904,7 +38883,6 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "chair",
     "box-or-step"
    ]
   },
@@ -38988,7 +38966,6 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "chair",
     "box-or-step"
    ]
   },
@@ -39072,7 +39049,6 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "chair",
     "box-or-step"
    ]
   },
@@ -39313,7 +39289,6 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "chair",
     "box-or-step"
    ]
   },
@@ -39704,7 +39679,6 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "chair",
     "box-or-step"
    ]
   },
@@ -39781,7 +39755,6 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "chair",
     "box-or-step"
    ]
   },
@@ -39944,9 +39917,7 @@
    "box-or-step": [
     "plates"
    ],
-   "flat-bench": [
-    "chair"
-   ]
+   "flat-bench": []
   },
   "catalog_issue": null,
   "schema": "v0.2",
@@ -40337,7 +40308,6 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "chair",
     "box-or-step"
    ]
   },
@@ -42171,7 +42141,6 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "chair",
     "box-or-step"
    ]
   },
@@ -44967,7 +44936,6 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "chair",
     "box-or-step"
    ]
   },
@@ -45924,7 +45892,6 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "chair",
     "box-or-step"
    ]
   },
@@ -47406,7 +47373,6 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "chair",
     "box-or-step"
    ]
   },
@@ -48744,7 +48710,6 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "chair",
     "box-or-step"
    ]
   },
@@ -48829,7 +48794,6 @@
   ],
   "equipment_alternatives": {
    "flat-bench": [
-    "chair",
     "box-or-step"
    ]
   },

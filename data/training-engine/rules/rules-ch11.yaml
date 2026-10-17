@@ -236,22 +236,15 @@
   value:
     exclude_if:
       any:
-        - {flag: jumping}
+        - {flag: [jumping, running]}
         - {field: modality, eq: plyometric}
         - {field: primary_pattern, eq: jump_land}
-        - all:
-            - {field: impact, gte: 2}
-            - not:
-                all:
-                  - {flag: running}
-                  - {not: {flag: jumping}}
-                  - {user: prepregnancy_running, is: true}
-                  - {user: running_comfortable_and_provider_agrees, is: true}
+        - {field: impact, gte: 2}
   evidence: A
   professional_review: true
   sources: [E05:Mottola2018, E05:ACOG804]
   unverified: [E05:ACOG804]
-  note: 孕前已跑步者确认舒适且医护同意可保留跑步；跳跃对所有孕妇排除（更保守）
+  note: v2 预览裁定：孕期不安排跑跳；依赖自我声明的跑步放宽路径本版不实现。
 
 - id: pregnancy.exclude.fall_risk
   chapter: 11
