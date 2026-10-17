@@ -29,6 +29,12 @@ jobs:
       - run: npm ci
       - run: node --test tools/v8/check.test.mjs
       - run: node tools/v8/check.mjs
+      # Compute the full receipt outside Vitest's nested subprocess. The original
+      # diagnostic tests still verify the receipt's exact source/input hashes and
+      # execute every safety/quality assertion in npm run check.
+      - run: npm run catalog:prepare
+      - run: npm run engine:prepare
+      - run: npm run engine:full
       # Functional correctness only; engine:perf is a separate informational command.
       - run: npm run check
       - run: npm run engine:check
