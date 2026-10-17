@@ -1,3 +1,4 @@
+import {BACKUP_VERSION,DATABASE_VERSION} from '../../src/domain/storage-version';
 import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 const source = JSON.parse(readFileSync(new URL('../fixtures/legacy-backups/followup-preview-v9.json', import.meta.url), 'utf8'));
@@ -28,11 +29,14 @@ for (const fail of [false, true]) test(`database 9 to current ${fail ? 'failure 
         const result = { rejected, unchanged: before === await snapshot(inspect), version: inspect.verno, metadata: (await inspect.table('metadata').toCollection().first()).schemaVersion };
         inspect.close(); return result;
       }
+      // Expect only the DB18 addition; every other historical field remains byte-for-byte equal.
+      const expectedFacts=JSON.parse(facts);
+      for(const row of expectedFacts.find(([name]:[string,unknown])=>name==='v8State')[1]){if(row.coachProfile?.place!=='home'||Object.hasOwn(row.coachProfile,'householdSupport'))throw Error('Expected legacy home fixture without a support answer');row.coachProfile.householdSupport=true;}
       const after = await snapshot(current); current.close(); await current.open();
-      return { rejected, unchanged: facts === await snapshot(current, true), idempotent: after === await snapshot(current), version: current.verno, metadata: (await current.metadata.toCollection().first()).schemaVersion, noInferredSource: (await current.v8PlanVersions.toArray()).every((version: any) => !('source' in version)) };
+      return { rejected, unchanged: JSON.stringify(expectedFacts) === await snapshot(current, true), idempotent: after === await snapshot(current), version: current.verno, metadata: (await current.metadata.toCollection().first()).schemaVersion, noInferredSource: (await current.v8PlanVersions.toArray()).every((version: any) => !('source' in version)) };
     } finally { current.close(); await current.delete(); }
   }, { source, fail });
-  expect(result).toEqual(fail ? { rejected: true, unchanged: true, version:9, metadata: 9 } : { rejected: false, unchanged: true, idempotent: true, version:15, metadata:15, noInferredSource: true });
+  expect(result).toEqual(fail ? { rejected: true, unchanged: true, version:9, metadata: 9 } : { rejected: false, unchanged: true, idempotent: true, version:DATABASE_VERSION, metadata:DATABASE_VERSION, noInferredSource: true });
 });
 
 test('optional local and AI sources round-trip without rewriting old records; failed restore is atomic', async ({ page }) => {
@@ -63,5 +67,5 @@ test('optional local and AI sources round-trip without rewriting old records; fa
       return { results, failed, rolledBack, invalidRejected, invalidUnchanged: before === await snapshot() };
     } finally { db.close(); await db.delete(); }
   }, source);
-  expect(result).toEqual({ results: [null,'local','ai'].map(origin => ({ origin, same: true, version:13, metadata:15 })), failed: true, rolledBack: true, invalidRejected: true, invalidUnchanged: true });
+  expect(result).toEqual({ results: [null,'local','ai'].map(origin => ({ origin, same: true, version:BACKUP_VERSION, metadata:DATABASE_VERSION })), failed: true, rolledBack: true, invalidRejected: true, invalidUnchanged: true });
 });
