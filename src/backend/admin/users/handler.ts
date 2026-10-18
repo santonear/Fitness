@@ -3,6 +3,12 @@ import {z} from 'zod';
 import {D1ControlStore} from '../../d1-store';
 import {AdminError,adminJson,requireFreshContext,requireAdminDb,type AdminContext,type AdminDatabase} from '../core/contracts';
 import type {ControlState} from '../../store';
+import {readFeatureFlags,type FeatureConfigEnv} from '../../feature-config';
+/** One source of truth for every admin view of the AI switch: the state the app actually serves. */
+export async function aiSwitchState(state:Pick<ControlState,'aiEnabled'>,env:FeatureConfigEnv&{CONTROL_MODE?:string}){
+ const flag=(await readFeatureFlags(env).catch(()=>({aiAssistantV2:false}))).aiAssistantV2===true,model=env.CONTROL_MODE==='external';
+ return {aiFlag:flag,aiModelConnected:model,aiEffective:state.aiEnabled&&flag&&model};
+}
 export interface UsersContext extends AdminContext {forward:(operation:string,data:unknown)=>Promise<Response>}
 const short=(id:string)=>id.slice(0,12);
 export async function readUserState(c:AdminContext){if(!c.env.CONTROL_DB)throw new AdminError('CONTROL_UNAVAILABLE',503);return new D1ControlStore(c.env.CONTROL_DB).read()}
@@ -56,7 +62,7 @@ export async function handleUsers(request:Request,c:UsersContext):Promise<Respon
  if(part==='audit'){const items=(await db.prepare('SELECT actor,at,object_id,action,result FROM admin_audit ORDER BY at DESC LIMIT 2000').all()).results;return adminJson({items})}
  const state=await readUserState(c);
  if(['users/list','users/detail'].includes(part)&&c.env.ADMIN_CONSOLE_ENABLED==='true')c={...c,env:await resolveRuntimeEnv(c.env)};
- if(part==='users/status')return adminJson({aiEnabled:state.aiEnabled,recoveryRequired:state.recoveryRequired});
+ if(part==='users/status')return adminJson({aiEnabled:state.aiEnabled,recoveryRequired:state.recoveryRequired,...await aiSwitchState(state,c.env)});
  if(part==='applications')return adminJson({items:Object.values(state.applications??{}).map(a=>({id:short(a.id),name:a.name,note:a.note,kind:a.kind,state:a.state,createdAt:a.createdAt,directlyActivated:a.directlyActivated??false}))});
  if(part==='users/list'){const q=(url.searchParams.get('q')??'').trim().toLowerCase();let items=userProjection(state,c.now,c.env.ADMIN_ENVIRONMENT,c.env.CONTROL_POLICY);if(q)items=items.filter(s=>s.id.includes(q)||Object.values(state.applications??{}).some(a=>a.subjectId?.startsWith(s.id)&&a.name.toLowerCase().includes(q)));return adminJson({items,invites:Object.entries(state.invites).filter(([,i])=>!i.redeemed&&i.expiresAt>c.now).map(([id,i])=>({id:short(id),expiresAt:i.expiresAt}))})}
  if(part==='users/detail'){const id=resolve(url.searchParams.get('id')??'',Object.keys(state.subjects));const records=Object.values(state.requests).filter(r=>r.subjectId===id&&(r.createdAt===undefined||r.createdAt>=c.now-30*86400000)).map(r=>({id:short(r.requestId),operation:r.operation,status:r.status,costFen:r.actualCost??null,period:r.period,at:r.createdAt??null}));return adminJson({user:userProjection(state,c.now,c.env.ADMIN_ENVIRONMENT,c.env.CONTROL_POLICY).find(s=>s.id===short(id)),retryQuota:await quotaRetry(state,id,c),requests:records,history:state.audit.filter(a=>a.subjectId===id).map(a=>({at:a.at,event:a.event.split(':')[0]})),timingAvailable:false})}
