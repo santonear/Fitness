@@ -172,7 +172,7 @@ test('legacy parity retention removes only expired closed application',async({pa
 });
 test('legacy parity AI switch persists without invoking any model transport',async({page})=>{
  await page.request.post('/__test/parity-fixture',{data:{mode:'ai'}});await page.goto('/admin/settings');
- for(const name of ['开启','关闭']){await page.getByRole('heading',{name:'芽芽AI助手',exact:true}).locator('..').getByRole('button',{name,exact:true}).click();const response=page.waitForResponse(r=>r.url().endsWith('/console/users/action'));await page.getByRole('button',{name:'确认',exact:true}).click();expect((await response).status()).toBe(200);await expect(page.getByRole('dialog')).not.toBeVisible();expect((await (await page.request.get('/__test/evidence')).json()).aiEnabled).toBe(name==='开启');}
+ for(const name of ['开启 AI','关闭 AI']){await page.getByRole('heading',{name:'芽芽AI助手',exact:true}).locator('..').getByRole('button',{name,exact:true}).click();const response=page.waitForResponse(r=>r.url().endsWith('/console/users/action'));await page.getByRole('button',{name:'确认',exact:true}).click();expect((await response).status()).toBe(200);await expect(page.getByRole('dialog')).not.toBeVisible();expect((await (await page.request.get('/__test/evidence')).json()).aiEnabled).toBe(name==='开启 AI');}
 });
 test('legacy parity audit filter and CSV preserve UTF8 BOM',async({page})=>{
  await page.goto('/admin/applications');await page.getByRole('button',{name:'批准',exact:true}).click();await page.getByRole('button',{name:'确认',exact:true}).click();await expect(page.getByRole('dialog')).not.toBeVisible();await page.goto('/admin/audit');await page.getByLabel('筛选操作').fill('批准申请');await expect(page.getByText(/admin@integration.test.*批准申请.*已完成/)).toBeVisible();
