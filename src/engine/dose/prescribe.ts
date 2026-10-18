@@ -1,5 +1,8 @@
 import { ownedEquipment } from "../equipment";
-import { pregnancyStandingCap } from "../pregnancy-limits";
+import {
+  pregnancyBalanceSupport,
+  pregnancyStandingCap,
+} from "../pregnancy-limits";
 import { type Exercise, Rules, midpoint, stretchHoldRange } from "../data";
 import { type EngineProfile, type EnginePrescription } from "../contracts";
 import { type SafetyState } from "../gates/strength-scoring";
@@ -263,9 +266,11 @@ export function prescribe(
         : ((e.equipment_alternatives[required] ?? []).find((k) =>
             owned.has(k),
           ) ?? required);
+  const support = pregnancyBalanceSupport(e, p, r);
+  if (support.required && support.copy) prescription.safetyCue = support.copy;
   return {
     exerciseId: e.id,
-    equipment,
+    equipment: support.available[0] ?? equipment,
     sets: Math.max(1, sets),
     target,
     prescription,

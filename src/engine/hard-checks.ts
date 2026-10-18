@@ -6,7 +6,10 @@ import { checkItemStructure } from "./checkHard/item-structure";
 import { checkItemDose } from "./checkHard/item-dose";
 import { pregnancyRampMinutes } from "./pregnancy-limits";
 
-import { proveEnvironmentCoverage } from "./environment";
+import {
+  proveEnvironmentCoverage,
+  pregnancyEnvironmentIssues,
+} from "./environment";
 
 import { isRealizedBodyweightWarmup, sourceWarmupRamps } from "./source-warmup";
 import type {
@@ -387,6 +390,7 @@ export function checkHard(
         "required weekly balance days absent",
       );
   }
+  errors.push(...pregnancyEnvironmentIssues(p, g, r));
   return errors;
 }
 

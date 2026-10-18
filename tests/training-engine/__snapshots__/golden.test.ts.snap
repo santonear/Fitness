@@ -33,7 +33,7 @@ exports[`20 explicit synthetic golden profiles > all-cautions-no-floor 1`] = `
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "0eb41eb1857629347a5a49a5ade127bb60472613e5dc48bbad0317cc5d641629",
+      "rulesVersion": "3ab0c8844434d12f5de7044e103c638bc66d6f12ce32c0bc633b55ed1c15c35e",
       "seed": "d66993f3",
     },
     "notices": [
@@ -1806,7 +1806,7 @@ exports[`20 explicit synthetic golden profiles > bands-fat-loss3x45 1`] = `
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "0eb41eb1857629347a5a49a5ade127bb60472613e5dc48bbad0317cc5d641629",
+      "rulesVersion": "3ab0c8844434d12f5de7044e103c638bc66d6f12ce32c0bc633b55ed1c15c35e",
       "seed": "c2eb5ac8",
     },
     "notices": [
@@ -4124,7 +4124,7 @@ exports[`20 explicit synthetic golden profiles > bodyweight-health3x30 1`] = `
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "0eb41eb1857629347a5a49a5ade127bb60472613e5dc48bbad0317cc5d641629",
+      "rulesVersion": "3ab0c8844434d12f5de7044e103c638bc66d6f12ce32c0bc633b55ed1c15c35e",
       "seed": "1d5c9a9a",
     },
     "notices": [
@@ -6003,7 +6003,7 @@ exports[`20 explicit synthetic golden profiles > cesarean-week8-confirmed 1`] = 
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "0eb41eb1857629347a5a49a5ade127bb60472613e5dc48bbad0317cc5d641629",
+      "rulesVersion": "3ab0c8844434d12f5de7044e103c638bc66d6f12ce32c0bc633b55ed1c15c35e",
       "seed": "86198efb",
     },
     "notices": [
@@ -6392,7 +6392,7 @@ exports[`20 explicit synthetic golden profiles > cesarean6-not-cleared 1`] = `
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "0eb41eb1857629347a5a49a5ade127bb60472613e5dc48bbad0317cc5d641629",
+      "rulesVersion": "3ab0c8844434d12f5de7044e103c638bc66d6f12ce32c0bc633b55ed1c15c35e",
       "seed": "8db73fef",
     },
     "notices": [
@@ -6741,7 +6741,7 @@ exports[`20 explicit synthetic golden profiles > first-week-health2x20 1`] = `
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "0eb41eb1857629347a5a49a5ade127bb60472613e5dc48bbad0317cc5d641629",
+      "rulesVersion": "3ab0c8844434d12f5de7044e103c638bc66d6f12ce32c0bc633b55ed1c15c35e",
       "seed": "3ecc1f8d",
     },
     "notices": [
@@ -7735,7 +7735,7 @@ exports[`20 explicit synthetic golden profiles > gym-intermediate-muscle4x45 1`]
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "0eb41eb1857629347a5a49a5ade127bb60472613e5dc48bbad0317cc5d641629",
+      "rulesVersion": "3ab0c8844434d12f5de7044e103c638bc66d6f12ce32c0bc633b55ed1c15c35e",
       "seed": "52daa0b5",
     },
     "notices": [
@@ -10707,7 +10707,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "0eb41eb1857629347a5a49a5ade127bb60472613e5dc48bbad0317cc5d641629",
+      "rulesVersion": "3ab0c8844434d12f5de7044e103c638bc66d6f12ce32c0bc633b55ed1c15c35e",
       "seed": "9ef69708",
     },
     "notices": [
@@ -10737,22 +10737,22 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
       "perRule": [
         {
           "id": "safety.session.warmup_cooldown",
-          "satisfaction": 0.3427777777777778,
+          "satisfaction": 0.3727777777777778,
           "weight": 1,
         },
         {
           "id": "goal.floor.all",
-          "satisfaction": 0.993421052631579,
+          "satisfaction": 0.9901315789473684,
           "weight": 3,
         },
         {
           "id": "goal.aerobic.baseline",
-          "satisfaction": 0.034666666666666665,
+          "satisfaction": 0.041666666666666664,
           "weight": 1,
         },
         {
           "id": "goal.params.health",
-          "satisfaction": 0.6809014622625126,
+          "satisfaction": 0.691362422390176,
           "weight": 3,
         },
         {
@@ -10767,7 +10767,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
         },
         {
           "id": "session.warmup.general",
-          "satisfaction": 0.5666666666666667,
+          "satisfaction": 0.6777777777777777,
           "weight": 2,
         },
         {
@@ -10777,7 +10777,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
         },
         {
           "id": "session.cooldown.stretch",
-          "satisfaction": 0.048611111111111105,
+          "satisfaction": 0.07797619047619048,
           "weight": 1,
         },
         {
@@ -10792,7 +10792,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
         },
         {
           "id": "dose.sets_exercise",
-          "satisfaction": 0.9473684210526315,
+          "satisfaction": 0.9210526315789473,
           "weight": 1,
         },
         {
@@ -10817,7 +10817,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
         },
         {
           "id": "aerobic.target.weekly",
-          "satisfaction": 0.034666666666666665,
+          "satisfaction": 0.041666666666666664,
           "weight": 1,
         },
         {
@@ -10826,14 +10826,14 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
           "weight": 4,
         },
       ],
-      "score": 0.8107173976850136,
+      "score": 0.8192699262568953,
       "status": "limited",
     },
     "sessionMinutes": 40,
     "templates": [
       {
-        "estimatedMinutes": 40,
-        "estimatedSeconds": 2400,
+        "estimatedMinutes": 37,
+        "estimatedSeconds": 2187,
         "id": "day-644e230f",
         "items": [
           {
@@ -10858,15 +10858,15 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
                 4,
               ],
             },
-            "sets": 1,
+            "sets": 2,
             "target": {
-              "durationSeconds": 20,
+              "durationSeconds": 39,
               "metricType": "duration",
             },
           },
           {
             "equipment": "none",
-            "exerciseId": "86d096ca-ee52-5326-85e1-f32536062941",
+            "exerciseId": "65e2ea16-50ef-5f66-8f78-1acc38466c10",
             "prescription": {
               "block": "warmup",
               "goalRole": undefined,
@@ -10908,7 +10908,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
             },
             "sets": 1,
             "target": {
-              "durationSeconds": 15,
+              "durationSeconds": 23,
               "metricType": "duration",
             },
           },
@@ -10930,9 +10930,9 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
               "sourcePosition": "day-644e230f-M1-main_1",
               "structure": "straight",
             },
-            "sets": 3,
+            "sets": 2,
             "target": {
-              "durationSeconds": 22,
+              "durationSeconds": 23,
               "metricType": "duration",
             },
           },
@@ -10985,32 +10985,26 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
             },
           },
           {
-            "equipment": "dumbbell",
-            "exerciseId": "7feb2a11-6fb3-5757-8d1a-c6502fecd221",
+            "equipment": "none",
+            "exerciseId": "bb96ec5f-31cc-5af0-832c-f9ac2d1b22d1",
             "prescription": {
               "block": "main",
-              "goalRole": undefined,
-              "loadBand": "light",
-              "loadDescription": {
-                "en": "Light weight",
-                "zh": "轻重量",
-              },
-              "pattern": "hinge",
+              "pattern": "anti_lateral_flexion",
               "perSide": true,
-              "restSeconds": 105,
+              "restSeconds": 45,
               "rir": [
                 2,
                 3,
               ],
-              "secondsPerRep": 4,
-              "setupSeconds": 15,
+              "secondsPerRep": 3.5,
+              "setupSeconds": 5,
               "sourcePosition": "day-644e230f-SS1-acc_1",
               "structure": "straight",
             },
             "sets": 3,
             "target": {
-              "metricType": "reps",
-              "reps": 8,
+              "durationSeconds": 23,
+              "metricType": "duration",
             },
           },
           {
@@ -11055,7 +11049,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
               "sourcePosition": "day-644e230f-SS2-core_1",
               "structure": "straight",
             },
-            "sets": 2,
+            "sets": 1,
             "target": {
               "durationSeconds": 23,
               "metricType": "duration",
@@ -11063,7 +11057,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
           },
           {
             "equipment": "none",
-            "exerciseId": "c95d05eb-d0e8-5557-84cf-0b1fc11e3e48",
+            "exerciseId": "9ab4007b-4404-5576-8bed-9f0641cdbecf",
             "prescription": {
               "block": "conditioning",
               "goalRole": undefined,
@@ -11074,7 +11068,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
                 2,
                 3,
               ],
-              "secondsPerRep": 1,
+              "secondsPerRep": 3.5,
               "setupSeconds": 5,
               "sourcePosition": "day-644e230f-CN1-acc_4",
               "structure": "straight",
@@ -11085,7 +11079,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
             },
             "sets": 1,
             "target": {
-              "durationSeconds": 75,
+              "durationSeconds": 138,
               "metricType": "duration",
             },
           },
@@ -11119,13 +11113,13 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
         "weekday": "mon",
       },
       {
-        "estimatedMinutes": 39,
-        "estimatedSeconds": 2281,
+        "estimatedMinutes": 41,
+        "estimatedSeconds": 2401,
         "id": "day-685067f2",
         "items": [
           {
-            "equipment": "chair",
-            "exerciseId": "bf4bc395-9395-57dd-8a5f-188ad063d783",
+            "equipment": "none",
+            "exerciseId": "9ab4007b-4404-5576-8bed-9f0641cdbecf",
             "prescription": {
               "block": "warmup",
               "goalRole": undefined,
@@ -11137,7 +11131,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
                 3,
               ],
               "secondsPerRep": 3.5,
-              "setupSeconds": 15,
+              "setupSeconds": 5,
               "sourcePosition": "day-685067f2-WU1",
               "structure": "straight",
               "targetRpe": [
@@ -11145,7 +11139,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
                 4,
               ],
             },
-            "sets": 2,
+            "sets": 1,
             "target": {
               "durationSeconds": 20,
               "metricType": "duration",
@@ -11177,7 +11171,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
           },
           {
             "equipment": "none",
-            "exerciseId": "1a33dc4f-2152-5612-8a5f-d7c6b3f0f990",
+            "exerciseId": "a7cca67b-384d-55a8-856f-d7a72a25f50b",
             "prescription": {
               "block": "warmup",
               "goalRole": undefined,
@@ -11299,7 +11293,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
               "sourcePosition": "day-685067f2-SS1-acc_1",
               "structure": "straight",
             },
-            "sets": 2,
+            "sets": 3,
             "target": {
               "metricType": "reps",
               "reps": 10,
@@ -11377,7 +11371,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
           },
           {
             "equipment": "dumbbell",
-            "exerciseId": "41337131-6dbc-513d-8c72-7b927bfa159d",
+            "exerciseId": "7a7ba8f2-efa2-5b62-846e-9ca3bcdfcf30",
             "prescription": {
               "block": "conditioning",
               "goalRole": undefined,
@@ -11401,7 +11395,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
           },
           {
             "equipment": "none",
-            "exerciseId": "9ab4007b-4404-5576-8bed-9f0641cdbecf",
+            "exerciseId": "9f2b36bf-e604-5671-8113-573d74a04132",
             "prescription": {
               "block": "conditioning",
               "goalRole": undefined,
@@ -11429,7 +11423,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
           },
           {
             "equipment": "none",
-            "exerciseId": "ac636515-f939-556a-8937-acf8683d0d0e",
+            "exerciseId": "8a4b7d62-194a-5220-8643-0976baa9697b",
             "prescription": {
               "block": "cooldown",
               "goalRole": undefined,
@@ -11457,13 +11451,13 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
         "weekday": "wed",
       },
       {
-        "estimatedMinutes": 37,
-        "estimatedSeconds": 2174,
+        "estimatedMinutes": 39,
+        "estimatedSeconds": 2330,
         "id": "day-a8530b49",
         "items": [
           {
-            "equipment": "none",
-            "exerciseId": "9f2b36bf-e604-5671-8113-573d74a04132",
+            "equipment": "chair",
+            "exerciseId": "bf4bc395-9395-57dd-8a5f-188ad063d783",
             "prescription": {
               "block": "warmup",
               "goalRole": undefined,
@@ -11475,7 +11469,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
                 3,
               ],
               "secondsPerRep": 3.5,
-              "setupSeconds": 5,
+              "setupSeconds": 15,
               "sourcePosition": "day-a8530b49-WU1",
               "structure": "straight",
               "targetRpe": [
@@ -11540,7 +11534,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
           },
           {
             "equipment": "none",
-            "exerciseId": "af443655-c6cb-5a11-8b45-f2fb15d3de0b",
+            "exerciseId": "0617f41b-512d-5201-817c-7b4181cf3ca0",
             "prescription": {
               "block": "main",
               "goalRole": undefined,
@@ -11587,13 +11581,19 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
             },
           },
           {
-            "equipment": "wall",
-            "exerciseId": "5e763766-ee3e-56b0-8b68-69bed38b8381",
+            "equipment": "dumbbell",
+            "exerciseId": "884278bd-4d05-5191-8807-f3109e26f718",
             "prescription": {
               "block": "main",
-              "pattern": "anti_lateral_flexion",
+              "goalRole": undefined,
+              "loadBand": "light",
+              "loadDescription": {
+                "en": "Light weight",
+                "zh": "轻重量",
+              },
+              "pattern": "hinge",
               "perSide": false,
-              "restSeconds": 45,
+              "restSeconds": 105,
               "rir": [
                 2,
                 3,
@@ -11605,8 +11605,8 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
             },
             "sets": 3,
             "target": {
-              "durationSeconds": 23,
-              "metricType": "duration",
+              "metricType": "reps",
+              "reps": 10,
             },
           },
           {
@@ -11635,7 +11635,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
           },
           {
             "equipment": "none",
-            "exerciseId": "b15e6289-c68a-566e-8abc-096b4d7f8bc4",
+            "exerciseId": "5552d253-5693-5588-8336-46e70ee4c35b",
             "prescription": {
               "block": "accessory",
               "goalRole": undefined,
@@ -11683,7 +11683,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
           },
           {
             "equipment": "none",
-            "exerciseId": "e4e81141-14e6-5f72-8b8f-5e19e3cb709a",
+            "exerciseId": "9f2b36bf-e604-5671-8113-573d74a04132",
             "prescription": {
               "block": "conditioning",
               "goalRole": undefined,
@@ -11848,7 +11848,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
         "step": "fill",
       },
       {
-        "note": "day-644e230f-WU1:5",
+        "note": "day-644e230f-WU1:4",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -11884,7 +11884,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
         "step": "fill",
       },
       {
-        "note": "day-644e230f-CN1-acc_3:16",
+        "note": "day-644e230f-CN1-acc_3:15",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.fallback.chain",
         "step": "candidates",
@@ -11896,7 +11896,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
         "step": "fill",
       },
       {
-        "note": "day-644e230f-CN1-acc_4:15",
+        "note": "day-644e230f-CN1-acc_4:14",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.fallback.chain",
         "step": "candidates",
@@ -12014,7 +12014,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
         "step": "fill",
       },
       {
-        "note": "day-685067f2-WU1:5",
+        "note": "day-685067f2-WU1:4",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -12050,7 +12050,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
         "step": "fill",
       },
       {
-        "note": "day-685067f2-CN1-acc_3:16",
+        "note": "day-685067f2-CN1-acc_3:15",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.fallback.chain",
         "step": "candidates",
@@ -12062,7 +12062,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
         "step": "fill",
       },
       {
-        "note": "day-685067f2-CN1-acc_4:15",
+        "note": "day-685067f2-CN1-acc_4:14",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.fallback.chain",
         "step": "candidates",
@@ -12180,7 +12180,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
         "step": "fill",
       },
       {
-        "note": "day-a8530b49-WU1:5",
+        "note": "day-a8530b49-WU1:4",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -12216,7 +12216,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
         "step": "fill",
       },
       {
-        "note": "day-a8530b49-CN1-acc_3:15",
+        "note": "day-a8530b49-CN1-acc_3:14",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.fallback.chain",
         "step": "candidates",
@@ -12228,7 +12228,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
         "step": "fill",
       },
       {
-        "note": "day-a8530b49-CN1-acc_4:14",
+        "note": "day-a8530b49-CN1-acc_4:13",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.fallback.chain",
         "step": "candidates",
@@ -12274,7 +12274,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
         "step": "skeleton/dose",
       },
       {
-        "note": "improve-0:3",
+        "note": "improve-0:2",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -12340,13 +12340,13 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
         "step": "candidates",
       },
       {
-        "note": "improve-0:3",
+        "note": "improve-0:2",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-1:32",
+        "note": "improve-1:31",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -12418,7 +12418,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
         "step": "candidates",
       },
       {
-        "note": "improve-0:3",
+        "note": "improve-0:2",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -12485,9 +12485,9 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
       },
       {
         "details": {
-          "from": "884278bd-4d05-5191-8807-f3109e26f718",
-          "quality": 0.785655775254457,
-          "to": "5e763766-ee3e-56b0-8b68-69bed38b8381",
+          "from": "7feb2a11-6fb3-5757-8d1a-c6502fecd221",
+          "quality": 0.7935869605524681,
+          "to": "bb96ec5f-31cc-5af0-832c-f9ac2d1b22d1",
         },
         "note": "round 1",
         "reason": "legal local quality gain",
@@ -12495,7 +12495,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
         "step": "improve",
       },
       {
-        "note": "improve-0:3",
+        "note": "improve-0:2",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -12531,7 +12531,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
         "step": "candidates",
       },
       {
-        "note": "improve-6:5",
+        "note": "improve-6:1",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -12549,7 +12549,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
         "step": "candidates",
       },
       {
-        "note": "improve-9:3",
+        "note": "improve-9:2",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -12561,13 +12561,13 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
         "step": "candidates",
       },
       {
-        "note": "improve-0:3",
+        "note": "improve-0:2",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-1:32",
+        "note": "improve-1:31",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -12627,7 +12627,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
         "step": "candidates",
       },
       {
-        "note": "improve-11:3",
+        "note": "improve-11:2",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -12639,7 +12639,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
         "step": "candidates",
       },
       {
-        "note": "improve-0:3",
+        "note": "improve-0:2",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -12669,7 +12669,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
         "step": "candidates",
       },
       {
-        "note": "improve-5:1",
+        "note": "improve-5:5",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -12693,7 +12693,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
         "step": "candidates",
       },
       {
-        "note": "improve-9:3",
+        "note": "improve-9:2",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -12706,7 +12706,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
       },
       {
         "details": {
-          "quality": 0.7997849609000364,
+          "quality": 0.8077256207840239,
         },
         "note": "round 2",
         "reason": "legal local quality gain",
@@ -12714,7 +12714,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
         "step": "improve",
       },
       {
-        "note": "improve-0:3",
+        "note": "improve-0:2",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -12750,7 +12750,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
         "step": "candidates",
       },
       {
-        "note": "improve-6:5",
+        "note": "improve-6:1",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -12768,7 +12768,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
         "step": "candidates",
       },
       {
-        "note": "improve-9:3",
+        "note": "improve-9:2",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -12780,13 +12780,13 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
         "step": "candidates",
       },
       {
-        "note": "improve-0:3",
+        "note": "improve-0:2",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-1:32",
+        "note": "improve-1:31",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -12846,7 +12846,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
         "step": "candidates",
       },
       {
-        "note": "improve-11:3",
+        "note": "improve-11:2",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -12858,7 +12858,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
         "step": "candidates",
       },
       {
-        "note": "improve-0:3",
+        "note": "improve-0:2",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -12888,7 +12888,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
         "step": "candidates",
       },
       {
-        "note": "improve-5:1",
+        "note": "improve-5:5",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -12912,7 +12912,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
         "step": "candidates",
       },
       {
-        "note": "improve-9:3",
+        "note": "improve-9:2",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -12925,7 +12925,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
       },
       {
         "details": {
-          "quality": 0.8107173976850136,
+          "quality": 0.8192699262568953,
         },
         "note": "round 3",
         "reason": "legal local quality gain",
@@ -12983,7 +12983,7 @@ exports[`20 explicit synthetic golden profiles > inactive-known-condition-blocke
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "0eb41eb1857629347a5a49a5ade127bb60472613e5dc48bbad0317cc5d641629",
+      "rulesVersion": "3ab0c8844434d12f5de7044e103c638bc66d6f12ce32c0bc633b55ed1c15c35e",
       "seed": "2611cd8a",
     },
     "notices": [
@@ -13162,7 +13162,7 @@ exports[`20 explicit synthetic golden profiles > mobility6x90 1`] = `
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "0eb41eb1857629347a5a49a5ade127bb60472613e5dc48bbad0317cc5d641629",
+      "rulesVersion": "3ab0c8844434d12f5de7044e103c638bc66d6f12ce32c0bc633b55ed1c15c35e",
       "seed": "bc0e9f4f",
     },
     "notices": [
@@ -18408,7 +18408,7 @@ exports[`20 explicit synthetic golden profiles > older70-cautious-balance 1`] = 
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "0eb41eb1857629347a5a49a5ade127bb60472613e5dc48bbad0317cc5d641629",
+      "rulesVersion": "3ab0c8844434d12f5de7044e103c638bc66d6f12ce32c0bc633b55ed1c15c35e",
       "seed": "a703923c",
     },
     "notices": [
@@ -18488,7 +18488,7 @@ exports[`20 explicit synthetic golden profiles > older70-cautious-balance 1`] = 
         },
         {
           "id": "session.cooldown.stretch",
-          "satisfaction": 0.07242063492063493,
+          "satisfaction": 0.07638888888888888,
           "weight": 1,
         },
         {
@@ -18562,14 +18562,14 @@ exports[`20 explicit synthetic golden profiles > older70-cautious-balance 1`] = 
           "weight": 4,
         },
       ],
-      "score": 0.7994929027370324,
+      "score": 0.7995851877130383,
       "status": "limited",
     },
     "sessionMinutes": 30,
     "templates": [
       {
-        "estimatedMinutes": 31,
-        "estimatedSeconds": 1807,
+        "estimatedMinutes": 30,
+        "estimatedSeconds": 1800,
         "id": "day-a47e81bd",
         "items": [
           {
@@ -18602,7 +18602,7 @@ exports[`20 explicit synthetic golden profiles > older70-cautious-balance 1`] = 
           },
           {
             "equipment": "none",
-            "exerciseId": "a4f69ee4-54a4-5f38-8dee-15a859e57ef7",
+            "exerciseId": "eb725ac0-00dc-5fe5-80f1-ac3c82c4a6b7",
             "prescription": {
               "block": "warmup",
               "goalRole": undefined,
@@ -18613,7 +18613,7 @@ exports[`20 explicit synthetic golden profiles > older70-cautious-balance 1`] = 
                 4,
                 4,
               ],
-              "secondsPerRep": 3.5,
+              "secondsPerRep": 2,
               "setupSeconds": 5,
               "sourcePosition": "day-a47e81bd-WU2",
               "structure": "straight",
@@ -18745,26 +18745,27 @@ exports[`20 explicit synthetic golden profiles > older70-cautious-balance 1`] = 
             },
           },
           {
-            "equipment": "wall",
-            "exerciseId": "5e763766-ee3e-56b0-8b68-69bed38b8381",
+            "equipment": "none",
+            "exerciseId": "0fd0172d-6578-58aa-8d3c-628a9eca1caa",
             "prescription": {
               "block": "accessory",
-              "pattern": "anti_lateral_flexion",
+              "goalRole": undefined,
+              "pattern": "anti_extension",
               "perSide": false,
-              "restSeconds": 45,
+              "restSeconds": 105,
               "rir": [
                 4,
                 4,
               ],
-              "secondsPerRep": 3.5,
-              "setupSeconds": 15,
+              "secondsPerRep": 3,
+              "setupSeconds": 5,
               "sourcePosition": "day-a47e81bd-SS2-core_1",
               "structure": "straight",
             },
             "sets": 1,
             "target": {
-              "durationSeconds": 15,
-              "metricType": "duration",
+              "metricType": "reps",
+              "reps": 6,
             },
           },
           {
@@ -18854,7 +18855,7 @@ exports[`20 explicit synthetic golden profiles > older70-cautious-balance 1`] = 
           },
           {
             "equipment": "none",
-            "exerciseId": "86d096ca-ee52-5326-85e1-f32536062941",
+            "exerciseId": "65e2ea16-50ef-5f66-8f78-1acc38466c10",
             "prescription": {
               "block": "warmup",
               "goalRole": undefined,
@@ -19075,12 +19076,12 @@ exports[`20 explicit synthetic golden profiles > older70-cautious-balance 1`] = 
       },
       {
         "estimatedMinutes": 29,
-        "estimatedSeconds": 1715,
+        "estimatedSeconds": 1722,
         "id": "day-60799983",
         "items": [
           {
             "equipment": "none",
-            "exerciseId": "9ab4007b-4404-5576-8bed-9f0641cdbecf",
+            "exerciseId": "9f2b36bf-e604-5671-8113-573d74a04132",
             "prescription": {
               "block": "warmup",
               "goalRole": undefined,
@@ -19108,7 +19109,7 @@ exports[`20 explicit synthetic golden profiles > older70-cautious-balance 1`] = 
           },
           {
             "equipment": "none",
-            "exerciseId": "86d096ca-ee52-5326-85e1-f32536062941",
+            "exerciseId": "65e2ea16-50ef-5f66-8f78-1acc38466c10",
             "prescription": {
               "block": "warmup",
               "goalRole": undefined,
@@ -19157,7 +19158,7 @@ exports[`20 explicit synthetic golden profiles > older70-cautious-balance 1`] = 
           },
           {
             "equipment": "none",
-            "exerciseId": "6c60b2cc-75e8-5f84-879c-dd112c5d10ec",
+            "exerciseId": "775b7331-0fb6-5037-8fa8-8e9fd13f450a",
             "prescription": {
               "block": "main",
               "goalRole": undefined,
@@ -19228,27 +19229,26 @@ exports[`20 explicit synthetic golden profiles > older70-cautious-balance 1`] = 
             },
           },
           {
-            "equipment": "none",
-            "exerciseId": "0fd0172d-6578-58aa-8d3c-628a9eca1caa",
+            "equipment": "wall",
+            "exerciseId": "5e763766-ee3e-56b0-8b68-69bed38b8381",
             "prescription": {
               "block": "accessory",
-              "goalRole": undefined,
-              "pattern": "anti_extension",
+              "pattern": "anti_lateral_flexion",
               "perSide": false,
-              "restSeconds": 105,
+              "restSeconds": 45,
               "rir": [
                 4,
                 4,
               ],
-              "secondsPerRep": 3,
-              "setupSeconds": 5,
+              "secondsPerRep": 3.5,
+              "setupSeconds": 15,
               "sourcePosition": "day-60799983-SS2-core_1",
               "structure": "straight",
             },
             "sets": 1,
             "target": {
-              "metricType": "reps",
-              "reps": 6,
+              "durationSeconds": 15,
+              "metricType": "duration",
             },
           },
           {
@@ -19418,7 +19418,7 @@ exports[`20 explicit synthetic golden profiles > older70-cautious-balance 1`] = 
         "step": "fill",
       },
       {
-        "note": "day-a47e81bd-WU1:5",
+        "note": "day-a47e81bd-WU1:4",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -19454,7 +19454,7 @@ exports[`20 explicit synthetic golden profiles > older70-cautious-balance 1`] = 
         "step": "fill",
       },
       {
-        "note": "day-a47e81bd-CD1:27",
+        "note": "day-a47e81bd-CD1:28",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -19575,7 +19575,7 @@ exports[`20 explicit synthetic golden profiles > older70-cautious-balance 1`] = 
         "step": "fill",
       },
       {
-        "note": "day-60805548-WU1:5",
+        "note": "day-60805548-WU1:4",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -19726,7 +19726,7 @@ exports[`20 explicit synthetic golden profiles > older70-cautious-balance 1`] = 
         "step": "fill",
       },
       {
-        "note": "day-60799983-WU1:5",
+        "note": "day-60799983-WU1:4",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -19805,7 +19805,7 @@ exports[`20 explicit synthetic golden profiles > older70-cautious-balance 1`] = 
         "step": "skeleton/dose",
       },
       {
-        "note": "improve-0:4",
+        "note": "improve-0:3",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -19859,13 +19859,13 @@ exports[`20 explicit synthetic golden profiles > older70-cautious-balance 1`] = 
         "step": "candidates",
       },
       {
-        "note": "improve-9:26",
+        "note": "improve-9:27",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-0:4",
+        "note": "improve-0:3",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -19925,7 +19925,7 @@ exports[`20 explicit synthetic golden profiles > older70-cautious-balance 1`] = 
         "step": "candidates",
       },
       {
-        "note": "improve-0:4",
+        "note": "improve-0:3",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -19981,7 +19981,7 @@ exports[`20 explicit synthetic golden profiles > older70-cautious-balance 1`] = 
       {
         "details": {
           "from": "0fd0172d-6578-58aa-8d3c-628a9eca1caa",
-          "quality": 0.7881908890782819,
+          "quality": 0.7882831740542878,
           "to": "5e763766-ee3e-56b0-8b68-69bed38b8381",
         },
         "note": "round 1",
@@ -19990,7 +19990,7 @@ exports[`20 explicit synthetic golden profiles > older70-cautious-balance 1`] = 
         "step": "improve",
       },
       {
-        "note": "improve-0:4",
+        "note": "improve-0:3",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -20032,7 +20032,7 @@ exports[`20 explicit synthetic golden profiles > older70-cautious-balance 1`] = 
         "step": "candidates",
       },
       {
-        "note": "improve-7:1",
+        "note": "improve-7:4",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -20044,13 +20044,13 @@ exports[`20 explicit synthetic golden profiles > older70-cautious-balance 1`] = 
         "step": "candidates",
       },
       {
-        "note": "improve-9:26",
+        "note": "improve-9:27",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-0:4",
+        "note": "improve-0:3",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -20110,7 +20110,7 @@ exports[`20 explicit synthetic golden profiles > older70-cautious-balance 1`] = 
         "step": "candidates",
       },
       {
-        "note": "improve-0:4",
+        "note": "improve-0:3",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -20146,7 +20146,7 @@ exports[`20 explicit synthetic golden profiles > older70-cautious-balance 1`] = 
         "step": "candidates",
       },
       {
-        "note": "improve-6:4",
+        "note": "improve-6:1",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -20165,7 +20165,7 @@ exports[`20 explicit synthetic golden profiles > older70-cautious-balance 1`] = 
       },
       {
         "details": {
-          "quality": 0.7942531226275308,
+          "quality": 0.7943454076035367,
         },
         "note": "round 2",
         "reason": "legal local quality gain",
@@ -20173,7 +20173,7 @@ exports[`20 explicit synthetic golden profiles > older70-cautious-balance 1`] = 
         "step": "improve",
       },
       {
-        "note": "improve-0:4",
+        "note": "improve-0:3",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -20215,7 +20215,7 @@ exports[`20 explicit synthetic golden profiles > older70-cautious-balance 1`] = 
         "step": "candidates",
       },
       {
-        "note": "improve-7:1",
+        "note": "improve-7:4",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -20227,13 +20227,13 @@ exports[`20 explicit synthetic golden profiles > older70-cautious-balance 1`] = 
         "step": "candidates",
       },
       {
-        "note": "improve-9:26",
+        "note": "improve-9:27",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-0:4",
+        "note": "improve-0:3",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -20293,7 +20293,7 @@ exports[`20 explicit synthetic golden profiles > older70-cautious-balance 1`] = 
         "step": "candidates",
       },
       {
-        "note": "improve-0:4",
+        "note": "improve-0:3",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -20329,7 +20329,7 @@ exports[`20 explicit synthetic golden profiles > older70-cautious-balance 1`] = 
         "step": "candidates",
       },
       {
-        "note": "improve-6:4",
+        "note": "improve-6:1",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -20348,7 +20348,7 @@ exports[`20 explicit synthetic golden profiles > older70-cautious-balance 1`] = 
       },
       {
         "details": {
-          "quality": 0.7994929027370324,
+          "quality": 0.7995851877130383,
         },
         "note": "round 3",
         "reason": "legal local quality gain",
@@ -20401,7 +20401,7 @@ exports[`20 explicit synthetic golden profiles > older70-unrestricted 1`] = `
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "0eb41eb1857629347a5a49a5ade127bb60472613e5dc48bbad0317cc5d641629",
+      "rulesVersion": "3ab0c8844434d12f5de7044e103c638bc66d6f12ce32c0bc633b55ed1c15c35e",
       "seed": "5fd97864",
     },
     "notices": [
@@ -22219,7 +22219,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy-provider-missing 1`] 
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "0eb41eb1857629347a5a49a5ade127bb60472613e5dc48bbad0317cc5d641629",
+      "rulesVersion": "3ab0c8844434d12f5de7044e103c638bc66d6f12ce32c0bc633b55ed1c15c35e",
       "seed": "e96c3354",
     },
     "notices": [
@@ -22399,7 +22399,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "0eb41eb1857629347a5a49a5ade127bb60472613e5dc48bbad0317cc5d641629",
+      "rulesVersion": "3ab0c8844434d12f5de7044e103c638bc66d6f12ce32c0bc633b55ed1c15c35e",
       "seed": "1dafe98b",
     },
     "notices": [
@@ -22439,7 +22439,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
       "perRule": [
         {
           "id": "goal.floor.all",
-          "satisfaction": 0.9926470588235294,
+          "satisfaction": 0.99609375,
           "weight": 3,
         },
         {
@@ -22449,7 +22449,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
         },
         {
           "id": "goal.params.health",
-          "satisfaction": 0.6414415736934821,
+          "satisfaction": 0.6566457438608083,
           "weight": 3,
         },
         {
@@ -22464,32 +22464,32 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
         },
         {
           "id": "session.warmup.general",
-          "satisfaction": 0.5888888888888889,
+          "satisfaction": 0.6444444444444445,
           "weight": 2,
         },
         {
           "id": "session.warmup.dynamic",
-          "satisfaction": 1,
+          "satisfaction": 0.6666666666666666,
           "weight": 1,
         },
         {
           "id": "session.cooldown.stretch",
-          "satisfaction": 0.07242063492063493,
+          "satisfaction": 0.05416666666666667,
           "weight": 1,
         },
         {
           "id": "dose.sets_week.beginner",
-          "satisfaction": 0.9027777777777777,
+          "satisfaction": 0.9722222222222223,
           "weight": 3,
         },
         {
           "id": "dose.sets_week.goal_matrix",
-          "satisfaction": 0.9027777777777777,
+          "satisfaction": 0.9722222222222223,
           "weight": 1,
         },
         {
           "id": "dose.sets_exercise",
-          "satisfaction": 0.9411764705882353,
+          "satisfaction": 0.96875,
           "weight": 1,
         },
         {
@@ -22528,19 +22528,19 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
           "weight": 4,
         },
       ],
-      "score": 0.8344534870181017,
+      "score": 0.838007242922359,
       "status": "limited",
     },
     "sessionMinutes": 30,
     "templates": [
       {
-        "estimatedMinutes": 30,
-        "estimatedSeconds": 1761,
+        "estimatedMinutes": 28,
+        "estimatedSeconds": 1644,
         "id": "day-cde01faf",
         "items": [
           {
             "equipment": "none",
-            "exerciseId": "9ab4007b-4404-5576-8bed-9f0641cdbecf",
+            "exerciseId": "9f2b36bf-e604-5671-8113-573d74a04132",
             "prescription": {
               "block": "warmup",
               "goalRole": undefined,
@@ -22560,57 +22560,9 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
                 4,
               ],
             },
-            "sets": 2,
+            "sets": 1,
             "target": {
               "durationSeconds": 20,
-              "metricType": "duration",
-            },
-          },
-          {
-            "equipment": "none",
-            "exerciseId": "86d096ca-ee52-5326-85e1-f32536062941",
-            "prescription": {
-              "block": "warmup",
-              "goalRole": undefined,
-              "pattern": "mobility",
-              "perSide": true,
-              "restSeconds": 105,
-              "rir": [
-                3,
-                3,
-              ],
-              "secondsPerRep": 3.5,
-              "setupSeconds": 5,
-              "sourcePosition": "day-cde01faf-WU2",
-              "structure": "straight",
-            },
-            "sets": 1,
-            "target": {
-              "durationSeconds": 30,
-              "metricType": "duration",
-            },
-          },
-          {
-            "equipment": "none",
-            "exerciseId": "c587f444-e7d6-5e0d-88f9-f451d05da067",
-            "prescription": {
-              "block": "warmup",
-              "goalRole": undefined,
-              "pattern": "squat",
-              "perSide": true,
-              "restSeconds": 45,
-              "rir": [
-                3,
-                3,
-              ],
-              "secondsPerRep": 3.5,
-              "setupSeconds": 5,
-              "sourcePosition": "day-cde01faf-WU3",
-              "structure": "straight",
-            },
-            "sets": 1,
-            "target": {
-              "durationSeconds": 15,
               "metricType": "duration",
             },
           },
@@ -22656,7 +22608,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
               "sourcePosition": "day-cde01faf-SS1-main_2",
               "structure": "straight",
             },
-            "sets": 3,
+            "sets": 2,
             "target": {
               "metricType": "reps",
               "reps": 8,
@@ -22688,12 +22640,11 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
           },
           {
             "equipment": "none",
-            "exerciseId": "a7cca67b-384d-55a8-856f-d7a72a25f50b",
+            "exerciseId": "63dd8ff9-5994-5916-8fa6-3f347b3898b0",
             "prescription": {
               "block": "accessory",
-              "goalRole": undefined,
-              "pattern": "hinge",
-              "perSide": true,
+              "pattern": "anti_lateral_flexion",
+              "perSide": false,
               "restSeconds": 45,
               "rir": [
                 3,
@@ -22704,7 +22655,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
               "sourcePosition": "day-cde01faf-SS2-acc_1",
               "structure": "straight",
             },
-            "sets": 2,
+            "sets": 3,
             "target": {
               "durationSeconds": 15,
               "metricType": "duration",
@@ -22712,71 +22663,53 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
           },
           {
             "equipment": "none",
-            "exerciseId": "0fd0172d-6578-58aa-8d3c-628a9eca1caa",
+            "exerciseId": "0e1da082-9ee0-57ae-808e-de1bec5c1e1d",
             "prescription": {
               "block": "accessory",
               "goalRole": undefined,
               "pattern": "anti_extension",
               "perSide": false,
-              "restSeconds": 105,
-              "rir": [
-                3,
-                3,
-              ],
-              "secondsPerRep": 3,
-              "setupSeconds": 5,
-              "sourcePosition": "day-cde01faf-SS2-core_1",
-              "structure": "straight",
-            },
-            "sets": 2,
-            "target": {
-              "metricType": "reps",
-              "reps": 8,
-            },
-          },
-          {
-            "equipment": "none",
-            "exerciseId": "c25ab669-fde4-5976-8935-84859bba7a38",
-            "prescription": {
-              "block": "accessory",
-              "pattern": "rotation",
-              "perSide": false,
-              "restSeconds": 75,
-              "rir": [
-                3,
-                3,
-              ],
-              "secondsPerRep": 2,
-              "setupSeconds": 5,
-              "structure": "straight",
-            },
-            "sets": 1,
-            "target": {
-              "metricType": "reps",
-              "reps": 8,
-            },
-          },
-          {
-            "equipment": "none",
-            "exerciseId": "fe202858-3bc6-5f6e-8ecf-b0335ccd9619",
-            "prescription": {
-              "block": "cooldown",
-              "goalRole": undefined,
-              "pattern": "mobility",
-              "perSide": true,
-              "restSeconds": 105,
+              "restSeconds": 45,
               "rir": [
                 3,
                 3,
               ],
               "secondsPerRep": 3.5,
               "setupSeconds": 5,
-              "sourcePosition": "day-cde01faf-CD1",
+              "sourcePosition": "day-cde01faf-SS2-core_1",
               "structure": "straight",
             },
-            "sets": 1,
+            "sets": 3,
             "target": {
-              "durationSeconds": 30,
+              "durationSeconds": 15,
+              "metricType": "duration",
+            },
+          },
+          {
+            "equipment": "wall",
+            "exerciseId": "b6a3104a-bb84-50d8-8721-14b2822bbb7c",
+            "prescription": {
+              "block": "balance",
+              "goalRole": undefined,
+              "pattern": "balance",
+              "perSide": true,
+              "restSeconds": 45,
+              "rir": [
+                3,
+                3,
+              ],
+              "safetyCue": {
+                "en": "Hold a wall or chair for support.",
+                "zh": "扶墙或扶椅",
+              },
+              "secondsPerRep": 3.5,
+              "setupSeconds": 15,
+              "sourcePosition": "day-cde01faf-pregnancy-supported-balance",
+              "structure": "straight",
+            },
+            "sets": 3,
+            "target": {
+              "durationSeconds": 15,
               "metricType": "duration",
             },
           },
@@ -22787,12 +22720,12 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
       },
       {
         "estimatedMinutes": 29,
-        "estimatedSeconds": 1690,
+        "estimatedSeconds": 1702,
         "id": "day-d1e26492",
         "items": [
           {
             "equipment": "none",
-            "exerciseId": "e4e81141-14e6-5f72-8b8f-5e19e3cb709a",
+            "exerciseId": "9f2b36bf-e604-5671-8113-573d74a04132",
             "prescription": {
               "block": "warmup",
               "goalRole": undefined,
@@ -22814,7 +22747,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
             },
             "sets": 2,
             "target": {
-              "durationSeconds": 23,
+              "durationSeconds": 20,
               "metricType": "duration",
             },
           },
@@ -22844,26 +22777,26 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
           },
           {
             "equipment": "none",
-            "exerciseId": "4001ed34-a416-534c-8fbe-900cdd0cc7df",
+            "exerciseId": "3137bfa5-65ae-52de-88f8-febd64e5b3e8",
             "prescription": {
               "block": "warmup",
               "goalRole": undefined,
               "pattern": "hinge",
-              "perSide": true,
-              "restSeconds": 45,
+              "perSide": false,
+              "restSeconds": 105,
               "rir": [
                 3,
                 3,
               ],
-              "secondsPerRep": 3.5,
+              "secondsPerRep": 2,
               "setupSeconds": 5,
               "sourcePosition": "day-d1e26492-WU3",
               "structure": "straight",
             },
             "sets": 1,
             "target": {
-              "durationSeconds": 15,
-              "metricType": "duration",
+              "metricType": "reps",
+              "reps": 8,
             },
           },
           {
@@ -22884,7 +22817,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
               "sourcePosition": "day-d1e26492-M1-main_1",
               "structure": "straight",
             },
-            "sets": 2,
+            "sets": 3,
             "target": {
               "metricType": "reps",
               "reps": 8,
@@ -22908,7 +22841,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
               "sourcePosition": "day-d1e26492-SS1-main_2",
               "structure": "straight",
             },
-            "sets": 3,
+            "sets": 2,
             "target": {
               "metricType": "reps",
               "reps": 8,
@@ -22932,7 +22865,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
               "sourcePosition": "day-d1e26492-SS1-main_3",
               "structure": "straight",
             },
-            "sets": 3,
+            "sets": 2,
             "target": {
               "durationSeconds": 15,
               "metricType": "duration",
@@ -22980,7 +22913,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
               "sourcePosition": "day-d1e26492-SS2-core_1",
               "structure": "straight",
             },
-            "sets": 2,
+            "sets": 3,
             "target": {
               "durationSeconds": 15,
               "metricType": "duration",
@@ -22988,33 +22921,29 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
           },
           {
             "equipment": "none",
-            "exerciseId": "9ab4007b-4404-5576-8bed-9f0641cdbecf",
+            "exerciseId": "56ce7dc9-da1d-5d85-8413-d39705c8351d",
             "prescription": {
-              "block": "conditioning",
-              "pattern": "cardio_cyclic",
+              "block": "accessory",
+              "pattern": "locomotion_ground",
               "perSide": false,
               "restSeconds": 105,
               "rir": [
                 3,
                 3,
               ],
-              "secondsPerRep": 3.5,
+              "secondsPerRep": 1.5,
               "setupSeconds": 5,
               "structure": "straight",
-              "targetRpe": [
-                4,
-                4,
-              ],
             },
             "sets": 1,
             "target": {
-              "durationSeconds": 40,
-              "metricType": "duration",
+              "metricType": "reps",
+              "reps": 8,
             },
           },
           {
             "equipment": "none",
-            "exerciseId": "fe202858-3bc6-5f6e-8ecf-b0335ccd9619",
+            "exerciseId": "8a4b7d62-194a-5220-8643-0976baa9697b",
             "prescription": {
               "block": "cooldown",
               "goalRole": undefined,
@@ -23042,13 +22971,13 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
         "weekday": "wed",
       },
       {
-        "estimatedMinutes": 28,
-        "estimatedSeconds": 1658,
+        "estimatedMinutes": 29,
+        "estimatedSeconds": 1699,
         "id": "day-91e43e69",
         "items": [
           {
             "equipment": "none",
-            "exerciseId": "9f2b36bf-e604-5671-8113-573d74a04132",
+            "exerciseId": "e4e81141-14e6-5f72-8b8f-5e19e3cb709a",
             "prescription": {
               "block": "warmup",
               "goalRole": undefined,
@@ -23068,20 +22997,20 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
                 4,
               ],
             },
-            "sets": 1,
+            "sets": 2,
             "target": {
-              "durationSeconds": 20,
+              "durationSeconds": 28,
               "metricType": "duration",
             },
           },
           {
             "equipment": "none",
-            "exerciseId": "65e2ea16-50ef-5f66-8f78-1acc38466c10",
+            "exerciseId": "a4f69ee4-54a4-5f38-8dee-15a859e57ef7",
             "prescription": {
               "block": "warmup",
               "goalRole": undefined,
               "pattern": "mobility",
-              "perSide": true,
+              "perSide": false,
               "restSeconds": 105,
               "rir": [
                 3,
@@ -23117,7 +23046,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
               "structure": "straight",
               "warmupSeconds": 22,
             },
-            "sets": 3,
+            "sets": 2,
             "target": {
               "metricType": "reps",
               "reps": 8,
@@ -23125,7 +23054,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
           },
           {
             "equipment": "none",
-            "exerciseId": "0617f41b-512d-5201-817c-7b4181cf3ca0",
+            "exerciseId": "775b7331-0fb6-5037-8fa8-8e9fd13f450a",
             "prescription": {
               "block": "main",
               "goalRole": undefined,
@@ -23173,7 +23102,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
           },
           {
             "equipment": "none",
-            "exerciseId": "3137bfa5-65ae-52de-88f8-febd64e5b3e8",
+            "exerciseId": "80910204-15ee-5125-8dca-6af97eba9341",
             "prescription": {
               "block": "accessory",
               "goalRole": undefined,
@@ -23184,12 +23113,12 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
                 3,
                 3,
               ],
-              "secondsPerRep": 2,
+              "secondsPerRep": 3.5,
               "setupSeconds": 5,
               "sourcePosition": "day-91e43e69-SS2-acc_1",
               "structure": "straight",
             },
-            "sets": 2,
+            "sets": 3,
             "target": {
               "metricType": "reps",
               "reps": 8,
@@ -23197,11 +23126,12 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
           },
           {
             "equipment": "none",
-            "exerciseId": "63dd8ff9-5994-5916-8fa6-3f347b3898b0",
+            "exerciseId": "3af7d9a0-edf4-5f27-8b2d-10066ef4b693",
             "prescription": {
               "block": "accessory",
-              "pattern": "anti_lateral_flexion",
-              "perSide": false,
+              "goalRole": undefined,
+              "pattern": "anti_extension",
+              "perSide": true,
               "restSeconds": 45,
               "rir": [
                 3,
@@ -23220,10 +23150,10 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
           },
           {
             "equipment": "none",
-            "exerciseId": "2bc539d7-0817-5f22-8309-7cb1406ef2fa",
+            "exerciseId": "9ab4007b-4404-5576-8bed-9f0641cdbecf",
             "prescription": {
-              "block": "accessory",
-              "pattern": "lunge",
+              "block": "conditioning",
+              "pattern": "cardio_cyclic",
               "perSide": false,
               "restSeconds": 105,
               "rir": [
@@ -23233,11 +23163,15 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
               "secondsPerRep": 3.5,
               "setupSeconds": 5,
               "structure": "straight",
+              "targetRpe": [
+                4,
+                4,
+              ],
             },
             "sets": 1,
             "target": {
-              "metricType": "reps",
-              "reps": 8,
+              "durationSeconds": 40,
+              "metricType": "duration",
             },
           },
           {
@@ -23343,7 +23277,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
         "step": "fill",
       },
       {
-        "note": "day-cde01faf-SS2-acc_1:7",
+        "note": "day-cde01faf-SS2-acc_1:5",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -23367,7 +23301,19 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
         "step": "fill",
       },
       {
-        "note": "day-cde01faf-WU1:5",
+        "note": "day-cde01faf-pregnancy-supported-balance:5",
+        "reason": "hard eligible candidate pool",
+        "ruleId": "select.pipeline",
+        "step": "candidates",
+      },
+      {
+        "note": "day-cde01faf-pregnancy-supported-balance",
+        "reason": "maximum marginal contribution",
+        "ruleId": "select.rank",
+        "step": "fill",
+      },
+      {
+        "note": "day-cde01faf-WU1:4",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -23403,7 +23349,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
         "step": "fill",
       },
       {
-        "note": "day-cde01faf-CD1:41",
+        "note": "day-cde01faf-CD1:38",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -23415,14 +23361,14 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
         "step": "fill",
       },
       {
-        "note": "9 items",
+        "note": "10 items",
         "reason": "source dose with session and introductory weekly caps",
         "ruleId": "dose.sets_session.cap",
         "step": "dose",
       },
       {
         "details": {
-          "estimatedSeconds": 1816,
+          "estimatedSeconds": 1803,
           "targetSeconds": 1800,
         },
         "note": "optional actions then sets then timed work",
@@ -23473,7 +23419,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
         "step": "fill",
       },
       {
-        "note": "day-d1e26492-SS2-acc_1:7",
+        "note": "day-d1e26492-SS2-acc_1:5",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -23503,7 +23449,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
         "step": "fill",
       },
       {
-        "note": "day-d1e26492-WU1:5",
+        "note": "day-d1e26492-WU1:4",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -23527,7 +23473,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
         "step": "fill",
       },
       {
-        "note": "day-d1e26492-WU3:4",
+        "note": "day-d1e26492-WU3:2",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -23539,7 +23485,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
         "step": "fill",
       },
       {
-        "note": "day-d1e26492-CD1:41",
+        "note": "day-d1e26492-CD1:39",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -23558,7 +23504,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
       },
       {
         "details": {
-          "estimatedSeconds": 1800,
+          "estimatedSeconds": 1815,
           "targetSeconds": 1800,
         },
         "note": "optional actions then sets then timed work",
@@ -23609,7 +23555,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
         "step": "fill",
       },
       {
-        "note": "day-91e43e69-SS2-acc_1:7",
+        "note": "day-91e43e69-SS2-acc_1:5",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -23633,7 +23579,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
         "step": "fill",
       },
       {
-        "note": "day-91e43e69-WU1:5",
+        "note": "day-91e43e69-WU1:4",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -23669,7 +23615,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
         "step": "fill",
       },
       {
-        "note": "day-91e43e69-CD1:41",
+        "note": "day-91e43e69-CD1:38",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -23688,7 +23634,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
       },
       {
         "details": {
-          "estimatedSeconds": 1805,
+          "estimatedSeconds": 1800,
           "targetSeconds": 1800,
         },
         "note": "optional actions then sets then timed work",
@@ -23703,61 +23649,43 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
         "step": "skeleton/dose",
       },
       {
-        "note": "improve-0:4",
+        "note": "improve-0:3",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-1:36",
+        "note": "improve-1:3",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-2:4",
+        "note": "improve-2:8",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-3:3",
+        "note": "improve-3:1",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-4:8",
+        "note": "improve-4:11",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-5:1",
+        "note": "improve-5:12",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-6:13",
-        "reason": "hard eligible candidate pool",
-        "ruleId": "select.pipeline",
-        "step": "candidates",
-      },
-      {
-        "note": "improve-7:12",
-        "reason": "hard eligible candidate pool",
-        "ruleId": "select.pipeline",
-        "step": "candidates",
-      },
-      {
-        "note": "improve-8:7",
-        "reason": "hard eligible candidate pool",
-        "ruleId": "select.pipeline",
-        "step": "candidates",
-      },
-      {
-        "note": "improve-9:40",
+        "note": "improve-6:4",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -23769,13 +23697,13 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
         "step": "candidates",
       },
       {
-        "note": "improve-1:36",
+        "note": "improve-1:35",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-2:3",
+        "note": "improve-2:1",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -23799,7 +23727,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
         "step": "candidates",
       },
       {
-        "note": "improve-6:12",
+        "note": "improve-6:10",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -23811,19 +23739,19 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
         "step": "candidates",
       },
       {
-        "note": "improve-8:3",
+        "note": "improve-8:10",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-9:40",
+        "note": "improve-9:38",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-0:4",
+        "note": "improve-0:2",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -23853,7 +23781,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
         "step": "candidates",
       },
       {
-        "note": "improve-5:13",
+        "note": "improve-5:11",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -23865,21 +23793,21 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
         "step": "candidates",
       },
       {
-        "note": "improve-7:15",
+        "note": "improve-7:2",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-8:40",
+        "note": "improve-8:37",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
         "details": {
-          "from": "0fd0172d-6578-58aa-8d3c-628a9eca1caa",
-          "quality": 0.8108464628239036,
+          "from": "59de160c-e965-5d38-8fe1-75a4469f55ce",
+          "quality": 0.8098751111789554,
           "to": "63dd8ff9-5994-5916-8fa6-3f347b3898b0",
         },
         "note": "round 1",
@@ -23888,61 +23816,43 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
         "step": "improve",
       },
       {
-        "note": "improve-0:4",
+        "note": "improve-0:3",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-1:36",
+        "note": "improve-1:3",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-2:4",
+        "note": "improve-2:8",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-3:3",
+        "note": "improve-3:1",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-4:8",
+        "note": "improve-4:6",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-5:1",
+        "note": "improve-5:5",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-6:6",
-        "reason": "hard eligible candidate pool",
-        "ruleId": "select.pipeline",
-        "step": "candidates",
-      },
-      {
-        "note": "improve-7:5",
-        "reason": "hard eligible candidate pool",
-        "ruleId": "select.pipeline",
-        "step": "candidates",
-      },
-      {
-        "note": "improve-8:1",
-        "reason": "hard eligible candidate pool",
-        "ruleId": "select.fallback.chain",
-        "step": "candidates",
-      },
-      {
-        "note": "improve-9:40",
+        "note": "improve-6:4",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -23954,13 +23864,13 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
         "step": "candidates",
       },
       {
-        "note": "improve-1:36",
+        "note": "improve-1:35",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-2:3",
+        "note": "improve-2:1",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -23984,7 +23894,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
         "step": "candidates",
       },
       {
-        "note": "improve-6:5",
+        "note": "improve-6:3",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -24002,13 +23912,13 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
         "step": "candidates",
       },
       {
-        "note": "improve-9:40",
+        "note": "improve-9:38",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-0:4",
+        "note": "improve-0:2",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -24038,32 +23948,32 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
         "step": "candidates",
       },
       {
-        "note": "improve-5:6",
+        "note": "improve-5:4",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-6:6",
+        "note": "improve-6:5",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-7:8",
+        "note": "improve-7:2",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-8:40",
+        "note": "improve-8:37",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
         "details": {
-          "quality": 0.8240710695131472,
+          "quality": 0.8275665359162601,
         },
         "note": "round 2",
         "reason": "legal local quality gain",
@@ -24071,61 +23981,43 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
         "step": "improve",
       },
       {
-        "note": "improve-0:4",
+        "note": "improve-0:3",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-1:36",
+        "note": "improve-1:3",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-2:4",
+        "note": "improve-2:8",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-3:3",
+        "note": "improve-3:1",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-4:8",
+        "note": "improve-4:6",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-5:1",
+        "note": "improve-5:5",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-6:6",
-        "reason": "hard eligible candidate pool",
-        "ruleId": "select.pipeline",
-        "step": "candidates",
-      },
-      {
-        "note": "improve-7:5",
-        "reason": "hard eligible candidate pool",
-        "ruleId": "select.pipeline",
-        "step": "candidates",
-      },
-      {
-        "note": "improve-8:1",
-        "reason": "hard eligible candidate pool",
-        "ruleId": "select.fallback.chain",
-        "step": "candidates",
-      },
-      {
-        "note": "improve-9:40",
+        "note": "improve-6:4",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -24137,13 +24029,13 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
         "step": "candidates",
       },
       {
-        "note": "improve-1:36",
+        "note": "improve-1:35",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-2:3",
+        "note": "improve-2:1",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -24167,7 +24059,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
         "step": "candidates",
       },
       {
-        "note": "improve-6:5",
+        "note": "improve-6:3",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -24185,13 +24077,13 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
         "step": "candidates",
       },
       {
-        "note": "improve-9:40",
+        "note": "improve-9:38",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-0:4",
+        "note": "improve-0:2",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -24221,32 +24113,32 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
         "step": "candidates",
       },
       {
-        "note": "improve-5:6",
+        "note": "improve-5:4",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-6:6",
+        "note": "improve-6:5",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-7:8",
+        "note": "improve-7:2",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
-        "note": "improve-8:40",
+        "note": "improve-8:37",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
       },
       {
         "details": {
-          "quality": 0.8344534870181017,
+          "quality": 0.838007242922359,
         },
         "note": "round 3",
         "reason": "legal local quality gain",
@@ -24293,7 +24185,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy28-confirmed 1`] = `
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "0eb41eb1857629347a5a49a5ade127bb60472613e5dc48bbad0317cc5d641629",
+      "rulesVersion": "3ab0c8844434d12f5de7044e103c638bc66d6f12ce32c0bc633b55ed1c15c35e",
       "seed": "912756bb",
     },
     "notices": [
@@ -24663,7 +24555,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy28-confirmed 1`] = `
         "items": [
           {
             "equipment": "none",
-            "exerciseId": "e4e81141-14e6-5f72-8b8f-5e19e3cb709a",
+            "exerciseId": "9ab4007b-4404-5576-8bed-9f0641cdbecf",
             "prescription": {
               "block": "warmup",
               "goalRole": undefined,
@@ -24691,7 +24583,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy28-confirmed 1`] = `
           },
           {
             "equipment": "none",
-            "exerciseId": "86d096ca-ee52-5326-85e1-f32536062941",
+            "exerciseId": "65e2ea16-50ef-5f66-8f78-1acc38466c10",
             "prescription": {
               "block": "warmup",
               "goalRole": undefined,
@@ -24915,7 +24807,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy28-confirmed 1`] = `
         "items": [
           {
             "equipment": "none",
-            "exerciseId": "9f2b36bf-e604-5671-8113-573d74a04132",
+            "exerciseId": "e4e81141-14e6-5f72-8b8f-5e19e3cb709a",
             "prescription": {
               "block": "warmup",
               "goalRole": undefined,
@@ -24942,8 +24834,8 @@ exports[`20 explicit synthetic golden profiles > pregnancy28-confirmed 1`] = `
             },
           },
           {
-            "equipment": "yoga-mat-optional",
-            "exerciseId": "f573f9f4-7efd-5ff5-88c2-a251cdfaa997",
+            "equipment": "none",
+            "exerciseId": "a4f69ee4-54a4-5f38-8dee-15a859e57ef7",
             "prescription": {
               "block": "warmup",
               "goalRole": undefined,
@@ -25113,8 +25005,8 @@ exports[`20 explicit synthetic golden profiles > pregnancy28-confirmed 1`] = `
             },
           },
           {
-            "equipment": "yoga-mat-optional",
-            "exerciseId": "0e70e94d-79e7-50fc-8333-e4ee1be4571c",
+            "equipment": "none",
+            "exerciseId": "9ab0d29f-9494-52b3-8430-31f1f4f42b5f",
             "prescription": {
               "block": "cooldown",
               "goalRole": undefined,
@@ -25239,7 +25131,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy28-confirmed 1`] = `
         "step": "fill",
       },
       {
-        "note": "day-8db56fd3-WU1:5",
+        "note": "day-8db56fd3-WU1:4",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -25375,7 +25267,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy28-confirmed 1`] = `
         "step": "fill",
       },
       {
-        "note": "day-d1b81976-WU1:5",
+        "note": "day-d1b81976-WU1:4",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -25505,7 +25397,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy28-confirmed 1`] = `
         "step": "fill",
       },
       {
-        "note": "day-91b9f34d-WU1:5",
+        "note": "day-91b9f34d-WU1:4",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -25575,7 +25467,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy28-confirmed 1`] = `
         "step": "skeleton/dose",
       },
       {
-        "note": "improve-0:4",
+        "note": "improve-0:3",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -25629,7 +25521,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy28-confirmed 1`] = `
         "step": "candidates",
       },
       {
-        "note": "improve-0:4",
+        "note": "improve-0:3",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -25689,7 +25581,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy28-confirmed 1`] = `
         "step": "candidates",
       },
       {
-        "note": "improve-0:3",
+        "note": "improve-0:2",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -25731,7 +25623,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy28-confirmed 1`] = `
         "step": "candidates",
       },
       {
-        "note": "improve-7:3",
+        "note": "improve-7:2",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -25754,7 +25646,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy28-confirmed 1`] = `
         "step": "improve",
       },
       {
-        "note": "improve-0:4",
+        "note": "improve-0:3",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -25808,7 +25700,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy28-confirmed 1`] = `
         "step": "candidates",
       },
       {
-        "note": "improve-0:4",
+        "note": "improve-0:3",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -25868,7 +25760,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy28-confirmed 1`] = `
         "step": "candidates",
       },
       {
-        "note": "improve-0:3",
+        "note": "improve-0:2",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -25910,7 +25802,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy28-confirmed 1`] = `
         "step": "candidates",
       },
       {
-        "note": "improve-7:3",
+        "note": "improve-7:2",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -25931,7 +25823,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy28-confirmed 1`] = `
         "step": "improve",
       },
       {
-        "note": "improve-0:4",
+        "note": "improve-0:3",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -25985,7 +25877,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy28-confirmed 1`] = `
         "step": "candidates",
       },
       {
-        "note": "improve-0:4",
+        "note": "improve-0:3",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -26045,7 +25937,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy28-confirmed 1`] = `
         "step": "candidates",
       },
       {
-        "note": "improve-0:3",
+        "note": "improve-0:2",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -26087,7 +25979,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy28-confirmed 1`] = `
         "step": "candidates",
       },
       {
-        "note": "improve-7:3",
+        "note": "improve-7:2",
         "reason": "hard eligible candidate pool",
         "ruleId": "select.pipeline",
         "step": "candidates",
@@ -26147,7 +26039,7 @@ exports[`20 explicit synthetic golden profiles > quiet-bodyweight-2x20 1`] = `
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "0eb41eb1857629347a5a49a5ade127bb60472613e5dc48bbad0317cc5d641629",
+      "rulesVersion": "3ab0c8844434d12f5de7044e103c638bc66d6f12ce32c0bc633b55ed1c15c35e",
       "seed": "0cd49fa0",
     },
     "notices": [
@@ -27058,7 +26950,7 @@ exports[`20 explicit synthetic golden profiles > start-moving2x10 1`] = `
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "0eb41eb1857629347a5a49a5ade127bb60472613e5dc48bbad0317cc5d641629",
+      "rulesVersion": "3ab0c8844434d12f5de7044e103c638bc66d6f12ce32c0bc633b55ed1c15c35e",
       "seed": "7770169f",
     },
     "notices": [
@@ -27910,7 +27802,7 @@ exports[`20 explicit synthetic golden profiles > strength1x10 1`] = `
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "0eb41eb1857629347a5a49a5ade127bb60472613e5dc48bbad0317cc5d641629",
+      "rulesVersion": "3ab0c8844434d12f5de7044e103c638bc66d6f12ce32c0bc633b55ed1c15c35e",
       "seed": "4d1b3163",
     },
     "notices": [
@@ -28354,7 +28246,7 @@ exports[`20 explicit synthetic golden profiles > symptoms-blocked 1`] = `
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "0eb41eb1857629347a5a49a5ade127bb60472613e5dc48bbad0317cc5d641629",
+      "rulesVersion": "3ab0c8844434d12f5de7044e103c638bc66d6f12ce32c0bc633b55ed1c15c35e",
       "seed": "882a65ac",
     },
     "notices": [
@@ -28530,7 +28422,7 @@ exports[`20 explicit synthetic golden profiles > under18-blocked 1`] = `
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "0eb41eb1857629347a5a49a5ade127bb60472613e5dc48bbad0317cc5d641629",
+      "rulesVersion": "3ab0c8844434d12f5de7044e103c638bc66d6f12ce32c0bc633b55ed1c15c35e",
       "seed": "f7ea674b",
     },
     "notices": [

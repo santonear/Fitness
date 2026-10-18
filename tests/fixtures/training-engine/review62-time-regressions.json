@@ -1,0 +1,190 @@
+[
+  {
+    "sourceIndex": 170,
+    "profile": {
+      "goal": "fat_loss",
+      "level": "intermediate",
+      "trainingAgeWeeks": 0,
+      "daysPerWeek": 2,
+      "sessionMinutes": 20,
+      "equipment": [
+        "none"
+      ],
+      "place": "home",
+      "constraints": {
+        "noJump": true,
+        "quiet": false,
+        "space": "mat"
+      },
+      "cautions": [],
+      "population": {
+        "kind": "pregnant",
+        "week": 14,
+        "prenatalCareConfirmed": true,
+        "providerCleared": true,
+        "contraindicationsConfirmedNone": true,
+        "lastScreenedWeek": 14
+      },
+      "screening": {
+        "parqAllNo": false,
+        "parqAnswers": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          true,
+          false
+        ],
+        "knownCondition": false,
+        "knownCmrDisease": false,
+        "symptoms": false,
+        "cmrSymptoms": {
+          "chest_neck_jaw_arm_pain_or_discomfort": false,
+          "dyspnea_at_rest_or_mild_exertion": false,
+          "dizziness_or_syncope": false,
+          "orthopnea_or_nocturnal_dyspnea": false,
+          "ankle_edema": false,
+          "palpitations_or_tachycardia": false,
+          "intermittent_claudication": false,
+          "known_heart_murmur": false,
+          "unusual_fatigue_or_breathlessness_usual_activity": false
+        },
+        "activityStatus": "inactive",
+        "restingBp": "known_below_threshold",
+        "acuteIllness": false,
+        "completedAt": "2026-10-01T00:00:00.000Z",
+        "lastScreenedAt": "2026-10-01T00:00:00.000Z"
+      },
+      "preferences": {
+        "excludedExerciseIds": [],
+        "cannotDo": [
+          "jumping"
+        ]
+      },
+      "birthYearMonth": "1991-06",
+      "asOfDate": "2026-10-15",
+      "locale": "zh"
+    }
+  },
+  {
+    "sourceIndex": 1778,
+    "profile": {
+      "goal": "fat_loss",
+      "level": "intermediate",
+      "trainingAgeWeeks": 2,
+      "daysPerWeek": 3,
+      "sessionMinutes": 10,
+      "equipment": [
+        "none",
+        "dumbbell",
+        "resistance-band",
+        "loop-band",
+        "flat-bench"
+      ],
+      "place": "home",
+      "constraints": {
+        "noJump": true,
+        "quiet": false,
+        "space": "medium"
+      },
+      "cautions": [
+        "back",
+        "wrist"
+      ],
+      "population": {
+        "kind": "pregnant",
+        "week": 26,
+        "prenatalCareConfirmed": true,
+        "providerCleared": true,
+        "contraindicationsConfirmedNone": true,
+        "lastScreenedWeek": 26
+      },
+      "screening": {
+        "parqAllNo": true,
+        "parqAnswers": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "knownCondition": false,
+        "knownCmrDisease": false,
+        "symptoms": false,
+        "cmrSymptoms": {
+          "chest_neck_jaw_arm_pain_or_discomfort": false,
+          "dyspnea_at_rest_or_mild_exertion": false,
+          "dizziness_or_syncope": false,
+          "orthopnea_or_nocturnal_dyspnea": false,
+          "ankle_edema": false,
+          "palpitations_or_tachycardia": false,
+          "intermittent_claudication": false,
+          "known_heart_murmur": false,
+          "unusual_fatigue_or_breathlessness_usual_activity": false
+        },
+        "activityStatus": "active",
+        "restingBp": "known_below_threshold",
+        "acuteIllness": false,
+        "completedAt": "2026-10-01T00:00:00.000Z",
+        "lastScreenedAt": "2026-10-01T00:00:00.000Z",
+        "redFlagReview": {
+          "requiredAt": "2026-10-01T00:00:00.000Z",
+          "answeredAt": "2026-10-01T00:00:00.000Z",
+          "areas": [
+            "back",
+            "wrist"
+          ],
+          "questionKeys": [
+            "pain_after_fall_or_impact",
+            "cannot_bear_weight_or_use_limb",
+            "joint_hot_red_swollen_or_with_fever",
+            "locking_or_giving_way",
+            "unexplained_night_or_rest_pain",
+            "visible_deformity",
+            "numbness_tingling_or_weakness_spreading_into_limb",
+            "numbness_groin_or_buttocks",
+            "new_bladder_or_bowel_problem",
+            "progressive_leg_weakness",
+            "back_pain_with_fever_or_unwell",
+            "back_pain_with_cancer_history",
+            "unexplained_weight_loss",
+            "back_pain_after_significant_trauma",
+            "severe_constant_pain_unrelated_to_movement"
+          ],
+          "answers": {
+            "pain_after_fall_or_impact": false,
+            "cannot_bear_weight_or_use_limb": false,
+            "joint_hot_red_swollen_or_with_fever": false,
+            "locking_or_giving_way": false,
+            "unexplained_night_or_rest_pain": false,
+            "visible_deformity": false,
+            "numbness_tingling_or_weakness_spreading_into_limb": false,
+            "numbness_groin_or_buttocks": false,
+            "new_bladder_or_bowel_problem": false,
+            "progressive_leg_weakness": false,
+            "back_pain_with_fever_or_unwell": false,
+            "back_pain_with_cancer_history": false,
+            "unexplained_weight_loss": false,
+            "back_pain_after_significant_trauma": false,
+            "severe_constant_pain_unrelated_to_movement": false
+          }
+        }
+      },
+      "preferences": {
+        "excludedExerciseIds": [],
+        "cannotDo": [
+          "walking_carry",
+          "jumping",
+          "floor_work",
+          "kneeling"
+        ]
+      },
+      "birthYearMonth": "1991-06",
+      "asOfDate": "2026-10-15",
+      "locale": "zh"
+    }
+  }
+]

@@ -1,3 +1,4 @@
+import { pregnancyBalanceSupport } from "../pregnancy-limits";
 import { ownedEquipment } from "../equipment";
 import { sourceFallbackRestriction } from "../candidates";
 
@@ -17,6 +18,8 @@ export function exclusions(
     s = g.restrictions,
     user = {
       ...s.user,
+      pregnancy_balance_supported:
+        pregnancyBalanceSupport(e, p, r).available.length > 0,
       exercise: {
         supported_variant_available: e.supported_variant_available === true,
       },

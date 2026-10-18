@@ -59,7 +59,11 @@ export function independentlyPossibleIds(profile:EngineProfile,sourceRules:Rules
    if(cautious&&(matches(rules.get('older.exclude.balance_cautious').exclude_if,exercise,olderUser)||exercise.requires_floor_transition||matches(rules.get('older.floor.transitions').floor_based_if,exercise,olderUser)))return false;
    if(pop.boneFlag&&matches(rules.get('older.bone').until_clearance_exclude_if,exercise,olderUser))return false;
   }
-  if(profile.population.kind==='pregnant')for(const rule of rules.data.rules.filter(rule=>rule.id.startsWith('pregnancy.exclude.'))){const value=rule.value!;if((!value.when||matches(value.when,exercise,user))&&matches(value.exclude_if,exercise,user))return false;}
+  if(profile.population.kind==='pregnant'){
+   const support=rules.get('pregnancy.exclude.fall_risk').modify.find((row:{cue:string})=>row.cue==='hold_wall_or_chair');
+   const pregnancyUser={...user,pregnancy_balance_supported:(exercise.supported_variant_available===true||support.supported_exercise_ids.includes(exercise.id))&&support.support_equipment.some((key:string)=>available.has(key))};
+   for(const rule of rules.data.rules.filter(rule=>rule.id.startsWith('pregnancy.exclude.'))){const value=rule.value!;if((!value.when||matches(value.when,exercise,pregnancyUser))&&matches(value.exclude_if,exercise,pregnancyUser))return false;}
+  }
   if(profile.population.kind==='postpartum'&&!profile.population.readinessChecklistPassed&&matches(rules.get('postpartum.running.readiness').on_pass_unlock_if,exercise,user))return false;
   if(phase===1){const pop=profile.population,rule=pop.kind==='postpartum'&&pop.delivery==='cesarean'&&!pop.cleared?'postpartum.gate.caesarean':'postpartum.phase1';if(!matches(rules.get(rule).allow_only_if,exercise,user))return false;}
   return true;
@@ -78,6 +82,15 @@ export function environmentallyRecoverableIds(profile:EngineProfile):string[]{
 
 /** Independent source-scoped environment proof; no generated status or stored claim is an input. */
 export function independentBalanceEnvironmentConstraint(profile:EngineProfile,sourceRules:Rules=rules):{ruleId:string;patterns:string[];issueCodes:string[]}|undefined {
+ if(profile.population.kind==='pregnant'){
+  const rule=sourceRules.byId.get('pregnancy.exclude.fall_risk')!,exception=rule.value!.environment_exception;
+  if(!matches(exception.when,{}, {gestation_week:profile.population.week}))return undefined;
+  const pool=(p:EngineProfile)=>{const possible=new Set(independentlyPossibleIds(p,sourceRules));return sourceRules.data.exercises.filter(e=>exception.patterns.includes(e.primary_pattern)&&possible.has(e.id));};
+  if(pool(profile).length)return undefined;
+  const relaxed:EngineProfile={...profile,equipment:[...equipmentItemSchema.options],householdSupport:true,constraints:{...profile.constraints,space:exception.relax.space}};
+  if(!pool(relaxed).length)return undefined;
+  return {ruleId:rule.id,patterns:[...exception.patterns],issueCodes:[...exception.issue_codes]};
+ }
  const rule=sourceRules.byId.get('older.template.balance_required'),value=rule?.value,exception=value?.environment_exception;
  if(!rule||!exception||profile.population.kind!=='older_adult'||profile.daysPerWeek<value!.hard_when_days_available_min)return undefined;
  if(!matches(exception.when,{}, {place:profile.place,household_support:profile.householdSupport}))return undefined;

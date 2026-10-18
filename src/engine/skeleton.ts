@@ -1,5 +1,5 @@
 import type { DayPlan, EngineProfile, Pattern, Slot } from "./contracts";
-import { Rules, type RuleValue } from "./data";
+import { Rules, condition, type RuleValue } from "./data";
 import { buildWeek } from "./structure";
 import { runGates } from "./gates";
 import { isHardEligible } from "./candidates";
@@ -210,7 +210,11 @@ export function buildSlots(
         ),
         preferred =
           groups[
-            days.findIndex((value) => day.weekday ? value.weekday === day.weekday : value.index === day.index) % groups.length
+            days.findIndex((value) =>
+              day.weekday
+                ? value.weekday === day.weekday
+                : value.index === day.index,
+            ) % groups.length
           ] ?? all,
         pool = legal.filter((e) => preferred.includes(e.primary_pattern)),
         patterns = [
@@ -323,6 +327,33 @@ export function buildSlots(
         }
       }
     }
+  }
+  const restore = rules.get("pregnancy.exclude.fall_risk").restore_slot;
+  if (
+    profile.population.kind === "pregnant" &&
+    day.index === 0 &&
+    condition(restore.when, rules.data.exercises[0], {
+      gestation_week: profile.population.week,
+    }) &&
+    !slots.some((s) => s.patterns.includes("balance"))
+  ) {
+    const gate = runGates(profile, rules);
+    if (
+      rules.data.exercises.some(
+        (e) =>
+          restore.pattern.includes(e.primary_pattern) &&
+          isHardEligible(e, profile, gate, { rules }),
+      )
+    )
+      slots.push(
+        make(
+          "pregnancy-supported-balance",
+          restore.role,
+          restore.pattern,
+          "pregnancy.exclude.fall_risk",
+          restore.optional_at_shortest_duration && minutes === allowed[0],
+        ),
+      );
   }
   if (!slots.some((s) => !s.optional) && slots.length)
     slots[0] = { ...slots[0], optional: false };

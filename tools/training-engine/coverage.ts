@@ -34,10 +34,21 @@ export async function coverage(){
  const config=JSON.parse(await readFile('data/training-engine/coverage-contract.json','utf8'));
  const rule=(id:string)=>{const found=rules.find(row=>row.id===id);if(!found)throw Error('Missing coverage rule '+id);return found.value as RecordValue;};
  if(JSON.stringify(config.carryEquivalentPatterns)!==JSON.stringify(rule(config.carryEquivalentSourceRuleId).patterns))throw Error('Carry equivalence must exactly match its authored source rule patterns');
+ const support=rule('pregnancy.exclude.fall_risk').modify as RecordValue[];
+ const modifier=support.find(row=>row.cue==='hold_wall_or_chair')!;
+ const pregnancyUser=(exercise:typeof data.exercises[number],available:ReadonlySet<string>)=>({gestation_week:config.pregnancyWeek,pregnancy_balance_supported:(exercise.supported_variant_available===true||(modifier.supported_exercise_ids as string[]).includes(exercise.id))&&(modifier.support_equipment as string[]).some(key=>available.has(key))});
  const pregnancyRules=rules.filter(row=>row.id.startsWith('pregnancy.exclude.')).map(row=>row.value as RecordValue);
  const failures:{scenario:string;pattern:string;restriction:string;count:number}[]=[],rawFailures:typeof failures=[];
+ const environmentLimited:{scenario:string;pattern:string;restriction:string;count:number;reason:string}[]=[];
+ const supportControls:{scenario:string;support:string;count:number;exerciseIds:string[]}[]=[];
  const reports=[];
  for(const scenario of config.scenarios){
+  for(const supportKey of ['wall','chair']) {
+   const available=new Set<string>([...scenario.equipment,supportKey]);
+   const legal=data.exercises.filter(e=>e.primary_pattern==='balance'&&e.modality!=='mobility'&&e.difficulty<=config.difficultyMaximum&&equipmentSatisfied(e,available)&&!pregnancyRules.some(value=>(!value.when||matches(value.when,e,pregnancyUser(e,available)))&&matches(value.exclude_if,e,pregnancyUser(e,available))));
+   supportControls.push({scenario:scenario.id,support:supportKey,count:legal.length,exerciseIds:legal.map(e=>e.id)});
+   if(legal.length<config.minimumPerCell||legal.some(e=>!matches(modifier.when,e,pregnancyUser(e,available)))) failures.push({scenario:scenario.id+'+'+supportKey,pattern:'balance',restriction:'pregnancy',count:legal.length});
+  }
   const available=new Set<string>(scenario.equipment);
   const rows=[];
   for(const pattern of config.patterns){
@@ -51,14 +62,16 @@ export async function coverage(){
       if(matches((value.level_1 as RecordValue).exclude_if,exercise,{equipment:[...available]}))return false;
      }
      if(restriction==='quiet'&&exercise.noise>0)return false;
-     if(restriction==='pregnancy'&&pregnancyRules.some(value=>(!value.when||matches(value.when,exercise,{gestation_week:config.pregnancyWeek}))&&matches(value.exclude_if,exercise,{gestation_week:config.pregnancyWeek})))return false;
+     if(restriction==='pregnancy'&&pregnancyRules.some(value=>(!value.when||matches(value.when,exercise,pregnancyUser(exercise,available)))&&matches(value.exclude_if,exercise,pregnancyUser(exercise,available))))return false;
      return true;
     });
     counts[restriction]=candidates.filter(exercise=>exercise.primary_pattern===pattern).length;
     gateCounts[restriction]=pattern==='carry'&&config.carryEquivalentAuthorized?candidates.filter(exercise=>config.carryEquivalentPatterns.includes(exercise.primary_pattern)).length:counts[restriction];
     const exempt=config.allowedZero.some((exception:{pattern:string;restriction:string})=>exception.pattern===pattern&&exception.restriction===restriction);
     if(counts[restriction]<config.minimumPerCell&&!exempt)rawFailures.push({scenario:scenario.id,pattern,restriction,count:counts[restriction]});
-    if(gateCounts[restriction]<config.minimumPerCell&&!exempt)failures.push({scenario:scenario.id,pattern,restriction,count:gateCounts[restriction]});
+    const environmentExempt=restriction==='pregnancy'&&pattern==='balance'&&counts[restriction]===0&&supportControls.filter(c=>c.scenario===scenario.id).every(c=>c.count>=config.minimumPerCell)&&!['wall','chair','counter'].some(key=>available.has(key));
+    if(environmentExempt)environmentLimited.push({scenario:scenario.id,pattern,restriction,count:0,reason:'孕13–27周平衡动作必须扶墙或扶椅；当前条件没有支撑物。'});
+    else if(gateCounts[restriction]<config.minimumPerCell&&!exempt)failures.push({scenario:scenario.id,pattern,restriction,count:gateCounts[restriction]});
    }
    rows.push({pattern,counts,gateCounts});
   }
@@ -69,10 +82,12 @@ export async function coverage(){
  let markdown='# 训练引擎动作覆盖报告\n\n由 `node tools/training-engine/coverage.ts` 生成。逐项使用完整器械及替代品、主要动作模式和机器规则排除条件。没有自动假定墙、椅子、桌子、门扣或固定点可用。瑜伽垫为可选项。\n\n';
  markdown+=`来源动作 ${data.counts.repdb}；本地动作 ${data.counts.native}；原创补充 ${data.counts.custom}；总计 ${data.counts.total}。规则版本 ${data.rulesVersion}。\n\n`;
  for(const report of reports){markdown+=`## ${report.scenario.label}\n\n器械：${report.scenario.equipment.join('、')}。下表保留主要模式原始数量。\n\n| 模式 | ${config.restrictions.map((r:string)=>headings[r]).join(' | ')} |\n|---|${config.restrictions.map(()=>'---').join('|')}|\n`;for(const row of report.rows)markdown+=`| ${row.pattern} | ${config.restrictions.map((restriction:string)=>row.counts[restriction]).join(' | ')} |\n`;markdown+=`\n已批准 carry_or_ground 闸门数量：${JSON.stringify(report.carryOrGround)}。只合计主要模式 carry 与 locomotion_ground，不计抗侧屈等其他模式。\n\n`;}
+ markdown+='## 孕20周支撑物对照\n\n原矩阵不假定支撑物。以下对照明确提供墙或椅，仍逐格要求至少2个合法平衡动作，且每个匹配扶持提示规则。\n\n| 原场景 | 明确支撑物 | 合法数量 |\n|---|---|---|\n'+supportControls.map(c=>`| ${c.scenario} | ${c.support} | ${c.count} |`).join('\n')+'\n\n';
+ markdown+='### environmentLimited\n\n'+environmentLimited.map(c=>`- ${c.scenario}：原始数量 ${c.count}；${c.reason}`).join('\n')+'\n\n';
  markdown+=`## 闸门结果\n\n原始计数低于 ${config.minimumPerCell} 的非豁免格子 ${rawFailures.length} 个。按用户批准的 carry_or_ground 等效口径，闸门 ${failures.length?'未通过':'通过'}；不足格子 ${failures.length} 个。其余模式仍严格使用原始数量。肩注意的过头推按原任务豁免。\n\n`;
  if(failures.length)markdown+='| 场景 | 模式 | 限制 | 数量 |\n|---|---|---|---|\n'+failures.map(row=>`| ${row.scenario} | ${row.pattern} | ${row.restriction} | ${row.count} |`).join('\n')+'\n';
  await mkdir('docs/training-engine',{recursive:true});await writeFile('docs/training-engine/coverage-report.md',markdown.trimEnd()+'\n');
- await writeFile('src/engine/generated/coverage.json',JSON.stringify({rulesVersion:data.rulesVersion,reports,rawFailures,failures,carryEquivalentAuthorized:config.carryEquivalentAuthorized}));
+ await writeFile('src/engine/generated/coverage.json',JSON.stringify({rulesVersion:data.rulesVersion,reports,rawFailures,failures,environmentLimited,supportControls,carryEquivalentAuthorized:config.carryEquivalentAuthorized}));
  console.log(`Coverage: ${reports.length} equipment scenarios × ${config.restrictions.length} restrictions; raw failures ${rawFailures.length}; gate failures ${failures.length}; carry equivalent authorized: ${config.carryEquivalentAuthorized}.`);
  return failures;
 }

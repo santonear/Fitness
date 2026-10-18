@@ -73,3 +73,16 @@ it('regenerates postpartum only after the actual birth event and completed rescr
  expect(db.versions).toHaveLength(2);expect(db.versions[1].basedOnVersionId).toBe(original.id);
  expect(JSON.stringify(db.versions[0])).toBe(before);
 });
+
+it('restores pregnancy balance through the real workflow after enabling household support, retaining the old version',async()=>{
+ vi.useFakeTimers();vi.setSystemTime(new Date('2026-10-16T10:00:00Z'));vi.spyOn(flags,'isFeatureEnabled').mockReturnValue(true);
+ const db=setup(),pregnant:EngineCoachProfile={...profile,birthYearMonth:'1996-01',population:{kind:'pregnant',week:20,prenatalCareConfirmed:true,providerCleared:true,contraindicationsConfirmedNone:true,lastScreenedWeek:20},place:'home',householdSupport:false,screening:{...profile.screening!,activityStatus:'active'}};
+ db.state.coachProfile=pregnant;
+ const candidate=await db.workflow.propose(pregnant,'zh',{trainingEngine:true});expect(candidate.enginePlan?.quality?.status).toBe('environmentLimited');
+ const before=await db.workflow.adopt(candidate),original=JSON.stringify(before);
+ const notices=renderToStaticMarkup(createElement(EnginePlanNotices,{plan:before.enginePlan!,locale:'zh'}));expect(notices).toContain('平衡练习需要');expect(notices).toContain('<button');
+ const restored=await db.workflow.saveEngineSettings({...pregnant,householdSupport:true},1);
+ expect(restored?.basedOnVersionId).toBe(before.id);expect(restored?.enginePlan?.quality?.status).not.toBe('environmentLimited');
+ const balance=restored!.templates.flatMap(t=>t.items).filter(i=>i.prescription?.pattern==='balance');expect(balance.length).toBeGreaterThan(0);
+ expect(balance.every(i=>i.prescription?.safetyCue?.zh==='扶墙或扶椅')).toBe(true);expect(JSON.stringify(db.versions[0])).toBe(original);
+});

@@ -27,7 +27,7 @@ export function itemTarget(item: PlannedItem, language: PlanLanguage, hideDistan
     : target.metricType === 'reps' ? t.reps(target.reps)
     : target.metricType === 'duration' ? durationText(target.durationSeconds, language)
     : `${durationText(target.durationSeconds, language)}${hideDistance||target.distanceMeters === undefined ? '' : ` · ${t.meters(target.distanceMeters)}`}`;
-  const relative=item.prescription?.safetyCue?` · ${item.prescription.loadDescription?.[language]??''} · ${item.prescription.safetyCue[language]}`:'';
+  const relative=item.prescription?.safetyCue?` · ${[item.prescription.loadDescription?.[language],item.prescription.safetyCue[language]].filter(Boolean).join(' · ')}`:'';
   return `${t.sets(item.sets)} · ${value}${relative}`;
 }
 

@@ -1,5 +1,5 @@
 import type { EnginePlan, EngineProfile, ValidationIssue } from "../contracts";
-import { Rules } from "../data";
+import { Rules, condition } from "../data";
 import { independentElapsedSeconds } from "./cardio-duration";
 
 /** Recalculate from source data and items; never trust a producer marker or its clock. */
@@ -34,6 +34,39 @@ export function independentPregnancyIssues(
     const standing = r.get("pregnancy.intensity").static_standing;
     for (const item of t.items) {
       const e = r.byExercise.get(item.exerciseId);
+      const modifier = r
+        .get("pregnancy.exclude.fall_risk")
+        .modify.find(
+          (row: { cue: string }) => row.cue === "hold_wall_or_chair",
+        );
+      if (
+        e &&
+        condition(modifier.when, e, { gestation_week: p.population.week })
+      ) {
+        const household = r.get("environment.household_support");
+        const owned = new Set([
+          ...p.equipment,
+          ...((p.householdSupport ?? household.default_places.includes(p.place))
+            ? household.equipment
+            : []),
+        ]);
+        const hasVariant =
+          e.supported_variant_available === true ||
+          modifier.supported_exercise_ids.includes(e.id);
+        const copy = r.text("pregnancy.exclude.fall_risk.support_copy");
+        if (
+          !hasVariant ||
+          !modifier.support_equipment.includes(item.equipment) ||
+          !owned.has(item.equipment) ||
+          item.prescription?.safetyCue?.zh !== copy.zh ||
+          item.prescription?.safetyCue?.en !== copy.en
+        )
+          add(
+            "independent_pregnancy_support",
+            "pregnancy.exclude.fall_risk",
+            t.id,
+          );
+      }
       if (
         e?.flags.includes(standing.match.flag) &&
         "durationSeconds" in item.target &&

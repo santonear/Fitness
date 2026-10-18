@@ -80,3 +80,37 @@ test('upper-only local action uses the shared engine and only changes the active
   expect(after.patterns.every((pattern:string)=>['push_horizontal','push_vertical','pull_horizontal','pull_vertical','isolation_upper'].includes(pattern))).toBe(true);
   expect(modelCalls).toBe(0);
 });
+
+
+test('week20 plan excludes rapid climbers and shows real support for balance',async({page},info)=>{
+ const seeded=await page.evaluate(async()=>{const path='/tests/e2e/helpers/engine-followup-seed.ts';return (await import(/* @vite-ignore */path)).seedFollowup('pregnancy-active',true);});
+ const items=(seeded.version as import('../../src/domain/v8/contracts').PlanVersion).templates.flatMap(t=>t.items);
+ expect(items.some(i=>i.exerciseId==='c95d05eb-d0e8-5557-84cf-0b1fc11e3e48')).toBe(false);
+ const supported=items.filter(i=>i.prescription?.safetyCue?.zh==='扶墙或扶椅');
+ expect(supported.length).toBeGreaterThan(0);
+ expect(supported.every(i=>['wall','chair','counter'].includes(i.equipment))).toBe(true);
+ await page.goto('/plans');
+ await expect(page.getByText('扶墙或扶椅',{exact:false}).first()).toBeVisible();
+ for(const width of [375,1280]){
+  await page.setViewportSize({width,height:900});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.screenshot({path:info.outputPath(`pregnancy-support-${width}.png`),fullPage:true});
+ }
+});
+
+test('pregnancy environment notice links to support and saving adds a supported balance version',async({page})=>{
+ const seeded=await page.evaluate(async()=>{const path='/tests/e2e/helpers/engine-followup-seed.ts';return (await import(/* @vite-ignore */path)).seedFollowup('pregnancy-active',false,false);});
+ expect(seeded.version.enginePlan?.quality?.status).toBe('environmentLimited');
+ await page.goto('/plans');
+ await page.getByRole('button',{name:/平衡练习需要一个能扶的地方/}).click();
+ await expect(page).toHaveURL(/\/settings\/engine#environment$/);
+ await page.getByRole('checkbox',{name:'家里有可扶的墙或椅子',exact:true}).check();
+ await page.getByRole('button',{name:'保存',exact:true}).click();
+ await expect(page).toHaveURL(/\/settings$/);
+ const after=await page.evaluate(async()=>{const path='/tests/e2e/helpers/engine-followup-seed.ts';return (await import(/* @vite-ignore */path)).followupSnapshot();});
+ expect(after.version.basedOnVersionId).toBe(seeded.version.id);
+ expect(after.version.enginePlan?.quality?.status).not.toBe('environmentLimited');
+ const balance=(after.version as import('../../src/domain/v8/contracts').PlanVersion).templates.flatMap(t=>t.items).filter(i=>i.prescription?.pattern==='balance');
+ expect(balance.length).toBeGreaterThan(0);expect(balance.every(i=>i.prescription?.safetyCue?.zh==='扶墙或扶椅')).toBe(true);
+ await page.goto('/plans');await expect(page.getByText('扶墙或扶椅',{exact:false}).first()).toBeVisible();
+});

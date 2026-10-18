@@ -1204,6 +1204,13 @@ describe('A source weekly structure',()=>{
                ],
                true,
              ],
+             [
+               "balance",
+               [
+                 "balance",
+               ],
+               false,
+             ],
            ],
            "weekday": "mon",
          },

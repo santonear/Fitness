@@ -29189,7 +29189,8 @@
    "plank"
   ],
   "flags": [
-   "wrist_extension_loaded"
+   "wrist_extension_loaded",
+   "running"
   ],
   "use": [
    "conditioning",
