@@ -8,6 +8,7 @@ import * as flags from "../../src/application/feature-flags";
 import type { Repository } from "../../src/persistence/repository";
 import type { PlanVersion, WorkoutRecord } from "../../src/domain/v8/contracts";
 import { baseProfile } from "../../tools/eval/training-engine-profiles";
+import { localProfile } from "../../src/application/rules/local-profile";
 
 const at = "2026-10-18T01:00:00.000Z";
 function setup() {
@@ -96,6 +97,28 @@ function profile(savedAt = at): EngineCoachProfile {
 afterEach(() => {
   vi.restoreAllMocks();
   vi.useRealTimers();
+});
+it("keeps an inactive forty-year-old's spoken ten minutes through generation and adoption", async () => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date(at));
+  vi.spyOn(flags, "isFeatureEnabled").mockReturnValue(true);
+  const input = {
+    ...profile(),
+    ...localProfile({ goalText: "规律训练", scheduleOriginalText: "每周1次，每次10分钟", placeEquipmentText: "在家，徒手", adultConfirmed: true, cautions: [] }),
+    birthYearMonth: "1986-01",
+    screening: { ...profile().screening!, activityStatus: "inactive" as const },
+  };
+  expect(input.sessionMinutes).toBe(10);
+  const service = setup();
+  const candidate = await service.workflow.propose(input, "zh", { trainingEngine: true });
+  expect(candidate.proposal.sessionMinutes).toBe(10);
+  const adopted = await service.workflow.adopt(candidate);
+  for (const template of adopted.templates) {
+    expect(template.targetMinutes).toBe(10);
+    expect(template.estimatedSeconds).toBeGreaterThanOrEqual(480);
+    expect(template.estimatedSeconds).toBeLessThanOrEqual(720);
+    expect(template.estimatedMinutes).toBe(Math.ceil(template.estimatedSeconds! / 60));
+  }
 });
 it("preserves exact engine duration through propose, adopt, and first next preview", async () => {
   vi.useFakeTimers();

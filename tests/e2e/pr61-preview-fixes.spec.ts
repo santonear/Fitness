@@ -29,6 +29,42 @@ test.beforeEach(async ({ page, baseURL }) => {
   await page.clock.setFixedTime(new Date("2026-10-17T10:00:00Z"));
   await page.goto("/");
 });
+
+test("inactive forty-year-old keeps spoken ten-minute target on the plan page", async ({ page }) => {
+  const result = await page.evaluate(async () => {
+    const load = (path: string) => import(/* @vite-ignore */ path);
+    const { profileService } = await load('/src/application/profile.ts');
+    const { localProfile } = await load('/src/application/rules/local-profile.ts');
+    const { workflow } = await load('/src/ui/mainline/context.tsx');
+    const { Rules } = await load('/src/engine/data.ts');
+    const { validatePlan } = await load('/src/engine/index.ts');
+    const { toEngineProfile } = await load('/src/application/engine-profile.ts');
+    await profileService.initialize('zh');
+    const at = new Date().toISOString(), rules = new Rules();
+    const profile = {
+      ...localProfile({ goalText: '规律训练', scheduleOriginalText: '每周1次，每次10分钟', placeEquipmentText: '在家，徒手', adultConfirmed: true, cautions: [] }),
+      birthYearMonth: '1986-01', population: { kind: 'general' },
+      healthStorageConsent: { acceptedAt: at },
+      screening: { completedAt: at, lastScreenedAt: at, parqAllNo: true, parqAnswers: Array(7).fill(false), knownCondition: false, symptoms: false, activityStatus: 'inactive', restingBp: 'known_below_threshold', acuteIllness: false, cmrSymptoms: Object.fromEntries(rules.get('safety.screen.cmr_symptoms').symptoms.map((key: string) => [key, false])) },
+    };
+    const candidate = await workflow.propose(profile, 'zh', { trainingEngine: true });
+    const mapped = toEngineProfile(profile, { asOfDate: at.slice(0, 10), timeZone: 'Asia/Shanghai' });
+    const errors = validatePlan(candidate.enginePlan, mapped).filter((issue: { severity: string }) => issue.severity === 'error');
+    const version = await workflow.adopt(candidate);
+    return { input: profile.sessionMinutes, target: version.sessionMinutes, templates: version.templates, errors };
+  });
+  expect(result.input).toBe(10);
+  expect(result.target).toBe(10);
+  expect(result.errors).toEqual([]);
+  for (const template of result.templates) {
+    expect(template.targetMinutes).toBe(10);
+    expect(template.estimatedSeconds).toBeGreaterThanOrEqual(480);
+    expect(template.estimatedSeconds).toBeLessThanOrEqual(720);
+  }
+  await page.goto('/plans');
+  await expect(page.locator('.plan-summary').filter({ hasText: '节奏' })).not.toContainText('17 分钟');
+  await expect(page.locator('.plan-summary').filter({ hasText: '节奏' }).locator('.plan-muted')).toContainText(`${result.templates[0].estimatedMinutes}`);
+});
 test("replacement browser cannot offer or apply a running movement to a quiet no-jump profile", async ({
   page,
 }) => {
