@@ -34,7 +34,7 @@ test('admin presents one assistant settings card and preserves confirmation and 
   return r.fulfill({json});
  });
  await page.goto('/admin/settings');const card=page.getByRole('heading',{name:'芽芽AI助手',exact:true}).locator('..');await expect(card).toBeVisible();await expect(card.getByRole('combobox')).toHaveCount(1);await expect(card.getByLabel('每人每天消息上限')).toHaveValue('30');await expect(page.getByRole('heading',{name:'AI 服务开关'})).toHaveCount(0);
- await card.getByRole('button',{name:'关闭',exact:true}).click();expect(calls).toEqual([]);await page.getByRole('dialog').getByRole('button',{name:'确认',exact:true}).click();await expect.poll(()=>calls).toEqual(['releases/flags','users/action']);
- await expect(card.getByRole('button',{name:'开启',exact:true})).toBeVisible();
+ await expect(card).toContainText('当前：开启');await card.getByRole('button',{name:'关闭 AI',exact:true}).click();expect(calls).toEqual([]);await page.getByRole('dialog').getByRole('button',{name:'确认',exact:true}).click();await expect.poll(()=>calls).toEqual(['releases/flags','users/action']);
+ await expect(card.getByRole('button',{name:'开启 AI',exact:true})).toBeVisible();await expect(card).toContainText('当前：关闭（AI 服务已关闭）');
  for(const width of [375,1280]){await page.setViewportSize({width,height:900});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:`outputs/assistant-round6/admin-${width}.png`,fullPage:true});}
 });

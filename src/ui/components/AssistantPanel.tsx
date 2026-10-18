@@ -3,8 +3,7 @@ import {detectBodyChange,type BodyChange} from '../../assistant/body-change';
 import {bodyChangeCopy} from '../../i18n/features/coach/body-change';
 import {engineDisplayNotices} from '../../application/engine-presentation';
 import {isFeatureEnabled} from '../../application/feature-flags';
-import {localEngineContext} from '../../coach/engine-health';
-import {assembleEngineIntent} from '../../backend/assistant/engine-assemble';
+import {resolveEngineIntent} from '../../assistant/engine-intent';
 import {EngineLocalActions} from './EngineLocalActions';
 import {enginePreferences} from '../../application/engine-profile';
 import {enginePlanProposal,engineAction,type LocalEngineAction} from '../../application/engine-plan';
@@ -61,6 +60,7 @@ export function AssistantPanel(props:CoachPanelProps){
  const [guide,setGuide]=useState<string>();
  const [onlyToday,setOnlyToday]=useState(false);
  const [retryMessage,setRetryMessage]=useState('');
+ const [intentStatus,setIntentStatus]=useState('');
  const loaded=useRef(false),applyLock=useRef(false);
  const [privacy,setPrivacy]=useState(()=>{try{return localStorage.getItem('fitness-assistant-privacy')!=='seen';}catch{return true;}});
  const fallbackTrigger=useRef<HTMLElement>(null);
@@ -74,11 +74,11 @@ export function AssistantPanel(props:CoachPanelProps){
  useEffect(()=>{if(open&&initialSend&&!consumed.current.has(initialSend.nonce)){consumed.current.add(initialSend.nonce);void send(initialSend.message,initialSend.request,initialSend.expectedRevision);}},[open,initialSend?.nonce]);
  useEffect(()=>{if(engineEnabled||!request?.trainingEngine&&!candidate?.request.trainingEngine)return;sequence.current++;controller.current?.abort();lock.current=false;setBusy(false);setPending(false);setCandidate(undefined);setLocalNotices([]);},[engineEnabled,request?.trainingEngine,candidate?.request.trainingEngine]);
  async function persist(next:AssistantConversation){try{await store.save(next);setRows(await store.list());}catch{setError(t.storage);}}
- function select(next:AssistantConversation){const referral=readBodyReferral(next.id);setBodyChange(referral&&!referral.dismissed.has(referral.kind)?referral.kind:undefined);setHealth(false);setDiet(false);setDietWithdrawn(false);setLocalReply(false);setChat(next);setBodyFields(next.consent?.bodyFields);setCandidate(undefined);setGuide(undefined);setSaved(false);setRemembered(undefined);setOnlyToday(false);setBody(next.consent?.body??rememberedBody());setHistory(next.consent?.history??false);setText('');setHistoryOpen(false);setError('');}
+ function select(next:AssistantConversation){const referral=readBodyReferral(next.id);setBodyChange(referral&&!referral.dismissed.has(referral.kind)?referral.kind:undefined);setHealth(false);setDiet(false);setDietWithdrawn(false);setLocalReply(false);setChat(next);setBodyFields(next.consent?.bodyFields);setCandidate(undefined);setGuide(undefined);setSaved(false);setRemembered(undefined);setOnlyToday(false);setBody(next.consent?.body??rememberedBody());setHistory(next.consent?.history??false);setText('');setHistoryOpen(false);setError('');setIntentStatus('');}
  function setConsent(key:'body'|'history',value:boolean,fields=bodyFields){const consent={body,history,...(fields?{bodyFields:fields}:{}),[key]:value};if(key==='body'){setBody(value);try{localStorage.setItem('fitness-assistant-body-consent',value?'yes':'no');}catch{/* The current conversation still remembers consent. */}}else setHistory(value);const next={...chat,consent};setChat(next);if(next.messages.length)void persist(next);}
  async function send(message=text,source=request,revision=expectedRevision){
   if(source?.trainingEngine&&!isFeatureEnabled('trainingEngine')){setCandidate(undefined);setError(t.disabled);return;}
-  if(lock.current||!message.trim())return;lock.current=true;setBusy(true);setPending(false);setLocalNotices([]);setLocalReply(false);setError('');setRetryMessage('');setCandidate(undefined);setGuide(undefined);setSaved(false);setRemembered(undefined);setOnlyToday(false);setText('');
+  if(lock.current||!message.trim())return;lock.current=true;setBusy(true);setPending(false);setLocalNotices([]);setLocalReply(false);setError('');setRetryMessage('');setIntentStatus('');setCandidate(undefined);setGuide(undefined);setSaved(false);setRemembered(undefined);setOnlyToday(false);setText('');
   const preflight=sequence.current;
   const localState=await repository.db.v8State.get('v8').catch(()=>undefined);
   if(sequence.current!==preflight||!lock.current)return;
@@ -111,7 +111,7 @@ export function AssistantPanel(props:CoachPanelProps){
      if(context?.trainingEngine&&!isFeatureEnabled('trainingEngine')){abort.abort();setCandidate(undefined);setPending(false);return;}
      if(event.type==='text_delta'){responseText+=event.delta;next.messages[next.messages.length-1]={role:'assistant',content:responseText};setChat({...next,messages:[...next.messages]});}
      if(event.type==='attachment_pending')setPending(true);
-     if(event.type==='engine_intent'&&context&&routed?.engineProfile&&isFeatureEnabled('trainingEngine')){setPending(false);const localContext=localEngineContext(routed,context);const assembled=assembleEngineIntent(event.intent,{version:'fitness-assistant-v2',requestId:context.requestId,conversationId:chat.id,locale:replyLocale,timeZone:context.timeZone,adultConfirmed:context.adultConfirmed,messages:[{role:'user',content:message}],engineCandidateIds,context:localContext},localLockedIndexes);setLocalNotices(assembled.notices);if(assembled.attachment&&assembled.attachment.type!=='exercise_info'){const value={request:localContext,response:assembled.attachment,expectedRevision:routedRevision,...(assembled.enginePlan?{enginePlan:assembled.enginePlan}:{})};setCandidate(value);onResponse?.(value);}else if(event.intent.kind!=='review')setRetryMessage(message);}
+     if(event.type==='engine_intent'){setPending(false);if(!isFeatureEnabled('trainingEngine')){setError(t.disabled);return;}const outcome=resolveEngineIntent({intent:event.intent,routed,sent:context,locale:replyLocale,conversationId:chat.id,message,engineCandidateIds,lockedItemIndexes:localLockedIndexes,expectedRevision:routedRevision});if(outcome.kind==='review')return;setLocalNotices(outcome.notices);if(outcome.kind==='candidate'){setCandidate(outcome.candidate);onResponse?.(outcome.candidate);}else if(outcome.kind==='no_session')setIntentStatus(t.noSession);else setRetryMessage(message);}
 
      if(event.type==='attachment'){setPending(false);if(event.attachment.type==='exercise_info'){const asksReplacement=/(换|替|疼|痛|replace|swap|hurt|pain)/i.test(message);const currentIds=context?.task==='ADJUST_TODAY'?context.template.items.map(item=>item.exerciseId):context?.task==='MODIFY_PLAN'?context.plan.templates.flatMap(template=>template.items.map(item=>item.exerciseId)):[];if(asksReplacement&&currentIds.includes(event.attachment.exerciseId))streamIssue='attachment';else setGuide(event.attachment.exerciseId);}else if(context){if(event.attachment.requestId!==context.requestId||event.attachment.restoreGeneration!==context.restoreGeneration)throw new Error('STALE_INPUT');const value={request:context,response:event.attachment,expectedRevision:routedRevision};setCandidate(value);onResponse?.(value);}}
      if(event.type==='done'&&(!event.success||event.result==='no_change')){setCandidate(undefined);streamIssue=event.result==='no_change'?'no_change':'model';}
@@ -152,6 +152,7 @@ export function AssistantPanel(props:CoachPanelProps){
  {privacy&&<p>{t.privacy}</p>}
  {historyOpen&&<ul className="assistant-history">{rows.map(row=><li key={row.id}><Button disabled={busy||applying} onClick={()=>select(row)}><span className="assistant-history-title">{row.title}</span><time dateTime={row.updatedAt}>{new Date(row.updatedAt).toLocaleString(locale)}</time></Button><Button disabled={busy||applying} aria-label={`${t.remove}: ${row.title}`} onClick={()=>void store.remove(row.id).then(async()=>{clearBodyReferral(row.id);setRows(await store.list());if(row.id===chat.id)select(fresh());})}>{t.remove}</Button></li>)}</ul>}
  <div role="log" aria-label={t.title} aria-live="polite" className="assistant-messages">{chat.messages.map((message,index)=><Fragment key={index}>{index===chat.messages.length-1&&message.role==='assistant'&&bodyChangeCard}<div className={`assistant-bubble assistant-bubble--${message.role}`}><span className="assistant-speaker">{message.role==='user'?t.you:t.title}</span><p>{message.content}</p></div></Fragment>)}{chat.messages.at(-1)?.role!=='assistant'&&bodyChangeCard}<div ref={end}/></div>
+ {intentStatus&&<p role="status">{intentStatus}</p>}
  {retryMessage&&<p role="status">{engineEnabled?engineCopy('assistant.copy.engine_noop',locale):(locale==='zh'?'这次没能生成调整，点重试。':'No adjustment was generated this time. Tap to retry.')} <Button disabled={busy} onClick={()=>void send(retryMessage)}>{locale==='zh'?'重试':'Retry'}</Button></p>}
  {guide&&<details><summary>{exercises.find(e=>e.id===guide)?.name[locale]}</summary><ExerciseGuideContent id={guide} locale={locale}/></details>}
  {pending&&<p role="status">{t.pending}</p>}

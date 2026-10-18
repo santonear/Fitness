@@ -37,8 +37,33 @@ export function reportSafeError(type:SafeErrorEvent['type']) {
  reported.add(key);
  void fetch('/api/v1/telemetry/errors',{method:'POST',credentials:'omit',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).catch(()=>{});
 }
+// Expected "feature off" answers are product states, not failures.
+const expectedOff=new Set(['AI_DISABLED','PUSH_DISABLED','ERROR_COLLECTION_DISABLED']);
+/**
+ * Count same-origin API failures (5xx or no connection) as a 'network' error
+ * category. Only the category, canonical route and environment family leave
+ * the device: never the URL, request body, response body or user content.
+ */
+export function instrumentApiFailures(target:{fetch:typeof fetch}=globalThis) {
+ const original=target.fetch;
+ const wrapped:typeof fetch=async(input,init)=>{
+  let tracked=false;
+  try{const raw=typeof input==='string'?input:input instanceof URL?input.href:input.url;const url=new URL(raw,location.origin);tracked=url.origin===location.origin&&url.pathname.startsWith('/api/')&&!url.pathname.startsWith('/api/v1/telemetry/');}catch{tracked=false;}
+  try{
+   const response=await original.call(target,input,init);
+   if(tracked&&response.status>=500)void response.clone().json().then((body:unknown)=>{const code=body&&typeof body==='object'?(body as {error?:unknown}).error:undefined;if(typeof code!=='string'||!expectedOff.has(code))reportSafeError('network');},()=>reportSafeError('network'));
+   return response;
+  }catch(error){
+   if(tracked&&!init?.signal?.aborted&&!(error instanceof DOMException&&error.name==='AbortError'))reportSafeError('network');
+   throw error;
+  }
+ };
+ target.fetch=wrapped;
+ return()=>{if(target.fetch===wrapped)target.fetch=original;};
+}
 export function startMonitoring() {
+ const restoreFetch=instrumentApiFailures();
  const error=()=>reportSafeError('unexpected');window.addEventListener('error',error);window.addEventListener('unhandledrejection',error);
  const timer=setInterval(()=>void flushUsage(),60_000);
- return()=>{clearInterval(timer);window.removeEventListener('error',error);window.removeEventListener('unhandledrejection',error);};
+ return()=>{restoreFetch();clearInterval(timer);window.removeEventListener('error',error);window.removeEventListener('unhandledrejection',error);};
 }

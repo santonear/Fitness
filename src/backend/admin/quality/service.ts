@@ -1,7 +1,10 @@
+import { readFeatureFlags, type FeatureConfigEnv } from '../../feature-config';
 import { errorEvent, blockCategory, evaluationReport, isSpike, type QualityEnv, type QualityDatabase } from './contracts';
 import { adminJson, type AdminTodo } from '../core/contracts';
 
 const HOUR = 3600000;
+/** Collection needs both the deployment switch and the errorReports flag; the admin page says which. */
+export async function errorCollectionEnabled(env: QualityEnv & FeatureConfigEnv): Promise<boolean> { return env.ADMIN_ERROR_COLLECTION_ENABLED === 'true' && !!env.ADMIN_DB && (await readFeatureFlags(env).catch(() => ({ errorReports: false }))).errorReports === true; }
 export async function collectError(request: Request, env: QualityEnv, now = Date.now()): Promise<Response> {
   if (env.ADMIN_ERROR_COLLECTION_ENABLED !== 'true' || !env.ADMIN_DB) return adminJson({ error: 'ERROR_COLLECTION_DISABLED' }, 503);
   if (request.method !== 'POST') return adminJson({ error: 'METHOD_NOT_ALLOWED' }, 405);

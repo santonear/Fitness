@@ -24,7 +24,7 @@ describe('preview push privacy and scheduling', () => {
     const {env,db}=environment(); await pushFetch(request(),env); const send=vi.fn().mockResolvedValue(201);
     env.FITNESS_FEATURE_CONFIG={get:async()=>JSON.stringify({pwaOffline:true,systemNotifications:false})};
     await dispatchPush(env,now,send); expect(send).not.toHaveBeenCalled();
-    expect(await (await pushFetch(new Request('https://fitness.test/api/v1/push/config'),env)).json()).toEqual({enabled:false});
+    expect(await (await pushFetch(new Request('https://fitness.test/api/v1/push/config'),env)).json()).toEqual({enabled:false,reason:'unconfigured'});
     env.FITNESS_FEATURE_CONFIG={get:async()=>{throw Error('unavailable');}};
     await dispatchPush(env,now,send); expect(send).not.toHaveBeenCalled();
     expect((await pushFetch(request(),env)).status).toBe(503);

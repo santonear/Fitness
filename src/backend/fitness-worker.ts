@@ -10,7 +10,7 @@ import { evaluateTodos } from './admin/core/todos';
 import { handleConsole, type ConsoleEnv } from './admin/core/console';
 import { runAdminSchedule } from './admin/core/schedule';
 import { resolveRuntimeEnv,activeAnnouncement } from './admin/finance';
-import { collectError } from './admin/quality';
+import { collectError, errorCollectionEnabled } from './admin/quality';
 import { anonymousBatchSchema, TelemetryStore } from './telemetry-store';
 export interface FitnessWorkerEnv extends DeepSeekWorkerEnv, ManagementEnv, FeatureConfigEnv, AdminEnvironment, ConsoleEnv {
   ASSETS?: { fetch(request: Request): Promise<Response> };
@@ -29,8 +29,16 @@ export function createFitnessWorker(control = createDeepSeekWorker(), authentica
     if(path==='/api/v1/trial/access-status'&&(await readFeatureFlags(env)).aiAssistantV2)return assistantAccessStatus(request,env);
     if(path==='/api/v1/assistant/chat'){if(!(await readFeatureFlags(env)).aiAssistantV2)return adminJson({error:'AI_DISABLED'},503);return handleAssistant(request,env)}
     if(path==='/api/v1/announcement'&&request.method==='GET') {try{return adminJson({announcement:env.ADMIN_CONSOLE_ENABLED==='true'?await activeAnnouncement(env):null})}catch{return adminJson({announcement:null})}}
-    if(path==='/api/v1/telemetry/errors'&&env.ADMIN_CONSOLE_ENABLED==='true')return collectError(request,{...env,ADMIN_ERROR_COLLECTION_ENABLED:(await readFeatureFlags(env)).errorReports?env.ADMIN_ERROR_COLLECTION_ENABLED:'false'});
+    // Disabled collection drops reports quietly (204) instead of adding a console error to every failure.
+    if(path==='/api/v1/telemetry/errors'&&env.ADMIN_CONSOLE_ENABLED==='true')return await errorCollectionEnabled(env)?collectError(request,env):new Response(null,{status:204});
     if (path.startsWith('/api/v1/push/')) {
+      // Reading the configuration is a capability probe: a missing or disabled
+      // service is a normal "feature off" answer, never an HTTP error.
+      if (path === '/api/v1/push/config' && request.method === 'GET') {
+        if (!env.PUSH) return adminJson({ enabled: false, reason: 'unconfigured' });
+        if (!(await readFeatureFlags(env).catch(() => ({ systemNotifications: false }))).systemNotifications) return adminJson({ enabled: false, reason: 'disabled' });
+        return env.PUSH.fetch(request);
+      }
       if (!env.PUSH) return new Response(null, { status: 503 });
       if (request.method !== 'DELETE' && !(await readFeatureFlags(env)).systemNotifications) return new Response(null, { status: 503 });
       return env.PUSH.fetch(request);

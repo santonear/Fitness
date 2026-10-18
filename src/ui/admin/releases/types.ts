@@ -1,4 +1,4 @@
-export interface ReleaseItem {id:string;publishedAt:string;compatibleDataVersion:number}
+export interface ReleaseItem {id:string;publishedAt:string;compatibleDataVersion?:number;deploymentId?:string;commit?:string;pr?:number}
 export interface ReleaseOverview {
  environment:'preview'|'production';adapterAvailable:boolean;
  previewSimulation?:{mode:'preview-simulation';actualDeploymentUnchanged:true;selectedDeploymentId:string|null;changedAt:string|null}|null;

@@ -16,7 +16,7 @@ async function pushAllowed(env: PushEnv) {
 }
 export async function pushFetch(request: Request, env: PushEnv): Promise<Response> {
   const url = new URL(request.url);
-  if (request.method === 'GET' && url.pathname === '/api/v1/push/config') { const enabled = await pushAllowed(env); return json({ enabled, publicKey: enabled ? env.VAPID_PUBLIC_KEY : undefined }); }
+  if (request.method === 'GET' && url.pathname === '/api/v1/push/config') { const configured = env.PUSH_ENABLED === 'true' && !!env.VAPID_PUBLIC_KEY && !!env.VAPID_PRIVATE_JWK; const enabled = configured && await pushAllowed(env); return json(enabled ? { enabled, publicKey: env.VAPID_PUBLIC_KEY } : { enabled, reason: configured ? 'disabled' : 'unconfigured' }); }
   if (url.pathname !== '/api/v1/push/subscription') return json({ error: 'NOT_FOUND' }, 404);
   if (!['POST','DELETE'].includes(request.method)) return json({ error: 'METHOD_NOT_ALLOWED' }, 405);
   if (request.headers.get('Origin') !== env.APP_ORIGIN) return json({ error: 'ORIGIN_REQUIRED' }, 403);
