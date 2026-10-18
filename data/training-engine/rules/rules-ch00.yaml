@@ -1,0 +1,35 @@
+# 第 0 章 手册说明 —— 机器规则 v0.1（2026-10-14）
+# 仅 meta.* 条目；与 ch00-overview.md 一一对应。
+
+- id: meta.id.convention
+  chapter: 0
+  type: limit
+  value:
+    pattern: '^[a-z0-9_]+(\.[a-z0-9_]+){2,3}$'
+    segments: [3, 4]
+    unique: true
+    rename_after_release: false
+    retire_with: deprecated_true
+    domain_registry: [meta, safety, dose, volume, progression, ladder, deload, caution, pain, substitution, older, pregnancy, postpartum, aerobic, hiit, steps, fatloss, sedentary, duration]
+  evidence: C
+  sources: [INTERNAL:rulebook-spec]
+  note: 工程选择；新前缀须先登记
+
+- id: meta.conflict.precedence
+  chapter: 0
+  type: default
+  value:
+    order: [safety, population_module, caution_and_pain, dose_progression_aerobic, duration_fit]
+    within_level: most_conservative
+    duration_may_override_limits: false
+  evidence: C
+  sources: [INTERNAL:rulebook-spec]
+  note: 工程选择；时长拟合不得突破上层上下限
+
+- id: meta.manual.version
+  chapter: 0
+  type: default
+  value: {rulebook_version: "0.1", release_date: "2026-10-14", record_in_plan: rulebook_version}
+  evidence: C
+  sources: [INTERNAL:rulebook-spec]
+  note: 版本规则见第 0 章 0.8 节

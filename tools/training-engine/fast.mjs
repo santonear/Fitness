@@ -1,0 +1,18 @@
+import {sourceFingerprint} from './evidence.ts';
+const fullStartedAt=performance.timeOrigin;const sourceHash=await sourceFingerprint();
+import {mkdir} from 'node:fs/promises';
+import {resolve} from 'node:path';
+import {pathToFileURL} from 'node:url';
+import {availableParallelism} from 'node:os';
+import {build} from 'esbuild';
+const directory=resolve('.cache');await mkdir(directory,{recursive:true});
+const arg=(key,fallback)=>{const value=process.argv.find(v=>v.startsWith(key+'='));return value?Number(value.split('=')[1]):fallback;};
+const full=process.argv.includes('--full'),verify=process.argv.includes('--verify-parallel'),count=arg('--count',verify?4:80),workers=arg('--workers',Math.min(8,availableParallelism()));
+if(!Number.isInteger(count)||count<1||!Number.isInteger(workers)||workers<1)throw Error('Counts must be positive integers');
+const worker=resolve(directory,`engine-audit-worker-fast-${process.pid}.mjs`),outfile=resolve(directory,`engine-fast-entry-${process.pid}.mjs`);
+await build({entryPoints:['tools/eval/training-engine-audit-worker.ts'],bundle:true,platform:'node',format:'esm',outfile:worker});
+const options=JSON.stringify({workers,workerUrl:pathToFileURL(worker).href,fullStartedAt,sourceHash});
+const contents=`import {audit,fullAudit} from './tools/eval/training-engine-audit';import {sampledProfiles,extremeProfiles} from './tools/eval/training-engine-profiles';import {strict as assert} from 'node:assert';import {readFile} from 'node:fs/promises';
+${full&&!verify?'':`const profiles=sampledProfiles(${count});`}
+${verify?`const extremes=extremeProfiles(1);const serial=await audit(profiles,'.cache/engine-small-serial.json',extremes,{snapshots:'.cache/engine-small-serial-outputs.json'});const parallel=await audit(profiles,'.cache/engine-small-parallel.json',extremes,{...${options},snapshots:'.cache/engine-small-parallel-outputs.json'});const stable=({performance,...rest})=>JSON.stringify(rest);assert.equal(stable(parallel),stable(serial));assert.equal(await readFile('.cache/engine-small-serial-outputs.json','utf8'),await readFile('.cache/engine-small-parallel-outputs.json','utf8'));console.log(JSON.stringify({verified:true,evaluated:profiles.length,extremeEvaluated:extremes.length,workers:${workers},nonTimingReportBytes:Buffer.byteLength(stable(serial)),serial:serial.performance,parallel:parallel.performance}));`:`const report=await ${full?`fullAudit(${options})`:`audit(profiles,'.cache/engine-fast.json',[],${options})`};console.log(JSON.stringify({stage:report.stage,evaluated:report.evaluated,extremeEvaluated:report.extremeEvaluated,hardViolations:report.unsafe.length,actionableHardViolations:report.actionableHardViolations.length,environmentUnmet:report.environmentUnmet,empty:report.empty,environmentLimited:report.environmentLimited,noticeCounts:report.noticeCounts,qualityMedian:report.qualityMedian,qualityP10:report.qualityP10,within10Rate:report.within10Rate,timingBreakdown:{...report.timingBreakdown,shortageProfiles:undefined},shortageGroups:Object.entries((report.timingBreakdown?.shortageProfiles??[]).reduce((groups,row)=>{const key=[row.population,row.level,row.equipment,row.space,row.targetMinutes,row.reasons.join(',')].join('|');groups[key]=(groups[key]??0)+1;return groups;},{})).map(([key,count])=>({key,count})),coverageRate:report.coverageRate,coverageEvaluated:report.coverageEvaluated,topLoss:report.topLoss.slice(0,5),performance:report.performance,validationCoverage:report.validationCoverage}));`}`;
+await build({stdin:{contents,resolveDir:process.cwd(),loader:'ts'},bundle:true,platform:'node',format:'esm',outfile});await import(pathToFileURL(outfile).href);

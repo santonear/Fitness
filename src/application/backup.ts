@@ -1,3 +1,4 @@
+import {DATABASE_VERSION,BACKUP_VERSION,SUPPORTED_BACKUP_VERSIONS} from '../domain/storage-version';
 import {includeAssistantBackup} from '../persistence/assistant-conversations';
 import {migrateBodyProfile} from '../persistence/body-profile-migration';
 import type { BackupEnvelope, ExerciseSnapshot, ImportReport, PlanVersion, ReplaceConfirmation, SetRecord, ValidatedBackup, WorkoutSession } from '../domain/models';
@@ -83,8 +84,8 @@ function validateSession(session: WorkoutSession, sets: SetRecord[], versions: M
 }
 
 export function validateBackupEnvelope(value: unknown): BackupEnvelope {
-  if (typeof value === 'object' && value !== null && 'schemaVersion' in value && ![2,3,4,5,6,7,8,9,10,11,12,13].includes(value.schemaVersion as number)) {
-    throw new DomainError('BACKUP_VERSION_UNSUPPORTED', 'Unsupported JSON backup version; versions 2 through 13 are supported');
+  if (typeof value === 'object' && value !== null && 'schemaVersion' in value && !SUPPORTED_BACKUP_VERSIONS.includes(value.schemaVersion as number)) {
+    throw new DomainError('BACKUP_VERSION_UNSUPPORTED', `Unsupported JSON backup version; versions 2 through ${BACKUP_VERSION} are supported`);
   }
   const parsed = backupEnvelopeSchema.safeParse(value);
   if (!parsed.success) throw new DomainError('BACKUP_INVALID', `Invalid backup: ${parsed.error.message}`);
@@ -325,7 +326,7 @@ export function createBackupService(repo: Repository) {
       const versions = await repo.db.planVersions.toArray();
       const previousMemo = await repo.db.trainingMemo.get(1);
       return validateBackupEnvelope({
-        format: 'fitness-local', schemaVersion: 13, catalogVersion: 1, exportedAt: new Date().toISOString(),
+        format: 'fitness-local', schemaVersion: BACKUP_VERSION, catalogVersion: 1, exportedAt: new Date().toISOString(),
         data: {
           assistantConversations: includeAssistantBackup()?await repo.db.assistantConversations.toArray():[],
           exerciseFavorites: await repo.db.exerciseFavorites.toArray(),
@@ -382,7 +383,7 @@ export function createBackupService(repo: Repository) {
       // Device reminder preferences and suppression ledger are not portable training facts.
       for (const table of repo.db.tables) if (table.name !== 'coachDevice') await table.clear();
       const data = envelope.data;
-      await repo.db.metadata.put({ ...data.metadata, schemaVersion: 15, revision: before.revision, dataRevision: before.dataRevision, restoreGeneration: committedGeneration, importedAt: new Date().toISOString() });
+      await repo.db.metadata.put({ ...data.metadata, schemaVersion: DATABASE_VERSION, revision: before.revision, dataRevision: before.dataRevision, restoreGeneration: committedGeneration, importedAt: new Date().toISOString() });
       await repo.db.profiles.bulkAdd(data.profiles.map(profile=>migrateBodyProfile(profile,data.guidedStates?.find(row=>row.id==='guided'),new Date().toISOString())));
       await repo.db.assistantConversations.bulkAdd(data.assistantConversations??[]);
       await repo.db.exerciseFavorites.bulkAdd(data.exerciseFavorites ?? []);

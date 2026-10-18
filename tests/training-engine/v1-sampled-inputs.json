@@ -1,0 +1,596 @@
+{
+  "source": "9504891 profileArbitrary before V2 population reweighting",
+  "seed": 20261015,
+  "profiles": [
+    {
+      "index": 5,
+      "profile": {
+        "goal": "muscle",
+        "level": "beginner",
+        "trainingAgeWeeks": 20,
+        "daysPerWeek": 3,
+        "sessionMinutes": 86,
+        "equipment": [
+          "none",
+          "dumbbell"
+        ],
+        "place": "home",
+        "constraints": {
+          "noJump": false,
+          "quiet": true,
+          "space": "medium"
+        },
+        "cautions": [
+          "knee",
+          "back",
+          "shoulder",
+          "wrist"
+        ],
+        "population": {
+          "kind": "pregnant",
+          "week": 8,
+          "providerCleared": true,
+          "contraindicationsConfirmedNone": true,
+          "lastScreenedWeek": 8
+        },
+        "screening": {
+          "parqAllNo": true,
+          "parqAnswers": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "knownCondition": false,
+          "knownCmrDisease": false,
+          "symptoms": false,
+          "activityStatus": "inactive",
+          "restingBp": "known_below_threshold",
+          "acuteIllness": false,
+          "completedAt": "2026-10-01T00:00:00.000Z",
+          "lastScreenedAt": "2026-10-01T00:00:00.000Z"
+        },
+        "preferences": {
+          "excludedExerciseIds": [],
+          "cannotDo": [
+            "kneeling"
+          ]
+        },
+        "birthYearMonth": "1991-06",
+        "asOfDate": "2026-10-15",
+        "locale": "zh"
+      }
+    },
+    {
+      "index": 10,
+      "profile": {
+        "goal": "start_moving",
+        "level": "intermediate",
+        "trainingAgeWeeks": 77,
+        "daysPerWeek": 6,
+        "sessionMinutes": 37,
+        "equipment": [
+          "none",
+          "dumbbell",
+          "resistance-band",
+          "loop-band",
+          "flat-bench"
+        ],
+        "place": "home",
+        "constraints": {
+          "noJump": false,
+          "quiet": true,
+          "space": "large"
+        },
+        "cautions": [
+          "shoulder"
+        ],
+        "population": {
+          "kind": "pregnant",
+          "week": 37,
+          "providerCleared": true,
+          "contraindicationsConfirmedNone": true,
+          "lastScreenedWeek": 37
+        },
+        "screening": {
+          "parqAllNo": true,
+          "parqAnswers": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "knownCondition": false,
+          "knownCmrDisease": false,
+          "symptoms": false,
+          "activityStatus": "inactive",
+          "restingBp": "known_below_threshold",
+          "acuteIllness": false,
+          "completedAt": "2026-10-01T00:00:00.000Z",
+          "lastScreenedAt": "2026-10-01T00:00:00.000Z"
+        },
+        "preferences": {
+          "excludedExerciseIds": [],
+          "cannotDo": []
+        },
+        "birthYearMonth": "1991-06",
+        "asOfDate": "2026-10-15",
+        "locale": "zh"
+      }
+    },
+    {
+      "index": 22,
+      "profile": {
+        "goal": "muscle",
+        "level": "intermediate",
+        "trainingAgeWeeks": 16,
+        "daysPerWeek": 5,
+        "sessionMinutes": 15,
+        "equipment": [
+          "none",
+          "dumbbell",
+          "resistance-band",
+          "loop-band",
+          "flat-bench"
+        ],
+        "place": "home",
+        "constraints": {
+          "noJump": false,
+          "quiet": true,
+          "space": "small"
+        },
+        "cautions": [
+          "back",
+          "shoulder"
+        ],
+        "population": {
+          "kind": "pregnant",
+          "week": 4,
+          "providerCleared": true,
+          "contraindicationsConfirmedNone": true,
+          "lastScreenedWeek": 4
+        },
+        "screening": {
+          "parqAllNo": true,
+          "parqAnswers": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "knownCondition": false,
+          "knownCmrDisease": false,
+          "symptoms": false,
+          "activityStatus": "inactive",
+          "restingBp": "known_below_threshold",
+          "acuteIllness": false,
+          "completedAt": "2026-10-01T00:00:00.000Z",
+          "lastScreenedAt": "2026-10-01T00:00:00.000Z"
+        },
+        "preferences": {
+          "excludedExerciseIds": [],
+          "cannotDo": [
+            "overhead"
+          ]
+        },
+        "birthYearMonth": "1991-06",
+        "asOfDate": "2026-10-15",
+        "locale": "zh"
+      }
+    },
+    {
+      "index": 42,
+      "profile": {
+        "goal": "muscle",
+        "level": "beginner",
+        "trainingAgeWeeks": 26,
+        "daysPerWeek": 1,
+        "sessionMinutes": 12,
+        "equipment": [
+          "none",
+          "resistance-band",
+          "loop-band"
+        ],
+        "place": "home",
+        "constraints": {
+          "noJump": true,
+          "quiet": false,
+          "space": "mat"
+        },
+        "cautions": [
+          "back"
+        ],
+        "population": {
+          "kind": "pregnant",
+          "week": 1,
+          "providerCleared": true,
+          "contraindicationsConfirmedNone": true,
+          "lastScreenedWeek": 1
+        },
+        "screening": {
+          "parqAllNo": false,
+          "parqAnswers": [
+            true,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "knownCondition": false,
+          "knownCmrDisease": false,
+          "symptoms": false,
+          "activityStatus": "active",
+          "restingBp": "known_below_threshold",
+          "acuteIllness": false,
+          "completedAt": "2026-10-01T00:00:00.000Z",
+          "lastScreenedAt": "2026-10-01T00:00:00.000Z"
+        },
+        "preferences": {
+          "excludedExerciseIds": [],
+          "cannotDo": [
+            "walking_carry",
+            "jumping",
+            "floor_work",
+            "overhead",
+            "kneeling"
+          ]
+        },
+        "birthYearMonth": "1991-06",
+        "asOfDate": "2026-10-15",
+        "locale": "zh"
+      }
+    },
+    {
+      "index": 44,
+      "profile": {
+        "goal": "start_moving",
+        "level": "beginner",
+        "trainingAgeWeeks": 102,
+        "daysPerWeek": 5,
+        "sessionMinutes": 16,
+        "equipment": [
+          "none",
+          "dumbbell",
+          "kettlebell",
+          "barbell",
+          "flat-bench",
+          "adjustable-bench",
+          "cable",
+          "lat-pulldown-machine",
+          "leg-curl",
+          "leg-extension",
+          "leg-press",
+          "squat-rack",
+          "pull-up-bar",
+          "chair",
+          "wall",
+          "anchor-point"
+        ],
+        "place": "home",
+        "constraints": {
+          "noJump": true,
+          "quiet": false,
+          "space": "large"
+        },
+        "cautions": [],
+        "population": {
+          "kind": "pregnant",
+          "week": 52,
+          "providerCleared": true,
+          "contraindicationsConfirmedNone": true,
+          "lastScreenedWeek": 52
+        },
+        "screening": {
+          "parqAllNo": true,
+          "parqAnswers": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "knownCondition": false,
+          "knownCmrDisease": false,
+          "symptoms": false,
+          "activityStatus": "active",
+          "restingBp": "known_below_threshold",
+          "acuteIllness": false,
+          "completedAt": "2026-10-01T00:00:00.000Z",
+          "lastScreenedAt": "2026-10-01T00:00:00.000Z"
+        },
+        "preferences": {
+          "excludedExerciseIds": [],
+          "cannotDo": [
+            "walking_carry",
+            "jumping",
+            "overhead",
+            "kneeling"
+          ]
+        },
+        "birthYearMonth": "1991-06",
+        "asOfDate": "2026-10-15",
+        "locale": "zh"
+      }
+    },
+    {
+      "index": 53,
+      "profile": {
+        "goal": "start_moving",
+        "level": "intermediate",
+        "trainingAgeWeeks": 44,
+        "daysPerWeek": 1,
+        "sessionMinutes": 39,
+        "equipment": [
+          "none",
+          "dumbbell",
+          "kettlebell",
+          "barbell",
+          "flat-bench",
+          "adjustable-bench",
+          "cable",
+          "lat-pulldown-machine",
+          "leg-curl",
+          "leg-extension",
+          "leg-press",
+          "squat-rack",
+          "pull-up-bar",
+          "chair",
+          "wall",
+          "anchor-point"
+        ],
+        "place": "home",
+        "constraints": {
+          "noJump": true,
+          "quiet": false,
+          "space": "medium"
+        },
+        "cautions": [],
+        "population": {
+          "kind": "pregnant",
+          "week": 1,
+          "providerCleared": true,
+          "contraindicationsConfirmedNone": true,
+          "lastScreenedWeek": 1
+        },
+        "screening": {
+          "parqAllNo": true,
+          "parqAnswers": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "knownCondition": false,
+          "knownCmrDisease": false,
+          "symptoms": false,
+          "activityStatus": "inactive",
+          "restingBp": "unknown",
+          "acuteIllness": false,
+          "completedAt": "2026-10-01T00:00:00.000Z",
+          "lastScreenedAt": "2026-10-01T00:00:00.000Z"
+        },
+        "preferences": {
+          "excludedExerciseIds": [],
+          "cannotDo": [
+            "walking_carry",
+            "jumping",
+            "floor_work",
+            "overhead",
+            "kneeling"
+          ]
+        },
+        "birthYearMonth": "1991-06",
+        "asOfDate": "2026-10-15",
+        "locale": "zh"
+      }
+    },
+    {
+      "index": 63,
+      "profile": {
+        "goal": "start_moving",
+        "level": "beginner",
+        "trainingAgeWeeks": 0,
+        "daysPerWeek": 1,
+        "sessionMinutes": 90,
+        "equipment": [
+          "none",
+          "dumbbell"
+        ],
+        "place": "home",
+        "constraints": {
+          "noJump": false,
+          "quiet": false,
+          "space": "large"
+        },
+        "cautions": [
+          "other"
+        ],
+        "population": {
+          "kind": "pregnant",
+          "week": 46,
+          "providerCleared": true,
+          "contraindicationsConfirmedNone": true,
+          "lastScreenedWeek": 46
+        },
+        "screening": {
+          "parqAllNo": true,
+          "parqAnswers": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "knownCondition": false,
+          "knownCmrDisease": false,
+          "symptoms": false,
+          "activityStatus": "active",
+          "restingBp": "known_below_threshold",
+          "acuteIllness": false,
+          "completedAt": "2026-10-01T00:00:00.000Z",
+          "lastScreenedAt": "2026-10-01T00:00:00.000Z"
+        },
+        "preferences": {
+          "excludedExerciseIds": [],
+          "cannotDo": [
+            "jumping"
+          ]
+        },
+        "birthYearMonth": "1991-06",
+        "asOfDate": "2026-10-15",
+        "locale": "zh"
+      }
+    },
+    {
+      "index": 71,
+      "profile": {
+        "goal": "mobility",
+        "level": "beginner",
+        "trainingAgeWeeks": 68,
+        "daysPerWeek": 1,
+        "sessionMinutes": 23,
+        "equipment": [
+          "none",
+          "dumbbell",
+          "kettlebell",
+          "barbell",
+          "flat-bench",
+          "adjustable-bench",
+          "cable",
+          "lat-pulldown-machine",
+          "leg-curl",
+          "leg-extension",
+          "leg-press",
+          "squat-rack",
+          "pull-up-bar",
+          "chair",
+          "wall",
+          "anchor-point"
+        ],
+        "place": "home",
+        "constraints": {
+          "noJump": false,
+          "quiet": false,
+          "space": "small"
+        },
+        "cautions": [
+          "back",
+          "other"
+        ],
+        "population": {
+          "kind": "general"
+        },
+        "screening": {
+          "parqAllNo": true,
+          "parqAnswers": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "knownCondition": false,
+          "knownCmrDisease": false,
+          "symptoms": false,
+          "activityStatus": "active",
+          "restingBp": "known_below_threshold",
+          "acuteIllness": false,
+          "completedAt": "2026-10-01T00:00:00.000Z",
+          "lastScreenedAt": "2026-10-01T00:00:00.000Z"
+        },
+        "preferences": {
+          "excludedExerciseIds": [],
+          "cannotDo": [
+            "walking_carry",
+            "jumping"
+          ]
+        },
+        "birthYearMonth": "1991-06",
+        "asOfDate": "2026-10-15",
+        "locale": "zh"
+      }
+    },
+    {
+      "index": 74,
+      "profile": {
+        "goal": "start_moving",
+        "level": "intermediate",
+        "trainingAgeWeeks": 5,
+        "daysPerWeek": 1,
+        "sessionMinutes": 90,
+        "equipment": [
+          "none",
+          "dumbbell",
+          "resistance-band",
+          "loop-band",
+          "flat-bench"
+        ],
+        "place": "home",
+        "constraints": {
+          "noJump": false,
+          "quiet": true,
+          "space": "small"
+        },
+        "cautions": [
+          "wrist"
+        ],
+        "population": {
+          "kind": "pregnant",
+          "week": 35,
+          "providerCleared": true,
+          "contraindicationsConfirmedNone": true,
+          "lastScreenedWeek": 35
+        },
+        "screening": {
+          "parqAllNo": true,
+          "parqAnswers": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "knownCondition": true,
+          "knownCmrDisease": true,
+          "symptoms": false,
+          "activityStatus": "active",
+          "restingBp": "known_below_threshold",
+          "acuteIllness": false,
+          "completedAt": "2026-10-01T00:00:00.000Z",
+          "lastScreenedAt": "2026-10-01T00:00:00.000Z"
+        },
+        "preferences": {
+          "excludedExerciseIds": [],
+          "cannotDo": [
+            "jumping"
+          ]
+        },
+        "birthYearMonth": "1991-06",
+        "asOfDate": "2026-10-15",
+        "locale": "zh"
+      }
+    }
+  ]
+}

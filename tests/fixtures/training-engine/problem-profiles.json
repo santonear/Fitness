@@ -1,0 +1,995 @@
+{
+  "source": {
+    "report": ".cache/engine-full.json",
+    "sampleSeed": 20261015,
+    "sampledCount": 2000,
+    "rulesVersion": "3ed556dfe5e97a9233725706043cc96106ae4465f9902a6bf51fbc503277e937",
+    "engineVersion": "2.0.0-p0",
+    "variant": 0,
+    "generationPath": "sampledProfiles(2000)[index] -> engine.generatePlan(profile,{variant:0})",
+    "reportedViolations": [
+      {
+        "index": 329,
+        "reason": "floor_descents",
+        "ruleId": "older.floor.transitions"
+      },
+      {
+        "index": 329,
+        "reason": "duration_tolerance",
+        "ruleId": "duration.fit.bounds"
+      },
+      {
+        "index": 329,
+        "reason": "duration_tolerance",
+        "ruleId": "duration.fit.bounds"
+      },
+      {
+        "index": 329,
+        "reason": "floor_descents",
+        "ruleId": "older.floor.transitions"
+      },
+      {
+        "index": 329,
+        "reason": "duration_tolerance",
+        "ruleId": "duration.fit.bounds"
+      },
+      {
+        "index": 329,
+        "reason": "duration_tolerance",
+        "ruleId": "duration.fit.bounds"
+      },
+      {
+        "index": 559,
+        "reason": "floor_descents",
+        "ruleId": "older.floor.transitions"
+      },
+      {
+        "index": 559,
+        "reason": "duration_tolerance",
+        "ruleId": "duration.fit.bounds"
+      },
+      {
+        "index": 875,
+        "reason": "floor_descents",
+        "ruleId": "older.floor.transitions"
+      },
+      {
+        "index": 875,
+        "reason": "duration_tolerance",
+        "ruleId": "duration.fit.bounds"
+      },
+      {
+        "index": 875,
+        "reason": "duration_tolerance",
+        "ruleId": "duration.fit.bounds"
+      },
+      {
+        "index": 959,
+        "reason": "floor_descents",
+        "ruleId": "older.floor.transitions"
+      },
+      {
+        "index": 959,
+        "reason": "duration_tolerance",
+        "ruleId": "duration.fit.bounds"
+      },
+      {
+        "index": 959,
+        "reason": "duration_tolerance",
+        "ruleId": "duration.fit.bounds"
+      },
+      {
+        "index": 967,
+        "reason": "floor_descents",
+        "ruleId": "older.floor.transitions"
+      },
+      {
+        "index": 967,
+        "reason": "duration_tolerance",
+        "ruleId": "duration.fit.bounds"
+      },
+      {
+        "index": 1775,
+        "reason": "floor_descents",
+        "ruleId": "older.floor.transitions"
+      },
+      {
+        "index": 1775,
+        "reason": "duration_tolerance",
+        "ruleId": "duration.fit.bounds"
+      },
+      {
+        "index": 1775,
+        "reason": "duration_tolerance",
+        "ruleId": "duration.fit.bounds"
+      },
+      {
+        "index": 1775,
+        "reason": "duration_tolerance",
+        "ruleId": "duration.fit.bounds"
+      },
+      {
+        "index": 1829,
+        "reason": "floor_descents",
+        "ruleId": "older.floor.transitions"
+      }
+    ],
+    "reportRulesVersion": "not_recorded_in_report",
+    "reportSha256": "c2f189952af680bf5c6a638fc8111871bdbcea9d19066e1ef9468d502558c183",
+    "profilePolicy": "Exact sampled inputs, unchanged; indexes identify fixed regressions only and must never select production behavior."
+  },
+  "profiles": [
+    {
+      "index": 329,
+      "profile": {
+        "goal": "muscle",
+        "level": "beginner",
+        "trainingAgeWeeks": 13,
+        "daysPerWeek": 4,
+        "sessionMinutes": 60,
+        "equipment": [
+          "none",
+          "dumbbell",
+          "kettlebell",
+          "barbell",
+          "flat-bench",
+          "adjustable-bench",
+          "cable",
+          "lat-pulldown-machine",
+          "leg-curl",
+          "leg-extension",
+          "leg-press",
+          "squat-rack",
+          "pull-up-bar",
+          "chair",
+          "wall",
+          "anchor-point"
+        ],
+        "place": "home",
+        "constraints": {
+          "noJump": true,
+          "quiet": true,
+          "space": "mat"
+        },
+        "cautions": [],
+        "population": {
+          "kind": "older_adult",
+          "fallsAnswers": [
+            false,
+            false,
+            false,
+            false
+          ],
+          "balanceCautious": false
+        },
+        "screening": {
+          "parqAllNo": true,
+          "parqAnswers": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "knownCondition": false,
+          "knownCmrDisease": false,
+          "symptoms": false,
+          "cmrSymptoms": {
+            "chest_neck_jaw_arm_pain_or_discomfort": false,
+            "dyspnea_at_rest_or_mild_exertion": false,
+            "dizziness_or_syncope": false,
+            "orthopnea_or_nocturnal_dyspnea": false,
+            "ankle_edema": false,
+            "palpitations_or_tachycardia": false,
+            "intermittent_claudication": false,
+            "known_heart_murmur": false,
+            "unusual_fatigue_or_breathlessness_usual_activity": false
+          },
+          "activityStatus": "inactive",
+          "restingBp": "known_below_threshold",
+          "acuteIllness": false,
+          "completedAt": "2026-10-01T00:00:00.000Z",
+          "lastScreenedAt": "2026-10-01T00:00:00.000Z"
+        },
+        "preferences": {
+          "excludedExerciseIds": [],
+          "cannotDo": [
+            "jumping"
+          ]
+        },
+        "birthYearMonth": "1956-06",
+        "asOfDate": "2026-10-15",
+        "locale": "zh"
+      },
+      "profileHash": "edebee3c",
+      "generationSeed": "6dbf59e8"
+    },
+    {
+      "index": 559,
+      "profile": {
+        "goal": "muscle",
+        "level": "intermediate",
+        "trainingAgeWeeks": 94,
+        "daysPerWeek": 1,
+        "sessionMinutes": 60,
+        "equipment": [
+          "none",
+          "dumbbell",
+          "kettlebell",
+          "barbell",
+          "flat-bench",
+          "adjustable-bench",
+          "cable",
+          "lat-pulldown-machine",
+          "leg-curl",
+          "leg-extension",
+          "leg-press",
+          "squat-rack",
+          "pull-up-bar",
+          "chair",
+          "wall",
+          "anchor-point"
+        ],
+        "place": "home",
+        "constraints": {
+          "noJump": false,
+          "quiet": false,
+          "space": "mat"
+        },
+        "cautions": [
+          "knee",
+          "back",
+          "shoulder",
+          "wrist"
+        ],
+        "population": {
+          "kind": "older_adult",
+          "fallsAnswers": [
+            false,
+            false,
+            false,
+            false
+          ],
+          "balanceCautious": false
+        },
+        "screening": {
+          "parqAllNo": true,
+          "parqAnswers": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "knownCondition": false,
+          "knownCmrDisease": false,
+          "symptoms": false,
+          "cmrSymptoms": {
+            "chest_neck_jaw_arm_pain_or_discomfort": false,
+            "dyspnea_at_rest_or_mild_exertion": false,
+            "dizziness_or_syncope": false,
+            "orthopnea_or_nocturnal_dyspnea": false,
+            "ankle_edema": false,
+            "palpitations_or_tachycardia": false,
+            "intermittent_claudication": false,
+            "known_heart_murmur": false,
+            "unusual_fatigue_or_breathlessness_usual_activity": false
+          },
+          "activityStatus": "active",
+          "restingBp": "unknown",
+          "acuteIllness": false,
+          "completedAt": "2026-10-01T00:00:00.000Z",
+          "lastScreenedAt": "2026-10-01T00:00:00.000Z",
+          "redFlagReview": {
+            "requiredAt": "2026-10-01T00:00:00.000Z",
+            "answeredAt": "2026-10-01T00:00:00.000Z",
+            "areas": [
+              "knee",
+              "back",
+              "shoulder",
+              "wrist"
+            ],
+            "questionKeys": [
+              "pain_after_fall_or_impact",
+              "cannot_bear_weight_or_use_limb",
+              "joint_hot_red_swollen_or_with_fever",
+              "locking_or_giving_way",
+              "unexplained_night_or_rest_pain",
+              "visible_deformity",
+              "numbness_tingling_or_weakness_spreading_into_limb",
+              "numbness_groin_or_buttocks",
+              "new_bladder_or_bowel_problem",
+              "progressive_leg_weakness",
+              "back_pain_with_fever_or_unwell",
+              "back_pain_with_cancer_history",
+              "unexplained_weight_loss",
+              "back_pain_after_significant_trauma",
+              "severe_constant_pain_unrelated_to_movement",
+              "shoulder_pain_with_chest_pain",
+              "shoulder_pain_with_breathlessness",
+              "sudden_loss_of_arm_movement_after_injury"
+            ],
+            "answers": {
+              "pain_after_fall_or_impact": false,
+              "cannot_bear_weight_or_use_limb": false,
+              "joint_hot_red_swollen_or_with_fever": false,
+              "locking_or_giving_way": false,
+              "unexplained_night_or_rest_pain": false,
+              "visible_deformity": false,
+              "numbness_tingling_or_weakness_spreading_into_limb": false,
+              "numbness_groin_or_buttocks": false,
+              "new_bladder_or_bowel_problem": false,
+              "progressive_leg_weakness": false,
+              "back_pain_with_fever_or_unwell": false,
+              "back_pain_with_cancer_history": false,
+              "unexplained_weight_loss": false,
+              "back_pain_after_significant_trauma": false,
+              "severe_constant_pain_unrelated_to_movement": false,
+              "shoulder_pain_with_chest_pain": false,
+              "shoulder_pain_with_breathlessness": false,
+              "sudden_loss_of_arm_movement_after_injury": false
+            }
+          }
+        },
+        "preferences": {
+          "excludedExerciseIds": [],
+          "cannotDo": [
+            "overhead"
+          ]
+        },
+        "birthYearMonth": "1956-06",
+        "asOfDate": "2026-10-15",
+        "locale": "zh"
+      },
+      "profileHash": "9130793d",
+      "generationSeed": "1c142767"
+    },
+    {
+      "index": 875,
+      "profile": {
+        "goal": "strength",
+        "level": "beginner",
+        "trainingAgeWeeks": 16,
+        "daysPerWeek": 2,
+        "sessionMinutes": 45,
+        "equipment": [
+          "none",
+          "dumbbell"
+        ],
+        "place": "home",
+        "constraints": {
+          "noJump": false,
+          "quiet": false,
+          "space": "mat"
+        },
+        "cautions": [
+          "knee",
+          "back",
+          "shoulder",
+          "wrist"
+        ],
+        "population": {
+          "kind": "older_adult",
+          "fallsAnswers": [
+            false,
+            false,
+            false,
+            false
+          ],
+          "balanceCautious": false
+        },
+        "screening": {
+          "parqAllNo": true,
+          "parqAnswers": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "knownCondition": false,
+          "knownCmrDisease": false,
+          "symptoms": false,
+          "cmrSymptoms": {
+            "chest_neck_jaw_arm_pain_or_discomfort": false,
+            "dyspnea_at_rest_or_mild_exertion": false,
+            "dizziness_or_syncope": false,
+            "orthopnea_or_nocturnal_dyspnea": false,
+            "ankle_edema": false,
+            "palpitations_or_tachycardia": false,
+            "intermittent_claudication": false,
+            "known_heart_murmur": false,
+            "unusual_fatigue_or_breathlessness_usual_activity": false
+          },
+          "activityStatus": "inactive",
+          "restingBp": "known_below_threshold",
+          "acuteIllness": false,
+          "completedAt": "2026-10-01T00:00:00.000Z",
+          "lastScreenedAt": "2026-10-01T00:00:00.000Z",
+          "redFlagReview": {
+            "requiredAt": "2026-10-01T00:00:00.000Z",
+            "answeredAt": "2026-10-01T00:00:00.000Z",
+            "areas": [
+              "knee",
+              "back",
+              "shoulder",
+              "wrist"
+            ],
+            "questionKeys": [
+              "pain_after_fall_or_impact",
+              "cannot_bear_weight_or_use_limb",
+              "joint_hot_red_swollen_or_with_fever",
+              "locking_or_giving_way",
+              "unexplained_night_or_rest_pain",
+              "visible_deformity",
+              "numbness_tingling_or_weakness_spreading_into_limb",
+              "numbness_groin_or_buttocks",
+              "new_bladder_or_bowel_problem",
+              "progressive_leg_weakness",
+              "back_pain_with_fever_or_unwell",
+              "back_pain_with_cancer_history",
+              "unexplained_weight_loss",
+              "back_pain_after_significant_trauma",
+              "severe_constant_pain_unrelated_to_movement",
+              "shoulder_pain_with_chest_pain",
+              "shoulder_pain_with_breathlessness",
+              "sudden_loss_of_arm_movement_after_injury"
+            ],
+            "answers": {
+              "pain_after_fall_or_impact": false,
+              "cannot_bear_weight_or_use_limb": false,
+              "joint_hot_red_swollen_or_with_fever": false,
+              "locking_or_giving_way": false,
+              "unexplained_night_or_rest_pain": false,
+              "visible_deformity": false,
+              "numbness_tingling_or_weakness_spreading_into_limb": false,
+              "numbness_groin_or_buttocks": false,
+              "new_bladder_or_bowel_problem": false,
+              "progressive_leg_weakness": false,
+              "back_pain_with_fever_or_unwell": false,
+              "back_pain_with_cancer_history": false,
+              "unexplained_weight_loss": false,
+              "back_pain_after_significant_trauma": false,
+              "severe_constant_pain_unrelated_to_movement": false,
+              "shoulder_pain_with_chest_pain": false,
+              "shoulder_pain_with_breathlessness": false,
+              "sudden_loss_of_arm_movement_after_injury": false
+            }
+          }
+        },
+        "preferences": {
+          "excludedExerciseIds": [],
+          "cannotDo": []
+        },
+        "birthYearMonth": "1956-06",
+        "asOfDate": "2026-10-15",
+        "locale": "zh"
+      },
+      "profileHash": "5afe10c5",
+      "generationSeed": "56e4a748"
+    },
+    {
+      "index": 959,
+      "profile": {
+        "goal": "fat_loss",
+        "level": "beginner",
+        "trainingAgeWeeks": 101,
+        "daysPerWeek": 2,
+        "sessionMinutes": 60,
+        "equipment": [
+          "none",
+          "dumbbell",
+          "kettlebell",
+          "barbell",
+          "flat-bench",
+          "adjustable-bench",
+          "cable",
+          "lat-pulldown-machine",
+          "leg-curl",
+          "leg-extension",
+          "leg-press",
+          "squat-rack",
+          "pull-up-bar",
+          "chair",
+          "wall",
+          "anchor-point"
+        ],
+        "place": "home",
+        "constraints": {
+          "noJump": true,
+          "quiet": true,
+          "space": "mat"
+        },
+        "cautions": [
+          "back",
+          "shoulder"
+        ],
+        "population": {
+          "kind": "older_adult",
+          "fallsAnswers": [
+            false,
+            false,
+            false,
+            false
+          ],
+          "balanceCautious": false
+        },
+        "screening": {
+          "parqAllNo": true,
+          "parqAnswers": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "knownCondition": false,
+          "knownCmrDisease": false,
+          "symptoms": false,
+          "cmrSymptoms": {
+            "chest_neck_jaw_arm_pain_or_discomfort": false,
+            "dyspnea_at_rest_or_mild_exertion": false,
+            "dizziness_or_syncope": false,
+            "orthopnea_or_nocturnal_dyspnea": false,
+            "ankle_edema": false,
+            "palpitations_or_tachycardia": false,
+            "intermittent_claudication": false,
+            "known_heart_murmur": false,
+            "unusual_fatigue_or_breathlessness_usual_activity": false
+          },
+          "activityStatus": "inactive",
+          "restingBp": "known_below_threshold",
+          "acuteIllness": false,
+          "completedAt": "2026-10-01T00:00:00.000Z",
+          "lastScreenedAt": "2026-10-01T00:00:00.000Z",
+          "redFlagReview": {
+            "requiredAt": "2026-10-01T00:00:00.000Z",
+            "answeredAt": "2026-10-01T00:00:00.000Z",
+            "areas": [
+              "back",
+              "shoulder"
+            ],
+            "questionKeys": [
+              "pain_after_fall_or_impact",
+              "cannot_bear_weight_or_use_limb",
+              "joint_hot_red_swollen_or_with_fever",
+              "locking_or_giving_way",
+              "unexplained_night_or_rest_pain",
+              "visible_deformity",
+              "numbness_tingling_or_weakness_spreading_into_limb",
+              "numbness_groin_or_buttocks",
+              "new_bladder_or_bowel_problem",
+              "progressive_leg_weakness",
+              "back_pain_with_fever_or_unwell",
+              "back_pain_with_cancer_history",
+              "unexplained_weight_loss",
+              "back_pain_after_significant_trauma",
+              "severe_constant_pain_unrelated_to_movement",
+              "shoulder_pain_with_chest_pain",
+              "shoulder_pain_with_breathlessness",
+              "sudden_loss_of_arm_movement_after_injury"
+            ],
+            "answers": {
+              "pain_after_fall_or_impact": false,
+              "cannot_bear_weight_or_use_limb": false,
+              "joint_hot_red_swollen_or_with_fever": false,
+              "locking_or_giving_way": false,
+              "unexplained_night_or_rest_pain": false,
+              "visible_deformity": false,
+              "numbness_tingling_or_weakness_spreading_into_limb": false,
+              "numbness_groin_or_buttocks": false,
+              "new_bladder_or_bowel_problem": false,
+              "progressive_leg_weakness": false,
+              "back_pain_with_fever_or_unwell": false,
+              "back_pain_with_cancer_history": false,
+              "unexplained_weight_loss": false,
+              "back_pain_after_significant_trauma": false,
+              "severe_constant_pain_unrelated_to_movement": false,
+              "shoulder_pain_with_chest_pain": false,
+              "shoulder_pain_with_breathlessness": false,
+              "sudden_loss_of_arm_movement_after_injury": false
+            }
+          }
+        },
+        "preferences": {
+          "excludedExerciseIds": [],
+          "cannotDo": [
+            "jumping"
+          ]
+        },
+        "birthYearMonth": "1956-06",
+        "asOfDate": "2026-10-15",
+        "locale": "zh"
+      },
+      "profileHash": "82a57c32",
+      "generationSeed": "92243545"
+    },
+    {
+      "index": 967,
+      "profile": {
+        "goal": "muscle",
+        "level": "beginner",
+        "trainingAgeWeeks": 0,
+        "daysPerWeek": 2,
+        "sessionMinutes": 40,
+        "equipment": [
+          "none",
+          "resistance-band",
+          "loop-band"
+        ],
+        "place": "home",
+        "constraints": {
+          "noJump": true,
+          "quiet": true,
+          "space": "mat"
+        },
+        "cautions": [
+          "knee",
+          "back",
+          "shoulder",
+          "wrist"
+        ],
+        "population": {
+          "kind": "older_adult",
+          "fallsAnswers": [
+            false,
+            false,
+            false,
+            false
+          ],
+          "balanceCautious": false
+        },
+        "screening": {
+          "parqAllNo": true,
+          "parqAnswers": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "knownCondition": false,
+          "knownCmrDisease": false,
+          "symptoms": false,
+          "cmrSymptoms": {
+            "chest_neck_jaw_arm_pain_or_discomfort": false,
+            "dyspnea_at_rest_or_mild_exertion": false,
+            "dizziness_or_syncope": false,
+            "orthopnea_or_nocturnal_dyspnea": false,
+            "ankle_edema": false,
+            "palpitations_or_tachycardia": false,
+            "intermittent_claudication": false,
+            "known_heart_murmur": false,
+            "unusual_fatigue_or_breathlessness_usual_activity": false
+          },
+          "activityStatus": "inactive",
+          "restingBp": "known_below_threshold",
+          "acuteIllness": false,
+          "completedAt": "2026-10-01T00:00:00.000Z",
+          "lastScreenedAt": "2026-10-01T00:00:00.000Z",
+          "redFlagReview": {
+            "requiredAt": "2026-10-01T00:00:00.000Z",
+            "answeredAt": "2026-10-01T00:00:00.000Z",
+            "areas": [
+              "knee",
+              "back",
+              "shoulder",
+              "wrist"
+            ],
+            "questionKeys": [
+              "pain_after_fall_or_impact",
+              "cannot_bear_weight_or_use_limb",
+              "joint_hot_red_swollen_or_with_fever",
+              "locking_or_giving_way",
+              "unexplained_night_or_rest_pain",
+              "visible_deformity",
+              "numbness_tingling_or_weakness_spreading_into_limb",
+              "numbness_groin_or_buttocks",
+              "new_bladder_or_bowel_problem",
+              "progressive_leg_weakness",
+              "back_pain_with_fever_or_unwell",
+              "back_pain_with_cancer_history",
+              "unexplained_weight_loss",
+              "back_pain_after_significant_trauma",
+              "severe_constant_pain_unrelated_to_movement",
+              "shoulder_pain_with_chest_pain",
+              "shoulder_pain_with_breathlessness",
+              "sudden_loss_of_arm_movement_after_injury"
+            ],
+            "answers": {
+              "pain_after_fall_or_impact": false,
+              "cannot_bear_weight_or_use_limb": false,
+              "joint_hot_red_swollen_or_with_fever": false,
+              "locking_or_giving_way": false,
+              "unexplained_night_or_rest_pain": false,
+              "visible_deformity": false,
+              "numbness_tingling_or_weakness_spreading_into_limb": false,
+              "numbness_groin_or_buttocks": false,
+              "new_bladder_or_bowel_problem": false,
+              "progressive_leg_weakness": false,
+              "back_pain_with_fever_or_unwell": false,
+              "back_pain_with_cancer_history": false,
+              "unexplained_weight_loss": false,
+              "back_pain_after_significant_trauma": false,
+              "severe_constant_pain_unrelated_to_movement": false,
+              "shoulder_pain_with_chest_pain": false,
+              "shoulder_pain_with_breathlessness": false,
+              "sudden_loss_of_arm_movement_after_injury": false
+            }
+          }
+        },
+        "preferences": {
+          "excludedExerciseIds": [],
+          "cannotDo": [
+            "overhead",
+            "kneeling"
+          ]
+        },
+        "birthYearMonth": "1956-06",
+        "asOfDate": "2026-10-15",
+        "locale": "zh"
+      },
+      "profileHash": "c684894e",
+      "generationSeed": "5686a251"
+    },
+    {
+      "index": 1775,
+      "profile": {
+        "goal": "strength",
+        "level": "beginner",
+        "trainingAgeWeeks": 34,
+        "daysPerWeek": 3,
+        "sessionMinutes": 45,
+        "equipment": [
+          "none",
+          "dumbbell"
+        ],
+        "place": "home",
+        "constraints": {
+          "noJump": true,
+          "quiet": false,
+          "space": "mat"
+        },
+        "cautions": [
+          "shoulder"
+        ],
+        "population": {
+          "kind": "older_adult",
+          "fallsAnswers": [
+            false,
+            false,
+            false,
+            false
+          ],
+          "balanceCautious": false
+        },
+        "screening": {
+          "parqAllNo": true,
+          "parqAnswers": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "knownCondition": false,
+          "knownCmrDisease": false,
+          "symptoms": false,
+          "cmrSymptoms": {
+            "chest_neck_jaw_arm_pain_or_discomfort": false,
+            "dyspnea_at_rest_or_mild_exertion": false,
+            "dizziness_or_syncope": false,
+            "orthopnea_or_nocturnal_dyspnea": false,
+            "ankle_edema": false,
+            "palpitations_or_tachycardia": false,
+            "intermittent_claudication": false,
+            "known_heart_murmur": false,
+            "unusual_fatigue_or_breathlessness_usual_activity": false
+          },
+          "activityStatus": "inactive",
+          "restingBp": "known_below_threshold",
+          "acuteIllness": false,
+          "completedAt": "2026-10-01T00:00:00.000Z",
+          "lastScreenedAt": "2026-10-01T00:00:00.000Z",
+          "redFlagReview": {
+            "requiredAt": "2026-10-01T00:00:00.000Z",
+            "answeredAt": "2026-10-01T00:00:00.000Z",
+            "areas": [
+              "shoulder"
+            ],
+            "questionKeys": [
+              "pain_after_fall_or_impact",
+              "cannot_bear_weight_or_use_limb",
+              "joint_hot_red_swollen_or_with_fever",
+              "locking_or_giving_way",
+              "unexplained_night_or_rest_pain",
+              "visible_deformity",
+              "numbness_tingling_or_weakness_spreading_into_limb",
+              "shoulder_pain_with_chest_pain",
+              "shoulder_pain_with_breathlessness",
+              "sudden_loss_of_arm_movement_after_injury"
+            ],
+            "answers": {
+              "pain_after_fall_or_impact": false,
+              "cannot_bear_weight_or_use_limb": false,
+              "joint_hot_red_swollen_or_with_fever": false,
+              "locking_or_giving_way": false,
+              "unexplained_night_or_rest_pain": false,
+              "visible_deformity": false,
+              "numbness_tingling_or_weakness_spreading_into_limb": false,
+              "shoulder_pain_with_chest_pain": false,
+              "shoulder_pain_with_breathlessness": false,
+              "sudden_loss_of_arm_movement_after_injury": false
+            }
+          }
+        },
+        "preferences": {
+          "excludedExerciseIds": [],
+          "cannotDo": [
+            "walking_carry",
+            "overhead"
+          ]
+        },
+        "birthYearMonth": "1956-06",
+        "asOfDate": "2026-10-15",
+        "locale": "zh"
+      },
+      "profileHash": "bfa8e09e",
+      "generationSeed": "af6b56c5"
+    },
+    {
+      "index": 1829,
+      "profile": {
+        "goal": "strength",
+        "level": "beginner",
+        "trainingAgeWeeks": 27,
+        "daysPerWeek": 2,
+        "sessionMinutes": 60,
+        "equipment": [
+          "none",
+          "dumbbell",
+          "kettlebell",
+          "barbell",
+          "flat-bench",
+          "adjustable-bench",
+          "cable",
+          "lat-pulldown-machine",
+          "leg-curl",
+          "leg-extension",
+          "leg-press",
+          "squat-rack",
+          "pull-up-bar",
+          "chair",
+          "wall",
+          "anchor-point"
+        ],
+        "place": "home",
+        "constraints": {
+          "noJump": true,
+          "quiet": true,
+          "space": "mat"
+        },
+        "cautions": [
+          "knee",
+          "back",
+          "shoulder",
+          "wrist"
+        ],
+        "population": {
+          "kind": "older_adult",
+          "fallsAnswers": [
+            false,
+            false,
+            false,
+            false
+          ],
+          "balanceCautious": false
+        },
+        "screening": {
+          "parqAllNo": true,
+          "parqAnswers": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "knownCondition": false,
+          "knownCmrDisease": false,
+          "symptoms": false,
+          "cmrSymptoms": {
+            "chest_neck_jaw_arm_pain_or_discomfort": false,
+            "dyspnea_at_rest_or_mild_exertion": false,
+            "dizziness_or_syncope": false,
+            "orthopnea_or_nocturnal_dyspnea": false,
+            "ankle_edema": false,
+            "palpitations_or_tachycardia": false,
+            "intermittent_claudication": false,
+            "known_heart_murmur": false,
+            "unusual_fatigue_or_breathlessness_usual_activity": false
+          },
+          "activityStatus": "active",
+          "restingBp": "known_below_threshold",
+          "acuteIllness": false,
+          "completedAt": "2026-10-01T00:00:00.000Z",
+          "lastScreenedAt": "2026-10-01T00:00:00.000Z",
+          "redFlagReview": {
+            "requiredAt": "2026-10-01T00:00:00.000Z",
+            "answeredAt": "2026-10-01T00:00:00.000Z",
+            "areas": [
+              "knee",
+              "back",
+              "shoulder",
+              "wrist"
+            ],
+            "questionKeys": [
+              "pain_after_fall_or_impact",
+              "cannot_bear_weight_or_use_limb",
+              "joint_hot_red_swollen_or_with_fever",
+              "locking_or_giving_way",
+              "unexplained_night_or_rest_pain",
+              "visible_deformity",
+              "numbness_tingling_or_weakness_spreading_into_limb",
+              "numbness_groin_or_buttocks",
+              "new_bladder_or_bowel_problem",
+              "progressive_leg_weakness",
+              "back_pain_with_fever_or_unwell",
+              "back_pain_with_cancer_history",
+              "unexplained_weight_loss",
+              "back_pain_after_significant_trauma",
+              "severe_constant_pain_unrelated_to_movement",
+              "shoulder_pain_with_chest_pain",
+              "shoulder_pain_with_breathlessness",
+              "sudden_loss_of_arm_movement_after_injury"
+            ],
+            "answers": {
+              "pain_after_fall_or_impact": false,
+              "cannot_bear_weight_or_use_limb": false,
+              "joint_hot_red_swollen_or_with_fever": false,
+              "locking_or_giving_way": false,
+              "unexplained_night_or_rest_pain": false,
+              "visible_deformity": false,
+              "numbness_tingling_or_weakness_spreading_into_limb": false,
+              "numbness_groin_or_buttocks": false,
+              "new_bladder_or_bowel_problem": false,
+              "progressive_leg_weakness": false,
+              "back_pain_with_fever_or_unwell": false,
+              "back_pain_with_cancer_history": false,
+              "unexplained_weight_loss": false,
+              "back_pain_after_significant_trauma": false,
+              "severe_constant_pain_unrelated_to_movement": false,
+              "shoulder_pain_with_chest_pain": false,
+              "shoulder_pain_with_breathlessness": false,
+              "sudden_loss_of_arm_movement_after_injury": false
+            }
+          }
+        },
+        "preferences": {
+          "excludedExerciseIds": [],
+          "cannotDo": [
+            "kneeling"
+          ]
+        },
+        "birthYearMonth": "1956-06",
+        "asOfDate": "2026-10-15",
+        "locale": "zh"
+      },
+      "profileHash": "d94a50a9",
+      "generationSeed": "5994caa0"
+    }
+  ]
+}

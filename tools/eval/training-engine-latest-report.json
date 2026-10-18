@@ -1,0 +1,1091 @@
+{
+  "seed": 20261015,
+  "requested": 2000,
+  "evaluated": 2000,
+  "totals": {
+    "qualityPass": 130,
+    "healthBlocked": 567,
+    "limitedAllowed": 8,
+    "unavailableAllowed": 0,
+    "algorithmFailure": 1295,
+    "throws": 0
+  },
+  "qualityPassRate": 0.065,
+  "axes": {
+    "goal": {
+      "strength": 341,
+      "muscle": 359,
+      "fat_loss": 350,
+      "start_moving": 309,
+      "health": 325,
+      "mobility": 316
+    },
+    "level": {
+      "intermediate": 1001,
+      "beginner": 999
+    },
+    "days": {
+      "1": 360,
+      "2": 354,
+      "3": 375,
+      "4": 293,
+      "5": 320,
+      "6": 298
+    },
+    "minutes": {
+      "10": 52,
+      "11": 66,
+      "12": 68,
+      "13": 66,
+      "14": 72,
+      "15": 61,
+      "16": 64,
+      "17": 24,
+      "18": 20,
+      "19": 23,
+      "20": 23,
+      "21": 14,
+      "22": 17,
+      "23": 31,
+      "24": 14,
+      "25": 7,
+      "26": 22,
+      "27": 21,
+      "28": 17,
+      "29": 16,
+      "30": 13,
+      "31": 14,
+      "32": 14,
+      "33": 15,
+      "34": 23,
+      "35": 16,
+      "36": 18,
+      "37": 19,
+      "38": 16,
+      "39": 19,
+      "40": 20,
+      "41": 17,
+      "42": 12,
+      "43": 16,
+      "44": 14,
+      "45": 13,
+      "46": 21,
+      "47": 15,
+      "48": 14,
+      "49": 18,
+      "50": 28,
+      "51": 20,
+      "52": 19,
+      "53": 17,
+      "54": 19,
+      "55": 11,
+      "56": 31,
+      "57": 24,
+      "58": 21,
+      "59": 26,
+      "60": 21,
+      "61": 15,
+      "62": 22,
+      "63": 23,
+      "64": 15,
+      "65": 24,
+      "66": 15,
+      "67": 16,
+      "68": 22,
+      "69": 14,
+      "70": 21,
+      "71": 22,
+      "72": 17,
+      "73": 13,
+      "74": 15,
+      "75": 23,
+      "76": 16,
+      "77": 20,
+      "78": 23,
+      "79": 24,
+      "80": 13,
+      "81": 20,
+      "82": 22,
+      "83": 21,
+      "84": 34,
+      "85": 37,
+      "86": 53,
+      "87": 47,
+      "88": 40,
+      "89": 50,
+      "90": 41
+    },
+    "equipment": {
+      "none,resistance-band,loop-band": 393,
+      "none": 414,
+      "none,dumbbell,resistance-band,loop-band,flat-bench": 378,
+      "none,dumbbell": 447,
+      "none,dumbbell,kettlebell,barbell,flat-bench,adjustable-bench,cable,lat-pulldown-machine,leg-curl,leg-extension,leg-press,squat-rack,pull-up-bar,chair,wall,anchor-point": 368
+    },
+    "population": {
+      "postpartum": 443,
+      "older_adult": 542,
+      "pregnant": 488,
+      "general": 527
+    },
+    "noJump": {
+      "true": 999,
+      "false": 1001
+    },
+    "quiet": {
+      "false": 962,
+      "true": 1038
+    }
+  },
+  "issuesByCode": {
+    "empty_plan": 64,
+    "duration_tolerance": 1057,
+    "weekly_volume_floor": 1791,
+    "carry_ground_gap": 620,
+    "balance_days": 402,
+    "pull_push_balance": 514,
+    "hinge_knee_balance": 834,
+    "core_gap": 49,
+    "goal_frequency_min": 85,
+    "weekly_volume_cap": 27,
+    "weekly_exposure_gap": 52,
+    "weekly_pattern_gap": 51
+  },
+  "issuesByRule": {
+    "week.days.allocation": 64,
+    "duration.fit.tolerance": 1057,
+    "dose.sets_week.goal_matrix": 1818,
+    "balance.week.carry_ground": 620,
+    "older.template.balance_required": 402,
+    "balance.week.pull_push": 514,
+    "balance.week.hinge_knee": 834,
+    "balance.week.core_three": 49,
+    "goal.params.strength": 31,
+    "goal.params.health": 14,
+    "goal.params.muscle": 20,
+    "goal.params.mobility": 12,
+    "week.coverage.patterns": 103,
+    "goal.params.fat_loss": 8
+  },
+  "counterexamples": {
+    "algorithmFailure": {
+      "index": 0,
+      "profile": {
+        "goal": "strength",
+        "level": "intermediate",
+        "trainingAgeWeeks": 5,
+        "daysPerWeek": 2,
+        "sessionMinutes": 89,
+        "equipment": [
+          "none",
+          "resistance-band",
+          "loop-band"
+        ],
+        "place": "home",
+        "constraints": {
+          "noJump": true,
+          "quiet": false,
+          "space": "mat"
+        },
+        "cautions": [
+          "other"
+        ],
+        "population": {
+          "kind": "postpartum",
+          "weeksSinceBirth": 48,
+          "delivery": "cesarean",
+          "cleared": false,
+          "readinessChecklistPassed": false,
+          "postnatalCheckDone": false
+        },
+        "screening": {
+          "parqAllNo": true,
+          "parqAnswers": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "knownCondition": false,
+          "knownCmrDisease": false,
+          "symptoms": false,
+          "activityStatus": "active",
+          "restingBp": "known_below_threshold",
+          "acuteIllness": false,
+          "completedAt": "2026-10-01T00:00:00.000Z",
+          "lastScreenedAt": "2026-10-01T00:00:00.000Z"
+        },
+        "preferences": {
+          "excludedExerciseIds": [],
+          "cannotDo": []
+        },
+        "birthYearMonth": "1991-06",
+        "asOfDate": "2026-10-15",
+        "locale": "zh"
+      },
+      "quality": {
+        "status": "unavailable",
+        "basis": "no_safe_candidates",
+        "issues": [
+          {
+            "code": "empty_plan",
+            "ruleId": "week.days.allocation",
+            "severity": "error",
+            "reason": "eligible_profile_has_no_templates"
+          }
+        ]
+      },
+      "proof": "independent_zero_candidate_proof",
+      "issues": [
+        {
+          "code": "empty_plan",
+          "ruleId": "week.days.allocation",
+          "severity": "error",
+          "reason": "eligible_profile_has_no_templates"
+        }
+      ]
+    },
+    "empty_plan": {
+      "index": 0,
+      "profile": {
+        "goal": "strength",
+        "level": "intermediate",
+        "trainingAgeWeeks": 5,
+        "daysPerWeek": 2,
+        "sessionMinutes": 89,
+        "equipment": [
+          "none",
+          "resistance-band",
+          "loop-band"
+        ],
+        "place": "home",
+        "constraints": {
+          "noJump": true,
+          "quiet": false,
+          "space": "mat"
+        },
+        "cautions": [
+          "other"
+        ],
+        "population": {
+          "kind": "postpartum",
+          "weeksSinceBirth": 48,
+          "delivery": "cesarean",
+          "cleared": false,
+          "readinessChecklistPassed": false,
+          "postnatalCheckDone": false
+        },
+        "screening": {
+          "parqAllNo": true,
+          "parqAnswers": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "knownCondition": false,
+          "knownCmrDisease": false,
+          "symptoms": false,
+          "activityStatus": "active",
+          "restingBp": "known_below_threshold",
+          "acuteIllness": false,
+          "completedAt": "2026-10-01T00:00:00.000Z",
+          "lastScreenedAt": "2026-10-01T00:00:00.000Z"
+        },
+        "preferences": {
+          "excludedExerciseIds": [],
+          "cannotDo": []
+        },
+        "birthYearMonth": "1991-06",
+        "asOfDate": "2026-10-15",
+        "locale": "zh"
+      },
+      "issue": {
+        "code": "empty_plan",
+        "ruleId": "week.days.allocation",
+        "severity": "error",
+        "reason": "eligible_profile_has_no_templates"
+      }
+    },
+    "duration_tolerance": {
+      "index": 1,
+      "profile": {
+        "goal": "muscle",
+        "level": "intermediate",
+        "trainingAgeWeeks": 6,
+        "daysPerWeek": 2,
+        "sessionMinutes": 28,
+        "equipment": [
+          "none"
+        ],
+        "place": "home",
+        "constraints": {
+          "noJump": true,
+          "quiet": false,
+          "space": "mat"
+        },
+        "cautions": [
+          "other"
+        ],
+        "population": {
+          "kind": "older_adult",
+          "fallsAnswers": [
+            true,
+            true,
+            false,
+            true
+          ],
+          "balanceCautious": false,
+          "walkingAid": false
+        },
+        "screening": {
+          "parqAllNo": true,
+          "parqAnswers": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "knownCondition": false,
+          "knownCmrDisease": false,
+          "symptoms": false,
+          "activityStatus": "inactive",
+          "restingBp": "known_below_threshold",
+          "acuteIllness": false,
+          "completedAt": "2026-10-01T00:00:00.000Z",
+          "lastScreenedAt": "2026-10-01T00:00:00.000Z"
+        },
+        "preferences": {
+          "excludedExerciseIds": [],
+          "cannotDo": [
+            "walking_carry"
+          ]
+        },
+        "birthYearMonth": "1956-06",
+        "asOfDate": "2026-10-15",
+        "locale": "zh"
+      },
+      "issue": {
+        "code": "duration_tolerance",
+        "ruleId": "duration.fit.tolerance",
+        "severity": "error",
+        "reason": "estimated_duration_outside_tolerance",
+        "templateId": "engine-e5e404a2-0"
+      }
+    },
+    "weekly_volume_floor": {
+      "index": 1,
+      "profile": {
+        "goal": "muscle",
+        "level": "intermediate",
+        "trainingAgeWeeks": 6,
+        "daysPerWeek": 2,
+        "sessionMinutes": 28,
+        "equipment": [
+          "none"
+        ],
+        "place": "home",
+        "constraints": {
+          "noJump": true,
+          "quiet": false,
+          "space": "mat"
+        },
+        "cautions": [
+          "other"
+        ],
+        "population": {
+          "kind": "older_adult",
+          "fallsAnswers": [
+            true,
+            true,
+            false,
+            true
+          ],
+          "balanceCautious": false,
+          "walkingAid": false
+        },
+        "screening": {
+          "parqAllNo": true,
+          "parqAnswers": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "knownCondition": false,
+          "knownCmrDisease": false,
+          "symptoms": false,
+          "activityStatus": "inactive",
+          "restingBp": "known_below_threshold",
+          "acuteIllness": false,
+          "completedAt": "2026-10-01T00:00:00.000Z",
+          "lastScreenedAt": "2026-10-01T00:00:00.000Z"
+        },
+        "preferences": {
+          "excludedExerciseIds": [],
+          "cannotDo": [
+            "walking_carry"
+          ]
+        },
+        "birthYearMonth": "1956-06",
+        "asOfDate": "2026-10-15",
+        "locale": "zh"
+      },
+      "issue": {
+        "code": "weekly_volume_floor",
+        "ruleId": "dose.sets_week.goal_matrix",
+        "severity": "error",
+        "reason": "chest:6<10"
+      }
+    },
+    "carry_ground_gap": {
+      "index": 1,
+      "profile": {
+        "goal": "muscle",
+        "level": "intermediate",
+        "trainingAgeWeeks": 6,
+        "daysPerWeek": 2,
+        "sessionMinutes": 28,
+        "equipment": [
+          "none"
+        ],
+        "place": "home",
+        "constraints": {
+          "noJump": true,
+          "quiet": false,
+          "space": "mat"
+        },
+        "cautions": [
+          "other"
+        ],
+        "population": {
+          "kind": "older_adult",
+          "fallsAnswers": [
+            true,
+            true,
+            false,
+            true
+          ],
+          "balanceCautious": false,
+          "walkingAid": false
+        },
+        "screening": {
+          "parqAllNo": true,
+          "parqAnswers": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "knownCondition": false,
+          "knownCmrDisease": false,
+          "symptoms": false,
+          "activityStatus": "inactive",
+          "restingBp": "known_below_threshold",
+          "acuteIllness": false,
+          "completedAt": "2026-10-01T00:00:00.000Z",
+          "lastScreenedAt": "2026-10-01T00:00:00.000Z"
+        },
+        "preferences": {
+          "excludedExerciseIds": [],
+          "cannotDo": [
+            "walking_carry"
+          ]
+        },
+        "birthYearMonth": "1956-06",
+        "asOfDate": "2026-10-15",
+        "locale": "zh"
+      },
+      "issue": {
+        "code": "carry_ground_gap",
+        "ruleId": "balance.week.carry_ground",
+        "severity": "error",
+        "reason": "no_actual_carry_or_ground_locomotion"
+      }
+    },
+    "balance_days": {
+      "index": 1,
+      "profile": {
+        "goal": "muscle",
+        "level": "intermediate",
+        "trainingAgeWeeks": 6,
+        "daysPerWeek": 2,
+        "sessionMinutes": 28,
+        "equipment": [
+          "none"
+        ],
+        "place": "home",
+        "constraints": {
+          "noJump": true,
+          "quiet": false,
+          "space": "mat"
+        },
+        "cautions": [
+          "other"
+        ],
+        "population": {
+          "kind": "older_adult",
+          "fallsAnswers": [
+            true,
+            true,
+            false,
+            true
+          ],
+          "balanceCautious": false,
+          "walkingAid": false
+        },
+        "screening": {
+          "parqAllNo": true,
+          "parqAnswers": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "knownCondition": false,
+          "knownCmrDisease": false,
+          "symptoms": false,
+          "activityStatus": "inactive",
+          "restingBp": "known_below_threshold",
+          "acuteIllness": false,
+          "completedAt": "2026-10-01T00:00:00.000Z",
+          "lastScreenedAt": "2026-10-01T00:00:00.000Z"
+        },
+        "preferences": {
+          "excludedExerciseIds": [],
+          "cannotDo": [
+            "walking_carry"
+          ]
+        },
+        "birthYearMonth": "1956-06",
+        "asOfDate": "2026-10-15",
+        "locale": "zh"
+      },
+      "issue": {
+        "code": "balance_days",
+        "ruleId": "older.template.balance_required",
+        "severity": "error",
+        "reason": "fewer_than_required_balance_days"
+      }
+    },
+    "pull_push_balance": {
+      "index": 5,
+      "profile": {
+        "goal": "muscle",
+        "level": "beginner",
+        "trainingAgeWeeks": 20,
+        "daysPerWeek": 3,
+        "sessionMinutes": 86,
+        "equipment": [
+          "none",
+          "dumbbell"
+        ],
+        "place": "home",
+        "constraints": {
+          "noJump": false,
+          "quiet": true,
+          "space": "medium"
+        },
+        "cautions": [
+          "knee",
+          "back",
+          "shoulder",
+          "wrist"
+        ],
+        "population": {
+          "kind": "pregnant",
+          "week": 8,
+          "providerCleared": true,
+          "contraindicationsConfirmedNone": true,
+          "lastScreenedWeek": 8
+        },
+        "screening": {
+          "parqAllNo": true,
+          "parqAnswers": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "knownCondition": false,
+          "knownCmrDisease": false,
+          "symptoms": false,
+          "activityStatus": "inactive",
+          "restingBp": "known_below_threshold",
+          "acuteIllness": false,
+          "completedAt": "2026-10-01T00:00:00.000Z",
+          "lastScreenedAt": "2026-10-01T00:00:00.000Z"
+        },
+        "preferences": {
+          "excludedExerciseIds": [],
+          "cannotDo": [
+            "kneeling"
+          ]
+        },
+        "birthYearMonth": "1991-06",
+        "asOfDate": "2026-10-15",
+        "locale": "zh"
+      },
+      "issue": {
+        "code": "pull_push_balance",
+        "ruleId": "balance.week.pull_push",
+        "severity": "warning",
+        "reason": "pull_push_ratio_outside_range"
+      }
+    },
+    "hinge_knee_balance": {
+      "index": 5,
+      "profile": {
+        "goal": "muscle",
+        "level": "beginner",
+        "trainingAgeWeeks": 20,
+        "daysPerWeek": 3,
+        "sessionMinutes": 86,
+        "equipment": [
+          "none",
+          "dumbbell"
+        ],
+        "place": "home",
+        "constraints": {
+          "noJump": false,
+          "quiet": true,
+          "space": "medium"
+        },
+        "cautions": [
+          "knee",
+          "back",
+          "shoulder",
+          "wrist"
+        ],
+        "population": {
+          "kind": "pregnant",
+          "week": 8,
+          "providerCleared": true,
+          "contraindicationsConfirmedNone": true,
+          "lastScreenedWeek": 8
+        },
+        "screening": {
+          "parqAllNo": true,
+          "parqAnswers": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "knownCondition": false,
+          "knownCmrDisease": false,
+          "symptoms": false,
+          "activityStatus": "inactive",
+          "restingBp": "known_below_threshold",
+          "acuteIllness": false,
+          "completedAt": "2026-10-01T00:00:00.000Z",
+          "lastScreenedAt": "2026-10-01T00:00:00.000Z"
+        },
+        "preferences": {
+          "excludedExerciseIds": [],
+          "cannotDo": [
+            "kneeling"
+          ]
+        },
+        "birthYearMonth": "1991-06",
+        "asOfDate": "2026-10-15",
+        "locale": "zh"
+      },
+      "issue": {
+        "code": "hinge_knee_balance",
+        "ruleId": "balance.week.hinge_knee",
+        "severity": "warning",
+        "reason": "hinge_knee_ratio_outside_range"
+      }
+    },
+    "core_gap": {
+      "index": 6,
+      "profile": {
+        "goal": "fat_loss",
+        "level": "intermediate",
+        "trainingAgeWeeks": 36,
+        "daysPerWeek": 5,
+        "sessionMinutes": 15,
+        "equipment": [
+          "none",
+          "resistance-band",
+          "loop-band"
+        ],
+        "place": "home",
+        "constraints": {
+          "noJump": false,
+          "quiet": false,
+          "space": "small"
+        },
+        "cautions": [
+          "shoulder",
+          "other"
+        ],
+        "population": {
+          "kind": "older_adult",
+          "fallsAnswers": [
+            true,
+            false,
+            true,
+            false
+          ],
+          "balanceCautious": false,
+          "walkingAid": false
+        },
+        "screening": {
+          "parqAllNo": true,
+          "parqAnswers": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "knownCondition": false,
+          "knownCmrDisease": false,
+          "symptoms": false,
+          "activityStatus": "inactive",
+          "restingBp": "known_below_threshold",
+          "acuteIllness": false,
+          "completedAt": "2026-10-01T00:00:00.000Z",
+          "lastScreenedAt": "2026-10-01T00:00:00.000Z"
+        },
+        "preferences": {
+          "excludedExerciseIds": [],
+          "cannotDo": [
+            "walking_carry",
+            "jumping",
+            "floor_work",
+            "overhead",
+            "kneeling"
+          ]
+        },
+        "birthYearMonth": "1956-06",
+        "asOfDate": "2026-10-15",
+        "locale": "zh"
+      },
+      "issue": {
+        "code": "core_gap",
+        "ruleId": "balance.week.core_three",
+        "severity": "error",
+        "reason": "anti_rotation"
+      }
+    },
+    "goal_frequency_min": {
+      "index": 15,
+      "profile": {
+        "goal": "strength",
+        "level": "intermediate",
+        "trainingAgeWeeks": 31,
+        "daysPerWeek": 2,
+        "sessionMinutes": 65,
+        "equipment": [
+          "none",
+          "resistance-band",
+          "loop-band"
+        ],
+        "place": "home",
+        "constraints": {
+          "noJump": false,
+          "quiet": true,
+          "space": "mat"
+        },
+        "cautions": [
+          "back"
+        ],
+        "population": {
+          "kind": "general"
+        },
+        "screening": {
+          "parqAllNo": true,
+          "parqAnswers": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "knownCondition": false,
+          "knownCmrDisease": false,
+          "symptoms": false,
+          "activityStatus": "inactive",
+          "restingBp": "known_below_threshold",
+          "acuteIllness": false,
+          "completedAt": "2026-10-01T00:00:00.000Z",
+          "lastScreenedAt": "2026-10-01T00:00:00.000Z"
+        },
+        "preferences": {
+          "excludedExerciseIds": [],
+          "cannotDo": []
+        },
+        "birthYearMonth": "1991-06",
+        "asOfDate": "2026-10-15",
+        "locale": "zh"
+      },
+      "issue": {
+        "code": "goal_frequency_min",
+        "ruleId": "goal.params.strength",
+        "severity": "error",
+        "reason": "rt_days:2<3"
+      }
+    },
+    "weekly_volume_cap": {
+      "index": 18,
+      "profile": {
+        "goal": "start_moving",
+        "level": "beginner",
+        "trainingAgeWeeks": 3,
+        "daysPerWeek": 5,
+        "sessionMinutes": 80,
+        "equipment": [
+          "none",
+          "dumbbell"
+        ],
+        "place": "home",
+        "constraints": {
+          "noJump": true,
+          "quiet": true,
+          "space": "mat"
+        },
+        "cautions": [
+          "knee",
+          "back",
+          "shoulder",
+          "wrist",
+          "other"
+        ],
+        "population": {
+          "kind": "general"
+        },
+        "screening": {
+          "parqAllNo": true,
+          "parqAnswers": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "knownCondition": false,
+          "knownCmrDisease": false,
+          "symptoms": false,
+          "activityStatus": "active",
+          "restingBp": "known_below_threshold",
+          "acuteIllness": false,
+          "completedAt": "2026-10-01T00:00:00.000Z",
+          "lastScreenedAt": "2026-10-01T00:00:00.000Z"
+        },
+        "preferences": {
+          "excludedExerciseIds": [],
+          "cannotDo": []
+        },
+        "birthYearMonth": "1991-06",
+        "asOfDate": "2026-10-15",
+        "locale": "zh"
+      },
+      "issue": {
+        "code": "weekly_volume_cap",
+        "ruleId": "dose.sets_week.goal_matrix",
+        "severity": "error",
+        "reason": "glutes:5>4"
+      }
+    },
+    "weekly_exposure_gap": {
+      "index": 127,
+      "profile": {
+        "goal": "health",
+        "level": "beginner",
+        "trainingAgeWeeks": 0,
+        "daysPerWeek": 5,
+        "sessionMinutes": 52,
+        "equipment": [
+          "none",
+          "resistance-band",
+          "loop-band"
+        ],
+        "place": "home",
+        "constraints": {
+          "noJump": true,
+          "quiet": false,
+          "space": "medium"
+        },
+        "cautions": [
+          "knee",
+          "back",
+          "shoulder",
+          "other"
+        ],
+        "population": {
+          "kind": "general"
+        },
+        "screening": {
+          "parqAllNo": true,
+          "parqAnswers": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "knownCondition": false,
+          "knownCmrDisease": false,
+          "symptoms": false,
+          "activityStatus": "active",
+          "restingBp": "known_below_threshold",
+          "acuteIllness": false,
+          "completedAt": "2026-10-01T00:00:00.000Z",
+          "lastScreenedAt": "2026-10-01T00:00:00.000Z"
+        },
+        "preferences": {
+          "excludedExerciseIds": [],
+          "cannotDo": [
+            "walking_carry",
+            "jumping",
+            "kneeling"
+          ]
+        },
+        "birthYearMonth": "1991-06",
+        "asOfDate": "2026-10-15",
+        "locale": "zh"
+      },
+      "issue": {
+        "code": "weekly_exposure_gap",
+        "ruleId": "week.coverage.patterns",
+        "severity": "error",
+        "reason": "hip_dominant"
+      }
+    },
+    "weekly_pattern_gap": {
+      "index": 137,
+      "profile": {
+        "goal": "strength",
+        "level": "intermediate",
+        "trainingAgeWeeks": 88,
+        "daysPerWeek": 4,
+        "sessionMinutes": 42,
+        "equipment": [
+          "none",
+          "resistance-band",
+          "loop-band"
+        ],
+        "place": "home",
+        "constraints": {
+          "noJump": false,
+          "quiet": false,
+          "space": "mat"
+        },
+        "cautions": [
+          "back",
+          "wrist",
+          "other"
+        ],
+        "population": {
+          "kind": "older_adult",
+          "fallsAnswers": [
+            true,
+            true,
+            true,
+            false
+          ],
+          "balanceCautious": true,
+          "walkingAid": false
+        },
+        "screening": {
+          "parqAllNo": true,
+          "parqAnswers": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "knownCondition": false,
+          "knownCmrDisease": false,
+          "symptoms": false,
+          "activityStatus": "inactive",
+          "restingBp": "known_below_threshold",
+          "acuteIllness": false,
+          "completedAt": "2026-10-01T00:00:00.000Z",
+          "lastScreenedAt": "2026-10-01T00:00:00.000Z"
+        },
+        "preferences": {
+          "excludedExerciseIds": [],
+          "cannotDo": [
+            "walking_carry",
+            "kneeling"
+          ]
+        },
+        "birthYearMonth": "1956-06",
+        "asOfDate": "2026-10-15",
+        "locale": "zh"
+      },
+      "issue": {
+        "code": "weekly_pattern_gap",
+        "ruleId": "week.coverage.patterns",
+        "severity": "error",
+        "reason": "hinge"
+      }
+    }
+  },
+  "unsafe": [],
+  "nondeterministic": [],
+  "performance": {
+    "environment": "Node CPU proxy; not a mid-range mobile device",
+    "p50Ms": 6.0538000000001375,
+    "p95Ms": 26.5625,
+    "maxMs": 126.17580000000089
+  },
+  "evidence": {
+    "coreCommit": "99104a5",
+    "rulesVersion": "2a46407eb3a1",
+    "classifierCommit": "9286917",
+    "synthetic": true,
+    "acceptance": "failed",
+    "knownClassifierLimitationsAtRun": [
+      "Soft warnings were incorrectly included in source hard-error proof. Corrected after this run.",
+      "Uncleared cesarean phase-one candidate proof used the broader phase-one source rule. Corrected after this run."
+    ],
+    "subsequentPainProjectionChangesNotMeasured": true,
+    "independentSafetyDimensionsNotCoveredAtRun": [
+      "Actual source-applicable warmup/cooldown minimums from safety.session.warmup_cooldown.",
+      "Medium-space quadruped positions without explicit floor-transition annotations."
+    ],
+    "independentDurationDimensionsNotCoveredAtRun": [
+      "Unequal grouped rounds: transitions only between stations with remaining actual sets."
+    ]
+  }
+}

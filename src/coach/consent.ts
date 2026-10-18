@@ -1,9 +1,10 @@
+import {engineHealthScope} from './engine-health';
 import { confirmationFor } from '../domain/request-fingerprint';
 import { coachRequestSchema, type CoachRequest } from './contracts';
 
 /** Optional sensitive fields are absent, not empty placeholders, until selected. */
-export function coachScope(request: CoachRequest, includeBody = false, includeHistory = false, includeNutrition = false): CoachRequest {
-  const { body, history, nutrition, ...required } = structuredClone(request);
+export function coachScope(request: CoachRequest, includeBody = false, includeHistory = false, includeNutrition = false, includeHealth = false): CoachRequest {
+  const { body, history, nutrition, ...required } = engineHealthScope(request,includeHealth);
   return coachRequestSchema.parse({ ...required, ...(includeBody && body ? { body } : {}), ...(includeHistory && history ? { history } : {}), ...(includeNutrition && nutrition ? {nutrition} : {}) });
 }
 /** Shared by the home disclosure and its explicitly authorized panel send. */

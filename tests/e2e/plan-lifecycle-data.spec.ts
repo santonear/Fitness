@@ -1,3 +1,4 @@
+import {BACKUP_VERSION,DATABASE_VERSION} from '../../src/domain/storage-version';
 import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 const source=JSON.parse(readFileSync(new URL('../fixtures/legacy-backups/pr52-before-plan-delete.json',import.meta.url),'utf8'));
@@ -13,10 +14,13 @@ for(const fail of [false,true])test(`DB10 lifecycle upgrade ${fail?'rolls back o
  const before=await snap(old),facts=await snap(old,['metadata']);old.close();const db=createDatabase(name);
  try{if(fail)db.metadata.hook('updating',()=>{throw Error('injected upgrade failure');});const rejected=await db.open().then(()=>false,()=>true);
  if(fail){db.close();const check=new Dexie(name);await check.open();const result={rejected,same:before===await snap(check),version:check.verno};check.close();return result;}
- const after=await snap(db);db.close();await db.open();return{rejected,same:facts===await snap(db,['metadata','v8PlanReferences']),version:db.verno,metadata:(await db.metadata.toCollection().first()).schemaVersion,empty:await db.v8PlanReferences.count()===0,idempotent:after===await snap(db)};
+ // Independently expect DB18's one-field addition; retain all other state and training facts.
+ const expectedFacts=JSON.parse(facts);
+ for(const row of expectedFacts.find(([name]:[string,unknown])=>name==='v8State')[1]){if(row.coachProfile?.place!=='home'||Object.hasOwn(row.coachProfile,'householdSupport'))throw Error('Expected legacy home fixture without a support answer');row.coachProfile.householdSupport=true;}
+ const after=await snap(db);db.close();await db.open();return{rejected,same:JSON.stringify(expectedFacts)===await snap(db,['metadata','v8PlanReferences']),version:db.verno,metadata:(await db.metadata.toCollection().first()).schemaVersion,empty:await db.v8PlanReferences.count()===0,idempotent:after===await snap(db)};
  }finally{db.close();await db.delete();}
  },{source,fail});
- expect(result).toEqual(fail?{rejected:true,same:true,version:10}:{rejected:false,same:true,version:15,metadata:15,empty:true,idempotent:true});
+ expect(result).toEqual(fail?{rejected:true,same:true,version:10}:{rejected:false,same:true,version:DATABASE_VERSION,metadata:DATABASE_VERSION,empty:true,idempotent:true});
 });
 
 test('real IndexedDB deletion backup, expiry cleanup and rollback preserve training and review',async({page})=>{
@@ -37,5 +41,5 @@ test('real IndexedDB deletion backup, expiry cleanup and rollback preserve train
  return{softRestored,failed,rolledBack,count,again,idempotent,envelope:cleaned.schemaVersion,plans:await db.v8Plans.count(),versions:await db.v8PlanVersions.count(),references:await db.v8PlanReferences.count(),sameWorkouts:before===JSON.stringify(await db.v8Workouts.toArray()),sameFacts:previous===JSON.stringify(await facts())};
  }finally{db.close();await db.delete();}
  },source);
- expect(result).toEqual({softRestored:true,failed:true,rolledBack:true,count:1,again:0,idempotent:true,envelope:13,plans:0,versions:0,references:1,sameWorkouts:true,sameFacts:true});
+ expect(result).toEqual({softRestored:true,failed:true,rolledBack:true,count:1,again:0,idempotent:true,envelope:BACKUP_VERSION,plans:0,versions:0,references:1,sameWorkouts:true,sameFacts:true});
 });

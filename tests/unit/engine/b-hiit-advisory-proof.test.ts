@@ -1,0 +1,259 @@
+import { describe, it, expect } from "vitest";
+import { runGates } from "../../../src/engine/gates";
+import { isHardEligible } from "../../../src/engine/candidates";
+import { engineProfileSchema } from "../../../src/engine/contracts";
+import { Rules } from "../../../src/engine/data";
+import { baseProfile } from "../../../tools/eval/training-engine-profiles";
+const r = new Rules();
+function profile() {
+  const p = baseProfile({ level: "intermediate" });
+  p.screening.activityEvidence = {
+    consecutiveRegularWeeks: 4,
+    noSymptomReportsWeeks: 4,
+  };
+  return p;
+}
+const unlocked = (p = profile()) =>
+  runGates(p, r).restrictions.user.hiit_unlocked;
+describe("source HIIT evidence and age45 advisory", () => {
+  it("locks missing evidence despite old training age and leaves input unchanged", () => {
+    const p = profile();
+    delete p.screening.activityEvidence;
+    p.trainingAgeWeeks = 100;
+    const before = structuredClone(p);
+    expect(unlocked(p)).toBe(false);
+    expect(p).toEqual(before);
+  });
+  it("requires both source week thresholds", () => {
+    const p = profile();
+    expect(unlocked(p)).toBe(true);
+    p.screening.activityEvidence!.consecutiveRegularWeeks = 3;
+    expect(unlocked(p)).toBe(false);
+    p.screening.activityEvidence = {
+      consecutiveRegularWeeks: 4,
+      noSymptomReportsWeeks: 3,
+    };
+    expect(unlocked(p)).toBe(false);
+  });
+  it("normalizes real vigorous clearance but rejects moderate clearance", () => {
+    const p = profile();
+    p.screening.knownCmrDisease = true;
+    p.screening.clearance = {
+      date: p.screening.completedAt!,
+      intensity: "vigorous",
+    };
+    expect(unlocked(p)).toBe(true);
+    p.screening.clearance.intensity = "moderate";
+    expect(unlocked(p)).toBe(false);
+  });
+  it("keeps inactive or symptomatic training locked", () => {
+    const p = profile();
+    p.screening.activityStatus = "inactive";
+    expect(unlocked(p)).toBe(false);
+    p.screening.activityStatus = "active";
+    p.screening.symptoms = true;
+    expect(unlocked(p)).toBe(false);
+  });
+  it("unconditionally locks pregnancy even with complete general evidence", () => {
+    const p = profile();
+    p.population = {
+      kind: "pregnant",
+      week: 20,
+      providerCleared: true,
+      prenatalCareConfirmed: true,
+      contraindicationsConfirmedNone: true,
+      lastScreenedWeek: 20,
+    };
+    expect(unlocked(p)).toBe(false);
+  });
+  it("requires age45 acknowledgement for rarely vigorous, without blocking moderate activity", () => {
+    const p = profile();
+    p.birthYearMonth = "1976-01";
+    p.screening.rarelyVigorous = true;
+    const g = runGates(p, r);
+    expect(g.status).not.toBe("blocked");
+    expect(g.restrictions.maxIntensity).toBeLessThanOrEqual(
+      r.get("aerobic.intensity.rpe_scale").moderate[1],
+    );
+    expect(unlocked(p)).toBe(false);
+    p.screening.age45AdvisoryAck = {
+      screenedAt: p.screening.completedAt!,
+      acknowledgedAt: "2026-10-02T00:00:00.000Z",
+    };
+    expect(unlocked(p)).toBe(true);
+  });
+  it("does not require acknowledgement when explicit active frequent-vigorous answer rules it out", () => {
+    const p = profile();
+    p.birthYearMonth = "1976-01";
+    p.screening.rarelyVigorous = false;
+    expect(unlocked(p)).toBe(true);
+  });
+  it("rejects stale, earlier, future acknowledgement and rescreen flags", () => {
+    const p = profile();
+    p.birthYearMonth = "1976-01";
+    p.screening.rarelyVigorous = true;
+    for (const ack of [
+      {
+        screenedAt: "2026-09-01T00:00:00.000Z",
+        acknowledgedAt: "2026-10-02T00:00:00.000Z",
+      },
+      {
+        screenedAt: p.screening.completedAt!,
+        acknowledgedAt: "2026-09-30T00:00:00.000Z",
+      },
+      {
+        screenedAt: p.screening.completedAt!,
+        acknowledgedAt: "2026-10-16T00:00:00.000Z",
+      },
+    ]) {
+      p.screening.age45AdvisoryAck = ack;
+      expect(unlocked(p)).toBe(false);
+    }
+    p.screening.age45AdvisoryAck = {
+      screenedAt: p.screening.completedAt!,
+      acknowledgedAt: "2026-10-02T00:00:00.000Z",
+    };
+    p.screening.rescreenRequired = true;
+    expect(unlocked(p)).toBe(false);
+  });
+  it("rejects malformed evidence rather than accepting invented fractional weeks", () => {
+    const p = profile();
+    p.screening.activityEvidence!.consecutiveRegularWeeks = 3.9;
+    expect(engineProfileSchema.safeParse(p).success).toBe(false);
+  });
+  it("filters explicitly HIIT candidates until gate evidence exists, preserving ordinary eligibility", () => {
+    const p = profile(),
+      e = r.data.exercises.find((e) =>
+        isHardEligible(e, p, runGates(p, r), { rules: r }),
+      )!,
+      hiit = { ...e, flags: [...e.flags, "hiit"] };
+    delete p.screening.activityEvidence;
+    let g = runGates(p, r);
+    expect(isHardEligible(e, p, g, { rules: r })).toBe(true);
+    expect(isHardEligible(hiit, p, g, { rules: r })).toBe(false);
+    p.screening.activityEvidence = {
+      consecutiveRegularWeeks: 4,
+      noSymptomReportsWeeks: 4,
+    };
+    g = runGates(p, r);
+    expect(isHardEligible(hiit, p, g, { rules: r })).toBe(true);
+  });
+});
+
+it("postpartum urgent pause blocks, regression lowers phase and excludes impact survives later population edits", () => {
+  const p = profile();
+  p.population = {
+    kind: "postpartum",
+    weeksSinceBirth: 30,
+    delivery: "vaginal",
+    cleared: true,
+    readinessChecklistPassed: true,
+  };
+  p.postpartumSafety = { urgentPaused: true };
+  expect(runGates(p, r).status).toBe("blocked");
+  p.postpartumSafety = { regressedPhase: 2 };
+  const g = runGates(p, r);
+  expect(g.restrictions.phase).toBe(2);
+  const e = r.data.exercises.find((e) =>
+    isHardEligible(e, p, g, { rules: r }),
+  )!;
+  expect(e).toBeDefined();
+  expect(isHardEligible({ ...e, impact: 1 }, p, g, { rules: r })).toBe(false);
+  expect(
+    isHardEligible({ ...e, flags: [...e.flags, "heavy_axial_load"] }, p, g, {
+      rules: r,
+    }),
+  ).toBe(false);
+  p.population = { kind: "general" };
+  p.postpartumSafety = { urgentPaused: true, regressedPhase: 1 };
+  expect(runGates(p, r).status).toBe("blocked");
+});
+
+it("postpartum remains HIIT locked because running readiness does not explicitly unlock HIIT", () => {
+  const p = profile();
+  p.population = {
+    kind: "postpartum",
+    weeksSinceBirth: 30,
+    delivery: "vaginal",
+    cleared: true,
+    readinessChecklistPassed: true,
+  };
+  expect(unlocked(p)).toBe(false);
+});
+it("unlocks inactive vigorous only at the source eight-week boundary with report evidence", () => {
+  const p = profile();
+  p.screening.activityStatus = "inactive";
+  p.trainingAgeWeeks = 100;
+  p.screening.activityEvidence = {
+    consecutiveRegularWeeks: 7,
+    noSymptomReportsWeeks: 8,
+  };
+  const moderate = r.get("aerobic.intensity.rpe_scale").moderate[1];
+  expect(runGates(p, r).restrictions.maxIntensity).toBeLessThanOrEqual(
+    moderate,
+  );
+  p.screening.activityEvidence.consecutiveRegularWeeks = 8;
+  expect(runGates(p, r).restrictions.maxIntensity).toBeGreaterThan(moderate);
+  p.screening.activityEvidence.noSymptomReportsWeeks = 0;
+  expect(runGates(p, r).restrictions.maxIntensity).toBeLessThanOrEqual(
+    moderate,
+  );
+});
+it("eight inactive weeks never bypass symptoms, age acknowledgement or clearance intensity", () => {
+  const p = profile();
+  p.screening.activityStatus = "inactive";
+  p.screening.activityEvidence = {
+    consecutiveRegularWeeks: 8,
+    noSymptomReportsWeeks: 8,
+  };
+  p.birthYearMonth = "1976-01";
+  const moderate = r.get("aerobic.intensity.rpe_scale").moderate[1];
+  expect(runGates(p, r).restrictions.maxIntensity).toBeLessThanOrEqual(
+    moderate,
+  );
+  p.screening.age45AdvisoryAck = {
+    screenedAt: p.screening.completedAt!,
+    acknowledgedAt: "2026-10-02T00:00:00.000Z",
+  };
+  expect(runGates(p, r).restrictions.maxIntensity).toBeGreaterThan(moderate);
+  p.screening.clearance = {
+    date: p.screening.completedAt!,
+    intensity: "moderate",
+  };
+  expect(runGates(p, r).restrictions.maxIntensity).toBeLessThanOrEqual(
+    moderate,
+  );
+  p.screening.clearance.intensity = "vigorous";
+  expect(runGates(p, r).restrictions.maxIntensity).toBeGreaterThan(moderate);
+  p.screening.symptoms = true;
+  expect(runGates(p, r).status).toBe("blocked");
+  expect(unlocked(p)).toBe(false);
+});
+it("eight inactive weeks preserve pregnancy intensity and postpartum HIIT locks", () => {
+  const p = profile();
+  p.screening.activityStatus = "inactive";
+  p.screening.activityEvidence = {
+    consecutiveRegularWeeks: 8,
+    noSymptomReportsWeeks: 8,
+  };
+  p.population = {
+    kind: "pregnant",
+    week: 20,
+    providerCleared: true,
+    prenatalCareConfirmed: true,
+    contraindicationsConfirmedNone: true,
+    lastScreenedWeek: 20,
+  };
+  expect(runGates(p, r).restrictions.maxIntensity).toBeLessThanOrEqual(
+    r.get("pregnancy.intensity").rpe_0_10.max,
+  );
+  expect(unlocked(p)).toBe(false);
+  p.population = {
+    kind: "postpartum",
+    weeksSinceBirth: 30,
+    delivery: "vaginal",
+    cleared: true,
+    readinessChecklistPassed: true,
+  };
+  expect(unlocked(p)).toBe(false);
+});

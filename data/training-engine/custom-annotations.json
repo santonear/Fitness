@@ -1,0 +1,3405 @@
+[
+  {
+    "id": "e309250b-5101-53ca-8b66-6a72adacff34",
+    "slug": "custom-standing-self-row",
+    "primary_pattern": "pull_horizontal",
+    "secondary_patterns": [],
+    "modality": "strength",
+    "laterality": "unilateral",
+    "nsca_class": "compound",
+    "plane": "sagittal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 0,
+      "back": 0,
+      "shoulder": 1,
+      "wrist": 1,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [],
+    "use": [
+      "main",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": [
+          8,
+          12
+        ],
+        "seconds": null,
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": [
+          8,
+          12
+        ],
+        "seconds": null,
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": 3.5,
+      "per_side": true
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false
+  },
+  {
+    "id": "2ae67103-c243-5bb3-88d5-72a626a3fb07",
+    "slug": "custom-kneeling-knuckle-push-up",
+    "primary_pattern": "push_horizontal",
+    "secondary_patterns": [],
+    "modality": "strength",
+    "laterality": "bilateral",
+    "nsca_class": "compound",
+    "plane": "sagittal",
+    "difficulty": 2,
+    "joint_load": {
+      "knee": 1,
+      "back": 0,
+      "shoulder": 1,
+      "wrist": 1,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "plank",
+      "kneeling"
+    ],
+    "flags": [
+      "kneeling_on_knee"
+    ],
+    "use": [
+      "main",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": [
+          8,
+          12
+        ],
+        "seconds": null,
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": [
+          8,
+          12
+        ],
+        "seconds": null,
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": 3.5,
+      "per_side": false
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": true
+  },
+  {
+    "id": "56a14f4c-839d-598a-8c37-8d52f01e17a8",
+    "slug": "custom-standing-self-row-hold",
+    "primary_pattern": "pull_horizontal",
+    "secondary_patterns": [],
+    "modality": "isometric",
+    "laterality": "unilateral",
+    "nsca_class": "compound",
+    "plane": "sagittal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 0,
+      "back": 0,
+      "shoulder": 1,
+      "wrist": 1,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [
+      "static_standing_hold"
+    ],
+    "use": [
+      "main",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": true
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false
+  },
+  {
+    "id": "e0951491-94bd-5e4b-8cdf-5abc67d9bee2",
+    "slug": "custom-standing-cross-press-brace",
+    "primary_pattern": "anti_rotation",
+    "secondary_patterns": [],
+    "modality": "strength",
+    "laterality": "bilateral",
+    "nsca_class": "compound",
+    "plane": "transverse",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 0,
+      "back": 0,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [],
+    "use": [
+      "main",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": [
+          8,
+          12
+        ],
+        "seconds": null,
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": [
+          8,
+          12
+        ],
+        "seconds": null,
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": 3.5,
+      "per_side": false
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false
+  },
+  {
+    "id": "e0b3a5bd-4c9d-5249-83e1-816ff305a08b",
+    "slug": "custom-band-self-anchored-row",
+    "primary_pattern": "pull_horizontal",
+    "secondary_patterns": [],
+    "modality": "strength",
+    "laterality": "unilateral",
+    "nsca_class": "compound",
+    "plane": "sagittal",
+    "difficulty": 2,
+    "joint_load": {
+      "knee": 0,
+      "back": 0,
+      "shoulder": 1,
+      "wrist": 1,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "seated"
+    ],
+    "flags": [],
+    "use": [
+      "main",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": [
+          8,
+          12
+        ],
+        "seconds": null,
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": [
+          8,
+          12
+        ],
+        "seconds": null,
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 15,
+      "s_per_rep": 3.5,
+      "per_side": true
+    },
+    "equipment_required": [
+      "resistance-band"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": true
+  },
+  {
+    "id": "7c1ac9d8-2327-56d0-8809-bedb89052062",
+    "slug": "custom-self-resisted-pulldown",
+    "primary_pattern": "pull_vertical",
+    "secondary_patterns": [],
+    "modality": "strength",
+    "laterality": "unilateral",
+    "nsca_class": "compound",
+    "plane": "sagittal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 0,
+      "back": 0,
+      "shoulder": 1,
+      "wrist": 1,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [],
+    "use": [
+      "main",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": [
+          8,
+          12
+        ],
+        "seconds": null,
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": [
+          8,
+          12
+        ],
+        "seconds": null,
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": 3.5,
+      "per_side": true
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false
+  },
+  {
+    "id": "5f49f6d0-7fc0-544a-844d-8f1f00d243cf",
+    "slug": "custom-self-resisted-pulldown-hold",
+    "primary_pattern": "pull_vertical",
+    "secondary_patterns": [],
+    "modality": "isometric",
+    "laterality": "unilateral",
+    "nsca_class": "compound",
+    "plane": "sagittal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 0,
+      "back": 0,
+      "shoulder": 1,
+      "wrist": 1,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [
+      "static_standing_hold"
+    ],
+    "use": [
+      "main",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": true
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false
+  },
+  {
+    "id": "9f7c1d5a-5f1e-598c-88fd-ef2a83a3a981",
+    "slug": "custom-band-high-pulldown",
+    "primary_pattern": "pull_vertical",
+    "secondary_patterns": [],
+    "modality": "strength",
+    "laterality": "bilateral",
+    "nsca_class": "compound",
+    "plane": "sagittal",
+    "difficulty": 2,
+    "joint_load": {
+      "knee": 0,
+      "back": 0,
+      "shoulder": 1,
+      "wrist": 1,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [],
+    "use": [
+      "main",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": [
+          8,
+          12
+        ],
+        "seconds": null,
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": [
+          8,
+          12
+        ],
+        "seconds": null,
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 15,
+      "s_per_rep": 3.5,
+      "per_side": false
+    },
+    "equipment_required": [
+      "resistance-band",
+      "anchor-point"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false
+  },
+  {
+    "id": "85b27729-fb5f-5406-8cb2-29306d951a60",
+    "slug": "custom-backpack-suitcase-walk",
+    "primary_pattern": "carry",
+    "secondary_patterns": [
+      "anti_lateral_flexion"
+    ],
+    "modality": "strength",
+    "laterality": "bilateral",
+    "nsca_class": "compound",
+    "plane": "sagittal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 0,
+      "back": 0,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "medium",
+    "position": [
+      "standing"
+    ],
+    "flags": [
+      "grip_intensive"
+    ],
+    "use": [
+      "conditioning",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 15,
+      "s_per_rep": null,
+      "per_side": false
+    },
+    "equipment_required": [
+      "backpack"
+    ],
+    "equipment_alternatives": {
+      "backpack": [
+        "dumbbell",
+        "kettlebell"
+      ]
+    },
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false
+  },
+  {
+    "id": "36cb78ba-060d-59f7-8f7a-ded946f7a052",
+    "slug": "custom-bottle-farmer-walk",
+    "primary_pattern": "carry",
+    "secondary_patterns": [
+      "anti_lateral_flexion"
+    ],
+    "modality": "strength",
+    "laterality": "bilateral",
+    "nsca_class": "compound",
+    "plane": "sagittal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 0,
+      "back": 0,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "medium",
+    "position": [
+      "standing"
+    ],
+    "flags": [
+      "grip_intensive"
+    ],
+    "use": [
+      "conditioning",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 15,
+      "s_per_rep": null,
+      "per_side": false
+    },
+    "equipment_required": [
+      "water-bottles"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false
+  },
+  {
+    "id": "6b35deb1-017a-5956-8d42-2cc52c465546",
+    "slug": "custom-wall-supported-shallow-stepback",
+    "primary_pattern": "lunge",
+    "secondary_patterns": [],
+    "modality": "strength",
+    "laterality": "unilateral",
+    "nsca_class": "compound",
+    "plane": "sagittal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 1,
+      "back": 0,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 1,
+      "ankle": 1
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [],
+    "use": [
+      "main",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": [
+          8,
+          12
+        ],
+        "seconds": null,
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": [
+          8,
+          12
+        ],
+        "seconds": null,
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 15,
+      "s_per_rep": 3.5,
+      "per_side": true
+    },
+    "equipment_required": [
+      "wall"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false
+  },
+  {
+    "id": "dc4bab89-e5e8-58dc-8315-f845cc62d5ac",
+    "slug": "custom-shallow-split-squat",
+    "primary_pattern": "lunge",
+    "secondary_patterns": [],
+    "modality": "strength",
+    "laterality": "unilateral",
+    "nsca_class": "compound",
+    "plane": "sagittal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 1,
+      "back": 0,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 1,
+      "ankle": 1
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [],
+    "use": [
+      "main",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": [
+          8,
+          12
+        ],
+        "seconds": null,
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": [
+          8,
+          12
+        ],
+        "seconds": null,
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": 3.5,
+      "per_side": true
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false
+  },
+  {
+    "id": "44e07d20-b451-59fe-8345-c6e5ea948643",
+    "slug": "custom-supported-low-step-up",
+    "primary_pattern": "lunge",
+    "secondary_patterns": [],
+    "modality": "strength",
+    "laterality": "bilateral",
+    "nsca_class": "compound",
+    "plane": "sagittal",
+    "difficulty": 2,
+    "joint_load": {
+      "knee": 1,
+      "back": 0,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 1,
+      "ankle": 1
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [],
+    "use": [
+      "main",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": [
+          8,
+          12
+        ],
+        "seconds": null,
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": [
+          8,
+          12
+        ],
+        "seconds": null,
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 15,
+      "s_per_rep": 3.5,
+      "per_side": false
+    },
+    "equipment_required": [
+      "box-or-step",
+      "chair"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false
+  },
+  {
+    "id": "4cfe1b0c-271a-5b9d-8635-7f87630ae44a",
+    "slug": "custom-chair-sit-to-stand",
+    "primary_pattern": "squat",
+    "secondary_patterns": [],
+    "modality": "strength",
+    "laterality": "bilateral",
+    "nsca_class": "compound",
+    "plane": "sagittal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 1,
+      "back": 0,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 1,
+      "ankle": 1
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "seated",
+      "standing"
+    ],
+    "flags": [],
+    "use": [
+      "main",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": [
+          8,
+          12
+        ],
+        "seconds": null,
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": [
+          8,
+          12
+        ],
+        "seconds": null,
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 15,
+      "s_per_rep": 3.5,
+      "per_side": false
+    },
+    "equipment_required": [
+      "chair"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false
+  },
+  {
+    "id": "76e886a9-6094-5673-8837-283f854121a6",
+    "slug": "custom-high-wall-sit",
+    "primary_pattern": "squat",
+    "secondary_patterns": [],
+    "modality": "isometric",
+    "laterality": "bilateral",
+    "nsca_class": "compound",
+    "plane": "sagittal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 1,
+      "back": 0,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 1,
+      "ankle": 1
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [
+      "static_standing_hold"
+    ],
+    "use": [
+      "main",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 15,
+      "s_per_rep": null,
+      "per_side": false
+    },
+    "equipment_required": [
+      "wall"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false
+  },
+  {
+    "id": "2949ad45-b236-5fee-8b81-ba8851cc0146",
+    "slug": "custom-standing-self-antirotation",
+    "primary_pattern": "anti_rotation",
+    "secondary_patterns": [],
+    "modality": "isometric",
+    "laterality": "unilateral",
+    "nsca_class": "compound",
+    "plane": "transverse",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 0,
+      "back": 0,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [
+      "static_standing_hold"
+    ],
+    "use": [
+      "main",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": true
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false
+  },
+  {
+    "id": "e0970209-6057-56dc-8193-06cf29e1a520",
+    "slug": "custom-wall-antirotation-press",
+    "primary_pattern": "anti_rotation",
+    "secondary_patterns": [],
+    "modality": "isometric",
+    "laterality": "bilateral",
+    "nsca_class": "compound",
+    "plane": "transverse",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 0,
+      "back": 0,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [
+      "static_standing_hold"
+    ],
+    "use": [
+      "main",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 15,
+      "s_per_rep": null,
+      "per_side": false
+    },
+    "equipment_required": [
+      "wall"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false
+  },
+  {
+    "id": "63dd8ff9-5994-5916-8fa6-3f347b3898b0",
+    "slug": "custom-kneeling-side-bridge",
+    "primary_pattern": "anti_lateral_flexion",
+    "secondary_patterns": [],
+    "modality": "isometric",
+    "laterality": "bilateral",
+    "nsca_class": "compound",
+    "plane": "frontal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 1,
+      "back": 0,
+      "shoulder": 1,
+      "wrist": 0,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "side_lying",
+      "kneeling"
+    ],
+    "flags": [
+      "kneeling_on_knee"
+    ],
+    "use": [
+      "main",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": false
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": true
+  },
+  {
+    "id": "bb96ec5f-31cc-5af0-832c-f9ac2d1b22d1",
+    "slug": "custom-standing-side-resistance-hold",
+    "primary_pattern": "anti_lateral_flexion",
+    "secondary_patterns": [],
+    "modality": "isometric",
+    "laterality": "unilateral",
+    "nsca_class": "compound",
+    "plane": "frontal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 0,
+      "back": 0,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [
+      "static_standing_hold"
+    ],
+    "use": [
+      "main",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": true
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false
+  },
+  {
+    "id": "b3469727-3bd6-5826-85f9-28d5efc1a2ca",
+    "slug": "custom-self-resisted-overhead-press",
+    "primary_pattern": "push_vertical",
+    "secondary_patterns": [],
+    "modality": "strength",
+    "laterality": "unilateral",
+    "nsca_class": "compound",
+    "plane": "sagittal",
+    "difficulty": 2,
+    "joint_load": {
+      "knee": 0,
+      "back": 0,
+      "shoulder": 1,
+      "wrist": 0,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [],
+    "use": [
+      "main",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": [
+          8,
+          12
+        ],
+        "seconds": null,
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": [
+          8,
+          12
+        ],
+        "seconds": null,
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": 3.5,
+      "per_side": true
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false
+  },
+  {
+    "id": "0941a9bd-2bb8-58a1-8ead-4431daba8952",
+    "slug": "custom-seated-self-overhead-press",
+    "primary_pattern": "push_vertical",
+    "secondary_patterns": [],
+    "modality": "strength",
+    "laterality": "unilateral",
+    "nsca_class": "compound",
+    "plane": "sagittal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 0,
+      "back": 0,
+      "shoulder": 1,
+      "wrist": 0,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "seated"
+    ],
+    "flags": [],
+    "use": [
+      "main",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": [
+          8,
+          12
+        ],
+        "seconds": null,
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": [
+          8,
+          12
+        ],
+        "seconds": null,
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": 3.5,
+      "per_side": true
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": true
+  },
+  {
+    "id": "56692b0e-64cb-5fe4-8a49-6d57c6ccc437",
+    "slug": "custom-forearm-wall-push",
+    "primary_pattern": "push_horizontal",
+    "secondary_patterns": [],
+    "modality": "strength",
+    "laterality": "bilateral",
+    "nsca_class": "compound",
+    "plane": "sagittal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 0,
+      "back": 0,
+      "shoulder": 1,
+      "wrist": 0,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [],
+    "use": [
+      "main",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": [
+          8,
+          12
+        ],
+        "seconds": null,
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": [
+          8,
+          12
+        ],
+        "seconds": null,
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 15,
+      "s_per_rep": 3.5,
+      "per_side": false
+    },
+    "equipment_required": [
+      "wall"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false
+  },
+  {
+    "id": "3488272c-79af-5b0e-8bd9-eb58e0fbc453",
+    "slug": "custom-self-resisted-chest-press",
+    "primary_pattern": "push_horizontal",
+    "secondary_patterns": [],
+    "modality": "strength",
+    "laterality": "unilateral",
+    "nsca_class": "compound",
+    "plane": "sagittal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 0,
+      "back": 0,
+      "shoulder": 1,
+      "wrist": 1,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [],
+    "use": [
+      "main",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": [
+          8,
+          12
+        ],
+        "seconds": null,
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": [
+          8,
+          12
+        ],
+        "seconds": null,
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": 3.5,
+      "per_side": true
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false
+  },
+  {
+    "id": "9ab4007b-4404-5576-8bed-9f0641cdbecf",
+    "slug": "custom-quiet-march",
+    "primary_pattern": "cardio_cyclic",
+    "secondary_patterns": [],
+    "modality": "cardio",
+    "laterality": "bilateral",
+    "nsca_class": "none",
+    "plane": "sagittal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 1,
+      "back": 0,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 0,
+      "ankle": 1
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [],
+    "use": [
+      "warmup",
+      "conditioning",
+      "cooldown"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": null,
+        "seconds": [
+          20,
+          60
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": null,
+        "seconds": [
+          20,
+          60
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": false
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false
+  },
+  {
+    "id": "e4e81141-14e6-5f72-8b8f-5e19e3cb709a",
+    "slug": "custom-step-jack",
+    "primary_pattern": "cardio_cyclic",
+    "secondary_patterns": [],
+    "modality": "cardio",
+    "laterality": "bilateral",
+    "nsca_class": "none",
+    "plane": "sagittal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 1,
+      "back": 0,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 0,
+      "ankle": 1
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [],
+    "use": [
+      "warmup",
+      "conditioning"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": null,
+        "seconds": [
+          20,
+          60
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": null,
+        "seconds": [
+          20,
+          60
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": false
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false
+  },
+  {
+    "id": "9f2b36bf-e604-5671-8113-573d74a04132",
+    "slug": "custom-quiet-shadow-boxing",
+    "primary_pattern": "cardio_cyclic",
+    "secondary_patterns": [],
+    "modality": "cardio",
+    "laterality": "bilateral",
+    "nsca_class": "none",
+    "plane": "sagittal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 1,
+      "back": 0,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 0,
+      "ankle": 1
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [],
+    "use": [
+      "warmup",
+      "conditioning"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": null,
+        "seconds": [
+          20,
+          60
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": null,
+        "seconds": [
+          20,
+          60
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": false
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false
+  },
+  {
+    "id": "bf4bc395-9395-57dd-8a5f-188ad063d783",
+    "slug": "custom-seated-march",
+    "primary_pattern": "cardio_cyclic",
+    "secondary_patterns": [],
+    "modality": "cardio",
+    "laterality": "bilateral",
+    "nsca_class": "none",
+    "plane": "sagittal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 1,
+      "back": 0,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 0,
+      "ankle": 1
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "seated"
+    ],
+    "flags": [],
+    "use": [
+      "warmup",
+      "conditioning"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": null,
+        "seconds": [
+          20,
+          60
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": null,
+        "seconds": [
+          20,
+          60
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 15,
+      "s_per_rep": null,
+      "per_side": false
+    },
+    "equipment_required": [
+      "chair"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false
+  },
+  {
+    "id": "b6a3104a-bb84-50d8-8721-14b2822bbb7c",
+    "slug": "custom-wall-supported-single-leg-stand",
+    "primary_pattern": "balance",
+    "secondary_patterns": [],
+    "modality": "isometric",
+    "laterality": "unilateral",
+    "nsca_class": "none",
+    "plane": "frontal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 1,
+      "back": 0,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 0,
+      "ankle": 1
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [
+      "static_standing_hold"
+    ],
+    "use": [
+      "warmup",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 15,
+      "s_per_rep": null,
+      "per_side": true
+    },
+    "equipment_required": [
+      "wall"
+    ],
+    "equipment_alternatives": {
+      "wall": [
+        "chair",
+        "counter"
+      ]
+    },
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending. v2 adjustment; source: user training-engine-v2-finish section 1.1. A stable chair back or sturdy table edge/counter may replace wall hand support throughout; this does not authorize load-bearing wall exercise substitutions.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false,
+    "supported_variant_available": true
+  },
+  {
+    "id": "ce553625-eca7-5c17-81fa-1999900a7e21",
+    "slug": "custom-supported-tandem-stand",
+    "primary_pattern": "balance",
+    "secondary_patterns": [],
+    "modality": "isometric",
+    "laterality": "bilateral",
+    "nsca_class": "none",
+    "plane": "frontal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 1,
+      "back": 0,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 0,
+      "ankle": 1
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [
+      "static_standing_hold"
+    ],
+    "use": [
+      "warmup",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 15,
+      "s_per_rep": null,
+      "per_side": false
+    },
+    "equipment_required": [
+      "wall"
+    ],
+    "equipment_alternatives": {
+      "wall": [
+        "chair",
+        "counter"
+      ]
+    },
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending. v2 adjustment; source: user training-engine-v2-finish section 1.1. A stable chair back or sturdy table edge/counter may replace wall hand support throughout; this does not authorize load-bearing wall exercise substitutions.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false,
+    "supported_variant_available": true
+  },
+  {
+    "id": "42a33bad-4563-5b3a-89f0-89d76f6a5383",
+    "slug": "custom-supported-heel-raise",
+    "primary_pattern": "balance",
+    "secondary_patterns": [],
+    "modality": "strength",
+    "laterality": "bilateral",
+    "nsca_class": "none",
+    "plane": "frontal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 1,
+      "back": 0,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 0,
+      "ankle": 1
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [],
+    "use": [
+      "warmup",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": [
+          8,
+          12
+        ],
+        "seconds": null,
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": [
+          8,
+          12
+        ],
+        "seconds": null,
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 15,
+      "s_per_rep": 3.5,
+      "per_side": false
+    },
+    "equipment_required": [
+      "wall"
+    ],
+    "equipment_alternatives": {
+      "wall": [
+        "chair",
+        "counter"
+      ]
+    },
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending. v2 adjustment; source: user training-engine-v2-finish section 1.1. A stable chair back or sturdy table edge/counter may replace wall hand support throughout; this does not authorize load-bearing wall exercise substitutions.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false,
+    "supported_variant_available": true
+  },
+  {
+    "id": "124e183e-1f04-5f06-8e2d-d4dadc9413d8",
+    "slug": "custom-wall-plank",
+    "primary_pattern": "anti_extension",
+    "secondary_patterns": [],
+    "modality": "isometric",
+    "laterality": "bilateral",
+    "nsca_class": "compound",
+    "plane": "sagittal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 0,
+      "back": 0,
+      "shoulder": 1,
+      "wrist": 0,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing",
+      "plank"
+    ],
+    "flags": [
+      "static_standing_hold"
+    ],
+    "use": [
+      "main",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 15,
+      "s_per_rep": null,
+      "per_side": false
+    },
+    "equipment_required": [
+      "wall"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false
+  },
+  {
+    "id": "3af7d9a0-edf4-5f27-8b2d-10066ef4b693",
+    "slug": "custom-standing-self-antileaning",
+    "primary_pattern": "anti_extension",
+    "secondary_patterns": [],
+    "modality": "isometric",
+    "laterality": "unilateral",
+    "nsca_class": "compound",
+    "plane": "sagittal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 0,
+      "back": 0,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [
+      "static_standing_hold"
+    ],
+    "use": [
+      "main",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": true
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false
+  },
+  {
+    "id": "b8f89f42-2607-557f-8e2f-4be56f0f65a7",
+    "slug": "custom-slow-bear-step",
+    "primary_pattern": "locomotion_ground",
+    "secondary_patterns": [],
+    "modality": "strength",
+    "laterality": "bilateral",
+    "nsca_class": "compound",
+    "plane": "sagittal",
+    "difficulty": 2,
+    "joint_load": {
+      "knee": 0,
+      "back": 1,
+      "shoulder": 1,
+      "wrist": 2,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "small",
+    "position": [
+      "plank"
+    ],
+    "flags": [
+      "wrist_extension_loaded"
+    ],
+    "use": [
+      "conditioning",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": false
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": true
+  },
+  {
+    "id": "28641172-b3f1-5895-8864-d2af61cbebfd",
+    "slug": "custom-forearm-ground-step",
+    "primary_pattern": "locomotion_ground",
+    "secondary_patterns": [],
+    "modality": "strength",
+    "laterality": "bilateral",
+    "nsca_class": "compound",
+    "plane": "sagittal",
+    "difficulty": 3,
+    "joint_load": {
+      "knee": 0,
+      "back": 1,
+      "shoulder": 1,
+      "wrist": 0,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "small",
+    "position": [
+      "plank"
+    ],
+    "flags": [],
+    "use": [
+      "conditioning",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": false
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": true
+  },
+  {
+    "id": "7308de98-c530-5da4-811f-71c9d5986e1b",
+    "slug": "custom-kneeling-forearm-crawl",
+    "primary_pattern": "locomotion_ground",
+    "secondary_patterns": [],
+    "modality": "strength",
+    "laterality": "bilateral",
+    "nsca_class": "compound",
+    "plane": "sagittal",
+    "difficulty": 2,
+    "joint_load": {
+      "knee": 1,
+      "back": 1,
+      "shoulder": 1,
+      "wrist": 0,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "small",
+    "position": [
+      "kneeling",
+      "plank"
+    ],
+    "flags": [
+      "kneeling_on_knee"
+    ],
+    "use": [
+      "conditioning",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": false
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": true
+  },
+  {
+    "id": "5e763766-ee3e-56b0-8b68-69bed38b8381",
+    "slug": "custom-wall-side-brace",
+    "primary_pattern": "anti_lateral_flexion",
+    "secondary_patterns": [],
+    "modality": "isometric",
+    "laterality": "bilateral",
+    "nsca_class": "compound",
+    "plane": "frontal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 0,
+      "back": 0,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [
+      "static_standing_hold"
+    ],
+    "use": [
+      "main",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 15,
+      "s_per_rep": null,
+      "per_side": false
+    },
+    "equipment_required": [
+      "wall"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false
+  },
+  {
+    "id": "3c19cd42-91c7-5443-882b-bc59ca264279",
+    "slug": "custom-seated-self-resisted-leg-curl",
+    "primary_pattern": "isolation_lower",
+    "secondary_patterns": [],
+    "modality": "isometric",
+    "laterality": "unilateral",
+    "nsca_class": "isolation",
+    "plane": "sagittal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 0,
+      "back": 0,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "seated"
+    ],
+    "flags": [],
+    "use": [
+      "main",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": true
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": true
+  },
+  {
+    "id": "10820d67-fcdf-529a-8206-48ef97954658",
+    "slug": "custom-standing-heel-drag-hold",
+    "primary_pattern": "isolation_lower",
+    "secondary_patterns": [],
+    "modality": "isometric",
+    "laterality": "bilateral",
+    "nsca_class": "isolation",
+    "plane": "sagittal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 0,
+      "back": 0,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [
+      "static_standing_hold"
+    ],
+    "use": [
+      "main",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": false
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original addition; coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false
+  },
+  {
+    "id": "894c5044-1af6-596e-8628-2fa8b7522f0f",
+    "slug": "custom-standing-upper-back-stretch",
+    "primary_pattern": "mobility",
+    "secondary_patterns": [],
+    "modality": "mobility",
+    "laterality": "bilateral",
+    "nsca_class": "none",
+    "plane": "multi",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 0,
+      "back": 1,
+      "shoulder": 1,
+      "wrist": 0,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [
+      "static_standing_hold"
+    ],
+    "use": [
+      "cooldown"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": false
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "high",
+    "review": false,
+    "stretch_hold_s": [
+      15,
+      30
+    ],
+    "note": "Approved source-backed standing variant; original bilingual paraphrase. Source: https://myhealth.alberta.ca/health/AfterCareInformation/pages/conditions.aspx?hwid=zp4447; section: Lower neck and upper back (rhomboid) stretch; source hold 15–30 s, 2–4 repetitions. Conservative joint_load is an engineering annotation, not a claim of zero load.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false
+  },
+  {
+    "id": "47562b7f-d0ad-54a9-8383-b83547a80282",
+    "slug": "custom-supported-wide-static-stand",
+    "primary_pattern": "balance",
+    "secondary_patterns": [],
+    "modality": "isometric",
+    "laterality": "bilateral",
+    "nsca_class": "none",
+    "plane": "frontal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 1,
+      "back": 0,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 0,
+      "ankle": 1
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [
+      "static_standing_hold"
+    ],
+    "use": [
+      "warmup",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": [
+          2,
+          3
+        ]
+      }
+    },
+    "time": {
+      "setup_s": 15,
+      "s_per_rep": null,
+      "per_side": false
+    },
+    "equipment_required": [
+      "wall"
+    ],
+    "equipment_alternatives": {
+      "wall": [
+        "chair",
+        "counter"
+      ]
+    },
+    "confidence": "medium",
+    "review": false,
+    "note": "Source older.balance.progression stage 1: wide stance, static, continuous hand support. Existing supported-balance dose retained; user-approved catalog addition.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false,
+    "supported_variant_available": true
+  },
+  {
+    "id": "83cb6674-515a-52cc-8ff4-b74c33f5da5a",
+    "slug": "custom-slow-walking-in-place",
+    "primary_pattern": "cardio_cyclic",
+    "secondary_patterns": [],
+    "modality": "cardio",
+    "laterality": "alternating",
+    "nsca_class": "none",
+    "plane": "sagittal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 1,
+      "back": 0,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 0,
+      "ankle": 1
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [
+      "low_intensity",
+      "postpartum_safe"
+    ],
+    "use": [
+      "conditioning",
+      "warmup",
+      "cooldown"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          1,
+          1
+        ],
+        "reps": null,
+        "seconds": [
+          300,
+          1200
+        ],
+        "rir": null
+      },
+      "intermediate": {
+        "sets": [
+          1,
+          1
+        ],
+        "reps": null,
+        "seconds": [
+          600,
+          1800
+        ],
+        "rir": null
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": false
+    },
+    "confidence": "high",
+    "review": true,
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false,
+    "note": "User-approved locomotion / low-intensity walking maps to existing cardio_cyclic; coach review pending. Optional wall/chair support is not required equipment. Only slow, low foot lift, natural unweighted arm swing: no high knees, fast or loaded variants. No intensity ladder; progression direction is walking only. default_dose, time and confidence copied unchanged from walking; existing aerobic intensity rules remain authoritative. ACOG references provide general postpartum background only, not specific endorsement for walking in place or uncleared cesarean exercise."
+  }
+]

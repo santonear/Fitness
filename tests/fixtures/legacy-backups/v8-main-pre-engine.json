@@ -1,0 +1,325 @@
+{
+  "format": "fitness-local",
+  "schemaVersion": 13,
+  "exportedAt": "2026-10-15T03:00:00.000Z",
+  "catalogVersion": 1,
+  "data": {
+    "assistantConversations": [],
+    "exerciseFavorites": [],
+    "metadata": {
+      "schemaVersion": 15,
+      "localProfileId": "c4d2e137-dba3-4bb9-8bed-3f177dbfec4b",
+      "catalogVersion": 1,
+      "revision": 8,
+      "dataRevision": 8,
+      "assistantScheduleRecoveryV2At": "2026-10-15T03:00:00.000Z"
+    },
+    "profiles": [
+      {
+        "id": "c4d2e137-dba3-4bb9-8bed-3f177dbfec4b",
+        "createdAt": "2026-10-15T03:00:00.000Z",
+        "updatedAt": "2026-10-15T03:00:00.000Z",
+        "revision": 2,
+        "bodyDetails": {
+          "values": {
+            "biologicalSex": "男性",
+            "age": 34,
+            "heightCm": 170,
+            "weightKg": 71,
+            "waistCm": 80
+          },
+          "source": "entered",
+          "updatedAt": "2026-10-15T03:00:00.000Z",
+          "confirmedAt": "2026-10-15T03:00:00.000Z",
+          "weightPromptAt": "2026-10-15T03:00:00.000Z"
+        },
+        "locale": "zh",
+        "timeZone": "Etc/GMT-8",
+        "units": "metric"
+      }
+    ],
+    "plans": [],
+    "planVersions": [],
+    "sessions": [],
+    "sets": [],
+    "scheduledWorkouts": [],
+    "bodyWeights": [
+      {
+        "id": "741dbffc-5a27-4287-8395-56653a51a6f2",
+        "createdAt": "2026-10-15T03:00:00.000Z",
+        "updatedAt": "2026-10-15T03:00:00.000Z",
+        "revision": 0,
+        "localDate": "2026-10-15",
+        "timeZone": "Etc/GMT-8",
+        "weightGrams": 70000
+      },
+      {
+        "id": "d3223112-8887-40fd-adfc-0e24f443a2f0",
+        "createdAt": "2026-10-15T03:00:00.000Z",
+        "updatedAt": "2026-10-15T03:00:00.000Z",
+        "revision": 0,
+        "localDate": "2026-10-15",
+        "timeZone": "Etc/GMT-8",
+        "weightGrams": 71000
+      }
+    ],
+    "trainingMemo": {
+      "schemaVersion": 1,
+      "revision": 2,
+      "updatedAt": "2026-10-15T03:00:00.000Z",
+      "sourceRevision": 8,
+      "sessions": []
+    },
+    "aiMemoryNotes": [
+      {
+        "id": "1ea9e416-8554-439a-917f-e1eec94d4fd0",
+        "createdAt": "2026-10-15T03:00:00.000Z",
+        "updatedAt": "2026-10-15T03:00:00.000Z",
+        "revision": 0,
+        "memoRevision": 0,
+        "generatorVersion": "assistant-v3.0.0",
+        "locale": "zh",
+        "suggestion": "",
+        "explanation": "",
+        "kind": "equipment",
+        "value": [
+          "none"
+        ]
+      }
+    ],
+    "timers": [],
+    "mediaAssets": [],
+    "guidedStates": [],
+    "v8": {
+      "state": {
+        "id": "v8",
+        "currentPlanId": "3d95c62e-0894-426e-8b7e-e9597e8d9110",
+        "migratedAt": "2026-10-15T03:00:00.000Z",
+        "legacyPlanIds": [],
+        "notice": {
+          "planCount": 0,
+          "acknowledged": true
+        },
+        "coachProfile": {
+          "goalText": "保持健康，规律训练",
+          "weeklyTarget": 2,
+          "sessionMinutes": 30,
+          "scheduleOriginalText": "每周2次，每次30分钟",
+          "place": "home",
+          "equipment": [
+            "none"
+          ],
+          "adultConfirmed": true,
+          "placeEquipmentOriginalText": "在家，只有瑜伽垫",
+          "cautions": [],
+          "confirmedAt": "2026-10-15T03:00:00.000Z"
+        }
+      },
+      "plans": [
+        {
+          "id": "3d95c62e-0894-426e-8b7e-e9597e8d9110",
+          "name": "保持健康，规律训练",
+          "currentVersionId": "c6e171f8-8d71-4f5d-9990-b940bedc984a",
+          "readOnly": false
+        }
+      ],
+      "planVersions": [
+        {
+          "id": "c6e171f8-8d71-4f5d-9990-b940bedc984a",
+          "planId": "3d95c62e-0894-426e-8b7e-e9597e8d9110",
+          "versionNumber": 1,
+          "goalText": "保持健康，规律训练",
+          "weeklyTarget": 2,
+          "scheduleOriginalText": "每周2次，每次30分钟",
+          "sessionMinutes": 30,
+          "templates": [
+            {
+              "id": "basic-0",
+              "name": "A",
+              "estimatedMinutes": 30,
+              "items": [
+                {
+                  "exerciseId": "d16325d9-fc00-4c41-88a1-000000000003",
+                  "equipment": "none",
+                  "sets": 4,
+                  "target": {
+                    "metricType": "reps",
+                    "reps": 8
+                  }
+                },
+                {
+                  "exerciseId": "aa2c5cf6-b759-5833-8e86-651e98fe8a28",
+                  "equipment": "none",
+                  "sets": 3,
+                  "target": {
+                    "metricType": "reps",
+                    "reps": 8
+                  }
+                },
+                {
+                  "exerciseId": "d16325d9-fc00-4c41-88a1-000000000005",
+                  "equipment": "none",
+                  "sets": 3,
+                  "target": {
+                    "metricType": "reps",
+                    "reps": 8
+                  }
+                },
+                {
+                  "exerciseId": "d655f4a4-f5f4-5cd4-8388-b1baed03a68a",
+                  "equipment": "none",
+                  "sets": 3,
+                  "target": {
+                    "metricType": "reps",
+                    "reps": 8
+                  }
+                }
+              ]
+            },
+            {
+              "id": "basic-1",
+              "name": "B",
+              "estimatedMinutes": 30,
+              "items": [
+                {
+                  "exerciseId": "aa2c5cf6-b759-5833-8e86-651e98fe8a28",
+                  "equipment": "none",
+                  "sets": 4,
+                  "target": {
+                    "metricType": "reps",
+                    "reps": 8
+                  }
+                },
+                {
+                  "exerciseId": "d16325d9-fc00-4c41-88a1-000000000005",
+                  "equipment": "none",
+                  "sets": 3,
+                  "target": {
+                    "metricType": "reps",
+                    "reps": 8
+                  }
+                },
+                {
+                  "exerciseId": "d16325d9-fc00-4c41-88a1-000000000004",
+                  "equipment": "none",
+                  "sets": 3,
+                  "target": {
+                    "metricType": "duration",
+                    "durationSeconds": 20
+                  }
+                },
+                {
+                  "exerciseId": "87247362-0cd9-5122-8ab5-f876180163de",
+                  "equipment": "none",
+                  "sets": 3,
+                  "target": {
+                    "metricType": "reps",
+                    "reps": 8
+                  }
+                }
+              ]
+            }
+          ],
+          "createdAt": "2026-10-15T03:00:00.000Z",
+          "origin": "onboard",
+          "changeSummary": [],
+          "source": "local"
+        }
+      ],
+      "workouts": [
+        {
+          "id": "9572447c-3a02-4ccd-a607-4f9c10be3b4a",
+          "planVersionId": "c6e171f8-8d71-4f5d-9990-b940bedc984a",
+          "templateId": "basic-0",
+          "startedAt": "2026-10-15T03:00:00.000Z",
+          "endedAt": "2026-10-15T03:00:00.000Z",
+          "localDate": "2026-10-15",
+          "timeZone": "Etc/GMT-8",
+          "status": "partial",
+          "sets": [
+            {
+              "exerciseId": "d16325d9-fc00-4c41-88a1-000000000003",
+              "itemIndex": 0,
+              "setIndex": 0,
+              "reps": 8,
+              "completedAt": "2026-10-15T03:00:00.000Z"
+            }
+          ],
+          "plannedSetCount": 13,
+          "templateSnapshot": {
+            "id": "basic-0",
+            "name": "A",
+            "estimatedMinutes": 30,
+            "items": [
+              {
+                "exerciseId": "d16325d9-fc00-4c41-88a1-000000000003",
+                "equipment": "none",
+                "sets": 4,
+                "target": {
+                  "metricType": "reps",
+                  "reps": 8
+                }
+              },
+              {
+                "exerciseId": "aa2c5cf6-b759-5833-8e86-651e98fe8a28",
+                "equipment": "none",
+                "sets": 3,
+                "target": {
+                  "metricType": "reps",
+                  "reps": 8
+                }
+              },
+              {
+                "exerciseId": "d16325d9-fc00-4c41-88a1-000000000005",
+                "equipment": "none",
+                "sets": 3,
+                "target": {
+                  "metricType": "reps",
+                  "reps": 8
+                }
+              },
+              {
+                "exerciseId": "d655f4a4-f5f4-5cd4-8388-b1baed03a68a",
+                "equipment": "none",
+                "sets": 3,
+                "target": {
+                  "metricType": "reps",
+                  "reps": 8
+                }
+              }
+            ]
+          },
+          "feedback": {
+            "reasons": []
+          },
+          "plannedExercises": [
+            {
+              "exerciseId": "d16325d9-fc00-4c41-88a1-000000000003",
+              "itemIndex": 0,
+              "plannedSetCount": 4
+            },
+            {
+              "exerciseId": "aa2c5cf6-b759-5833-8e86-651e98fe8a28",
+              "itemIndex": 1,
+              "plannedSetCount": 3
+            },
+            {
+              "exerciseId": "d16325d9-fc00-4c41-88a1-000000000005",
+              "itemIndex": 2,
+              "plannedSetCount": 3
+            },
+            {
+              "exerciseId": "d655f4a4-f5f4-5cd4-8388-b1baed03a68a",
+              "itemIndex": 3,
+              "plannedSetCount": 3
+            }
+          ]
+        }
+      ],
+      "activities": [],
+      "planReferences": []
+    },
+    "nutritionRecords": [],
+    "activityImportReceipts": []
+  }
+}

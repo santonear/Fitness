@@ -1,3 +1,4 @@
+import {assembleEngineIntent} from './engine-assemble';
 import {estimatedDurationLabel} from '../../i18n/features/plan/labels';
 import {diffTemplates} from '../../assistant/template-diff';
 import {sameExerciseFamily} from '../../catalog/exercise-family';
@@ -159,6 +160,7 @@ export function assembleAssistantIntent(raw:unknown,request:AssistantRequest):{a
  const parsed=typeof raw==='string'?JSON.parse(raw):raw;
  const value=parsed&&typeof parsed==='object'&&'intent'in parsed?parsed.intent:parsed;
  let intent=assistantIntentSchema.parse(value);
+ if(request.context?.trainingEngine)return assembleEngineIntent(intent,request);
  const context=request.context,candidates=applicableAssistantCandidates(request),dropped:string[]=[];
  if(!request.adultConfirmed||!context)return {attachment:null,dropped,repaired:false};
  const explicitReplacements=explicitExistingReplacements(request);

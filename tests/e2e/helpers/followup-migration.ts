@@ -13,6 +13,9 @@ export async function checkV8Upgrade(source: any, fail = false) {
  let rejected=false;try{await model.open();}catch{rejected=true;}
  if(fail){model.close();await old.open();const after=Object.fromEntries(await Promise.all(old.tables.map(async table=>[table.name,await table.toArray()])));const result={rejected,version:old.verno,unchanged:JSON.stringify(before)===JSON.stringify(after)};old.close();await Dexie.delete(name);return result;}
  const after=Object.fromEntries(await Promise.all(model.tables.filter(table=>table.name!=='metadata'&&!['nutritionRecords','activityImportReceipts'].includes(table.name)).map(async table=>[table.name,await table.toArray()])));
- const unchanged=Object.entries(after).every(([key,value])=>JSON.stringify(value)===JSON.stringify(before[key]));
+ // DB18 adds exactly one explicit support field for these known home fixtures.
+ const expected=structuredClone(before);
+ for(const row of expected.v8State as any[]){if(row.coachProfile?.place!=='home'||Object.hasOwn(row.coachProfile,'householdSupport'))throw Error('Expected legacy home fixture without a support answer');row.coachProfile.householdSupport=true;}
+ const unchanged=Object.entries(after).every(([key,value])=>JSON.stringify(value)===JSON.stringify(expected[key]));
  model.close();await model.open();const result={unchanged,version:model.verno,metadata:(await model.metadata.toCollection().first())?.schemaVersion,empty:await model.nutritionRecords.count()===0&&await model.activityImportReceipts.count()===0};model.close();await Dexie.delete(name);return result;
 }

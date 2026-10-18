@@ -6,6 +6,7 @@ import './plan.css';
 import guideZh from '../../../i18n/features/training/guide.zh.json';
 import guideEn from '../../../i18n/features/training/guide.en.json';
 import {EXERCISE_IDS} from '../../../catalog/exercise-ids';
+import {durationText} from '../../components/ExerciseTargets';
 
 export interface PlanPageProps {
   version: PlanVersion;
@@ -24,9 +25,10 @@ export function itemTarget(item: PlannedItem, language: PlanLanguage, hideDistan
   const t = planMessages[language], target = item.target;
   const value = target.metricType === 'reps_load' ? `${t.reps(target.reps)} · ${target.loadGrams>0?t.kg(target.loadGrams / 1000):(language==='zh'?guideZh:guideEn).chooseLoad}`
     : target.metricType === 'reps' ? t.reps(target.reps)
-    : target.metricType === 'duration' ? t.seconds(target.durationSeconds)
-    : `${t.seconds(target.durationSeconds)}${hideDistance||target.distanceMeters === undefined ? '' : ` · ${t.meters(target.distanceMeters)}`}`;
-  return `${t.sets(item.sets)} · ${value}`;
+    : target.metricType === 'duration' ? durationText(target.durationSeconds, language)
+    : `${durationText(target.durationSeconds, language)}${hideDistance||target.distanceMeters === undefined ? '' : ` · ${t.meters(target.distanceMeters)}`}`;
+  const relative=item.prescription?.safetyCue?` · ${item.prescription.loadDescription?.[language]??''} · ${item.prescription.safetyCue[language]}`:'';
+  return `${t.sets(item.sets)} · ${value}${relative}`;
 }
 
 export {templateLabel} from '../../../i18n/features/plan/labels';

@@ -1,0 +1,96 @@
+{
+  "profile": {
+    "goal": "health",
+    "level": "beginner",
+    "trainingAgeWeeks": 0,
+    "daysPerWeek": 3,
+    "sessionMinutes": 30,
+    "equipment": [
+      "none",
+      "dumbbell",
+      "resistance-band"
+    ],
+    "place": "home",
+    "constraints": {
+      "noJump": false,
+      "quiet": false,
+      "space": "small"
+    },
+    "cautions": [],
+    "population": {
+      "kind": "general"
+    },
+    "screening": {
+      "parqAllNo": true,
+      "knownCondition": false,
+      "symptoms": false,
+      "lastScreenedAt": "2026-10-15T03:00:00.000Z",
+      "completedAt": "2026-10-15T03:00:00.000Z",
+      "parqAnswers": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "activityStatus": "active",
+      "knownCmrDisease": false,
+      "acuteIllness": false,
+      "restingBp": "known_below_threshold"
+    },
+    "preferences": {
+      "excludedExerciseIds": [],
+      "cannotDo": []
+    },
+    "birthYearMonth": "1991-06",
+    "asOfDate": "2026-10-15",
+    "timeZone": "Asia/Shanghai",
+    "locale": "zh"
+  },
+  "issues": [
+    {
+      "code": "weekly_volume_floor",
+      "ruleId": "dose.sets_week.goal_matrix",
+      "severity": "error",
+      "reason": "chest:2<6"
+    },
+    {
+      "code": "weekly_volume_floor",
+      "ruleId": "dose.sets_week.goal_matrix",
+      "severity": "error",
+      "reason": "back:5.5<6"
+    },
+    {
+      "code": "weekly_volume_floor",
+      "ruleId": "dose.sets_week.goal_matrix",
+      "severity": "error",
+      "reason": "quads:5.5<6"
+    },
+    {
+      "code": "weekly_volume_floor",
+      "ruleId": "dose.sets_week.goal_matrix",
+      "severity": "error",
+      "reason": "hamstrings:2.5<6"
+    },
+    {
+      "code": "hinge_knee_balance",
+      "ruleId": "balance.week.hinge_knee",
+      "severity": "warning",
+      "reason": "hinge_knee_ratio_outside_range"
+    }
+  ],
+  "gates": [
+    {
+      "ruleId": "safety.scope.age_min",
+      "status": "pass",
+      "reason": "adult_age_supplied"
+    },
+    {
+      "ruleId": "safety.screen.parq",
+      "status": "pass",
+      "reason": "screening_explicitly_completed"
+    }
+  ]
+}

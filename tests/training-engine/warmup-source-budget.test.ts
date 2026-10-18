@@ -1,0 +1,50 @@
+import {expect,it} from 'vitest';
+import {generatePlan,validatePlan} from '../../src/engine';
+import {Rules} from '../../src/engine/data';
+import {actualWarmupSeconds} from '../../src/engine/fit/elapsed-time';
+import {ensureSafetyBlocks} from '../../src/engine/progression/legacy-blocks';
+import {prescribe} from '../../src/engine/dose';
+import {safety} from '../../src/engine/gates/strength-scoring';
+import {scorePlan} from '../../src/engine/score';
+import type {EngineProfile} from '../../src/engine/contracts';
+import type {PlannedItem,SessionTemplate} from '../../src/domain/v8/contracts';
+import {baseProfile} from '../../tools/eval/training-engine-profiles';
+import {actualBlockSeconds,independentSessionTimeIssues,independentWarmupAudit} from '../unit/engine/reference/training-engine-session-time';
+import {independentElapsedAllocation} from '../unit/engine/reference/training-engine-goal-share';
+const r=new Rules(),base=baseProfile({level:'intermediate',sessionMinutes:85,equipment:['none','dumbbell']}),shell=generatePlan(base);
+function item(slug:string,p:EngineProfile,block:NonNullable<PlannedItem['prescription']>['block'],seconds:number){const e=r.data.exercises.find(e=>e.slug===slug)!,i=prescribe(e,p,r,safety(p,r),block,1);i.target={metricType:'duration',durationSeconds:seconds};return i;}
+function wrapped(t:SessionTemplate,p:EngineProfile){const plan=structuredClone(shell);plan.sessionMinutes=p.sessionMinutes;plan.templates=[t];t.estimatedSeconds=independentElapsedAllocation(plan).total;t.estimatedMinutes=Math.ceil(t.estimatedSeconds/60);return plan;}
+function target(plan:ReturnType<typeof generatePlan>,p:EngineProfile,id:string){return scorePlan(plan,p,r).perRule.find(v=>v.id===id)!.satisfaction;}
+function aerobic(warmSeconds:number){const p=structuredClone(base),warm=item('custom-quiet-shadow-boxing',p,'warmup',warmSeconds-r.get('duration.set.overhead').overhead_s_per_set),conditioning=item('custom-step-jack',p,'conditioning',60),cold=item('custom-quiet-march',p,'cooldown',290);return {p,t:{id:'actual-aerobic',name:'actual source boundary',estimatedMinutes:85,items:[warm,conditioning,cold]} as SessionTemplate};}
+function resistance(minutes:number){const p={...base,sessionMinutes:minutes},tier=r.get('session.durations.allowed').minutes.filter((n:number)=>n<=minutes).at(-1),general=r.get('session.warmup.general').seconds_by_duration[String(tier)][0],warm=item('custom-quiet-shadow-boxing',p,'warmup',general),dynamic=item('pilates-roll-down',p,'warmup',r.get('session.warmup.dynamic').seconds[0]),main=prescribe(r.data.exercises.find(e=>e.slug==='dumbbell-front-squat')!,p,r,safety(p,r),'main',2);main.prescription!.sourcePosition='main_1';return {p,t:{id:'source-components',name:'general dynamic and main work',estimatedMinutes:minutes,items:[warm,dynamic,main,item('custom-step-jack',p,'conditioning',60),item('custom-quiet-march',p,'cooldown',290)]} as SessionTemplate};}
+it.each([85,90])('does not promote the %i-minute session warmup budget into a hard minimum',minutes=>{
+ const {p,t}=resistance(minutes),plan=wrapped(t,p),tier=r.get('session.durations.allowed').minutes.filter((n:number)=>n<=minutes).at(-1),row=r.get('duration.block.warmup_cooldown').by_session_min.filter((v:{session:number})=>v.session<=tier).at(-1),audit=independentWarmupAudit(t,p);
+ expect(audit.issues).toEqual([]);expect(audit.seconds).toBe(actualBlockSeconds(t,'warmup'));expect(audit.seconds).toBeLessThan(row.warmup*60);
+ expect(independentSessionTimeIssues(plan,p).filter(i=>i.code==='external_general_warmup_range'||i.code==='external_dynamic_warmup_range')).toEqual([]);expect(target(plan,p,'safety.session.warmup_cooldown')).toBeLessThan(1);expect(validatePlan(plan,p).some(i=>i.code==='safety_warmup_min')).toBe(false);
+});
+it.each([299,300])('scores the actual warmup boundary at %i seconds without restoring a hard floor',seconds=>{
+ const {p,t}=aerobic(seconds),plan=wrapped(t,p);expect(independentWarmupAudit(t,p).seconds).toBe(seconds);expect(independentSessionTimeIssues(plan,p).some(i=>i.code==='safety_warmup_duration')).toBe(seconds<r.get('safety.session.warmup_cooldown').warmup_min_minutes*60);expect(validatePlan(plan,p).some(i=>i.ruleId==='safety.session.warmup_cooldown')).toBe(false);const cold=actualBlockSeconds(t,'cooldown'),warm=independentWarmupAudit(t,p).seconds,v=r.get('safety.session.warmup_cooldown');expect(scorePlan(plan,p,r).perRule.find(v=>v.id==='safety.session.warmup_cooldown')!.satisfaction).toBeCloseTo((Math.min(1,warm/(v.warmup_min_minutes*60))+Math.min(1,cold/(v.cooldown_min_minutes*60)))/2);
+});
+it('penalizes inflated general and dynamic target components while rejecting an unrelated fake ramp',()=>{
+ const {p,t}=resistance(85),general=structuredClone(t);general.items[0].target={metricType:'duration',durationSeconds:600};expect(independentSessionTimeIssues(wrapped(general,p),p).some(i=>i.code==='external_general_warmup_range')).toBe(true);expect(validatePlan(wrapped(general,p),p).some(i=>i.ruleId==='session.warmup.general')).toBe(false);expect(target(wrapped(general,p),p,'session.warmup.general')).toBeLessThan(target(wrapped(t,p),p,'session.warmup.general'));
+ const dynamic=structuredClone(t);dynamic.items[1].target={metricType:'duration',durationSeconds:r.get('session.warmup.dynamic').seconds[1]+1};expect(independentSessionTimeIssues(wrapped(dynamic,p),p).some(i=>i.code==='external_dynamic_warmup_range')).toBe(true);expect(validatePlan(wrapped(dynamic,p),p).some(i=>i.ruleId==='session.warmup.dynamic')).toBe(false);expect(target(wrapped(dynamic,p),p,'session.warmup.dynamic')).toBeLessThan(target(wrapped(t,p),p,'session.warmup.dynamic'));
+ const fake=aerobic(299);fake.t.items[1].prescription!.warmupSeconds=r.get('duration.ramp.sets').first_loaded_compound.ramp_s;expect(independentWarmupAudit(fake.t,fake.p).seconds).toBe(299);expect(independentWarmupAudit(fake.t,fake.p).issues.some(i=>i.code==='external_ramp_source')).toBe(true);expect(independentSessionTimeIssues(wrapped(fake.t,fake.p),fake.p).some(i=>i.code==='safety_warmup_duration')).toBe(true);expect(validatePlan(wrapped(fake.t,fake.p),fake.p).some(i=>i.code==='unverified_ramp_time'&&i.ruleId==='duration.fit.bounds'&&i.severity==='error')).toBe(true);
+});
+it('replays the approved bodyweight one-set half-repetition source without pretending it is a loaded 180-second ramp',()=>{
+ const source=r.get('session.warmup.ramp_sets').bodyweight_main;expect(source.sets).toBe(1);expect(source.target_rep_fraction).toBe(0.5);
+ const {p,t}=aerobic(240),e=r.data.exercises.find(e=>e.slug==='bodyweight-squat')!,main=prescribe(e,p,r,safety(p,r),'main',2);main.target={metricType:'reps',reps:15};main.prescription!.sourcePosition='main_1';const seconds=source.sets*(Math.ceil(15*source.target_rep_fraction)*(main.prescription!.secondsPerRep??e.time.s_per_rep??r.get('duration.rep.seconds').default_if_unknown)*(e.time.per_side?r.get('session.time.model').per_side_multiplier:1)+r.get('duration.set.overhead').overhead_s_per_set);main.prescription!.warmupSeconds=seconds;t.items.push(main);
+ expect(independentWarmupAudit(t,p)).toEqual({seconds:240+seconds,issues:[]});const before=independentElapsedAllocation({templates:[t]}).total;main.prescription!.warmupSeconds=0;expect(before-independentElapsedAllocation({templates:[t]}).total).toBe(seconds);main.prescription!.warmupSeconds=180;expect(independentWarmupAudit(t,p).issues.some(i=>i.code==='external_ramp_source')).toBe(true);expect(independentWarmupAudit(t,p).seconds).toBe(240);
+});
+it.each(['bodyweight-squat','knee-push-ups'])('does not certify an accessory %s by a forged main_1 position alone',slug=>{
+ const {p,t}=aerobic(299),e=r.data.exercises.find(e=>e.slug===slug)!,fake=prescribe(e,p,r,safety(p,r),'accessory',2);fake.target={metricType:'reps',reps:10};fake.prescription!.sourcePosition='main_1';const model=r.get('session.warmup.ramp_sets').bodyweight_main;fake.prescription!.warmupSeconds=model.sets*(Math.ceil(10*model.target_rep_fraction)*(fake.prescription!.secondsPerRep??e.time.s_per_rep??r.get('duration.rep.seconds').default_if_unknown)+r.get('duration.set.overhead').overhead_s_per_set);t.items.push(fake);
+ expect(independentWarmupAudit(t,p).seconds).toBe(299);expect(independentWarmupAudit(t,p).issues.some(i=>i.code==='external_ramp_source')).toBe(true);expect(independentSessionTimeIssues(wrapped(t,p),p).some(i=>i.code==='safety_warmup_duration')).toBe(true);expect(validatePlan(wrapped(t,p),p).some(i=>i.code==='unverified_ramp_time'&&i.ruleId==='duration.fit.bounds'&&i.severity==='error')).toBe(true);
+});
+
+it.each([10,20])('fills an applicable %i-minute session to exactly five actual minutes without inflating source dynamics or ramps',minutes=>{
+ const {p,t}=resistance(minutes);t.items.shift();const before=structuredClone(t.items.filter(i=>r.byExercise.get(i.exerciseId)?.mobility_type==='dynamic')),work=t.items.filter(i=>['main','accessory'].includes(i.prescription?.block??''));
+ ensureSafetyBlocks(t,p,r,safety(p,r));expect(actualWarmupSeconds(t,p,r)).toBe(300);expect(independentWarmupAudit(t,p).seconds).toBe(300);expect(t.items.filter(i=>['main','accessory'].includes(i.prescription?.block??''))).toEqual(work);
+ expect(before).toHaveLength(1);expect(independentWarmupAudit(t,p).issues).toEqual([]);expect(independentSessionTimeIssues(wrapped(t,p),p).filter(i=>['safety_warmup_duration','external_general_warmup_range','external_dynamic_warmup_range'].includes(i.code))).toEqual([]);
+ const cardio=t.items.find(i=>i.prescription?.block==='warmup'&&r.byExercise.get(i.exerciseId)?.modality==='cardio')!;expect('durationSeconds'in cardio.target).toBe(true);
+ if('durationSeconds'in cardio.target){const total=cardio.target.durationSeconds;for(const delta of [-1,1]){cardio.target.durationSeconds=total+delta;expect(actualWarmupSeconds(t,p,r)).toBe(300+delta);expect(validatePlan(wrapped(t,p),p).some(i=>['safety.session.warmup_cooldown','session.warmup.general'].includes(i.ruleId))).toBe(false);}cardio.target.durationSeconds=total;}
+ ensureSafetyBlocks(t,p,r,safety(p,r));expect(actualWarmupSeconds(t,p,r)).toBe(300);
+});

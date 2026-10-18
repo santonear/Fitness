@@ -1,3 +1,4 @@
+import {BACKUP_VERSION,DATABASE_VERSION} from '../../src/domain/storage-version';
 import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 
@@ -9,7 +10,7 @@ for (const name of ['v5-plans-weight', 'v62-plans-weight', 'v71-plans-weight', '
       const path = '/tests/e2e/helpers/v8-migration-browser.ts';
       return (await import(/* @vite-ignore */ path)).verifyV8Migration(source);
     }, envelope);
-    expect(result).toEqual({ unchanged: true, idempotent: true, readOnly: true, schemaVersion: 15, envelopeVersion: 13,
+    expect(result).toEqual({ unchanged: true, idempotent: true, readOnly: true, schemaVersion: DATABASE_VERSION, envelopeVersion: BACKUP_VERSION,
       planCount: envelope.data.plans.filter((plan: { deletedAt?: string }) => !plan.deletedAt).length,
       noticeCount: envelope.data.plans.filter((plan: { deletedAt?: string }) => !plan.deletedAt).length,
       noticeCleared: true, historyCount: envelope.data.sessions.length, oldRestoreSame: true, roundTrip: true, reminderPreserved: true, restoreRejected: true, restoreRolledBack: true, invalidDurationsExcluded: true, notesPreserved: true });

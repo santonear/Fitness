@@ -245,3 +245,149 @@ RepDB官方证据：[数据许可证](https://github.com/RepDB/exercise-dataset/
 - 已批准话术：已完成的动作不能修改，请保留它们后再调整。／这次训练已变化，请重新生成建议。／资料或计划已变化，请重新查看建议。及等义英文。仅应用错误提示使用。
 - 第六轮补充：保留逐项身体资料同意与独立饮食开关，默认不发送；撤回饮食后不外发此前相关对话，但不删除本地聊天。对话仅新增可选 bodyFields、请求仅新增可选 nutrition，同一PR同步生产者和调用方。手动候选只预览、不提前写偏好，避免开始训练前版本失效。涉及 AssistantPanel.tsx、assistant/contracts.ts、assistant-conversations.ts、ManualPage.tsx。
 - 已批准保存失败提示：这次应用尚未确认，请重试。及等义英文。不自动重新调用模型。数据库15升级后不支持旧数据库14客户端直接降级；预览回滚采用关闭 aiAssistantV2，保留新客户端的本地建议和数据兼容。生产未修改。
+
+## 2026-10-15 训练引擎工程约定（待审，不改变来源阈值）
+
+- 情况：目标时间份额定义了本周总分钟分母，但没有定义跨类别共享休息和准备如何分摊。决定：按实际动作modality归类工作时间及其专属休息、准备和专项热身；跨类别共享开销暂不强行分摊，但仍计入总分母，使用明确上下界检查并提示不确定性。理由：不把估算归属冒充已知事实，也不排除暖冷以迁就比例。涉及：src/engine/duration.ts、planning.ts、validation.ts及独立评测工具。
+- 情况：轻有氧可能作为暖身／冷身。决定：只有实际处方为cardio才计入有氧时间份额；低于中等强度的不计中等强度当量，休息不自动当作MVPA。理由：时间份额与运动强度当量是两种不同统计。涉及：src/engine/duration.ts、validation.ts及独立评测工具。
+- 情况：规则正文与机器YAML的普通热身分钟表不一致。决定：按本任务明确指定的机器规则优先级使用YAML，正文差异原样保留并记录，不混表。理由：保持同一数值来源，不自行修改健康规则。涉及：data/training-engine/rules/rules-ch13.yaml、docs/training-engine/rulebook/ch13-duration.md。
+- 情况：已结束训练的4–5分反馈可能没有足够画像生成可靠替代。决定：追加单独review元数据完成明确自查，不伪造或接受历史替代处方；原动作在下一次适用范围内保守移除，未经确认不自动挑选替代。理由：结束不应造成自查死锁，完成事实仍只读。涉及：training-pain.ts、domain/schemas.ts、domain/v8/contracts.ts、engine/progression.ts及对应界面。
+- 已确认：用户批准18项危险信号问题、主动就医确认文案及撤回保存同意后保留原训练危险信号暂停的边界。唯一规范和规则文案已登记；这些批准不代表来源临床内容已经通过专业审核。
+- 已确认：疲劳自查独立本机临时保存，需本机健康资料同意，可跳过，不进备份或外发；10天后于下次打开或访问时清除。训练事实、原有历史字段及已应用调整保留。涉及：training-checkin.ts、db.ts、storage-version.ts、workflow和训练前控件。
+- 情况：来源要求动态热身及静态拉伸，但原标注未区分。决定：新增可选mobility_type，首批17项逐项核对已导入RepDB步骤并保存步骤SHA256和索引；未知不推断，源变化时编译失败并要求复核。理由：不凭动作名猜姿势，不用静态长保持冒充动态热身。涉及：mobility-annotations.json、compile-annotations.ts和引擎计时。
+- 情况：已授权的安静原地踏步仅标热身和体能，狭小空间冷身候选只剩拉伸。决定：为该已有动作补充cooldown用途，保持原器械、负担、空间和动作说明；仅可作为必要静态拉伸完成后的低强度剩余活动，不计MVPA，不替代拉伸。理由：来源并未限定低强度冷身只能走动，补齐真实候选而不是把当前候选缺口当作所有方案无解。涉及：custom-annotations.json、duration.ts。
+- 情况：合法疲劳减量被普通每周最低组数拦截。决定：默认校验不变；显式提供基线、历史和当前自查时重算来源操作，逐项处方必须完全一致，仅把基线原本合格、且实际按来源减量的肌群最低组数标为临时受限说明，其它硬错误保留。临时进阶／减量只投影至本次快照，不持久改写计划基线。理由：既不以任意标记豁免质量，也不把合法临时减量当普通计划。涉及：engine/index.ts、contracts.ts、workflow、engine-plan.ts及反例测试。
+- 已确认：每肌群约60秒拉伸为默认目标，短时按原文优先主项并使用合法剂量范围，目标不足保留说明；热身／冷身各5分钟和老年保持时间下限不放宽。理由：不把默认目标误作安全硬门槛。涉及：engine/duration.ts、planning.ts、validation.ts及正反例测试。
+- 已确认：训练前危险信号另存仅含时间的最小暂停标记，答案到期／撤回同意／关闭开关仍暂停；新完整筛查时间不得早于标记，并需主动就医确认。理由：限期清理原始答案同时防止绕过安全暂停。涉及：training-checkin.ts、workflow、schemas.ts、NextPage、Settings、Workout及备份测试。
+- 情况：新手临时减量原来固定作用于第一份训练单，实际选择其他训练单可能绕过。决定：nextTargets及重放校验上下文新增可选templateId，应用传入实际选择，旧调用默认行为保留；只投影本次，不改计划或历史。理由：同一来源规则对实际开始的训练生效。涉及：engine/contracts.ts、index.ts、progression.ts、v8-workflow.ts及独立回归。
+- 情况：来源允许超级组轮间休息60–90秒，但处方只能表示默认75秒。决定：新增可选roundRestSeconds，省略仍用75；仅真实超级组可用，同组一致且在源范围内，其他结构拒绝。生产者、核心计时、校验及独立评测同步；不降低其他动作休息下限。理由：表达既有来源剂量，不用显示时长替代实际处方。涉及：engine/contracts.ts、duration.ts、validation.ts及独立评测。
+- 情况：胸部拉伸仅有弹力带动作被核实，且既有doorway条目被按名称误标为需墙。决定：逐字核实已导入步骤后补充站姿与凳上胸部静态拉伸的明确目标和步骤哈希；站姿条目器械按原目录和实际步骤修为none，其余姿势、肩部负担和注意事项不改。理由：纠正已有数据错配，不凭名称或主肌群猜拉伸部位。涉及：mobility-annotations.json、annotations.json、compiled index和源步骤回归。
+- 用户已确认并实现：短时拉伸按前3个主项的明确主要肌群优先，将仅来自协同／辅助动作的未覆盖项保留为说明。来源的default与M1–M3优先未引用fractional训练组数信用；当前代码却将全部credit>0肌群设为必须覆盖。独立源核对与用户安全解释确认已完成；实际已安排拉伸的合法剂量和热身／冷身安全下限不变，主项不能由未知姿势冒充已覆盖。
+- 用户已批准：按 Alberta 官方 Healthy Upper Back: Exercises 来源新增站姿上背拉伸与原创中英指导，不复制图片。新增可选stretch_hold_s保留该动作15–30秒来源范围，与总体范围取交集；不改安全过滤与剂量规则。涉及：custom动作目录、动作标注编译器、引擎选择与剂量校验、对应回归测试。
+- 用户已批准：仅将cross-body-shoulder-stretch和doorway-chest-stretch的空间标注由small纠正为mat，按原步骤沿垫长边站立；不改其他空间事实、安全规则或剂量。涉及：annotations.json与生成索引、对应空间筛选正反测试。
+- 用户已批准：可选逐训练单targetMinutes统一表达来源独立柔韧日10–20分钟，力量日仍用用户原目标；缺失保留旧规则，原sessionMinutes和用户原话不变，普通日或伪造短目标不能绕过校验。涉及：SessionTemplate及engine/coach/backup schema、引擎逐日生成与校验、候选适配和界面时长显示、schema/备份/来源正反回归。本任务DB17/备份15尚未发布，新增字段随同一首次升级交付，旧备份仍由既有兼容路径恢复，不改历史事实。
+- 用户已批准：仅start_moving的新逐日目标按来源合法剂量和周目标安排，原80分钟保留为可用上限，不通过增组、拖休息或大量有氧填满；实际剂量、原上限和周占比仍严格校验，其他目标不变。涉及：逐日来源目标推导、生成/操作/独立验证、界面实际范围；不得事后将任意失败处方的时长直接写成目标来掩盖错误。
+- 情况：已由候选超集下界独立证明时长不可能满足的短循环，生成物仍可能混有可修复的占比错误。决定：只在已有时长证书且没有其他未证明硬错误时，尝试按来源短时拉伸及真实中等强度活动修复占比；最终全量校验仍保留真实超时及频率限制，不改用户时间和天数，不算质量通过。没有证书、其他安全/剂量/目录错误或修复失败时保留原结果。理由：不能让已证明的时间冲突掩盖算法错误，也不能把实际延长伪装成按时。涉及：certified-repair.ts、engine/index.ts、原独立dual-proof测试。
+- 情况：动态热身来源允许bodyPart或primaryMuscles匹配，编译数据漏了已有bodyPart。决定：从现有registry和custom目录读取可选字段，缺失保持未知，不从动作名／模式推断；消费端补全来源的OR分支。理由：完成原规则，不编造部位。涉及：compile-annotations.ts、engine/data.ts、planning.ts及逐项源数据回归。
+- 情况：减脂来源允许每周力量2–4次、默认3次，旧搜索遗漏较低合法分支。决定：先试默认，再有限尝试来源[min,max]尚未尝试的次数；总训练日不增加，每周剂量和时间份额仍全部校验。独立受控默认3次仍不合格，完整合法范围选择2次时实际逐项计时和全部独立硬检查通过。涉及：planning.ts和source-min-frequency.test.ts。
+- 情况：普通组残留超级组编号导致核心跳过第二项，独立计时多出303秒。决定：仅实际分组结构才按编号去重，普通组逐项计时；保留残留编号的数学回归，不清空测试输入来掩盖缺陷。真实重新生成后减脂用例独立通过。涉及：duration.ts和round-rest/source-min-frequency测试。此前只依赖核心校验的通过结论已撤回并更正。
+
+- 已确认：冷身按来源总上限及M1→M2→M3优先顺序选择合法拉伸，真实装不下时明确说明未覆盖；保留适用5分钟安全下限及全部剂量校验。涉及engine/duration.ts、validation.ts及独立反例测试；使用已有批准说明。
+
+- 用户已批准（2026-10-16）：热身默认预算不作为硬下限，一般／动态／专项内容分别依来源安排，适用的真实5分钟下限严格保留；同步纠正当前420秒默认预算测试，增加来源范围及299秒必拒反例，不延长一般热身凑时间。涉及duration.ts的safetyBlockMinimums／ensureSafetyBlocks、独立session-time验证及针对性测试；冷身上限与适用5分钟下限保持不变。实施与验证尚未完成，不记为验收通过。
+
+- 来源适用细节：没有力量主／辅项的纯有氧日仍按有氧安全规则安排真实低强度5分钟热身，不把力量课一般热身的默认档位误当成有氧安全上限；混合力量课分别核真实一般、动态和专项内容。理由：不能为遵守非适用的默认建议而截断已批准的安全下限，也不能将混合课改标签绕过组成检查。涉及duration.ts与独立session-time正反例；不新增健康阈值或用户话术。
+
+- 工程决定：新增可选goalRole区分力量目标最终主／辅身份与原模板sourcePosition、SS容器block，避免改变旧字段含义；来源允许每课1–2主项，其余必须真实辅助重处方，校验拒绝只改标签。理由：保留来源事实和现有容器语义。涉及engine/contracts.ts、planning.ts、duration.ts、validation.ts及独立测试。
+
+- 工程决定：start生成采用可由画像与来源重放的默认力量日结构，优先独立有氧日承担周有氧配额，避免新增持久分配字段及扩散调用上下文；校验核实际日类型／配额。逐日target依赖合法工作剂量而非固定10次默认值，非法源剂量独立拒绝。理由：支持真实合法调整及来源周目标，不把同课安全块开销伪作必需。涉及engine/duration.ts、planning.ts、validation.ts及独立工具。
+
+- 发布工程决定：引擎完整exercise-index.json由catalog:prepare／engine:prepare构建生成，沿用RepDB现有资源策略，不提交公开Git。当前本地开发历史包含该生成物，最终公开交付需从main创建仅含最终授权源码的干净提交，保留本地历史分支，不推送含索引的旧开发提交。理由：避免完整衍生数据作为公开数据集再分发；运行时应用内使用及署名保持。涉及.gitignore、compile-annotations.ts既有构建流程及最终PR交付。
+
+- 情况：start逐日目标的独立检查把普通冷身总上限当作必须填满的时长，产生21／22分钟误判；同一姿势的50、54、58秒剂量都可能合法，来源范围本身不决定生成器选哪一个。决定：独立检查有限重放既有确定性选择顺序（偏好剂量→合法最小值→从后压缩、既有ID排序），保留独立时间算术与全部来源硬检查，不直接相信实际冷身、估计时长或放宽目标容差。理由：验证工程确定性，不新增健康阈值或改变targetMinutes含义。涉及tools/eval/training-engine-start-target.ts及对应正反测试；实现完成前仍记为未修复。
+
+- 用户已批准（2026-10-16）：仅活动度目标中来源要求慢离心的按次数力量动作采用约3秒离心＋约1秒向心、不额外停顿，估时取固定节奏总时长与原目录估时的较大值；不按时长缺口调速度。有氧、静态支撑与拉伸不适用。涉及engine/dose、处方契约、独立计时和动作指导；实施及验证中，不记为完成。
+
+- 用户已批准（2026-10-16）：适用循环／中等强度短课安全优先，仅补足达到真实5分钟所需的低强度热身，普通默认范围不阻止安全补足；不得用它填满计划。超出用户可用时间仍报告受限，不记质量通过。涉及duration.ts一般热身组成、独立安全计时及短课正反例；实施及验证中，不记为完成。
+
+- 用户已批准（2026-10-16，本轮）：孕期安全排除优先于`session.cooldown.stretch`默认安排；确实无安全拉伸候选时披露未覆盖，不伪造覆盖，真实5分钟下限及合法剂量保持。已批准对应中文说明及等义英文。涉及duration、validation、index、rules-engine-ui与独立cooldown重算；新正反例通过，完整验证进行中。
+- 用户已批准（2026-10-16，本轮）：仅health／每周2天／每次20分钟、其他硬检查全部通过时，把来源默认占比的真实偏差明确报告为limited而非ready；不作全局不可行证明，原比例数值不改。涉及validation公共边界、planning内部严格拟合、index及独立goal-share／quality验收；不扩展到其他目标或时间。旧实际超时、剂量不足和安全负例不变。
+- 用户已批准（2026-10-16，本轮）：受限短课草案的定量说明及等义英文：“本次实际安排：抗阻 {resistance}%、有氧 {aerobic}%。默认目标是两者各占45%–55%，这份短课尚未达到该占比。”仅显示真实计算，不增加健康建议。待当前固定种子验证结束后写入copy与notice，避免测试中变更源码。
+
+- 用户已批准（2026-10-16）：完整2,000画像暴露共因后，按契约／热身、错误类别和最小反例分组修复；不逐画像试错、不放宽门槛、不动生产。完整批次仅在共因修复后重跑。
+
+- 实施决定（2026-10-16，共因修复）：老年画像可用天数低于来源强制平衡训练天数时，新草案提前返回unavailable/source_constraint和明确balance_days硬错误，不增加用户训练日，不构造其他未达标工作单；旧计划与历史不修改。理由是可用天数本身构成严格上界，不是启发式生成失败的借口。涉及selection、planning、validation、index及required-balance-frequency正反测试；独立验收继续用来源频率证明，并保留3天可满足反例。
+
+- 保守实施决定（2026-10-16，共因验证）：只有原受限模式的安全强度上限已迫使全部合法组的有效计量为零、且来源每周下限为正时，新草案提前明确不可用；不提高强度、不降低每周下限、不改写既有计划或历史。独立校验从原始筛查和规则重证，不接受正常强度画像伪造该结果。未扩大到无法独立重建的就医确认、已知疾病分支或产后第一阶段。文件：selection、planning、validation、index、独立quality及required-credited-volume测试。
+- 保守实施决定（2026-10-16，全局预算证明）：新来源剂量“先动起来”流程中，若原中等有氧周下限大于“原有氧占比上限×全部工作单实际时长上界”，则明确不可用，不降低任一要求。先修复生产／独立连续有氧每侧计时，再从原始数值独立重证；健康阻断、未成年、产后第一阶段、旧无来源目标及无法证明的分类不借用证书。不将某个固定槽布局失败标为全局无解。涉及selection、planning、validation、index、独立quality及新证书正反测试；旧计划和历史保留。
+- 保守实施决定（2026-10-16，共因）：已确认的新“先动起来”力量日策略触发负重行走／地面移动义务、且完整硬筛选池为空时，新草案带来源范围明确不可用；普通目标与旧计划规则不扩大。独立检查采用原始分配与安全候选超集，保留单力量日、仍有软窗口外安全候选、未成年及伪范围反例。文件：selection、planning、validation、quality、new-start-carry-pool-proof测试。
+- 实施决定（2026-10-16，共因）：周训练量修剪后的既有力量动作允许重新核对合法剂量余量；只增加来源允许的组数／次数／静态保持，完整校验实际时长、周与单次上限，不能增加占比偏差，不靠拉长休息凑时长。不新增健康建议，不修改完成事实。文件：refill、planning、post-trim-resistance-refill测试。46画像只证明合法局部改善，不宣称全部通过。
+- 用户V2重置（2026-10-16，优先于上方旧证明/受限规划决定）：使用附件完整351条分级及9组override；停止逐画像proof/refill/certification路线，按唯一计划(a)–(f)推进。附件已明确授权数值、范围和验收变化，不重问。分级源SHA256=17572b23368f48d8965e25dd5e6ebc97d958a2c561ff1dcece78dd57a7e9a21c。只使用training-engine集成工作区，旧L1–L5保留不删除。V1未提交改动先私有存档；数据、健康同意、疼痛/反馈/备份集成继续复用。当前只完成(a)数据接入，不声称旧规划已符合V2。
+
+- V2并行确认（2026-10-16）：用户已确认P0按接口/夹具/类型/lint门禁，M1–M2阶段指标，M3起全量通过；完整硬候选池为空时单列环境受限，不算健康阻断/质量通过。原孕产与空间硬约束不变，新说明已登记copy+分级，完整源原351条保持。工作线从同一P0本地提交建新临时工作树；旧l1–l5/baseline不使用不删除。
+- V2共享接口增补（2026-10-16）：DayPlan新增可选sourceDayRuleId，保留原始日模板来源以展开from_pos槽位；不改变kind含义，不加入业务逻辑。涉及src/engine/contracts.ts；由统筹统一维护。
+- V2用户确认（2026-10-16）：完整必需balance类型硬候选池真空可保留环境受限安全草案；原hard缺项及其他错误保留、独立重证、不可应用、不标质量通过。新增可选environmentConstraints与environment_constraint basis；两组提示中英按用户原文登记。墙/椅/桌只说明支撑场景，目录未授权的器械替代不自动推定。涉及contracts/pipeline、E独立评测及F展示入口。
+- V2测试迁移（2026-10-16）：P0占位score恒0断言改为真实perRule加权公式精确重算；unknown exercise由占位excluded_exercise改为明确unknown_exercise+sourceRuleId断言。保留确定性、契约、未知动作拒绝和环境伪造反例，不以旧占位值限制真实实现。
+
+
+### 2026-10-16：训练引擎V2收尾已确认规则
+- 情况：用户新收尾指令覆盖上一轮“环境草案不允许应用”。决定：增加显式environmentLimited状态，重新证明环境原因后可应用；其他硬失败仍拒绝。理由：本轮正式授权且保留原始未满足事实。涉及文件：engine/environment、pipeline、contracts及应用／界面适配。
+- 情况：已有画像无householdSupport字段。决定：按来源mechanic中场所默认值投影；显式false不被覆盖，也不删除用户明确拥有的器械。理由：兼容旧备份且不混淆空间和支撑物。涉及文件：engine/equipment、engine-profile、db迁移、备份。
+- 情况：用户要求按本周时间模型计算可行训练量；全目录组合最优不等于参考容量表。决定：明确使用来源直组槽位的共同配额路径，按共用实际计时及(组数−1)次休息计算该路径可完成前缀，未知肌群保留旧下限；参考表只选档位。理由：不把单一见证冒充全局最大、不把同一总组数重复分给所有肌群、不用未知零值制造满分；评分原上限和权重不变。初版按参考成本较大者和表格组数截断的做法经审查撤回，不能用虚高估时压低下限。涉及文件：engine/dose、score及手册第5章。此工程模型限定待审，不增加健康阈值。
+# 2026-10-17 收尾待决：爆发力百分比规则
+
+- 情况：手册第5章 `dose.load.pct_1rm` 只在已知1RM时提供百分比参考，`dose.power` 允许“30–70% 1RM（或自重）”；机器硬规则仅有 `load_pct_1rm:[30,70]`，未表达自重分支及未知1RM的处理。
+- 决定：尚未决定，按用户“硬性规则规格有问题时停止”暂停第2项。不把RIR、器械重量或体重冒充1RM证据，不将覆盖标记改为true。
+- 建议：明确自重分支；负重爆发动作仅在有可靠的该动作1RM估值时校验30–70%，缺证据不安排该负重爆发动作，改选合法非爆发动作。是否采用等待用户裁定。
+- 理由：避免自行扩大健康规则或伪造负荷依据；不要求用户自行测试最大重量。
+- 涉及文件：`data/training-engine/rules/rules-ch05.yaml`、`src/engine/contracts.ts`、`src/engine/candidates.ts`、`src/engine/hard-checks.ts`、资料输入与规则测试（均未就此项修改）。
+
+## 2026-10-17：上述power待决已获裁定；新增HIIT来源冲突
+
+- power已按用户三分支裁定实施，不采用先前建议的未知1RM一律排除；专项测试7/7通过，完整安全覆盖仍未通过。
+- 待决情况：hiit.gate.unlock要求pregnant:false；pregnancy.hiit明确允许孕前规律高强度且医护批准后解锁短间歇。
+- 决定：暂停第2项，请用户确认一般禁令绝对优先，或孕期专项模块覆盖一般孕期排除；没有擅自开放。
+- 涉及文件：data/training-engine/rules/rules-ch08.yaml、rules-ch11.yaml、src/engine/gates.ts。
+
+
+### 2026-10-17 安全收尾已决与保守实施
+- 已决：power三个分支、孕期HIIT延期、阶段1扶稳宽站静态站立均获用户批准；此前对应待决项以本条和唯一规范同日增补为准。
+- 情况：柔韧日来源平衡槽被统一成拉伸角色。决定：保留balance角色与不可省略语义。理由：已有必需平衡规则，禁止拉伸冒充。文件：skeleton.ts、older-mobility-balance-slot.test.ts。
+- 情况：新CMR9项来源筛查使旧合成正对照阻断。决定：只补明确健康正对照的九项显式否，缺项/旧资料仍保持未知。理由：不能由旧聚合勾选推断用户答案。文件：相关tests/unit夹具。
+- 情况：撤回同意后仍需防危险暂停绕过。决定：保留已批准最小暂停时间和已应用调整，清问答证明；不新增保留孕期身份的隐私例外。理由：既有隐私边界。文件：v8-workflow.ts、postpartum-referral-birth.test.ts。
+- 情况：疼痛复查阳性需本次及下次排除。决定：临时回答10天到期，独立调整只保存模式/来源训练/应用时间/注意等级增量；同源动作重复保存幂等。理由：既有“答案到期不撤销已应用调整”授权。文件：pain-followup.ts、training-checkin.ts、engine-profile.ts、schemas.ts。
+- 尚未宣称完成：其余9个关节替换cue仅保留源标识；无登记文案不自编芽芽建议。硬覆盖、全量测试、行数、性能、预览仍待完整验收。
+
+- 已决（2026-10-17）：用户明确自动幅度10–15度/箱高一档路径延期；原caution.progression mechanic+deferred，严格负荷/阶梯另立caution.progression_gate hard。取消注意须用户设置主动操作+当次红旗负筛。后续缺数据的放宽路径按同原则直接延期记录，不再重复询问。
+
+### 2026-10-17 孕产路由与通用健康门禁（按已批准的更严格优先原则）
+- 情况：safety.screen.pregnancy_route 写有跳过通用 clearance.matrix，而通用矩阵对已知心代谢疾病且不活动者要求真实医护许可；直接跳过会放开已有阻断。
+- 决定：本版保留更严格的通用许可与实际症状阻断，同时照常要求孕产专项许可，不把专项许可推断为心代谢疾病许可；不新增自我声明放行。
+- 理由：按用户批准的专项/通用冲突取更严格方，不以未核实的许可数据放宽安全。此冲突在最终 PR 的“规格冲突与裁定”披露，不冒充 skip 分支已实现。
+- 涉及文件：src/engine/gates.ts（保留现有严格门禁）、docs/training-engine/hard-rule-coverage.md、最终PR说明。
+
+### 2026-10-17 第2周第三课证据不足（既定原则直接执行）
+- 情况：生成器本已保守只排两次，公开校验却允许未知首周完成与DOMS事实时出现第三次。
+- 决定：YAML仅第三课放行支路标deferred，父级progression.new.week_caps保持hard；公开校验同步按已实现两次上限，不以自我声明推断历史。
+- 理由：按用户批准的缺数据/猜测才能放宽则延期原则，仍可获得两次安全训练，不删除历史。
+- 涉及文件：rules-ch07.yaml、src/engine/hard-checks.ts、手册第7章、硬规则覆盖清单及专测；最终PR“规格冲突与裁定”。
+
+### 2026-10-17 已解决：产后早期步行与邻日去重冲突
+- 情况：已实际核对产后1周/剖宫产未许可、周二周三、large空间、none器械。runGates为phase1/restricted，完整硬筛候选只有walking，两课均为同一真实conditioning ID，非ramp。
+- 后续裁定：用户最终批准所有人群按动作类型区分，覆盖此前仅产后阶段1步行的窄例外。课内全部不重复；隔天只限制力量类，低强度有氧、灵活拉伸、呼吸和盆底提醒免除。
+- 停止理由：严格执行通用去重将让该类用户无法获得完整计划，符合用户明确要求的暂停条件；不能以伪造候选或降级整条hard规避。
+- 涉及文件：variety.no_repeat源规则及手册第6/12章、模板真实weekday传递、生成/独立校验、硬规则覆盖清单、最终PR“规格冲突与裁定”。
+- 实施：源YAML结构化modality与有氧真实RPE条件；新增可选template.weekday保留DayPlan实际星期，旧模板未知不推断；生成、拟合、改计划和独立校验都按真实邻日过滤。范围缺事实保守，纯平衡静站须有已核目录事实。新增字段不改已有用户计划/事实，当前未发布DB19/备份17内保持向后兼容。
+- 验证：b-adjacent-days-source9项、adjacent-day-generation4项覆盖剖宫产Tue/Wed双轻步行、普通力量不重复、Sun/Mon边界、课内步行重复拒绝与修改计划保护。阶段1缺失的计划强度按既有light_max明确记录，不靠未知豁免。
+
+### 待确认：未许可剖宫产用户的小空间步行（2026-10-17）
+情况：完整验证的52个真无候选结果，分别为加权样本2个（0.1%）和极端样本50个；具体分类及证据见implementation.md本次共因修复记录。
+冲突：postpartum.gate.caesarean仅允许slug=walking，而该动作空间事实为large。现有小空间原地踏步与灵活性动作不满足此硬门禁，盆底/呼吸提醒不能冒充动作处方。
+决定：未擅自改规则或目录；请求确认是否允许将来源核实后的低强度原地慢走纳入该硬规则的步行范围，再补相应小空间目录事实。其余健康、强度与剂量限制保持不变。
+涉及文件：data/training-engine/rules/rules-ch12.yaml、对应动作目录/注解与手册第12章；目前均未因此修改。
+
+2026-10-17裁定已解决“未许可剖宫产用户的小空间步行”项：新增已批准原地慢走，最低空间由small进一步明确为mat，只改新动作；不动全局空间排序。已批准双语名称及指导，不加新用户文案；仅作为该人群原walking不可用时的候补，同组参数复用，其他人群与大空间walking不变。实施/复核与验证仍待完成，不把裁定当成已验证。
+
+2026-10-17补充裁定：已批准把平衡天数的既有环境受限语义显式写入规则数据。完整合法平衡池为空且仅环境原因，返回非违规环境例外码并保留可应用安全草案，不计质量合格；有候选仍严格原天数。任何安全上限、时长、起落地、健康和孕产规则不适用。独立候选证明不信生成标记，说明与提示沿用已批准内容。实现与验证证据见implementation.md本次checkpoint。
+
+2026-10-17 user ruling supersedes1800-total gate: no total engine line ceiling; formatted per-file400 remains. Explain15776/10740 inventory ranges and compare raw2680 reported user snapshot with actual current same-set raw/formatted counts (different checkout/timestamp cannot be falsely equated). Tests/generated/rule data excluded and separately counted. After safety/coverage/performance/full validation, remove five legacy modules and split by stage via moves only; preserve20+80+problem exact outputs. Tool-audit unused exports/functions; preserve independent decision logic. PR must include formatted per-file/stage counts, truthful main comparison (verify whether main has an engine), approved added-requirement attribution, and any stage above1500 as residual. No comment/type deletion or compressed statements. Separate post-merge simplification review is not a delivery blocker. Earlier cap decision is resolved; no authorization to alter behavior during cleanup.
+
+### 2026-10-17：单段已批准动作说明的要点展示
+- 情况：原地慢走只有一段已批准说明，而全站动作指导要求至少两条可用要点。
+- 决定：保留动作库原始单段及所有字词，展示层按句子切成最多三条；不补写健康建议。目录数量断言按两项已批准新增动作精确更新，不降低637来源动作或1126图片校验。
+- 理由：同时保留批准内容、来源形状和现有可用性要求，避免为通过测试改写话术。
+- 涉及文件：src/catalog/exercise-guide.ts、tests/catalog/exercise-guide.test.ts、tests/domain/repdb-catalog.test.ts。
+
+### 2026-10-18：关闭引擎时的旧换动作兼容
+- 情况：CI旧版四步初见流程关闭trainingEngine且未收集新版自查；无条件完整准入使换动作列表为空。
+- 决定：仅在引擎关闭且无任何新版健康事实时，复用原基础计划的保守候选子集；完整或部分健康资料、引擎开启场景继续严格过滤并在保存前复核。
+- 理由：保留功能关闭/回滚的既有行为，不伪造七题答案，不放开新引擎临床边界；不提供未核实的新动作候选。
+- 涉及文件：src/application/engine-replacement-candidates.ts、src/application/v8-workflow.ts、tests/unit/replacement-feature-off.test.ts。
+- 验证：原CI浏览器用例不变通过；开启引擎非法换动作仍拒绝；11项定向单测及3331项完整功能测试通过。无新增话术。
+
+### 2026-10-18 已批准：ACOG四项最小接线
+- 情况：仅改数据不能执行新产检关卡、孕前不活跃递增、静站上限和实际45分钟提示。
+- 决定：按用户裁定接线；既有计划缺新增产检答案可继续，新的生成严格要求答案；可选递增起算时刻只在首次采用时写入。
+- 理由：不伪造旧答案、不以孕前历史推算本方案进度；完整保留其他安全关卡。相同周数的生成不受起算时间戳随机影响。
+- 涉及文件：rules-ch11/12.yaml、pregnancy-limits、准入/剂量/独立校验、pregnancy-safety、v8-workflow、资料设置与计划页、数据库/备份版本、定向及浏览器测试。
+- 待审决定：无新增；专业审核和第三方授权前置项保持未完成，生产不动。

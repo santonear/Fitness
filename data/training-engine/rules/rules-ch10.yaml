@@ -1,0 +1,451 @@
+# rules-ch10.yaml — 第 10 章 老年人（65 岁及以上）
+# 与 ch10-older-adults.md 一一对应。条件表达式约定见 rules-ch09.yaml 文件头 / ch09 第 0 节。
+# 本章叠加在通用规则之上；与第 9 章同时命中时排除条件取并集。
+
+- id: older.activation
+  chapter: 10
+  type: gate
+  value:
+    trigger: {any: [{user: age, gte: 65}, {user: older_module_opt_in, is: true}]}
+    set_population: older_adult
+  evidence: A
+  sources: [E05:WHO2020, E01:WHO20]
+  note: 年满 65 岁自动启用，也可由用户主动开启
+
+- id: older.screen.general
+  chapter: 10
+  type: gate
+  applies: {population: [older_adult]}
+  value:
+    run_before_first_plan: general_screening_parq_style
+    then: older.screen.falls
+  evidence: A
+  sources: [E05:Riebe2015, E01:PARQ23]
+  note: 先跑通用筛查（第 5 节同款问答），再问跌倒相关问题
+
+- id: older.screen.falls
+  chapter: 10
+  type: gate
+  applies: {population: [older_adult]}
+  value:
+    questions: [fell_in_past_12_months, afraid_of_falling, frequent_dizziness, uses_walking_aid]
+    any_yes:
+      set_user: {balance_cautious: true}
+    walking_aid_yes:
+      set_user: {walking_aid: true}
+    not_a_risk_score: true
+  evidence: C
+  professional_review: true
+  sources: [E05:WHO2020, E05:Sherrington2019, E05:Fragala2019]
+  unverified: [E05:Fragala2019]
+  note: 只用于选择更稳妥的模板，不评估、不打分跌倒风险
+
+- id: older.screen.copy
+  chapter: 10
+  type: copy
+  value:
+    intro:
+      zh: 为了把平衡练习安排得更稳妥，想先问你 4 个简单的问题。
+      en: To set up your balance work safely, we have 4 quick questions.
+    fell_in_past_12_months:
+      zh: 过去 12 个月里，你摔倒过吗？
+      en: Have you had a fall in the past 12 months?
+    afraid_of_falling:
+      zh: 你平时会担心自己摔倒吗？
+      en: Do you worry about falling?
+    frequent_dizziness:
+      zh: 你经常感到头晕或站不稳吗？
+      en: Do you often feel dizzy or unsteady?
+    uses_walking_aid:
+      zh: 你平时走路会用手杖、助行器等辅助工具吗？
+      en: Do you use a stick, frame or other walking aid?
+    any_yes_result:
+      zh: 谢谢。我们会从有扶手支撑的平衡练习开始，一步步来。
+      en: Thanks. We'll start your balance work with something to hold on to and build up step by step.
+  evidence: C
+  professional_review: true
+  sources: [E05:Sherrington2019]
+  note: 措辞平和，不出现「跌倒风险高」等判断
+
+- id: older.hypertension
+  chapter: 10
+  type: exclude
+  applies: {population: [older_adult]}
+  value:
+    when: {user: hypertension, in: [uncontrolled, unknown]}
+    exclude_if: {flag: valsalva_prone}
+    modify:
+      reps_min: 8
+      rpe_0_10_max: 7
+      isometric_rpe_0_10_max: 7
+    cue: exhale_on_effort
+  evidence: C
+  sources: [E05:Fragala2019, E05:Riebe2015]
+  unverified: [E05:Fragala2019]
+  note: 避免憋气导致血压骤升；具体上限为工程选择
+
+- id: older.week.aerobic
+  chapter: 10
+  type: limit
+  applies: {population: [older_adult]}
+  value:
+    moderate_min_week: {min: 150, max: 300}
+    vigorous_min_week: {min: 75, max: 150}
+    vigorous_credit_multiplier: 2
+  evidence: A
+  sources: [E05:WHO2020, E01:WHO20, E01:PAG18]
+  note: 与 18–64 岁成人相同；新手按通用规则从低于目标起步
+
+- id: older.week.strength
+  chapter: 10
+  type: limit
+  applies: {population: [older_adult]}
+  value:
+    days_per_week: {min: 2, max: 3, default: 2}
+    intensity: moderate_or_greater
+    cover_all_major_muscle_groups: true
+  evidence: A
+  sources: [E05:WHO2020, E05:Fragala2019]
+  unverified: [E05:Fragala2019]
+  note: WHO ≥2 天；NSCA 2–3 天
+
+- id: older.week.multicomponent
+  chapter: 10
+  type: limit
+  applies: {population: [older_adult]}
+  value:
+    balance_functional_days_per_week: {min: 3, default: 3}
+    may_combine_with_strength_session: true
+    default_block: {position: end_of_strength_session, minutes: 10}
+    standalone_balance_session_if_strength_days_lt_3: true
+  evidence: A
+  sources: [E05:WHO2020, E01:WHO20, E01:UKCMO]
+  note: 平衡≥3 天取 WHO（UK 为≥2）；10 分钟块为工程选择
+
+- id: older.week.flexibility
+  chapter: 10
+  type: default
+  applies: {population: [older_adult]}
+  value:
+    days_per_week: {min: 2}
+    seconds_per_muscle_group_total: 60
+    placement: cooldown
+  evidence: A
+  sources: [E05:Chodzko2009, E01:UKCMO, E01:GARBER11]
+  unverified: [E05:Chodzko2009]
+  note: 秒数取成人通用值（Garber 2011）；老年专属细节未核实
+
+- id: older.template.balance_required
+  chapter: 10
+  type: limit
+  applies: {population: [older_adult]}
+  value:
+    reject_template_if: {all: [{user: template.strength_days, gte: 1}, {user: template.balance_days, lt: 3}]}
+    fall_prevention_goal_requires: [balance_functional, resistance]
+    hard_when_days_available_min: 3
+    hard_balance_days_min: 3
+    target_balance_per_session_when_days_below: 3
+    balance_items_per_session_min: 1
+    environment_exception:
+      kind: coverage
+      issue_codes: [balance_days]
+      warning_code: balance_days.environment_exempt
+      patterns: [balance]
+      when:
+        any:
+          - {user: place, eq: outdoor}
+          - {user: household_support, is: false}
+      relax: {equipment: all_catalogue, space: large, householdSupport: true}
+      notice_key: engine.copy.environment_balance
+  evidence: B
+  sources: [E05:Sherrington2019, "USER:training-engine-v2:environment-coverage-exception"]
+  note: "单纯力量训练未证明能预防跌倒，模板必须含平衡；老年人可用日≥3天时每周至少3天含平衡为hard，少于3天时每次至少1个为target。用户批准：户外或显式无可扶物、完整合法平衡池为零且仅放松器械/空间/可扶物可恢复时，缺项记environmentLimited而非违规；不计质量合格，不豁免任何其他安全条件，存在合法候选时仍必须满足原天数。"
+
+- id: older.program_horizon
+  chapter: 10
+  type: default
+  applies: {population: [older_adult]}
+  value:
+    plan_block_weeks_min: 12
+    show_milestone_copy_at_weeks: [4, 8, 12]
+  evidence: B
+  sources: [E05:Sherrington2019]
+  note: 有效项目多持续≥12 周；里程碑周次为工程选择
+
+- id: older.intensity.aerobic
+  chapter: 10
+  type: limit
+  applies: {population: [older_adult]}
+  value:
+    moderate: {rpe_0_10: {min: 5, max: 6}, talk_test: can_talk_not_sing}
+    vigorous: {rpe_0_10: {min: 7, max: 8}, talk_test: few_words}
+    relative_to_own_fitness: true
+    hide_hr_targets_if: {any: [{user: beta_blockers, is: true}, {user: heart_condition, is: true}]}
+  evidence: A
+  sources: [E01:CDC-INT, E01:PAG18, E01:TANAKA01]
+  note: 用 0–10 自觉强度和谈话测试，不依赖心率
+
+- id: older.strength.dose
+  chapter: 10
+  type: limit
+  applies: {population: [older_adult]}
+  value:
+    sets_per_exercise: {min: 1, max: 3}
+    single_set_ok_for: beginner
+    exercises_per_session: {min: 8, max: 10, truncate_by_session_time: true}
+    reps_phase_intro: {min: 10, max: 15}
+    reps_phase_strength: {min: 6, max: 12}
+    rpe_0_10_intro: {min: 5, max: 6}
+    rir_min: 2
+    to_failure: false
+  evidence: A
+  sources: [E05:Fragala2019]
+  unverified: [E05:Fragala2019]
+  note: 不必练到力竭；RIR≥2 为工程选择
+
+- id: older.strength.progression
+  chapter: 10
+  type: limit
+  applies: {population: [older_adult]}
+  value:
+    intro_phase_weeks: {min: 2, max: 4, default: 4}
+    then_reps_range: {min: 6, max: 12}
+    load_step_pct_max: {min: 5, max: 10, default: 5}
+    requires_completed_reps_at_rir_gte: 2
+  evidence: A
+  sources: [E05:Fragala2019]
+  unverified: [E05:Fragala2019]
+  note: 起步期取 4 周、每次加重取 5%，均为证据范围内的保守端
+
+- id: older.strength.low_start
+  chapter: 10
+  type: default
+  applies: {population: [older_adult]}
+  value:
+    when: {any: [{user: balance_cautious, is: true}, {user: walking_aid, is: true}, {user: activity_status, eq: inactive}]}
+    start: {sets: 1, load: lightest_available, rpe_0_10_max: 5}
+    build_to: {sets: 3, reps: {min: 8, max: 12}}
+    sets_step: {add: 1, after_weeks_without_symptoms: 2}
+    prefer_order: [machine, band, seated, standing_supported]
+    include_functional: [sit_to_stand]
+    catalog_gaps: [sit_to_stand]
+  evidence: A
+  sources: [E05:Fragala2019]
+  unverified: [E05:Fragala2019]
+  note: 证据为极轻负荷起步再到 3×8–12；RPE 上限与加组节奏为工程选择
+
+- id: older.exclude.base
+  chapter: 10
+  type: exclude
+  applies: {population: [older_adult]}
+  value:
+    exclude_if:
+      any:
+        - {flag: [high_fall_risk, jumping]}
+        - {field: modality, in: [plyometric, power]}
+        - {field: primary_pattern, in: [jump_land, olympic]}
+        - {use: skill}
+    default_low_impact:
+      exclude_if: {field: impact, gte: 2}
+      user_can_disable_if: {user: balance_cautious, is: false}
+  evidence: C
+  sources: [E05:Fragala2019, E05:Sherrington2019, E01:PAG18]
+  unverified: [E05:Fragala2019]
+  note: 默认不提供跳跃；低冲击可由非谨慎档案用户关闭
+
+- id: older.exclude.balance_cautious
+  chapter: 10
+  type: exclude
+  applies: {population: [older_adult]}
+  value:
+    when: {user: balance_cautious, is: true}
+    exclude_if:
+      any:
+        - {flag: [unstable_surface, running, high_fall_risk]}
+        - {field: impact, gte: 2}
+        - all:
+            - {flag: balance_demand}
+            - {not: {user: exercise.supported_variant_available, is: true}}
+    modify:
+      - when: {flag: balance_demand}
+        cue: hold_wall_or_chair
+  evidence: C
+  professional_review: true
+  sources: [E05:Fragala2019, E05:Sherrington2019]
+  unverified: [E05:Fragala2019]
+  note: 无扶墙/扶椅版本的单腿或窄支撑动作不安排
+
+- id: older.balance.progression
+  chapter: 10
+  type: formula
+  applies: {population: [older_adult]}
+  value:
+    pattern: balance
+    stages:
+      - {stage: 1, base: wide, mode: static, hand_support: true}
+      - {stage: 2, base: narrow_or_tandem, mode: dynamic_allowed, hand_support: true}
+      - {stage: 3, base: narrow_or_single_leg, mode: dynamic_allowed, hand_support: false}
+    advance_when: {user: balance.consecutive_sessions_no_loss_of_balance, gte: 2}
+    regress_when: {user: balance.loss_of_balance_this_session, is: true}
+    max_stage_if_balance_cautious: 2
+    never: [eyes_closed, unstable_surface]
+    catalog_gaps: [balance_pattern_exercises]
+  evidence: C
+  sources: [E05:Sherrington2019, E05:Fragala2019]
+  unverified: [E05:Fragala2019]
+  note: 先静后动、先宽后窄、最后去支撑；升降级条件为工程选择
+
+- id: older.power.gate
+  chapter: 10
+  type: gate
+  applies: {population: [older_adult]}
+  value:
+    unlock_when:
+      all:
+        - {user: weeks_consistent_training, gte: 6}
+        - {user: session_completion_pct_last_6_weeks, gte: 80}
+        - {user: flagged_symptoms_last_6_weeks, eq: 0}
+    load_pct_of_working_weight: {min: 40, max: 60}
+    tempo: fast_concentric_slow_eccentric
+    eligible_if:
+      all:
+        - {field: modality, eq: strength}
+        - {field: difficulty, lte: 2}
+        - {position: [seated, standing]}
+        - {not: {flag: [balance_demand, unstable_surface, high_fall_risk, overhead_load, jumping]}}
+    prefer_order: [seated_machine, band, seated_free_weight, box_squat_fast_stand]
+    balance_cautious_only: {position: seated}
+    sets_reps: inherit_older.strength.dose
+  evidence: A
+  professional_review: true
+  sources: [E05:Fragala2019]
+  unverified: [E05:Fragala2019]
+  note: 证据为 4–6 周取 6；完成率 80% 为工程选择；负荷范围待核实
+
+- id: older.floor.transitions
+  chapter: 10
+  type: exclude
+  applies: {population: [older_adult]}
+  value:
+    floor_based_if:
+      all:
+        - {position: [supine, prone, side_lying, quadruped, kneeling]}
+        - {field: space, eq: mat}
+        - {not: {position: [standing, seated]}}
+    cautious_profile:
+      when: {any: [{user: balance_cautious, is: true}, {user: walking_aid, is: true}]}
+      exclude_if:
+        all:
+          - {position: [supine, prone, side_lying, quadruped, kneeling]}
+          - {field: space, eq: mat}
+          - {not: {position: [standing, seated]}}
+      substitute_with: [seated, standing, bench_supported]
+    other_older_users:
+      group_floor_exercises_consecutively: true
+      max_floor_descents_per_session: 1
+      cue: use_chair_to_get_down_and_up
+    annotation_request: add_flag_floor_transition
+  evidence: C
+  sources: [E05:Sherrington2019, E05:Fragala2019]
+  unverified: [E05:Fragala2019]
+  note: 工程选择，待教练审核；不教授「跌倒后起身」等干预
+
+- id: older.floor.copy
+  chapter: 10
+  type: copy
+  value:
+    before_floor_block:
+      zh: 接下来几个动作在垫子上做。请扶着椅子慢慢下去，做完再扶着椅子慢慢起来，不用着急。
+      en: The next few moves are on the mat. Use a chair to lower yourself down slowly, and use it again to get up when you're done. Take your time.
+    stand_up_slowly:
+      zh: 起身后先站稳几秒，没有头晕再继续。
+      en: Once you're up, stand still for a few seconds and carry on only if you don't feel dizzy.
+  evidence: C
+  sources: [E05:Sherrington2019]
+  note: 只是动作提示，不是跌倒干预
+
+- id: older.bone
+  chapter: 10
+  type: gate
+  applies: {population: [older_adult]}
+  value:
+    when: {any: [{user: osteoporosis_reported, is: true}, {user: fracture_history_reported, is: true}]}
+    set_user: {requires_clearance: true, bone_flag: true}
+    until_clearance_exclude_if:
+      any:
+        - {flag: [loaded_spinal_flexion, loaded_spinal_rotation, heavy_axial_load, jumping, high_fall_risk]}
+        - {field: impact, gte: 2}
+    never_state_safe_loads: true
+    copy:
+      zh: 骨质疏松或骨折史需要专业人士帮你判断适合的负荷。在你确认已咨询医生或物理治疗师之前，我们会先避开负重弯腰、负重扭转、大重量和跳跃类动作。
+      en: With osteoporosis or a past fracture, a health professional should advise on suitable loads. Until you confirm you've spoken to a doctor or physiotherapist, we'll leave out loaded bending, loaded twisting, heavy lifts and jumping.
+  evidence: C
+  professional_review: true
+  sources: [E05:Fragala2019, E01:PARQ23]
+  unverified: [E05:Fragala2019]
+  note: 排除清单为工程选择；应用不告诉用户哪种负荷「安全」
+
+- id: older.return_after_break
+  chapter: 10
+  type: limit
+  applies: {population: [older_adult]}
+  value:
+    detraining_threshold_multiplier: 0.5
+    returning_short_weeks_max: 2
+    returning_mid_weeks: {min: 2, max: 6}
+    returning_long_weeks_gt: 6
+  evidence: C
+  sources: [E04:S16, E04:S17]
+  unverified: [E04:S16, E04:S17]
+  note: 老年人停训损失更大，回归分档阈值减半（作者估算）
+
+- id: older.stop.trigger
+  chapter: 10
+  type: trigger
+  applies: {population: [older_adult]}
+  value:
+    cardiac_items: [chest_pain_or_pressure, unusual_breathlessness, dizziness_or_faintness, racing_or_irregular_heartbeat]
+    cardiac_action: [end_session, show_copy_older.stop.copy.cardiac, block_all_training_until_clearance_confirmed]
+    fall_in_session:
+      action: [end_session, ask_head_hit_or_cannot_bear_weight]
+      if_head_hit_or_cannot_bear_weight: [show_copy_older.stop.copy.fall_injury, block_all_training_until_professional_seen]
+      otherwise: [show_copy_older.stop.copy.fall_no_injury, regress_balance_stage_by_1]
+  evidence: A
+  professional_review: true
+  sources: [E05:Fragala2019, E01:FRANK20, E01:RIEBE15]
+  unverified: [E05:Fragala2019]
+  note: 无伤跌倒后平衡阶段降 1 级为工程选择
+
+- id: older.stop.copy
+  chapter: 10
+  type: copy
+  value:
+    cardiac:
+      zh: 如果你感到胸口疼或发紧、异常气喘、头晕想晕倒，或者心跳很快、不规律，请马上停下来坐好，并尽快就医。如果休息几分钟后仍没有缓解，请立即拨打急救电话。
+      en: If you feel chest pain or tightness, unusual breathlessness, dizziness or faintness, or a racing or irregular heartbeat, stop now, sit down and seek medical advice. If it doesn't ease after a few minutes' rest, call emergency services.
+    fall_injury:
+      zh: 摔倒时撞到了头，或者站起来后腿不能用力，请尽快就医。训练计划先暂停，等你确认看过医生后再继续。
+      en: If you hit your head when you fell, or you can't put weight on your leg, please get medical advice soon. Your plan is paused until you confirm you've been checked.
+    fall_no_injury:
+      zh: 今天的训练先到这里，好好休息。下次我们会把平衡练习调得更稳一些。
+      en: Let's stop here for today and rest. Next time we'll make the balance work a bit steadier.
+  evidence: C
+  professional_review: true
+  sources: [E05:Fragala2019, E01:FRANK20, E01:Healthline]
+  unverified: [E05:Fragala2019, E01:Healthline]
+  note: 上线前须医疗专业人员审核
+
+- id: older.never
+  chapter: 10
+  type: limit
+  value:
+    never:
+      - call_program_fall_prevention_treatment
+      - assess_or_score_fall_risk
+      - tell_osteoporosis_or_fracture_users_which_loads_are_safe
+      - encourage_training_through_warning_symptoms
+      - teach_post_fall_recovery_techniques
+  evidence: A
+  sources: [E05:Sherrington2019, E05:Fragala2019]
+  unverified: [E05:Fragala2019]
+  note: 这些属于临床评估与干预

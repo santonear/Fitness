@@ -1,0 +1,57 @@
+{
+  "goal": "start_moving",
+  "level": "intermediate",
+  "trainingAgeWeeks": 77,
+  "daysPerWeek": 6,
+  "sessionMinutes": 37,
+  "equipment": [
+    "none",
+    "dumbbell",
+    "resistance-band",
+    "loop-band",
+    "flat-bench"
+  ],
+  "place": "home",
+  "constraints": {
+    "noJump": false,
+    "quiet": true,
+    "space": "large"
+  },
+  "cautions": [
+    "shoulder"
+  ],
+  "population": {
+    "kind": "pregnant",
+    "week": 37,
+    "providerCleared": true,
+    "contraindicationsConfirmedNone": true,
+    "lastScreenedWeek": 37
+  },
+  "screening": {
+    "parqAllNo": true,
+    "parqAnswers": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "knownCondition": false,
+    "knownCmrDisease": false,
+    "symptoms": false,
+    "activityStatus": "inactive",
+    "restingBp": "known_below_threshold",
+    "acuteIllness": false,
+    "completedAt": "2026-10-01T00:00:00.000Z",
+    "lastScreenedAt": "2026-10-01T00:00:00.000Z"
+  },
+  "preferences": {
+    "excludedExerciseIds": [],
+    "cannotDo": []
+  },
+  "birthYearMonth": "1991-06",
+  "asOfDate": "2026-10-15",
+  "locale": "zh"
+}

@@ -64,3 +64,12 @@ export function localCoachReply(message: string, request?: CoachRequest, profile
   if (/这周|本周|回顾|this week|review/i.test(message)) return { lines:copy.review,review:true };
   return { lines: locale==='zh' ? ['我可以解释动作要点、根据现有训练单给出短版或替换建议，也可以打开本周回顾。','你可以说“徒手深蹲怎么做”或“今天只有 15 分钟”。更复杂的计划调整可以开启 AI 后讨论。'] : ['I can explain exercise technique, suggest a shorter session or a replacement from your current plan, and open your weekly review.','Try “How do I do a bodyweight squat?” or “I only have 15 minutes.” Enable AI to discuss more detailed plan changes.'] };
 }
+
+/** Engine mode permits read-only guidance, never the legacy regex plan builder. */
+export function localCoachReplyForMode(engineEnabled:boolean,message:string,request?:CoachRequest,profile?:CoachProfile,locale:'zh'|'en'=request?.locale??'zh',lockedItemIndexes?:readonly number[]):LocalReply {
+  if(!engineEnabled)return localCoachReply(message,request,profile,locale,lockedItemIndexes);
+  const named=exercises.find(exercise=>[exercise.name.zh,exercise.name.en].some(name=>message.toLowerCase().includes(name.toLowerCase())));
+  if(named&&/怎么|要点|指导|做法|how|tips|technique|form/i.test(message))return {lines:[named.name[locale],...named.steps[locale],...named.cautions[locale]],guideExerciseId:named.id};
+  if(/这周|本周|回顾|this week|review/i.test(message))return {lines:(locale==='en'?en:zh).review,review:true};
+  return {lines:[]};
+}

@@ -2,6 +2,9 @@ import core from './generated/core.json' with { type: 'json' };
 import type { Exercise } from '../domain/models';
 import { exerciseSchema } from '../domain/schemas';
 import { EXERCISE_IDS } from './exercise-ids';
+import {applyCatalogCorrection} from './corrections';
+import {customExercises} from './custom-exercises';
+import {catalogMetadata} from './registry';
 
 export { EXERCISE_IDS } from './exercise-ids';
 
@@ -43,4 +46,5 @@ export const exercises: Exercise[] = [
     cautions: { zh: ['不憋气，不猛拉；有肩、手腕或腰背不适时不安排此动作。'], en: ['Breathe normally and avoid jerking. Do not select this movement with shoulder, wrist or back discomfort.'] },
   },
   ...core.filter(item => !Object.values(EXERCISE_IDS).includes(item.id as typeof EXERCISE_IDS[keyof typeof EXERCISE_IDS])),
-].map((exercise) => exerciseSchema.parse(exercise));
+  ...customExercises,
+].map((exercise) => exerciseSchema.parse(applyCatalogCorrection(exercise as Exercise,catalogMetadata.get(exercise.id)?.slug??'')));

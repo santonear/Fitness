@@ -1,0 +1,1833 @@
+{
+  "weeklyTarget": 6,
+  "sessionMinutes": 90,
+  "templates": [
+    {
+      "id": "engine-e6f7daee-0",
+      "name": "全身训练",
+      "estimatedMinutes": 57,
+      "items": [
+        {
+          "exerciseId": "c95d05eb-d0e8-5557-84cf-0b1fc11e3e48",
+          "equipment": "none",
+          "sets": 1,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 530
+          },
+          "prescription": {
+            "pattern": "cardio_cyclic",
+            "block": "warmup",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 105,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 1,
+            "targetRpe": [
+              4,
+              4
+            ]
+          }
+        },
+        {
+          "exerciseId": "519d21de-a1d7-5ee8-850f-5220a41faf3f",
+          "equipment": "none",
+          "sets": 1,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 30
+          },
+          "prescription": {
+            "pattern": "mobility",
+            "block": "warmup",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 105,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 3.5
+          }
+        },
+        {
+          "exerciseId": "810254f2-6efe-5203-81c1-23855f790907",
+          "equipment": "dumbbell",
+          "sets": 2,
+          "target": {
+            "metricType": "reps_load",
+            "reps": 15,
+            "loadGrams": 0
+          },
+          "prescription": {
+            "pattern": "squat",
+            "block": "main",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 180,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 15,
+            "secondsPerRep": 3.5,
+            "loadBand": "medium",
+            "loadDescription": {
+              "zh": "中等重量",
+              "en": "Moderate weight"
+            },
+            "sourcePosition": "main_1",
+            "warmupSeconds": 180
+          }
+        },
+        {
+          "exerciseId": "54a3f4c2-2168-55f1-85ee-7a376cbb389b",
+          "equipment": "dumbbell",
+          "sets": 4,
+          "target": {
+            "metricType": "reps_load",
+            "reps": 15,
+            "loadGrams": 0
+          },
+          "prescription": {
+            "pattern": "push_horizontal",
+            "block": "main",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 180,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 15,
+            "secondsPerRep": 3.5,
+            "loadBand": "medium",
+            "loadDescription": {
+              "zh": "中等重量",
+              "en": "Moderate weight"
+            },
+            "sourcePosition": "main_2"
+          }
+        },
+        {
+          "exerciseId": "5899d255-8b31-563f-8a1d-75fa64603c85",
+          "equipment": "dumbbell",
+          "sets": 2,
+          "target": {
+            "metricType": "reps_load",
+            "reps": 15,
+            "loadGrams": 0
+          },
+          "prescription": {
+            "pattern": "hinge",
+            "block": "accessory",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 105,
+            "structure": "superset",
+            "perSide": true,
+            "setupSeconds": 15,
+            "secondsPerRep": 3.5,
+            "loadBand": "light",
+            "loadDescription": {
+              "zh": "轻重量",
+              "en": "Light weight"
+            },
+            "groupId": "engine-e6f7daee-0-pair-3",
+            "sourcePosition": "acc_1"
+          }
+        },
+        {
+          "exerciseId": "dfbdb029-1fa1-5827-845c-682c8e05b31f",
+          "equipment": "dumbbell",
+          "sets": 2,
+          "target": {
+            "metricType": "reps_load",
+            "reps": 15,
+            "loadGrams": 0
+          },
+          "prescription": {
+            "pattern": "pull_vertical",
+            "block": "accessory",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 75,
+            "structure": "superset",
+            "perSide": false,
+            "setupSeconds": 15,
+            "secondsPerRep": 3.5,
+            "loadBand": "light",
+            "loadDescription": {
+              "zh": "轻重量",
+              "en": "Light weight"
+            },
+            "groupId": "engine-e6f7daee-0-pair-3",
+            "sourcePosition": "acc_2"
+          }
+        },
+        {
+          "exerciseId": "a5b7e125-ebd6-50e5-8cf0-14d095d183ef",
+          "equipment": "none",
+          "sets": 4,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 45
+          },
+          "prescription": {
+            "pattern": "cardio_cyclic",
+            "block": "conditioning",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 105,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 3,
+            "targetRpe": [
+              5,
+              6
+            ]
+          }
+        },
+        {
+          "exerciseId": "057c92b6-84e8-563e-8a2a-4361e307729b",
+          "equipment": "resistance-band",
+          "sets": 2,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 30
+          },
+          "prescription": {
+            "pattern": "mobility",
+            "block": "cooldown",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 105,
+            "structure": "straight",
+            "perSide": true,
+            "setupSeconds": 15,
+            "secondsPerRep": 3.5
+          }
+        },
+        {
+          "exerciseId": "fe202858-3bc6-5f6e-8ecf-b0335ccd9619",
+          "equipment": "none",
+          "sets": 2,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 20
+          },
+          "prescription": {
+            "pattern": "mobility",
+            "block": "cooldown",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 105,
+            "structure": "straight",
+            "perSide": true,
+            "setupSeconds": 5,
+            "secondsPerRep": 3.5
+          }
+        },
+        {
+          "exerciseId": "3ddedf9e-566a-5171-8221-07b6108780e1",
+          "equipment": "flat-bench",
+          "sets": 2,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 10
+          },
+          "prescription": {
+            "pattern": "mobility",
+            "block": "cooldown",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 105,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 3.5
+          }
+        },
+        {
+          "exerciseId": "0e70e94d-79e7-50fc-8333-e4ee1be4571c",
+          "equipment": "yoga-mat-optional",
+          "sets": 2,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 10
+          },
+          "prescription": {
+            "pattern": "mobility",
+            "block": "cooldown",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 105,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 3.5
+          }
+        },
+        {
+          "exerciseId": "9ab0d29f-9494-52b3-8430-31f1f4f42b5f",
+          "equipment": "none",
+          "sets": 2,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 10
+          },
+          "prescription": {
+            "pattern": "mobility",
+            "block": "cooldown",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 105,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 3.5
+          }
+        },
+        {
+          "exerciseId": "8a4b7d62-194a-5220-8643-0976baa9697b",
+          "equipment": "none",
+          "sets": 2,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 10
+          },
+          "prescription": {
+            "pattern": "mobility",
+            "block": "cooldown",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 105,
+            "structure": "straight",
+            "perSide": true,
+            "setupSeconds": 5,
+            "secondsPerRep": 3.5
+          }
+        },
+        {
+          "exerciseId": "36907f62-9ea7-5a6f-8add-18a36b47ff9c",
+          "equipment": "yoga-mat-optional",
+          "sets": 2,
+          "target": {
+            "metricType": "reps",
+            "reps": 15
+          },
+          "prescription": {
+            "pattern": "isolation_lower",
+            "block": "accessory",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 120,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 5
+          }
+        }
+      ],
+      "estimatedSeconds": 3385
+    },
+    {
+      "id": "engine-e6f7daee-1",
+      "name": "全身训练",
+      "estimatedMinutes": 62,
+      "items": [
+        {
+          "exerciseId": "c95d05eb-d0e8-5557-84cf-0b1fc11e3e48",
+          "equipment": "none",
+          "sets": 1,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 530
+          },
+          "prescription": {
+            "pattern": "cardio_cyclic",
+            "block": "warmup",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 105,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 1,
+            "targetRpe": [
+              4,
+              4
+            ]
+          }
+        },
+        {
+          "exerciseId": "519d21de-a1d7-5ee8-850f-5220a41faf3f",
+          "equipment": "none",
+          "sets": 1,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 30
+          },
+          "prescription": {
+            "pattern": "mobility",
+            "block": "warmup",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 105,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 3.5
+          }
+        },
+        {
+          "exerciseId": "27e06ba2-5237-5832-8790-f24e917acdf6",
+          "equipment": "dumbbell",
+          "sets": 2,
+          "target": {
+            "metricType": "reps_load",
+            "reps": 15,
+            "loadGrams": 0
+          },
+          "prescription": {
+            "pattern": "hinge",
+            "block": "main",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 180,
+            "structure": "straight",
+            "perSide": true,
+            "setupSeconds": 15,
+            "secondsPerRep": 3.5,
+            "loadBand": "medium",
+            "loadDescription": {
+              "zh": "中等重量",
+              "en": "Moderate weight"
+            },
+            "sourcePosition": "main_1",
+            "warmupSeconds": 180
+          }
+        },
+        {
+          "exerciseId": "d224cd16-e59e-59b0-8787-4eeac062470d",
+          "equipment": "dumbbell",
+          "sets": 2,
+          "target": {
+            "metricType": "reps_load",
+            "reps": 15,
+            "loadGrams": 0
+          },
+          "prescription": {
+            "pattern": "push_vertical",
+            "block": "main",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 180,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 15,
+            "secondsPerRep": 3.5,
+            "loadBand": "medium",
+            "loadDescription": {
+              "zh": "中等重量",
+              "en": "Moderate weight"
+            },
+            "sourcePosition": "main_2"
+          }
+        },
+        {
+          "exerciseId": "2bc539d7-0817-5f22-8309-7cb1406ef2fa",
+          "equipment": "none",
+          "sets": 2,
+          "target": {
+            "metricType": "reps",
+            "reps": 15
+          },
+          "prescription": {
+            "pattern": "lunge",
+            "block": "accessory",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 105,
+            "structure": "superset",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 3.5,
+            "groupId": "engine-e6f7daee-1-pair-3",
+            "sourcePosition": "acc_1"
+          }
+        },
+        {
+          "exerciseId": "41310470-2356-5167-8872-fc03893513e9",
+          "equipment": "dumbbell",
+          "sets": 3,
+          "target": {
+            "metricType": "reps_load",
+            "reps": 15,
+            "loadGrams": 0
+          },
+          "prescription": {
+            "pattern": "pull_horizontal",
+            "block": "accessory",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 105,
+            "structure": "superset",
+            "perSide": false,
+            "setupSeconds": 15,
+            "secondsPerRep": 3.5,
+            "loadBand": "light",
+            "loadDescription": {
+              "zh": "轻重量",
+              "en": "Light weight"
+            },
+            "groupId": "engine-e6f7daee-1-pair-3",
+            "sourcePosition": "acc_2"
+          }
+        },
+        {
+          "exerciseId": "7a7ba8f2-efa2-5b62-846e-9ca3bcdfcf30",
+          "equipment": "dumbbell",
+          "sets": 4,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 45
+          },
+          "prescription": {
+            "pattern": "carry",
+            "block": "accessory",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 180,
+            "structure": "straight",
+            "perSide": true,
+            "setupSeconds": 15,
+            "secondsPerRep": 3.5,
+            "sourcePosition": "carry_1"
+          }
+        },
+        {
+          "exerciseId": "a5b7e125-ebd6-50e5-8cf0-14d095d183ef",
+          "equipment": "none",
+          "sets": 4,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 45
+          },
+          "prescription": {
+            "pattern": "cardio_cyclic",
+            "block": "conditioning",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 105,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 3,
+            "targetRpe": [
+              5,
+              6
+            ]
+          }
+        },
+        {
+          "exerciseId": "057c92b6-84e8-563e-8a2a-4361e307729b",
+          "equipment": "resistance-band",
+          "sets": 2,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 30
+          },
+          "prescription": {
+            "pattern": "mobility",
+            "block": "cooldown",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 105,
+            "structure": "straight",
+            "perSide": true,
+            "setupSeconds": 15,
+            "secondsPerRep": 3.5
+          }
+        },
+        {
+          "exerciseId": "9ab0d29f-9494-52b3-8430-31f1f4f42b5f",
+          "equipment": "none",
+          "sets": 2,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 30
+          },
+          "prescription": {
+            "pattern": "mobility",
+            "block": "cooldown",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 105,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 3.5
+          }
+        },
+        {
+          "exerciseId": "8a4b7d62-194a-5220-8643-0976baa9697b",
+          "equipment": "none",
+          "sets": 2,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 14
+          },
+          "prescription": {
+            "pattern": "mobility",
+            "block": "cooldown",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 105,
+            "structure": "straight",
+            "perSide": true,
+            "setupSeconds": 5,
+            "secondsPerRep": 3.5
+          }
+        },
+        {
+          "exerciseId": "0e70e94d-79e7-50fc-8333-e4ee1be4571c",
+          "equipment": "yoga-mat-optional",
+          "sets": 2,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 10
+          },
+          "prescription": {
+            "pattern": "mobility",
+            "block": "cooldown",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 105,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 3.5
+          }
+        },
+        {
+          "exerciseId": "fe202858-3bc6-5f6e-8ecf-b0335ccd9619",
+          "equipment": "none",
+          "sets": 2,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 10
+          },
+          "prescription": {
+            "pattern": "mobility",
+            "block": "cooldown",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 105,
+            "structure": "straight",
+            "perSide": true,
+            "setupSeconds": 5,
+            "secondsPerRep": 3.5
+          }
+        },
+        {
+          "exerciseId": "9ab4007b-4404-5576-8bed-9f0641cdbecf",
+          "equipment": "none",
+          "sets": 1,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 4
+          },
+          "prescription": {
+            "pattern": "cardio_cyclic",
+            "block": "cooldown",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 105,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 3.5,
+            "targetRpe": [
+              4,
+              4
+            ]
+          }
+        }
+      ],
+      "estimatedSeconds": 3687.5
+    },
+    {
+      "id": "engine-e6f7daee-2",
+      "name": "活动度训练",
+      "estimatedMinutes": 22,
+      "items": [
+        {
+          "exerciseId": "3e92f9f9-9844-52ab-8a4e-102d420cd45d",
+          "equipment": "none",
+          "sets": 1,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 290
+          },
+          "prescription": {
+            "pattern": "cardio_cyclic",
+            "block": "warmup",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 105,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 1,
+            "targetRpe": [
+              4,
+              4
+            ]
+          }
+        },
+        {
+          "exerciseId": "9ab0d29f-9494-52b3-8430-31f1f4f42b5f",
+          "equipment": "none",
+          "sets": 4,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 30
+          },
+          "prescription": {
+            "pattern": "mobility",
+            "block": "mobility",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 0,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 3.5
+          }
+        },
+        {
+          "exerciseId": "3ddedf9e-566a-5171-8221-07b6108780e1",
+          "equipment": "flat-bench",
+          "sets": 4,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 30
+          },
+          "prescription": {
+            "pattern": "mobility",
+            "block": "mobility",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 0,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 3.5
+          }
+        },
+        {
+          "exerciseId": "519d21de-a1d7-5ee8-850f-5220a41faf3f",
+          "equipment": "none",
+          "sets": 2,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 30
+          },
+          "prescription": {
+            "pattern": "mobility",
+            "block": "mobility",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 0,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 3.5
+          }
+        },
+        {
+          "exerciseId": "a5b7e125-ebd6-50e5-8cf0-14d095d183ef",
+          "equipment": "none",
+          "sets": 1,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 60
+          },
+          "prescription": {
+            "pattern": "cardio_cyclic",
+            "block": "conditioning",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 105,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 3,
+            "targetRpe": [
+              5,
+              6
+            ]
+          }
+        },
+        {
+          "exerciseId": "9ab4007b-4404-5576-8bed-9f0641cdbecf",
+          "equipment": "none",
+          "sets": 1,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 290
+          },
+          "prescription": {
+            "pattern": "cardio_cyclic",
+            "block": "cooldown",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 105,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 3.5,
+            "targetRpe": [
+              4,
+              4
+            ]
+          }
+        },
+        {
+          "exerciseId": "057c92b6-84e8-563e-8a2a-4361e307729b",
+          "equipment": "resistance-band",
+          "sets": 4,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 30
+          },
+          "prescription": {
+            "pattern": "mobility",
+            "block": "mobility",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 0,
+            "structure": "straight",
+            "perSide": true,
+            "setupSeconds": 15,
+            "secondsPerRep": 3.5
+          }
+        }
+      ],
+      "estimatedSeconds": 1270,
+      "targetMinutes": 20
+    },
+    {
+      "id": "engine-e6f7daee-3",
+      "name": "活动度训练",
+      "estimatedMinutes": 22,
+      "items": [
+        {
+          "exerciseId": "3e92f9f9-9844-52ab-8a4e-102d420cd45d",
+          "equipment": "none",
+          "sets": 1,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 290
+          },
+          "prescription": {
+            "pattern": "cardio_cyclic",
+            "block": "warmup",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 105,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 1,
+            "targetRpe": [
+              4,
+              4
+            ]
+          }
+        },
+        {
+          "exerciseId": "9ab0d29f-9494-52b3-8430-31f1f4f42b5f",
+          "equipment": "none",
+          "sets": 4,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 30
+          },
+          "prescription": {
+            "pattern": "mobility",
+            "block": "mobility",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 0,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 3.5
+          }
+        },
+        {
+          "exerciseId": "3ddedf9e-566a-5171-8221-07b6108780e1",
+          "equipment": "flat-bench",
+          "sets": 4,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 30
+          },
+          "prescription": {
+            "pattern": "mobility",
+            "block": "mobility",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 0,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 3.5
+          }
+        },
+        {
+          "exerciseId": "519d21de-a1d7-5ee8-850f-5220a41faf3f",
+          "equipment": "none",
+          "sets": 2,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 30
+          },
+          "prescription": {
+            "pattern": "mobility",
+            "block": "mobility",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 0,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 3.5
+          }
+        },
+        {
+          "exerciseId": "a5b7e125-ebd6-50e5-8cf0-14d095d183ef",
+          "equipment": "none",
+          "sets": 1,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 60
+          },
+          "prescription": {
+            "pattern": "cardio_cyclic",
+            "block": "conditioning",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 105,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 3,
+            "targetRpe": [
+              5,
+              6
+            ]
+          }
+        },
+        {
+          "exerciseId": "9ab4007b-4404-5576-8bed-9f0641cdbecf",
+          "equipment": "none",
+          "sets": 1,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 290
+          },
+          "prescription": {
+            "pattern": "cardio_cyclic",
+            "block": "cooldown",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 105,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 3.5,
+            "targetRpe": [
+              4,
+              4
+            ]
+          }
+        },
+        {
+          "exerciseId": "057c92b6-84e8-563e-8a2a-4361e307729b",
+          "equipment": "resistance-band",
+          "sets": 4,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 30
+          },
+          "prescription": {
+            "pattern": "mobility",
+            "block": "mobility",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 0,
+            "structure": "straight",
+            "perSide": true,
+            "setupSeconds": 15,
+            "secondsPerRep": 3.5
+          }
+        }
+      ],
+      "estimatedSeconds": 1270,
+      "targetMinutes": 20
+    },
+    {
+      "id": "engine-e6f7daee-4",
+      "name": "活动度训练",
+      "estimatedMinutes": 22,
+      "items": [
+        {
+          "exerciseId": "3e92f9f9-9844-52ab-8a4e-102d420cd45d",
+          "equipment": "none",
+          "sets": 1,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 290
+          },
+          "prescription": {
+            "pattern": "cardio_cyclic",
+            "block": "warmup",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 105,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 1,
+            "targetRpe": [
+              4,
+              4
+            ]
+          }
+        },
+        {
+          "exerciseId": "9ab0d29f-9494-52b3-8430-31f1f4f42b5f",
+          "equipment": "none",
+          "sets": 4,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 30
+          },
+          "prescription": {
+            "pattern": "mobility",
+            "block": "mobility",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 0,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 3.5
+          }
+        },
+        {
+          "exerciseId": "3ddedf9e-566a-5171-8221-07b6108780e1",
+          "equipment": "flat-bench",
+          "sets": 4,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 30
+          },
+          "prescription": {
+            "pattern": "mobility",
+            "block": "mobility",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 0,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 3.5
+          }
+        },
+        {
+          "exerciseId": "519d21de-a1d7-5ee8-850f-5220a41faf3f",
+          "equipment": "none",
+          "sets": 2,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 30
+          },
+          "prescription": {
+            "pattern": "mobility",
+            "block": "mobility",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 0,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 3.5
+          }
+        },
+        {
+          "exerciseId": "a5b7e125-ebd6-50e5-8cf0-14d095d183ef",
+          "equipment": "none",
+          "sets": 1,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 60
+          },
+          "prescription": {
+            "pattern": "cardio_cyclic",
+            "block": "conditioning",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 105,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 3,
+            "targetRpe": [
+              5,
+              6
+            ]
+          }
+        },
+        {
+          "exerciseId": "9ab4007b-4404-5576-8bed-9f0641cdbecf",
+          "equipment": "none",
+          "sets": 1,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 290
+          },
+          "prescription": {
+            "pattern": "cardio_cyclic",
+            "block": "cooldown",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 105,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 3.5,
+            "targetRpe": [
+              4,
+              4
+            ]
+          }
+        },
+        {
+          "exerciseId": "057c92b6-84e8-563e-8a2a-4361e307729b",
+          "equipment": "resistance-band",
+          "sets": 4,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 30
+          },
+          "prescription": {
+            "pattern": "mobility",
+            "block": "mobility",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 0,
+            "structure": "straight",
+            "perSide": true,
+            "setupSeconds": 15,
+            "secondsPerRep": 3.5
+          }
+        }
+      ],
+      "estimatedSeconds": 1270,
+      "targetMinutes": 20
+    },
+    {
+      "id": "engine-e6f7daee-5",
+      "name": "活动度训练",
+      "estimatedMinutes": 22,
+      "items": [
+        {
+          "exerciseId": "3e92f9f9-9844-52ab-8a4e-102d420cd45d",
+          "equipment": "none",
+          "sets": 1,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 290
+          },
+          "prescription": {
+            "pattern": "cardio_cyclic",
+            "block": "warmup",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 105,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 1,
+            "targetRpe": [
+              4,
+              4
+            ]
+          }
+        },
+        {
+          "exerciseId": "9ab0d29f-9494-52b3-8430-31f1f4f42b5f",
+          "equipment": "none",
+          "sets": 4,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 30
+          },
+          "prescription": {
+            "pattern": "mobility",
+            "block": "mobility",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 0,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 3.5
+          }
+        },
+        {
+          "exerciseId": "3ddedf9e-566a-5171-8221-07b6108780e1",
+          "equipment": "flat-bench",
+          "sets": 4,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 30
+          },
+          "prescription": {
+            "pattern": "mobility",
+            "block": "mobility",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 0,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 3.5
+          }
+        },
+        {
+          "exerciseId": "519d21de-a1d7-5ee8-850f-5220a41faf3f",
+          "equipment": "none",
+          "sets": 2,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 30
+          },
+          "prescription": {
+            "pattern": "mobility",
+            "block": "mobility",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 0,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 3.5
+          }
+        },
+        {
+          "exerciseId": "a5b7e125-ebd6-50e5-8cf0-14d095d183ef",
+          "equipment": "none",
+          "sets": 1,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 60
+          },
+          "prescription": {
+            "pattern": "cardio_cyclic",
+            "block": "conditioning",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 105,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 3,
+            "targetRpe": [
+              5,
+              6
+            ]
+          }
+        },
+        {
+          "exerciseId": "9ab4007b-4404-5576-8bed-9f0641cdbecf",
+          "equipment": "none",
+          "sets": 1,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 290
+          },
+          "prescription": {
+            "pattern": "cardio_cyclic",
+            "block": "cooldown",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 105,
+            "structure": "straight",
+            "perSide": false,
+            "setupSeconds": 5,
+            "secondsPerRep": 3.5,
+            "targetRpe": [
+              4,
+              4
+            ]
+          }
+        },
+        {
+          "exerciseId": "057c92b6-84e8-563e-8a2a-4361e307729b",
+          "equipment": "resistance-band",
+          "sets": 4,
+          "target": {
+            "metricType": "duration",
+            "durationSeconds": 30
+          },
+          "prescription": {
+            "pattern": "mobility",
+            "block": "mobility",
+            "rir": [
+              2,
+              3
+            ],
+            "restSeconds": 0,
+            "structure": "straight",
+            "perSide": true,
+            "setupSeconds": 15,
+            "secondsPerRep": 3.5
+          }
+        }
+      ],
+      "estimatedSeconds": 1270,
+      "targetMinutes": 20
+    }
+  ],
+  "meta": {
+    "engineVersion": "1.0.0",
+    "rulesVersion": "7e988f690696996068b93df38c0f88258135ed42e6d39f8e7e299b0e5d83653d",
+    "seed": "e6f7daee"
+  },
+  "trace": [
+    {
+      "ruleId": "safety.scope.age_min",
+      "reason": "adult_age_supplied"
+    },
+    {
+      "ruleId": "safety.screen.parq",
+      "reason": "screening_explicitly_completed"
+    },
+    {
+      "ruleId": "meta.conflict.precedence",
+      "reason": "safety_population_caution_dose_duration"
+    },
+    {
+      "ruleId": "select.pipeline",
+      "reason": "candidate_selected",
+      "details": {
+        "exerciseId": "810254f2-6efe-5203-81c1-23855f790907"
+      }
+    },
+    {
+      "ruleId": "select.fallback.chain",
+      "reason": "reserve_cooldown_use_for_actual_safety_block",
+      "details": {
+        "exerciseId": "a5b7e125-ebd6-50e5-8cf0-14d095d183ef"
+      }
+    },
+    {
+      "ruleId": "session.warmup.dynamic",
+      "reason": "verified_dynamic_content",
+      "details": {
+        "exerciseId": "519d21de-a1d7-5ee8-850f-5220a41faf3f"
+      }
+    },
+    {
+      "ruleId": "duration.block.warmup_cooldown",
+      "reason": "warmup_budget_uses_actual_source_content",
+      "details": {
+        "defaultBudgetSeconds": 540
+      }
+    },
+    {
+      "ruleId": "duration.fit.algorithm",
+      "reason": "within_tolerance",
+      "details": {
+        "estimatedSeconds": 5905,
+        "targetSeconds": 5400
+      }
+    },
+    {
+      "ruleId": "select.fallback.chain",
+      "reason": "difficulty_window_relaxed_with_hard_caps",
+      "details": {
+        "exerciseId": "5f49f6d0-7fc0-544a-844d-8f1f00d243cf"
+      }
+    },
+    {
+      "ruleId": "week.day.mobility",
+      "reason": "source_independent_mobility_day_duration",
+      "details": {
+        "templateId": "engine-e6f7daee-2",
+        "targetMinutes": 20
+      }
+    },
+    {
+      "ruleId": "week.day.mobility",
+      "reason": "scheduled_verified_region_work",
+      "details": {
+        "region": "lower_body",
+        "exerciseId": "9ab0d29f-9494-52b3-8430-31f1f4f42b5f"
+      }
+    },
+    {
+      "ruleId": "dose.sets_week.goal_matrix",
+      "reason": "removed_redundant_over_budget_exercise",
+      "details": {
+        "exerciseId": "7a7ba8f2-efa2-5b62-846e-9ca3bcdfcf30"
+      }
+    },
+    {
+      "ruleId": "duration.fit.algorithm",
+      "reason": "closest_safe_result",
+      "details": {
+        "estimatedSeconds": 2786,
+        "targetSeconds": 5400
+      }
+    },
+    {
+      "ruleId": "duration.fit.algorithm",
+      "reason": "mobility_source_dose_with_actual_aerobic_exchange"
+    },
+    {
+      "ruleId": "week.days.allocation",
+      "reason": "scheduled_resistance_and_other_days",
+      "details": {
+        "rtDays": 2,
+        "days": 6
+      }
+    },
+    {
+      "ruleId": "goal.params.mobility",
+      "reason": "selected_bounded_resistance_frequency",
+      "details": {
+        "sourceDefault": 2,
+        "considered": [
+          {
+            "rtDays": 2,
+            "holdSeconds": 30,
+            "primaryOnly": false,
+            "errors": [
+              "duration_tolerance",
+              "duration_tolerance",
+              "goal_time_share",
+              "goal_time_share",
+              "goal_time_share",
+              "goal_time_share_joint",
+              "weekly_muscle_exposure_gap"
+            ]
+          },
+          {
+            "rtDays": 2,
+            "holdSeconds": 10,
+            "primaryOnly": false,
+            "errors": [
+              "duration_tolerance",
+              "duration_tolerance",
+              "goal_time_share",
+              "goal_time_share",
+              "goal_time_share",
+              "goal_time_share_joint",
+              "weekly_muscle_exposure_gap"
+            ]
+          },
+          {
+            "rtDays": 2,
+            "holdSeconds": 10,
+            "primaryOnly": true,
+            "errors": [
+              "duration_tolerance",
+              "duration_tolerance",
+              "goal_time_share",
+              "goal_time_share",
+              "goal_time_share",
+              "goal_time_share_joint",
+              "weekly_muscle_exposure_gap"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "ruleId": "session.cooldown.stretch",
+      "reason": "short_session_stretch_below_default_target:quads:40",
+      "details": {
+        "code": "cooldown_stretch_target",
+        "severity": "warning"
+      }
+    },
+    {
+      "ruleId": "session.cooldown.stretch",
+      "reason": "short_session_stretch_below_default_target:hamstrings:20",
+      "details": {
+        "code": "cooldown_stretch_target",
+        "severity": "warning"
+      }
+    },
+    {
+      "ruleId": "session.cooldown.stretch",
+      "reason": "short_session_stretch_below_default_target:chest:20",
+      "details": {
+        "code": "cooldown_stretch_target",
+        "severity": "warning"
+      }
+    },
+    {
+      "ruleId": "session.cooldown.stretch",
+      "reason": "short_session_stretch_below_default_target:shoulders:20",
+      "details": {
+        "code": "cooldown_stretch_target",
+        "severity": "warning"
+      }
+    },
+    {
+      "ruleId": "session.cooldown.stretch",
+      "reason": "short_session_stretch_below_default_target:back:20",
+      "details": {
+        "code": "cooldown_stretch_target",
+        "severity": "warning"
+      }
+    },
+    {
+      "ruleId": "duration.fit.tolerance",
+      "reason": "estimated_duration_outside_tolerance",
+      "details": {
+        "code": "duration_tolerance",
+        "severity": "error"
+      }
+    },
+    {
+      "ruleId": "session.cooldown.stretch",
+      "reason": "short_session_stretch_below_default_target:shoulders:28",
+      "details": {
+        "code": "cooldown_stretch_target",
+        "severity": "warning"
+      }
+    },
+    {
+      "ruleId": "session.cooldown.stretch",
+      "reason": "short_session_stretch_below_default_target:quads:20",
+      "details": {
+        "code": "cooldown_stretch_target",
+        "severity": "warning"
+      }
+    },
+    {
+      "ruleId": "goal.params.mobility",
+      "reason": "resistance:elapsed_seconds:4842.5;weekly_total_seconds:12152.5;unallocated_seconds:0;share_bounds:0.3984776794898169,0.3984776794898169;required:0.4,0.5",
+      "details": {
+        "code": "goal_time_share",
+        "severity": "error"
+      }
+    },
+    {
+      "ruleId": "goal.params.mobility",
+      "reason": "aerobic:elapsed_seconds:4094;weekly_total_seconds:12152.5;unallocated_seconds:0;share_bounds:0.33688541452376053,0.33688541452376053;required:0.2,0.3",
+      "details": {
+        "code": "goal_time_share",
+        "severity": "error"
+      }
+    },
+    {
+      "ruleId": "goal.params.mobility",
+      "reason": "mobility:elapsed_seconds:3216;weekly_total_seconds:12152.5;unallocated_seconds:0;share_bounds:0.26463690598642253,0.26463690598642253;required:0.3,0.4",
+      "details": {
+        "code": "goal_time_share",
+        "severity": "error"
+      }
+    },
+    {
+      "ruleId": "goal.params.mobility",
+      "reason": "minimum_share_deficit_seconds:448.25>unallocated_seconds:0;weekly_total_seconds:12152.5",
+      "details": {
+        "code": "goal_time_share_joint",
+        "severity": "error"
+      }
+    },
+    {
+      "ruleId": "goal.floor.all",
+      "reason": "chest:1<2",
+      "details": {
+        "code": "weekly_muscle_exposure_gap",
+        "severity": "error"
+      }
+    },
+    {
+      "ruleId": "balance.week.pull_push",
+      "reason": "pull_push_ratio_outside_range",
+      "details": {
+        "code": "pull_push_balance",
+        "severity": "warning"
+      }
+    }
+  ],
+  "notices": [
+    {
+      "code": "session.copy.short_stretch_target",
+      "ruleId": "session.copy.short_stretch_target",
+      "copyPath": "",
+      "severity": "warning",
+      "message": {
+        "zh": "时间有限，这次优先拉伸主项肌群，部分肌群未达到默认拉伸目标。",
+        "en": "With limited time, this workout prioritizes stretching the main muscle groups; some groups are below the default stretching target."
+      }
+    },
+    {
+      "code": "engine.copy.unavailable",
+      "ruleId": "engine.copy.unavailable",
+      "copyPath": "",
+      "severity": "warning",
+      "message": {
+        "zh": "无可用安全方案",
+        "en": "No safe plan available"
+      }
+    }
+  ],
+  "gates": [
+    {
+      "ruleId": "safety.scope.age_min",
+      "status": "pass",
+      "reason": "adult_age_supplied"
+    },
+    {
+      "ruleId": "safety.screen.parq",
+      "status": "pass",
+      "reason": "screening_explicitly_completed"
+    }
+  ],
+  "preferredDays": [
+    "mon",
+    "thu"
+  ],
+  "quality": {
+    "status": "unavailable",
+    "basis": "generation_failure",
+    "issues": [
+      {
+        "code": "cooldown_stretch_target",
+        "ruleId": "session.cooldown.stretch",
+        "severity": "warning",
+        "reason": "short_session_stretch_below_default_target:quads:40",
+        "templateId": "engine-e6f7daee-0"
+      },
+      {
+        "code": "cooldown_stretch_target",
+        "ruleId": "session.cooldown.stretch",
+        "severity": "warning",
+        "reason": "short_session_stretch_below_default_target:hamstrings:20",
+        "templateId": "engine-e6f7daee-0"
+      },
+      {
+        "code": "cooldown_stretch_target",
+        "ruleId": "session.cooldown.stretch",
+        "severity": "warning",
+        "reason": "short_session_stretch_below_default_target:chest:20",
+        "templateId": "engine-e6f7daee-0"
+      },
+      {
+        "code": "cooldown_stretch_target",
+        "ruleId": "session.cooldown.stretch",
+        "severity": "warning",
+        "reason": "short_session_stretch_below_default_target:shoulders:20",
+        "templateId": "engine-e6f7daee-0"
+      },
+      {
+        "code": "cooldown_stretch_target",
+        "ruleId": "session.cooldown.stretch",
+        "severity": "warning",
+        "reason": "short_session_stretch_below_default_target:back:20",
+        "templateId": "engine-e6f7daee-0"
+      },
+      {
+        "code": "duration_tolerance",
+        "ruleId": "duration.fit.tolerance",
+        "severity": "error",
+        "reason": "estimated_duration_outside_tolerance",
+        "templateId": "engine-e6f7daee-0"
+      },
+      {
+        "code": "cooldown_stretch_target",
+        "ruleId": "session.cooldown.stretch",
+        "severity": "warning",
+        "reason": "short_session_stretch_below_default_target:shoulders:28",
+        "templateId": "engine-e6f7daee-1"
+      },
+      {
+        "code": "cooldown_stretch_target",
+        "ruleId": "session.cooldown.stretch",
+        "severity": "warning",
+        "reason": "short_session_stretch_below_default_target:back:20",
+        "templateId": "engine-e6f7daee-1"
+      },
+      {
+        "code": "cooldown_stretch_target",
+        "ruleId": "session.cooldown.stretch",
+        "severity": "warning",
+        "reason": "short_session_stretch_below_default_target:quads:20",
+        "templateId": "engine-e6f7daee-1"
+      },
+      {
+        "code": "duration_tolerance",
+        "ruleId": "duration.fit.tolerance",
+        "severity": "error",
+        "reason": "estimated_duration_outside_tolerance",
+        "templateId": "engine-e6f7daee-1"
+      },
+      {
+        "code": "goal_time_share",
+        "ruleId": "goal.params.mobility",
+        "severity": "error",
+        "reason": "resistance:elapsed_seconds:4842.5;weekly_total_seconds:12152.5;unallocated_seconds:0;share_bounds:0.3984776794898169,0.3984776794898169;required:0.4,0.5"
+      },
+      {
+        "code": "goal_time_share",
+        "ruleId": "goal.params.mobility",
+        "severity": "error",
+        "reason": "aerobic:elapsed_seconds:4094;weekly_total_seconds:12152.5;unallocated_seconds:0;share_bounds:0.33688541452376053,0.33688541452376053;required:0.2,0.3"
+      },
+      {
+        "code": "goal_time_share",
+        "ruleId": "goal.params.mobility",
+        "severity": "error",
+        "reason": "mobility:elapsed_seconds:3216;weekly_total_seconds:12152.5;unallocated_seconds:0;share_bounds:0.26463690598642253,0.26463690598642253;required:0.3,0.4"
+      },
+      {
+        "code": "goal_time_share_joint",
+        "ruleId": "goal.params.mobility",
+        "severity": "error",
+        "reason": "minimum_share_deficit_seconds:448.25>unallocated_seconds:0;weekly_total_seconds:12152.5"
+      },
+      {
+        "code": "weekly_muscle_exposure_gap",
+        "ruleId": "goal.floor.all",
+        "severity": "error",
+        "reason": "chest:1<2"
+      },
+      {
+        "code": "pull_push_balance",
+        "ruleId": "balance.week.pull_push",
+        "severity": "warning",
+        "reason": "pull_push_ratio_outside_range"
+      }
+    ]
+  }
+}

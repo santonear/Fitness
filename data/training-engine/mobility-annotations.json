@@ -1,0 +1,241 @@
+[
+  {
+    "slug": "cat-cow",
+    "mobility_type": "dynamic",
+    "sourcePath": "src/catalog/generated/details.json",
+    "stepIndexes": [
+      1,
+      2,
+      3
+    ],
+    "stepsSha256": "13adb5710a4570f74b5487b34fd8ec225cf24f9d8941dd42cc88bdd7546e6781"
+  },
+  {
+    "slug": "lateral-leg-swing",
+    "mobility_type": "dynamic",
+    "sourcePath": "src/catalog/generated/details.json",
+    "stepIndexes": [
+      2,
+      3,
+      4
+    ],
+    "stepsSha256": "adb43b596793a7880ec27c6a54359ef9b269bed9f9e29f09c8df5c82ce2d3494"
+  },
+  {
+    "slug": "leg-swing-front-to-back",
+    "mobility_type": "dynamic",
+    "sourcePath": "src/catalog/generated/details.json",
+    "stepIndexes": [
+      2,
+      3,
+      4
+    ],
+    "stepsSha256": "0848d52061e264ec97d00826b8c9ae33d9ceae83122d758b6b3f968953a49cc8"
+  },
+  {
+    "slug": "pilates-saw",
+    "mobility_type": "dynamic",
+    "sourcePath": "src/catalog/generated/details.json",
+    "stepIndexes": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "stepsSha256": "5b5e21a05508a0cebedafd37f888fffcc8a5aaf0355c6d688b4bb9d22b545cd2"
+  },
+  {
+    "slug": "deep-squat-hold",
+    "mobility_type": "static",
+    "sourcePath": "src/catalog/generated/details.json",
+    "stepIndexes": [
+      4
+    ],
+    "stepsSha256": "67de57709423187b3b4e030363b686be93ccc9f4f4d5028528cffd416ffb3306"
+  },
+  {
+    "slug": "banded-lat-stretch",
+    "mobility_type": "static",
+    "sourcePath": "src/catalog/generated/details.json",
+    "stepIndexes": [
+      3
+    ],
+    "stepsSha256": "0cd299db3aa9566204dc74820f8d2f0d32363c5065ed44b184fcf8124e01a137",
+    "stretch_targets": [
+      "back"
+    ]
+  },
+  {
+    "slug": "banded-chest-stretch",
+    "mobility_type": "static",
+    "sourcePath": "src/catalog/generated/details.json",
+    "stepIndexes": [
+      3
+    ],
+    "stepsSha256": "9ee47da1c718d62d490ceac43abfbe3d93133563bf6794ccaf9d1473652fae7f",
+    "stretch_targets": [
+      "chest"
+    ]
+  },
+  {
+    "slug": "sphinx-pose",
+    "mobility_type": "static",
+    "sourcePath": "src/catalog/generated/details.json",
+    "stepIndexes": [
+      3
+    ],
+    "stepsSha256": "3815c4f222e43ac289c4088424ca2a41e0cfd96b5f256d9d4213dc4b017ac108"
+  },
+  {
+    "slug": "standing-quad-stretch",
+    "mobility_type": "static",
+    "sourcePath": "src/catalog/generated/details.json",
+    "stepIndexes": [
+      3,
+      4
+    ],
+    "stepsSha256": "c4cbbc9dbc948da1c4e65395dddd2258e86809f69748297f2874ae5f1169526b",
+    "stretch_targets": [
+      "quads"
+    ]
+  },
+  {
+    "slug": "seated-straddle-stretch",
+    "mobility_type": "static",
+    "sourcePath": "src/catalog/generated/details.json",
+    "stepIndexes": [
+      3
+    ],
+    "stepsSha256": "4ad1d12be627e64585ce3d53153b706c953661520737fee8e84a3f4e72cfcdb5",
+    "stretch_targets": [
+      "hamstrings"
+    ]
+  },
+  {
+    "slug": "childs-pose",
+    "mobility_type": "static",
+    "sourcePath": "src/catalog/generated/details.json",
+    "stepIndexes": [
+      3
+    ],
+    "stepsSha256": "018817e6c7c909146ab89bca232221de42144f61c1b041db3fc0ba17ce81bce1",
+    "stretch_targets": [
+      "back"
+    ]
+  },
+  {
+    "slug": "banded-figure-4-stretch",
+    "mobility_type": "static",
+    "sourcePath": "src/catalog/generated/details.json",
+    "stepIndexes": [
+      3,
+      4
+    ],
+    "stepsSha256": "310f83f9798a8459fe044edaede36dd8e8eeaba91555d27c00864283a43b3d63",
+    "stretch_targets": [
+      "glutes"
+    ]
+  },
+  {
+    "slug": "cross-body-shoulder-stretch",
+    "mobility_type": "static",
+    "sourcePath": "src/catalog/generated/details.json",
+    "stepIndexes": [
+      3,
+      4
+    ],
+    "stepsSha256": "b8ecf59e438dfcb249f1e0df84b8454b748f8fd50de2f3d3e6dd08e2a1904fcd",
+    "stretch_targets": [
+      "shoulders"
+    ]
+  },
+  {
+    "slug": "banded-hamstring-stretch",
+    "mobility_type": "static",
+    "sourcePath": "src/catalog/generated/details.json",
+    "stepIndexes": [
+      3,
+      4
+    ],
+    "stepsSha256": "17809789b40c434da2c11e4e4d95e1f51087780b794fa42570fb096c550a7dde",
+    "stretch_targets": [
+      "hamstrings"
+    ]
+  },
+  {
+    "slug": "knee-to-chest-stretch",
+    "mobility_type": "static",
+    "sourcePath": "src/catalog/generated/details.json",
+    "stepIndexes": [
+      3,
+      4
+    ],
+    "stepsSha256": "53469fcbd597e891558829c385174bed53021b9483019779f3c7a61a6330a426",
+    "stretch_targets": [
+      "glutes"
+    ]
+  },
+  {
+    "slug": "doorway-chest-stretch",
+    "mobility_type": "static",
+    "stretch_targets": [
+      "chest"
+    ],
+    "sourcePath": "src/catalog/generated/details.json",
+    "stepIndexes": [
+      2,
+      3
+    ],
+    "stepsSha256": "d2d648f3c9963fd0976a4d2f8eeada7d5f5476c627d75cc25419030de7a85378"
+  },
+  {
+    "slug": "bench-chest-stretch",
+    "mobility_type": "static",
+    "stretch_targets": [
+      "chest"
+    ],
+    "sourcePath": "src/catalog/generated/details.json",
+    "stepIndexes": [
+      2,
+      3
+    ],
+    "stepsSha256": "6873cf21140dc60af54dbda013f1af776ce7f16672cc426c899587d849b5fbb9"
+  },
+  {
+    "slug": "pilates-roll-down",
+    "mobility_type": "dynamic",
+    "sourcePath": "src/catalog/generated/details.json",
+    "stepIndexes": [
+      1,
+      3,
+      4
+    ],
+    "stepsSha256": "e19e436f5627d624de4725ffced930e4186312305f8820134a62febb629946f3"
+  },
+  {
+    "slug": "torso-twists",
+    "mobility_type": "dynamic",
+    "sourcePath": "src/catalog/generated/details.json",
+    "stepIndexes": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "stepsSha256": "d67fb444c0b0c32178d1f512db9d26e8fc03461fadc684ab6f59245c00b1841d"
+  },
+  {
+    "slug": "custom-standing-upper-back-stretch",
+    "mobility_type": "static",
+    "stretch_targets": [
+      "back"
+    ],
+    "sourcePath": "src/catalog/custom-exercises.json",
+    "stepIndexes": [
+      0,
+      1,
+      2
+    ],
+    "stepsSha256": "ada50e2571edb173d3e979e5478fe897252d8e37d1ae2050e0ab2dc1b90230df"
+  }
+]

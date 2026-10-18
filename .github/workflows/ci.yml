@@ -29,7 +29,12 @@ jobs:
       - run: npm ci
       - run: node --test tools/v8/check.test.mjs
       - run: node tools/v8/check.mjs
-      - run: npm run check
+      # Same functional group as tools/training-engine/test.mjs. The complete
+      # diagnostic group runs in engine-audit, and verify requires both jobs.
+      - run: npm run typecheck
+      - run: npm test -- --exclude tests/training-engine/diagnostic.test.ts
+      - run: npm run build
+      - run: npm run engine:check
       - run: node tools/check-coach-client-boundary.mjs
       - name: Collect all browser suites before installing browsers
         run: |
@@ -38,8 +43,58 @@ jobs:
           npx playwright test --list --config tests/e2e/v8-mainline.config.ts > /dev/null
           npx playwright test --list --config tests/e2e/v8-plan-review.config.ts > /dev/null
           npx playwright test --list --config playwright.v8-coach.config.ts > /dev/null
+          npx playwright test --list --config tests/e2e/training-engine.config.ts > /dev/null
+
+  engine-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci
+      - run: npm run catalog:prepare
+      - run: npm run engine:prepare
+      # Build a fresh receipt outside Vitest, on this same source/input/runtime.
+      # Original diagnostic assertions and their timeout remain unchanged.
+      - run: npm run engine:full
+      - run: npm test -- tests/training-engine/diagnostic.test.ts
 
   browser-main:
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, webkit]
+        shard: [1, 2]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci
+      - run: npm run catalog:prepare
+      - run: npm run engine:prepare
+      - run: npx playwright install --with-deps chromium webkit
+      # Execute every existing test once; independent runners keep the job deadline unchanged.
+      - run: npm run test:e2e -- --project=${{ matrix.browser }} --shard=${{ matrix.shard }}/2 --workers=2 --reporter=line
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-main-${{ matrix.browser }}-${{ matrix.shard }}
+          path: test-results/
+          retention-days: 3
+
+  browser-followup:
     needs: checks
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -53,8 +108,8 @@ jobs:
           package-manager-cache: false
       - run: npm ci
       - run: npm run catalog:prepare
+      - run: npm run engine:prepare
       - run: npx playwright install --with-deps chromium webkit
-      - run: npm run test:e2e
       - run: npx playwright test --config tests/e2e/followup-finish.config.ts
       - run: npm run build && npx playwright test --config followup-pwa.config.ts
 
@@ -72,12 +127,31 @@ jobs:
           package-manager-cache: false
       - run: npm ci
       - run: npm run catalog:prepare
+      - run: npm run engine:prepare
       - run: npx playwright install --with-deps chromium webkit
       - run: npx playwright test --config playwright.trial.config.ts
       - run: npx playwright test --config tests/e2e/v8-mainline.config.ts
       - run: npx playwright test --config tests/e2e/mainline-polish.config.ts
       - run: npx playwright test --config tests/e2e/v8-plan-review.config.ts
       - run: npx playwright test --config playwright.v8-coach.config.ts
+
+  browser-engine:
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci
+      - run: npm run catalog:prepare
+      - run: npm run engine:prepare
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test --config tests/e2e/training-engine.config.ts
 
   browser-admin:
     needs: checks
@@ -93,6 +167,7 @@ jobs:
           package-manager-cache: false
       - run: npm ci
       - run: npm run catalog:prepare
+      - run: npm run engine:prepare
       - run: npx playwright install --with-deps chromium
       - run: npx playwright test --config tests/admin/integration.playwright.config.ts
       - run: npx playwright test --config tests/admin/releases-ui.config.ts
@@ -101,14 +176,17 @@ jobs:
   # Preserve the existing required check name and fail closed if any group fails.
   verify:
     if: always()
-    needs: [checks, browser-main, browser-flows, browser-admin]
+    needs: [checks, engine-audit, browser-main, browser-followup, browser-flows, browser-engine, browser-admin]
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
       - name: Require all checks
         env:
           CHECKS: ${{ needs.checks.result }}
+          AUDIT: ${{ needs.engine-audit.result }}
           MAIN: ${{ needs.browser-main.result }}
+          FOLLOWUP: ${{ needs.browser-followup.result }}
           FLOWS: ${{ needs.browser-flows.result }}
+          ENGINE: ${{ needs.browser-engine.result }}
           ADMIN: ${{ needs.browser-admin.result }}
-        run: test "$CHECKS" = success && test "$MAIN" = success && test "$FLOWS" = success && test "$ADMIN" = success
+        run: test "$CHECKS" = success && test "$AUDIT" = success && test "$MAIN" = success && test "$FOLLOWUP" = success && test "$FLOWS" = success && test "$ENGINE" = success && test "$ADMIN" = success

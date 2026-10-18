@@ -1,0 +1,249 @@
+{
+  "source": {
+    "report": ".cache/engine-full-after-safety-repair-failed-2.json",
+    "sha256": "5efab46053a0a32dd2b9d96d1bf92c0895813825ac464aa090e232328a5fed72",
+    "seed": 20261015,
+    "sampledCount": 2000,
+    "extremeCount": 200,
+    "rulesVersion": "c7ce150248baefb44d7b1bce37291c4834c3b5d59a769305898810bf332fcacb",
+    "variant": 0,
+    "reportedViolations": [
+      {
+        "index": 2078,
+        "reason": "No hard-safe generation checkpoint at assemble: duration_tolerance"
+      },
+      {
+        "index": 2182,
+        "reason": "No hard-safe generation checkpoint at assemble: duration_tolerance"
+      }
+    ]
+  },
+  "profiles": [
+    {
+      "index": 2078,
+      "extremeIndex": 78,
+      "profile": {
+        "goal": "strength",
+        "level": "intermediate",
+        "trainingAgeWeeks": 1,
+        "daysPerWeek": 1,
+        "sessionMinutes": 10,
+        "equipment": [
+          "none"
+        ],
+        "place": "home",
+        "constraints": {
+          "noJump": true,
+          "quiet": true,
+          "space": "small"
+        },
+        "cautions": [
+          "knee",
+          "back",
+          "shoulder",
+          "wrist"
+        ],
+        "population": {
+          "kind": "older_adult",
+          "balanceCautious": true,
+          "fallsAnswers": [
+            false,
+            true,
+            false,
+            false
+          ]
+        },
+        "screening": {
+          "parqAllNo": true,
+          "parqAnswers": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "knownCondition": false,
+          "knownCmrDisease": false,
+          "symptoms": false,
+          "cmrSymptoms": {
+            "chest_neck_jaw_arm_pain_or_discomfort": false,
+            "dyspnea_at_rest_or_mild_exertion": false,
+            "dizziness_or_syncope": false,
+            "orthopnea_or_nocturnal_dyspnea": false,
+            "ankle_edema": false,
+            "palpitations_or_tachycardia": false,
+            "intermittent_claudication": false,
+            "known_heart_murmur": false,
+            "unusual_fatigue_or_breathlessness_usual_activity": false
+          },
+          "activityStatus": "active",
+          "restingBp": "known_below_threshold",
+          "acuteIllness": false,
+          "completedAt": "2026-10-01T00:00:00.000Z",
+          "lastScreenedAt": "2026-10-01T00:00:00.000Z",
+          "redFlagReview": {
+            "requiredAt": "2026-10-01T00:00:00.000Z",
+            "answeredAt": "2026-10-01T00:00:00.000Z",
+            "areas": [
+              "knee",
+              "back",
+              "shoulder",
+              "wrist"
+            ],
+            "questionKeys": [
+              "pain_after_fall_or_impact",
+              "cannot_bear_weight_or_use_limb",
+              "joint_hot_red_swollen_or_with_fever",
+              "locking_or_giving_way",
+              "unexplained_night_or_rest_pain",
+              "visible_deformity",
+              "numbness_tingling_or_weakness_spreading_into_limb",
+              "numbness_groin_or_buttocks",
+              "new_bladder_or_bowel_problem",
+              "progressive_leg_weakness",
+              "back_pain_with_fever_or_unwell",
+              "back_pain_with_cancer_history",
+              "unexplained_weight_loss",
+              "back_pain_after_significant_trauma",
+              "severe_constant_pain_unrelated_to_movement",
+              "shoulder_pain_with_chest_pain",
+              "shoulder_pain_with_breathlessness",
+              "sudden_loss_of_arm_movement_after_injury"
+            ],
+            "answers": {
+              "pain_after_fall_or_impact": false,
+              "cannot_bear_weight_or_use_limb": false,
+              "joint_hot_red_swollen_or_with_fever": false,
+              "locking_or_giving_way": false,
+              "unexplained_night_or_rest_pain": false,
+              "visible_deformity": false,
+              "numbness_tingling_or_weakness_spreading_into_limb": false,
+              "numbness_groin_or_buttocks": false,
+              "new_bladder_or_bowel_problem": false,
+              "progressive_leg_weakness": false,
+              "back_pain_with_fever_or_unwell": false,
+              "back_pain_with_cancer_history": false,
+              "unexplained_weight_loss": false,
+              "back_pain_after_significant_trauma": false,
+              "severe_constant_pain_unrelated_to_movement": false,
+              "shoulder_pain_with_chest_pain": false,
+              "shoulder_pain_with_breathlessness": false,
+              "sudden_loss_of_arm_movement_after_injury": false
+            }
+          }
+        },
+        "preferences": {
+          "excludedExerciseIds": [],
+          "cannotDo": [
+            "jumping"
+          ]
+        },
+        "birthYearMonth": "1956-06",
+        "asOfDate": "2026-10-15",
+        "locale": "zh"
+      },
+      "profileHash": "ffefcb88"
+    },
+    {
+      "index": 2182,
+      "extremeIndex": 182,
+      "profile": {
+        "goal": "strength",
+        "level": "intermediate",
+        "trainingAgeWeeks": 3,
+        "daysPerWeek": 1,
+        "sessionMinutes": 10,
+        "equipment": [
+          "none"
+        ],
+        "place": "home",
+        "constraints": {
+          "noJump": true,
+          "quiet": true,
+          "space": "small"
+        },
+        "cautions": [
+          "knee"
+        ],
+        "population": {
+          "kind": "older_adult",
+          "balanceCautious": true,
+          "fallsAnswers": [
+            false,
+            true,
+            false,
+            false
+          ]
+        },
+        "screening": {
+          "parqAllNo": true,
+          "parqAnswers": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "knownCondition": false,
+          "knownCmrDisease": false,
+          "symptoms": false,
+          "cmrSymptoms": {
+            "chest_neck_jaw_arm_pain_or_discomfort": false,
+            "dyspnea_at_rest_or_mild_exertion": false,
+            "dizziness_or_syncope": false,
+            "orthopnea_or_nocturnal_dyspnea": false,
+            "ankle_edema": false,
+            "palpitations_or_tachycardia": false,
+            "intermittent_claudication": false,
+            "known_heart_murmur": false,
+            "unusual_fatigue_or_breathlessness_usual_activity": false
+          },
+          "activityStatus": "active",
+          "restingBp": "known_below_threshold",
+          "acuteIllness": false,
+          "completedAt": "2026-10-01T00:00:00.000Z",
+          "lastScreenedAt": "2026-10-01T00:00:00.000Z",
+          "redFlagReview": {
+            "requiredAt": "2026-10-01T00:00:00.000Z",
+            "answeredAt": "2026-10-01T00:00:00.000Z",
+            "areas": [
+              "knee"
+            ],
+            "questionKeys": [
+              "pain_after_fall_or_impact",
+              "cannot_bear_weight_or_use_limb",
+              "joint_hot_red_swollen_or_with_fever",
+              "locking_or_giving_way",
+              "unexplained_night_or_rest_pain",
+              "visible_deformity",
+              "numbness_tingling_or_weakness_spreading_into_limb"
+            ],
+            "answers": {
+              "pain_after_fall_or_impact": false,
+              "cannot_bear_weight_or_use_limb": false,
+              "joint_hot_red_swollen_or_with_fever": false,
+              "locking_or_giving_way": false,
+              "unexplained_night_or_rest_pain": false,
+              "visible_deformity": false,
+              "numbness_tingling_or_weakness_spreading_into_limb": false
+            }
+          }
+        },
+        "preferences": {
+          "excludedExerciseIds": [],
+          "cannotDo": [
+            "jumping"
+          ]
+        },
+        "birthYearMonth": "1956-06",
+        "asOfDate": "2026-10-15",
+        "locale": "zh"
+      },
+      "profileHash": "e1af7083"
+    }
+  ]
+}

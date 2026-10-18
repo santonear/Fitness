@@ -1,0 +1,257 @@
+# 第 2 章 目标与训练变量映射 —— 机器规则
+# 与 ch02-goals.md 一一对应。枚举：goal ∈ {health, fat_loss, strength, muscle, mobility, start_moving}
+# 时间份额（share）= 该类训练分钟数 / 本周计划训练总分钟数；aerobic_min 为"中等强度当量分钟"（剧烈 1 分钟 = 中等 2 分钟）。
+# sets_per_muscle_week 为"分数组"（直接 1.0、协同 0.5），换算见第 5 章 dose.volume.fractional。
+
+- id: goal.floor.all
+  chapter: 2
+  type: gate
+  value:
+    rt_days_week_min: 2
+    all_major_muscles_per_week_min: 2      # 用户可训练天数 ≥2 时，每个主要肌群每周 ≥2 次
+    sets_per_exercise_min: 2
+    exempt:
+      - session_minutes_max: 10            # 10 分钟课可每动作 1–3 轮（第 4 章）
+      - new_user_week: 1                   # 新手第 1 周每动作 1–2 组（第 7 章）
+      - goal: start_moving
+    applies_when: { days_available_min: 2 }
+    target_only_when: {"any":[{"user":"days_available","lte":1},{"user":"session_minutes","lte":20}]}
+  evidence: A
+  sources: [E03:ACSM-2026, E01:WHO20, E01:PAG18]
+  note: "全体硬下限；1 天/周用户只给提示，不判为违规；v2 调整：每周1天或单次≤20分钟时，每肌群每周≥2次按目标计分，不判失败；此项分级为target。"
+
+- id: goal.aerobic.baseline
+  chapter: 2
+  type: default
+  value:
+    aerobic_moderate_equiv_min_week: { target: 150, stretch: 300 }
+    vigorous_credit_factor: 2
+    min_bout_min: 1
+    counts: [planned_conditioning, planned_cardio_session, logged_brisk_walk]
+    steps_count_as_mvpa: false             # 只有"能说话不能唱歌"的快走计入
+  evidence: A
+  sources: [E01:WHO20, E01:PAG18, E03:WHO-2020]
+  note: 有氧分钟按中等强度当量计；任意时长的活动都算
+
+- id: goal.params.start_moving
+  chapter: 2
+  type: default
+  applies:
+    goal: [start_moving]
+  value:
+    rt_sessions_week: { min: 1, default: 2, max: 2 }
+    time_share: {"resistance":[0.3,0.7],"aerobic":[0.3,0.7]}
+    aerobic_mode_default: walking
+    aerobic_moderate_equiv_min_week: { week1: [60, 90], target: 150, ramp_weeks: 8 }
+    sets_per_muscle_week: { min: 2, max: 4 }
+    sets_per_exercise: { min: 1, max: 2 }
+    reps: { min: 10, max: 15 }
+    load_band: light_to_moderate
+    rir: { min: 3, max: 4 }
+    mobility_min_per_session: { default: 5, optional: true }
+    max_intensity: moderate                # RPE ≤6/10
+  evidence: C
+  sources: [E03:ACSM-2026, E03:Garber-2011, E01:WHO20, E03:Momma-2022]
+  note: "工程选择；整合 A 级\"少量也有益\"与证据库目标表；v2 调整：每个已定义时间类别的目标区间为30%–70%，按权重计分，不作为失败或空计划原因。"
+
+- id: goal.params.health
+  chapter: 2
+  type: default
+  applies:
+    goal: [health]
+  value:
+    rt_sessions_week: { min: 2, default: 2, max: 3 }
+    time_share: {"resistance":[0.3,0.7],"aerobic":[0.3,0.7]}
+    aerobic_moderate_equiv_min_week: { target: 150, stretch: 300 }
+    sets_per_muscle_week: { min: 6, max: 10 }
+    reps: { min: 8, max: 15 }
+    rir: { min: 2, max: 3 }
+    mobility_sessions_week: { min: 2, max: 3 }
+  evidence: C
+  sources: [E03:ACSM-2026, E01:WHO20, E03:Garber-2011]
+  note: "工程选择；力量与有氧各约一半，朝每周 150 分钟推进；v2 调整：每个已定义时间类别的目标区间为30%–70%，按权重计分，不作为失败或空计划原因。"
+
+- id: goal.params.fat_loss
+  chapter: 2
+  type: default
+  applies:
+    goal: [fat_loss]
+  value:
+    rt_sessions_week: { min: 2, default: 3, max: 4 }
+    time_share: {"resistance":[0.3,0.7],"aerobic":[0.3,0.7]}
+    aerobic_moderate_equiv_min_week: { start: 150, target: [200, 300], ramp_weeks: [8, 12] }
+    sets_per_muscle_week: { min: 8, max: 12 }
+    reps: { min: 8, max: 15 }
+    rir: { min: 1, max: 3 }
+    mobility: optional
+    require_resistance_training: true
+    require_nutrition_prompt: true
+  evidence: C
+  sources: [E03:Bellicha-2021, E03:Wewege-2022, E03:Lopez-2022, E03:Donnelly-2009, E01:DONN09, E01:JAYEDI24]
+  note: "工程选择；有氧制造消耗，力量训练保住瘦体重；v2 调整：每个已定义时间类别的目标区间为30%–70%，按权重计分，不作为失败或空计划原因。"
+
+- id: goal.params.muscle
+  chapter: 2
+  type: default
+  applies:
+    goal: [muscle]
+  value:
+    rt_sessions_week: { min: 3, default: 4, max: 5, opt_in_max: 6, opt_in_level: [intermediate] }
+    time_share: {"resistance":[0.3,0.7],"aerobic":[0.3,0.7]}
+    sets_per_muscle_week: { min: 10, max: 20 }
+    reps: { min: 6, max: 15, acceptable_min: 5, acceptable_max: 30 }
+    rir: { min: 0, max: 3, rir0_only: [isolation_last_set, machine_last_set] }
+    mobility: optional
+  evidence: C
+  sources: [E03:ACSM-2026, E02:Currier2026, E02:Pelland2024, E02:Baz-Valle2022]
+  note: "工程选择；≥10 组/肌群/周为 A 级锚点，20 为默认上限；v2 调整：每个已定义时间类别的目标区间为30%–70%，按权重计分，不作为失败或空计划原因。"
+
+- id: goal.params.strength
+  chapter: 2
+  type: default
+  applies:
+    goal: [strength]
+  value:
+    rt_sessions_week: { min: 3, default: 3, max: 4 }
+    time_share: {"resistance":[0.3,0.7],"aerobic":[0.3,0.7]}
+    sets_per_muscle_week: { min: 6, max: 12 }
+    main_lifts_per_session: { min: 1, max: 2 }
+    main_lift: { sets_per_session: [2, 3], reps: [3, 6], load_pct_1rm: [80, 90], rir: [1, 3] }
+    accessory: { reps: [8, 12], rir: [1, 3] }
+    weekly_hard_sets_per_main_lift_useful_max: 5
+    mobility: optional
+  evidence: A
+  sources: [E03:ACSM-2026, E02:Currier2026, E02:Lopez2021, E02:Pelland2024]
+  note: "≥80%1RM、每动作 2–3 组为 A；单个主项每周超 5 组后转去辅助；v2 调整：每个已定义时间类别的目标区间为30%–70%，按权重计分，不作为失败或空计划原因。"
+
+- id: goal.strength.beginner_rep_gate
+  chapter: 2
+  type: gate
+  applies:
+    goal: [strength]
+    level: [beginner]
+  value:
+    weeks_trained_before_low_reps: 12
+    main_lift_reps_before_gate: { min: 8, max: 12 }
+    min_reps_after_gate: 3
+  evidence: C
+  sources: [E02:Currier2026, E02:Ratamess2009]
+  note: 证据给 8–12 周，取 12 周；之前主项不做 ≤6 次组
+
+- id: goal.params.mobility
+  chapter: 2
+  type: default
+  applies:
+    goal: [mobility]
+  value:
+    rt_sessions_week: { min: 2, default: 2, max: 2 }
+    rt_style: full_rom
+    time_share: {"resistance":[0.3,0.7],"aerobic":[0.3,0.7],"mobility":[0.3,0.7]}
+    sets_per_muscle_week: { min: 4, max: 8 }
+    reps: { min: 8, max: 15 }
+    eccentric_s: 3
+    concentric_s: 1
+    pause_s: 0
+    rep_duration_min_s: 4
+    rep_duration_catalog_policy: max
+    rir: { min: 2, max: 3 }
+    mobility_days_week: { min: 5, max: 7 }
+    mobility_block_min: [5, 10]
+    stretch_s_per_muscle_per_session_min: 60
+    stretch_min_per_region_per_week_min: 5
+  evidence: B
+  sources: [E03:Garber-2011, E03:Thomas-2018, E03:Afonso-2021]
+  note: "每周总拉伸时间决定柔韧收益；全幅度力量训练效果相近；v2 调整：每个已定义时间类别的目标区间为30%–70%，按权重计分，不作为失败或空计划原因。"
+
+- id: goal.rir.level_override
+  chapter: 2
+  type: limit
+  value:
+    beginner: { rir_min: 2 }
+    intermediate: { rir_min: 0 }
+    heavy_compound_rir_min: 1               # flags 含 heavy_axial_load 的动作永不做到 0 RIR
+    older_adult_rir_min: 2
+    resolve: max_of_goal_and_level
+  evidence: C
+  sources: [E02:Currier2026, E02:Grgic2022, E02:Refalo2024]
+  note: 目标 RIR 与水平下限冲突时取更保守者
+
+- id: goal.interference.guard
+  chapter: 2
+  type: limit
+  applies:
+    goal: [strength, muscle]
+  value:
+    hard_aerobic_sessions_week_max: 3
+    hard_aerobic_min_week_max: 90
+    preferred_modes: [cycling, rowing, walking]
+    no_hard_intervals_within_h_before_heavy_lower: 24
+    reduce_moderate_aerobic: false
+  evidence: C
+  sources: [E03:Schumann-2022, E03:Wilson-2012]
+  note: 同期训练基本不损力量与肌肉；只给高强度有氧设温和上限
+
+- id: goal.aerobic.daily_life_credit
+  chapter: 2
+  type: default
+  applies:
+    goal: [strength, muscle, mobility]
+  value:
+    show_tracker: true
+    target_moderate_equiv_min_week: 150
+    planned_aerobic_share_unchanged: true
+  evidence: C
+  sources: [E01:WHO20, E01:PAG18]
+  note: 工程选择；计划内有氧仍按份额，150 分钟靠日常快走补足
+
+- id: goal.select.single_primary
+  chapter: 2
+  type: default
+  value:
+    primary_goal_count: 1
+    secondary_goal_count_max: 1
+    secondary_effect: { aerobic_share_shift_max: 0.10, mobility_cooldown_extra_min: 5 }
+    tie_break_order: [start_moving, health, fat_loss, muscle, strength, mobility]
+  evidence: C
+  sources: [E03:ACSM-2026, E04:S8]
+  note: 工程选择，待教练审核；只用主目标定参数，次目标微调
+
+- id: goal.fat_loss.copy_spot_reduction
+  chapter: 2
+  type: copy
+  applies:
+    goal: [fat_loss]
+  value:
+    trigger: on_plan_created
+  zh: 脂肪从哪里减掉没法自己挑。核心训练让你更有力量；整体活动量和饮食才决定减脂。
+  en: You can't choose where fat comes off. Core work builds strength; overall activity and nutrition reduce fat.
+  evidence: B
+  sources: [E01:RC21, E01:JAYEDI24]
+  note: 不得出现"练腹减肚子"等文案
+
+- id: goal.fat_loss.copy_expectation
+  chapter: 2
+  type: copy
+  applies:
+    goal: [fat_loss]
+  value:
+    trigger: on_plan_created
+    kg_per_30min_week: 0.5
+  zh: 平均来看，每周多 30 分钟有氧，体重约多降 0.5 公斤；配合饮食调整效果更明显。
+  en: On average, each extra 30 min/week of aerobic exercise adds about 0.5 kg of weight loss, more alongside your nutrition.
+  evidence: B
+  sources: [E01:JAYEDI24, E03:Bellicha-2021]
+  note: 表述为平均值，不承诺个人结果
+
+- id: goal.start_moving.copy_intro
+  chapter: 2
+  type: copy
+  applies:
+    goal: [start_moving]
+  value:
+    trigger: on_plan_created
+  zh: 每一分钟都算数。从你现在能做到的开始，我们一点点往上加。
+  en: Every minute counts. Start where you are, and we'll build up a little at a time.
+  evidence: A
+  sources: [E01:WHO20, E01:PAG18]
+  note: 指南明确"有一点好过没有"

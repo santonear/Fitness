@@ -1,0 +1,278 @@
+# 第 13 章 时长估算公式 —— 机器规则 v0.1（2026-10-14）
+# 与 ch13-duration.md 一一对应。字段名对齐动作标注 time.s_per_rep / time.setup_s / time.per_side
+
+- id: duration.rep.seconds
+  chapter: 13
+  type: default
+  value:
+    source_field: time.s_per_rep
+    fallback_s_per_rep: {general: 3.5, bodyweight: 3.0, machine: 3.0, heavy_barbell: 4.0, slow_eccentric: 5.0, ballistic: 2.0}
+    default_if_unknown: 3.5
+    slow_down_to_fill_time: false
+  evidence: C
+  sources: [E02:Schoenfeld2015, E02:Currier2026, E02:Paz2017, E02:DeSouzaBezerra2025, E02:Ratamess2009]
+  note: 工程选择，待教练审核；Paz2017 待核实
+
+- id: duration.set.overhead
+  chapter: 13
+  type: default
+  value: {overhead_s_per_set: 10, mobility_overhead_s_per_set: 5}
+  evidence: C
+  sources: [E02:Paz2017, E02:Iversen2021]
+  note: 工程选择，待教练审核
+
+- id: duration.unilateral.multiplier
+  chapter: 13
+  type: formula
+  value:
+    side: "2 if time.per_side or reps_prescribed_per_side else 1"
+    multiply: work_time_only
+    overhead_once_per_set: true
+    counts_as_sets: 1
+  evidence: C
+  sources: [E02:Paz2017]
+  note: 工程选择，待教练审核
+
+- id: duration.set.work_time
+  chapter: 13
+  type: formula
+  value:
+    dynamic_set_s: reps * s_per_rep * side + 10
+    isometric_set_s: seconds * side + 10
+    mobility_set_s: seconds * side + 5
+    reps_from_range: ceil(midpoint)
+    examples_s: {db_squat_10: 45, bulgarian_split_squat_8_per_side: 66, plank_30s: 40}
+  evidence: C
+  sources: [E02:Paz2017, E02:Schoenfeld2015, E02:Iversen2021]
+  note: 工程选择，待教练审核
+
+- id: duration.rest.straight
+  chapter: 13
+  type: default
+  value:
+    rest_s: {heavy_compound: 150, compound: 90, isolation: 60}
+    rest_range_s: {heavy_compound: [90, 240], compound: [60, 180], isolation: [45, 120]}
+    heavy_compound_max_reps: 6
+    class_map: {nsca_class_compound_reps_le_6: heavy_compound, nsca_class_compound: compound, nsca_class_power: heavy_compound, nsca_class_isolation: isolation, modality_isometric: isolation}
+    rest_after_last_set: false
+    trained_strength_block_main_min_s: 150
+  evidence: C
+  sources: [E02:Singer2024, E02:Grgic2018rest, E02:Currier2026, E02:Ratamess2009]
+  note: 工程选择；取证据范围中点或下端
+
+- id: duration.rest.block
+  chapter: 13
+  type: default
+  value:
+    superset: {between_exercises_s: 15, after_round_s: 75, after_round_range_s: [60, 90]}
+    circuit: {between_stations_s: 15, after_round_s: 60, stations: [3, 4]}
+    same_muscle_superset: finisher_only
+  evidence: C
+  sources: [E02:Zhang2025, E02:Paz2017, E02:Iversen2021, E02:Currier2026]
+  note: 工程选择；Zhang2025、Paz2017 待核实
+
+- id: duration.transition.setup
+  chapter: 13
+  type: formula
+  value:
+    transition_s: sum(setup_s of exercises in block) + 45
+    buffer_s: 45
+    setup_s_defaults: {bodyweight: 5, dumbbell_kettlebell_band: 15, machine_cable: 30, barbell: 60, unknown: 15}
+    within_block_change: included_in_15s_gap
+  evidence: C
+  sources: [E02:Paz2017, E02:Iversen2021]
+  note: 工程选择，最不确定，校准时优先替换
+
+- id: duration.ramp.sets
+  chapter: 13
+  type: default
+  value:
+    first_loaded_compound: {when: "session_min >= 30 and setup_s >= 15", ramp_sets: [{pct_working: 50, reps: 8}, {pct_working: 75, reps: 3}], ramp_s: 180}
+    later_barbell_compound: {when: "setup_s == 60", ramp_sets: 1, ramp_s: 60}
+    bodyweight_or_short_session: merged_into_warmup
+    counts_as_working_sets: false
+  evidence: B
+  sources: [E03:Ribeiro-2021, E03:Iversen-2021, E02:Iversen2021]
+  note: 数值为工程选择
+
+- id: duration.block.warmup_cooldown
+  chapter: 13
+  type: default
+  value:
+    by_session_min:
+      - {session: 10, warmup: 2, cooldown: 1}
+      - {session: 20, warmup: 3, cooldown: 1}
+      - {session: 30, warmup: 4, cooldown: 2}
+      - {session: 45, warmup: 5, cooldown: 3}
+      - {session: 60, warmup: 7, cooldown: 4}
+      - {session: 90, warmup: 9, cooldown: 6}
+    lookup: nearest_lower
+    moderate_plus_aerobic_min_each: safety.session.warmup_cooldown
+    warmup_content: {general_aerobic_min: [1, 3], general_aerobic_if_session_min_ge: 30, dynamic_mobility_s: [30, 90], static_hold_per_muscle_max_s: 59}
+    hiit_session_min_minutes: 20
+  evidence: C
+  sources: [E03:Fradkin-2010, E03:Behm-2016, E03:Boullosa-2026, E03:Iversen-2021, E02:Iversen2021, E01:FRANK20]
+  note: 工程选择，在证据区间内取值
+
+- id: duration.block.cardio
+  chapter: 13
+  type: formula
+  value:
+    continuous_s: prescribed_min * 60
+    interval_s: rounds * (work_s + recovery_s) + 30
+    snack_s: prescribed_min * 60
+    snack_warmup: false
+  evidence: C
+  sources: [E01:FRANK20, E03:Rodriguez-2026]
+  note: 工程选择，待教练审核
+
+- id: duration.block.mobility
+  chapter: 13
+  type: formula
+  value:
+    exercise_s: sets * (seconds * side + 5)
+    rest_between_s: 0
+    cap: duration.block.warmup_cooldown
+    if_over_cap: drop_exercises
+  evidence: C
+  sources: [E03:Behm-2016, E03:Iversen-2021]
+  note: 工程选择，待教练审核
+
+- id: duration.session.total
+  chapter: 13
+  type: formula
+  value:
+    straight_exercise_s: transition_s + sets * set_s + (sets - 1) * rest_s
+    block_s: transition_s + rounds * (sum(set_s) + (k - 1) * 15) + (rounds - 1) * block_rest_s
+    block_rest_s: {superset: 75, circuit: 60}
+    session_s: warmup_s + ramp_s + sum(exercise_or_block_s) + sum(cardio_block_s) + cooldown_s
+    display_rounding: nearest_minute
+    per_set_cost_s_reference: {heavy_straight: 165, compound_straight: 125, isolation_straight: 105, superset: 90, circuit: 75}
+    quick_capacity: (T_s - warmup_s - cooldown_s - ramp_s) / per_set_cost_s
+  evidence: C
+  sources: [E02:Iversen2021, E02:Paz2017, E03:Iversen-2021]
+  note: 工程选择，待教练审核
+
+- id: duration.capacity.table
+  chapter: 13
+  type: template
+  value:
+    lookup: nearest_lower
+    sessions:
+      - {minutes: 10, warmup: 2, cooldown: 1, ramp_s: 0, structure: [circuit_3_bodyweight_x2], exercises: 3, working_sets: 6, sets_range: [5, 7], model_est_min: 10.5, max_intensity: moderate}
+      - {minutes: 20, warmup: 3, cooldown: 1, ramp_s: 0, structure: [superset_lower_push_x3, superset_single_leg_or_hinge_pull_x2], exercises: 4, working_sets: 10, sets_range: [9, 12], model_est_min: 19.7}
+      - {minutes: 30, warmup: 4, cooldown: 2, ramp_s: 180, structure: [m1_lower_straight_3, superset_push_pull_x3, superset_single_leg_core_x2], exercises: 5, working_sets: 13, sets_range: [10, 16], model_est_min: 30.6, straight_only_sets: 10}
+      - {minutes: 45, warmup: 5, cooldown: 3, ramp_s: 180, structure: [m1_straight_3, m2_straight_3, superset_push_pull_x3, superset_isolation_x3], exercises: 6, working_sets: 18, sets_range: [16, 20], model_est_min: 43.6}
+      - {minutes: 60, warmup: 7, cooldown: 4, ramp_s: 180, structure: [m1_straight_4, m2_straight_3, superset_x3, superset_x3, superset_x3], exercises: 8, working_sets: 25, sets_range: [20, 26], model_est_min: 59.6}
+      - {minutes: 90, warmup: 9, cooldown: 6, ramp_s: 240, structure: [m1_straight_4, m2_barbell_straight_3, m3_straight_3, superset_x3, superset_x3, superset_x3, conditioning_15min], exercises: 9, working_sets: 28, sets_range: [28, 34], model_est_min: 87.9, level_min: intermediate}
+    model_params: {compound_reps: 10, s_per_rep: 3.5, single_leg_reps_per_side: 8, isolation_reps: 12, isolation_s_per_rep: 3.0, plank_s: 30, heavy_reps: 5, heavy_s_per_rep: 4.0}
+    per_muscle_session_cap_fractional_sets: 11
+    over_cap_fill: [aerobic, mobility]
+    fat_loss_or_health_swap_last_accessory_for_aerobic_min: [6, 10]
+  evidence: C
+  sources: [E02:Iversen2021, E03:Iversen-2021, E02:Remmert2025, E02:Currier2026]
+  note: 工程选择；Remmert2025 为预印本
+
+- id: duration.fit.tolerance
+  chapter: 13
+  type: limit
+  value:
+    band: [0.9, 1.1]
+    of: target_session_s
+    choose: min_abs_deviation
+    tie_break: shorter
+    zero_score_band: [0.8,1.2]
+  evidence: C
+  sources: [E02:Iversen2021]
+  note: "工程选择，待教练审核；v2 调整：±10%以内目标满分，偏差10%–20%线性扣分；超出hard边界仍失败。"
+
+- id: duration.fit.bounds
+  chapter: 13
+  type: limit
+  value:
+    sets_per_exercise_min: {main_compound: 2, other: 1}
+    sets_per_exercise_max: {beginner: 3, intermediate: 4}
+    full_body_keep_patterns: [lower, push, pull]
+    lower_patterns: [squat, lunge, hinge]
+    push_patterns: [push_horizontal, push_vertical]
+    pull_patterns: [pull_horizontal, pull_vertical]
+    never_remove: m1
+    rest_floor_s: {heavy_compound: 90, compound: 60, isolation: 45}
+    per_muscle_session_cap_fractional_sets: 11
+    higher_priority_rules_win: true
+    duration_band: [0.8,1.2]
+    min10_duration_seconds: [480,840]
+  evidence: C
+  sources: [E02:Currier2026, E02:Remmert2025, E02:Grgic2018rest]
+  note: "工程选择；每动作 ≥2 组有 A 级支持；v2 调整：时长±20%为hard；10分钟课允许8–14分钟，保留其他原硬性剂量边界。"
+
+- id: duration.fit.algorithm
+  chapter: 13
+  type: default
+  value:
+    start_from: duration.capacity.table
+    re_estimate_after_each_change: true
+    steps:
+      - step: adjust_exercise_count
+        over: {remove_order: [conditioning_unless_fat_loss, isolation_accessory, core_or_carry, second_superset, m2], accept_if: "est_new >= 0.9*T or est_new > 1.1*T"}
+        under: {add_from: program_design_pool, prefer_as: superset, accept_if: "est_new <= 1.1*T"}
+      - step: adjust_sets
+        over: {order: lowest_priority_first, delta: -1, respect: duration.fit.bounds}
+        under: {order: highest_priority_first, delta: 1, accept_if: "est_new <= 1.1*T", respect: duration.fit.bounds}
+      - step: over_last_resort
+        actions: [straight_to_noncompeting_superset, isolation_rest_to_45s, compound_rest_to_60s]
+      - step: under_fill
+        actions: {any_goal: mobility, fat_loss_or_health: low_moderate_aerobic}
+        increment_min: 1
+      - step: unresolved
+        over: {use: minimal_valid_plan, show_copy: duration.copy.over_time}
+        under: use_current_plan
+    weekly_shortfall_action: suggest_extra_session
+  evidence: C
+  sources: [E02:Iversen2021, E02:Zhang2025, E02:Currier2026]
+  note: 工程选择；先动作数后组数，省时手段放最后
+
+- id: duration.copy.over_time
+  chapter: 13
+  type: copy
+  zh: 按你选择的时间，我们已经精简到最少的内容，预计需要 {est} 分钟。可以选择更长的时长，或者每周多练一次。
+  en: We've trimmed this session to the essentials for the time you chose. It should take about {est} minutes. You can pick a longer session or add another session this week.
+  evidence: C
+  sources: [E02:Iversen2021]
+  note: 工程选择；{est} 为整数分钟
+
+- id: duration.calibrate.personal
+  chapter: 13
+  type: trigger
+  value:
+    after_timed_sessions: 3
+    replace_with_median: [s_per_rep_by_class, rest_actual_s, transition_s]
+    rolling_window_sessions: 5
+    session_level_fallback: {factor: median(actual_min / estimated_min), window_sessions: 3, clamp: [0.8, 1.3]}
+    affects: estimate_only
+    rejected_alternatives: {after_timed_sessions: [2, 3]}
+  evidence: C
+  sources: [E02:Iversen2021, E02:Paz2017]
+  note: 工程选择；只改估算，不改处方
+
+- id: duration.cardio.cap
+  chapter: 13
+  type: limit
+  value:
+    explicit_low_intensity_slugs: [walking, custom-quiet-march, custom-seated-march, custom-slow-walking-in-place]
+    low_intensity: {required_flag: low_intensity, impact: 0, max_work_seconds: 600}
+    other_max_work_seconds: 300
+    work_formula: sets * durationSeconds * per_side_multiplier
+    aggregate_by: exerciseId
+    specialized_caps: []
+    shortage: {lower_ratio: 0.8, require_exhausted_safe_capacity: true}
+    refill:
+      order: [existing_sets, missing_patterns, low_intensity, warmup_cooldown]
+      require_all_hard_rules: true
+      low_intensity_uses_own_dose_limits: true
+      intro_weekly_sets_apply_to: [strength, power, isometric]
+      shortage_population_fraction_max: 0.05
+      shortage_session_ratio_min: 0.5
+  evidence: C
+  sources: ["USER:training-engine-preview:2026-10-18"]
+  note: 用户批准；明确命名的四类低强度移动优先适用600秒，不改写其impact事实；其他动作须同时满足low_intensity及impact0；整条动作工作时间上限含组数及单侧，专项更低上限优先；同课动作不重复，不通过虚减目标时长达标。

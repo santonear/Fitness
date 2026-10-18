@@ -6,6 +6,11 @@ import guides from '../../src/catalog/generated/guides-zh.json';
 import {exercises,EXERCISE_IDS} from '../../src/catalog/exercises';
 const id=(slug:string)=>[...catalogMetadata.values()].find(e=>e.slug===slug)!.id;
 describe('shared exercise guidance',()=>{
+ it('splits the approved walking-in-place wording into useful points without adding advice',()=>{
+  const exercise=id('custom-slow-walking-in-place');
+  expect(getExerciseGuide(exercise,'zh').keyPoints.join('')).toBe('慢慢原地踏步，脚轻轻离地，膝盖不用抬高，手臂自然摆动。需要的话可以扶着墙或椅背。');
+  expect(getExerciseGuide(exercise,'en').keyPoints.join(' ')).toBe('Step slowly in place, lifting your feet just off the floor. No need to raise your knees high; let your arms swing naturally. Hold a wall or chair back if you like.');
+ });
  it('has at least 271 concrete Chinese guides with variant setup and actual catalogue IDs',()=>{
   expect(Object.keys(guides).length).toBeGreaterThanOrEqual(271);
   for(const slug of Object.keys(guides)) {const guide=getExerciseGuide(id(slug),'zh');expect(guide.keyPoints.length).toBeGreaterThanOrEqual(2);expect(guide.keyPoints.length).toBeLessThanOrEqual(3);expect(guide.steps.length).toBeGreaterThanOrEqual(3);expect(guide.mistakes.length).toBeGreaterThan(0);expect(guide.cautions.length).toBeGreaterThan(0);expect(guide.media?.src).toMatch(/^\/exercise-media\/repdb\//);}
