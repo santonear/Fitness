@@ -425,3 +425,10 @@ RepDB官方证据：[数据许可证](https://github.com/RepDB/exercise-dataset/
 三个原矩阵场景（徒手、弹力带、居家哑铃/凳）均不假定墙或椅，孕20周平衡合法候选原始数量保持0，登记environmentLimited；原因是孕13–27周平衡动作必须有真实支撑。新增墙、椅各三个明确提供支撑的对照格子，每格5个合法候选，继续要求至少2个，逐个执行“扶墙或扶椅”及等义英文处方提示。无支撑的安全非空草案沿用既有可应用流程；独立校验完整重算候选池和仅环境放宽后的候选池，不信生成标记。计划页使用已批准的平衡缺支撑提示，点击到环境设置；打开开关沿既有保存路径生成新版本并补回支撑平衡，旧版本与训练事实不改。
 
 实现涉及rules-ch11.yaml、coverage.ts、environment.ts、skeleton.ts、fit/requirements.ts、独立质量校验及回归测试；不新增临床阈值或用户话术。统计保留原始不足19格；既有carry等效口径与本次3格environmentLimited单列后，真正闸门失败0。
+
+### 2026-10-19 V9 设计系统（第 2 批）保守决定
+- 情况：V9 设计稿使用 Google Fonts（Fraunces、Nunito、Sora、Anton）且部分灰字/琥珀字对比度低于 4.5:1；休息页为倒计时并自动开始下一组；芽芽默认提示含“上周少练了一次”等具体事实及感叹号；后台没有 V9 稿。
+- 决定：字体用已打包的 OFL 字体替代（Cormorant Garamond 斜体、Jost、Archivo 窄体），不新增 CDN 或下载新字体；`--c-ink-muted`、`--c-accent-text` 加深到 ≥4.5:1，原浅色保留为 `--c-faint`；`RestClock` 保持已歇时间，`CountdownRing` 只给用户主动开始的计时用；默认提示改为不含事实的句子并去掉感叹号，页面有真实数据时再传入；悬浮助手不在训练进行页出现；后台沿用 V8 青瓷固定配色（`tokens.admin`）。
+- 理由：AGENTS §2.7、§3.1、§3.3 与不编造数据原则；无障碍规范；后台改版不在本批。
+- 涉及文件：docs/handoff-v8/02-design-tokens.json、src/themes/**、src/ui/components/{Orb,Yaya,Scene,ThemePicker}.tsx、src/ui/components/kit/、src/i18n/features/coach/orb.ts、docs/uiux/UIUX20261008.md（V9.4）。
+- 待 Bo 确认：休息页是否改为倒计时（不自动开始）；是否需要打包设计稿原字体；新增芽芽提示句及英文。
