@@ -1,7 +1,7 @@
 import './fonts/fonts.css';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
 import tokens from '../../docs/handoff-v8/02-design-tokens.json';
-import { compactThemeFonts } from './fonts';
+import { compactCapable, compactThemeFonts } from './fonts';
 import type { ThemeId, ThemeManifest } from './contract';
 import { defaultThemeId, getTheme, getAvailableThemes, isThemeId } from './registry';
 import { isFeatureEnabled, subscribeFeatureFlags } from '../application/feature-flags';
@@ -29,8 +29,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, []);
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
-    // V9 themes need weights beyond the compact Sans subset, so the full local faces always apply.
-    for (const property of ['--f-body', '--f-display', '--f-num']) document.documentElement.style.removeProperty(property);
+    // The opt-in compact subset carries weights 200–400 only, so it applies to themes whose type fits (pop).
+    const fontTokens = theme in tokens.themes ? tokens.themes[theme as keyof typeof tokens.themes].font : undefined;
+    for (const [property, name] of [['--f-body', 'body'], ['--f-display', 'display'], ['--f-num', 'num']] as const) {
+      if (compactFonts && fontTokens && theme in compactCapable) document.documentElement.style.setProperty(property, fontTokens[name].replace('Noto Sans SC', 'Noto Sans SC Compact').replace('Noto Serif SC', 'Noto Serif SC Compact'));
+      else document.documentElement.style.removeProperty(property);
+    }
     document.documentElement.style.colorScheme = getTheme(theme).colorScheme;
     let meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
     if (!meta) {

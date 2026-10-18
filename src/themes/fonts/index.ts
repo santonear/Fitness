@@ -13,5 +13,9 @@ export const themeFonts: Record<BuiltinThemeId, readonly string[]> = {
  fire: [sans, archivo],
 };
 
-/** V9 themes use heavier weights than the compact Sans subset (200–400) carries, so the full faces stay in use. */
-export const compactThemeFonts = themeFonts;
+/** Themes whose type stays within the compact Sans subset weights (200–400); heavier themes keep the full faces. */
+export const compactCapable = { pop: true } as const;
+export const compactThemeFonts: Record<BuiltinThemeId, readonly string[]> = {
+ ...themeFonts,
+ pop: [new URL('./notosanssc-compact.woff2', import.meta.url).href, jost],
+};

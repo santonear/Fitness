@@ -45,18 +45,18 @@ for(const theme of ['pop', 'vivid', 'gentle', 'data', 'fire'])test(`${theme} coa
 });
 test('fifth folder discovery and remote kill preserve saved preference',async({page})=>{
  await page.goto('/settings/appearance');
- await expect(page.getByRole('button',{name:'测试第五主题',exact:true})).toHaveCount(0);
+ await expect(page.getByRole('radio',{name:'测试第五主题',exact:true})).toHaveCount(0);
  await enable(page,{themeDiscovery:true});
- await expect(page.getByRole('button',{name:'测试第五主题',exact:true})).toHaveCount(0);
+ await expect(page.getByRole('radio',{name:'测试第五主题',exact:true})).toHaveCount(0);
  await page.getByRole('button',{name:'更多模板',exact:true}).click();
- await expect(page.getByRole('button',{name:'测试第五主题',exact:true})).toHaveCount(1);
- await page.getByRole('button',{name:'测试第五主题',exact:true}).click();
+ await expect(page.getByRole('radio',{name:'测试第五主题',exact:true})).toHaveCount(1);
+ await page.getByRole('radio',{name:'测试第五主题',exact:true}).click();
  const values=await page.evaluate(async()=>{const path='/src/themes/registry.ts';return (await import(/* @vite-ignore */path)).getAvailableThemes(true).map((x:any)=>x.id);});
  expect(values).toContain('followup-test');
  await expect(page.locator('html')).toHaveAttribute('data-theme','followup-test');
  await enable(page,{themeDiscovery:false});await expect(page.locator('html')).toHaveAttribute('data-theme','pop');
  expect(await page.evaluate(()=>localStorage.getItem('fitness-theme'))).toBe('followup-test');
- await expect(page.getByRole('button',{name:'测试第五主题',exact:true})).toHaveCount(0);
+ await expect(page.getByRole('radio',{name:'测试第五主题',exact:true})).toHaveCount(0);
 });
 test('font rollout loads local compact faces and returns to original tokens on remote kill',async({page})=>{
  await page.goto('/');
