@@ -334,3 +334,32 @@ test('pre-training joint danger persists as a minimal pause until fresh screenin
  const recovered=await page.evaluate(async()=>{const p='/src/persistence/repository.ts',repo=(await import(/* @vite-ignore */p)).repository;return {state:await repo.db.v8State.get('v8'),workouts:await repo.db.v8Workouts.toArray(),temporary:await repo.db.trainingCheckins.toArray()};});expect(recovered.state.trainingPause).toBeUndefined();expect(recovered.state.coachProfile.screening.parqAnswers).toEqual(Array(7).fill(false));expect(recovered.state.coachProfile.screening.completedAt).toBe('2026-10-15T03:02:00.000Z');expect(recovered.workouts).toEqual(facts);expect(recovered.temporary).toEqual([]);expect(modelAttempts).toEqual([]);expect(errors).toEqual([]);
 });
 
+
+test('home today_adjust intent from 芽芽 becomes a confirmable card for the next session',async({page})=>{
+ await page.route('**/api/v1/features',route=>route.fulfill({json:{version:1,flags:{trainingEngine:true,aiAssistantV2:true,bodyProfile:false},expiresAt:Date.now()+3600000}}));
+ await page.route('**/api/v1/trial/access-status',route=>route.fulfill({json:{qualification:'active',sessionValid:true,expiresAt:Date.now()+3600000,aiEnabled:true,summaryAvailable:true}}));
+ await page.clock.setFixedTime(new Date('2026-10-15T03:00:00.000Z'));
+ const sent:{task?:string;engineProfile?:unknown;template?:{id:string}}[]=[];
+ await page.route('**/api/v1/assistant/chat',async route=>{
+  sent.push(route.request().postDataJSON().context);
+  const events=[{type:'text_delta',delta:'我先整理一份可预览的调整'},{type:'attachment_pending'},{type:'engine_intent',version:'fitness-engine-intent-v1',intent:{kind:'today_adjust',minutes:20}},{type:'done',success:true,usage:{inputTokens:1,outputTokens:1},promptVersion:'test'}];
+  await route.fulfill({contentType:'text/event-stream',body:events.map(event=>'data: '+JSON.stringify(event)+'\n\n').join('')});
+ });
+ await screenAndDraft(page,true);
+ await page.getByRole('button',{name:'就用这份计划',exact:true}).click();await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
+ const before=await page.evaluate(async()=>{const path='/src/ui/mainline/context.tsx';const data=await(await import(/* @vite-ignore */path)).workflow.snapshot();return {version:JSON.stringify(data.version),override:data.state.nextWorkoutOverride};});
+ expect(before.override).toBeUndefined();
+ await page.getByRole('textbox',{name:'跟芽芽说'}).fill('今天只有20分钟，帮我调一下今天的训练');
+ await page.getByRole('button',{name:'发送',exact:true}).click();
+ const dialog=page.getByRole('dialog',{name:'芽芽',exact:true});
+ await expect(dialog.locator('.assistant-attachment')).toBeVisible();
+ await expect(dialog.locator('.assistant-attachment')).toContainText('只调整这次训练');
+ // Network payload stays health-scoped; the card is assembled from the local engine profile.
+ expect(sent).toHaveLength(1);expect(sent[0].task).toBe('ADJUST_TODAY');expect(sent[0].engineProfile).toBeUndefined();
+ // Nothing is written until the user confirms.
+ const pending=await page.evaluate(async()=>{const path='/src/ui/mainline/context.tsx';return (await(await import(/* @vite-ignore */path)).workflow.snapshot()).state.nextWorkoutOverride;});
+ expect(pending).toBeUndefined();
+ await dialog.getByRole('button',{name:'应用建议',exact:true}).click();await expect(dialog.getByText('已应用',{exact:true})).toBeVisible();
+ const after=await page.evaluate(async()=>{const path='/src/ui/mainline/context.tsx';const data=await(await import(/* @vite-ignore */path)).workflow.snapshot();return {version:JSON.stringify(data.version),override:data.state.nextWorkoutOverride};});
+ expect(after.version).toBe(before.version);expect(after.override?.template.estimatedMinutes).toBeLessThanOrEqual(22);
+});
