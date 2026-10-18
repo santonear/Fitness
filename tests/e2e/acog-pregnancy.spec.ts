@@ -52,7 +52,7 @@ test("inactive pregnancy first week adopts a bounded plan and preserves the ramp
 
 test("an applied legacy plan stays startable while new generation waits for the prenatal answer", async ({
   page,
-}, info) => {
+}) => {
   const result = await page.evaluate(async () => {
     const path = "/tests/e2e/helpers/acog-pregnancy-seed.ts";
     return (await import(/* @vite-ignore */ path)).seedAcogPregnancy(true);
@@ -78,21 +78,47 @@ test("an applied legacy plan stays startable while new generation waits for the 
       { exact: true },
     ),
   ).toBeVisible();
-  for (const [id, label] of [
-    ["qingci", "青瓷"],
-    ["liubai", "留白"],
-    ["jingshe", "静奢"],
-    ["zhuangse", "撞色"],
-  ]) {
+  const started = await page.evaluate(async (templateId) => {
+    const path = "/src/ui/mainline/context.tsx";
+    return (await import(/* @vite-ignore */ path)).workflow.start(templateId);
+  }, result.version.templates[0].id);
+  expect(started.planVersionId).toBe(result.version.id);
+  await page.goto("/workout/" + started.id);
+  await page.getByRole("button", { name: "暂停或结束", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "继续训练", exact: true }),
+  ).toBeVisible();
+});
+
+for (const [id, label] of [
+  ["qingci", "青瓷"],
+  ["liubai", "留白"],
+  ["jingshe", "静奢"],
+  ["zhuangse", "撞色"],
+]) {
+  test(`prenatal question and layout in ${id} at 375 and 1280`, async ({
+    page,
+  }, info) => {
+    await page.evaluate(async () => {
+      const path = "/tests/e2e/helpers/acog-pregnancy-seed.ts";
+      await (await import(/* @vite-ignore */ path)).seedAcogPregnancy(true);
+    });
     await page.goto("/settings/appearance");
     await page.getByRole("button", { name: label, exact: true }).click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", id);
     await page.goto("/settings/engine");
     await expect(page.locator("html")).toHaveAttribute("data-theme", id);
+    const question = page.getByRole("combobox", {
+      name: "你现在在定期做产检吗？",
+      exact: true,
+    });
+    await expect(question).toBeVisible();
+    await question.selectOption("false");
     await expect(
-      page.getByRole("combobox", {
-        name: "你现在在定期做产检吗？",
-        exact: true,
-      }),
+      page.getByText(
+        "请先在产检时和医生或助产士聊聊运动的事，确认后回来告诉我们，我们再为你安排。",
+        { exact: true },
+      ),
     ).toBeVisible();
     for (const width of [375, 1280]) {
       await page.setViewportSize({ width, height: 900 });
@@ -106,18 +132,8 @@ test("an applied legacy plan stays startable while new generation waits for the 
         fullPage: true,
       });
     }
-  }
-  const started = await page.evaluate(async (templateId) => {
-    const path = "/src/ui/mainline/context.tsx";
-    return (await import(/* @vite-ignore */ path)).workflow.start(templateId);
-  }, result.version.templates[0].id);
-  expect(started.planVersionId).toBe(result.version.id);
-  await page.goto("/workout/" + started.id);
-  await page.getByRole("button", { name: "暂停或结束", exact: true }).click();
-  await expect(
-    page.getByRole("button", { name: "继续训练", exact: true }),
-  ).toBeVisible();
-});
+  });
+}
 
 test("database19 upgrade preserves an unanswered prenatal field and applied plan bytes", async ({
   page,
