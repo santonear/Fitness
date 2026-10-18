@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Fitness 后台</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&amp;family=Noto+Sans+SC:wght@400;500;700;900&amp;display=swap">
+<style>
+body{margin:0;background:#E8E7E4}
+button:focus-visible,a:focus-visible{outline:3px solid #E8603C;outline-offset:3px}
+.ad-row{transition:background-color .15s ease}
+.ad-row:hover{background:#F7F6F3}
+.ad-nav{transition:background-color .15s ease,color .15s ease}
+.ad-nav:hover{background:rgba(255,255,255,.08);color:#FFFFFF}
+</style>
+</helmet>
+<div style="min-height: 1000px; box-sizing: border-box; padding: 20px; background: #E8E7E4; color: #1B1B1A; font-family: Manrope, Noto Sans SC, sans-serif; display: flex; flex-wrap: wrap; gap: 20px; align-items: stretch">
+
+<aside style="flex: 1 1 232px; max-width: 248px; box-sizing: border-box; border-radius: 32px; padding: 28px 18px; background: linear-gradient(180deg, #46464A 0%, #232325 100%); color: #F2F1EE; display: flex; flex-direction: column; gap: 32px">
+<div style="display: flex; align-items: center; gap: 12px; padding: 0 10px">
+<span style="width: 38px; height: 38px; border-radius: 12px; background: #E8603C; display: flex; align-items: center; justify-content: center; color: #FFFFFF"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21V11M12 11C12 6 15 3 20 3c0 5-3 8-8 8zM12 13C12 9 9.5 7 5 7c0 4 2.5 6 7 6z"></path></svg></span>
+<span style="font-weight: 800; font-size: 17px">Fitness 后台</span>
+</div>
+<nav aria-label="后台导航" style="display: flex; flex-direction: column; gap: 4px">
+<sc-for list="{{nav}}" as="n" hint-placeholder-count="8">
+<a href="#" class="ad-nav" aria-current="{{n.cur}}" style="{{n.style}}">
+<span style="{{n.iconWrap}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{n.icon}}"></path></svg></span>
+<span style="flex: 1">{{n.label}}</span>
+<sc-if value="{{n.hasBadge}}" hint-placeholder-val="{{false}}"><span style="min-width: 22px; height: 22px; padding: 0 7px; box-sizing: border-box; border-radius: 999px; background: #E8603C; color: #FFFFFF; font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center">{{n.badge}}</span></sc-if>
+</a>
+</sc-for>
+</nav>
+<div style="flex: 1"></div>
+<div style="border-radius: 24px; padding: 20px; background: rgba(255,255,255,.07); display: flex; flex-direction: column; gap: 12px">
+<span style="font-weight: 700; font-size: 15px">推送服务还没配置</span>
+<span style="font-size: 13px; line-height: 1.6; color: #C9C7C2">训练提醒发不出去，配置推送密钥后自动恢复。</span>
+<button type="button" style="align-self: flex-start; height: 40px; padding: 0 18px; border-radius: 999px; border: 0; background: #FFFFFF; color: #1B1B1A; font: 700 14px/1 Manrope, Noto Sans SC, sans-serif; cursor: pointer">去配置</button>
+</div>
+</aside>
+
+<main style="flex: 999 1 640px; min-width: 0; box-sizing: border-box; border-radius: 36px; padding: clamp(28px, 4vw, 56px); background: #F5F4F1; display: flex; flex-direction: column; gap: 64px">
+
+<header style="display: flex; flex-wrap: wrap; gap: 24px; justify-content: space-between; align-items: flex-end">
+<div style="display: flex; flex-direction: column; gap: 12px; max-width: 640px">
+<span style="font-size: 14px; color: #6A6964">10月19日 周一，生产环境</span>
+<h1 style="margin: 0; font-size: clamp(36px, 4.4vw, 56px); line-height: 1.1; font-weight: 900; letter-spacing: -0.025em; text-wrap: balance">早上好，今天有 3 件事要处理</h1>
+</div>
+<button type="button" style="height: 52px; padding: 0 24px; border-radius: 999px; border: 0; background: #1B1B1A; color: #FFFFFF; font: 700 15px/1 Manrope, Noto Sans SC, sans-serif; cursor: pointer; display: flex; align-items: center; gap: 10px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>生成邀请码</button>
+</header>
+
+<div style="display: flex; flex-wrap: wrap; gap: 48px; align-items: flex-start">
+<section aria-label="AI 用量" style="flex: 1 1 340px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+<span style="font-size: 15px; color: #6A6964">今天的 AI 用量</span>
+<div style="display: flex; align-items: baseline; gap: 12px">
+<span style="font-size: 72px; line-height: 0.95; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums">2,340</span>
+<span style="font-size: 17px; color: #6A6964">/ 8,000 次</span>
+</div>
+<div role="progressbar" aria-valuemin="0" aria-valuemax="8000" aria-valuenow="2340" style="height: 12px; border-radius: 999px; background: #E3E1DC; overflow: hidden"><div style="width: 29%; height: 100%; border-radius: 999px; background: #E8603C"></div></div>
+<span style="font-size: 14px; line-height: 1.6; color: #6A6964">按现在的速度，今天不会触到上限。单个用户每天最多 60 次。</span>
+</section>
+
+<section aria-label="待处理" style="flex: 1 1 420px; min-width: 0; border-radius: 28px; padding: 8px 28px; background: #FFFFFF; box-shadow: 0 1px 2px rgba(0,0,0,.03), 0 18px 44px rgba(0,0,0,.05)">
+<sc-for list="{{todos}}" as="x" hint-placeholder-count="3">
+<div style="{{x.row}}">
+<span style="{{x.dot}}"></span>
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+<span style="font-weight: 800; font-size: 16px; line-height: 1.4">{{x.title}}</span>
+<span style="font-size: 14px; line-height: 1.6; color: #5E5D58">{{x.detail}}</span>
+</div>
+<button type="button" style="flex: none; height: 40px; padding: 0 16px; border-radius: 999px; border: 0; background: #F0EEEA; color: #1B1B1A; font: 700 14px/1 Manrope, Noto Sans SC, sans-serif; cursor: pointer">{{x.cta}}</button>
+</div>
+</sc-for>
+</section>
+</div>
+
+<section aria-label="运行概况" style="display: flex; flex-direction: column; gap: 24px">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px">
+<h2 style="margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.01em">运行概况</h2>
+<div role="tablist" aria-label="时间范围" style="display: flex; padding: 5px; border-radius: 999px; background: #E9E7E3">
+<sc-for list="{{ranges}}" as="r" hint-placeholder-count="3">
+<button type="button" role="tab" aria-selected="{{r.on}}" onClick="{{r.pick}}" style="{{r.style}}">{{r.label}}</button>
+</sc-for>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px">
+<div style="border-radius: 28px; padding: 28px; background: #FFFFFF; display: flex; flex-direction: column; gap: 18px; box-shadow: 0 1px 2px rgba(0,0,0,.03), 0 18px 44px rgba(0,0,0,.05)">
+<span style="font-size: 14px; color: #6A6964">接口错误</span>
+<div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 12px">
+<span style="font-size: 48px; line-height: 1; font-weight: 800; font-variant-numeric: tabular-nums">{{stat.errors}}</span>
+<svg width="104" height="58" viewBox="0 0 104 58" aria-hidden="true"><path d="M8 52 A44 44 0 0 1 96 52" fill="none" stroke="#ECEAE6" stroke-width="10" stroke-linecap="round"></path><path d="{{stat.arc}}" fill="none" stroke="#E8603C" stroke-width="10" stroke-linecap="round"></path></svg>
+</div>
+<span style="font-size: 14px; color: #A23C15; font-weight: 700">{{stat.errorsNote}}</span>
+</div>
+<div style="border-radius: 28px; padding: 28px; background: #FFFFFF; display: flex; flex-direction: column; gap: 18px; box-shadow: 0 1px 2px rgba(0,0,0,.03), 0 18px 44px rgba(0,0,0,.05)">
+<span style="font-size: 14px; color: #6A6964">活跃用户</span>
+<div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 12px">
+<span style="font-size: 48px; line-height: 1; font-weight: 800; font-variant-numeric: tabular-nums">{{stat.users}}</span>
+<div aria-hidden="true" style="display: flex; align-items: flex-end; gap: 6px; height: 64px">
+<sc-for list="{{stat.bars}}" as="b" hint-placeholder-count="10"><div style="{{b.style}}"></div></sc-for>
+</div>
+</div>
+<span style="font-size: 14px; color: #6A6964">{{stat.usersNote}}</span>
+</div>
+<div style="border-radius: 28px; padding: 28px; background: linear-gradient(160deg, #46464A, #232325); color: #F2F1EE; display: flex; flex-direction: column; gap: 18px">
+<span style="font-size: 14px; color: #C9C7C2">当前版本</span>
+<span style="font-size: 40px; line-height: 1; font-weight: 800; letter-spacing: -0.02em">d646b83</span>
+<span style="font-size: 14px; color: #C9C7C2">10月19日发布，可回滚到 286bc95</span>
+</div>
+</div>
+</section>
+
+<section aria-label="功能开关" style="display: flex; flex-direction: column; gap: 20px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<h2 style="margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.01em">功能开关</h2>
+<span style="font-size: 14px; color: #6A6964">只影响生产环境，每次修改都要确认，并记入操作审计。</span>
+</div>
+<div style="border-radius: 28px; background: #FFFFFF; overflow-x: auto; box-shadow: 0 1px 2px rgba(0,0,0,.03), 0 18px 44px rgba(0,0,0,.05)">
+<table style="width: 100%; min-width: 680px; border-collapse: collapse; font-size: 15px">
+<thead><tr style="text-align: left; color: #6A6964; font-size: 13px"><th style="padding: 20px 28px 12px; font-weight: 500">功能</th><th style="padding: 20px 12px 12px; font-weight: 500">作用</th><th style="padding: 20px 12px 12px; font-weight: 500">最近修改</th><th style="padding: 20px 28px 12px; font-weight: 500; text-align: right">状态</th></tr></thead>
+<tbody>
+<sc-for list="{{flags}}" as="f" hint-placeholder-count="4">
+<tr class="ad-row" style="border-top: 1px solid #EFEDE9">
+<td style="padding: 20px 28px; font-weight: 700">{{f.name}}</td>
+<td style="padding: 20px 12px; color: #5E5D58">{{f.desc}}</td>
+<td style="padding: 20px 12px; color: #6A6964">{{f.when}}</td>
+<td style="padding: 14px 28px; text-align: right"><button type="button" role="switch" aria-checked="{{f.on}}" onClick="{{f.ask}}" style="{{f.btn}}"><span style="{{f.knob}}"></span>{{f.state}}</button></td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</section>
+
+<section aria-label="用户" style="display: flex; flex-direction: column; gap: 20px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<h2 style="margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.01em">最近活跃的用户</h2>
+<span style="font-size: 14px; color: #6A6964">后台不显示用户的训练、健康和聊天内容。</span>
+</div>
+<div style="border-radius: 28px; background: #FFFFFF; overflow-x: auto; box-shadow: 0 1px 2px rgba(0,0,0,.03), 0 18px 44px rgba(0,0,0,.05)">
+<table style="width: 100%; min-width: 680px; border-collapse: collapse; font-size: 15px">
+<thead><tr style="text-align: left; color: #6A6964; font-size: 13px"><th style="padding: 20px 28px 12px; font-weight: 500">用户 ID</th><th style="padding: 20px 12px 12px; font-weight: 500">注册</th><th style="padding: 20px 12px 12px; font-weight: 500">最近使用</th><th style="padding: 20px 12px 12px; font-weight: 500">AI 资格</th><th style="padding: 20px 28px 12px; font-weight: 500; text-align: right">今日 AI 次数</th></tr></thead>
+<tbody>
+<sc-for list="{{users}}" as="u" hint-placeholder-count="4">
+<tr class="ad-row" style="border-top: 1px solid #EFEDE9">
+<td style="padding: 20px 28px; font-weight: 700; font-variant-numeric: tabular-nums">{{u.id}}</td>
+<td style="padding: 20px 12px; color: #5E5D58">{{u.joined}}</td>
+<td style="padding: 20px 12px; color: #5E5D58">{{u.last}}</td>
+<td style="padding: 20px 12px"><span style="{{u.badge}}">{{u.ai}}</span></td>
+<td style="padding: 20px 28px; text-align: right; font-variant-numeric: tabular-nums">{{u.calls}}</td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</section>
+</main>
+
+<sc-if value="{{confirm.open}}" hint-placeholder-val="{{false}}">
+<div style="position: fixed; inset: 0; background: rgba(20,20,19,.42); display: flex; align-items: center; justify-content: center; padding: 16px">
+<div role="dialog" aria-label="确认修改开关" style="width: 100%; max-width: 460px; box-sizing: border-box; border-radius: 32px; padding: 32px; background: #FFFFFF; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 30px 80px rgba(0,0,0,.2)">
+<h2 style="margin: 0; font-size: 24px; font-weight: 800">{{confirm.title}}</h2>
+<p style="margin: 0; font-size: 15px; line-height: 1.7; color: #5E5D58">{{confirm.body}}</p>
+<div style="display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; margin-top: 8px">
+<button type="button" onClick="{{confirm.cancel}}" style="height: 48px; padding: 0 20px; border-radius: 999px; border: 0; background: #F0EEEA; font: 700 15px/1 Manrope, Noto Sans SC, sans-serif; cursor: pointer; color: #1B1B1A">取消</button>
+<button type="button" onClick="{{confirm.ok}}" style="height: 48px; padding: 0 22px; border-radius: 999px; border: 0; background: #1B1B1A; color: #FFFFFF; font: 700 15px/1 Manrope, Noto Sans SC, sans-serif; cursor: pointer">{{confirm.okLabel}}</button>
+</div>
+</div>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+renderVals() {
+const st = this.state || {};
+const range = st.range || 'day';
+const fl = st.flags || { ai: true, engine: true, push: false, invite: true };
+const pending = st.pending || null;
+const set = (o) => () => this.setState(o);
+const IC = {
+home: 'M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z',
+inbox: 'M4 13l2.5-7h11L20 13M4 13v6h16v-6M4 13h5l1 2h4l1-2h5',
+users: 'M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21c0-4 3-6 7-6s7 2 7 6M17 3.5a4 4 0 0 1 0 7.5M22 21c0-3-1.6-5-4.5-5.7',
+toggle: 'M8 6h8a6 6 0 0 1 0 12H8A6 6 0 0 1 8 6zM16 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
+rocket: 'M5 15c-1.5 1.5-2 5-2 5s3.5-.5 5-2M14 4c3-1 6-1 6-1s0 3-1 6l-6 6-5-5 6-6zM9 10H5l-2 3h4M14 15v4l-3 2v-4',
+alert: 'M12 3l10 18H2L12 3zM12 10v5M12 18v.5',
+log: 'M7 3h10l4 4v14H7zM11 11h6M11 15h6M3 7v14h4',
+gear: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a7.8 7.8 0 0 0 0-6l2-1.5-2-3.5-2.4 1a8 8 0 0 0-5-3L11.6 0h-4l-.4 2.5a8 8 0 0 0-5 3'
+};
+const nav = [['总览', 'home', 0, true], ['待处理', 'inbox', 3], ['用户与申请', 'users', 3], ['功能开关', 'toggle', 0], ['版本发布', 'rocket', 0], ['错误记录', 'alert', 0], ['操作审计', 'log', 0]].map((n) => ({
+label: n[0], icon: IC[n[1]], badge: n[2], hasBadge: n[2] > 0, cur: n[3] ? 'page' : 'false',
+style: 'height: 48px; padding: 0 12px 0 8px; border-radius: 16px; display: flex; align-items: center; gap: 12px; text-decoration: none; font-size: 15px; font-weight: ' + (n[3] ? 800 : 500) + '; color: ' + (n[3] ? '#FFFFFF' : '#C9C7C2') + '; background: ' + (n[3] ? 'rgba(255,255,255,.12)' : 'transparent'),
+iconWrap: 'width: 32px; height: 32px; border-radius: 999px; flex: none; display: flex; align-items: center; justify-content: center; background: ' + (n[3] ? '#E8603C' : 'transparent') + '; color: ' + (n[3] ? '#FFFFFF' : 'currentColor')
+}));
+const todos = [
+{ title: '3 个试用申请等待审批', detail: '最早一个在 2 天前提交。通过后自动生成邀请码并发到申请人邮箱。', cta: '去审批', tone: '#E8603C' },
+{ title: '推送配置缺失', detail: '推送配置接口持续 3 天返回 503，训练提醒没有发出。', cta: '查看原因', tone: '#E8603C' },
+{ title: '错误统计和记录对不上', detail: '统计显示 0 次，实际记录到 3 次 503，已标记待修复。', cta: '查看记录', tone: '#B9B6AF' }
+].map((x, k, a) => Object.assign(x, { row: 'display: flex; align-items: flex-start; gap: 16px; padding: 22px 0; ' + (k < a.length - 1 ? 'border-bottom: 1px solid #EFEDE9' : ''), dot: 'width: 10px; height: 10px; margin-top: 7px; border-radius: 999px; flex: none; background: ' + x.tone }));
+const R = [['day', '今天'], ['week', '本周'], ['month', '本月']];
+const ranges = R.map((r) => ({ label: r[1], on: r[0] === range ? 'true' : 'false', pick: set({ range: r[0] }), style: 'height: 40px; padding: 0 20px; border-radius: 999px; border: 0; cursor: pointer; font: ' + (r[0] === range ? 800 : 500) + ' 14px/1 Manrope, Noto Sans SC, sans-serif; color: ' + (r[0] === range ? '#1B1B1A' : '#6A6964') + '; background: ' + (r[0] === range ? '#FFFFFF' : 'transparent') + '; box-shadow: ' + (r[0] === range ? '0 1px 3px rgba(0,0,0,.08)' : 'none') }));
+const S = { day: ['3', '均为推送配置 503', '6', '比昨天多 2 人', [2, 3, 1, 4, 6, 3, 5, 2, 4, 6], 0.25], week: ['11', '8 次推送 503，3 次 AI 超时', '9', '比上周多 3 人', [4, 6, 5, 7, 9, 6, 8, 5, 7, 9], 0.55], month: ['27', '主要是推送配置 503', '12', '比上月多 5 人', [6, 8, 7, 9, 12, 10, 11, 9, 10, 12], 0.8] }[range];
+const mx = Math.max.apply(null, S[4]);
+const ang = Math.PI * (1 - S[5]);
+const arc = 'M8 52 A44 44 0 0 1 ' + (52 + 44 * Math.cos(ang)).toFixed(1) + ' ' + (52 - 44 * Math.sin(ang)).toFixed(1);
+const stat = { errors: S[0], errorsNote: S[1], users: S[2], usersNote: S[3], arc: arc, bars: S[4].map((v) => ({ style: 'width: 5px; border-radius: 3px; height: ' + Math.round(v / mx * 64) + 'px; background: ' + (v === mx ? '#1B1B1A' : '#DAD7D1') })) };
+const FD = [
+['ai', 'AI 助手（芽芽）', '用户可以和芽芽对话、调整当天训练', '10月19日'],
+['engine', '训练引擎', '按规则生成和调整训练计划', '10月19日'],
+['push', '训练提醒推送', '到点提醒用户训练', '10月12日'],
+['invite', '邀请码注册', '持邀请码的用户可以开通 AI 资格', '10月12日']
+];
+const flags = FD.map((f) => {
+const on = !!fl[f[0]];
+return {
+name: f[1], desc: f[2], when: f[3], on: on ? 'true' : 'false', state: on ? '已开启' : '已关闭',
+ask: set({ pending: f[0] }),
+btn: 'height: 40px; padding: 0 16px 0 6px; border-radius: 999px; border: 0; display: inline-flex; align-items: center; gap: 10px; cursor: pointer; font: 700 14px/1 Manrope, Noto Sans SC, sans-serif; background: ' + (on ? '#1B1B1A' : '#F0EEEA') + '; color: ' + (on ? '#FFFFFF' : '#5E5D58'),
+knob: 'width: 28px; height: 28px; border-radius: 999px; background: ' + (on ? '#E8603C' : '#FFFFFF') + '; box-shadow: 0 1px 2px rgba(0,0,0,.12)'
+};
+});
+const pf = FD.filter((f) => f[0] === pending)[0];
+const willOn = pf ? !fl[pf[0]] : false;
+const confirm = {
+open: !!pf,
+title: pf ? (willOn ? '开启「' + pf[1] + '」？' : '关闭「' + pf[1] + '」？') : '',
+body: pf ? (willOn ? '开启后所有用户立即可用。这次修改会记入操作审计。' : '关闭后用户立即无法使用，正在进行的请求会中断。这次修改会记入操作审计。') : '',
+okLabel: willOn ? '确认开启' : '确认关闭',
+cancel: set({ pending: null }),
+ok: () => { if (!pf) return; const n = Object.assign({}, fl); n[pf[0]] = willOn; this.setState({ flags: n, pending: null }); }
+};
+const users = [
+['U-7F3A2C91', '10月18日', '今天 09:12', '有效', '14'],
+['U-2B8D0E44', '10月15日', '昨天 21:40', '有效', '0'],
+['U-91C4A7D2', '10月12日', '10月16日', '待审批', '0'],
+['U-05E6B3F8', '10月10日', '10月14日', '未开通', '0']
+].map((u) => ({ id: u[0], joined: u[1], last: u[2], ai: u[3], calls: u[4], badge: 'padding: 5px 12px; border-radius: 999px; font-size: 13px; font-weight: 700; background: ' + (u[3] === '有效' ? '#FBE4DA' : '#F0EEEA') + '; color: ' + (u[3] === '有效' ? '#933612' : '#5E5D58') }));
+return { nav: nav, todos: todos, ranges: ranges, stat: stat, flags: flags, confirm: confirm, users: users };
+}
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>山野插画</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><style>body{margin:0}</style></helmet>
+<div style="width: 100%; height: 100%; position: absolute; inset: 0; overflow: hidden">
+<svg width="100%" height="100%" viewBox="0 0 390 420" preserveAspectRatio="xMidYMax slice" aria-hidden="true" style="display: block">
+<rect x="0" y="0" width="390" height="420" fill="{{p.sky}}"></rect>
+<circle cx="{{p.sx}}" cy="{{p.sy}}" r="58" fill="{{p.haze}}"></circle>
+<circle cx="{{p.sx}}" cy="{{p.sy}}" r="40" fill="{{p.sun}}"></circle>
+<path d="M52 92q7-8 14 0q7-8 14 0M92 70q5-6 10 0q5-6 10 0M300 58q6-7 12 0q6-7 12 0M332 84q4-5 8 0q4-5 8 0" fill="none" stroke="{{p.bird}}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="{{p.farD}}" fill="{{p.far}}"></path>
+<path d="M0 262C40 244 72 218 112 226C150 234 172 204 212 208C258 214 282 242 322 234C352 228 372 238 390 236V420H0Z" fill="{{p.mid}}"></path>
+<rect x="0" y="262" width="390" height="46" fill="{{p.lake}}"></rect>
+<path d="M150 276h70M236 284h40M120 292h52M262 296h60" stroke="{{p.sun}}" stroke-width="2" stroke-linecap="round" opacity=".7"></path>
+<path d="M-11.0 304L-6.0 276.2L-1.0 304ZM-5.4 304L1.0 268.4L7.4 304ZM1.7 304L7.6 271.1L13.5 304ZM11.7 304L15.6 282.6L19.4 304ZM20.4 304L24.1 283.1L27.9 304ZM28.5 304L32.4 282.3L36.3 304ZM33.7 304L39.1 273.8L44.5 304ZM45.0 304L49.1 281.0L53.2 304ZM50.1 304L56.4 268.9L62.7 304ZM60.9 304L67.0 270.1L73.1 304ZM67.3 304L75.1 260.6L82.9 304ZM74.3 304L81.6 263.4L88.9 304ZM85.0 304L89.2 280.5L93.4 304ZM91.1 304L96.0 276.6L100.9 304ZM101.6 304L106.0 279.7L110.4 304ZM108.5 304L114.9 268.7L121.3 304ZM116.9 304L122.9 270.9L128.8 304ZM125.6 304L129.5 282.6L133.3 304ZM130.1 304L136.7 267.7L143.2 304ZM140.0 304L144.9 276.5L149.9 304ZM148.3 304L153.8 273.1L159.4 304ZM154.5 304L161.5 264.9L168.5 304ZM166.3 304L170.9 278.1L175.6 304ZM174.0 304L179.8 271.4L185.7 304ZM183.3 304L190.1 266.5L196.8 304ZM189.8 304L197.7 260.5L205.5 304ZM199.1 304L204.5 274.0L209.9 304ZM209.9 304L214.2 280.4L218.5 304ZM218.9 304L222.7 283.1L226.5 304ZM225.1 304L232.0 265.7L238.9 304ZM233.5 304L240.9 263.0L248.3 304ZM242.0 304L248.6 267.3L255.2 304ZM251.5 304L257.6 270.1L263.7 304ZM258.7 304L265.9 263.8L273.2 304ZM270.8 304L276.5 272.6L282.1 304ZM281.9 304L285.8 282.5L289.6 304ZM288.8 304L295.2 268.5L301.6 304ZM298.8 304L306.0 264.3L313.1 304ZM308.3 304L313.6 274.7L318.8 304ZM319.2 304L322.9 283.5L326.6 304ZM326.9 304L331.3 280.0L335.6 304ZM334.2 304L338.1 282.6L341.9 304ZM343.7 304L347.8 280.9L352.0 304ZM350.0 304L355.3 274.6L360.5 304ZM361.5 304L365.5 282.1L369.4 304ZM367.8 304L373.8 270.8L379.8 304ZM376.9 304L384.1 264.3L391.2 304ZM389.5 304L394.3 277.3L399.1 304Z" fill="{{p.pine}}"></path>
+<path d="M-15.3 322L-6.0 270.5L3.3 322ZM-2.7 322L10.0 251.4L22.7 322ZM12.6 322L20.8 276.4L29.1 322ZM23.7 322L32.3 274.5L40.8 322ZM34.9 322L45.5 263.1L56.1 322ZM49.9 322L57.1 281.9L64.3 322ZM60.5 322L69.8 270.2L79.2 322ZM70.9 322L83.6 251.5L96.3 322ZM88.1 322L98.2 265.5L108.4 322ZM101.3 322L112.4 260.4L123.5 322ZM270.0 322L282.0 255.2L294.0 322ZM285.4 322L297.3 256.0L309.1 322ZM303.5 322L312.6 271.4L321.7 322ZM317.8 322L325.2 280.7L332.7 322ZM332.3 322L339.5 282.0L346.7 322ZM341.7 322L349.7 277.3L357.8 322ZM351.9 322L360.7 273.1L369.5 322ZM364.0 322L370.9 284.0L377.7 322ZM374.3 322L381.7 280.8L389.1 322ZM387.1 322L394.1 283.2L401.0 322Z" fill="{{p.pine}}"></path>
+<path d="M0 334C60 304 122 312 172 326C230 344 282 302 390 316V420H0Z" fill="{{p.hill1}}"></path>
+<rect x="61" y="320" width="5" height="34" rx="2" fill="{{p.trunk}}"></rect>
+<circle cx="64" cy="312" r="30" fill="{{p.treeB}}"></circle>
+<circle cx="44" cy="324" r="18" fill="{{p.treeB}}"></circle>
+<rect x="110" y="328" width="4" height="26" rx="2" fill="{{p.trunk}}"></rect>
+<circle cx="112" cy="326" r="19" fill="{{p.treeA}}"></circle>
+<rect x="318" y="306" width="5" height="34" rx="2" fill="{{p.trunk}}"></rect>
+<circle cx="320" cy="300" r="28" fill="{{p.treeA}}"></circle>
+<circle cx="342" cy="314" r="18" fill="{{p.treeA}}"></circle>
+<circle cx="268" cy="330" r="15" fill="{{p.treeB}}"></circle>
+<path d="M0 372C82 346 160 360 222 372C292 386 330 352 390 360V420H0Z" fill="{{p.hill2}}"></path>
+<ellipse cx="190" cy="392" rx="64" ry="16" fill="{{p.hill1}}" opacity=".55"></ellipse>
+<path d="M30 384l3-8l3 8M150 398l3-7l3 7M248 390l3-8l3 8M352 382l3-7l3 7" fill="none" stroke="{{p.hill1}}" stroke-width="2" stroke-linecap="round"></path>
+<circle cx="40" cy="398" r="3" fill="{{p.flower}}"></circle><circle cx="58" cy="404" r="2.5" fill="{{p.flower}}"></circle><circle cx="300" cy="396" r="3" fill="{{p.flower}}"></circle><circle cx="318" cy="404" r="2.5" fill="{{p.flower}}"></circle><circle cx="210" cy="410" r="2.5" fill="{{p.flower}}"></circle>
+</svg>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"v":{"editor":"enum","options":["dawn","lake","dusk","mist","peak"],"default":"dawn"},"$preview":{"width":390,"height":420}}'>
+class Component extends DCLogic {
+renderVals() {
+const P = {"dawn": {"sky": "#F6CBAA", "haze": "#FADCC2", "sun": "#FFF3E2", "sx": 246, "sy": 176, "far": "#E89D80", "mid": "#CB735B", "lake": "#A2CEC4", "pine": "#3E5E4F", "hill1": "#87A271", "hill2": "#5F7D52", "treeA": "#C6C47E", "treeB": "#E2826A", "trunk": "#5B3F33", "bird": "#3A2723", "flower": "#F4B393", "farD": "M0 232L58 190L104 212L168 150L226 204L288 160L348 198L390 176V420H0Z"}, "lake": {"sky": "#EEF1E6", "haze": "#F6F5EC", "sun": "#FFFFFF", "sx": 110, "sy": 150, "far": "#A5BDB5", "mid": "#7FA096", "lake": "#C3DED5", "pine": "#2F5248", "hill1": "#93AB80", "hill2": "#6C8A5F", "treeA": "#CDD18F", "treeB": "#E58F74", "trunk": "#4D3A30", "bird": "#C9573F", "flower": "#F1A88D", "farD": "M0 232L58 190L104 212L168 150L226 204L288 160L348 198L390 176V420H0Z"}, "dusk": {"sky": "#F2A17A", "haze": "#F6B993", "sun": "#FFE7C8", "sx": 196, "sy": 196, "far": "#DA6E54", "mid": "#AE4D3D", "lake": "#EDB898", "pine": "#5A2F2A", "hill1": "#C4654D", "hill2": "#8E3F33", "treeA": "#EB9070", "treeB": "#F4B38C", "trunk": "#4A2420", "bird": "#4A2420", "flower": "#FFE0C2", "farD": "M0 232L58 190L104 212L168 150L226 204L288 160L348 198L390 176V420H0Z"}, "mist": {"sky": "#DFE8E3", "haze": "#EAF0EC", "sun": "#F7F3EA", "sx": 280, "sy": 150, "far": "#BBCDC8", "mid": "#97B2AB", "lake": "#D2E2DD", "pine": "#365B51", "hill1": "#A2B794", "hill2": "#7D9771", "treeA": "#CBD5A8", "treeB": "#E08A6C", "trunk": "#4D3A30", "bird": "#C9573F", "flower": "#F4B393", "farD": "M0 232L58 190L104 212L168 150L226 204L288 160L348 198L390 176V420H0Z"}, "peak": {"sky": "#F8DCCB", "haze": "#FBE8DC", "sun": "#FFF5E9", "sx": 318, "sy": 118, "far": "#CC8C6C", "mid": "#9EA58A", "lake": "#ADD1C8", "pine": "#2E4A40", "hill1": "#86A178", "hill2": "#5E7A55", "treeA": "#D8C486", "treeB": "#E07C60", "trunk": "#4D3A30", "bird": "#3A2723", "flower": "#F7C3A6", "farD": "M0 240L40 214L84 228L150 120L176 150L206 96L250 186L300 160L344 196L390 180V420H0Z"}};
+return { p: P[this.props.v] || P.dawn };
+}
+}
+</script>
+</body>
+</html>

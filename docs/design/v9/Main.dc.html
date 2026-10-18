@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Fitness 原型</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden">
+<sc-if value="{{isVivid}}" hint-placeholder-val="{{false}}">
+<dc-import name="Vivid" theme="vivid" start-screen="{{start}}" autoplay="{{auto}}" on-theme="{{onTheme}}" hint-size="390px,844px"></dc-import>
+</sc-if>
+<sc-if value="{{isGentle}}" hint-placeholder-val="{{false}}">
+<dc-import name="Gentle" start-screen="{{start}}" autoplay="{{auto}}" on-theme="{{onTheme}}" hint-size="390px,844px"></dc-import>
+</sc-if>
+<sc-if value="{{isData}}" hint-placeholder-val="{{false}}">
+<dc-import name="Data" start-screen="{{start}}" autoplay="{{auto}}" on-theme="{{onTheme}}" hint-size="390px,844px"></dc-import>
+</sc-if>
+<sc-if value="{{isFire}}" hint-placeholder-val="{{false}}">
+<dc-import name="Fire" start-screen="{{start}}" autoplay="{{auto}}" on-theme="{{onTheme}}" hint-size="390px,844px"></dc-import>
+</sc-if>
+<sc-if value="{{isPop}}" hint-placeholder-val="{{true}}">
+<dc-import name="Pop" start-screen="{{start}}" autoplay="{{auto}}" on-theme="{{onTheme}}" hint-size="390px,844px"></dc-import>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["pop","vivid","gentle","data","fire"],"default":"pop"},"startScreen":{"editor":"enum","options":["welcome","onboard","plan","home","player","rest","finish","review","chat","settings"],"default":"welcome"},"autoplay":{"editor":"boolean","default":true},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+const st = this.state || {};
+const tk = st.theme || this.props.theme || 'pop';
+const start = st.start || this.props.startScreen || 'welcome';
+return {
+isVivid: tk === 'vivid', isGentle: tk === 'gentle', isData: tk === 'data', isFire: tk === 'fire', isPop: tk === 'pop',
+start: start, auto: this.props.autoplay !== false,
+onTheme: (k, screen) => this.setState({ theme: k, start: screen || 'settings' })
+};
+}
+}
+</script>
+</body>
+</html>

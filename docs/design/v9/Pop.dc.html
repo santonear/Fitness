@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>柔光拟物</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500&amp;family=Noto+Sans+SC:wght@300;400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+button{-webkit-tap-highlight-color:transparent}
+button:focus-visible,input:focus-visible{outline:2px solid #FFB534;outline-offset:3px}
+.p-scroll{scrollbar-width:none}
+.p-scroll::-webkit-scrollbar{width:0;height:0}
+.p-n{font-family:Jost,Noto Sans SC,sans-serif;font-variant-numeric:tabular-nums}
+.p-press{transition:box-shadow .18s ease,transform .18s ease}
+.p-press:active{transform:scale(.98);box-shadow:inset 4px 4px 9px rgba(163,158,148,.5),inset -4px -4px 9px #FFFFFF !important}
+.p-glow{animation:pglow 3.6s ease-in-out infinite}
+@keyframes pglow{0%,100%{opacity:.75}50%{opacity:1}}
+@media (prefers-reduced-motion: reduce){.p-press{transition:none}.p-glow{animation:none}}
+</style>
+</helmet>
+<div style="{{c.root}}">
+
+<sc-if value="{{is.welcome}}" hint-placeholder-val="{{true}}">
+<div style="position: absolute; inset: 0; display: flex; flex-direction: column; padding: 56px 28px 40px; box-sizing: border-box">
+<div style="display: flex; justify-content: space-between; align-items: flex-start">
+<div style="display: flex; flex-direction: column; gap: 2px"><span style="{{c.tiny}}">fitness</span><span style="{{c.tiny}}">芽芽陪练</span><span style="{{c.dash}}"></span></div>
+<span class="p-n" style="font-size: 22px; font-weight: 300; color: #A9A7A2">01</span>
+</div>
+<h1 style="{{c.hero}}; margin-top: 34px">动起来，<br>刚刚好</h1>
+<p style="{{c.sub}}; margin-top: 12px">三步设好计划，每天打开就知道练什么。</p>
+<div style="flex: 1; display: flex; align-items: center; justify-content: center">
+<div style="{{c.dialOuter}}; width: 250px; height: 250px">
+<div aria-hidden="true" class="p-glow" style="position: absolute; inset: 22px; border-radius: 50%; background: radial-gradient(circle at 50% 60%, rgba(255,200,80,.42), rgba(255,200,80,0) 62%)"></div>
+<svg width="250" height="250" viewBox="0 0 250 250" aria-hidden="true" style="position: absolute; inset: 0"><defs><linearGradient id="pyW" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFE38F"></stop><stop offset="1" stop-color="#FFA53D"></stop></linearGradient></defs><circle cx="125" cy="125" r="104" fill="none" stroke="url(#pyW)" stroke-width="10" stroke-linecap="round" stroke-dasharray="460 654" transform="rotate(135 125 125)"></circle></svg>
+<dc-import name="Yaya" pose="wave" tk="pop" px="{{170}}" hint-size="170px,170px"></dc-import>
+</div>
+</div>
+<div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 22px" aria-hidden="true"><span style="{{c.pgOn}}"></span><span style="{{c.pgOff}}"></span><span style="{{c.pgOff}}"></span></div>
+<button type="button" class="p-press" onClick="{{go.onboard}}" style="{{c.btn}}">开始</button>
+</div>
+</sc-if>
+
+<sc-if value="{{is.onboard}}" hint-placeholder-val="{{false}}">
+<div style="position: absolute; inset: 0; display: flex; flex-direction: column">
+<div style="padding: 54px 24px 0; display: flex; align-items: center; gap: 14px">
+<button type="button" aria-label="上一步" onClick="{{ob.back}}" class="p-press" style="{{c.roundSm}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg></button>
+<div role="progressbar" aria-valuemin="1" aria-valuemax="3" aria-valuenow="{{ob.stepNum}}" aria-label="{{ob.stepAria}}" style="{{c.track}}"><div style="{{ob.fill}}"></div></div>
+<span class="p-n" style="font-size: 15px; font-weight: 300; color: #8D8C88">{{ob.stepLabel}}</span>
+</div>
+<div class="p-scroll" style="flex: 1; overflow-y: auto; padding: 30px 24px 16px; display: flex; flex-direction: column">
+<h1 style="{{c.h1}}">{{ob.title}}</h1>
+<p style="{{c.sub}}; margin-top: 8px">{{ob.sub}}</p>
+<sc-for list="{{ob.groups}}" as="g" hint-placeholder-count="2">
+<div style="margin-top: 28px; display: flex; flex-direction: column; gap: 14px">
+<span style="font-size: 14px; font-weight: 500; color: #3C3C40">{{g.label}}<span style="font-size: 12px; font-weight: 300; color: #8D8C88; margin-left: 8px">{{g.hint}}</span></span>
+<div style="display: flex; flex-wrap: wrap; gap: 12px">
+<sc-for list="{{g.opts}}" as="o" hint-placeholder-count="4"><button type="button" class="p-press" aria-pressed="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button></sc-for>
+</div>
+</div>
+</sc-for>
+<sc-if value="{{ob.isBody}}" hint-placeholder-val="{{false}}">
+<div style="{{c.card}}; margin-top: 28px; padding: 16px 18px; display: flex; align-items: center; gap: 14px">
+<span style="flex: 1; font-size: 15px; font-weight: 500">年龄</span>
+<button type="button" aria-label="小一岁" onClick="{{ob.ageDown}}" class="p-press" style="{{c.roundSm}}">−</button>
+<span class="p-n" style="width: 56px; text-align: center; font-size: 32px; font-weight: 300">{{ob.age}}</span>
+<button type="button" aria-label="大一岁" onClick="{{ob.ageUp}}" class="p-press" style="{{c.roundSm}}">+</button>
+</div>
+<span style="margin-top: 28px; font-size: 14px; font-weight: 500">需要注意的情况<span style="font-size: 12px; font-weight: 300; color: #8D8C88; margin-left: 8px">没有就不选</span></span>
+<div style="{{c.card}}; margin-top: 12px; padding: 6px 18px; display: flex; flex-direction: column">
+<sc-for list="{{ob.flags}}" as="f" hint-placeholder-count="5">
+<button type="button" aria-pressed="{{f.on}}" onClick="{{f.toggle}}" style="min-height: 52px; padding: 0; border: 0; background: transparent; color: #3C3C40; display: flex; align-items: center; justify-content: space-between; font: 400 15px/1 Noto Sans SC, sans-serif; cursor: pointer"><span>{{f.label}}</span><span style="{{f.track}}"><span style="{{f.knob}}"></span></span></button>
+</sc-for>
+</div>
+</sc-if>
+</div>
+<div style="padding: 12px 24px 40px">
+<button type="button" class="p-press" onClick="{{ob.next}}" style="{{c.btn}}">{{ob.nextLabel}}</button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{is.plan}}" hint-placeholder-val="{{false}}">
+<div class="p-scroll" style="{{c.scrollPlan}}">
+<span style="{{c.tiny}}">10月19日 – 25日</span>
+<h1 style="{{c.h1}}; margin-top: 6px">你的计划</h1>
+<div role="tablist" aria-label="周次" style="{{c.seg}}; margin-top: 18px">
+<span role="tab" aria-selected="true" style="{{c.segOn}}">第 1 周</span><span role="tab" aria-selected="false" style="{{c.segOff}}">第 2 周</span><span role="tab" aria-selected="false" style="{{c.segOff}}">第 3 周</span>
+</div>
+<div style="{{c.card}}; margin-top: 22px; padding: 22px 20px">
+<div style="display: flex; align-items: flex-end; justify-content: space-between">
+<div style="display: flex; flex-direction: column"><span style="{{c.tiny}}">本周</span><span class="p-n" style="font-size: 52px; font-weight: 300; line-height: 1; margin-top: 6px">3<span style="font-size: 16px; color: #8D8C88; margin-left: 6px">次训练</span></span></div>
+<span class="p-n" style="font-size: 15px; font-weight: 400; color: #8D8C88">约 93 分钟</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin-top: 20px">
+<sc-for list="{{plan.spikes}}" as="k" hint-placeholder-count="7"><div style="display: flex; flex-direction: column; align-items: center; gap: 8px"><div style="{{k.well}}"><div style="{{k.style}}"></div></div><span style="{{k.lab}}">{{k.d}}</span></div></sc-for>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 14px; margin-top: 18px">
+<sc-for list="{{plan.tiles}}" as="x" hint-placeholder-count="3">
+<div style="{{x.box}}">
+<span style="{{x.dot}}"></span>
+<div style="flex: 1; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; color: #8D8C88">{{x.day}}</span><span style="font-size: 16px; font-weight: 500">{{x.name}}</span></div>
+<span class="p-n" style="font-size: 15px; color: #8D8C88">{{x.meta}}</span>
+</div>
+</sc-for>
+</div>
+<div style="{{c.inset}}; margin-top: 18px; padding: 18px 20px; border-radius: 24px">
+<span style="font-size: 14px; font-weight: 500">为什么这样排</span>
+<ul style="margin: 10px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; line-height: 1.7; color: #6F6E6A">
+<sc-for list="{{plan.reasons}}" as="r" hint-placeholder-count="3"><li>{{r}}</li></sc-for>
+</ul>
+</div>
+<sc-if value="{{plan.cta}}" hint-placeholder-val="{{true}}">
+<button type="button" class="p-press" onClick="{{go.start}}" style="{{c.btn}}; margin-top: 26px">就用这个计划</button>
+<button type="button" onClick="{{go.chat}}" style="{{c.link}}; margin-top: 8px">问问芽芽怎么改</button>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{is.home}}" hint-placeholder-val="{{false}}">
+<div class="p-scroll" style="position: absolute; inset: 0; overflow-y: auto; padding: 54px 24px 130px; display: flex; flex-direction: column">
+<div style="display: flex; justify-content: space-between; align-items: flex-start">
+<div style="display: flex; flex-direction: column; gap: 2px"><span style="{{c.tiny}}">10月19日 周一</span><span style="{{c.tiny}}">今天的训练</span><span style="{{c.dash}}"></span></div>
+<span class="p-n" style="font-size: 22px; font-weight: 300; color: #A9A7A2">19</span>
+</div>
+<h1 style="{{c.h1}}; margin-top: 18px">{{home.name}}</h1>
+<sc-if value="{{home.hasToast}}" hint-placeholder-val="{{false}}">
+<div role="status" style="{{c.inset}}; margin-top: 14px; padding: 12px 16px; border-radius: 18px; font-size: 14px; color: #8A5A00">{{s.toast}}</div>
+</sc-if>
+<div style="{{c.card}}; margin-top: 20px; padding: 26px 20px 20px; border-radius: 34px; display: flex; flex-direction: column; align-items: center">
+<div style="{{c.dialOuter}}; width: 216px; height: 216px">
+<div style="{{c.dialInner}}; width: 156px; height: 156px">
+<span class="p-n" style="font-size: 54px; font-weight: 300; line-height: 1; color: #FFA53D">{{home.min}}<span style="font-size: 20px">′</span></span>
+<span style="font-size: 12px; color: #8D8C88; margin-top: 6px">分钟 · {{home.count}} 个动作</span>
+</div>
+<svg width="216" height="216" viewBox="0 0 216 216" aria-hidden="true" style="position: absolute; inset: 0"><defs><linearGradient id="pyH" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFE38F"></stop><stop offset="1" stop-color="#FFA53D"></stop></linearGradient></defs><circle cx="108" cy="108" r="92" fill="none" stroke="url(#pyH)" stroke-width="9" stroke-linecap="round" stroke-dasharray="{{home.dash}}" transform="rotate(-90 108 108)"></circle></svg>
+<span aria-hidden="true" style="{{home.knob}}"></span>
+</div>
+<div role="group" aria-label="今天包括" style="{{c.seg}}; margin-top: 22px; width: 100%; box-sizing: border-box">
+<span style="{{c.segOn}}">力量</span><span style="{{c.segOff}}">热身</span><span style="{{c.segOff}}">拉伸</span>
+</div>
+<button type="button" class="p-press" onClick="{{go.player}}" style="{{c.btn}}; margin-top: 18px">开始训练</button>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 20px">
+<div style="{{c.card}}; padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 10px">
+<div style="position: relative; width: 84px; height: 84px; display: flex; align-items: center; justify-content: center"><div style="{{c.dialInner}}; width: 60px; height: 60px"><span class="p-n" style="font-size: 18px; font-weight: 400">0/3</span></div><svg width="84" height="84" viewBox="0 0 84 84" aria-hidden="true" style="position: absolute; inset: 0"><circle cx="42" cy="42" r="36" fill="none" stroke="#E2E0DC" stroke-width="7"></circle><circle cx="42" cy="42" r="36" fill="none" stroke="#FFC53D" stroke-width="7" stroke-linecap="round" stroke-dasharray="6 226" transform="rotate(-90 42 42)"></circle></svg></div>
+<span style="font-size: 12px; color: #8D8C88">本周完成</span>
+</div>
+<div style="{{c.card}}; padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 10px">
+<div style="position: relative; width: 84px; height: 84px; display: flex; align-items: center; justify-content: center"><div style="{{c.dialInner}}; width: 60px; height: 60px"><span class="p-n" style="font-size: 18px; font-weight: 400">63</span></div><svg width="84" height="84" viewBox="0 0 84 84" aria-hidden="true" style="position: absolute; inset: 0"><circle cx="42" cy="42" r="36" fill="none" stroke="#E2E0DC" stroke-width="7"></circle><circle cx="42" cy="42" r="36" fill="none" stroke="#FFC53D" stroke-width="7" stroke-linecap="round" stroke-dasharray="153 226" transform="rotate(-90 42 42)"></circle></svg></div>
+<span style="font-size: 12px; color: #8D8C88">上周分钟</span>
+</div>
+</div>
+<div style="{{c.card}}; margin-top: 18px; padding: 18px 16px 14px">
+<div style="display: flex; justify-content: space-between"><span style="font-size: 14px; font-weight: 500">本周每天</span><span style="font-size: 12px; color: #8D8C88">计划分钟</span></div>
+<div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); margin-top: 16px">
+<sc-for list="{{home.eq}}" as="q" hint-placeholder-count="7">
+<div style="display: flex; flex-direction: column; align-items: center; gap: 10px">
+<div style="{{c.slot}}"><div style="{{q.fill}}"></div><div style="{{q.knob}}"></div></div>
+<span style="{{q.label}}">{{q.d}}</span>
+</div>
+</sc-for>
+</div>
+</div>
+<div style="{{c.card}}; margin-top: 18px; padding: 14px 18px 14px 12px; display: flex; align-items: center; gap: 12px">
+<dc-import name="Yaya" pose="head" tk="pop" px="{{56}}" hint-size="56px,56px"></dc-import>
+<p style="margin: 0; flex: 1; font-size: 14px; line-height: 1.6; color: #55544F">上次深蹲你觉得“刚好”，今天每组多 2 次。</p>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{is.player}}" hint-placeholder-val="{{false}}">
+<div style="position: absolute; inset: 0; display: flex; flex-direction: column">
+<div style="padding: 54px 20px 0; display: flex; align-items: center; gap: 12px">
+<button type="button" aria-label="结束训练" onClick="{{go.home}}" class="p-press" style="{{c.roundSm}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+<div style="flex: 1; display: flex; gap: 6px">
+<sc-for list="{{pl.segs}}" as="g" hint-placeholder-count="5"><span style="{{g.style}}"></span></sc-for>
+</div>
+<button type="button" onClick="{{pl.openSafety}}" class="p-press" style="{{c.warnBtn}}">不舒服</button>
+</div>
+<div style="{{c.card}}; margin: 22px 24px 0; padding: 20px; border-radius: 30px; display: flex; align-items: center; gap: 16px">
+<div style="{{c.inset}}; width: 92px; height: 92px; border-radius: 26px; flex: none; display: flex; align-items: center; justify-content: center; color: #A9A7A2"><svg width="62" height="62" viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="60" cy="20" r="10"></circle><path d="M60 32v28M60 42l-24 10M60 42l24 10M60 60l-20 20v24M60 60l20 20v24"></path></svg></div>
+<div style="flex: 1; display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 12px; color: #8D8C88">{{pl.setLabel}}</span>
+<span style="font-size: 24px; font-weight: 400">{{pl.name}}</span>
+</div>
+</div>
+<p style="margin: 16px 28px 0; font-size: 14px; line-height: 1.7; color: #6F6E6A">{{pl.cue}}</p>
+<div style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 26px">
+<sc-if value="{{pl.reps}}" hint-placeholder-val="{{true}}">
+<button type="button" aria-label="少一次" onClick="{{pl.minus}}" class="p-press" style="{{c.roundMd}}">−</button>
+<div style="{{c.dialOuter}}; width: 170px; height: 170px"><div style="{{c.dialInner}}; width: 128px; height: 128px"><span class="p-n" style="font-size: 64px; font-weight: 300; line-height: 1; color: #FFA53D">{{pl.count}}</span><span style="font-size: 12px; color: #8D8C88">次</span></div></div>
+<button type="button" aria-label="多一次" onClick="{{pl.plus}}" class="p-press" style="{{c.roundMd}}">+</button>
+</sc-if>
+<sc-if value="{{pl.timed}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; align-items: center; gap: 18px">
+<div style="{{c.dialOuter}}; width: 190px; height: 190px"><div style="{{c.dialInner}}; width: 140px; height: 140px"><span class="p-n" role="timer" style="font-size: 50px; font-weight: 300; line-height: 1; color: #FFA53D">{{pl.left}}</span></div></div>
+<button type="button" onClick="{{pl.toggleRun}}" class="p-press" style="{{c.pillRaised}}">{{pl.runLabel}}</button>
+</div>
+</sc-if>
+</div>
+<div style="padding: 0 24px 40px; display: flex; flex-direction: column; gap: 12px">
+<button type="button" class="p-press" onClick="{{pl.finishSet}}" style="{{c.btn}}">完成这组</button>
+<span style="text-align: center; font-size: 13px; color: #8D8C88">{{pl.nextText}}</span>
+</div>
+<sc-if value="{{s.safety}}" hint-placeholder-val="{{false}}">
+<div style="position: absolute; inset: 0; background: rgba(60,58,54,.28); display: flex; align-items: flex-end">
+<div role="dialog" aria-label="哪里不舒服" style="{{c.sheet}}">
+<h2 style="margin: 0; font-size: 22px; font-weight: 400">哪里不舒服？</h2>
+<p style="{{c.inset}}; margin: 0; padding: 14px 16px; border-radius: 18px; color: #B4462E; font-size: 14px; line-height: 1.6">如果胸痛、胸闷、喘不上气、头晕或眼前发黑，请马上停下坐着休息；休息后没有缓解，请及时就医。</p>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px">
+<button type="button" onClick="{{pl.swap}}" class="p-press" style="{{c.tileBtn}}">关节或肌肉疼<span style="font-size: 12px; font-weight: 400; color: #C98500">换个动作</span></button>
+<button type="button" onClick="{{pl.easier}}" class="p-press" style="{{c.tileBtn}}">跟不上<span style="font-size: 12px; font-weight: 400; color: #C98500">这组少做几次</span></button>
+</div>
+<button type="button" onClick="{{pl.stop}}" class="p-press" style="{{c.pillRaised}}; width: 100%; color: #B4462E">结束今天的训练</button>
+<button type="button" onClick="{{pl.closeSafety}}" class="p-press" style="{{c.btn}}">没事，继续</button>
+</div>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{is.rest}}" hint-placeholder-val="{{false}}">
+<div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; padding: 64px 28px 40px; box-sizing: border-box">
+<div style="align-self: stretch; display: flex; flex-direction: column; gap: 2px"><span style="{{c.tiny}}">休息一下</span><span style="{{c.tiny}}">呼吸放慢</span><span style="{{c.dash}}"></span></div>
+<div style="flex: 1; display: flex; align-items: center; justify-content: center">
+<div style="{{c.dialOuter}}; width: 260px; height: 260px">
+<div aria-hidden="true" class="p-glow" style="position: absolute; inset: 30px; border-radius: 50%; background: radial-gradient(circle, rgba(255,197,61,.30), rgba(255,197,61,0) 66%)"></div>
+<div style="{{c.dialInner}}; width: 186px; height: 186px"><span class="p-n" role="timer" style="font-size: 62px; font-weight: 300; line-height: 1; color: #FFA53D">{{rs.left}}</span><span style="font-size: 12px; color: #8D8C88; margin-top: 6px">秒后继续</span></div>
+<svg width="260" height="260" viewBox="0 0 260 260" aria-hidden="true" style="position: absolute; inset: 0"><defs><linearGradient id="pyR" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFE38F"></stop><stop offset="1" stop-color="#FFA53D"></stop></linearGradient></defs><circle cx="130" cy="130" r="112" fill="none" stroke="url(#pyR)" stroke-width="10" stroke-linecap="round" stroke-dasharray="{{rs.dash}}" transform="rotate(-90 130 130)" style="transition: stroke-dasharray 1s linear"></circle></svg>
+<span aria-hidden="true" style="{{rs.knob}}"></span>
+</div>
+</div>
+<div style="display: flex; gap: 16px">
+<button type="button" onClick="{{rs.minus}}" class="p-press p-n" style="{{c.pillRaised}}">−15 秒</button>
+<button type="button" onClick="{{rs.plus}}" class="p-press p-n" style="{{c.pillRaised}}">+15 秒</button>
+</div>
+<div style="{{c.inset}}; align-self: stretch; margin-top: 26px; padding: 14px 18px; border-radius: 22px; display: flex; justify-content: space-between; align-items: center"><span style="font-size: 12px; color: #8D8C88">下一组</span><span style="font-size: 15px; font-weight: 500">{{s.nextLabel}}</span></div>
+<button type="button" class="p-press" onClick="{{rs.skip}}" style="{{c.btn}}; margin-top: 18px">跳过休息</button>
+</div>
+</sc-if>
+
+<sc-if value="{{is.finish}}" hint-placeholder-val="{{false}}">
+<div class="p-scroll" style="position: absolute; inset: 0; overflow-y: auto; padding: 56px 24px 40px; display: flex; flex-direction: column">
+<div style="display: flex; flex-direction: column; gap: 2px"><span style="{{c.tiny}}">{{home.name}}</span><span style="{{c.tiny}}">10月19日</span><span style="{{c.dash}}"></span></div>
+<div style="{{c.card}}; margin-top: 20px; padding: 18px 20px; border-radius: 34px; display: flex; align-items: center; gap: 8px">
+<div style="flex: 1; display: flex; flex-direction: column"><h1 style="{{c.h1}}">练完了</h1><span class="p-n" style="font-size: 46px; font-weight: 300; line-height: 1.1; color: #FFA53D; margin-top: 6px">31:20</span><span style="font-size: 12px; color: #8D8C88">用时</span></div>
+<div style="position: relative; width: 130px; height: 130px; display: flex; align-items: center; justify-content: center"><div aria-hidden="true" class="p-glow" style="position: absolute; inset: 4px; border-radius: 50%; background: radial-gradient(circle at 45% 40%, #FFF3C9, #FFD266 60%, rgba(255,210,102,0) 72%)"></div><dc-import name="Yaya" pose="celebrate" tk="pop" px="{{120}}" hint-size="120px,120px"></dc-import></div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 18px">
+<sc-for list="{{fin.tiles}}" as="x" hint-placeholder-count="2">
+<div style="{{c.card}}; padding: 16px; display: flex; align-items: center; justify-content: space-between">
+<div style="display: flex; flex-direction: column"><span style="font-size: 12px; color: #8D8C88">{{x.k}}</span><span class="p-n" style="font-size: 28px; font-weight: 300">{{x.v}}</span></div>
+<div style="position: relative; width: 54px; height: 54px; display: flex; align-items: center; justify-content: center"><svg width="54" height="54" viewBox="0 0 52 52" aria-hidden="true" style="position: absolute; inset: 0"><circle cx="26" cy="26" r="22" fill="none" stroke="#E2E0DC" stroke-width="5"></circle><circle cx="26" cy="26" r="22" fill="none" stroke="#FFC53D" stroke-width="5" stroke-linecap="round" stroke-dasharray="{{x.dash}}" transform="rotate(-90 26 26)"></circle></svg><span class="p-n" style="font-size: 12px">{{x.pct}}</span></div>
+</div>
+</sc-for>
+</div>
+<h2 style="margin: 30px 0 0; font-size: 15px; font-weight: 500">感觉怎么样？</h2>
+<div role="radiogroup" aria-label="感受" style="{{c.seg}}; margin-top: 14px">
+<sc-for list="{{fin.feels}}" as="f" hint-placeholder-count="3"><button type="button" role="radio" aria-checked="{{f.on}}" onClick="{{f.pick}}" style="{{f.style}}">{{f.label}}</button></sc-for>
+</div>
+<div style="flex: 1; min-height: 28px"></div>
+<button type="button" class="p-press" onClick="{{fin.done}}" style="{{c.btn}}">保存</button>
+</div>
+</sc-if>
+
+<sc-if value="{{is.review}}" hint-placeholder-val="{{false}}">
+<div class="p-scroll" style="position: absolute; inset: 0; overflow-y: auto; padding: 54px 24px 130px; display: flex; flex-direction: column">
+<div style="display: flex; flex-direction: column; gap: 2px"><span style="{{c.tiny}}">review</span><span style="{{c.tiny}}">回顾</span><span style="{{c.dash}}"></span></div>
+<div role="tablist" aria-label="指标" style="{{c.seg}}; margin-top: 20px">
+<sc-for list="{{rv.tabs}}" as="t" hint-placeholder-count="3"><button type="button" role="tab" aria-selected="{{t.on}}" onClick="{{t.pick}}" style="{{t.style}}">{{t.label}}</button></sc-for>
+</div>
+<div style="{{c.card}}; margin-top: 20px; padding: 20px 0 16px; border-radius: 30px; overflow: hidden">
+<div style="padding: 0 20px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12px; color: #8D8C88">{{rv.k1}}</span><span class="p-n" style="font-size: 30px; font-weight: 300">{{rv.v1}}</span></div>
+<div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12px; color: #8D8C88">{{rv.k2}}</span><span class="p-n" style="font-size: 30px; font-weight: 300">{{rv.v2}}</span></div>
+</div>
+<div style="position: relative; height: 210px; margin-top: 6px">
+<svg width="342" height="210" viewBox="0 0 342 210" aria-hidden="true">
+<defs><linearGradient id="pyA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFD266" stop-opacity=".55"></stop><stop offset="1" stop-color="#FFD266" stop-opacity="0"></stop></linearGradient></defs>
+<path d="{{rv.area}}" fill="url(#pyA)"></path>
+<path d="{{rv.line}}" fill="none" stroke="#FFB534" stroke-width="2.5" stroke-linecap="round"></path>
+</svg>
+<sc-for list="{{rv.pts}}" as="p" hint-placeholder-count="2"><span aria-hidden="true" style="{{p.knob}}"></span><span class="p-n" style="{{p.tip}}">{{p.label}}</span></sc-for>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 18px">
+<sc-for list="{{rv.tiles}}" as="x" hint-placeholder-count="2">
+<div style="{{c.card}}; padding: 16px; display: flex; flex-direction: column; gap: 10px">
+<span style="font-size: 14px; font-weight: 500">{{x.n}}</span>
+<span class="p-n" style="font-size: 13px; color: #8D8C88">{{x.m}}</span>
+<span class="p-n" style="font-size: 24px; font-weight: 400; color: #FFA53D">{{x.d}}</span>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{is.chat}}" hint-placeholder-val="{{false}}">
+<div style="position: absolute; inset: 0; display: flex; flex-direction: column">
+<div style="padding: 54px 20px 14px; display: flex; align-items: center; gap: 12px">
+<button type="button" aria-label="返回" onClick="{{ch.back}}" class="p-press" style="{{c.roundSm}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg></button>
+<dc-import name="Yaya" pose="head" tk="pop" px="{{42}}" hint-size="42px,42px"></dc-import>
+<div style="display: flex; flex-direction: column"><span style="font-weight: 500; font-size: 16px">芽芽</span><span style="font-size: 12px; color: #8D8C88">只调整训练，不做诊断</span></div>
+</div>
+<div class="p-scroll" style="flex: 1; overflow-y: auto; padding: 12px 24px; display: flex; flex-direction: column; gap: 16px">
+<div style="{{c.userBubble}}">今天只有 20 分钟</div>
+<div style="{{c.aiBubble}}">没问题，这样改：</div>
+<div style="{{c.card}}; padding: 18px 20px; border-radius: 28px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-size: 15px; font-weight: 500">今天的训练</span><span class="p-n" style="font-size: 24px; font-weight: 300; color: #FFA53D">32 → 20′</span></div>
+<div style="{{c.inset}}; border-radius: 18px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; font-size: 14px">
+<div style="display: flex; justify-content: space-between"><span style="color: #8D8C88">动作</span><span class="p-n">5 → 4 个</span></div>
+<div style="display: flex; justify-content: space-between"><span style="color: #8D8C88">每个动作</span><span class="p-n">3 → 2 组</span></div>
+<div style="display: flex; justify-content: space-between"><span style="color: #8D8C88">去掉</span><span>原地开合跳</span></div>
+</div>
+<sc-if value="{{ch.notApplied}}" hint-placeholder-val="{{true}}">
+<div style="display: flex; gap: 12px; margin-top: 4px">
+<button type="button" class="p-press" onClick="{{ch.apply}}" style="{{c.btn}}; height: 48px; flex: 1; font-size: 15px">应用到今天</button>
+<button type="button" class="p-press" style="{{c.pillRaised}}; height: 48px">不用了</button>
+</div>
+</sc-if>
+<sc-if value="{{s.applied}}" hint-placeholder-val="{{false}}"><span style="color: #C98500; font-weight: 500; font-size: 14px">已应用，回首页就能开始</span></sc-if>
+</div>
+</div>
+<div style="padding: 10px 20px 32px; display: flex; flex-direction: column; gap: 14px">
+<div class="p-scroll" style="display: flex; gap: 10px; overflow-x: auto; padding: 4px 4px 10px">
+<button type="button" class="p-press" style="{{c.chip}}">今天有点累</button>
+<button type="button" class="p-press" style="{{c.chip}}">膝盖不太舒服</button>
+<button type="button" class="p-press" style="{{c.chip}}">换成在家练</button>
+</div>
+<div style="{{c.inset}}; display: flex; align-items: center; gap: 10px; padding: 6px 6px 6px 18px; border-radius: 999px">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A9A7A2" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+<label for="p-input" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">发消息给芽芽</label>
+<input id="p-input" placeholder="说说今天的情况" style="flex: 1; min-width: 0; height: 44px; border: 0; background: transparent; color: #3C3C40; font: 400 15px/1 Noto Sans SC, sans-serif; outline: none">
+<button type="button" aria-label="发送" class="p-press" style="{{c.sendBtn}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"></path></svg></button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{is.settings}}" hint-placeholder-val="{{false}}">
+<div class="p-scroll" style="position: absolute; inset: 0; overflow-y: auto; padding: 54px 24px 130px; display: flex; flex-direction: column">
+<div style="display: flex; flex-direction: column; gap: 2px"><span style="{{c.tiny}}">me</span><span style="{{c.tiny}}">我的</span><span style="{{c.dash}}"></span></div>
+<div style="{{c.card}}; margin-top: 20px; padding: 16px 18px; display: flex; align-items: center; gap: 14px">
+<dc-import name="Yaya" pose="head" tk="pop" px="{{56}}" hint-size="56px,56px"></dc-import>
+<div style="flex: 1; display: flex; flex-direction: column; gap: 3px"><span style="font-size: 17px; font-weight: 500">{{st.goal}}</span><span style="font-size: 13px; color: #8D8C88">{{st.sum}}</span></div>
+<button type="button" class="p-press" style="{{c.pillRaised}}; height: 38px; padding: 0 16px; font-size: 13px">修改</button>
+</div>
+<h2 style="margin: 30px 0 14px; font-size: 13px; font-weight: 400; color: #8D8C88">界面风格</h2>
+<div role="radiogroup" aria-label="界面风格" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px">
+<sc-for list="{{themeOpts}}" as="o" hint-placeholder-count="5"><button type="button" role="radio" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="{{o.tile}}"><span style="{{o.sw}}"></span><span style="font-size: 12px; font-weight: 500">{{o.label}}</span></button></sc-for>
+</div>
+<h2 style="margin: 30px 0 14px; font-size: 13px; font-weight: 400; color: #8D8C88">更多</h2>
+<div style="{{c.card}}; padding: 4px 18px">
+<sc-for list="{{st.rows}}" as="r" hint-placeholder-count="5"><button type="button" style="{{r.style}}"><span style="flex: 1; text-align: left">{{r.k}}</span><sc-if value="{{r.isToggle}}" hint-placeholder-val="{{false}}"><span style="{{r.track}}"><span style="{{r.knob}}"></span></span></sc-if><sc-if value="{{r.isText}}" hint-placeholder-val="{{true}}"><span style="font-size: 13px; color: #8D8C88">{{r.v}}</span></sc-if></button></sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{orb.show}}" hint-placeholder-val="{{false}}">
+<div style="position: absolute; inset: 0; pointer-events: none; z-index: 5"><dc-import name="Orb" tk="pop" tip="{{orb.tip}}" actions="{{orb.actions}}" on-chat="{{go.chat}}" top="{{orb.top}}" hint-size="390px,844px"></dc-import></div>
+</sc-if>
+<sc-if value="{{showTabs}}" hint-placeholder-val="{{false}}">
+<nav aria-label="主导航" style="{{c.nav}}">
+<button type="button" onClick="{{go.home}}" aria-label="今天" aria-current="{{tabs.homeCur}}" style="{{tabs.home}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"></path></svg></button>
+<button type="button" onClick="{{go.plan}}" aria-label="计划" aria-current="{{tabs.planCur}}" style="{{tabs.plan}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="3"></rect><path d="M4 10h16M9 3v4M15 3v4"></path></svg></button>
+<button type="button" class="p-press" onClick="{{go.player}}" aria-label="开始今天的训练" style="{{c.navPlus}}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+<button type="button" onClick="{{go.review}}" aria-label="回顾" aria-current="{{tabs.reviewCur}}" style="{{tabs.review}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17c3 0 4-8 7-8s3 6 6 6 3-6 5-8"></path></svg></button>
+<button type="button" onClick="{{go.settings}}" aria-label="我的" aria-current="{{tabs.meCur}}" style="{{tabs.me}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"></path></svg></button>
+</nav>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"startScreen":{"editor":"enum","options":["welcome","onboard","plan","home","player","rest","finish","review","chat","settings"],"default":"welcome"},"autoplay":{"editor":"boolean","default":true},"onTheme":{"editor":null},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+S() {
+const p = this.props || {};
+const st = this.state || {};
+const start = p.startScreen || 'welcome';
+const d = { screen: start, step: 0, goal: null, focus: [], days: null, time: null, place: null, age: 30, flags: [], onboarded: ['welcome', 'onboard', 'plan'].indexOf(start) < 0, ex: 0, set: 0, reps: null, timeLeft: null, running: false, rest: 45, restTotal: 60, nextLabel: '徒手深蹲，第 2 组', feel: '刚好', applied: false, toast: '', safety: false, metric: 'min' };
+return Object.assign(d, st);
+}
+exList(applied) {
+const L = [
+{ n: '徒手深蹲', sets: 3, reps: 12, cue: '脚与肩同宽，臀部向后坐，膝盖和脚尖同向。' },
+{ n: '跪姿俯卧撑', sets: 3, reps: 10, cue: '从头到膝盖一条直线，胸口贴近地面再推起。' },
+{ n: '平板支撑', sets: 3, secs: 30, cue: '手肘在肩膀正下方，收紧肚子。' },
+{ n: '臀桥', sets: 3, reps: 15, cue: '脚跟发力把臀部推高，停一秒。' },
+{ n: '原地开合跳', sets: 2, secs: 40, cue: '落地屈膝，跟不上就改踏步。' }
+];
+if (!applied) return L;
+return L.slice(0, 4).map(function (x) { return Object.assign({}, x, { sets: 2 }); });
+}
+componentDidMount() { this.iv = setInterval(() => this.tick(), 1000); }
+componentWillUnmount() { clearInterval(this.iv); }
+tick() {
+if (this.props && this.props.autoplay === false) return;
+const s = this.S();
+if (s.screen === 'rest') { if (s.rest <= 1) this.setState({ screen: 'player', rest: 0 }); else this.setState({ rest: s.rest - 1 }); }
+else if (s.screen === 'player' && s.running) { const e = this.exList(s.applied)[s.ex]; const left = s.timeLeft == null ? e.secs : s.timeLeft; if (left <= 1) this.setState({ timeLeft: 0, running: false }); else this.setState({ timeLeft: left - 1 }); }
+}
+fmt(sec) { const m = Math.floor(sec / 60); const x = sec % 60; return m + ':' + (x < 10 ? '0' : '') + x; }
+finishSet() {
+const s = this.S(); const L = this.exList(s.applied); const i = Math.min(s.ex, L.length - 1); const e = L[i];
+if (s.set + 1 < e.sets) this.setState({ screen: 'rest', set: s.set + 1, rest: 45, restTotal: 45, timeLeft: null, running: false, reps: null, safety: false, nextLabel: e.n + '，第 ' + (s.set + 2) + ' 组' });
+else if (i + 1 < L.length) { const n = L[i + 1]; this.setState({ screen: 'rest', ex: i + 1, set: 0, rest: 60, restTotal: 60, timeLeft: null, running: false, reps: null, safety: false, nextLabel: n.n + '，第 1 组' }); }
+else this.setState({ screen: 'finish', safety: false });
+}
+renderVals() {
+const s = this.S();
+const set = (o) => () => this.setState(o);
+const BG = '#EDECEA', INK = '#3C3C40', MU = '#8D8C88';
+const R = (n) => 'background: ' + BG + '; box-shadow: -' + n + 'px -' + n + 'px ' + Math.round(n * 2.2) + 'px #FFFFFF, ' + n + 'px ' + n + 'px ' + Math.round(n * 2.4) + 'px rgba(163,158,148,.48)';
+const IN = (n) => 'background: #E8E7E4; box-shadow: inset ' + n + 'px ' + n + 'px ' + (n * 2) + 'px rgba(163,158,148,.5), inset -' + n + 'px -' + n + 'px ' + (n * 2) + 'px #FFFFFF';
+const YB = 'background: linear-gradient(145deg, #FFE38F, #FFBE3B); box-shadow: -5px -5px 12px #FFFFFF, 6px 8px 16px rgba(240,165,40,.38), inset 1px 1px 1px rgba(255,255,255,.7)';
+const go = {
+onboard: set({ screen: 'onboard', step: 0 }), plan: set({ screen: 'plan' }), home: set({ screen: 'home', safety: false }),
+review: set({ screen: 'review' }), chat: set({ screen: 'chat' }), settings: set({ screen: 'settings' }),
+start: set({ screen: 'home', onboarded: true, toast: '' }),
+player: set({ screen: 'player', ex: 0, set: 0, timeLeft: null, running: false, reps: null, toast: '' })
+};
+const is = {};
+['welcome', 'onboard', 'plan', 'home', 'player', 'rest', 'finish', 'review', 'chat', 'settings'].forEach(function (k) { is[k] = s.screen === k; });
+const showTabs = ['home', 'review', 'settings'].indexOf(s.screen) >= 0 || (s.screen === 'plan' && s.onboarded);
+const F = 'Noto Sans SC, sans-serif';
+const c = {
+root: 'width: 390px; height: 844px; position: relative; overflow: hidden; background: ' + BG + '; color: ' + INK + '; font-family: ' + F + '; -webkit-font-smoothing: antialiased',
+scrollPlan: 'position: absolute; inset: 0; overflow-y: auto; padding: 54px 24px ' + (s.onboarded ? '130px' : '40px') + '; display: flex; flex-direction: column',
+tiny: 'font-size: 12px; line-height: 1.5; color: ' + MU + '; font-weight: 400',
+dash: 'display: block; width: 16px; height: 2px; border-radius: 1px; background: #FFB534; margin-top: 8px',
+hero: 'margin: 0; font-size: 40px; line-height: 1.22; font-weight: 300; letter-spacing: .02em; color: ' + INK,
+h1: 'margin: 0; font-size: 28px; line-height: 1.3; font-weight: 300; letter-spacing: .02em; color: ' + INK,
+sub: 'margin: 0; font-size: 14px; line-height: 1.75; font-weight: 300; color: ' + MU,
+card: 'border-radius: 26px; ' + R(8),
+inset: IN(4),
+btn: 'height: 58px; width: 100%; border: 0; border-radius: 999px; ' + YB + '; color: #5B3A00; font: 500 17px/1 ' + F + '; letter-spacing: .08em; cursor: pointer; flex: none',
+pillRaised: 'height: 44px; padding: 0 20px; border: 0; border-radius: 999px; ' + R(5) + '; color: ' + INK + '; font: 400 14px/1 ' + F + '; cursor: pointer',
+roundSm: 'width: 44px; height: 44px; flex: none; border: 0; border-radius: 50%; ' + R(5) + '; color: ' + INK + '; display: flex; align-items: center; justify-content: center; font: 300 22px/1 Jost, sans-serif; cursor: pointer',
+roundMd: 'width: 58px; height: 58px; flex: none; border: 0; border-radius: 50%; ' + R(6) + '; color: ' + INK + '; font: 300 28px/1 Jost, sans-serif; cursor: pointer',
+warnBtn: 'height: 40px; padding: 0 16px; flex: none; border: 0; border-radius: 999px; ' + R(4) + '; color: #B4462E; font: 500 13px/1 ' + F + '; cursor: pointer',
+track: 'flex: 1; height: 12px; border-radius: 999px; padding: 3px; box-sizing: border-box; ' + IN(3),
+seg: 'display: flex; gap: 6px; padding: 6px; border-radius: 999px; ' + IN(4),
+segOn: 'flex: 1; height: 40px; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 500; color: #C98500; ' + R(4),
+segOff: 'flex: 1; height: 40px; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: ' + MU,
+dialOuter: 'position: relative; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex: none; ' + R(12),
+dialInner: 'position: relative; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; ' + R(6),
+pgOn: 'width: 8px; height: 8px; border-radius: 50%; background: #FFB534; box-shadow: 0 0 8px rgba(255,181,52,.7)',
+pgOff: 'width: 8px; height: 8px; border-radius: 50%; ' + IN(2),
+slot: 'position: relative; width: 12px; height: 92px; border-radius: 999px; ' + IN(3),
+sheet: 'width: 100%; box-sizing: border-box; background: ' + BG + '; border-radius: 34px 34px 0 0; padding: 26px 24px 36px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 -12px 30px rgba(120,115,105,.18)',
+tileBtn: 'min-height: 84px; padding: 14px; border: 0; border-radius: 22px; ' + R(6) + '; color: ' + INK + '; display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; font: 500 15px/1.3 ' + F + '; cursor: pointer; text-align: left',
+link: 'min-height: 44px; border: 0; background: transparent; color: #C98500; font: 500 14px/1 ' + F + '; cursor: pointer',
+userBubble: 'align-self: flex-end; max-width: 78%; padding: 12px 18px; border-radius: 22px 22px 6px 22px; ' + YB + '; color: #5B3A00; font-size: 15px',
+aiBubble: 'align-self: flex-start; max-width: 86%; padding: 12px 18px; border-radius: 22px 22px 22px 6px; ' + R(5) + '; font-size: 15px; line-height: 1.6',
+chip: 'height: 38px; padding: 0 16px; flex: none; border: 0; border-radius: 999px; ' + R(4) + '; color: ' + INK + '; font: 400 13px/1 ' + F + '; cursor: pointer',
+sendBtn: 'width: 44px; height: 44px; flex: none; border: 0; border-radius: 50%; ' + YB + '; color: #5B3A00; display: flex; align-items: center; justify-content: center; cursor: pointer',
+nav: 'position: absolute; left: 18px; right: 18px; bottom: 22px; height: 72px; padding: 0 10px; box-sizing: border-box; border-radius: 999px; ' + R(9) + '; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center',
+navPlus: 'justify-self: center; width: 56px; height: 56px; border-radius: 50%; border: 0; ' + YB + '; color: #5B3A00; display: flex; align-items: center; justify-content: center; cursor: pointer'
+};
+const chip = (on) => 'height: 46px; padding: 0 18px; border-radius: 999px; border: 0; ' + (on ? YB + '; color: #5B3A00' : R(5) + '; color: ' + INK) + '; font: ' + (on ? 500 : 400) + ' 14px/1 ' + F + '; cursor: pointer';
+const single = (key, list) => list.map((label) => { const on = s[key] === label; const p = {}; p[key] = label; return { label: label, on: on ? 'true' : 'false', pick: set(p), style: chip(on) }; });
+const multi = (key, list) => list.map((label) => { const on = (s[key] || []).indexOf(label) >= 0; return { label: label, on: on ? 'true' : 'false', style: chip(on), pick: () => { const a = (this.S()[key] || []).slice(); const k = a.indexOf(label); if (k >= 0) a.splice(k, 1); else a.push(label); const p = {}; p[key] = a; this.setState(p); } }; });
+const tog = (on) => ({ track: 'position: relative; width: 50px; height: 28px; flex: none; border-radius: 999px; ' + (on ? 'background: linear-gradient(145deg, #FFE38F, #FFBE3B); box-shadow: inset 2px 2px 5px rgba(200,130,20,.35)' : IN(3)), knob: 'position: absolute; top: 3px; left: ' + (on ? 25 : 3) + 'px; width: 22px; height: 22px; border-radius: 50%; background: #F7F6F4; box-shadow: 2px 2px 5px rgba(140,130,115,.4), -1px -1px 2px #FFFFFF; transition: left .2s ease' });
+const step = Math.min(s.step, 2); const age = s.age || 30;
+const STEPS = [
+{ title: '你想练成什么样？', sub: '目标决定动作和次数，部位可以多选。', groups: [{ label: '目标', hint: '', opts: single('goal', ['减脂塑形', '增强力量', '保持健康', '提升体能']) }, { label: '重点部位', hint: '可多选', opts: multi('focus', ['肩部', '胸部', '手臂', '腹部', '臀部', '腿部']) }] },
+{ title: '什么时候练？', sub: '按你真实的时间来，坚持比强度重要。', groups: [{ label: '每周', hint: '', opts: single('days', ['2 天', '3 天', '4 天', '5 天']) }, { label: '每次', hint: '含热身拉伸', opts: single('time', ['20 分钟', '30 分钟', '45 分钟', '60 分钟']) }, { label: '地点', hint: '', opts: single('place', ['家里，没有器械', '家里，有哑铃', '健身房', '户外']) }] },
+{ title: '再了解一下你', sub: '用来设起始强度，并换掉不合适的动作。', groups: [] }
+];
+const S0 = STEPS[step];
+const ob = {
+title: S0.title, sub: S0.sub, groups: S0.groups, isBody: step === 2, age: age,
+stepAria: '第 ' + (step + 1) + ' 步，共 3 步', stepNum: step + 1, stepLabel: '0' + (step + 1) + ' / 03',
+fill: 'height: 100%; border-radius: 999px; width: ' + Math.round((step + 1) / 3 * 100) + '%; background: linear-gradient(90deg, #FFE38F, #FFB534); box-shadow: 0 0 8px rgba(255,181,52,.55); transition: width .4s ease',
+back: step > 0 ? set({ step: step - 1 }) : set({ screen: 'welcome' }),
+ageUp: set({ age: Math.min(90, age + 1) }), ageDown: set({ age: Math.max(14, age - 1) }),
+flags: ['怀孕中', '产后一年内', '65 岁以上', '心脏病或高血压', '近期受伤或有疼痛'].map((label) => { const on = s.flags.indexOf(label) >= 0; const tg = tog(on); return { label: label, on: on ? 'true' : 'false', track: tg.track, knob: tg.knob, toggle: () => { const f = this.S().flags.slice(); const k = f.indexOf(label); if (k >= 0) f.splice(k, 1); else f.push(label); this.setState({ flags: f }); } }; }),
+nextLabel: step === 2 ? '生成计划' : '下一步',
+next: step === 2 ? set({ screen: 'plan' }) : set({ step: step + 1 })
+};
+const plan = {
+cta: !s.onboarded,
+spikes: [['一', 32], ['二', 0], ['三', 30], ['四', 0], ['五', 31], ['六', 0], ['日', 0]].map((m, k) => ({ d: m[0], well: 'position: relative; width: 100%; max-width: 30px; height: 84px; border-radius: 12px; overflow: hidden; ' + IN(3), style: 'position: absolute; left: 4px; right: 4px; bottom: 4px; border-radius: 9px; height: ' + (m[1] ? Math.round(m[1] / 32 * 74) : 0) + 'px; background: linear-gradient(180deg, #FFE38F, #FFB534); box-shadow: 0 0 10px rgba(255,181,52,.45)', lab: 'font-size: 12px; color: ' + (k === 0 ? '#C98500' : MU) + '; font-weight: ' + (k === 0 ? 500 : 400) })),
+tiles: [['周一 · 今天', s.applied ? '全身力量 A 精简' : '全身力量 A', s.applied ? '20′' : '32′', true], ['周三', '低冲击有氧', '30′', false], ['周五', '全身力量 B', '31′', false]].map((x) => ({ day: x[0], name: x[1], meta: x[2], box: 'border-radius: 24px; padding: 16px 18px; display: flex; align-items: center; gap: 14px; ' + (x[3] ? R(7) : IN(3)), dot: 'width: 12px; height: 12px; flex: none; border-radius: 50%; ' + (x[3] ? 'background: #FFB534; box-shadow: 0 0 10px rgba(255,181,52,.8)' : IN(2)) })),
+reasons: ['隔天练，肌肉有时间恢复。', '力量和有氧搭配。', '每次约 ' + (s.time || '30 分钟') + '，按你的时间来。'].concat(s.flags.length ? ['已为「' + s.flags.join('、') + '」换掉跳跃和憋气动作。'] : [])
+};
+const L = this.exList(s.applied);
+const ring = (r, cx, pct, sz) => { const a = (-90 + pct * 360) * Math.PI / 180; const x = cx + r * Math.cos(a), y = cx + r * Math.sin(a); return 'position: absolute; left: ' + Math.round(x - sz / 2) + 'px; top: ' + Math.round(y - sz / 2) + 'px; width: ' + sz + 'px; height: ' + sz + 'px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #FFFFFF, #F1EFEA); box-shadow: 3px 3px 8px rgba(150,140,120,.45), -2px -2px 5px #FFFFFF, 0 0 12px rgba(255,190,60,.55)'; };
+const hp = (s.applied ? 20 : 32) / 93;
+const home = {
+name: s.applied ? '全身力量 A 精简版' : '全身力量 A', min: s.applied ? '20' : '32', count: L.length + '', hasToast: !!s.toast,
+dash: (2 * Math.PI * 92 * hp) + ' ' + (2 * Math.PI * 92), knob: ring(92, 108, hp, 24),
+eq: [['一', 32, true], ['二', 0], ['三', 30], ['四', 0], ['五', 31], ['六', 0], ['日', 0]].map((q) => { const h = Math.round(q[1] / 32 * 70); return { d: q[0], fill: 'position: absolute; left: 3px; right: 3px; bottom: 3px; border-radius: 999px; height: ' + h + 'px; background: ' + (q[1] ? 'linear-gradient(180deg, #FFE38F, #FFB534)' : 'transparent'), knob: 'position: absolute; left: 50%; bottom: ' + Math.max(0, h - 6) + 'px; transform: translateX(-50%); width: 20px; height: 20px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #FFFFFF, #EEECE7); box-shadow: 2px 2px 6px rgba(150,140,120,.45), -1px -1px 3px #FFFFFF' + (q[2] ? ', 0 0 10px rgba(255,181,52,.8)' : ''), label: 'font-size: 12px; font-weight: ' + (q[2] ? 500 : 400) + '; color: ' + (q[2] ? '#C98500' : MU) }; })
+};
+const i = Math.min(s.ex, L.length - 1); const e = L[i];
+const timed = !!e.secs; const left = s.timeLeft == null ? (e.secs || 0) : s.timeLeft;
+const count = s.reps == null ? (e.reps || 0) : s.reps;
+const pl = {
+name: e.n, cue: e.cue, timed: timed, reps: !timed, count: count, left: this.fmt(left),
+setLabel: '第 ' + (i + 1) + ' 个动作 · 第 ' + (s.set + 1) + ' / ' + e.sets + ' 组',
+segs: L.map((x, k) => ({ style: 'flex: 1; height: 10px; border-radius: 999px; ' + (k < i ? 'background: linear-gradient(90deg, #FFE38F, #FFB534)' : k === i ? 'background: #FFB534; box-shadow: 0 0 8px rgba(255,181,52,.8)' : IN(2)) })),
+runLabel: s.running ? '暂停' : (left === 0 ? '再来一次' : (left < e.secs ? '继续' : '开始计时')),
+toggleRun: () => this.setState({ running: !s.running, timeLeft: left === 0 ? e.secs : left }),
+minus: set({ reps: Math.max(0, count - 1) }), plus: set({ reps: count + 1 }),
+finishSet: () => this.finishSet(),
+nextText: '接下来：' + (s.set + 1 < e.sets ? e.n + ' 第 ' + (s.set + 2) + ' 组' : (L[i + 1] ? L[i + 1].n : '最后一组')),
+openSafety: set({ safety: true, running: false }), closeSafety: set({ safety: false }),
+swap: set({ safety: false, ex: Math.min(i + 1, L.length - 1), set: 0, reps: null, timeLeft: null }),
+easier: set({ safety: false, reps: Math.max(1, Math.round(count * 0.6)) }),
+stop: set({ safety: false, screen: 'home', toast: '已结束今天的训练，好好休息。' })
+};
+const rp = Math.max(0, Math.min(1, s.rest / (s.restTotal || 60)));
+const rs = { left: s.rest + '', dash: (2 * Math.PI * 112 * rp) + ' ' + (2 * Math.PI * 112), knob: ring(112, 130, rp, 26), minus: set({ rest: Math.max(5, s.rest - 15) }), plus: set({ rest: s.rest + 15, restTotal: Math.max(s.restTotal || 60, s.rest + 15) }), skip: set({ screen: 'player', rest: 0 }) };
+const C = 2 * Math.PI * 22;
+const segBtn = (on) => 'flex: 1; height: 42px; border: 0; border-radius: 999px; ' + (on ? R(4) + '; color: #C98500; font-weight: 500' : 'background: transparent; color: ' + MU) + '; font-size: 14px; font-family: ' + F + '; cursor: pointer';
+const fin = {
+tiles: [['完成组数', '14', 1], ['本周', '1/3', 0.33]].map((x) => ({ k: x[0], v: x[1], pct: Math.round(x[2] * 100) + '%', dash: (C * x[2]) + ' ' + C })),
+feels: ['太轻松', '刚好', '有点吃力'].map((f) => { const on = s.feel === f; return { label: f, on: on ? 'true' : 'false', pick: set({ feel: f }), style: segBtn(on) }; }),
+done: set({ screen: 'home', toast: '已保存，下次按“' + s.feel + '”调整。' })
+};
+const M = { min: { k1: '上周', v1: '63′', k2: '近 4 周', v2: '308′', data: [48, 62, 55, 70, 88, 95, 63] }, cnt: { k1: '上周', v1: '2 次', k2: '近 4 周', v2: '11 次', data: [2, 3, 2, 3, 3, 3, 2] }, moves: { k1: '上周', v1: '9 个', k2: '近 4 周', v2: '41 个', data: [8, 10, 9, 11, 12, 12, 9] } }[s.metric];
+const mx = Math.max.apply(null, M.data); const mn = Math.min.apply(null, M.data);
+const xs = M.data.map((v, k) => [k * 57, 180 - ((v - mn) / ((mx - mn) || 1)) * 120]);
+let d = 'M' + xs[0][0] + ' ' + xs[0][1];
+for (let k = 1; k < xs.length; k++) { const p0 = xs[k - 1], p1 = xs[k]; const cx = (p0[0] + p1[0]) / 2; d += ' C' + cx + ' ' + p0[1] + ' ' + cx + ' ' + p1[1] + ' ' + p1[0] + ' ' + p1[1]; }
+const hi = [xs.indexOf(xs.reduce((a, b) => (b[1] < a[1] ? b : a))), xs.length - 1];
+const rv = {
+tabs: [['min', '分钟'], ['cnt', '次数'], ['moves', '动作']].map((t) => { const on = s.metric === t[0]; return { label: t[1], on: on ? 'true' : 'false', pick: set({ metric: t[0] }), style: segBtn(on) }; }),
+line: d, area: d + ' L' + xs[xs.length - 1][0] + ' 210 L0 210 Z',
+pts: hi.map((k) => ({ label: M.data[k] + '', knob: 'position: absolute; left: ' + Math.round(xs[k][0] - 11) + 'px; top: ' + Math.round(xs[k][1] - 11) + 'px; width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #FFFFFF, #F1EFEA); box-shadow: 2px 2px 6px rgba(150,140,120,.45), 0 0 14px rgba(255,181,52,.8)', tip: 'position: absolute; left: ' + Math.max(4, Math.min(290, Math.round(xs[k][0] - 24))) + 'px; top: ' + Math.round(xs[k][1] - 50) + 'px; width: 48px; height: 28px; border-radius: 999px; ' + R(4) + '; display: flex; align-items: center; justify-content: center; font-size: 13px; color: #C98500' })),
+k1: M.k1, v1: M.v1, k2: M.k2, v2: M.v2,
+tiles: [['徒手深蹲', '10 → 14 次', '+40%'], ['平板支撑', '20 → 35 秒', '+75%']].map((x) => ({ n: x[0], m: x[1], d: x[2] }))
+};
+const ch = { back: set({ screen: s.onboarded ? 'home' : 'plan' }), notApplied: !s.applied, apply: set({ applied: true, toast: '今天改成 20 分钟、4 个动作。' }) };
+const TH = [['pop', '柔光拟物', 'linear-gradient(145deg, #FFE38F, #FFBE3B)', '#EDECEA'], ['vivid', '山野暖阳', '#E0745A', '#FBF1E7'], ['gentle', '温和陪伴', '#C5E84A', '#F3F7EC'], ['data', '专业数据', '#5CF2E6', '#060A13'], ['fire', '燃动挑战', '#FF2D2D', '#0A0A0A']];
+const themeOpts = TH.map((o) => { const on = o[0] === 'pop'; return { label: o[1], on: on ? 'true' : 'false', pick: () => { if (this.props.onTheme) this.props.onTheme(o[0], 'settings'); }, tile: 'padding: 10px; border-radius: 22px; border: 0; ' + (on ? IN(4) : R(6)) + '; color: ' + (on ? '#C98500' : INK) + '; display: flex; flex-direction: column; gap: 8px; align-items: stretch; cursor: pointer; font-family: ' + F, sw: 'height: 44px; border-radius: 14px; background: ' + o[2] + '; box-shadow: inset 0 0 0 6px ' + o[3] + ', inset 2px 2px 6px rgba(0,0,0,.08)' }; });
+const row = 'min-height: 56px; width: 100%; padding: 0; border: 0; background: transparent; color: ' + INK + '; display: flex; align-items: center; gap: 10px; font: 400 15px/1 ' + F + '; cursor: pointer';
+const ai = tog(true);
+const stt = { goal: s.goal || '减脂塑形', sum: '每周 ' + (s.days || '3 天') + '，每次约 ' + (s.time || '30 分钟'), rows: [['身体情况', s.flags.length ? s.flags.length + ' 项' : '无'], ['芽芽 AI', '', true], ['训练提醒', '19:00'], ['备份与恢复', ''], ['版本', '2.0']].map((r, k, A) => ({ k: r[0], v: r[1], isToggle: !!r[2], isText: !r[2], track: ai.track, knob: ai.knob, style: row + (k < A.length - 1 ? '; border-bottom: 1px solid #E0DED9' : '') })) };
+const tabStyle = (cur) => 'justify-self: center; width: 48px; height: 48px; border: 0; border-radius: 50%; ' + (cur ? IN(3) : 'background: transparent') + '; display: flex; align-items: center; justify-content: center; cursor: pointer; color: ' + (cur ? '#FFA53D' : '#A9A7A2');
+const tabs = { home: tabStyle(is.home), plan: tabStyle(is.plan), review: tabStyle(is.review), me: tabStyle(is.settings), homeCur: is.home ? 'page' : 'false', planCur: is.plan ? 'page' : 'false', reviewCur: is.review ? 'page' : 'false', meCur: is.settings ? 'page' : 'false' };
+const OT = { home: ['今天 32 分钟。想先热身 5 分钟，还是直接开始？', ['只有 20 分钟', '今天有点累', '换个地方练']], plan: ['想换训练日或缩短时间？点我直接改。', ['把周三换到周四', '每次改成 20 分钟', '加一次有氧']], review: ['上周少练了一次，要我帮你补回来吗？', ['帮我补上', '为什么少练了', '看看进步最大的动作']], settings: ['换风格时，我也会跟着换装。', ['推荐一个风格', '调整提醒时间', '修改身体情况']], finish: ['练得不错！要看看下次怎么加量吗？', ['下次怎么加量', '今天哪里做得好', '明天该休息吗']] };
+const orb = { show: !!OT[s.screen] && (s.screen !== 'plan' || s.onboarded), tip: OT[s.screen] ? OT[s.screen][0] : '', actions: OT[s.screen] ? OT[s.screen][1] : [], top: s.screen === 'finish' ? 600 : 560 };
+return { orb: orb, s: s, c: c, go: go, is: is, showTabs: showTabs, ob: ob, plan: plan, home: home, pl: pl, rs: rs, fin: fin, rv: rv, ch: ch, themeOpts: themeOpts, st: stt, tabs: tabs };
+}
+}
+</script>
+</body>
+</html>
