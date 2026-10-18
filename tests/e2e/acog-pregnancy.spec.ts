@@ -90,12 +90,7 @@ test("an applied legacy plan stays startable while new generation waits for the 
   ).toBeVisible();
 });
 
-for (const [id, label] of [
-  ["qingci", "青瓷"],
-  ["liubai", "留白"],
-  ["jingshe", "静奢"],
-  ["zhuangse", "撞色"],
-]) {
+for (const [id, label] of [["pop","柔光拟物"],["vivid","山野暖阳"],["gentle","温和陪伴"],["data","专业数据"],["fire","燃动挑战"]]) {
   test(`prenatal question and layout in ${id} at 375 and 1280`, async ({
     page,
   }, info) => {
@@ -104,7 +99,7 @@ for (const [id, label] of [
       await (await import(/* @vite-ignore */ path)).seedAcogPregnancy(true);
     });
     await page.goto("/settings/appearance");
-    await page.getByRole("button", { name: label, exact: true }).click();
+    await page.getByRole("radio", { name: label, exact: true }).click();
     await expect(page.locator("html")).toHaveAttribute("data-theme", id);
     await page.goto("/settings/engine");
     await expect(page.locator("html")).toHaveAttribute("data-theme", id);

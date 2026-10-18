@@ -49,7 +49,7 @@ describe('V9 tokens', () => {
     expect(themeSelector('pop')).toBe(':root[data-theme="pop"], [data-theme="pop"]');
   });
 
-  it('keeps body text readable in every theme (WCAG AA 4.5:1 for ink and muted ink on bg and surface)', () => {
+  it('keeps body text readable in every theme (WCAG AA 4.5:1 for body, accent and on-primary text)', () => {
     const luminance = (hex: string) => {
       const channels = hex.replace('#', '').match(/../g)!.map(part => parseInt(part, 16) / 255).map(c => c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
       return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
@@ -62,6 +62,7 @@ describe('V9 tokens', () => {
         expect(ratio(color.inkMuted, ground), `${id} muted`).toBeGreaterThanOrEqual(4.5);
         expect(ratio(color.accentText, ground), `${id} accent text`).toBeGreaterThanOrEqual(4.5);
       }
+      expect(ratio(color.onPrimary, color.primary), `${id} on primary`).toBeGreaterThanOrEqual(4.5);
     }
   });
 });

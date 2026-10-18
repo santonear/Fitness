@@ -1,0 +1,6 @@
+.v9-gallery { box-sizing: border-box; max-inline-size: 480px; min-block-size: 100dvh; margin: auto; padding: var(--s7) var(--s5) calc(var(--s8) * 2); background: var(--c-bg-grad); background-color: var(--c-bg); color: var(--c-ink); display: grid; gap: var(--s5); }
+.v9-gallery header { display: flex; gap: var(--s2); align-items: center; }
+.v9-gallery-stack { display: grid; gap: calc(var(--s4) + 2px); }
+.v9-gallery-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s4); }
+.v9-gallery-row { display: flex; flex-wrap: wrap; gap: var(--s3); align-items: center; }
+.v9-gallery-scene { position: relative; block-size: 260px; border-radius: var(--r-hero); overflow: hidden; }

@@ -13,7 +13,7 @@ async function capture(page:Page,name:string){
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.screenshot({path:`outputs/followup-finish/${name}.png`,fullPage:true});
 }
-for(const theme of ['qingci','liubai','jingshe','zhuangse'])for(const width of [375,430,768,1024])test(`${theme} ${width} responsive signatures and RepDB`,async({page},info)=>{
+for(const theme of ['pop', 'vivid', 'gentle', 'data', 'fire'])for(const width of [375,430,768,1024])test(`${theme} ${width} responsive signatures and RepDB`,async({page},info)=>{
  await page.addInitScript(theme=>localStorage.setItem('fitness-theme',theme),theme);
  await page.setViewportSize({width,height:900});await page.emulateMedia({reducedMotion:'reduce'});
  await page.goto('/');await enable(page,{fontSubset:true,exercisePanel:true});
@@ -34,7 +34,7 @@ for(const theme of ['qingci','liubai','jingshe','zhuangse'])for(const width of [
  expect(metrics[0].x===metrics[1].x).toBe(width<768);
  mkdirSync('outputs/followup-finish/metrics',{recursive:true});writeFileSync(`outputs/followup-finish/metrics/${prefix}.json`,JSON.stringify(metrics));
 });
-for(const theme of ['qingci','liubai','jingshe','zhuangse'])test(`${theme} coach 320`,async({page},info)=>{
+for(const theme of ['pop', 'vivid', 'gentle', 'data', 'fire'])test(`${theme} coach 320`,async({page},info)=>{
  await page.addInitScript(theme=>localStorage.setItem('fitness-theme',theme),theme);
  await page.setViewportSize({width:320,height:844});await page.goto('/');
  for(const answer of ['保持力量','每周3次，每次30分钟','在家，只有瑜伽垫']){await page.getByLabel(o.answer,{exact:true}).fill(answer);await page.getByRole('button',{name:o.next,exact:true}).click();}
@@ -54,7 +54,7 @@ test('fifth folder discovery and remote kill preserve saved preference',async({p
  const values=await page.evaluate(async()=>{const path='/src/themes/registry.ts';return (await import(/* @vite-ignore */path)).getAvailableThemes(true).map((x:any)=>x.id);});
  expect(values).toContain('followup-test');
  await expect(page.locator('html')).toHaveAttribute('data-theme','followup-test');
- await enable(page,{themeDiscovery:false});await expect(page.locator('html')).toHaveAttribute('data-theme','qingci');
+ await enable(page,{themeDiscovery:false});await expect(page.locator('html')).toHaveAttribute('data-theme','pop');
  expect(await page.evaluate(()=>localStorage.getItem('fitness-theme'))).toBe('followup-test');
  await expect(page.getByRole('button',{name:'测试第五主题',exact:true})).toHaveCount(0);
 });

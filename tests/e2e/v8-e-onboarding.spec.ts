@@ -10,7 +10,7 @@ async function questions(page: Page) {
   await page.getByRole('button', { name: '在家，只有瑜伽垫', exact: true }).click();
   await page.getByRole('button', { name: '继续', exact: true }).click();
 }
-for (const theme of ['qingci', 'liubai', 'jingshe', 'zhuangse']) for (const width of [390, 1440]) {
+for (const theme of ['pop', 'vivid', 'gentle', 'data', 'fire']) for (const width of [390, 1440]) {
   test(`${theme} ${width} adult gate, consent, explicit candidate confirmation`, async ({ page }, info) => {
     await page.setViewportSize({ width, height: 1000 });
     await page.goto(`/tests/e2e/helpers/v8-e-onboarding.html?theme=${theme}`);

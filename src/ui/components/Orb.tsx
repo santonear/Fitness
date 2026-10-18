@@ -23,6 +23,8 @@ export interface OrbProps {
 export const orbContexts = orbContextCopy;
 const defaultAvoid = '[data-orb-avoid], .v9-btn[data-tone="primary"], .v9-btn[data-size="lg"], .v8-button-primary, .v8-shell > nav';
 const gap = 8;
+/** Other controls are never covered by the full orb: it tucks to the edge while one is underneath, and the tip hides. */
+const controlSelector = 'button, a[href], input, select, textarea, summary, [role="button"], [role="radio"], [role="switch"], [role="tab"]';
 /** Position survives route changes within the session. */
 const memory: { y?: number; side: 'left' | 'right' } = { side: 'right' };
 
@@ -52,7 +54,7 @@ export function Orb({ locale = 'zh', context = 'other', tip, actions, onAction, 
   const [tucked, setTucked] = useState(autoTuck);
   const [tipClosed, setTipClosed] = useState(false);
   const [dragging, setDragging] = useState(false);
-  const [avoid, setAvoid] = useState<{ tuck: boolean; y?: number }>({ tuck: false });
+  const [avoid, setAvoid] = useState<{ tuck: boolean; y?: number; tipBlocked?: boolean }>({ tuck: false });
 
   useEffect(() => { setTucked(autoTuck); setOpen(false); setTipClosed(false); }, [autoTuck, context]);
   useLayoutEffect(() => {
@@ -69,20 +71,28 @@ export function Orb({ locale = 'zh', context = 'other', tip, actions, onAction, 
     const left = side === 'right' ? b.width - 12 - b.size : 12;
     const home = { left, right: left + b.size, top: y, bottom: y + b.size };
     const shift = b.size * .68 * (side === 'right' ? 1 : -1);
-    const targets = [...document.querySelectorAll<HTMLElement>(avoidSelector)]
+    const tipWidth = Math.min(210, b.width - b.size - 48);
+    const tip = side === 'right'
+      ? { left: home.left - 10 - tipWidth, right: home.left - 10, top: home.bottom - 80, bottom: home.bottom - 16 }
+      : { left: home.right + 10, right: home.right + 10 + tipWidth, top: home.bottom - 80, bottom: home.bottom - 16 };
+    const rects = (selector: string) => [...document.querySelectorAll<HTMLElement>(selector)]
       .filter(element => !element.closest('.v9-orb'))
       .map(element => element.getBoundingClientRect())
       .filter(rect => rect.width > 0 && rect.height > 0 && rect.bottom > 0 && rect.top < window.innerHeight);
-    const hits = targets.filter(rect => overlaps(home, rect));
-    if (!hits.length) { setAvoid(previous => previous.tuck ? { tuck: false } : previous); return; }
-    const tuckedRect = { left: home.left + shift, right: home.right + shift, top: home.top, bottom: home.bottom };
-    let nextY: number | undefined;
-    if (targets.some(rect => overlaps(tuckedRect, rect))) {
-      const top = Math.min(...hits.map(rect => rect.top));
-      const above = top - gap - b.size;
-      nextY = above >= b.min ? above : Math.min(b.max, Math.max(...hits.map(rect => rect.bottom)) + gap);
+    const primaries = rects(avoidSelector), controls = rects(controlSelector);
+    const touches = (area: typeof home, rect: DOMRect, margin: number) => area.left < rect.right + margin && area.right > rect.left - margin && area.top < rect.bottom + margin && area.bottom > rect.top - margin;
+    const tipBlocked = [...primaries, ...controls].some(rect => touches(tip, rect, 0));
+    const hits = primaries.filter(rect => overlaps(home, rect));
+    const covering = hits.length > 0 || controls.some(rect => touches(home, rect, 0));
+    let next: { tuck: boolean; y?: number; tipBlocked: boolean } = { tuck: covering, tipBlocked };
+    if (hits.length) {
+      const tuckedRect = { left: home.left + shift, right: home.right + shift, top: home.top, bottom: home.bottom };
+      if (primaries.some(rect => overlaps(tuckedRect, rect))) {
+        const above = Math.min(...hits.map(rect => rect.top)) - gap - b.size;
+        next = { ...next, y: above >= b.min ? above : Math.min(b.max, Math.max(...hits.map(rect => rect.bottom)) + gap) };
+      }
     }
-    setAvoid(previous => previous.tuck && previous.y === nextY ? previous : { tuck: true, y: nextY });
+    setAvoid(previous => previous.tuck === next.tuck && previous.y === next.y && previous.tipBlocked === next.tipBlocked ? previous : next);
   }, [y, side, avoidSelector]);
   useEffect(() => {
     let frame = 0;
@@ -113,7 +123,7 @@ export function Orb({ locale = 'zh', context = 'other', tip, actions, onAction, 
       if (next.pointerId !== state.id) return;
       const dy = next.clientY - state.y, dx = next.clientX - state.x;
       if (!state.moved && Math.abs(dy) <= 4 && Math.abs(dx) <= 4) return;
-      if (!state.moved) { state.moved = true; setDragging(true); setTucked(false); setOpen(false); setAvoid({ tuck: false }); }
+      if (!state.moved) { state.moved = true; setDragging(true); setTucked(false); setOpen(false); setAvoid({ tuck: false, tipBlocked: true }); }
       const b = bounds();
       setY(Math.min(b.max, Math.max(b.min, state.top + dy)));
       setSide(next.clientX < b.width / 2 ? 'left' : 'right');
@@ -145,8 +155,8 @@ export function Orb({ locale = 'zh', context = 'other', tip, actions, onAction, 
   if (y === undefined) return null;
   const upward = (shownY ?? 0) > window.innerHeight / 2;
   return <div className="v9-orb" data-side={side} data-tucked={isTucked ? 'true' : 'false'} data-dragging={dragging ? 'true' : 'false'}
-    data-direction={upward ? 'up' : 'down'} style={{ top: `${shownY}px` }}>
-    {!open && !tipClosed && !isTucked && tipText && <div className="v9-orb-tip" role="status">
+    data-direction={upward ? 'up' : 'down'} style={upward ? { bottom: `${window.innerHeight - (shownY ?? 0) - bounds().size}px` } : { top: `${shownY}px` }}>
+    {!open && !tipClosed && !isTucked && !avoid.tipBlocked && tipText && <div className="v9-orb-tip">
       <span>{tipText}</span>
       <button type="button" className="v9-orb-icon" aria-label={t.closeTip} onClick={() => setTipClosed(true)}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg></button>
     </div>}

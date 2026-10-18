@@ -3,7 +3,7 @@
 :root[data-orb="shown"] { --orb-reserve: var(--orb-safe); }
 .v9-orb {
   position: fixed; z-index: 7; inset-inline-end: var(--s3); display: flex; flex-direction: row; align-items: flex-end; gap: calc(var(--s2) + var(--s1) / 2);
-  transition: top .35s var(--snap-ease), transform .35s var(--snap-ease); pointer-events: none;
+  transition: top .35s var(--snap-ease), bottom .35s var(--snap-ease), transform .35s var(--snap-ease); pointer-events: none;
 }
 .v9-orb[data-side="left"] { inset-inline-end: auto; inset-inline-start: var(--s3); flex-direction: row-reverse; }
 .v9-orb[data-direction="down"] { align-items: flex-start; }

@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-for (const theme of ['qingci', 'liubai', 'jingshe', 'zhuangse']) for (const width of [390, 1440]) {
+for (const theme of ['pop', 'vivid', 'gentle', 'data', 'fire']) for (const width of [390, 1440]) {
   test(`${theme} ${width}: native interactions, motion and geometry`, async ({ page }, testInfo) => {
     await page.setViewportSize({ width, height: 1100 });
     await page.goto(`/tests/e2e/helpers/v8-common.html?theme=${theme}`);
@@ -28,8 +28,7 @@ for (const theme of ['qingci', 'liubai', 'jingshe', 'zhuangse']) for (const widt
     await expect(page.getByRole('button', { name: '本月' })).toHaveAttribute('aria-pressed', 'true');
     await expect(page.getByRole('button', { name: '本周' })).toHaveAttribute('aria-pressed', 'false');
     await start.hover(); await page.mouse.down();
-    await expect.poll(() => start.evaluate(el => getComputedStyle(el).transform)).toBe(theme === 'zhuangse' ? 'matrix(0.98, 0, 0, 0.98, 3, 3)' : 'matrix(0.96, 0, 0, 0.96, 0, 0)');
-    if (theme === 'zhuangse') expect(await start.evaluate(el => getComputedStyle(el).boxShadow)).toBe('none');
+    await expect.poll(() => start.evaluate(el => getComputedStyle(el).transform)).toBe(({ pop: 'matrix(0.98, 0, 0, 0.98, 0, 0)', vivid: 'matrix(0.97, 0, 0, 0.97, 0, 0)', gentle: 'matrix(0.95, 0, 0, 0.95, 0, 0)', data: 'matrix(0.97, 0, 0, 0.97, 0, 0)', fire: 'matrix(0.98, 0, 0, 0.98, 0, 0)' } as Record<string, string>)[theme]);
     await page.mouse.up(); await expect.poll(() => start.evaluate(el => getComputedStyle(el).transform)).toBe('none');
     await page.emulateMedia({ reducedMotion: 'reduce' }); await start.hover(); await page.mouse.down();
     expect(await start.evaluate(el => getComputedStyle(el).transform)).toBe('none');

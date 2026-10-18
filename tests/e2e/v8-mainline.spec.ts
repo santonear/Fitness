@@ -89,8 +89,8 @@ test('real local mainline persists a confirmed plan, training and review with no
   await page.getByRole('button', { name: '完成这一组', exact: true }).click();
   await expect(page.getByText('第 2 组，共 2 组', { exact: true })).toBeVisible();
   await page.reload(); await expect(page.getByText('第 2 组，共 2 组', { exact: true })).toBeVisible();
-  await page.goto('/settings/appearance'); await page.getByRole('button', { name: '留白', exact: true }).click();
-  await page.getByRole('button', { name: '青瓷', exact: true }).click();
+  await page.goto('/settings/appearance'); await page.getByRole('radio', { name: '温和陪伴', exact: true }).click();
+  await page.getByRole('radio', { name: '柔光拟物', exact: true }).click();
   await page.goto('/'); await page.getByRole('button', { name: '正在进行，点这里回到训练' }).click();
   await expect(page.getByText('第 2 组，共 2 组', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: '暂停或结束' }).click();

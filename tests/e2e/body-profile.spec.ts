@@ -1,12 +1,12 @@
 import {test,expect,type Page} from '@playwright/test';
-async function enable(page:Page,theme='qingci'){
+async function enable(page:Page,theme='pop'){
  await page.addInitScript(theme=>localStorage.setItem('fitness-theme',theme),theme);
  await page.route('**/api/v1/features',route=>route.fulfill({json:{version:1,flags:{bodyProfile:true,themeDiscovery:true,planLifecycle:true},expiresAt:Date.now()+60000}}));
  await page.route('**/api/v1/trial/access-status',route=>route.fulfill({json:{qualification:'none',sessionValid:false,aiEnabled:false}}));
 }
 async function bodyStep(page:Page){await page.goto('/');await page.getByLabel('你的回答').fill('想有些力量');await page.getByRole('button',{name:'继续',exact:true}).click();await expect(page.getByRole('heading',{name:'身体情况',exact:true})).toBeVisible()}
 async function draft(page:Page){await page.getByRole('button',{name:'继续',exact:true}).click();await page.getByLabel('你的回答').fill('每周2次，每次30分钟');await page.getByRole('button',{name:'继续',exact:true}).click();await page.getByLabel('你的回答').fill('在家，只有瑜伽垫');await page.getByRole('button',{name:'继续',exact:true}).click();await page.getByRole('button',{name:'膝盖',exact:true}).click();await page.getByRole('button',{name:'肩',exact:true}).click();await page.getByRole('button',{name:'手腕',exact:true}).click();await page.getByLabel('我已年满 18 岁').check();await page.getByRole('button',{name:'生成新计划'}).click();await expect(page.getByRole('heading',{name:'你的第一版计划'})).toBeVisible()}
-for(const theme of ['qingci','liubai','jingshe','zhuangse'])for(const width of [375,1280])test(`body and draft ${theme} ${width}`,async({page},info)=>{
+for(const theme of ['pop', 'vivid', 'gentle', 'data', 'fire'])for(const width of [375,1280])test(`body and draft ${theme} ${width}`,async({page},info)=>{
  await enable(page,theme);await page.setViewportSize({width,height:900});await bodyStep(page);
  await expect(page.getByRole('button',{name:'继续',exact:true})).toBeDisabled();await expect(page.getByRole('status')).toContainText('再告诉我');
  await page.getByLabel('说说你的身体情况').fill('男，34岁，167，70公斤');await expect(page.getByRole('button',{name:'身高（厘米） · 167 厘米',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'继续',exact:true})).toBeEnabled();
