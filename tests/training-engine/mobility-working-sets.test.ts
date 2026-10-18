@@ -1,4 +1,4 @@
-import {expect,it} from 'vitest';
+import {beforeAll,expect,it} from 'vitest';
 import {validatePlan,generatePlan} from '../../src/engine';
 import {improve} from '../../src/engine/improve';
 import {createContext} from '../../src/engine/pipeline';
@@ -11,6 +11,10 @@ import {independentElapsedAllocation} from '../unit/engine/reference/training-en
 import {independentSessionTimeIssues} from '../unit/engine/reference/training-engine-session-time';
 import {mobilityFrozenSource} from './mobility-frozen-source';
 const r=new Rules(),p=goldenProfiles.find(f=>f.id==='mobility6x90')!.profile,source=mobilityFrozenSource(),ignored=['duration_tolerance','goal_time_share','goal_time_share_joint'];
+// Fixture generation and the independent improvement assertions are separate phases.
+// Keep the existing test timeout and every purity/quality/safety assertion unchanged.
+let generated:EnginePlan;
+beforeAll(()=>{generated=generatePlan(p);});
 function volumes(plan:EnginePlan){const out:Record<string,number>={},f=r.get('dose.volume.fractional'),map=r.get('dose.muscle_groups').catalog_map;for(const i of plan.templates.flatMap(t=>t.items)){const e=r.byExercise.get(i.exerciseId)!;if(f.excluded_modalities.includes(e.modality)||f.excluded_patterns.includes(e.primary_pattern)||['warmup','cooldown','mobility','balance'].includes(i.prescription?.block??''))continue;const credit:Record<string,number>={};for(const [muscles,n]of [[e.primaryMuscles??[],f.per_set_credit.primaryMuscles],[e.secondaryMuscles??[],f.per_set_credit.secondaryMuscles]] as [string[],number][])for(const m of muscles)if(map[m])credit[map[m]]=Math.max(credit[map[m]]??0,n);if(!Object.keys(credit).length)Object.assign(credit,f.pattern_fallback_if_no_muscles[e.primary_pattern]??{});const rir=i.prescription?.rir[0]??r.get('dose.rir.targets').beginner[0],effort=rir<=3?f.set_effort_multiplier.rir_0_to_3:rir===4?f.set_effort_multiplier.rir_4:f.set_effort_multiplier.rir_5_plus;for(const [g,n]of Object.entries(credit))out[g]=(out[g]??0)+n*i.sets*effort;}return out;}
 function loss(plan:EnginePlan){const a=independentElapsedAllocation(plan),shares=r.get('goal.params.mobility').time_share,band=r.get('duration.fit.tolerance').band;return Object.entries(shares).reduce((sum,[k,range])=>{const q=range as number[],n=a[k as 'resistance'|'aerobic'|'mobility'];return sum+Math.max(0,q[0]*a.total-n,n-q[1]*a.total);},0)+plan.templates.reduce((sum,t)=>{const n=independentElapsedAllocation({templates:[t]}).total,target=(t.targetMinutes??p.sessionMinutes)*60;return sum+Math.max(0,target*band[0]-n,n-target*band[1]);},0);}
 function addOne(slug:string){const plan=structuredClone(source),t=plan.templates.find(t=>t.items.some(i=>r.byExercise.get(i.exerciseId)?.slug===slug))!,i=t.items.find(i=>r.byExercise.get(i.exerciseId)?.slug===slug)!;i.sets++;t.estimatedSeconds=independentElapsedAllocation({templates:[t]}).total;t.estimatedMinutes=Math.ceil(t.estimatedSeconds/60);return plan;}
@@ -28,7 +32,7 @@ it('measures the actual Nordic 2-to-3 increment and weekly dose facts independen
  for(const g of r.get('dose.muscle_groups').target_groups){expect(v[g]??0).toBeGreaterThanOrEqual(min);expect(v[g]??0).toBeLessThanOrEqual(max);}for(const g of r.get('dose.muscle_groups').cap_only_groups)expect(v[g]??0).toBeLessThanOrEqual(max);
 });
 it('considers legal local changes through the pure V2 result without forcing a historical 205-second repair',()=>{
- const plan=generatePlan(p),before=structuredClone(plan),ctx=createContext(p,0,r),next=improve(plan,ctx,{score:scorePlan,marginal},3);
+ const plan=structuredClone(generated),before=structuredClone(plan),ctx=createContext(p,0,r),next=improve(plan,ctx,{score:scorePlan,marginal},3);
  expect(plan).toEqual(before);expect(scorePlan(next,p,r).quality).toBeGreaterThanOrEqual(scorePlan(plan,p,r).quality);expect(validatePlan(next,p).filter(i=>i.severity==='error')).toEqual([]);expect(ctx.trace.filter(t=>t.step==='improve').length).toBeLessThanOrEqual(3);
  // No assertion requires duration/share failure to remain: a fully ready repair is welcome.
 });
