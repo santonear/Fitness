@@ -1192,3 +1192,10 @@ rules:
 - id: session.copy.intentional_short
   type: copy
   severity: copy
+
+- id: pregnancy.inactive.ramp
+  type: limit
+  severity: hard
+- id: pregnancy.copy.long_session
+  type: copy
+  severity: copy

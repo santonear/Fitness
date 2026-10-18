@@ -171,6 +171,7 @@
         "kind": "pregnant",
         "week": 20,
         "providerCleared": true,
+        "prenatalCareConfirmed": true,
         "contraindicationsConfirmedNone": true,
         "lastScreenedWeek": 20
       },
@@ -1124,7 +1125,8 @@
         "week": 20,
         "providerCleared": false,
         "contraindicationsConfirmedNone": true,
-        "lastScreenedWeek": 20
+        "lastScreenedWeek": 20,
+        "prenatalCareConfirmed": true
       },
       "screening": {
         "parqAllNo": true,
@@ -1253,6 +1255,7 @@
         "kind": "pregnant",
         "week": 28,
         "providerCleared": true,
+        "prenatalCareConfirmed": true,
         "contraindicationsConfirmedNone": true,
         "lastScreenedWeek": 28
       },

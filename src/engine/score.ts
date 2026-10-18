@@ -1,4 +1,5 @@
 import { Rules } from "./data";
+import { pregnancyTargetMinutes } from "./pregnancy-limits";
 import {
   type Scorer,
   type Plan,
@@ -61,6 +62,8 @@ export function scorePlan(
   profile: EngineProfile,
   rules = defaultRules,
 ): ScoreResult {
+  const cap = pregnancyTargetMinutes(profile, rules);
+  if (cap !== undefined) profile = { ...profile, sessionMinutes: cap };
   return evaluate(plan, profile, rules, facts(plan, rules));
 }
 

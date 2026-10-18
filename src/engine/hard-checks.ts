@@ -4,6 +4,7 @@ import {
 } from "./checkHard/cardio-duration";
 import { checkItemStructure } from "./checkHard/item-structure";
 import { checkItemDose } from "./checkHard/item-dose";
+import { pregnancyRampMinutes } from "./pregnancy-limits";
 
 import { proveEnvironmentCoverage } from "./environment";
 
@@ -112,6 +113,20 @@ export function checkHard(
           );
     }
   for (const t of plan.templates) {
+    const ramp = pregnancyRampMinutes(p, r);
+    if (
+      !skipDuration &&
+      ramp !== undefined &&
+      (estimatedSeconds(t, r) > ramp * 60 + 1e-9 ||
+        (t.targetMinutes ?? plan.sessionMinutes) >
+          Math.min(p.sessionMinutes, ramp))
+    )
+      add(
+        "pregnancy_inactive_ramp",
+        "pregnancy.inactive.ramp",
+        "session exceeds approved inactive-pregnancy weekly duration cap",
+        t.id,
+      );
     checkCardioCaps(t, p, g, r, add);
     if (
       !engineTemplateSchema.shape.targetMinutes.safeParse(t.targetMinutes)

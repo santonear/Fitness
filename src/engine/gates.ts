@@ -5,10 +5,24 @@ import { gateState } from "./gates/state";
 export function runGates(
   profile: EngineProfile,
   rules = new Rules(),
+  options: { allowLegacyPrenatalCare?: boolean } = {},
 ): import("./contracts").GateOutcome {
   const state = gateState(profile, rules),
     excludeFlags = new Set<string>(),
     excludePositions = new Set<string>();
+  // Only an already-applied plan may retain its unanswered new question. No answer is fabricated.
+  if (
+    options.allowLegacyPrenatalCare &&
+    profile.population.kind === "pregnant" &&
+    profile.population.prenatalCareConfirmed === undefined &&
+    rules.get("pregnancy.gate.provider").legacy_missing_answer_policy ===
+      "continue_applied_plan_until_generation_or_reconfirm"
+  ) {
+    state.gates = state.gates.filter(
+      (gate) => gate.reason !== "prenatal_care_confirmation_missing",
+    );
+    state.blocked = state.gates.some((gate) => gate.status === "blocked");
+  }
   if (profile.pregnancySafety?.avoidSupine) excludePositions.add("supine");
   const collect = (expr: Record<string, any>) => {
     if (expr.flag)

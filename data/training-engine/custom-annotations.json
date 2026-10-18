@@ -188,7 +188,9 @@
     "position": [
       "standing"
     ],
-    "flags": [],
+    "flags": [
+      "static_standing_hold"
+    ],
     "use": [
       "main",
       "accessory"
@@ -512,7 +514,9 @@
     "position": [
       "standing"
     ],
-    "flags": [],
+    "flags": [
+      "static_standing_hold"
+    ],
     "use": [
       "main",
       "accessory"
@@ -1176,7 +1180,9 @@
     "position": [
       "standing"
     ],
-    "flags": [],
+    "flags": [
+      "static_standing_hold"
+    ],
     "use": [
       "main",
       "accessory"
@@ -1257,7 +1263,9 @@
     "position": [
       "standing"
     ],
-    "flags": [],
+    "flags": [
+      "static_standing_hold"
+    ],
     "use": [
       "main",
       "accessory"
@@ -1338,7 +1346,9 @@
     "position": [
       "standing"
     ],
-    "flags": [],
+    "flags": [
+      "static_standing_hold"
+    ],
     "use": [
       "main",
       "accessory"
@@ -1503,7 +1513,9 @@
     "position": [
       "standing"
     ],
-    "flags": [],
+    "flags": [
+      "static_standing_hold"
+    ],
     "use": [
       "main",
       "accessory"
@@ -2233,7 +2245,9 @@
     "position": [
       "standing"
     ],
-    "flags": [],
+    "flags": [
+      "static_standing_hold"
+    ],
     "use": [
       "warmup",
       "accessory"
@@ -2320,7 +2334,9 @@
     "position": [
       "standing"
     ],
-    "flags": [],
+    "flags": [
+      "static_standing_hold"
+    ],
     "use": [
       "warmup",
       "accessory"
@@ -2495,7 +2511,9 @@
       "standing",
       "plank"
     ],
-    "flags": [],
+    "flags": [
+      "static_standing_hold"
+    ],
     "use": [
       "main",
       "accessory"
@@ -2576,7 +2594,9 @@
     "position": [
       "standing"
     ],
-    "flags": [],
+    "flags": [
+      "static_standing_hold"
+    ],
     "use": [
       "main",
       "accessory"
@@ -2905,7 +2925,9 @@
     "position": [
       "standing"
     ],
-    "flags": [],
+    "flags": [
+      "static_standing_hold"
+    ],
     "use": [
       "main",
       "accessory"
@@ -3067,7 +3089,9 @@
     "position": [
       "standing"
     ],
-    "flags": [],
+    "flags": [
+      "static_standing_hold"
+    ],
     "use": [
       "main",
       "accessory"
@@ -3148,7 +3172,9 @@
     "position": [
       "standing"
     ],
-    "flags": [],
+    "flags": [
+      "static_standing_hold"
+    ],
     "use": [
       "cooldown"
     ],
@@ -3232,7 +3258,9 @@
     "position": [
       "standing"
     ],
-    "flags": [],
+    "flags": [
+      "static_standing_hold"
+    ],
     "use": [
       "warmup",
       "accessory"

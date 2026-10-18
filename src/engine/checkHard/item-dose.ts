@@ -1,3 +1,4 @@
+import { pregnancyStandingCap } from "../pregnancy-limits";
 import { powerLoadIssue } from "../power";
 
 import { stretchHoldRange } from "../data";
@@ -20,6 +21,23 @@ export function checkItemDose({
   intro,
   add,
 }: ItemCheckContext) {
+  const standingCap = pregnancyStandingCap(e, p, r);
+  if (
+    standingCap !== undefined &&
+    "durationSeconds" in item.target &&
+    item.target.durationSeconds *
+      (pres?.perSide || e.time.per_side
+        ? r.get("session.time.model").per_side_multiplier
+        : 1) >
+      standingCap
+  )
+    add(
+      "pregnancy_static_standing",
+      "pregnancy.intensity",
+      "static standing hold exceeds pregnancy per-set cap",
+      t.id,
+      index,
+    );
   if (e.modality === "isometric" && work) {
     const source = r.get("dose.isometric"),
       range = source[p.level].hold_s;

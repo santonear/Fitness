@@ -1,4 +1,5 @@
 import { cardioWorkCap, capCardioItems } from "./cardio-cap";
+import { pregnancyRampMinutes } from "../pregnancy-limits";
 import { fillSafeBudget } from "./refill";
 import { finalizeFit } from "./finalize";
 import { type SessionDraft, type PipelineContext } from "../contracts";
@@ -21,13 +22,20 @@ export function fitDuration(
     bounds = r.get("duration.fit.bounds"),
     band = r.get("duration.fit.tolerance").band,
     T = target * 60,
+    pregnancyCeiling = (pregnancyRampMinutes(p, r) ?? Infinity) * 60,
     locked = new Set(
       (ctx.lockedItemIndexes ?? []).map((n) => out.items[n]?.exerciseId),
     ),
     distance = (s: SessionDraft) => Math.abs(estimateSeconds(s, r) - T),
     accept = (next: SessionDraft) => {
       if (!retainsRequirements(out, next, ctx)) return false;
-      if (distance(next) < distance(out)) {
+      const before = estimateSeconds(out, r),
+        after = estimateSeconds(next, r);
+      if (before <= pregnancyCeiling && after > pregnancyCeiling) return false;
+      if (
+        distance(next) < distance(out) ||
+        (before > pregnancyCeiling && after < before)
+      ) {
         const base = ctx.plan ?? {
             weeklyTarget: p.daysPerWeek,
             sessionMinutes: target,
@@ -88,7 +96,7 @@ export function fitDuration(
       gates: ctx.gate.reasons,
     });
   // Remove one optional action at a time, choosing the smallest true quality loss.
-  while (estimateSeconds(out, r) > T * band[1]) {
+  while (estimateSeconds(out, r) > Math.min(T * band[1], pregnancyCeiling)) {
     const plan = planFor(out),
       choices = out.items
         .flatMap((item, index) => {

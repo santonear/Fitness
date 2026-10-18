@@ -5,6 +5,48 @@ import { Rules } from "../../src/engine/data";
 import { independentElapsedSeconds } from "../../src/engine/validation/cardio-duration";
 import { independentRefillWitness } from "../../src/engine/validation/refill-capacity";
 import { independentlyPossibleIds } from "./training-engine-quality";
+
+/** Clinically capped ramp courses are reported separately, never as exhausted-capacity exemptions. */
+export function pregnancyRampFacts(
+  plan: EnginePlan,
+  p: EngineProfile,
+  r: Rules,
+) {
+  const source = r.get("pregnancy.week.target").previously_inactive;
+  if (
+    p.population.kind !== "pregnant" ||
+    p.screening.activityStatus !== source.when.activity_status ||
+    !plan.templates.length
+  )
+    return;
+  const cap = Math.min(
+    p.sessionMinutes,
+    source.first_week_minutes +
+      Math.floor(p.trainingAgeWeeks) * source.weekly_increment_minutes,
+    source.max_minutes,
+  );
+  if (cap >= p.sessionMinutes) return;
+  const courses = plan.templates.map((t) => ({
+    templateId: t.id,
+    actualSeconds: independentElapsedSeconds(t.items, r),
+    targetMinutes: t.targetMinutes,
+  }));
+  return {
+    requestedMinutes: p.sessionMinutes,
+    capMinutes: cap,
+    trainingAgeWeeks: p.trainingAgeWeeks,
+    courses,
+    withinCap: courses.every(
+      (t) =>
+        t.actualSeconds <= cap * 60 + 1e-9 &&
+        t.targetMinutes !== undefined &&
+        t.targetMinutes <= cap,
+    ),
+    disclosed:
+      plan.notices.some((n) => n.code === "session.copy.intentional_short") &&
+      plan.trace.some((t) => t.reason === "pregnancy_inactive_ramp"),
+  };
+}
 /** A producer warning alone never earns a denominator exemption. */
 export function intentionalShortFacts(
   plan: EnginePlan,

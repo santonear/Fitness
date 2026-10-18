@@ -384,3 +384,10 @@ RepDB官方证据：[数据许可证](https://github.com/RepDB/exercise-dataset/
 - 理由：保留功能关闭/回滚的既有行为，不伪造七题答案，不放开新引擎临床边界；不提供未核实的新动作候选。
 - 涉及文件：src/application/engine-replacement-candidates.ts、src/application/v8-workflow.ts、tests/unit/replacement-feature-off.test.ts。
 - 验证：原CI浏览器用例不变通过；开启引擎非法换动作仍拒绝；11项定向单测及3331项完整功能测试通过。无新增话术。
+
+### 2026-10-18 已批准：ACOG四项最小接线
+- 情况：仅改数据不能执行新产检关卡、孕前不活跃递增、静站上限和实际45分钟提示。
+- 决定：按用户裁定接线；既有计划缺新增产检答案可继续，新的生成严格要求答案；可选递增起算时刻只在首次采用时写入。
+- 理由：不伪造旧答案、不以孕前历史推算本方案进度；完整保留其他安全关卡。相同周数的生成不受起算时间戳随机影响。
+- 涉及文件：rules-ch11/12.yaml、pregnancy-limits、准入/剂量/独立校验、pregnancy-safety、v8-workflow、资料设置与计划页、数据库/备份版本、定向及浏览器测试。
+- 待审决定：无新增；专业审核和第三方授权前置项保持未完成，生产不动。

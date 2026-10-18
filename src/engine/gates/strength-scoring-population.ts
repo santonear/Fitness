@@ -16,6 +16,16 @@ export function applyStrengthScoringPopulation(
   population: GateState["population"],
 ): void {
   if (population === "pregnant" && pop.kind === "pregnant") {
+    if (
+      rules.get("pregnancy.gate.provider").regular_prenatal_checkups_required &&
+      pop.prenatalCareConfirmed !== true
+    )
+      gate(
+        "pregnancy.gate.provider",
+        "blocked",
+        "prenatal_care_confirmation_missing",
+        "pregnancy.gate.copy.ask_provider",
+      );
     if (!pop.providerCleared)
       gate(
         "pregnancy.gate.provider",

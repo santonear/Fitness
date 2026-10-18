@@ -129,6 +129,8 @@ export const populationSchema = z.discriminatedUnion("kind", [
     kind: z.literal("pregnant"),
     week: nonnegative,
     providerCleared: z.boolean(),
+    prenatalCareConfirmed: z.boolean().optional(),
+    inactiveRampStartedAt: z.iso.datetime().optional(),
     contraindicationsConfirmedNone: z.boolean(),
     absoluteContraindications: z.array(z.string()).optional(),
     relativeContraindications: z.array(z.string()).optional(),

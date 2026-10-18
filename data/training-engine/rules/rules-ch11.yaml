@@ -2,7 +2,7 @@
 # 与 ch11-pregnancy.md 一一对应。条件表达式约定见 rules-ch09.yaml 文件头 / ch09 第 0 节。
 # 本章全部规则上线前须产科医护或具资质的孕产运动专业人员审核（professional_review: true）。
 # 孕期规则优先于本手册其他章节；冲突时以本章为准。
-# E05:ACOG804 原文未能打开，内容来自三份一致的二手摘要，凡引用均列入 unverified。
+# ACOG804 已按2026-10-18核对报告核对；专业审核仍未完成。
 
 - id: pregnancy.activation
   chapter: 11
@@ -24,11 +24,14 @@
   applies: {population: [pregnant]}
   value:
     require_confirm: provider_said_no_reason_to_avoid_exercise
+    regular_prenatal_checkups_required: true
+    legacy_missing_answer_policy: continue_applied_plan_until_generation_or_reconfirm
+    question_order: [prenatal_checkups_question, provider_question]
+    if_prenatal_checkups_not_confirmed: block_plan_show_copy_pregnancy.gate.copy.ask_provider
     if_not_confirmed: block_plan_show_copy_pregnancy.gate.copy.ask_provider
   evidence: A
   professional_review: true
   sources: [E05:Mottola2018, E05:ACOG804]
-  unverified: [E05:ACOG804]
   note: 必须明确确认产检医生或助产士没有说过不能运动
 
 - id: pregnancy.gate.absolute
@@ -53,9 +56,8 @@
       fetal_growth_restriction_as: absolute
   evidence: A
   professional_review: true
-  sources: [E05:Mottola2018, E05:ACOG804]
-  unverified: [E05:ACOG804]
-  note: 两指南分歧时取更严格者（前置胎盘 26 周、胎儿生长受限按绝对）
+  sources: [E05:Mottola2018, E05:ACOG650]
+  note: 前置胎盘26周引用ACOG 650（2015，已被804取代），保守保留；其余加拿大条目引用Mottola2018。
 
 - id: pregnancy.gate.relative
   chapter: 11
@@ -82,9 +84,8 @@
       until_confirmed: block_plan_show_copy_pregnancy.gate.copy.relative_yes
   evidence: A
   professional_review: true
-  sources: [E05:Mottola2018, E05:ACOG804]
-  unverified: [E05:ACOG804]
-  note: ACOG 增补项仅来自二手摘要，待核实
+  sources: [E05:Mottola2018, E05:ACOG650]
+  note: ACOG 650（2015，已被 804 取代），保守保留；旧items_acog_unverified键仅为兼容，不表示仍归于804。
 
 - id: pregnancy.gate.copy
   chapter: 11
@@ -96,6 +97,9 @@
     provider_question:
       zh: 你的产检医生或助产士有没有说过你不适合运动？
       en: Has your doctor or midwife told you not to exercise?
+    prenatal_checkups_question:
+      zh: 你现在在定期做产检吗？
+      en: Are you having regular prenatal check-ups?
     absolute_list_zh:
       - 破水，或者有液体从阴道流出
       - 出现早产迹象（还没到预产期就有规律宫缩）
@@ -127,11 +131,11 @@
       - 营养不良或进食障碍
       - 孕 28 周以后的双胎妊娠
       - 其他明显的健康问题
-      - 体重明显过低或过高（待核实）
-      - 大量吸烟（待核实）
-      - 控制不佳的癫痫（待核实）
-      - 未经检查的心律不齐（待核实）
-      - 骨骼或关节方面的限制（待核实）
+      - 体重明显过低或过高
+      - 大量吸烟
+      - 控制不佳的癫痫
+      - 未经检查的心律不齐
+      - 骨骼或关节方面的限制
     relative_list_en:
       - Repeated miscarriages
       - A previous spontaneous preterm birth
@@ -141,14 +145,14 @@
       - Malnutrition or an eating disorder
       - Twins after 28 weeks
       - Another significant health condition
-      - Very low or very high body weight (to verify)
-      - Heavy smoking (to verify)
-      - Poorly controlled epilepsy (to verify)
-      - An irregular heartbeat that hasn't been checked (to verify)
-      - Bone or joint limitations (to verify)
+      - Very low or very high body weight
+      - Heavy smoking
+      - Poorly controlled epilepsy
+      - An irregular heartbeat that hasn't been checked
+      - Bone or joint limitations
     ask_provider:
-      zh: 在开始之前，请先向你的产检医生或助产士确认可以运动。确认后回来告诉我们，我们再为你安排。
-      en: Before you start, please check with your doctor or midwife that exercise is okay for you. Come back once you've checked and we'll set up your plan.
+      zh: 请先在产检时和医生或助产士聊聊运动的事，确认后回来告诉我们，我们再为你安排。
+      en: Please talk to your doctor or midwife about exercise at a prenatal check-up first. Come back once you have, and we’ll set up your plan.
     absolute_yes:
       zh: 根据你的回答，现在不适合由我们为你安排训练。请和你的产检医生或助产士谈一谈，听取适合你的建议。
       en: Based on your answers, we can't set up a training plan for you right now. Please talk to your doctor or midwife about what's right for you.
@@ -161,7 +165,6 @@
   evidence: A
   professional_review: true
   sources: [E05:Mottola2018, E05:ACOG804]
-  unverified: [E05:ACOG804]
   note: 通俗措辞须经产科专业人员审核；不使用「已获许可」类医学判断措辞
 
 - id: pregnancy.reconfirm
@@ -176,7 +179,6 @@
   evidence: A
   professional_review: true
   sources: [E05:Mottola2018, E05:ACOG804]
-  unverified: [E05:ACOG804]
   note: 每个孕期阶段重新确认；26 周单独问前置胎盘为工程选择
 
 - id: pregnancy.precedence
@@ -199,7 +201,6 @@
   evidence: A
   professional_review: true
   sources: [E05:WHO2020, E05:ACOG804, E05:Mottola2018, E05:Mottola2019]
-  unverified: [E05:ACOG804]
   note: WHO 孕早期后、ACOG 约 20 周；取 13 周，更保守
 
 - id: pregnancy.supine_symptom
@@ -243,7 +244,6 @@
   evidence: A
   professional_review: true
   sources: [E05:Mottola2018, E05:ACOG804]
-  unverified: [E05:ACOG804]
   note: v2 预览裁定：孕期不安排跑跳；依赖自我声明的跑步放宽路径本版不实现。
 
 - id: pregnancy.exclude.fall_risk
@@ -264,7 +264,6 @@
   evidence: A
   professional_review: true
   sources: [E05:Mottola2018, E05:ACOG804]
-  unverified: [E05:ACOG804]
   note: 平衡随孕期变化；13 周起扶墙、28 周起排除 balance_demand 为工程选择
 
 - id: pregnancy.exclude.valsalva
@@ -326,10 +325,13 @@
     rpe_0_10: {min: 5, max: 6}
     rpe_6_20: {min: 13, max: 14}
     strength_rir_min: 3
+    static_standing:
+      match: {flag: static_standing_hold}
+      per_set_seconds_max: 60
+      note: 静态站立保持类；不适用于步行、踏步等动态有氧。
   evidence: A
   professional_review: true
   sources: [E05:Mottola2018, E05:ACOG804, E01:CDC-INT]
-  unverified: [E05:ACOG804]
   note: 力量 RIR≥3 为工程选择
 
 - id: pregnancy.hiit
@@ -350,7 +352,6 @@
   evidence: C
   professional_review: true
   sources: [E05:Mottola2018, E05:ACOG804]
-  unverified: [E05:ACOG804]
   note: v1 不实现，见 v2 澄清；孕期hiit.gate.unlock始终锁定。本条不参与生成或校验。
 
 - id: pregnancy.copy.hiit_deferred
@@ -373,12 +374,17 @@
     combine: [aerobic, resistance]
     strength_days_per_week_default: 2
     acog_daily_suggestion_min: {min: 20, max: 30}
-    previously_inactive: ramp_from_below_target
+    previously_inactive:
+      when: {activity_status: inactive}
+      week_source: trainingAgeWeeks
+      first_week_minutes: 10
+      weekly_increment_minutes: 5
+      max_minutes: 30
+      target_mode: cap_available_time
   evidence: A
   professional_review: true
   sources: [E05:Mottola2018, E05:WHO2020, E05:ACOG804, E01:WHO20]
-  unverified: [E05:ACOG804]
-  note: 力量 2 天沿用成人通用规则；ACOG 每天 20–30 分钟待核实
+  note: 力量 2 天沿用成人通用规则；ACOG804建议每天20–30分钟。
 
 - id: pregnancy.pelvic_floor
   chapter: 11
@@ -405,15 +411,14 @@
     warnings: [heat_humidity, altitude_not_acclimatised, hydration]
     copy:
       heat:
-        zh: 天气炎热或潮湿时，请选择凉爽通风的地方运动，随时补水。觉得太热或不舒服就停下来休息。
-        en: In hot or humid weather, exercise somewhere cool and well ventilated, and drink regularly. If you feel too hot or unwell, stop and rest.
+        zh: 天气炎热或潮湿时，请选择凉爽通风的地方运动，穿宽松透气的衣服，随时补水。觉得太热或不舒服就停下来休息。
+        en: In hot or humid weather, exercise somewhere cool and well ventilated, wear loose, breathable clothing, and drink regularly. If you feel too hot or unwell, stop and rest.
       altitude:
-        zh: 在还没适应的高海拔地区，请不要做剧烈运动。
-        en: Avoid strenuous exercise at high altitude if you're not used to it.
+        zh: 在还没适应的高海拔地区（约 1,800 米以上），请不要做剧烈运动。
+        en: Avoid strenuous exercise above about 1,800 metres if you’re not used to the altitude.
   evidence: A
   professional_review: true
-  sources: [E05:Mottola2018, E05:ACOG804]
-  unverified: [E05:ACOG804]
+  sources: [E05:Mottola2018, E05:ACOG804, E05:ACOG-FAQ119]
   note: 动作库无对应字段，用内容黑名单加环境提示
 
 - id: pregnancy.stop.trigger
@@ -427,7 +432,7 @@
       - fluid_leaking_from_vagina
       - breathlessness_persisting_at_rest_or_before_exertion
       - chest_pain
-      - dizziness_or_faintness_not_resolving_with_rest
+      - dizziness_or_feeling_faint
       - headache
       - muscle_weakness_affecting_balance
       - calf_pain_or_swelling
@@ -437,7 +442,6 @@
   evidence: A
   professional_review: true
   sources: [E05:Mottola2018, E05:ACOG804, E01:FRANK20]
-  unverified: [E05:ACOG804]
   note: 加拿大与 ACOG 清单合并；应用不解读原因
 
 - id: pregnancy.stop.copy
@@ -445,8 +449,8 @@
   type: copy
   value:
     stop:
-      zh: 请现在停止运动，并联系你的产检医生或助产士，如果你出现：阴道出血、有液体流出、规律的疼痛宫缩、胸痛、休息后仍不缓解的头晕或要晕倒、运动前就呼吸费力或休息后仍气喘、头痛、小腿疼痛或肿胀、腹痛，或者腿没力气、站不稳。
-      en: Stop exercising now and contact your doctor or midwife if you have vaginal bleeding, fluid leaking, regular painful contractions, chest pain, dizziness or faintness that doesn't settle with rest, breathlessness before exercise or that doesn't ease afterwards, a headache, calf pain or swelling, tummy pain, or weakness that affects your balance.
+      zh: 请现在停止运动，并联系你的产检医生或助产士，如果你出现：阴道出血、有液体流出、规律的疼痛宫缩、胸痛、头晕或要晕倒、运动前就呼吸费力或休息后仍气喘、头痛、小腿疼痛或肿胀、腹痛，或者腿没力气、站不稳。
+      en: Stop exercising now and contact your doctor or midwife if you have vaginal bleeding, fluid leaking, regular painful contractions, chest pain, dizziness or feeling faint, breathlessness before exercise or that doesn't ease afterwards, a headache, calf pain or swelling, tummy pain, or weakness that affects your balance.
     chest_emergency:
       zh: 如果胸痛或呼吸困难在休息几分钟后仍没有缓解，请立即拨打急救电话。
       en: If chest pain or breathlessness doesn't ease after a few minutes' rest, call emergency services now.
@@ -456,7 +460,7 @@
   evidence: A
   professional_review: true
   sources: [E05:Mottola2018, E05:ACOG804, E01:FRANK20, E01:Healthline]
-  unverified: [E05:ACOG804, E01:Healthline]
+  unverified: [E01:Healthline]
   note: 上线前须产科专业人员审核措辞
 
 - id: pregnancy.never
@@ -474,7 +478,6 @@
   evidence: A
   professional_review: true
   sources: [E05:Mottola2018, E05:ACOG804]
-  unverified: [E05:ACOG804]
   note: 这些都属于产科医疗判断
 
 - id: pregnancy.end
@@ -487,3 +490,32 @@
   evidence: C
   sources: [E05:WHO2020, E05:Goom2019]
   note: 用户报告分娩后切换到第 12 章产后模块
+
+- id: pregnancy.inactive.ramp
+  chapter: 11
+  type: limit
+  applies: {population: [pregnant]}
+  value:
+    parameters_ref: pregnancy.week.target.previously_inactive
+    rule: actual_session_seconds_le_weekly_ramp_minutes
+    exceeds_requested_duration_tolerance: ramp_limit_wins
+    reporting: separate_from_capacity_shortage_fraction
+  evidence: C
+  professional_review: true
+  sources: [E05:ACOG-FAQ119, "USER:2026-10-18:inactive-pregnancy-ramp"]
+  note: 用户批准10分钟起、每周加5分钟至30分钟；是产品参数，不声称FAQ119原文给出10分钟。
+
+- id: pregnancy.copy.long_session
+  chapter: 11
+  type: copy
+  value:
+    when_minutes_gt: 45
+    duration_basis: actual_session_seconds
+    priority: below_stop_and_environment_above_quality
+    copy:
+      zh: 这次训练超过 45 分钟，运动前记得吃点东西，过程中随时补水。
+      en: This session is over 45 minutes. Have a snack beforehand and keep sipping water as you go.
+  evidence: A
+  professional_review: true
+  sources: [E05:ACOG804]
+  note: 占最多三条提示中的一条；严格比较实际总课时。

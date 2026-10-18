@@ -1,6 +1,6 @@
 # Hard 规则覆盖审查
 
-保留原始 **95** 条：当前 **原始93 active hard + 2 deferred (`pregnancy.hiit`、`caution.progression`)**；另**新增1 hard (`caution.progression_gate`)**，当前总 active hard 仍为 **94**。延期不是实现完成。`hardCheckCoverage.complete` 对当前批准支持范围为 **true**（来源版本及active ID集合绑定于 hard-coverage-audit.json；延期条目和放行支路不算已上线）。
+保留原始 **95** 条：当前 **原始93 active hard + 2 deferred (`pregnancy.hiit`、`caution.progression`)**；另**新增2 hard (`caution.progression_gate`、`pregnancy.inactive.ramp`)**，当前总 active hard 为 **95**。延期不是实现完成。`hardCheckCoverage.complete` 对当前批准支持范围为 **true**（来源版本及active ID集合绑定于 hard-coverage-audit.json；延期条目和放行支路不算已上线）。
 
 对象：2026-10-17当前协作工作区（未提交），不是历史提交认证。partial=本行列出代表性实际实施和行为测试（不是已发现缺口的同义词）；gap=未定位完整实施/证据；history=需要真实历史/尚缺事实；runtime=事件、交互或内容义务。**没有一行因登记了ID而标complete。** 清单一致性测试仅防漏项/漂移，不认证行为。
 
@@ -127,7 +127,7 @@
 
 ## 原95之外的硬不变量
 
-新增hard `caution.progression_gate`（type=limit）：仅承载连续2次低疼痛前不加负荷、先volume后load、ladder同样连续2次；不含ROM。真实行为证据见 `tests/unit/engine/b-caution-progression-source.test.ts` 的两次完整低痛解锁/缺答高痛不解锁/先次数后负荷。新增1与原始93 active相加为当前94，不能用总数冒充原始95已实现。 当前实现位于 `src/engine/progression/item-actions.ts` 的 `createItemActions`、`src/engine/progression/recovery-guards.ts` 的 `applyRecoveryGuards`，独立历史校验位于 `src/engine/history-checks.ts` 的 `checkHistoryChanges`。
+新增hard `caution.progression_gate`（type=limit）：仅承载连续2次低疼痛前不加负荷、先volume后load、ladder同样连续2次；不含ROM。真实行为证据见 `tests/unit/engine/b-caution-progression-source.test.ts` 的两次完整低痛解锁/缺答高痛不解锁/先次数后负荷。新增2与原始93 active相加为当前95，不能用总数冒充原始95已实现。 当前实现位于 `src/engine/progression/item-actions.ts` 的 `createItemActions`、`src/engine/progression/recovery-guards.ts` 的 `applyRecoveryGuards`，独立历史校验位于 `src/engine/history-checks.ts` 的 `checkHistoryChanges`。
 
 `older.template.balance_required` 为target行但用户override规定：可用日≥3时每周3平衡是条件hard；<3按目标。完整合法池确因器械/空间为空才environmentLimited，并保留原始balance issue；合法动作存在却漏排不可豁免。
 
@@ -162,3 +162,13 @@ source373/182、3ed556dfe5e9（最终元数据同步；业务审查基于同范�
 | safety.ts 的原strength评分安全计算 | `src/engine/gates/strength-scoring.ts` 的 `safety`；`strength-scoring-population.ts` 的 `applyStrengthScoringPopulation` | 旧 `safety.ts` 已删除；此处是保留的评分语义，医疗准入入口仍为 `runGates`。 |
 | validation.ts 的旧验证参考 | `tests/training-engine/reference/legacy-validation.ts`及 `legacy-duration-reference.ts` | 旧生产模块已删除；仅保留既有测试参考，不作为V2生产安全实现或独立认证。 |
 | history-checks.ts 的历史独立校验 | `src/engine/history-checks.ts` 的 `checkHistoryChanges` | 文件及公开符号未迁移，仅格式化。 |
+
+## ACOG核对新增的硬性剂量限制（2026-10-18）
+
+原始95条表格与两个deferred条目保持不变。本轮额外新增hard `pregnancy.inactive.ramp`，与此前 `caution.progression_gate` 一起计为新增2条；当前active hard为95（原始93＋新增2）。
+
+| 新增规则 | 分级 | 实现位置 | 对应行为测试 | 范围 |
+| --- | --- | --- | --- | --- |
+| pregnancy.inactive.ramp | runtime / hard | `src/engine/pregnancy-limits.ts`、`pipeline.ts`、`fit/fitting.ts`、`hard-checks.ts`；独立校验`validation/pregnancy.ts` | `tests/unit/engine/acog-pregnancy.test.ts`：`week index %s, available %s minutes respects a %s-minute cap`、`rejects a forged elapsed/target declaration independently` | 首周与第5周、用户更短时间、独立重算与反例；真实用户按首次采用孕期递增计划的时间起算，不用孕前历史推断。 |
+
+同一测试文件还覆盖`pregnancy.gate.provider`新增产检准入、`pregnancy.intensity`显式静态站立每组上限；`tests/e2e/acog-pregnancy.spec.ts`覆盖老用户继续已有计划、新生成阻止、19→20数据库升级不填健康答案。专业审核仍未完成。

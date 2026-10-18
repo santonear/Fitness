@@ -1,4 +1,5 @@
 import { checkHard } from "./hard-checks";
+import { estimatedSeconds } from "./fit/elapsed-time";
 import type {
   EngineNotice,
   GateOutcome,
@@ -56,6 +57,14 @@ export function buildNotices(
           owned.has(req) ||
           (e.equipment_alternatives[req] ?? []).some((alt) => owned.has(alt)),
       );
+  const longSession = ctx.rules.get("pregnancy.copy.long_session");
+  if (
+    ctx.profile?.population.kind === "pregnant" &&
+    plan?.templates.some(
+      (t) => estimatedSeconds(t, ctx.rules) > longSession.when_minutes_gt * 60,
+    )
+  )
+    add("pregnancy.copy.long_session.copy", 50);
   const actualPatterns = new Set<string | undefined>(
     items
       .filter((i) =>
@@ -159,10 +168,20 @@ export function buildNotices(
     }
   }
   const seen = new Set<string>();
+  const priority = (notice: EngineNotice) =>
+    notice.severity === "stop" || notice.code === "pregnancy.stop.copy.stop"
+      ? 3
+      : notice.code.startsWith("engine.copy.environment_")
+        ? 2
+        : notice.code === "pregnancy.copy.long_session.copy"
+          ? 1
+          : 0;
   return candidates
     .sort(
       (a, b) =>
-        b.impact - a.impact || a.notice.ruleId.localeCompare(b.notice.ruleId),
+        priority(b.notice) - priority(a.notice) ||
+        b.impact - a.impact ||
+        a.notice.ruleId.localeCompare(b.notice.ruleId),
     )
     .filter(({ notice }) => {
       if (seen.has(notice.ruleId)) return false;

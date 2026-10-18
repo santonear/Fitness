@@ -1,6 +1,6 @@
 {
   "reviewedOn": "2026-10-18",
-  "rulesVersion": "93a286602cbc5140dd4dddf6bc3d81233e7d863f1ec4e529338ac5dae411f1b2",
+  "rulesVersion": "44a8158c5c24427d63de05e8a19569709efe98f235d855c0576bc7df5da6095d",
   "activeRuleIds": [
     "safety.scope.age_min",
     "safety.screen.parq",
@@ -82,6 +82,7 @@
     "pregnancy.stop.trigger",
     "pregnancy.never",
     "pregnancy.end",
+    "pregnancy.inactive.ramp",
     "postpartum.activation",
     "postpartum.gate.pre_check",
     "postpartum.gate.clearance",
@@ -106,5 +107,5 @@
     "safety.screen.pregnancy_route.skip_rule"
   ],
   "evidence": "docs/training-engine/hard-rule-coverage.md",
-  "scope": "Current approved V2 supported branches; deferred paths excluded. Registration is not behavioral proof."
+  "scope": "Current approved V2 supported branches including ACOG-review prenatal admission, static-standing dose and inactive-pregnancy ramp; deferred paths excluded. Registration is not behavioral proof."
 }

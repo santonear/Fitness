@@ -2945,7 +2945,9 @@
   "position": [
    "standing"
   ],
-  "flags": [],
+  "flags": [
+   "static_standing_hold"
+  ],
   "use": [
    "accessory",
    "warmup"
@@ -3335,7 +3337,8 @@
    "standing"
   ],
   "flags": [
-   "balance_demand"
+   "balance_demand",
+   "static_standing_hold"
   ],
   "use": [
    "warmup",
@@ -3410,7 +3413,8 @@
    "standing"
   ],
   "flags": [
-   "balance_demand"
+   "balance_demand",
+   "static_standing_hold"
   ],
   "use": [
    "accessory",
@@ -3813,7 +3817,8 @@
    "standing"
   ],
   "flags": [
-   "deep_knee_flexion"
+   "deep_knee_flexion",
+   "static_standing_hold"
   ],
   "use": [
    "warmup",
@@ -4276,7 +4281,8 @@
    "standing"
   ],
   "flags": [
-   "balance_demand"
+   "balance_demand",
+   "static_standing_hold"
   ],
   "use": [
    "accessory",
@@ -8932,7 +8938,9 @@
   "position": [
    "standing"
   ],
-  "flags": [],
+  "flags": [
+   "static_standing_hold"
+  ],
   "use": [
    "warmup",
    "cooldown"
@@ -17370,7 +17378,9 @@
   "position": [
    "standing"
   ],
-  "flags": [],
+  "flags": [
+   "static_standing_hold"
+  ],
   "use": [
    "warmup",
    "cooldown"
@@ -18972,7 +18982,9 @@
   "position": [
    "standing"
   ],
-  "flags": [],
+  "flags": [
+   "static_standing_hold"
+  ],
   "use": [
    "warmup",
    "cooldown"
@@ -23420,7 +23432,9 @@
   "position": [
    "standing"
   ],
-  "flags": [],
+  "flags": [
+   "static_standing_hold"
+  ],
   "use": [
    "warmup",
    "cooldown"
@@ -25382,7 +25396,9 @@
    "seated",
    "standing"
   ],
-  "flags": [],
+  "flags": [
+   "static_standing_hold"
+  ],
   "use": [
    "warmup"
   ],
@@ -28045,7 +28061,8 @@
    "standing"
   ],
   "flags": [
-   "balance_demand"
+   "balance_demand",
+   "static_standing_hold"
   ],
   "use": [
    "accessory",
@@ -30013,7 +30030,9 @@
   "position": [
    "standing"
   ],
-  "flags": [],
+  "flags": [
+   "static_standing_hold"
+  ],
   "use": [
    "accessory",
    "warmup"
@@ -30088,7 +30107,8 @@
    "standing"
   ],
   "flags": [
-   "balance_demand"
+   "balance_demand",
+   "static_standing_hold"
   ],
   "use": [
    "accessory",
@@ -32508,7 +32528,9 @@
    "standing",
    "seated"
   ],
-  "flags": [],
+  "flags": [
+   "static_standing_hold"
+  ],
   "use": [
    "warmup"
   ],
@@ -35742,7 +35764,8 @@
    "standing"
   ],
   "flags": [
-   "balance_demand"
+   "balance_demand",
+   "static_standing_hold"
   ],
   "use": [
    "accessory",
@@ -36631,7 +36654,9 @@
   "position": [
    "standing"
   ],
-  "flags": [],
+  "flags": [
+   "static_standing_hold"
+  ],
   "use": [
    "accessory",
    "warmup"
@@ -37168,7 +37193,8 @@
    "standing"
   ],
   "flags": [
-   "balance_demand"
+   "balance_demand",
+   "static_standing_hold"
   ],
   "use": [
    "cooldown"
@@ -37556,7 +37582,8 @@
    "standing"
   ],
   "flags": [
-   "balance_demand"
+   "balance_demand",
+   "static_standing_hold"
   ],
   "use": [
    "accessory",
@@ -38130,7 +38157,9 @@
   "position": [
    "standing"
   ],
-  "flags": [],
+  "flags": [
+   "static_standing_hold"
+  ],
   "use": [
    "accessory"
   ],
@@ -38284,7 +38313,8 @@
    "standing"
   ],
   "flags": [
-   "balance_demand"
+   "balance_demand",
+   "static_standing_hold"
   ],
   "use": [
    "accessory",
@@ -39157,7 +39187,8 @@
    "standing"
   ],
   "flags": [
-   "grip_intensive"
+   "grip_intensive",
+   "static_standing_hold"
   ],
   "use": [
    "accessory"

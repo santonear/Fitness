@@ -12,30 +12,31 @@
 
 ## M3 后格式化源码
 
-总行数：15569；共107个文件。测试、generated和规则数据均未混入。
+总行数：15787；共109个文件。测试、generated和规则数据均未混入。
 
 | 阶段 | 格式化行数 |
 |---|---:|
 | candidates | 584 |
-| checkHard | 1354 |
-| contracts | 741 |
+| checkHard | 1387 |
+| contracts | 743 |
 | data | 427 |
-| dose | 1970 |
-| gates | 1524 |
+| dose | 1976 |
+| gates | 1558 |
 | fill | 216 |
-| fit | 1187 |
+| fit | 1195 |
 | independent validation | 353 |
 | improve | 285 |
-| pipeline | 405 |
-| notices | 174 |
+| pipeline | 430 |
+| notices | 193 |
 | operations | 664 |
+| pregnancy-limits | 38 |
 | progression | 3116 |
-| score | 1694 |
+| score | 1697 |
 | skeleton | 334 |
 | structure | 163 |
-| validation | 378 |
+| validation | 428 |
 
-超过1500行的阶段列入后续架构简化评审：dose 1970行；gates 1524行；progression 3116行；score 1694行。该评审不阻塞此次交付。
+超过1500行的阶段列入后续架构简化评审：dose 1976行；gates 1558行；progression 3116行；score 1697行。该评审不阻塞此次交付。
 
 | 文件 | 格式化行数 |
 |---|---:|
@@ -46,13 +47,13 @@
 | src/engine/checkHard/coverage.ts | 129 |
 | src/engine/checkHard/eligibility.ts | 230 |
 | src/engine/checkHard/item-context.ts | 28 |
-| src/engine/checkHard/item-dose.ts | 257 |
+| src/engine/checkHard/item-dose.ts | 275 |
 | src/engine/checkHard/item-structure.ts | 281 |
 | src/engine/contracts.ts | 18 |
 | src/engine/contracts/api.ts | 127 |
 | src/engine/contracts/pipeline.ts | 125 |
 | src/engine/contracts/plan.ts | 164 |
-| src/engine/contracts/profile.ts | 307 |
+| src/engine/contracts/profile.ts | 309 |
 | src/engine/data.ts | 400 |
 | src/engine/dose.ts | 21 |
 | src/engine/dose/assign.ts | 113 |
@@ -61,7 +62,7 @@
 | src/engine/dose/capacity.ts | 328 |
 | src/engine/dose/floor-order.ts | 147 |
 | src/engine/dose/limits.ts | 59 |
-| src/engine/dose/prescribe.ts | 267 |
+| src/engine/dose/prescribe.ts | 273 |
 | src/engine/dose/rep-ranges.ts | 117 |
 | src/engine/dose/roles.ts | 94 |
 | src/engine/dose/transforms.ts | 59 |
@@ -79,32 +80,33 @@
 | src/engine/fit/elapsed-time.ts | 236 |
 | src/engine/fit/estimate.ts | 109 |
 | src/engine/fit/finalize.ts | 97 |
-| src/engine/fit/fitting.ts | 360 |
+| src/engine/fit/fitting.ts | 368 |
 | src/engine/fit/item-order.ts | 13 |
 | src/engine/fit/refill-proposals.ts | 164 |
 | src/engine/fit/refill.ts | 42 |
 | src/engine/fit/requirements.ts | 92 |
 | src/engine/fit/types.ts | 3 |
-| src/engine/gates.ts | 63 |
-| src/engine/gates/population-limits.ts | 129 |
+| src/engine/gates.ts | 77 |
+| src/engine/gates/population-limits.ts | 139 |
 | src/engine/gates/redflag-review.ts | 197 |
 | src/engine/gates/state.ts | 343 |
-| src/engine/gates/strength-scoring-population.ts | 120 |
+| src/engine/gates/strength-scoring-population.ts | 130 |
 | src/engine/gates/strength-scoring.ts | 389 |
-| src/engine/hard-checks.ts | 378 |
+| src/engine/hard-checks.ts | 393 |
 | src/engine/history-checks.ts | 353 |
 | src/engine/improve.ts | 285 |
 | src/engine/index.ts | 86 |
-| src/engine/notices.ts | 174 |
+| src/engine/notices.ts | 193 |
 | src/engine/operations.ts | 4 |
 | src/engine/operations/adjust.ts | 151 |
 | src/engine/operations/modify.ts | 133 |
 | src/engine/operations/result.ts | 72 |
 | src/engine/operations/shared.ts | 95 |
 | src/engine/operations/substitute.ts | 209 |
-| src/engine/pipeline.ts | 319 |
+| src/engine/pipeline.ts | 344 |
 | src/engine/postpartum-risk.ts | 98 |
 | src/engine/power.ts | 104 |
+| src/engine/pregnancy-limits.ts | 38 |
 | src/engine/progression.ts | 400 |
 | src/engine/progression/confirmed-pain.ts | 239 |
 | src/engine/progression/fatigue.ts | 77 |
@@ -121,7 +123,7 @@
 | src/engine/progression/load-step.ts | 81 |
 | src/engine/progression/recovery-guards.ts | 116 |
 | src/engine/progression/schedule.ts | 28 |
-| src/engine/score.ts | 80 |
+| src/engine/score.ts | 83 |
 | src/engine/score/batch-helpers.ts | 103 |
 | src/engine/score/evaluate.ts | 54 |
 | src/engine/score/facts.ts | 191 |
@@ -145,13 +147,14 @@
 | src/engine/source-warmup.ts | 6 |
 | src/engine/structure.ts | 163 |
 | src/engine/validation/cardio-duration.ts | 209 |
+| src/engine/validation/pregnancy.ts | 50 |
 | src/engine/validation/refill-capacity.ts | 169 |
 
 ## 单独列账（不计入引擎源码）
 
 | 目录 | 文件数 | 存盘物理行数 | 字节数 |
 |---|---:|---:|---:|
-| src/engine/generated | 4 | 4 | 1284839 |
-| tests/training-engine | 85 | 35771 | 1305438 |
-| tests/unit/engine | 114 | 6438 | 539158 |
-| data/training-engine | 24 | 60967 | 1088748 |
+| src/engine/generated | 4 | 4 | 1290853 |
+| tests/training-engine | 85 | 36851 | 1320342 |
+| tests/unit/engine | 115 | 10195 | 579579 |
+| data/training-engine | 24 | 61062 | 1088217 |

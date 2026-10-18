@@ -220,6 +220,7 @@ const requestedProfiles = (() => {
         kind: "pregnant",
         week: 20,
         providerCleared: true,
+        prenatalCareConfirmed: true,
         contraindicationsConfirmedNone: true,
         lastScreenedWeek: 20,
       },

@@ -1,4 +1,5 @@
 import { ownedEquipment } from "../equipment";
+import { pregnancyStandingCap } from "../pregnancy-limits";
 import { type Exercise, Rules, midpoint, stretchHoldRange } from "../data";
 import { type EngineProfile, type EnginePrescription } from "../contracts";
 import { type SafetyState } from "../gates/strength-scoring";
@@ -111,6 +112,11 @@ export function prescribe(
     const range = stretchHoldRange(e, r, s.population);
     if (range) seconds = Math.max(range[0], Math.min(range[1], seconds));
   }
+  seconds = Math.min(
+    seconds,
+    (pregnancyStandingCap(e, p, r) ?? Infinity) /
+      (e.time.per_side ? r.get("session.time.model").per_side_multiplier : 1),
+  );
   const model = r.get("duration.capacity.table").model_params;
   const singleLeg =
     e.time.per_side &&

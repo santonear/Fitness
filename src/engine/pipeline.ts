@@ -1,4 +1,5 @@
 import { capCardioItems } from "./fit/cardio-cap";
+import { pregnancyTargetMinutes } from "./pregnancy-limits";
 import type {
   EnginePlan,
   EngineProfile,
@@ -62,8 +63,13 @@ export function createContext(
   const screening = profile.screening;
   const present = (value: string | undefined) =>
     value === undefined ? undefined : true;
+  const seedPopulation = { ...profile.population };
+  // Elapsed ramp weeks already carry the clinical meaning; an adoption timestamp must not shuffle actions.
+  if (seedPopulation.kind === "pregnant")
+    delete seedPopulation.inactiveRampStartedAt;
   const seedProfile = {
     ...profile,
+    population: seedPopulation,
     screening: {
       ...screening,
       completedAt: present(screening.completedAt),
@@ -146,6 +152,9 @@ export function generatePlan(
   profile: EngineProfile,
   opts: { variant?: number; rules?: Rules } = {},
 ): EnginePlan {
+  const requestedMinutes = profile.sessionMinutes;
+  const ramp = pregnancyTargetMinutes(profile, opts.rules);
+  if (ramp !== undefined) profile = { ...profile, sessionMinutes: ramp };
   const ctx = createContext(profile, opts.variant ?? 0, opts.rules),
     week = buildWeek(profile, ctx.gate, ctx.rules, ctx.profileHash),
     scorer: Scorer = createGenerationScorer();
@@ -158,7 +167,7 @@ export function generatePlan(
   );
   const plan: EnginePlan = {
     weeklyTarget: profile.daysPerWeek,
-    sessionMinutes: profile.sessionMinutes,
+    sessionMinutes: requestedMinutes,
     ...(profile.preferredDays
       ? { preferredDays: [...profile.preferredDays] }
       : {}),
@@ -301,6 +310,22 @@ export function generatePlan(
     note: "score and hard validation",
   });
   result.notices = buildNotices(score, ctx.gate, ctx);
+  if (ramp !== undefined && ramp < requestedMinutes) {
+    ctx.trace.push({
+      ruleId: "pregnancy.inactive.ramp",
+      step: "fit",
+      reason: "pregnancy_inactive_ramp",
+      details: {
+        requestedMinutes,
+        capMinutes: ramp,
+        trainingAgeWeeks: profile.trainingAgeWeeks,
+        actualSeconds: result.templates.map((t) => t.estimatedSeconds),
+      },
+    });
+    const notice: EnginePlan["notices"] = [];
+    ctx.rules.notice(notice, "session.copy.intentional_short");
+    result.notices = [...result.notices.slice(0, 2), ...notice].slice(0, 3);
+  }
   result.quality = {
     status:
       ctx.gate.status === "blocked"

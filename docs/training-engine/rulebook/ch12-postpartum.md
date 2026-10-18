@@ -2,7 +2,7 @@
 
 > 机器规则：`rules-ch12.yaml`（24 条，id 一一对应）。条件表达式约定见第 9 章第 0 节。
 > **本章全部规则【需专业审核】**（`postpartum.module_end` 除外）：上线前必须由医生、助产士或盆底物理治疗师审核。
-> 跑步时间线和准入清单来自英国专家共识指南（Goom 2019），属 C 级。ACOG 804 原文未能打开，凡引用处都标"（待核实）"。
+> 跑步时间线和准入清单来自英国专家共识指南（Goom 2019），属 C 级。ACOG804已按2026-10-18报告核对，专业审核仍未完成。
 
 ## 本章边界
 
@@ -27,9 +27,9 @@
 |---|---|
 | 恭喜你！在正式开始训练前，请先和医生或助产士确认身体恢复情况（通常在产后 6–8 周的复查时）。在那之前，我们只安排步行、盆底肌提醒和轻柔的活动。 | Congratulations! Before starting training, please check your recovery with your doctor or midwife, usually at your 6–8 week postnatal check. Until then, we'll keep to walking, pelvic floor reminders and gentle movement. |
 
-- **理由**：产后复查的时间因国家而异（英国通常 6–8 周；ACOG 主张产后 12 周内持续随访，待核实）。
+- **理由**：产后复查的时间因国家而异（英国通常 6–8 周；ACOG 主张产后 12 周内持续随访，来源为 ACOG 736 号意见）。
 - **证据等级**：A
-- **来源**：E05:WHO2020；E05:ACOG804（待核实）；E05:Goom2019
+- **来源**：E05:WHO2020；E05:ACOG804；E05:Goom2019
 
 **[postpartum.gate.clearance]**
 - **规则**：阶段 2 及以上，必须先由用户确认"复查时医生或助产士已确认可以开始运动"。未确认时，即使周数已到，也停在阶段 1。
@@ -64,9 +64,9 @@
 
 **[postpartum.phase1]**
 - **规则**：阶段 1（0–6 周）只包括：步行；盆底肌提醒；呼吸练习；轻柔活动度练习。动作库中只允许 `walking`，以及 `modality = mobility`、`difficulty = 1`、`impact = 0`、无 `balance_demand` / `high_fall_risk` / `unstable_surface`、不倒立的动作。步行时长按舒适程度逐周增加，不设分钟目标。
-- **理由**：专家共识建议产后最初几周以步行、盆底和轻柔核心为主；ACOG 指出盆底训练可在产后立即开始（待核实）。
+- **理由**：专家共识建议产后最初几周以步行、盆底和轻柔核心为主；ACOG 指出盆底训练可在产后立即开始。
 - **证据等级**：C（不设分钟目标为工程选择）
-- **来源**：E05:Goom2019；E05:ACOG804（待核实）；E05:DHSC2022
+- **来源**：E05:Goom2019；E05:ACOG804；E05:DHSC2022
 - **例外/注意**：Goom 的时间线在 2–4 周就提到可考虑深蹲、弓步和臀桥；本引擎在用户确认获准前不安排这些动作，更保守。
 
 **[postpartum.exclude.pre_phase3]**
@@ -132,11 +132,11 @@
 
 | 中文 | English |
 |---|---|
-| 如果你在哺乳，运动前先喂奶或吸奶会更舒服。运动一般不会影响奶量。 | If you're breastfeeding, feeding or expressing before exercise can feel more comfortable. Exercise doesn't usually affect milk supply. |
+| 如果你在哺乳，运动前先喂奶或吸奶会更舒服。运动一般不会影响奶量。运动前也记得喝水。 | If you're breastfeeding, feeding or expressing before exercise can feel more comfortable. Exercise doesn't usually affect milk supply. Remember to drink some water before you start, too. |
 
 - **理由**：运动不影响泌乳量；运动前先哺乳可减少不适。
 - **证据等级**：A
-- **来源**：E05:ACOG804（待核实）
+- **来源**：E05:ACOG804
 
 ---
 
@@ -223,7 +223,7 @@
 
 - **理由**：Cochrane 综述显示，产后对已有尿失禁者做盆底训练，6–12 个月时效果不明确（低确定性）。所以提醒是合理的，但漏尿需要专业评估，不由应用处理。
 - **证据等级**：B
-- **来源**：E05:WHO2020；E05:DHSC2022；E05:Woodley2020；E05:ACOG804（待核实）
+- **来源**：E05:WHO2020；E05:DHSC2022；E05:Woodley2020；E05:ACOG804
 
 **[postpartum.physio_offer]**
 - **规则**：从产后 6 周起，显示盆底物理治疗评估建议（不作为准入条件）。
@@ -261,7 +261,7 @@
 - **E05:WHO2020**：Bull FC, et al. 2020. WHO 2020 guidelines on physical activity and sedentary behaviour. *Br J Sports Med* 54(24):1451–1462.
 - **E05:DHSC2022**：Department of Health and Social Care (UK). 2022, updated 2026. Physical activity for women after childbirth (birth to 12 months): text of the infographic.
 - **E05:Goom2019**：Goom T, Donnelly G, Brockwell E. 2019. Returning to running postnatal: guideline for medical, health and fitness professionals managing this population. 自出版指南（专家共识，4 级证据）。
-- **E05:ACOG804**：ACOG. 2020. Physical Activity and Exercise During Pregnancy and the Postpartum Period. Committee Opinion No. 804. *Obstet Gynecol* 135(4):e178–e188.（待核实：原文未能打开，经二手摘要获得）
+- **E05:ACOG804**：ACOG. 2020. Physical Activity and Exercise During Pregnancy and the Postpartum Period. Committee Opinion No. 804. *Obstet Gynecol* 135(4):e178–e188.（已按2026-10-18报告核对）
 - **E05:Woodley2020**：Woodley SJ, et al. 2020. Pelvic floor muscle training for preventing and treating urinary and faecal incontinence in antenatal and postnatal women. *Cochrane Database Syst Rev* (5):CD007471.
 - **E05:Beamish2025**：Beamish NF, Davenport MH, Ali MU, et al. 2025. Impact of postpartum exercise on pelvic floor disorders and diastasis recti abdominis: a systematic review and meta-analysis. *Br J Sports Med* 59(8):562–575.（待核实：经 physiotutors 二手摘要获得；DOI 未核实）
 - **E01:FRANK20**：Franklin BA, et al. 2020. AHA Scientific Statement. *Circulation* 141:e705–e736.
@@ -283,3 +283,7 @@
 - 剂量与步行相同。时长、频率、RPE／谈话测试上限、每周进度及本章全部停止信号共用现有来源参数，不新增数值。只允许回到普通步行，不提供更高强度的自动阶梯。
 - 已批准动作要领：中文“慢慢原地踏步，脚轻轻离地，膝盖不用抬高，手臂自然摆动。需要的话可以扶着墙或椅背。”英文“Step slowly in place, lifting your feet just off the floor. No need to raise your knees high; let your arms swing naturally. Hold a wall or chair back if you like.”不另加垫子位置等用户文案。
 - 一般产后活动依据：[ACOG Exercise After Pregnancy](https://www.acog.org/womens-health/faqs/exercise-after-pregnancy) 与 Opinion804。具体原地动作及适用范围来自本次产品裁定，不宣称ACOG逐项验证本动作。加入 review-queue.csv，教练复核尚待完成。
+
+### 2026-10-18 来源澄清
+- **E05:ACOG736**：[Optimizing Postpartum Care](https://www.acog.org/clinical/clinical-guidance/committee-opinion/articles/2018/05/optimizing-postpartum-care)，用于产后12周内持续随访的出处；不是804。
+- ACOG804已按核对报告校对；产后获准前限制仍更保守，专业审核仍未完成。
