@@ -736,3 +736,5 @@ Latest user ruling supersedes prior performance stop:219–305ms/79s accepted; n
 | src/engine/validation/cardio-duration.ts | 209 |
 | src/engine/validation/pregnancy.ts | 50 |
 | src/engine/validation/refill-capacity.ts | 225 |
+
+末轮词表审查补充：8个反例先证明失败，再修正“刚生成/刚生效/发生了/产生了/医生完成”等非生育表达，并排除明显的概念提问；识别测试现43项通过。仅改本地词表及测试，不改引擎、接口、话术或外发流程；原引擎输出证据复用，远程CI在最终提交重新完整验证。

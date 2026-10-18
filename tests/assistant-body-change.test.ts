@@ -13,6 +13,9 @@ describe('local body-change referral', () => {
     expect(detectBodyChange(message)).toBe(kind);
   });
   it.each([
+    '刚生成的计划很好', '发生了什么问题', '产生了一个新版本',
+    '刚生效的设置', '我刚生气了', '医生完成了手术',
+    '什么是剖宫产', 'How does a C-section work?',
     '我老婆怀孕了', '朋友刚生完', '没怀孕', '我没有怀孕',
     '如果怀孕了怎么办', '假如产后能练吗', 'My wife is pregnant',
     'My friend gave birth', 'I am not pregnant', 'If I am pregnant',
