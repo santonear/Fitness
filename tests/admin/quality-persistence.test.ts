@@ -5,9 +5,11 @@ import type { AdminDatabase, AdminStatement } from '../../src/backend/admin/core
 import { collectError, errorSummary, recordBlockedCategory, saveEvaluation } from '../../src/backend/admin/quality/service';
 import { dispatchAdminPush, enqueueNotification, evaluateQualityNotifications, reconcileNotificationIncidents } from '../../src/backend/admin/quality/notifications';
 import { handleQuality } from '../../src/backend/admin/quality';
+import { createFitnessWorker } from '../../src/backend/fitness-worker';
 
-function database(): AdminDatabase {
+function database(extra: string[] = []): AdminDatabase {
   const sqlite = new DatabaseSync(':memory:');
+  for (const file of extra) sqlite.exec(readFileSync(file, 'utf8'));
   const migration = readFileSync('migrations/admin/4_quality.sql', 'utf8');
   sqlite.exec(migration); sqlite.exec(migration);
   const incidents = readFileSync('migrations/admin/4_quality_incidents.sql', 'utf8');
@@ -175,5 +177,23 @@ describe('quality SQLite persistence and retry', () => {
     expect(await db.prepare('SELECT state FROM admin_quality_deliveries').first()).toMatchObject({ state: 'cancelled' });
     await dispatchAdminPush(env(), now + 60000, send);
     expect(send).toHaveBeenCalledTimes(1);
+  });
+});
+describe('client error reports reach the admin error count end to end', () => {
+  it('a client network failure report through the public worker route is counted on the errors page', async () => {
+    const db = database(['migrations/admin/1_core.sql', 'migrations/admin/2_releases.sql']), worker = createFitnessWorker();
+    const env = { ADMIN_CONSOLE_ENABLED: 'true', ADMIN_ENVIRONMENT: 'production' as const, ADMIN_ERROR_COLLECTION_ENABLED: 'true', FITNESS_FEATURE_FLAGS: JSON.stringify({ errorReports: true }), ADMIN_DB: db };
+    const payload = { type: 'network', route: '/settings', version: '0.1.0', browser: 'Chrome', os: 'Android', time: Date.now() };
+    const post = () => new Request('https://fitness.test/api/v1/telemetry/errors', { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: 'https://fitness.test' }, body: JSON.stringify(payload) });
+    expect((await worker.fetch(post(), env)).status).toBe(202);
+    const groups = await errorSummary(db, Date.now());
+    expect(groups.find(group => group.type === 'network')?.count).toBe(1);
+    const context = { env, actor: 'admin', now: Date.now(), fresh: true, requestId: crypto.randomUUID(), audit: async () => {} };
+    const page = await handleQuality(new Request('https://fitness.test/api/v1/management/console/quality/errors'), context);
+    expect(await page!.json()).toMatchObject({ collecting: true, groups: [{ type: 'network', count: 1 }] });
+    // With collection switched off the report is dropped quietly and the page says collection is off.
+    const off = { ...env, ADMIN_ERROR_COLLECTION_ENABLED: 'false' };
+    expect((await worker.fetch(post(), off)).status).toBe(204);
+    expect(await (await handleQuality(new Request('https://fitness.test/api/v1/management/console/quality/errors'), { ...context, env: off }))!.json()).toMatchObject({ collecting: false });
   });
 });

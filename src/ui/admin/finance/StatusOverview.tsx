@@ -10,9 +10,9 @@ interface StatusData {
  ledger?:{settledFen:number;pendingFen:number};
  config?:{current:{config:{monthlyBudgetFen:number}}};
  todos?:{items:{id:string}[]};
- errors?:{groups:{spike:boolean;trend:{time:number;count:number}[]}[]};
+ errors?:{groups:{spike:boolean;trend:{time:number;count:number}[]}[];collecting?:boolean};
 }
-const copy={zh:{title:'系统状态',ai:'AI 开关',ledger:'账本',remaining:'本月剩余预算',pending:'待核算预留',errors:'24 小时错误',unavailable:'状态不可用',enabled:'开启',disabled:'关闭',aiNote:'与设置页同一状态：服务、对话开关和模型均可用才算开启',review:'需要核对',clear:'当前无核对待办',ledgerNote:'调用是否可用以当前准入状态为准',limit:'上限',reserved:'预留不是实际费用',spike:'出现突增',noSpike:'当前无突增',recorded:'仅统计已收到的错误报告',loading:'正在读取',unknown:'数据暂未取得'},en:{title:'System status',ai:'AI switch',ledger:'Ledger',remaining:'Budget remaining',pending:'Pending reservations',errors:'Errors in 24 hours',unavailable:'Unavailable',enabled:'On',disabled:'Off',aiNote:'Same state as Settings: on only when service, assistant flag and model are all available',review:'Review needed',clear:'No reconciliation task',ledgerNote:'Request availability follows current admission rules',limit:'Limit',reserved:'Reservations are not actual charges',spike:'Spike detected',noSpike:'No current spike',recorded:'Counts received error reports only',loading:'Loading',unknown:'Data is not available'}};
+const copy={zh:{title:'系统状态',ai:'AI 开关',ledger:'账本',remaining:'本月剩余预算',pending:'待核算预留',errors:'24 小时错误',unavailable:'状态不可用',enabled:'开启',disabled:'关闭',aiNote:'与设置页同一状态：服务、对话开关和模型均可用才算开启',review:'需要核对',clear:'当前无核对待办',ledgerNote:'调用是否可用以当前准入状态为准',limit:'上限',reserved:'预留不是实际费用',spike:'出现突增',noSpike:'当前无突增',recorded:'仅统计已收到的错误报告',notCollecting:'未开启收集',notCollectingNote:'错误收集关闭时这里不会有新上报',loading:'正在读取',unknown:'数据暂未取得'},en:{title:'System status',ai:'AI switch',ledger:'Ledger',remaining:'Budget remaining',pending:'Pending reservations',errors:'Errors in 24 hours',unavailable:'Unavailable',enabled:'On',disabled:'Off',aiNote:'Same state as Settings: on only when service, assistant flag and model are all available',review:'Review needed',clear:'No reconciliation task',ledgerNote:'Request availability follows current admission rules',limit:'Limit',reserved:'Reservations are not actual charges',spike:'Spike detected',noSpike:'No current spike',recorded:'Counts received error reports only',notCollecting:'Collection off',notCollectingNote:'No new reports arrive while collection is off',loading:'Loading',unknown:'Data is not available'}};
 export function statusCards(data:StatusData,language:FinanceLanguage){
  const t=copy[language],money=(n:number)=>`¥ ${(n/100).toFixed(2)}`;
  const review=data.todos?.items.some(i=>i.id==='finance-ledger-reconciliation');
@@ -23,7 +23,7 @@ export function statusCards(data:StatusData,language:FinanceLanguage){
   {id:'ledger',label:t.ledger,value:review===undefined?t.unavailable:review?t.review:t.clear,note:t.ledgerNote,status:review===undefined?'unknown':review?'alert':'ok'},
   {id:'budget',label:t.remaining,value:remaining===undefined?t.unavailable:money(remaining),note:budget===undefined?t.unknown:`${t.limit} ${money(budget)}`,status:remaining===undefined?'unknown':remaining===0?'alert':'ok'},
   {id:'pending',label:t.pending,value:data.ledger?money(data.ledger.pendingFen):t.unavailable,note:t.reserved,status:!data.ledger?'unknown':data.ledger.pendingFen>0?'warn':'ok'},
-  {id:'errors',label:t.errors,value:errorCount===undefined?t.unavailable:String(errorCount),note:errorCount===undefined?t.unknown:`${spike?t.spike:t.noSpike} · ${t.recorded}`,status:errorCount===undefined?'unknown':spike?'alert':'ok'},
+  {id:'errors',label:t.errors,value:errorCount===undefined?t.unavailable:data.errors?.collecting===false&&errorCount===0?t.notCollecting:String(errorCount),note:errorCount===undefined?t.unknown:data.errors?.collecting===false?t.notCollectingNote:`${spike?t.spike:t.noSpike} · ${t.recorded}`,status:errorCount===undefined?'unknown':spike?'alert':'ok'},
  ];
 }
 /** AI state is the shared effective projection (control service, assistant flag and model), never the aiOperations monitoring flag. */

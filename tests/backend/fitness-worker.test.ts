@@ -30,3 +30,15 @@ it('public config preserves missing keys and server security gates still fail cl
  expect((await worker.fetch(request,{})).status).toBe(503);
  const {readFeatureFlags}=await import('../../src/backend/feature-config');expect((await readFeatureFlags({FITNESS_FEATURE_CONFIG:{get:async()=>{throw Error('offline');}}})).systemNotifications).toBe(false);
 });
+it('push config is a feature-off answer, never an HTTP error, when the push service is missing or disabled',async()=>{
+ const worker=createFitnessWorker(),config=()=>new Request('https://preview.test/api/v1/push/config');
+ const unbound=await worker.fetch(config(),{FITNESS_FEATURE_FLAGS:JSON.stringify({pwaOffline:true,systemNotifications:true})});
+ expect(unbound.status).toBe(200);expect(await unbound.json()).toEqual({enabled:false,reason:'unconfigured'});
+ const push=vi.fn(async()=>Response.json({enabled:true,publicKey:'k'}));
+ const off=await worker.fetch(config(),{PUSH:{fetch:push},FITNESS_FEATURE_FLAGS:JSON.stringify({pwaOffline:true,systemNotifications:false})});
+ expect(off.status).toBe(200);expect(await off.json()).toEqual({enabled:false,reason:'disabled'});expect(push).not.toHaveBeenCalled();
+ const on=await worker.fetch(config(),{PUSH:{fetch:push},FITNESS_FEATURE_FLAGS:JSON.stringify({pwaOffline:true,systemNotifications:true})});
+ expect(await on.json()).toEqual({enabled:true,publicKey:'k'});
+ // Writing a subscription without a service is still refused.
+ expect((await worker.fetch(new Request('https://preview.test/api/v1/push/subscription',{method:'POST'}),{FITNESS_FEATURE_FLAGS:JSON.stringify({systemNotifications:true})})).status).toBe(503);
+});

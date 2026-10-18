@@ -1,4 +1,5 @@
 import { notificationStatus, pwaRegistration } from './pwa';
+import type { PushConfigResponse } from '../domain/push-status';
 // Structural, device-only preference. No training/profile fields are accepted.
 export interface BackgroundSchedule { weekdays: number[]; time: string; timeZone: string; quietStart: string; quietEnd: string; dailyLimit: number }
 const CAPABILITY = 'fitness.push-capability';
@@ -17,14 +18,16 @@ function serialize<T>(action: () => Promise<T>): Promise<T> {
 }
 export function configureBackgroundPush(enabled: boolean) { if (!enabled) epoch++; allowed = enabled; }
 export function backgroundPushEnabled() { try { return localStorage.getItem(ENABLED) === 'true'; } catch { return false; } }
-export async function backgroundPushConfig(): Promise<{ enabled: boolean; publicKey?: string }> {
-  if (!allowed) return { enabled: false };
-  const response = await fetch('/api/v1/push/config', { cache: 'no-store', credentials: 'omit' });
-  if (!response.ok) return { enabled: false };
-  const body: unknown = await response.json();
-  if (!body || typeof body !== 'object') return { enabled: false };
+export async function backgroundPushConfig(): Promise<PushConfigResponse> {
+  if (!allowed) return { enabled: false, reason: 'disabled' };
+  const response = await fetch('/api/v1/push/config', { cache: 'no-store', credentials: 'omit' }).catch(() => undefined);
+  if (!response?.ok) return { enabled: false, reason: 'unconfigured' };
+  const body: unknown = await response.json().catch(() => null);
+  if (!body || typeof body !== 'object') return { enabled: false, reason: 'unconfigured' };
   const value = body as Record<string, unknown>;
-  return { enabled: value.enabled === true && typeof value.publicKey === 'string' && /^[\w-]{87}$/.test(value.publicKey), publicKey: typeof value.publicKey === 'string' ? value.publicKey : undefined };
+  const enabled = value.enabled === true && typeof value.publicKey === 'string' && /^[\w-]{87}$/.test(value.publicKey);
+  if (!enabled) return { enabled: false, reason: value.reason === 'disabled' ? 'disabled' : 'unconfigured' };
+  return { enabled, publicKey: value.publicKey as string };
 }
 function deviceCapability() {
   const previous = localStorage.getItem(CAPABILITY); if (previous && /^[\w-]{43}$/.test(previous)) return previous;

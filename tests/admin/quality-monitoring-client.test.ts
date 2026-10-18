@@ -43,6 +43,31 @@ describe('frontend quality reporting compatibility and consent', () => {
     vi.stubEnv('VITE_APP_VERSION', 'abcdef123'); reportSafeError('validation');
     expect(JSON.parse(String(send.mock.calls[0][1].body))).toMatchObject({ type: 'unexpected', version: 'abcdef123' });
   });
+  it('counts same-origin API failures as a network category without URLs or bodies, and ignores feature-off answers', async () => {
+    config.flags = { adminConsole: true, errorReports: true };
+    vi.stubGlobal('location', { pathname: '/settings', origin: 'https://fitness.test', search: '', hash: '' });
+    const { instrumentApiFailures } = await import('../../src/application/monitoring-client');
+    const responses: Record<string, Response> = {
+      '/api/v1/push/config': new Response(null, { status: 503 }),
+      '/api/v1/assistant/chat': Response.json({ error: 'AI_DISABLED' }, { status: 503 }),
+      '/api/v1/features': Response.json({ flags: {} }),
+    };
+    const network = vi.fn(async (input: RequestInfo | URL) => { const path = new URL(String(input), 'https://fitness.test').pathname; return path.startsWith('/api/v1/telemetry/') ? new Response(null, { status: 204 }) : responses[path].clone(); });
+    const target = { fetch: network as unknown as typeof fetch };
+    vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => target.fetch(input, init));
+    const restore = instrumentApiFailures(target);
+    await target.fetch('/api/v1/features'); await target.fetch('/api/v1/assistant/chat');
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(network.mock.calls.filter(call => String(call[0]).includes('telemetry'))).toHaveLength(0);
+    await target.fetch('/api/v1/push/config?private=PRIVATE_HEALTH');
+    await vi.waitFor(() => expect(network.mock.calls.filter(call => String(call[0]).includes('telemetry'))).toHaveLength(1));
+    const report = network.mock.calls.find(call => String(call[0]).includes('telemetry'))!;
+    const payload = JSON.parse(String((report[1] as RequestInit).body));
+    expect(errorEvent.safeParse(payload).success).toBe(true);
+    expect(payload).toMatchObject({ type: 'network', route: '/settings' });
+    expect(JSON.stringify(payload)).not.toMatch(/push|PRIVATE/);
+    restore(); expect(target.fetch).toBe(network);
+  });
   it('keeps anonymous usage consent independent and does not opt anyone in', async () => {
     config.flags = { adminConsole: true, errorReports: true, anonymousUsage: true };
     const { countUsage, flushUsage } = await import('../../src/application/monitoring-client');

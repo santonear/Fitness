@@ -21,7 +21,7 @@
     "ADMIN_ENVIRONMENT": "production",
     "ADMIN_CONSOLE_ENABLED": "true",
     "ADMIN_PUSH_ENABLED": "false",
-    "ADMIN_ERROR_COLLECTION_ENABLED": "false",
+    "ADMIN_ERROR_COLLECTION_ENABLED": "true",
     "ADMIN_RELEASE_REGISTRY": "[{\"environment\":\"production\",\"dataVersion\":11,\"current\":{\"id\":\"admin-v8-20261012\",\"deploymentId\":\"4884ef3c-1470-4855-8634-1af7ed197764\",\"publishedAt\":\"2026-10-11T18:00:00Z\",\"compatibleDataVersion\":11,\"smokeOrigin\":\"https://fitness.initdevl.workers.dev\"},\"previous\":{\"id\":\"pr52-mainline\",\"deploymentId\":\"4884ef3c-1470-4855-8634-1af7ed197764\",\"publishedAt\":\"2026-10-11T14:12:40.060894Z\",\"compatibleDataVersion\":11,\"smokeOrigin\":\"https://fitness.initdevl.workers.dev\"}}]"
   },
   "d1_databases": [

@@ -1,3 +1,5 @@
+import type { PushUnavailableReason } from '../../../domain/push-status';
+import { readFeatureFlags } from '../../feature-config';
 import { capabilityHash } from '../../push-service';
 import { sendAdminPush } from './push-payload';
 import { defaultSettings, notificationSettings, notificationAllowed, type Category, type QualityDatabase, type QualityEnv } from './contracts';
@@ -34,6 +36,9 @@ export async function readSettings(db: QualityDatabase) {
   return row ? notificationSettings.parse(JSON.parse(row.value)) : defaultSettings;
 }
 export function pushAvailable(env: QualityEnv): boolean { return env.ADMIN_PUSH_ENABLED === 'true' && !!env.VAPID_PRIVATE_JWK && !!env.VAPID_PUBLIC_KEY && !!env.VAPID_SUBJECT; }
+/** Same reasons as the app's /api/v1/push/config, so both pages say the same thing. */
+export function pushUnavailableReason(env: QualityEnv): PushUnavailableReason | null { return pushAvailable(env) ? null : env.ADMIN_PUSH_ENABLED !== 'true' ? 'disabled' : 'unconfigured'; }
+export async function appPushUnavailableReason(env: QualityEnv & { PUSH?: unknown }): Promise<PushUnavailableReason | null> { if (!env.PUSH) return 'unconfigured'; return (await readFeatureFlags(env).catch(() => ({ systemNotifications: false }))).systemNotifications ? null : 'disabled'; }
 export async function enqueueNotification(db: QualityDatabase, category: Category, count: number, eventKey: string, now: number) {
   if (!Number.isSafeInteger(count) || count < 1) throw Error('INVALID_COUNT');
   const id = await capabilityHash(`${category}:${eventKey}`);

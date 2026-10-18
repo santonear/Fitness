@@ -2,8 +2,8 @@ import { pushSubscription, capabilityHash } from '../../push-service';
 import { z } from 'zod';
 import { adminJson, requireAdminDb, type AdminContext, type TodoSource } from '../core/contracts';
 import { notificationSettings, type QualityEnv } from './contracts';
-import { errorSummary, qualityTodos, saveEvaluation } from './service';
-import { dispatchAdminPush, enqueueNotification, pushAvailable, readSettings } from './notifications';
+import { errorCollectionEnabled, errorSummary, qualityTodos, saveEvaluation } from './service';
+import { appPushUnavailableReason, dispatchAdminPush, enqueueNotification, pushAvailable, pushUnavailableReason, readSettings } from './notifications';
 export * from './service';
 export * from './notifications';
 export type { QualityEnv } from './contracts';
@@ -13,12 +13,12 @@ export async function handleQuality(request: Request, context: AdminContext<Qual
   if (!new URL(request.url).pathname.startsWith('/api/v1/management/console/quality/')) return undefined;
   const db = requireAdminDb(context);
   if (request.method === 'GET') {
-    if (path === '/errors') return adminJson({ groups: await errorSummary(db, context.now) });
+    if (path === '/errors') return adminJson({ groups: await errorSummary(db, context.now), collecting: await errorCollectionEnabled(context.env) });
     if (path === '/reports') {
       const { results } = await db.prepare('SELECT report FROM admin_quality_evaluations ORDER BY time DESC LIMIT 100').all<{ report: string }>();
       return adminJson({ reports: results.map(row => JSON.parse(row.report)), blocks: (await db.prepare('SELECT day,category,count FROM admin_quality_blocks ORDER BY day DESC LIMIT 200').all()).results });
     }
-    if (path === '/notifications') return adminJson({ settings: await readSettings(db), available: pushAvailable(context.env), publicKey: context.env.VAPID_PUBLIC_KEY ?? null, subscriptions: (await db.prepare('SELECT id,created_at FROM admin_quality_subscriptions').all()).results });
+    if (path === '/notifications') return adminJson({ settings: await readSettings(db), available: pushAvailable(context.env), reason: pushUnavailableReason(context.env), appReason: await appPushUnavailableReason(context.env), publicKey: context.env.VAPID_PUBLIC_KEY ?? null, subscriptions: (await db.prepare('SELECT id,created_at FROM admin_quality_subscriptions').all()).results });
   }
   if (request.method !== 'POST') return undefined;
   let body: unknown; try { body = await request.json(); } catch { return adminJson({ error: 'INVALID_JSON' }, 400); }
