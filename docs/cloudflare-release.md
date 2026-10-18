@@ -26,7 +26,9 @@ Worker 名称为 `fitness`，实际稳定地址为 https://fitness.initdevl.work
 
 回滚只回退 Worker 代码，不回退 D1 迁移；迁移必须保持向后兼容，旧版本代码要能读新表结构。每次正式发布的运行摘要里记录发布前的线上版本号，回滚时可直接填写。
 
-冒烟测试（`tools/release/smoke.mjs`）只读：首页、`/api/v1/features`、未登录访问 `/admin` 不返回 200；不登录、不写数据、不调用模型。
+冒烟测试（`tools/release/smoke.mjs`）只读：`/api/v1/health`、首页、`/api/v1/features`、未登录访问 `/admin` 不返回 200；不登录、不写数据、不调用模型。
+
+健康检查地址统一以 `src/domain/health-paths.ts` 为准，冒烟脚本与后台“实际发布与检查”共用：`/api/v1/health`、`/api/v1/features`、`/`、`/admin`（管理入口保护检查为 `/api/v1/management/console/releases`）。根路径 `/health`、`/features` 是应用页面路由，返回 HTML，不能用于监控。
 
 GitHub 环境配置：
 

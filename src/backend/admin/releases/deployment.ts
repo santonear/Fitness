@@ -1,3 +1,4 @@
+import { healthPaths } from '../../../domain/health-paths';
 import { z } from 'zod';
 import { AdminError, requireAdminDb, type AdminContext } from '../core/contracts';
 import { smokeChecks, type ReleasesEnv, type ReleaseEnvironment, type ReleaseRegistration, type SmokeCheck } from './model';
@@ -30,7 +31,7 @@ export function isAccessLoginRedirect(response:Response,origin:string,issuer?:st
  }catch{return false;}
 }
 export async function runReleaseSmoke(context:AdminContext<ReleasesEnv>, environment:ReleaseEnvironment, target:ReleaseRegistration, transport:typeof fetch=fetch) {
- const paths={application:'/',features:'/api/v1/features',managementAccess:'/api/v1/management/console/releases'};
+ const paths={application:healthPaths.application,features:healthPaths.features,managementAccess:healthPaths.managementAccess};
  // Preview probes run in the independent private worker to avoid self-fetch restrictions.
  const probe=async(request:Request)=>{
   if(context.env.ADMIN_ENVIRONMENT!=='preview'||!context.env.ADMIN_PREVIEW_SIMULATION)return transport(request);
