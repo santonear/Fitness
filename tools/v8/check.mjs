@@ -7,7 +7,8 @@ const root = fileURLToPath(new URL('../../', import.meta.url));
 export function violations(file, source) {
   const found = [];
   const ui = /src\/(ui|themes|i18n|admin)\//.test(file);
-  const tokenFile = /^src\/themes\/[^/]+\/tokens\.css$/.test(file);
+  // Theme selectors live in generated tokens.css files and in the one generator that writes them.
+  const tokenFile = /^src\/themes\/[^/]+\/tokens\.css$/.test(file) || file === 'src/themes/token-css.ts';
   if (ui && !tokenFile && /\[data-theme/.test(source)) found.push('theme-selector');
   if (/^src\/ui\/(pages|components)\//.test(file)) {
     if (/#[\da-f]{3,8}\b|\brgba?\(/i.test(source)) found.push('literal-color');

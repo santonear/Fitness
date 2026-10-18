@@ -17,7 +17,7 @@ test('AI switch off keeps the modern panel local and makes zero model requests',
  await page.getByRole('textbox').fill('时间不够');await page.getByRole('button',{name:'发送',exact:true}).click();
  await expect(page.getByRole('log')).not.toBeEmpty();await expect(page.locator('.assistant-panel')).toContainText('现在用的是本地建议');expect(calls).toBe(0);
 });
-for(const theme of ['qingci','liubai','jingshe','zhuangse'])for(const width of [375,1280])test(`round6 panel ${theme} ${width}`,async({page},info)=>{
+for(const theme of ['pop', 'vivid', 'gentle', 'data', 'fire'])for(const width of [375,1280])test(`round6 panel ${theme} ${width}`,async({page},info)=>{
  await page.setViewportSize({width,height:900});await page.goto('/tests/fixtures/v8-coach/index.html');
  await page.addStyleTag({url:`/src/themes/${theme}/tokens.css`});await page.evaluate(theme=>document.documentElement.dataset.theme=theme,theme);
  await page.getByRole('button',{name:'跟芽芽说',exact:true}).click();await expect(page.locator('.assistant-panel')).toBeVisible();

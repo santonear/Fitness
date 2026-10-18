@@ -83,9 +83,10 @@ test('unknown load stays unknown until a chosen fractional weight, all theme num
  await expect(page.getByText('选择你的重量',{exact:true})).toBeVisible();await page.getByRole('button',{name:'完成这一组',exact:true}).click();
  const dialog=page.getByRole('dialog');await expect(dialog.getByRole('button',{name:'确定',exact:true})).toBeDisabled();await dialog.getByRole('spinbutton',{name:'公斤',exact:true}).pressSequentially('0.5');await expect(dialog.getByRole('spinbutton',{name:'公斤',exact:true})).toHaveValue('0.5');await dialog.getByRole('button',{name:'确定',exact:true}).click();await page.getByRole('button',{name:'完成这一组',exact:true}).click();await expect(page.getByText('第 2 组，共 2 组',{exact:true})).toBeVisible();
  const workoutUrl=page.url();
- for(const theme of ['青瓷','留白','静奢','撞色']){
-  await page.goto('/settings/appearance');await page.getByRole('button',{name:theme,exact:true}).click();await page.goto(workoutUrl);await expect(page.getByText('第 2 组，共 2 组',{exact:true})).toBeVisible();
-  await expect.poll(()=>page.locator('.v8-set-value').evaluate(e=>getComputedStyle(e).fontFamily)).toContain('Archivo');await shot(page,`digits-${theme}`);
+ const numerals:Record<string,string>={'柔光拟物':'Jost','山野暖阳':'Cormorant Garamond','温和陪伴':'Jost','专业数据':'Jost','燃动挑战':'Archivo'};
+ for(const theme of Object.keys(numerals)){
+  await page.goto('/settings/appearance');await page.getByRole('radio',{name:theme,exact:true}).click();await page.goto(workoutUrl);await expect(page.getByText('第 2 组，共 2 组',{exact:true})).toBeVisible();
+  await expect.poll(()=>page.locator('.v8-set-value').evaluate(e=>getComputedStyle(e).fontFamily)).toContain(numerals[theme]);await shot(page,`digits-${theme}`);
  }
 });
 test('manual selection to completed record, appearance previews and reminders',async({page})=>{
@@ -93,9 +94,10 @@ test('manual selection to completed record, appearance previews and reminders',a
  await search.fill('plank');await page.getByRole('button',{name:'平板支撑',exact:true}).first().click();await page.getByRole('button',{name:'清空筛选',exact:true}).click();await page.getByRole('button',{name:'在家',exact:true}).click();await shot(page,'manual-filter');await page.locator('.manual-card').first().scrollIntoViewIfNeeded();await shot(page,'manual-cards');
  await expect(page.locator('.manual-start')).toContainText('已选 2 个动作');await page.getByRole('button',{name:'开始',exact:true}).click();await page.getByRole('button',{name:'完成这一组',exact:true}).click();await page.locator('.v8-capsules').getByRole('button',{name:'平板支撑',exact:true}).click();await expect(page.locator('.v8-set-value')).toContainText('20 秒');await page.getByRole('button',{name:'暂停或结束',exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:'结束并记下',exact:true}).click();await page.getByRole('button',{name:'记下来',exact:true}).click();
  await expect(page.getByText('这周你动了 1 次。',{exact:true})).toBeVisible();
- await page.goto('/settings/appearance');await expect(page.locator('.v8-theme-choice')).toHaveCount(4);await shot(page,'appearance');
- for(const theme of ['青瓷','留白','静奢','撞色']){
-  await page.getByRole('button',{name:theme,exact:true}).click();await expect.poll(()=>page.evaluate(()=>getComputedStyle(document.documentElement).getPropertyValue('--f-num'))).toContain('Archivo');
+ await page.goto('/settings/appearance');await expect(page.locator('.v9-theme-option')).toHaveCount(5);await shot(page,'appearance');
+ const previewNumerals:Record<string,string>={'柔光拟物':'Jost','山野暖阳':'Cormorant Garamond','温和陪伴':'Jost','专业数据':'Jost','燃动挑战':'Archivo'};
+ for(const theme of Object.keys(previewNumerals)){
+  await page.getByRole('radio',{name:theme,exact:true}).click();await expect.poll(()=>page.evaluate(()=>getComputedStyle(document.documentElement).getPropertyValue('--f-num'))).toContain(previewNumerals[theme]);
   await shot(page,`appearance-${theme}`);
  }
 });

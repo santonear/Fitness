@@ -4,30 +4,36 @@
 
 ## 1. 现行规范
 
+### 2026-10-19 V9 定版设计（覆盖下文 V8 视觉与四套主题）
+
+- Bo 已定版 V9 设计：设计稿在 `docs/design/v9/`，规则写在唯一规范 `docs/uiux/UIUX20261008.md` 的“V9 定版视觉与设计系统”一节。V8 的视觉取值与青瓷/留白/静奢/撞色四套主题作废；交互、数据、安全与协作规则不变。
+- 五套主题同时上线：`pop` 柔光拟物（默认）、`vivid` 山野暖阳、`gentle` 温和陪伴、`data` 专业数据（深色）、`fire` 燃动挑战（深色）。旧偏好按 qingci→pop、liubai→gentle、jingshe→data、zhuangse→fire、未知→pop 幂等迁移。
+- 页面优先使用 `src/ui/components/kit` 的共享组件（主按钮、卡片、选项、进度环、统计块、周历、芽芽 `Yaya`、悬浮助手 `Orb`、山野插画 `Scene`、主题选择 `ThemePicker`），不得在页面里自造主题样式。
+
 ### 2026-10-10 最新执行授权（覆盖下文旧等待规则）
 
 - 普通未覆盖细节按不丢数据、不编造数据、不打扰用户、保守原则实施，记录 docs/handoff-v8/pending-decisions.md 的情况、决定、理由及文件。
 - 仅安全/隐私/外发、删除或不可恢复改写用户数据、删除接口字段或改变含义、芽芽话术与语气先询问；新增可选字段记录后直接实施。已批准的自由训练接口继续实现。
 - 每日决定集中在一个 PR 更新唯一规范并只升一个版本号。
-- 优先青瓷初见→草案→下一次→训练→反馈→周回顾，包含 B 迁移和 C 计算；E/F 只先做主线；G/H 空闲时才做。
-- CI 全绿可合入 v8/integration，无需阶段等待；main/公网仍保留最终验收边界。UI PR 只附青瓷 390/1440 两张截图，完整矩阵留到最后；不另建验证说明文件。
+- 优先初见→草案→下一次→训练→反馈→周回顾，包含 B 迁移和 C 计算；E/F 只先做主线；G/H 空闲时才做。
+- CI 全绿可合入 v8/integration，无需阶段等待；main/公网仍保留最终验收边界。UI PR 只附柔光拟物（pop）390/1440 两张截图，完整矩阵留到最后；不另建验证说明文件。
 - 每日汇总完成项、主线缺口、待审决定；用户否决后修改。仍最多四条工作线，文件所有权不变。
 
 - **唯一设计规范：`docs/uiux/UIUX20261008.md`**（视觉、交互与训练闭环、继承约束、维护规则）。以后所有设计规范只写在这个文件里，修改时在文首"版本记录"加一行；不得新建独立的设计规范文件。
-- 设计变量：`docs/handoff-v8/02-design-tokens.json`（取值的唯一来源，与规范第 1 部分第 3 节同步）
-- 参照原型：`docs/handoff-v8/Fitness_UX_V8_Prototype.html`（参照，不是规范；冲突时以规范为准）
+- 设计变量：`docs/handoff-v8/02-design-tokens.json`（V9.0.0，取值的唯一来源，与规范 V9.2 节同步；改值后用 `src/themes/token-css.ts` 重新生成各 `tokens.css`）
+- 参照设计稿：`docs/design/v9/`（V9 定版，参照，不是规范；冲突时以规范为准）。`docs/handoff-v8/Fitness_UX_V8_Prototype.html` 只作交互历史参照，视觉已被 V9 取代。
 
 以下文件已作废，不得引用：`ui-ux-max-design.md`、`design-model.yaml`、`docs/design/主题系统规范.md`、`docs/handoff-v8/01-*.md` 与 `03-*.md`（已并入规范）、`UIUX20261008.md` 附录 A 中未被第 3 部分提炼的内容。`DESIGN.md` 只保留一句指向规范的话。
 
 ## 2. 样式
 
 1. 页面（`src/ui/pages`）和通用组件中，不得写十六进制颜色、`rgb()`、`font-family`、具体字号、圆角、阴影值；只能用 `var(--…)` 设计变量。
-2. `[data-theme=…]` 选择器只允许出现在 `src/themes/<id>/tokens.css`。
-3. 主题差异只能写在 `src/themes/<id>/slots/` 的 9 个签名组件里（含陶瓷导航图标 `NavIcon`）；新增签名组件需先获得设计确认。
+2. `[data-theme=…]` 选择器只允许出现在 `src/themes/<id>/tokens.css`（及生成它们的 `src/themes/token-css.ts`）。元素上的 `data-theme` 属性可用于局部预览。
+3. 主题差异只能写在 `src/themes/<id>/tokens.css`（由令牌 JSON 生成）和 `src/themes/<id>/slots/` 的 9 个签名组件里（含导航图标 `NavIcon`）；共享组件只读变量。新增签名组件需先获得设计确认。字体用 `.v9-num` / `.v9-display` / `.v9-body` 类或变量，不写 `font-family`。
 4. 不得新建按版本命名的样式文件（`v32.css`、`onboarding-v6.css` 之类）。
 5. 不得使用 `!important`，除非用于 `prefers-reduced-motion` 和 `[hidden]`。
 6. 主卡流光描边每屏最多一张；训练页关闭所有持续动画。
-7. 图标沿用 Soft Ceramic 规则与 `docs/uiux/icon-inventory-v5.md`；不新增图标依赖、CDN 或位图。
+7. 线性图标沿用 `docs/uiux/icon-inventory-v5.md` 的清单与 V9 设计稿线宽；不新增图标依赖、CDN 或位图。例外：已定版的芽芽形象图 `public/yaya/<pose>-<theme>.webp`。
 
 ## 3. 交互与文案
 
@@ -48,7 +54,7 @@
 
 ## 5. 每个 UI 改动的 PR 必须附带
 
-1. 四套主题（青瓷、留白、静奢、撞色）× 390px / 1440px 截图；
+1. 五套主题（柔光拟物、山野暖阳、温和陪伴、专业数据、燃动挑战）× 390px / 1440px 截图（日常 PR 按第 1 节只附 pop 两张）；
 2. 对应规范条目（`UIUX20261008.md` 的部分 + 节号）；若改动涉及设计规则，同一 PR 更新规范与版本记录；
 3. 与原型的已知差异及原因；
 4. 单元测试、E2E、CI 样式检查结果。

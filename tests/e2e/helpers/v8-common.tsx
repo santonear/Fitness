@@ -4,7 +4,7 @@ import { Button, Chip, IconButton, Link, Row, Segmented, Sheet, Stat, Toggle } f
 import '../../../src/ui/theme.css';
 import './v8-common.css';
 
-document.documentElement.dataset.theme = new URLSearchParams(location.search).get('theme') ?? 'qingci';
+document.documentElement.dataset.theme = new URLSearchParams(location.search).get('theme') ?? 'pop';
 function Gallery() {
   const [count, setCount] = useState(0), [selected, setSelected] = useState(false), [checked, setChecked] = useState(false), [period, setPeriod] = useState('week');
   return <main><h1>训练，按自己的节奏</h1><Sheet>

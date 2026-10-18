@@ -1,5 +1,2 @@
-.v8-theme-choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s3); margin-block: var(--s4); }
-.v8-theme-choice { display: flex; flex-direction: column; align-items: stretch; gap: var(--s2); padding: var(--s3); text-align: start; color: var(--c-ink); background: var(--c-surface); border: var(--bw) solid var(--c-line); border-radius: var(--r-panel); min-block-size: var(--touch-min); }
-.v8-theme-choice[aria-pressed="true"] { outline: var(--ring-w) solid var(--c-primary); }
-.v8-theme-choice img { width: 100%; aspect-ratio: 4 / 3; border-radius: var(--r-control); }
-.v8-theme-choice span { font-size: var(--t1); line-height: var(--lh-body); color: var(--c-ink-muted); }
+.v8-appearance { display: grid; gap: var(--s3); margin-block: var(--s4); }
+main .v8-appearance > h2 { margin: 0; font-size: var(--t2); font-weight: var(--w-body); color: var(--c-ink-muted); }

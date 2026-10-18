@@ -1,14 +1,48 @@
 {
-  "$schema": "fitness-design-tokens-v8",
-  "version": "8.0.3",
-  "updated": "2026-10-10",
-  "note": "唯一的设计变量来源。页面与通用组件只能引用这里的语义名；主题差异只在 themes 中定义。shared 中的值所有主题共用，不可被主题覆盖（除非 themes.<id>.overrides 显式列出）。",
-  "defaultTheme": "qingci",
+  "$schema": "fitness-design-tokens-v9",
+  "version": "9.0.0",
+  "updated": "2026-10-19",
+  "note": "唯一的设计变量来源（V9 定版，来源 docs/design/v9/）。页面与通用组件只能引用这里生成的 var(--…) 语义名；主题差异只在 themes 中定义。shared 中的值所有主题共用。admin 为后台独立的固定配色，不随用户主题变化。",
+  "defaultTheme": "pop",
+  "legacyThemes": {
+    "qingci": "pop",
+    "liubai": "gentle",
+    "jingshe": "data",
+    "zhuangse": "fire"
+  },
   "shared": {
-    "space": { "s1": "4px", "s2": "8px", "s3": "12px", "s4": "16px", "s5": "24px", "s6": "32px", "s7": "48px", "s8": "64px" },
-    "type": { "t1": "12px", "t2": "13px", "t3": "15px", "t4": "17px", "t5": "22px", "t6": "28px", "t7": "40px", "t8": "72px" },
-    "lineHeight": { "tight": 1.2, "body": 1.7, "reading": 1.85 },
-    "touch": { "min": "44px", "primaryAction": "56px", "workoutAction": "72px", "secondaryAction": "48px", "row": "52px" },
+    "space": {
+      "s1": "4px",
+      "s2": "8px",
+      "s3": "12px",
+      "s4": "16px",
+      "s5": "24px",
+      "s6": "32px",
+      "s7": "48px",
+      "s8": "64px"
+    },
+    "type": {
+      "t1": "12px",
+      "t2": "13px",
+      "t3": "15px",
+      "t4": "17px",
+      "t5": "22px",
+      "t6": "28px",
+      "t7": "40px",
+      "t8": "72px"
+    },
+    "lineHeight": {
+      "tight": 1.2,
+      "body": 1.7,
+      "reading": 1.85
+    },
+    "touch": {
+      "min": "44px",
+      "primaryAction": "56px",
+      "workoutAction": "72px",
+      "secondaryAction": "48px",
+      "row": "52px"
+    },
     "motion": {
       "pressScale": 0.96,
       "sinkScale": 0.98,
@@ -22,180 +56,769 @@
       "fadeEasing": "cubic-bezier(.2,.7,.2,1)",
       "breathCycle": "6s",
       "ringCycle": "14s",
+      "floatCycle": "3.4s",
+      "snapEasing": "cubic-bezier(.16,1,.3,1)",
+      "popEasing": "cubic-bezier(.34,1.56,.64,1)",
       "reducedMotion": "所有持续动画停止；按压与变形改为 120ms 透明度过渡"
     },
-    "layout": { "mobileMax": "480px", "desktopRail": "88px", "desktopMain": "560px", "desktopBreakpoint": "960px" }
+    "layout": {
+      "mobileMax": "480px",
+      "desktopRail": "88px",
+      "desktopMain": "560px",
+      "desktopBreakpoint": "960px",
+      "orbSize": "68px",
+      "orbSafe": "92px",
+      "tabbarHeight": "72px"
+    },
+    "mascot": {
+      "shadow": "rgba(0,0,0,.28)"
+    },
+    "scene": {
+      "dawn": {
+        "sky": "#F6CBAA",
+        "haze": "#FADCC2",
+        "sun": "#FFF3E2",
+        "far": "#E89D80",
+        "mid": "#CB735B",
+        "lake": "#A2CEC4",
+        "pine": "#3E5E4F",
+        "hill1": "#87A271",
+        "hill2": "#5F7D52",
+        "treeA": "#C6C47E",
+        "treeB": "#E2826A",
+        "trunk": "#5B3F33",
+        "bird": "#3A2723",
+        "flower": "#F4B393"
+      },
+      "lake": {
+        "sky": "#EEF1E6",
+        "haze": "#F6F5EC",
+        "sun": "#FFFFFF",
+        "far": "#A5BDB5",
+        "mid": "#7FA096",
+        "lake": "#C3DED5",
+        "pine": "#2F5248",
+        "hill1": "#93AB80",
+        "hill2": "#6C8A5F",
+        "treeA": "#CDD18F",
+        "treeB": "#E58F74",
+        "trunk": "#4D3A30",
+        "bird": "#C9573F",
+        "flower": "#F1A88D"
+      },
+      "dusk": {
+        "sky": "#F2A17A",
+        "haze": "#F6B993",
+        "sun": "#FFE7C8",
+        "far": "#DA6E54",
+        "mid": "#AE4D3D",
+        "lake": "#EDB898",
+        "pine": "#5A2F2A",
+        "hill1": "#C4654D",
+        "hill2": "#8E3F33",
+        "treeA": "#EB9070",
+        "treeB": "#F4B38C",
+        "trunk": "#4A2420",
+        "bird": "#4A2420",
+        "flower": "#FFE0C2"
+      },
+      "mist": {
+        "sky": "#DFE8E3",
+        "haze": "#EAF0EC",
+        "sun": "#F7F3EA",
+        "far": "#BBCDC8",
+        "mid": "#97B2AB",
+        "lake": "#D2E2DD",
+        "pine": "#365B51",
+        "hill1": "#A2B794",
+        "hill2": "#7D9771",
+        "treeA": "#CBD5A8",
+        "treeB": "#E08A6C",
+        "trunk": "#4D3A30",
+        "bird": "#C9573F",
+        "flower": "#F4B393"
+      },
+      "peak": {
+        "sky": "#F8DCCB",
+        "haze": "#FBE8DC",
+        "sun": "#FFF5E9",
+        "far": "#CC8C6C",
+        "mid": "#9EA58A",
+        "lake": "#ADD1C8",
+        "pine": "#2E4A40",
+        "hill1": "#86A178",
+        "hill2": "#5E7A55",
+        "treeA": "#D8C486",
+        "treeB": "#E07C60",
+        "trunk": "#4D3A30",
+        "bird": "#3A2723",
+        "flower": "#F7C3A6"
+      }
+    }
+  },
+  "admin": {
+    "note": "后台沿用 V8 青瓷固定配色，由后台改版另行定稿。",
+    "color": {
+      "bg": "#DDE6E0",
+      "surface": "#F2F5F1",
+      "surface2": "#E6EDE8",
+      "ink": "#1E2B26",
+      "inkMuted": "#4F5F58",
+      "line": "#C8D5CD",
+      "primary": "#3E6B5C",
+      "onPrimary": "#F2F5F1",
+      "attention": "#765822",
+      "focus": "#1E2B26"
+    },
+    "font": {
+      "body": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+    }
   },
   "themes": {
-    "qingci": {
-      "name": { "zh": "青瓷", "en": "Celadon" },
-      "tagline": { "zh": "涟漪与呼吸，温润安静", "en": "Ripples and breath" },
+    "pop": {
+      "name": {
+        "zh": "柔光拟物",
+        "en": "Soft Glow"
+      },
+      "tagline": {
+        "zh": "柔光浮雕与暖黄刻度，默认风格",
+        "en": "Soft relief with warm amber dials"
+      },
       "colorScheme": "light",
       "color": {
-        "bg": "#DDE6E0", "bgGradient": "radial-gradient(120% 60% at 50% 0%, #E6EEE9 0%, #DDE6E0 55%, #D5E0D9 100%)",
-        "surface": "#F2F5F1", "surface2": "#E6EDE8",
-        "ink": "#1E2B26", "inkMuted": "#4F5F58",
-        "line": "#C8D5CD",
-        "primary": "#3E6B5C", "onPrimary": "#F2F5F1",
-        "signature": "#8FB3A5", "signature2": "#C7A867",
-        "done": "#3E6B5C", "onDone": "#F2F5F1",
-        "attention": "#765822",
-        "aiVoice": "#F2F5F1",
-        "focus": "#1E2B26",
-        "scrim": "rgba(30,43,38,.28)"
+        "bg": "#EDECEA",
+        "bgGradient": "#EDECEA",
+        "surface": "#EDECEA",
+        "surface2": "#E8E7E4",
+        "ink": "#3C3C40",
+        "inkMuted": "#66655F",
+        "faint": "#8D8C88",
+        "line": "#DAD8D3",
+        "primary": "#FFBE3B",
+        "onPrimary": "#5B3A00",
+        "signature": "#FFB534",
+        "signature2": "#FFA53D",
+        "accentText": "#8F5E00",
+        "done": "#FFA53D",
+        "onDone": "#5B3A00",
+        "attention": "#8A5A00",
+        "warn": "#B4462E",
+        "warnSoft": "#F3E3DD",
+        "aiVoice": "#EDECEA",
+        "inset": "#E8E7E4",
+        "invertBg": "#3C3C40",
+        "invertInk": "#EDECEA",
+        "focus": "#C98500",
+        "scrim": "rgba(60,58,54,.28)"
       },
       "font": {
-        "display": "\"Noto Serif SC\", \"Songti SC\", \"STSong\", \"SimSun\", serif",
+        "display": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
         "body": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
-        "num": "\"Archivo\", \"Noto Sans SC\", sans-serif",
-        "weightBody": 300, "weightDisplay": 400, "weightNum": 300, "weightStrong": 400
+        "num": "\"Jost\", \"Noto Sans SC\", sans-serif",
+        "weightBody": 300,
+        "weightDisplay": 300,
+        "weightNum": 300,
+        "weightStrong": 500,
+        "numStyle": "normal",
+        "numStretch": "100%"
       },
-      "shape": { "control": "999px", "panel": "28px", "chip": "24px", "border": "1px" },
-      "tracking": { "display": "0.08em", "body": "0.04em" },
+      "shape": {
+        "control": "999px",
+        "panel": "26px",
+        "chip": "999px",
+        "border": "0px",
+        "hero": "34px"
+      },
+      "tracking": {
+        "display": "0.02em",
+        "body": "0",
+        "button": "0.08em"
+      },
       "material": {
-        "surfaceGradient": "linear-gradient(180deg,#FFFFFF 0%,#F2F5F1 100%)",
-        "primaryGradient": "linear-gradient(180deg,#4A7A69 0%,#3E6B5C 55%,#355E50 100%)",
-        "highlight": "inset 0 1px 0 rgba(255,255,255,.9)",
-        "elevation1": "0 6px 14px -8px rgba(30,60,48,.35)",
-        "elevation2": "0 18px 40px -22px rgba(30,60,48,.45)",
-        "elevation3": "0 30px 60px -24px rgba(30,60,48,.55)",
-        "pressInset": "inset 0 4px 12px rgba(20,48,38,.32)",
+        "surfaceGradient": "#EDECEA",
+        "primaryGradient": "linear-gradient(145deg, #FFE38F, #FFBE3B)",
+        "highlight": "inset 1px 1px 1px rgba(255,255,255,.7)",
+        "elevation1": "-4px -4px 9px #FFFFFF, 4px 4px 10px rgba(163,158,148,.48)",
+        "elevation2": "-8px -8px 18px #FFFFFF, 8px 8px 19px rgba(163,158,148,.48)",
+        "elevation3": "-12px -12px 26px #FFFFFF, 12px 12px 29px rgba(163,158,148,.48)",
+        "pressInset": "inset 4px 4px 9px rgba(163,158,148,.5), inset -4px -4px 9px #FFFFFF",
+        "inset": "inset 4px 4px 8px rgba(163,158,148,.5), inset -4px -4px 8px #FFFFFF",
+        "primaryShadow": "-5px -5px 12px #FFFFFF, 6px 8px 16px rgba(240,165,40,.38), inset 1px 1px 1px rgba(255,255,255,.7)",
         "texture": "none"
       },
       "effects": {
-        "ring": "conic-gradient(from var(--ring-a), rgba(143,179,165,0) 0deg, #8FB3A5 70deg, #C7A867 120deg, rgba(143,179,165,0) 180deg, rgba(143,179,165,.35) 270deg, rgba(143,179,165,0) 360deg)",
-        "ringWidth": "1.5px",
-        "glow": "rgba(62,107,92,.45)", "glowBlur": "22px",
-        "pressStyle": "scale"
+        "ring": "conic-gradient(from var(--ring-a), rgba(255,181,52,0) 0deg, #FFE38F 70deg, #FFA53D 120deg, rgba(255,181,52,0) 180deg, rgba(255,181,52,.35) 270deg, rgba(255,181,52,0) 360deg)",
+        "ringWidth": "2px",
+        "glow": "rgba(255,181,52,.7)",
+        "glowBlur": "8px",
+        "ambient": "radial-gradient(circle at 50% 60%, rgba(255,200,80,.42), rgba(255,200,80,0) 62%)",
+        "pressStyle": "scale",
+        "pressScale": 0.98
+      },
+      "gradient": {
+        "accent": "linear-gradient(135deg, #FFE38F, #FFA53D)",
+        "hero": "#EDECEA"
+      },
+      "glass": {
+        "bg": "rgba(255,255,255,.78)",
+        "border": "rgba(255,255,255,.9)",
+        "blur": "16px",
+        "shadow": "0 18px 40px rgba(40,30,90,.18)"
+      },
+      "card": {
+        "bg": "#EDECEA",
+        "shadow": "-8px -8px 18px #FFFFFF, 8px 8px 19px rgba(163,158,148,.48)",
+        "border": "transparent",
+        "blur": "0px"
+      },
+      "meter": {
+        "from": "#FFE38F",
+        "to": "#FFA53D",
+        "glow": "rgba(255,181,52,0)"
+      },
+      "chart": {
+        "c1": "#FFA53D",
+        "c2": "#FFC53D",
+        "c3": "#FFE38F",
+        "c4": "#C98500",
+        "track": "#E2E0DC"
+      },
+      "mascot": {
+        "accent": "#FFB534",
+        "disc": "radial-gradient(circle at 35% 30%, #FFFFFF, #EDECEA)",
+        "orbRing": "conic-gradient(#FFE38F, #FFB534, #FFFFFF, #FFE38F)",
+        "orbCore": "radial-gradient(circle at 35% 30%, #FFFFFF, #E6E3F2 70%)",
+        "orbInk": "#15151A",
+        "orbSub": "#55555E",
+        "orbCta": "linear-gradient(135deg, #FFE38F, #FFB534, #FFFFFF, #FFE38F)",
+        "orbCtaInk": "#5B3A00",
+        "orbDrop": "0 10px 18px rgba(60,40,120,.25)",
+        "orbGlass": "rgba(255,255,255,.78)",
+        "orbBorder": "rgba(255,255,255,.9)",
+        "orbShadow": "0 18px 40px rgba(40,30,90,.18)",
+        "orbAction": "rgba(255,255,255,.7)",
+        "orbActionLine": "rgba(0,0,0,.06)"
+      },
+      "picker": {
+        "swatch": "linear-gradient(145deg, #FFE38F, #FFBE3B)",
+        "base": "#EDECEA"
       }
     },
-    "liubai": {
-      "name": { "zh": "留白", "en": "Blank" },
-      "tagline": { "zh": "宋体竖排、墨线与朱印", "en": "Ink, space and seal" },
+    "vivid": {
+      "name": {
+        "zh": "山野暖阳",
+        "en": "Warm Hills"
+      },
+      "tagline": {
+        "zh": "拱窗山野插画，暖阳与鼠尾草绿",
+        "en": "Arched landscapes in warm sun and sage"
+      },
       "colorScheme": "light",
       "color": {
-        "bg": "#ECEEEA", "bgGradient": "url(\"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27180%27 height=%27180%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%27.8%27 numOctaves=%273%27 stitchTiles=%27stitch%27/%3E%3C/filter%3E%3Crect width=%27100%25%27 height=%27100%25%27 filter=%27url(%23n)%27 opacity=%27.035%27/%3E%3C/svg%3E\"), #ECEEEA",
-        "surface": "#F4F5F2", "surface2": "#E3E6E1",
-        "ink": "#1C201E", "inkMuted": "#5F6662",
-        "line": "#C9CEC9",
-        "primary": "#1C201E", "onPrimary": "#ECEEEA",
-        "signature": "#A8372A", "signature2": "#1C201E",
-        "done": "#A8372A", "onDone": "#F4F2EC",
-        "attention": "#9A5B1E",
-        "aiVoice": "transparent",
-        "focus": "#1C201E",
-        "scrim": "rgba(28,32,30,.24)"
+        "bg": "#FBF1E7",
+        "bgGradient": "#FBF1E7",
+        "surface": "#FFF9F2",
+        "surface2": "#F3E2D3",
+        "ink": "#3A2723",
+        "inkMuted": "#755A50",
+        "faint": "#82655A",
+        "line": "#EBD6C6",
+        "primary": "#587566",
+        "onPrimary": "#FBF8F2",
+        "signature": "#D08A5C",
+        "signature2": "#8DAA9A",
+        "accentText": "#B4503A",
+        "done": "#D08A5C",
+        "onDone": "#FFF6EE",
+        "attention": "#B4503A",
+        "warn": "#A8321F",
+        "warnSoft": "#FBE4DC",
+        "aiVoice": "#FFF9F2",
+        "inset": "#EAE4DA",
+        "invertBg": "#F2A17A",
+        "invertInk": "#4A2420",
+        "focus": "#2F5248",
+        "scrim": "rgba(58,39,35,.3)"
       },
       "font": {
-        "display": "\"Noto Serif SC\", \"Songti SC\", \"STSong\", \"SimSun\", serif",
+        "display": "\"Noto Serif SC\", \"Songti SC\", \"STSong\", serif",
         "body": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
-        "num": "\"Archivo\", \"Noto Sans SC\", sans-serif",
-        "weightBody": 300, "weightDisplay": 400, "weightNum": 200, "weightStrong": 400
+        "num": "\"Cormorant Garamond\", \"Noto Serif SC\", serif",
+        "weightBody": 400,
+        "weightDisplay": 700,
+        "weightNum": 600,
+        "weightStrong": 700,
+        "numStyle": "italic",
+        "numStretch": "100%"
       },
-      "shape": { "control": "2px", "panel": "4px", "chip": "2px", "border": "1px" },
-      "tracking": { "display": "0.16em", "body": "0.04em" },
+      "shape": {
+        "control": "999px",
+        "panel": "28px",
+        "chip": "999px",
+        "border": "0px",
+        "hero": "179px 179px 30px 30px"
+      },
+      "tracking": {
+        "display": "0.02em",
+        "body": "0",
+        "button": "0.04em"
+      },
       "material": {
-        "surfaceGradient": "#F4F5F2",
-        "primaryGradient": "#1C201E",
-        "highlight": "none",
-        "elevation1": "0 1px 0 #C9CEC9",
-        "elevation2": "0 14px 30px -24px rgba(28,32,30,.45)",
-        "elevation3": "0 24px 48px -28px rgba(28,32,30,.5)",
-        "pressInset": "inset 0 3px 10px rgba(0,0,0,.35)",
-        "texture": "宣纸纹理：SVG 噪点，透明度 0.035，铺满 bg"
+        "surfaceGradient": "#FFF9F2",
+        "primaryGradient": "linear-gradient(180deg, rgba(255,255,255,.38), rgba(255,255,255,0) 60%), #8DAA9A",
+        "highlight": "inset 0 1.5px 0 rgba(255,255,255,.6)",
+        "elevation1": "0 1px 0 rgba(120,60,40,.04), 0 6px 16px rgba(150,80,50,.10)",
+        "elevation2": "0 1px 0 rgba(120,60,40,.04), 0 14px 32px rgba(150,80,50,.10)",
+        "elevation3": "0 22px 46px rgba(140,70,45,.18)",
+        "pressInset": "inset 0 3px 6px rgba(40,55,45,.28), inset 0 -1px 0 rgba(255,255,255,.35)",
+        "inset": "inset 0 2px 3px rgba(60,70,60,.14)",
+        "primaryShadow": "inset 0 1.5px 0 rgba(255,255,255,.6), inset 0 -2px 0 rgba(0,0,0,.05), 0 4px 0 #6F8D7E, 0 12px 22px rgba(70,85,75,.20)",
+        "texture": "山野插画（Scene）"
       },
       "effects": {
-        "ring": "conic-gradient(from var(--ring-a), rgba(28,32,30,0) 0deg, rgba(28,32,30,.55) 50deg, #A8372A 80deg, rgba(28,32,30,0) 120deg, rgba(28,32,30,0) 360deg)",
-        "ringWidth": "1px",
-        "glow": "rgba(28,32,30,.28)", "glowBlur": "26px",
-        "pressStyle": "scale"
+        "ring": "conic-gradient(from var(--ring-a), rgba(208,138,92,0) 0deg, #E6B98E 70deg, #8DAA9A 120deg, rgba(208,138,92,0) 180deg, rgba(208,138,92,.35) 270deg, rgba(208,138,92,0) 360deg)",
+        "ringWidth": "1.5px",
+        "glow": "rgba(208,138,92,.45)",
+        "glowBlur": "22px",
+        "ambient": "radial-gradient(circle at 50% 35%, rgba(246,203,170,.55), rgba(246,203,170,0) 65%)",
+        "pressStyle": "scale",
+        "pressScale": 0.97
+      },
+      "gradient": {
+        "accent": "linear-gradient(90deg, #E6B98E, #D08A5C)",
+        "hero": "#FFF9F2"
+      },
+      "glass": {
+        "bg": "rgba(255,249,242,.88)",
+        "border": "rgba(255,255,255,.7)",
+        "blur": "12px",
+        "shadow": "0 18px 40px rgba(140,70,45,.18)"
+      },
+      "card": {
+        "bg": "#FFF9F2",
+        "shadow": "0 1px 0 rgba(120,60,40,.04), 0 14px 32px rgba(150,80,50,.10)",
+        "border": "transparent",
+        "blur": "0px"
+      },
+      "meter": {
+        "from": "#E6B98E",
+        "to": "#D08A5C",
+        "glow": "rgba(208,138,92,0)"
+      },
+      "chart": {
+        "c1": "#D08A5C",
+        "c2": "#8DAA9A",
+        "c3": "#E6B98E",
+        "c4": "#7E9597",
+        "track": "#EAE4DA"
+      },
+      "mascot": {
+        "accent": "#E0745A",
+        "disc": "radial-gradient(circle at 50% 35%, #FFF9F2, #F6D9C6)",
+        "orbRing": "conic-gradient(#E0745A, #F6C29A, #8FB39A, #E0745A)",
+        "orbCore": "radial-gradient(circle at 35% 30%, #FFFFFF, #E6E3F2 70%)",
+        "orbInk": "#15151A",
+        "orbSub": "#55555E",
+        "orbCta": "linear-gradient(135deg, #E0745A, #F6C29A, #8FB39A, #E0745A)",
+        "orbCtaInk": "#FFFFFF",
+        "orbDrop": "0 10px 18px rgba(60,40,120,.25)",
+        "orbGlass": "rgba(255,255,255,.78)",
+        "orbBorder": "rgba(255,255,255,.9)",
+        "orbShadow": "0 18px 40px rgba(40,30,90,.18)",
+        "orbAction": "rgba(255,255,255,.7)",
+        "orbActionLine": "rgba(0,0,0,.06)"
+      },
+      "picker": {
+        "swatch": "#E0745A",
+        "base": "#FBF1E7"
       }
     },
-    "jingshe": {
-      "name": { "zh": "静奢", "en": "Quiet" },
-      "tagline": { "zh": "炭黑、骨白与香槟，深色", "en": "Charcoal and champagne" },
+    "gentle": {
+      "name": {
+        "zh": "温和陪伴",
+        "en": "Gentle"
+      },
+      "tagline": {
+        "zh": "嫩芽绿与圆润大按钮，一题一屏慢慢来",
+        "en": "Sprout green and big friendly buttons"
+      },
+      "colorScheme": "light",
+      "color": {
+        "bg": "#F3F7EC",
+        "bgGradient": "#F3F7EC",
+        "surface": "#FFFFFF",
+        "surface2": "#EDF3E4",
+        "ink": "#1F2A1C",
+        "inkMuted": "#5F6B5A",
+        "faint": "#7A8A7E",
+        "line": "#D7E3C8",
+        "primary": "#A8D132",
+        "onPrimary": "#1E3A14",
+        "signature": "#6FA52A",
+        "signature2": "#C5E84A",
+        "accentText": "#2F5D2A",
+        "done": "#6FA52A",
+        "onDone": "#FFFFFF",
+        "attention": "#2F5D2A",
+        "warn": "#B42318",
+        "warnSoft": "#FDECEA",
+        "aiVoice": "#FFFFFF",
+        "inset": "#E2EED3",
+        "invertBg": "#2F5D2A",
+        "invertInk": "#FFFFFF",
+        "focus": "#2F5D2A",
+        "scrim": "rgba(31,42,28,.28)"
+      },
+      "font": {
+        "display": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+        "body": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+        "num": "\"Jost\", \"Noto Sans SC\", sans-serif",
+        "weightBody": 400,
+        "weightDisplay": 900,
+        "weightNum": 600,
+        "weightStrong": 700,
+        "numStyle": "normal",
+        "numStretch": "100%"
+      },
+      "shape": {
+        "control": "999px",
+        "panel": "36px",
+        "chip": "999px",
+        "border": "0px",
+        "hero": "36px"
+      },
+      "tracking": {
+        "display": "0",
+        "body": "0",
+        "button": "0"
+      },
+      "material": {
+        "surfaceGradient": "linear-gradient(180deg, #FFFFFF, #EDF3E4)",
+        "primaryGradient": "radial-gradient(120% 150% at 82% 0%, #F1FBC4 0%, rgba(241,251,196,0) 46%), linear-gradient(180deg, #D6F263, #A8D132)",
+        "highlight": "inset 0 1.5px 0 #FFFFFF",
+        "elevation1": "0 0 0 1px rgba(47,93,42,.10), inset 0 1.5px 0 #FFFFFF, inset 0 -3px 6px rgba(47,93,42,.10), 0 6px 14px rgba(47,93,42,.14)",
+        "elevation2": "0 16px 40px rgba(70,100,40,.10)",
+        "elevation3": "0 16px 40px rgba(70,100,40,.16)",
+        "pressInset": "inset 0 2px 5px rgba(47,93,42,.18), inset 0 -1px 0 #FFFFFF",
+        "inset": "inset 0 2px 5px rgba(47,93,42,.18), inset 0 -1px 0 #FFFFFF",
+        "primaryShadow": "0 0 0 4px #2F5D2A, 0 0 0 6px rgba(47,93,42,.18), inset 0 2px 0 rgba(255,255,255,.7), inset 0 -7px 12px rgba(70,110,20,.30), 0 16px 28px -8px rgba(47,93,42,.55)",
+        "texture": "none"
+      },
+      "effects": {
+        "ring": "conic-gradient(from var(--ring-a), rgba(111,165,42,0) 0deg, #C5E84A 70deg, #6FA52A 120deg, rgba(111,165,42,0) 180deg, rgba(111,165,42,.35) 270deg, rgba(111,165,42,0) 360deg)",
+        "ringWidth": "2px",
+        "glow": "rgba(111,165,42,.45)",
+        "glowBlur": "22px",
+        "ambient": "radial-gradient(circle, #E8F4C8 0 70%, rgba(232,244,200,0) 71%)",
+        "pressStyle": "scale",
+        "pressScale": 0.95
+      },
+      "gradient": {
+        "accent": "linear-gradient(90deg, #C5E84A, #6FA52A)",
+        "hero": "#FFFFFF"
+      },
+      "glass": {
+        "bg": "rgba(255,255,255,.78)",
+        "border": "rgba(255,255,255,.9)",
+        "blur": "16px",
+        "shadow": "0 18px 40px rgba(40,30,90,.18)"
+      },
+      "card": {
+        "bg": "#FFFFFF",
+        "shadow": "0 16px 40px rgba(70,100,40,.10)",
+        "border": "transparent",
+        "blur": "0px"
+      },
+      "meter": {
+        "from": "#C5E84A",
+        "to": "#6FA52A",
+        "glow": "rgba(111,165,42,0)"
+      },
+      "chart": {
+        "c1": "#6FA52A",
+        "c2": "#A8D132",
+        "c3": "#2F5D2A",
+        "c4": "#FFB59A",
+        "track": "#E2EED3"
+      },
+      "mascot": {
+        "accent": "#B5E040",
+        "disc": "radial-gradient(circle at 50% 35%, #FFFFFF, #E8F3D6)",
+        "orbRing": "conic-gradient(#C5E84A, #6FA52A, #C5E84A)",
+        "orbCore": "radial-gradient(circle at 35% 30%, #FFFFFF, #E6E3F2 70%)",
+        "orbInk": "#15151A",
+        "orbSub": "#55555E",
+        "orbCta": "linear-gradient(135deg, #C5E84A, #6FA52A, #C5E84A)",
+        "orbCtaInk": "#0B1A10",
+        "orbDrop": "0 10px 18px rgba(60,40,120,.25)",
+        "orbGlass": "rgba(255,255,255,.78)",
+        "orbBorder": "rgba(255,255,255,.9)",
+        "orbShadow": "0 18px 40px rgba(40,30,90,.18)",
+        "orbAction": "rgba(255,255,255,.7)",
+        "orbActionLine": "rgba(0,0,0,.06)"
+      },
+      "picker": {
+        "swatch": "#C5E84A",
+        "base": "#F3F7EC"
+      }
+    },
+    "data": {
+      "name": {
+        "zh": "专业数据",
+        "en": "Pro Data"
+      },
+      "tagline": {
+        "zh": "深色玻璃与青蓝光环，每一组都有数",
+        "en": "Dark glass with cyan rings"
+      },
       "colorScheme": "dark",
       "color": {
-        "bg": "#191A18", "bgGradient": "radial-gradient(130% 70% at 50% 0%, #22231F 0%, #191A18 60%, #141513 100%)",
-        "surface": "#222320", "surface2": "#2C2D29",
-        "ink": "#EDE8DF", "inkMuted": "#8D8A83",
-        "line": "#34352F",
-        "primary": "#C8B48A", "onPrimary": "#191A18",
-        "signature": "#C8B48A", "signature2": "#EDE8DF",
-        "done": "#C8B48A", "onDone": "#191A18",
-        "attention": "#D9A35E",
-        "aiVoice": "#222320",
-        "focus": "#EDE8DF",
-        "scrim": "rgba(0,0,0,.5)"
+        "bg": "#060A13",
+        "bgGradient": "radial-gradient(420px 420px at -40px 70px, rgba(32,214,200,.42), rgba(32,214,200,0) 65%), #060A13",
+        "surface": "#111827",
+        "surface2": "#1A2233",
+        "ink": "#EEF4FF",
+        "inkMuted": "#A7B0C0",
+        "faint": "#7C8698",
+        "line": "#263043",
+        "primary": "#5CF2E6",
+        "onPrimary": "#041018",
+        "signature": "#5CF2E6",
+        "signature2": "#4D8BFF",
+        "accentText": "#9BFFF5",
+        "done": "#5CF2E6",
+        "onDone": "#041018",
+        "attention": "#FFC07A",
+        "warn": "#FFB3C2",
+        "warnSoft": "#3A1B26",
+        "aiVoice": "#111827",
+        "inset": "#0D1320",
+        "invertBg": "#EEF4FF",
+        "invertInk": "#060A13",
+        "focus": "#5CF2E6",
+        "scrim": "rgba(0,0,0,.55)"
       },
       "font": {
-        "display": "\"Noto Sans SC\", \"PingFang SC\", sans-serif",
-        "body": "\"Noto Sans SC\", \"PingFang SC\", sans-serif",
-        "num": "\"Archivo\", \"Noto Sans SC\", sans-serif",
-        "weightBody": 300, "weightDisplay": 300, "weightNum": 200, "weightStrong": 400
+        "display": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+        "body": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+        "num": "\"Jost\", \"Noto Sans SC\", sans-serif",
+        "weightBody": 400,
+        "weightDisplay": 700,
+        "weightNum": 300,
+        "weightStrong": 700,
+        "numStyle": "normal",
+        "numStretch": "100%"
       },
-      "shape": { "control": "999px", "panel": "20px", "chip": "999px", "border": "1px" },
-      "tracking": { "display": "0.16em", "body": "0.06em" },
+      "shape": {
+        "control": "999px",
+        "panel": "26px",
+        "chip": "999px",
+        "border": "1px",
+        "hero": "26px"
+      },
+      "tracking": {
+        "display": "0",
+        "body": "0",
+        "button": "0"
+      },
       "material": {
-        "surfaceGradient": "linear-gradient(180deg,#262724 0%,#222320 100%)",
-        "primaryGradient": "linear-gradient(115deg,#B9A57B 0%,#E4D3AD 45%,#C8B48A 60%,#AE9A70 100%)",
-        "highlight": "inset 0 1px 0 rgba(255,255,255,.06)",
-        "elevation1": "0 8px 18px -10px rgba(0,0,0,.6)",
-        "elevation2": "0 22px 44px -22px rgba(0,0,0,.7)",
-        "elevation3": "0 32px 64px -24px rgba(0,0,0,.8)",
+        "surfaceGradient": "linear-gradient(150deg, rgba(255,255,255,.16), rgba(255,255,255,.05) 45%, rgba(255,255,255,.03))",
+        "primaryGradient": "linear-gradient(180deg, rgba(255,255,255,.45), rgba(255,255,255,0) 58%), linear-gradient(135deg, #5CF2E6, #4D8BFF)",
+        "highlight": "inset 0 1px 0 rgba(255,255,255,.38)",
+        "elevation1": "inset 0 1px 0 rgba(255,255,255,.42), 0 10px 24px rgba(0,0,0,.32)",
+        "elevation2": "inset 0 1px 0 rgba(255,255,255,.38), inset 1px 0 0 rgba(255,255,255,.08), inset 0 -12px 28px rgba(110,190,255,.06), 0 22px 46px rgba(0,0,0,.42)",
+        "elevation3": "0 18px 40px rgba(0,0,0,.45)",
         "pressInset": "inset 0 4px 12px rgba(0,0,0,.45)",
-        "texture": "暗角：bg 四周 radial 渐暗"
+        "inset": "inset 0 2px 6px rgba(0,0,0,.45)",
+        "primaryShadow": "inset 0 1.5px 0 rgba(255,255,255,.8), inset 0 -8px 16px rgba(20,50,140,.3), inset 0 0 0 1px rgba(255,255,255,.25), 0 18px 34px -10px rgba(77,139,255,.75)",
+        "texture": "左上青色光晕"
       },
       "effects": {
-        "ring": "conic-gradient(from var(--ring-a), rgba(200,180,138,0) 0deg, #E4D3AD 60deg, rgba(200,180,138,0) 140deg, rgba(200,180,138,.25) 250deg, rgba(200,180,138,0) 360deg)",
+        "ring": "conic-gradient(from var(--ring-a), rgba(92,242,230,0) 0deg, #5CF2E6 60deg, #4D8BFF 120deg, rgba(92,242,230,0) 180deg, rgba(92,242,230,.25) 270deg, rgba(92,242,230,0) 360deg)",
         "ringWidth": "1px",
-        "glow": "rgba(200,180,138,.22)", "glowBlur": "26px",
-        "pressStyle": "scale"
+        "glow": "rgba(92,242,230,.8)",
+        "glowBlur": "10px",
+        "ambient": "radial-gradient(circle, rgba(32,214,200,.58), rgba(32,214,200,0) 65%)",
+        "pressStyle": "scale",
+        "pressScale": 0.97
+      },
+      "gradient": {
+        "accent": "linear-gradient(135deg, #5CF2E6, #4D8BFF)",
+        "hero": "linear-gradient(150deg, rgba(255,255,255,.16), rgba(255,255,255,.05) 45%, rgba(255,255,255,.03))"
+      },
+      "glass": {
+        "bg": "linear-gradient(150deg, rgba(255,255,255,.16), rgba(255,255,255,.05) 45%, rgba(255,255,255,.03))",
+        "border": "rgba(255,255,255,.18)",
+        "blur": "24px",
+        "shadow": "inset 0 1px 0 rgba(255,255,255,.38), 0 22px 46px rgba(0,0,0,.42)"
+      },
+      "card": {
+        "bg": "linear-gradient(150deg, rgba(255,255,255,.16), rgba(255,255,255,.05) 45%, rgba(255,255,255,.03))",
+        "shadow": "inset 0 1px 0 rgba(255,255,255,.38), inset 1px 0 0 rgba(255,255,255,.08), inset 0 -12px 28px rgba(110,190,255,.06), 0 22px 46px rgba(0,0,0,.42)",
+        "border": "rgba(255,255,255,.18)",
+        "blur": "24px"
+      },
+      "meter": {
+        "from": "#5CF2E6",
+        "to": "#4D8BFF",
+        "glow": "rgba(92,242,230,.8)"
+      },
+      "chart": {
+        "c1": "#5CF2E6",
+        "c2": "#4D8BFF",
+        "c3": "#A98BFF",
+        "c4": "#FFC07A",
+        "track": "rgba(255,255,255,.08)"
+      },
+      "mascot": {
+        "accent": "#3FE3E6",
+        "disc": "radial-gradient(circle at 50% 35%, #24406F, #0E1A33)",
+        "orbRing": "conic-gradient(#3BF0D0, #1A9BC4, #3BF0D0)",
+        "orbCore": "radial-gradient(circle at 35% 30%, #3A4560, #0E1320 70%)",
+        "orbInk": "#F2F5FA",
+        "orbSub": "rgba(242,245,250,.72)",
+        "orbCta": "linear-gradient(135deg, #3BF0D0, #1A9BC4, #3BF0D0)",
+        "orbCtaInk": "#0B1A10",
+        "orbDrop": "0 10px 18px rgba(0,0,0,.5)",
+        "orbGlass": "rgba(20,26,40,.72)",
+        "orbBorder": "rgba(255,255,255,.14)",
+        "orbShadow": "0 18px 40px rgba(0,0,0,.45)",
+        "orbAction": "rgba(255,255,255,.06)",
+        "orbActionLine": "rgba(255,255,255,.1)"
+      },
+      "picker": {
+        "swatch": "#5CF2E6",
+        "base": "#060A13"
       }
     },
-    "zhuangse": {
-      "name": { "zh": "撞色", "en": "Bold" },
-      "tagline": { "zh": "新野兽派，粗线、硬投影与色块", "en": "Neo-brutalist blocks" },
-      "colorScheme": "light",
+    "fire": {
+      "name": {
+        "zh": "燃动挑战",
+        "en": "Fire"
+      },
+      "tagline": {
+        "zh": "黑底红光，一天一关，深色",
+        "en": "Black and red, one level a day"
+      },
+      "colorScheme": "dark",
       "color": {
-        "bg": "#FAF6EC", "bgGradient": "#FAF6EC",
-        "surface": "#FFFFFF", "surface2": "#F1ECE0",
-        "ink": "#000000", "inkMuted": "#3D3A33",
-        "line": "#000000",
-        "primary": "#2340FF", "onPrimary": "#FFFFFF",
-        "signature": "#FFD43B", "signature2": "#FF5533",
-        "done": "#6EE7B7", "onDone": "#000000",
-        "attention": "#FF5533",
-        "aiVoice": "#E4DBFF",
-        "focus": "#2340FF",
-        "scrim": "rgba(0,0,0,.35)"
+        "bg": "#0A0A0A",
+        "bgGradient": "radial-gradient(420px 420px at calc(100% + 40px) 350px, rgba(255,45,45,.4), rgba(255,45,45,0) 66%), #0A0A0A",
+        "surface": "#161616",
+        "surface2": "#202020",
+        "ink": "#F5F5F3",
+        "inkMuted": "#A3A3A0",
+        "faint": "#8A8A86",
+        "line": "#2A2A2A",
+        "primary": "#D91A1F",
+        "onPrimary": "#FFF7F5",
+        "signature": "#FF2D2D",
+        "signature2": "#FF5C4D",
+        "accentText": "#FF5A4F",
+        "done": "#FF2D2D",
+        "onDone": "#FFF7F5",
+        "attention": "#FF5A4F",
+        "warn": "#FF6B5E",
+        "warnSoft": "#2E1210",
+        "aiVoice": "#161616",
+        "inset": "#121212",
+        "invertBg": "#F4F2EE",
+        "invertInk": "#0A0A0A",
+        "focus": "#FF2D2D",
+        "scrim": "rgba(0,0,0,.6)"
       },
       "font": {
-        "display": "\"Noto Sans SC\", \"PingFang SC\", sans-serif",
-        "body": "\"Noto Sans SC\", \"PingFang SC\", sans-serif",
+        "display": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+        "body": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
         "num": "\"Archivo\", \"Noto Sans SC\", sans-serif",
-        "weightBody": 500, "weightDisplay": 900, "weightNum": 900, "weightStrong": 700
+        "weightBody": 400,
+        "weightDisplay": 900,
+        "weightNum": 800,
+        "weightStrong": 700,
+        "numStyle": "normal",
+        "numStretch": "62%"
       },
-      "shape": { "control": "12px", "panel": "16px", "chip": "999px", "border": "2.5px" },
-      "tracking": { "display": "0", "body": "0" },
+      "shape": {
+        "control": "999px",
+        "panel": "24px",
+        "chip": "999px",
+        "border": "1px",
+        "hero": "28px"
+      },
+      "tracking": {
+        "display": "-0.02em",
+        "body": "0",
+        "button": "0.3em"
+      },
       "material": {
-        "surfaceGradient": "#FFFFFF",
-        "primaryGradient": "#2340FF",
-        "highlight": "none",
-        "elevation1": "3px 3px 0 #000000",
-        "elevation2": "4px 4px 0 #000000",
-        "elevation3": "8px 8px 0 #000000",
-        "pressInset": "inset 0 3px 0 rgba(0,0,0,.25)",
-        "texture": "none"
+        "surfaceGradient": "linear-gradient(150deg, rgba(255,255,255,.15), rgba(255,255,255,.04) 60%)",
+        "primaryGradient": "linear-gradient(180deg, rgba(255,255,255,.42), rgba(255,255,255,0) 58%), linear-gradient(160deg, #FF5C4D, #E3161C)",
+        "highlight": "inset 0 1px 0 rgba(255,255,255,.32)",
+        "elevation1": "inset 0 1px 0 rgba(255,255,255,.32), 0 10px 24px rgba(0,0,0,.4)",
+        "elevation2": "inset 0 1px 0 rgba(255,255,255,.32), 0 22px 44px rgba(0,0,0,.45)",
+        "elevation3": "0 16px 30px -10px rgba(0,0,0,.65)",
+        "pressInset": "inset 0 4px 12px rgba(0,0,0,.5)",
+        "inset": "inset 0 2px 6px rgba(0,0,0,.6)",
+        "primaryShadow": "inset 0 1.5px 0 rgba(255,255,255,.75), inset 0 -8px 16px rgba(110,0,0,.32), inset 0 0 0 1px rgba(255,255,255,.22), 0 18px 34px -10px rgba(255,45,45,.8)",
+        "texture": "右侧红色光晕"
       },
       "effects": {
-        "ring": "conic-gradient(from var(--ring-a), #000000 0 25%, #FFD43B 0 50%, #000000 0 75%, #FF5533 0 100%)",
-        "ringWidth": "4px",
-        "glow": "none", "glowBlur": "0",
-        "pressStyle": "sink",
-        "breath": "硬投影 5px↔9px 往复，2.8s"
+        "ring": "conic-gradient(from var(--ring-a), rgba(255,45,45,0) 0deg, #FF5C4D 60deg, #E3161C 120deg, rgba(255,45,45,0) 180deg, rgba(255,45,45,.3) 270deg, rgba(255,45,45,0) 360deg)",
+        "ringWidth": "1px",
+        "glow": "rgba(255,45,45,.8)",
+        "glowBlur": "10px",
+        "ambient": "radial-gradient(circle, rgba(255,45,45,.55), rgba(255,45,45,0) 66%)",
+        "pressStyle": "scale",
+        "pressScale": 0.98
       },
-      "extra": { "mint": "#6EE7B7", "butter": "#FFD43B", "tomato": "#FF5533", "cobalt": "#2340FF", "lilac": "#E4DBFF" }
+      "gradient": {
+        "accent": "linear-gradient(160deg, #FF5C4D, #E3161C)",
+        "hero": "linear-gradient(150deg, rgba(255,255,255,.15), rgba(255,255,255,.04) 60%)"
+      },
+      "glass": {
+        "bg": "linear-gradient(150deg, rgba(255,255,255,.15), rgba(255,255,255,.04) 60%)",
+        "border": "rgba(255,255,255,.16)",
+        "blur": "20px",
+        "shadow": "inset 0 1px 0 rgba(255,255,255,.32), 0 22px 44px rgba(0,0,0,.45)"
+      },
+      "card": {
+        "bg": "linear-gradient(150deg, rgba(255,255,255,.15), rgba(255,255,255,.04) 60%)",
+        "shadow": "inset 0 1px 0 rgba(255,255,255,.32), 0 22px 44px rgba(0,0,0,.45)",
+        "border": "rgba(255,255,255,.16)",
+        "blur": "20px"
+      },
+      "meter": {
+        "from": "#FF5C4D",
+        "to": "#E3161C",
+        "glow": "rgba(255,45,45,.7)"
+      },
+      "chart": {
+        "c1": "#FF2D2D",
+        "c2": "#F5F5F3",
+        "c3": "#8A8A86",
+        "c4": "#FF5C4D",
+        "track": "#2A2A2A"
+      },
+      "mascot": {
+        "accent": "#FF3B3B",
+        "disc": "radial-gradient(circle at 50% 35%, #2A2A2A, #0A0A0A)",
+        "orbRing": "conic-gradient(#FF6A6A, #B3121F, #FF6A6A)",
+        "orbCore": "radial-gradient(circle at 35% 30%, #3A4560, #0E1320 70%)",
+        "orbInk": "#F2F5FA",
+        "orbSub": "rgba(242,245,250,.72)",
+        "orbCta": "linear-gradient(135deg, #FF6A6A, #B3121F, #FF6A6A)",
+        "orbCtaInk": "#FFFFFF",
+        "orbDrop": "0 10px 18px rgba(0,0,0,.5)",
+        "orbGlass": "rgba(20,26,40,.72)",
+        "orbBorder": "rgba(255,255,255,.14)",
+        "orbShadow": "0 18px 40px rgba(0,0,0,.45)",
+        "orbAction": "rgba(255,255,255,.06)",
+        "orbActionLine": "rgba(255,255,255,.1)"
+      },
+      "picker": {
+        "swatch": "#FF2D2D",
+        "base": "#0A0A0A"
+      }
     }
   }
 }

@@ -105,7 +105,7 @@ test('independent admin tokens across four themes and two viewport widths', asyn
   await mock(page); await page.goto('/admin');
   await expect(page.getByRole('table')).toBeVisible();
   let reference: string | undefined;
-  for (const theme of ['qingci', 'liubai', 'jingshe', 'zhuangse']) {
+  for (const theme of ['pop', 'vivid', 'gentle', 'data', 'fire']) {
     await page.evaluate(theme => document.documentElement.setAttribute('data-theme', theme), theme);
     const background = await page.locator('.admin-console').evaluate(el => getComputedStyle(el).backgroundColor);
     reference ??= background; expect(background).toBe(reference);

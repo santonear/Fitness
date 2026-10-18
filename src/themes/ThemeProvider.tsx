@@ -1,7 +1,7 @@
 import './fonts/fonts.css';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
 import tokens from '../../docs/handoff-v8/02-design-tokens.json';
-import { compactThemeFonts } from './fonts';
+import { compactCapable, compactThemeFonts } from './fonts';
 import type { ThemeId, ThemeManifest } from './contract';
 import { defaultThemeId, getTheme, getAvailableThemes, isThemeId } from './registry';
 import { isFeatureEnabled, subscribeFeatureFlags } from '../application/feature-flags';
@@ -13,7 +13,7 @@ function readBrowserTheme(): ThemeId {
   try { return readTheme(window.localStorage); } catch { return defaultThemeId; }
 }
 
-/** Mount once around the future V8 routes; never key children by the selected theme. */
+/** Mount once around the routes; never key children by the selected theme. */
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [selectedTheme, setTheme] = useState(readBrowserTheme);
   const discovery = useSyncExternalStore(subscribeFeatureFlags, () => isFeatureEnabled('themeDiscovery'), () => false);
@@ -29,9 +29,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, []);
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
+    // The opt-in compact subset carries weights 200–400 only, so it applies to themes whose type fits (pop).
     const fontTokens = theme in tokens.themes ? tokens.themes[theme as keyof typeof tokens.themes].font : undefined;
     for (const [property, name] of [['--f-body', 'body'], ['--f-display', 'display'], ['--f-num', 'num']] as const) {
-      if (compactFonts && fontTokens && theme !== 'zhuangse') document.documentElement.style.setProperty(property, fontTokens[name].replace('Noto Sans SC', 'Noto Sans SC Compact').replace('Noto Serif SC', 'Noto Serif SC Compact'));
+      if (compactFonts && fontTokens && theme in compactCapable) document.documentElement.style.setProperty(property, fontTokens[name].replace('Noto Sans SC', 'Noto Sans SC Compact').replace('Noto Serif SC', 'Noto Serif SC Compact'));
       else document.documentElement.style.removeProperty(property);
     }
     document.documentElement.style.colorScheme = getTheme(theme).colorScheme;
@@ -57,3 +58,7 @@ export function useTheme(): ThemeContextValue {
   return context;
 }
 
+/** Shared components may render in fixtures without a provider; they fall back to the default theme. */
+export function useOptionalTheme(): ThemeContextValue | null {
+  return useContext(Context);
+}

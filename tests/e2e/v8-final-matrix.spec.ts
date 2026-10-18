@@ -4,7 +4,7 @@ import { mockActiveCoachAccess } from './helpers/coach-access';
 const oz=JSON.parse(readFileSync('src/i18n/features/onboarding/zh.json','utf8')),oe=JSON.parse(readFileSync('src/i18n/features/onboarding/en.json','utf8'));
 const tz=JSON.parse(readFileSync('src/i18n/features/training/zh.json','utf8')),te=JSON.parse(readFileSync('src/i18n/features/training/en.json','utf8'));
 const root='outputs/v8-cleanup';
-for(const theme of ['qingci','liubai','jingshe','zhuangse'])for(const locale of (theme==='qingci'?['zh','en']:['zh']))for(const width of [390,1440])test(`${theme} ${locale} ${width} final matrix`,async({page})=>{
+for(const theme of ['pop', 'vivid', 'gentle', 'data', 'fire'])for(const locale of (theme==='pop'?['zh','en']:['zh']))for(const width of [390,1440])test(`${theme} ${locale} ${width} final matrix`,async({page})=>{
  test.setTimeout(120000);const o=locale==='zh'?oz:oe,t=locale==='zh'?tz:te;const metrics:any[]=[];
  await mockActiveCoachAccess(page);
  await page.addInitScript(({theme,locale})=>{localStorage.setItem('fitness-theme',theme);localStorage.setItem('fitness.language',locale);},{theme,locale});

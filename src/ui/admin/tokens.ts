@@ -1,8 +1,8 @@
 import type { CSSProperties } from 'react';
 import tokens from '../../../docs/handoff-v8/02-design-tokens.json';
 
-// Admin is intentionally independent of the user's theme, using canonical celadon values.
-const { color, font } = tokens.themes.qingci;
+// Admin is intentionally independent of the user's theme, using its own fixed palette.
+const { color, font } = tokens.admin;
 export const adminTokens = {
   '--admin-bg': color.bg, '--admin-surface': color.surface, '--admin-soft': color.surface2,
   '--admin-ink': color.ink, '--admin-muted': color.inkMuted, '--admin-line': color.line,

@@ -22,7 +22,7 @@ const candidate: OnboardingProposal = {
   },
 };
 const query = new URLSearchParams(location.search);
-document.documentElement.dataset.theme = query.get('theme') ?? 'qingci';
+document.documentElement.dataset.theme = query.get('theme') ?? 'pop';
 function Fixture() {
   const [step, setStep] = useState<0 | 1 | 2 | 3 | 4>(0);
   const [answers, setAnswers] = useState<OnboardingAnswers>({ goalText: '', scheduleOriginalText: '', placeEquipmentText: '', adultConfirmed: false, cautions: [] });

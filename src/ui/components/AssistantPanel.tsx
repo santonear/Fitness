@@ -71,6 +71,7 @@ export function AssistantPanel(props:CoachPanelProps){
  useEffect(()=>{end.current?.scrollIntoView({block:'nearest'});},[chat.messages,pending]);
  useEffect(()=>()=>{sequence.current++;controller.current?.abort();},[]);
  useEffect(()=>{sequence.current++;controller.current?.abort();lock.current=false;setBusy(false);setCandidate(undefined);setBody(rememberedBody());setHistory(false);setHealth(false);},[request?.restoreGeneration]);
+ useEffect(()=>{const draft=props.draft;if(open&&draft&&!consumed.current.has(draft.nonce)){consumed.current.add(draft.nonce);setText(draft.text.slice(0,1600));}},[open,props.draft?.nonce]);
  useEffect(()=>{if(open&&initialSend&&!consumed.current.has(initialSend.nonce)){consumed.current.add(initialSend.nonce);void send(initialSend.message,initialSend.request,initialSend.expectedRevision);}},[open,initialSend?.nonce]);
  useEffect(()=>{if(engineEnabled||!request?.trainingEngine&&!candidate?.request.trainingEngine)return;sequence.current++;controller.current?.abort();lock.current=false;setBusy(false);setPending(false);setCandidate(undefined);setLocalNotices([]);},[engineEnabled,request?.trainingEngine,candidate?.request.trainingEngine]);
  async function persist(next:AssistantConversation){try{await store.save(next);setRows(await store.list());}catch{setError(t.storage);}}

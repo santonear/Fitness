@@ -117,8 +117,8 @@ test('synthetic source30 preferred-squat Next renders fixed tempo and preserves 
  const {identity,errors,modelAttempts}=await setupSyntheticMobilityTempo(page);
  await offlineTempoPage(page,'/');await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
  const phase=/≈3 \/ ≈1 \/ 0 秒/;
- for(const [theme,label]of [['qingci','青瓷'],['liubai','留白'],['jingshe','静奢'],['zhuangse','撞色']]){
-  await offlineTempoPage(page,'/settings/appearance');await page.getByRole('button',{name:label,exact:true}).click();await offlineTempoPage(page,'/');
+ for(const [theme,label]of [['pop','柔光拟物'],['vivid','山野暖阳'],['gentle','温和陪伴'],['data','专业数据'],['fire','燃动挑战']]){
+  await offlineTempoPage(page,'/settings/appearance');await page.getByRole('radio',{name:label,exact:true}).click();await offlineTempoPage(page,'/');
   const detail=page.locator('details').filter({has:page.locator('summary').filter({hasText:identity.name})}).first();await expect(detail).toHaveCount(1);await detail.locator('summary').click();
   await expect(detail.getByText('离心 / 向心 / 停顿',{exact:true}).first()).toBeVisible();await expect(detail.getByText(phase).last()).toBeVisible();
   const warm=detail.getByRole('region',{name:'专项热身组',exact:true});await expect(warm).toBeVisible();await expect(warm.getByText(phase)).toBeVisible();
@@ -133,8 +133,8 @@ test('synthetic source30 preferred-squat workout renders authenticated fixed tem
  const {identity,errors,modelAttempts}=await setupSyntheticMobilityTempo(page),phase=/≈3 \/ ≈1 \/ 0 秒/;
  await page.goto('/');await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
  await page.getByRole('button',{name:'开始训练',exact:true}).click();await expect(page).toHaveURL(/workout\//);const activeUrl=page.url();
- for(const [theme,label]of [['qingci','青瓷'],['liubai','留白'],['jingshe','静奢'],['zhuangse','撞色']]){
-  await page.goto('/settings/appearance');await page.getByRole('button',{name:label,exact:true}).click();await page.goto(activeUrl);await page.locator('.v8-capsules').getByRole('button',{name:identity.name,exact:true}).click();
+ for(const [theme,label]of [['pop','柔光拟物'],['vivid','山野暖阳'],['gentle','温和陪伴'],['data','专业数据'],['fire','燃动挑战']]){
+  await page.goto('/settings/appearance');await page.getByRole('radio',{name:label,exact:true}).click();await page.goto(activeUrl);await page.locator('.v8-capsules').getByRole('button',{name:identity.name,exact:true}).click();
   await expect(page.getByRole('heading',{name:identity.name,exact:true})).toBeVisible();await expect(page.getByText(phase).last()).toBeVisible();await expect(page.getByRole('region',{name:'专项热身组',exact:true}).getByText(phase)).toBeVisible();
   for(const width of [375,1280]){await page.setViewportSize({width,height:844});await page.screenshot({path:info.outputPath(`tempo-workout-${theme}-${width}.png`),fullPage:true,animations:'disabled'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);}
   await page.locator('.v8-capsules').getByRole('button',{name:identity.unauthenticatedName,exact:true}).click();await expect(page.getByRole('heading',{name:identity.unauthenticatedName,exact:true})).toBeVisible();await expect(page.getByRole('region',{name:'专项热身组',exact:true})).toHaveCount(0);
@@ -183,8 +183,8 @@ test('actual screening UI generates deterministic local drafts and preserves eng
  await info.attach('synthetic-loaded-progression',{body:JSON.stringify(syntheticLoadedHistory,null,2),contentType:'application/json'});
  await page.goto('/');
  await openSourceWarmup(page);
- for(const [theme,label]of [['qingci','青瓷'],['liubai','留白'],['jingshe','静奢'],['zhuangse','撞色']]){
-  await page.goto('/settings/appearance');await page.getByRole('button',{name:label,exact:true}).click();await page.goto('/');
+ for(const [theme,label]of [['pop','柔光拟物'],['vivid','山野暖阳'],['gentle','温和陪伴'],['data','专业数据'],['fire','燃动挑战']]){
+  await page.goto('/settings/appearance');await page.getByRole('radio',{name:label,exact:true}).click();await page.goto('/');
   await openSourceWarmup(page);
   for(const width of [375,1280,390,1440]){await page.setViewportSize({width,height:844});await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();await page.screenshot({path:info.outputPath(`${theme}-${width}.png`),fullPage:true});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);}
  }
@@ -222,8 +222,8 @@ test('actual screening UI generates deterministic local drafts and preserves eng
   return {loaded:name(ramp.exerciseId),first:name(active.plannedExercises[0].exerciseId)};
  });
  expect(warmupIdentity.loaded).toBeTruthy();expect(warmupIdentity.first).toBeTruthy();
- for(const [theme,label]of [['qingci','青瓷'],['liubai','留白'],['jingshe','静奢'],['zhuangse','撞色']]){
-  await page.goto('/settings/appearance');await page.getByRole('button',{name:label,exact:true}).click();await page.goto(activeUrl);
+ for(const [theme,label]of [['pop','柔光拟物'],['vivid','山野暖阳'],['gentle','温和陪伴'],['data','专业数据'],['fire','燃动挑战']]){
+  await page.goto('/settings/appearance');await page.getByRole('radio',{name:label,exact:true}).click();await page.goto(activeUrl);
   await page.locator('.v8-capsules').getByRole('button',{name:warmupIdentity.loaded!,exact:true}).click();
   await expect(page.getByRole('heading',{name:warmupIdentity.loaded!,exact:true})).toBeVisible();
   const source=page.getByRole('region',{name:'专项热身组',exact:true});

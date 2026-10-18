@@ -143,14 +143,9 @@ test("settings exposes support editing and population controls stay clean in all
   ).toHaveCount(0);
   await population.selectOption("pregnant");
   await expect(page.getByText(/待核实/)).toHaveCount(0);
-  for (const [theme, label] of [
-    ["qingci", "青瓷"],
-    ["liubai", "留白"],
-    ["jingshe", "静奢"],
-    ["zhuangse", "撞色"],
-  ]) {
+  for (const [theme, label] of [["pop","柔光拟物"],["vivid","山野暖阳"],["gentle","温和陪伴"],["data","专业数据"],["fire","燃动挑战"]]) {
     await page.goto("/settings/appearance");
-    await page.getByRole("button", { name: label, exact: true }).click();
+    await page.getByRole("radio", { name: label, exact: true }).click();
     await page.goto("/settings/engine");
     await expect(
       page.getByRole("combobox", { name: /孕期 \/ 产后状态/ }),

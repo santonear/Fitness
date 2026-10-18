@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { MorphPanel, Toast, Composer, Button } from '../../../src/ui/components/common';
 import '../../../src/themes/base/tokens.css';
-import '../../../src/themes/qingci/tokens.css';
+import '../../../src/themes/pop/tokens.css';
 import '../../../src/themes/base/common.css';
 function Fixture() {
  const trigger = useRef<HTMLButtonElement>(null);

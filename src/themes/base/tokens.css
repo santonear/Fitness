@@ -24,6 +24,9 @@
   --fade: 220ms cubic-bezier(.2,.7,.2,1);
   --breath: 6s;
   --ring-cycle: 14s;
+  --float-cycle: 3.4s;
+  --snap-ease: cubic-bezier(.16,1,.3,1);
+  --pop-ease: cubic-bezier(.34,1.56,.64,1);
   --touch-min: 44px;
   --touch-primary: 56px;
   --touch-workout: 72px;
@@ -36,4 +39,88 @@
   --layout-desktop-rail: 88px;
   --layout-desktop-main: 560px;
   --layout-desktop-breakpoint: 960px;
+  --yaya-shadow: rgba(0,0,0,.28);
+  --orb-size: 68px;
+  --orb-safe: 92px;
+  --tabbar-h: 72px;
+}
+.v9-scene[data-scene="dawn"] {
+  --scene-sky: #F6CBAA;
+  --scene-haze: #FADCC2;
+  --scene-sun: #FFF3E2;
+  --scene-far: #E89D80;
+  --scene-mid: #CB735B;
+  --scene-lake: #A2CEC4;
+  --scene-pine: #3E5E4F;
+  --scene-hill1: #87A271;
+  --scene-hill2: #5F7D52;
+  --scene-treeA: #C6C47E;
+  --scene-treeB: #E2826A;
+  --scene-trunk: #5B3F33;
+  --scene-bird: #3A2723;
+  --scene-flower: #F4B393;
+}
+.v9-scene[data-scene="lake"] {
+  --scene-sky: #EEF1E6;
+  --scene-haze: #F6F5EC;
+  --scene-sun: #FFFFFF;
+  --scene-far: #A5BDB5;
+  --scene-mid: #7FA096;
+  --scene-lake: #C3DED5;
+  --scene-pine: #2F5248;
+  --scene-hill1: #93AB80;
+  --scene-hill2: #6C8A5F;
+  --scene-treeA: #CDD18F;
+  --scene-treeB: #E58F74;
+  --scene-trunk: #4D3A30;
+  --scene-bird: #C9573F;
+  --scene-flower: #F1A88D;
+}
+.v9-scene[data-scene="dusk"] {
+  --scene-sky: #F2A17A;
+  --scene-haze: #F6B993;
+  --scene-sun: #FFE7C8;
+  --scene-far: #DA6E54;
+  --scene-mid: #AE4D3D;
+  --scene-lake: #EDB898;
+  --scene-pine: #5A2F2A;
+  --scene-hill1: #C4654D;
+  --scene-hill2: #8E3F33;
+  --scene-treeA: #EB9070;
+  --scene-treeB: #F4B38C;
+  --scene-trunk: #4A2420;
+  --scene-bird: #4A2420;
+  --scene-flower: #FFE0C2;
+}
+.v9-scene[data-scene="mist"] {
+  --scene-sky: #DFE8E3;
+  --scene-haze: #EAF0EC;
+  --scene-sun: #F7F3EA;
+  --scene-far: #BBCDC8;
+  --scene-mid: #97B2AB;
+  --scene-lake: #D2E2DD;
+  --scene-pine: #365B51;
+  --scene-hill1: #A2B794;
+  --scene-hill2: #7D9771;
+  --scene-treeA: #CBD5A8;
+  --scene-treeB: #E08A6C;
+  --scene-trunk: #4D3A30;
+  --scene-bird: #C9573F;
+  --scene-flower: #F4B393;
+}
+.v9-scene[data-scene="peak"] {
+  --scene-sky: #F8DCCB;
+  --scene-haze: #FBE8DC;
+  --scene-sun: #FFF5E9;
+  --scene-far: #CC8C6C;
+  --scene-mid: #9EA58A;
+  --scene-lake: #ADD1C8;
+  --scene-pine: #2E4A40;
+  --scene-hill1: #86A178;
+  --scene-hill2: #5E7A55;
+  --scene-treeA: #D8C486;
+  --scene-treeB: #E07C60;
+  --scene-trunk: #4D3A30;
+  --scene-bird: #3A2723;
+  --scene-flower: #F7C3A6;
 }
