@@ -203,3 +203,15 @@ it('uses actual production metadata only for the active environment',()=>{
  const {context}=fixture();context.env.ADMIN_ENVIRONMENT='production';context.env.ADMIN_RELEASE_REGISTRY=JSON.stringify([{environment:'preview',dataVersion:11,current,previous},{environment:'production',dataVersion:11,current,previous}]);context.env.CF_VERSION_METADATA={id:'33333333-3333-4333-8333-333333333333',timestamp:'2026-10-12T00:00:00Z'};
  const entries=registeredReleases(context.env);expect(entries[0].current.deploymentId).toBe(current.deploymentId);expect(entries[1].current.deploymentId).toBe(context.env.CF_VERSION_METADATA.id);expect(entries[1].current.publishedAt).toBe(context.env.CF_VERSION_METADATA.timestamp);expect(entries[1].previous!.deploymentId).toBe(previous.deploymentId);
 });
+it('a new deploy supersedes a stale release-state row, while a later admin rollback row is kept',async()=>{
+ const {context,sqlite}=fixture();
+ const fresh={...current,id:'pr63-e3957c5',publishedAt:'2026-10-19T08:00:00Z'},older={...previous,id:'pr62-a43f4e3'};
+ context.env.ADMIN_RELEASE_REGISTRY=JSON.stringify([{environment:'preview',dataVersion:11,current:fresh,previous:older}]);
+ sqlite.prepare("INSERT INTO admin_release_state(environment,current_id,previous_id,changed_at,operation_id) VALUES('preview','admin-v8-20261012','pr52-mainline','2026-10-11T18:00:00Z',NULL)").run();
+ const overview=await (await handleReleases(new Request('https://example.test/api/v1/management/console/releases'),context))!.json();
+ expect(overview.releases[0]).toMatchObject({current_id:'pr63-e3957c5',previous_id:'pr62-a43f4e3'});
+ // An admin rollback recorded after this release was published stays authoritative.
+ sqlite.prepare("UPDATE admin_release_state SET current_id='pr62-a43f4e3',previous_id='pr63-e3957c5',changed_at='2026-10-19T09:00:00Z'").run();
+ const after=await (await handleReleases(new Request('https://example.test/api/v1/management/console/releases'),context))!.json();
+ expect(after.releases[0]).toMatchObject({current_id:'pr62-a43f4e3',previous_id:'pr63-e3957c5'});
+});

@@ -28,6 +28,8 @@ Worker 名称为 `fitness`，实际稳定地址为 https://fitness.initdevl.work
 
 冒烟测试（`tools/release/smoke.mjs`）只读：`/api/v1/health`、首页、`/api/v1/features`、未登录访问 `/admin` 不返回 200；不登录、不写数据、不调用模型。
 
+版本登记：正式发布工作流在部署前读取线上版本（`wrangler deployments status/versions view --json`），由 `tools/release/registry.mjs` 生成 `ADMIN_RELEASE_REGISTRY`（本次提交、PR、发布时间、上一版本及其数据版本），随 `--var` 与 `--message release=… data=… sha=… pr=…` 一起部署；后台“开关与发布”与回滚检查读取它。手动部署不带登记时，后台只显示线上版本号，回滚按钮禁用并写明原因。数据版本见 `src/domain/release-data-version.ts`，迁移使旧代码不兼容时才递增。
+
 健康检查地址统一以 `src/domain/health-paths.ts` 为准，冒烟脚本与后台“实际发布与检查”共用：`/api/v1/health`、`/api/v1/features`、`/`、`/admin`（管理入口保护检查为 `/api/v1/management/console/releases`）。根路径 `/health`、`/features` 是应用页面路由，返回 HTML，不能用于监控。
 
 GitHub 环境配置：

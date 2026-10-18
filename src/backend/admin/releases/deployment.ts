@@ -1,18 +1,45 @@
+import { RELEASE_DATA_VERSION } from '../../../domain/release-data-version';
 import { healthPaths } from '../../../domain/health-paths';
 import { z } from 'zod';
 import { AdminError, requireAdminDb, type AdminContext } from '../core/contracts';
 import { smokeChecks, type ReleasesEnv, type ReleaseEnvironment, type ReleaseRegistration, type SmokeCheck } from './model';
 
-const release = z.object({id:z.string().regex(/^[\w.-]{1,80}$/),deploymentId:z.string().uuid(),publishedAt:z.string().datetime(),compatibleDataVersion:z.number().int().nonnegative(),smokeOrigin:z.string().url().refine(value=>new URL(value).protocol==='https:' && new URL(value).origin===value)}).strict();
-const registry = z.array(z.object({environment:z.enum(['preview','production']),dataVersion:z.number().int().nonnegative(),current:release,previous:release.optional()}).strict());
+const release = z.object({id:z.string().regex(/^[\w.-]{1,80}$/),deploymentId:z.string().uuid(),publishedAt:z.string().datetime(),compatibleDataVersion:z.number().int().nonnegative(),smokeOrigin:z.string().url().refine(value=>new URL(value).protocol==='https:' && new URL(value).origin===value),commit:z.string().regex(/^[a-f0-9]{7,40}$/).optional(),pr:z.number().int().positive().optional()}).strict();
+// A previous release whose data version was never registered cannot be a rollback target.
+const previousRelease = release.extend({compatibleDataVersion:z.number().int().nonnegative().optional()});
+const registry = z.array(z.object({environment:z.enum(['preview','production']),dataVersion:z.number().int().nonnegative(),current:release,previous:previousRelease.optional()}).strict());
+/** Manual deploys without a registered entry still show the live version, never a stale one, and offer no rollback. */
+function unregisteredLive(env:ReleasesEnv&{CONTROL_ORIGINS?:string}):z.infer<typeof registry>[number]|undefined {
+  if(!env.ADMIN_ENVIRONMENT||!env.CF_VERSION_METADATA)return;
+  const id=z.string().uuid().safeParse(env.CF_VERSION_METADATA.id);if(!id.success)return;
+  let origin:string|undefined;try{const origins:unknown=JSON.parse(env.CONTROL_ORIGINS??'[]');origin=Array.isArray(origins)&&typeof origins[0]==='string'?new URL(origins[0]).origin:undefined;}catch{origin=undefined;}
+  if(!origin?.startsWith('https://'))return;
+  return {environment:env.ADMIN_ENVIRONMENT,dataVersion:RELEASE_DATA_VERSION,current:{id:`cf-${id.data.slice(0,8)}`,deploymentId:id.data,publishedAt:env.CF_VERSION_METADATA.timestamp??new Date(0).toISOString(),compatibleDataVersion:RELEASE_DATA_VERSION,smokeOrigin:origin}};
+}
 export function registeredReleases(env:ReleasesEnv) {
-  try {const parsed=registry.parse(JSON.parse(env.ADMIN_RELEASE_REGISTRY ?? '[]'));if(new Set(parsed.map(item=>item.environment)).size!==parsed.length)throw new Error();if(env.ADMIN_ENVIRONMENT&&env.CF_VERSION_METADATA){const actual=z.string().uuid().parse(env.CF_VERSION_METADATA.id);for(const item of parsed)if(item.environment===env.ADMIN_ENVIRONMENT){item.current.deploymentId=actual;if(env.CF_VERSION_METADATA.timestamp)item.current.publishedAt=env.CF_VERSION_METADATA.timestamp;}}return parsed;}
+  try {const parsed=registry.parse(JSON.parse(env.ADMIN_RELEASE_REGISTRY ?? '[]'));if(new Set(parsed.map(item=>item.environment)).size!==parsed.length)throw new Error();if(env.ADMIN_ENVIRONMENT&&!parsed.some(item=>item.environment===env.ADMIN_ENVIRONMENT)){const live=unregisteredLive(env);if(live)parsed.push(live);}if(env.ADMIN_ENVIRONMENT&&env.CF_VERSION_METADATA){const actual=z.string().uuid().parse(env.CF_VERSION_METADATA.id);for(const item of parsed)if(item.environment===env.ADMIN_ENVIRONMENT){item.current.deploymentId=actual;if(env.CF_VERSION_METADATA.timestamp)item.current.publishedAt=env.CF_VERSION_METADATA.timestamp;}}return parsed;}
   catch {throw new AdminError('RELEASE_REGISTRY_UNAVAILABLE',503);}
+}
+/**
+ * The registry is written by each deploy. A state row recorded for an older
+ * deployment (before this release was published) is superseded, so the page
+ * and the checks never keep showing a stale version. An in-flight or newer
+ * admin rollback row is kept.
+ */
+export async function reconcileReleaseState(context:AdminContext<ReleasesEnv>,entry:{environment:ReleaseEnvironment;current:ReleaseRegistration;previous?:ReleaseRegistration}) {
+  const db=requireAdminDb(context);
+  const state=await db.prepare('SELECT current_id,previous_id,changed_at,operation_id FROM admin_release_state WHERE environment=?').bind(entry.environment).first<{current_id:string;previous_id:string|null;changed_at:string;operation_id:string|null}>();
+  if(!state||state.operation_id)return;
+  if(state.current_id===entry.current.id&&(state.previous_id??null)===(entry.previous?.id??null))return;
+  const older=!(Date.parse(state.changed_at)>=Date.parse(entry.current.publishedAt));
+  const unknown=![entry.current.id,entry.previous?.id].includes(state.current_id);
+  if(older||unknown)await db.prepare('UPDATE admin_release_state SET current_id=?,previous_id=?,changed_at=? WHERE environment=? AND operation_id IS NULL').bind(entry.current.id,entry.previous?.id??null,entry.current.publishedAt,entry.environment).run();
 }
 export async function checkCurrentRelease(context:AdminContext<ReleasesEnv>,environment:ReleaseEnvironment,releaseId:string) {
   const entry=registeredReleases(context.env).find(item=>item.environment===environment);
   if(!entry)throw new AdminError('UNREGISTERED_RELEASE',409);
   const db=requireAdminDb(context);
+  await reconcileReleaseState(context,entry);
   const state=await db.prepare('SELECT current_id,operation_id FROM admin_release_state WHERE environment=?').bind(environment).first<{current_id:string;operation_id:string|null}>();
   if(state?.operation_id)throw new AdminError('RELEASE_CHANGED_OR_BUSY',409);
   if((state?.current_id??entry.current.id)!==releaseId)throw new AdminError('RELEASE_CHANGED_OR_BUSY',409);

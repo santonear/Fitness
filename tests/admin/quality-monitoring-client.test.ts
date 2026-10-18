@@ -52,7 +52,7 @@ describe('frontend quality reporting compatibility and consent', () => {
       '/api/v1/assistant/chat': Response.json({ error: 'AI_DISABLED' }, { status: 503 }),
       '/api/v1/features': Response.json({ flags: {} }),
     };
-    const network = vi.fn(async (input: RequestInfo | URL) => { const path = new URL(String(input), 'https://fitness.test').pathname; return path.startsWith('/api/v1/telemetry/') ? new Response(null, { status: 204 }) : responses[path].clone(); });
+    const network = vi.fn(async (input: RequestInfo | URL, _init?: RequestInit) => { const path = new URL(String(input), 'https://fitness.test').pathname; return path.startsWith('/api/v1/telemetry/') ? new Response(null, { status: 204 }) : responses[path].clone(); });
     const target = { fetch: network as unknown as typeof fetch };
     vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => target.fetch(input, init));
     const restore = instrumentApiFailures(target);
