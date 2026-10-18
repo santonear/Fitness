@@ -9,6 +9,8 @@ import type {CoachRequest,CoachResponse} from '../../coach/contracts';
 export type CoachApplication = { enginePlan?:EnginePlan; request: CoachRequest; response: CoachResponse; expectedRevision: number };
 export type CoachPanelProps = { beforeSend?:(request:CoachRequest)=>Promise<void>; onPreferencesChanged?:()=>Promise<void>; resolveRequest?:(message:string,request:CoachRequest)=>CoachRequest|undefined; rememberOnApply?:boolean; open: boolean; localOnly?: boolean; applyLabel?: string; successLabel?: string; disableNutrition?: boolean; localFallbackOnError?: boolean; templateMinutes?: (template: SessionTemplate) => number; onClose: () => void; request?: CoachRequest; expectedRevision: number;
   initialSend?:{nonce:string;message:string;request:CoachRequest;expectedRevision:number};
+  /** Prefills the composer once per nonce (芽芽 quick actions); the user still reviews and sends it. */
+  draft?:{nonce:string;text:string};
   triggerRef?: RefObject<HTMLElement|null>; onLocalPlan?:()=>void; onLocalReview?:()=>void; locale?:'zh'|'en'; unavailableReason?:string; onApply: (candidate: CoachApplication) => Promise<unknown>; onResponse?: (candidate: CoachApplication) => void };
 
 export function CoachPanel(props:CoachPanelProps){
