@@ -24,6 +24,29 @@ it('Worker default-off health and API perform no store or supplier work', async 
   expect(response.status).toBe(503); expect(await response.json()).toEqual({ error: 'AI_DISABLED' });
 });
 
+it('operations dependencies fail closed, and provisioning restores health and invitations without model calls',async()=>{
+  const store=new SqliteControlStore(':memory:');let supplierCalls=0;
+  const worker=createWorker({store:()=>store,codec,transport:async()=>{supplierCalls++;throw Error('must not call model')}});
+  const configured={...env(),FITNESS_FEATURE_FLAGS:JSON.stringify({aiOperations:true}),
+    FITNESS_DAILY_LIMITS:JSON.stringify({calls:1000,costFen:3000})};
+  const health=()=>new Request('https://fitness.test/api/v1/health');
+  const invite=()=>new Request('https://fitness.test/api/v1/admin/invites',{
+    method:'POST',headers:{origin:'https://fitness.test','content-type':'application/json',
+      authorization:`Bearer ${configured.CONTROL_ADMIN_SECRET}`},body:'{}',
+  });
+  try {
+    expect(await (await worker.fetch(health(),configured)).json()).toEqual({error:'DAILY_USAGE_FALLBACK'});
+    expect((await worker.fetch(invite(),configured)).status).toBe(503);
+    const ready={...configured,FITNESS_OPS_DB:{withSession:()=>{throw Error('admin and health must not reserve usage')}} as D1Binding};
+    expect((await worker.fetch(health(),ready)).status).toBe(200);
+    const result=await worker.fetch(invite(),ready);
+    expect(result.status).toBe(200);
+    expect(await result.json()).toMatchObject({code:expect.stringMatching(/^[a-f0-9]{64}$/)});
+    expect((await worker.fetch(health(),{...ready,FITNESS_DAILY_LIMITS:'{}'})).status).toBe(503);
+    expect(supplierCalls).toBe(0);
+  } finally {store.close();}
+});
+
 it('Worker rejects missing/test credentials, unselected provider, absent D1 and inconsistent cost policy', async () => {
   for (const change of [{ CONTROL_ADMIN_SECRET: '' }, { CONTROL_DIGEST_SECRET: testConfig.digestSecret },
     { SUPPLIER_API_KEY: 'local-test-key'.repeat(4) }, { SUPPLIER_PROVIDER: 'unselected' },

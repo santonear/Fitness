@@ -52,6 +52,10 @@ jobs:
           fi
       - run: npm ci
       - run: npm run catalog:prepare
+      # Match CI: generate the complete audit receipt outside Vitest, then let
+      # the unchanged diagnostic tests validate that same-source evidence.
+      - run: npm run engine:prepare
+      - run: npm run engine:full
       - run: npm run check
       - name: Deploy the preview
         env:

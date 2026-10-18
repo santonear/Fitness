@@ -5,6 +5,14 @@ if (!/^https:\/\//.test(base)) throw Error('Smoke URL must be https');
 
 const attempts = 6;
 const checks = [
+  ['real health API', async () => {
+    const response = await fetch(base + '/api/v1/health');
+    if (response.status !== 200) throw Error(`status ${response.status}`);
+    const body = await response.json();
+    if (!['external-transport','control-only','disabled'].includes(body.status)) {
+      throw Error('health status missing or invalid');
+    }
+  }],
   ['home page', async () => {
     const response = await fetch(base + '/', {redirect: 'follow'});
     const body = await response.text();

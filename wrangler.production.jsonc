@@ -14,6 +14,7 @@
     "CONTROL_POLICY": "{\"timeZone\":\"Asia/Shanghai\",\"k\":14,\"budgetLimit\":3000,\"maximumRequestCost\":300,\"allowBoundedPending\":true,\"planningBudgetDisabled\":true,\"requestBounds\":{\"understand\":300,\"generate\":300},\"quotas\":{\"understand\":8,\"generate\":4},\"maxInputBytes\":65536,\"maxConcurrent\":2,\"allowUncertainPlanningPending\":true}",
     "DEEPSEEK_PRICING_VERIFIED_UNTIL": "2026-10-08T00:00:00Z",
     "FITNESS_FEATURE_FLAGS": "{}",
+    "FITNESS_DAILY_LIMITS": "{\"calls\":1000,\"costFen\":3000}",
     "FITNESS_SUPPLIER_DIAGNOSTICS": "errors",
     "SUPPLIER_PROVIDER": "deepseek",
     "TURNSTILE_SITE_KEY": "0x4AAAAAAFQG0Iz8JvDHA3mo",
@@ -24,6 +25,11 @@
     "ADMIN_RELEASE_REGISTRY": "[{\"environment\":\"production\",\"dataVersion\":11,\"current\":{\"id\":\"admin-v8-20261012\",\"deploymentId\":\"4884ef3c-1470-4855-8634-1af7ed197764\",\"publishedAt\":\"2026-10-11T18:00:00Z\",\"compatibleDataVersion\":11,\"smokeOrigin\":\"https://fitness.initdevl.workers.dev\"},\"previous\":{\"id\":\"pr52-mainline\",\"deploymentId\":\"4884ef3c-1470-4855-8634-1af7ed197764\",\"publishedAt\":\"2026-10-11T14:12:40.060894Z\",\"compatibleDataVersion\":11,\"smokeOrigin\":\"https://fitness.initdevl.workers.dev\"}}]"
   },
   "d1_databases": [
+    {
+      "binding": "FITNESS_OPS_DB",
+      "database_name": "fitness-ops-production",
+      "migrations_dir": "migrations/ops"
+    },
     {
       "binding": "CONTROL_DB",
       "database_name": "fitness-control-production",
