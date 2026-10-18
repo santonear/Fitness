@@ -391,3 +391,22 @@ RepDB官方证据：[数据许可证](https://github.com/RepDB/exercise-dataset/
 - 理由：不伪造旧答案、不以孕前历史推算本方案进度；完整保留其他安全关卡。相同周数的生成不受起算时间戳随机影响。
 - 涉及文件：rules-ch11/12.yaml、pregnancy-limits、准入/剂量/独立校验、pregnancy-safety、v8-workflow、资料设置与计划页、数据库/备份版本、定向及浏览器测试。
 - 待审决定：无新增；专业审核和第三方授权前置项保持未完成，生产不动。
+
+
+### 2026-10-18：engine-followup 的保守实现决定
+- 情况：聊天提示需跨页面保留，但不应成为身体事实或外发字段。
+- 决定：只在当前标签页按会话保存提示类别及“不是真人”关闭状态；不保存命中词或原文，不进备份；确认资料更新后清除。聊天原文按用户最终澄清照常发送。
+- 理由：不自动改变人群，不扩展模型数据边界；本地提示不充当筛查依据。
+- 涉及文件：body-change.ts、body-change-session.ts、AssistantPanel.tsx、body-change-keywords.json。
+- 情况：旧 older_adult 分类与出生年月可能不一致。
+- 决定：读取时依据真实出生年月投影，缺日期时不猜测；旧数据不改写，孕产下拉框不提供老年项。
+- 涉及文件：engine-profile.ts、EngineProfileEditor.tsx、legacy-population-selector.test.ts。
+- 情况：已有 untargeted 产后步行模板可短于10分钟，但旧通用合同拒绝保存；未知重量也被旧AI合同误要求数值。
+- 决定：仅对既有 untargeted 且无 targetMinutes 的模板接受正整数真实时长；普通课仍保持原范围。引擎动作另核实完整安全候选、来源剂量与相对负荷证明；旧链路仍严格保留原校验。
+- 理由：修复既有语义的读写不一致，不增加字段或数据库结构、不填0公斤、不绕过客户端校验。
+- 涉及文件：schemas.ts、coach/contracts.ts、engine-template-validation.ts、response-adapter.ts。
+- 情况：固定输入框内的本地建议过高，会覆盖滚动区里的应用按钮。
+- 决定：建议与提示随内容滚动，输入框固定；新建议滚入可见范围，实际点击应用验证，不强制点击。
+- 涉及文件：AssistantPanel.tsx、AssistantPanel.css、engine-followup.spec.ts。
+- 已批准冲突：第1–2周仍最多两次力量；第3周起在当周配额内均分，不以拉伸填满无配额日。目标质量权重不变，负重偏好仅参与同模式候选排序。
+- 发布限制：仅预览；生产开启仅用于测试；对外开放或商用前，专业审核和 RepDB 许可仍为必须项。

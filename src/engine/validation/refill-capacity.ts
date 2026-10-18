@@ -24,6 +24,21 @@ export function independentRefillWitness(
     source = r.get("duration.cardio.cap");
   const test = (next: Template) => {
     const after = independentElapsedSeconds(next.items, r);
+    const budget = source.refill.mobility_budget;
+    const mobility = next.items.filter((item) => {
+      const exercise = r.byExercise.get(item.exerciseId);
+      return (
+        exercise &&
+        budget.aggregate_modalities.includes(exercise.modality) &&
+        !budget.exclude_patterns.includes(exercise.primary_pattern) &&
+        !exercise.flags.some((flag) => budget.exclude_flags.includes(flag))
+      );
+    });
+    if (
+      independentElapsedSeconds(mobility, r) >
+      Math.max(budget.minimum_seconds, after * budget.session_fraction)
+    )
+      return false;
     if (
       after <= before ||
       after > target * 1.2 ||
@@ -164,6 +179,47 @@ export function independentRefillWitness(
       );
     next.items.splice(at < 0 ? next.items.length : at, 0, item);
     if (test(next)) return "new_" + role;
+  }
+  // Independently enumerate an additional legal warmup action inside its existing budget.
+  const timing = timingRow(
+    durationTier(t.targetMinutes ?? p.sessionMinutes, p, r),
+    r,
+  );
+  const safety = safetyBlockMinimums(t, p, r);
+  for (const exercise of r.data.exercises) {
+    if (
+      !possible.has(exercise.id) ||
+      used.has(exercise.id) ||
+      !exercise.use.includes("warmup") ||
+      !source.refill.new_warmup_modalities.includes(exercise.modality)
+    )
+      continue;
+    const item = prescribe(exercise, p, r, g.restrictions, "warmup", 1);
+    if (exercise.modality === "cardio" && "durationSeconds" in item.target) {
+      item.target.durationSeconds = Math.min(
+        item.target.durationSeconds,
+        timedCap(exercise),
+      );
+      const light = Math.min(
+        r.get("aerobic.intensity.rpe_scale").light_max,
+        g.restrictions.maxRpe,
+      );
+      item.prescription!.targetRpe = [light, light];
+    }
+    const next = structuredClone(t);
+    const first = next.items.findIndex(
+      (row) => row.prescription?.block !== "warmup",
+    );
+    next.items.splice(first < 0 ? next.items.length : first, 0, item);
+    const warmup = independentElapsedSeconds(
+      next.items.filter((row) => row.prescription?.block === "warmup"),
+      r,
+    );
+    if (
+      warmup <= Math.max(timing.warmup * 60, safety.warmupSeconds) &&
+      test(next)
+    )
+      return "new_warmup";
   }
   return undefined;
 }

@@ -305,6 +305,15 @@ export function createV8Workflow(repo: Repository) {
       ];
       const changed =
         stableString(environment(prior)) !== stableString(environment(parsed));
+      const populationChanged =
+        prior.population?.kind !== parsed.population?.kind &&
+        (parsed.population?.kind === "pregnant" ||
+          parsed.population?.kind === "postpartum");
+      const populationRescreenCompleted =
+        (parsed.population?.kind === "pregnant" || parsed.population?.kind === "postpartum") &&
+        prior.screening?.rescreenRequired === true &&
+        parsed.screening?.rescreenRequired !== true && !!parsed.screening?.completedAt;
+      const populationUpdated=populationChanged||populationRescreenCompleted;
       const plan = state.currentPlanId
           ? await db.v8Plans.get(state.currentPlanId)
           : undefined,
@@ -313,12 +322,14 @@ export function createV8Workflow(repo: Repository) {
           : undefined;
       let nextVersion;
       if (
-        changed &&
+        (changed || populationUpdated) &&
         isFeatureEnabled("trainingEngine") &&
         plan &&
         !plan.readOnly &&
         !plan.deletedAt &&
-        version?.enginePlan?.quality?.basis === "environment_constraint"
+        version &&
+        (populationUpdated ||
+          version?.enginePlan?.quality?.basis === "environment_constraint")
       ) {
         const mapped = await mappedEngineProfile(parsed);
         if (!mapped) return invalid("ENGINE_SCREENING_REQUIRED");

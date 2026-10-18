@@ -3891,7 +3891,8 @@
   "space": "mat",
   "position": [
    "quadruped",
-   "kneeling"
+   "kneeling",
+   "inverted"
   ],
   "flags": [
    "kneeling_on_knee",
@@ -8329,7 +8330,9 @@
    "quadruped",
    "prone"
   ],
-  "flags": [],
+  "flags": [
+   "deep_knee_flexion"
+  ],
   "use": [
    "cooldown"
   ],
@@ -24338,7 +24341,8 @@
   "space": "mat",
   "position": [
    "quadruped",
-   "plank"
+   "plank",
+   "inverted"
   ],
   "flags": [
    "wrist_extension_loaded"
@@ -24413,7 +24417,8 @@
   "space": "mat",
   "position": [
    "quadruped",
-   "prone"
+   "prone",
+   "inverted"
   ],
   "flags": [
    "wrist_extension_loaded"
@@ -27666,7 +27671,8 @@
   "noise": 0,
   "space": "mat",
   "position": [
-   "quadruped"
+   "quadruped",
+   "inverted"
   ],
   "flags": [
    "wrist_extension_loaded"
@@ -27749,7 +27755,8 @@
   "noise": 0,
   "space": "mat",
   "position": [
-   "quadruped"
+   "quadruped",
+   "inverted"
   ],
   "flags": [
    "wrist_extension_loaded"
@@ -33023,7 +33030,8 @@
   "noise": 0,
   "space": "mat",
   "position": [
-   "quadruped"
+   "quadruped",
+   "inverted"
   ],
   "flags": [
    "wrist_extension_loaded"
@@ -39976,7 +39984,8 @@
   "noise": 0,
   "space": "mat",
   "position": [
-   "quadruped"
+   "quadruped",
+   "inverted"
   ],
   "flags": [
    "wrist_extension_loaded"

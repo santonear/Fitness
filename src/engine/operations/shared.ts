@@ -10,24 +10,7 @@ import type { SessionTemplate } from "../../domain/v8/contracts";
 
 import { checkHard } from "../hard-checks";
 
-export const FOCUS: Record<string, Pattern[]> = {
-  upper: [
-    "push_horizontal",
-    "push_vertical",
-    "pull_horizontal",
-    "pull_vertical",
-    "isolation_upper",
-  ],
-  lower: ["squat", "lunge", "hinge", "isolation_lower"],
-  core: [
-    "anti_extension",
-    "anti_rotation",
-    "anti_lateral_flexion",
-    "rotation",
-    "trunk_flexion",
-  ],
-  mobility: ["mobility"],
-};
+export { FOCUS } from "../candidates/focus";
 export const slotFor = (
   item: SessionDraft["items"][number],
   patterns: Pattern[],

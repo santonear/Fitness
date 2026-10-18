@@ -267,7 +267,11 @@
     specialized_caps: []
     shortage: {lower_ratio: 0.8, require_exhausted_safe_capacity: true}
     refill:
-      order: [existing_sets, missing_patterns, low_intensity, warmup_cooldown]
+      order: [existing_sets, missing_patterns, low_intensity, balance_breathing, stretch, warmup_cooldown]
+      mobility_budget: {minimum_seconds: 600, session_fraction: 0.25, aggregate_modalities: [mobility], exclude_patterns: [balance], exclude_flags: [breathing]}
+      repeat_while_improving: true
+      new_warmup_modalities: [cardio, mobility]
+      preserve_mobility_dose_inside_tolerance: true
       require_all_hard_rules: true
       low_intensity_uses_own_dose_limits: true
       intro_weekly_sets_apply_to: [strength, power, isometric]

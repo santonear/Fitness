@@ -5,6 +5,8 @@ import { expect, it } from "vitest";
 import { generatePlan, validatePlan } from "../../src/engine";
 import { enginePlanSchema } from "../../src/engine/contracts";
 import { Rules } from "../../src/engine/data";
+import { prescribe } from "../../src/engine/dose";
+import { runGates } from "../../src/engine/gates";
 import { safetyBlockMinimums } from "../../src/engine/progression/legacy-blocks";
 
 import {
@@ -46,23 +48,22 @@ it("retains the original short pregnancy fixture with real whole-second prescrip
   ).toEqual([]);
 });
 it("counts additional actual general-warmup seconds without trusting a V1 minimum-fill proof or displayed time", () => {
+  // This arithmetic test uses an explicit general-warmup item, independent of
+  // whichever warmup the current legal candidate ranking chooses.
   const plan = generatePlan(profile),
-    t = plan.templates.find(
-      (t) =>
-        safetyBlockMinimums(t, profile, r).applies &&
-        t.items.some(
-          (i) =>
-            i.prescription?.block === "warmup" &&
-            r.byExercise.get(i.exerciseId)?.modality === "cardio",
-        ),
-    )!;
+    t = plan.templates[0];
   expect(t).toBeDefined();
-  const item = t.items.find(
-    (i) =>
-      i.prescription?.block === "warmup" &&
-      r.byExercise.get(i.exerciseId)?.modality === "cardio",
-  )!;
-  expect(item).toBeDefined();
+  const general = r.data.exercises.find((e) => e.slug === "walking")!;
+  const item = prescribe(
+    general,
+    profile,
+    r,
+    runGates(profile, r).restrictions,
+    "warmup",
+    1,
+  );
+  item.target = { metricType: "duration", durationSeconds: 60 };
+  t.items = [item, ...t.items.filter((i) => i.exerciseId !== general.id)];
   const before = independentWarmupAudit(t, profile).seconds,
     exercise = r.byExercise.get(item.exerciseId)!,
     side =

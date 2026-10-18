@@ -81,7 +81,8 @@ export function EngineProfileEditor({
     ? today.getFullYear() - birth[0] - (today.getMonth() + 1 < birth[1] ? 1 : 0)
     : ageYears;
   const [populationKind, setPopulationKind] = useState(
-    value.population?.kind ?? "",
+    value.population?.kind === "older_adult" && currentAge !== undefined && currentAge < olderAge
+      ? "general" : value.population?.kind ?? "",
   );
   const [populationDraft, setPopulationDraft] = useState<{
     weeks?: number;
@@ -370,7 +371,7 @@ export function EngineProfileEditor({
               </option>
             </select>
           </label>
-          {(populationKind === "older_adult" ||
+          {((populationKind === "older_adult" && (currentAge===undefined||currentAge>=olderAge)) ||
             (populationKind === "general" &&
               currentAge !== undefined &&
               currentAge >= olderAge)) && (

@@ -11,12 +11,14 @@ import { intentionalShortFacts } from "../../../tools/eval/training-engine-short
 import { externalIssues } from "../../../tools/eval/training-engine-invariants";
 const r = new Rules();
 describe("ordered safe refill", () => {
-  it("keeps the approved four-stage order and both shortage protections in mechanic data", () => {
+  it("keeps the approved separated refill order and both shortage protections in mechanic data", () => {
     expect(r.get("duration.cardio.cap").refill).toMatchObject({
       order: [
         "existing_sets",
         "missing_patterns",
         "low_intensity",
+        "balance_breathing",
+        "stretch",
         "warmup_cooldown",
       ],
       shortage_population_fraction_max: 0.05,

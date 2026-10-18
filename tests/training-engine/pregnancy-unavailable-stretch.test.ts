@@ -33,7 +33,7 @@ for(const id of ['pregnancy-week20-confirmed','pregnancy28-confirmed'])it(`keeps
  expect(validatePlan(plan,profile).filter(i=>i.severity==='error')).toEqual([]);
  expect(externalIssues(plan,profile)).toEqual([]);
  expect(plan.templates).toHaveLength(3);
- expect(plan.templates.filter(t=>t.items.some(i=>i.prescription?.block==='main'))).toHaveLength(Math.min(profile.daysPerWeek,r.get('pregnancy.week.target').strength_days_per_week_default));
+ expect(plan.templates.filter(t=>t.items.some(i=>i.prescription?.block==='main'))).toHaveLength(Math.min(profile.daysPerWeek,r.get('goal.params.'+profile.goal).rt_sessions_week.max));
  expect(profile).toEqual(before);
 });
 it('does not excuse a missing stretch when a safe registered option exists',()=>{

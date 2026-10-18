@@ -1275,11 +1275,11 @@ describe('A source weekly structure',()=>{
                true,
              ],
            ],
-           "weekday": "thu",
+           "weekday": "wed",
          },
          {
            "balance": false,
-           "kind": "aerobic",
+           "kind": "full",
            "slots": [
              [
                "warmup",
@@ -1289,11 +1289,53 @@ describe('A source weekly structure',()=>{
                true,
              ],
              [
-               "conditioning",
+               "warmup",
                [
-                 "cardio_cyclic",
+                 "mobility",
+               ],
+               true,
+             ],
+             [
+               "warmup",
+               [
+                 "squat",
+               ],
+               true,
+             ],
+             [
+               "main",
+               [
+                 "squat",
                ],
                false,
+             ],
+             [
+               "main",
+               [
+                 "push_horizontal",
+               ],
+               false,
+             ],
+             [
+               "main",
+               [
+                 "pull_horizontal",
+               ],
+               false,
+             ],
+             [
+               "accessory",
+               [
+                 "hinge",
+               ],
+               true,
+             ],
+             [
+               "accessory",
+               [
+                 "anti_extension",
+               ],
+               true,
              ],
              [
                "cooldown",
@@ -1303,7 +1345,7 @@ describe('A source weekly structure',()=>{
                true,
              ],
            ],
-           "weekday": "tue",
+           "weekday": "fri",
          },
        ],
        "status": "restricted",

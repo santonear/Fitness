@@ -1,0 +1,43 @@
+{
+  "pregnancy": [
+    "怀孕",
+    "有了宝宝",
+    "孕\\s*[一二三四五六七八九十百0-9]+\\s*周",
+    "备孕成功",
+    "\\bpregnant\\b"
+  ],
+  "postpartum": [
+    "生完",
+    "生了",
+    "刚生",
+    "坐月子",
+    "产后",
+    "剖腹产",
+    "剖宫产",
+    "顺产",
+    "\\bgave birth\\b",
+    "\\bpostpartum\\b",
+    "\\bc[- ]section\\b"
+  ],
+  "health": [
+    "做了手术",
+    "刚出院",
+    "医生让我别运动",
+    "\\b(?:had surgery|discharged from hospital)\\b",
+    "\\b(?:doctor|physician) .{0,30}(?:not to exercise|stop exercising)\\b"
+  ],
+  "exclude": [
+    "老婆|妻子|丈夫|老公|朋友|同事|姐姐|妹妹|女儿|妈妈|她|他",
+    "没(?:有)?怀孕|不是.{0,8}怀孕|未怀孕",
+    "如果|假如|假设|要是|会不会",
+    "\\b(?:my wife|my partner|my friend|my sister|my daughter|she|he|they)\\b",
+    "\\b(?:not pregnant|not postpartum|if|suppose|hypothetically)\\b",
+    "(?:没(?:有)?|不(?:是)?|并非|未).{0,12}(?:怀孕|孕期|生完|生了|产后|手术)",
+    "\\b(?:not|never)\\b.{0,32}\\b(?:pregnant|postpartum|given birth|gave birth|surgery|c[- ]section)\\b",
+    "\\b(?:my mother|my colleague|my cousin|my girlfriend|my patient)\\b",
+    "太太|家人|同学|嫂子|病人",
+    "\\b(?:could|might|would)\\b.{0,32}\\bpregnant\\b",
+    "\\bwas pregnant\\b",
+    "以前怀孕|曾经怀孕|过去怀孕"
+  ]
+}

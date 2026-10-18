@@ -1,3 +1,4 @@
+import {engineTemplateIds,engineMetricMatches} from './engine-template-validation';
 import { selectAiExercises, selectAssistantCandidates } from '../catalog/ai-catalog';
 import { exercises } from '../catalog/exercises';
 import { checkCoachLanguage, type CoachLanguageViolation } from '../application/rules/coach-language';
@@ -47,13 +48,14 @@ export function coachV8Exercises(request: CoachRequest) {
 }
 
 function validateTemplates(templates: Template[], request: CoachRequest) {
-  const vocabulary = new Map(coachV8Exercises(request).map(exercise => [exercise.id, exercise]));
+  const eligible=request.trainingEngine?engineTemplateIds(request):undefined;
+  const vocabulary = new Map((eligible?exercises.filter(exercise=>eligible.has(exercise.id)):coachV8Exercises(request)).map(exercise => [exercise.id, exercise]));
   requireCondition(new Set(templates.map(template => template.id)).size === templates.length, 'duplicate template');
   for (const template of templates) {
     for (const item of template.items) {
       const exercise = vocabulary.get(item.exerciseId);
       requireCondition(!!exercise, 'exercise outside supplied catalog');
-      requireCondition(item.target.metricType === exercise.metricType, 'exercise metric mismatch');
+      requireCondition(request.trainingEngine?engineMetricMatches(request,item):item.target.metricType === exercise.metricType, 'exercise metric mismatch');
     }
   }
 }

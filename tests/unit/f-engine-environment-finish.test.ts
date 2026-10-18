@@ -15,7 +15,7 @@ import type {PlanVersion,WorkoutRecord} from '../../src/domain/v8/contracts';
 const at='2026-10-16T00:00:00.000Z';
 const profile:EngineCoachProfile={goalText:'保持活动',weeklyTarget:3,sessionMinutes:30,scheduleOriginalText:'每周三天',place:'outdoor',equipment:['none'],householdSupport:false,adultConfirmed:true,cautions:[],confirmedAt:at,healthStorageConsent:{acceptedAt:at},population:{kind:'older_adult',fallsAnswers:[false,true,false,false],walkingAid:false,balanceCautious:true},screening:{cmrSymptoms:Object.fromEntries(new Rules().get('safety.screen.cmr_symptoms').symptoms.map((key:string)=>[key,false])),completedAt:at,parqAllNo:true,parqAnswers:Array(7).fill(false),knownCondition:false,symptoms:false,restingBp:'known_below_threshold'},birthYearMonth:'1956-01',constraints:{noJump:true,quiet:true,space:'small'}};
 function setup(){
- let state={id:'v8',legacyPlanIds:[] as string[],coachProfile:structuredClone(profile),currentPlanId:undefined as string|undefined};
+ let state={id:'v8',migratedAt:at,notice:{planCount:0,acknowledged:true},legacyPlanIds:[] as string[],coachProfile:structuredClone(profile),currentPlanId:undefined as string|undefined};
  const plans:{id:string;currentVersionId:string;readOnly:boolean;name:string}[]=[],versions:PlanVersion[]=[],workouts:WorkoutRecord[]=[];
  const empty={toArray:async()=>[]},db={tables:[],transaction:async(_mode:unknown,_tables:unknown,fn:()=>unknown)=>fn(),v8State:{get:async()=>state,put:async(value:typeof state)=>{state=value;}},v8Plans:{get:async(id:string)=>plans.find(p=>p.id===id),toArray:async()=>plans,toCollection:()=>({modify:async()=>{}}),add:async(value:typeof plans[number])=>plans.push(value),put:async(value:typeof plans[number])=>{plans.splice(plans.findIndex(p=>p.id===value.id),1,value);}},v8PlanVersions:{get:async(id:string)=>versions.find(v=>v.id===id),toArray:async()=>versions,add:async(value:PlanVersion)=>versions.push(value)},v8Workouts:{toArray:async()=>workouts,where:()=>({equals:()=>({count:async()=>workouts.filter(w=>w.status==='in_progress').length})}),add:async(value:WorkoutRecord)=>workouts.push(value)},sessions:{where:()=>({equals:()=>({count:async()=>0})})},profiles:{toCollection:()=>({first:async()=>({timeZone:'Asia/Shanghai',locale:'zh'})})},aiMemoryNotes:empty,v8PlanReferences:empty,v8Activities:empty};
  const workflow=createV8Workflow({db,readMetadata:async()=>({dataRevision:1,restoreGeneration:0}),write:async(fn:()=>unknown)=>fn()} as unknown as Repository);
@@ -46,4 +46,30 @@ describe('F finish environment application and recovery',()=>{
   expect(render({...profile,householdSupport:undefined,place:'home',constraints:{noJump:false,quiet:false,space:'mat'}})).toContain('checked=""');
   expect(render({...profile,householdSupport:false,place:'home'}).split('家里有可扶的墙或椅子')[0]).not.toContain('checked=""');
  });
+});
+
+
+it('regenerates a new version after confirmed pregnancy settings without rewriting the old plan',async()=>{
+ vi.useFakeTimers();vi.setSystemTime(new Date('2026-10-16T10:00:00Z'));vi.spyOn(flags,'isFeatureEnabled').mockReturnValue(true);
+ const db=setup();db.state.coachProfile={...db.state.coachProfile,birthYearMonth:'1996-01',population:{kind:'general'},place:'home',householdSupport:true};
+ const candidate=await db.workflow.propose(db.state.coachProfile,'zh',{trainingEngine:true});
+ const version=await db.workflow.adopt(candidate),before=JSON.stringify(version);
+ const pregnant={...db.state.coachProfile,population:{kind:'pregnant' as const,week:20,prenatalCareConfirmed:true,providerCleared:true,contraindicationsConfirmedNone:true,lastScreenedWeek:20}};
+ await db.workflow.saveEngineSettings(pregnant,1);
+ expect(db.versions).toHaveLength(2);expect(db.versions[1].basedOnVersionId).toBe(version.id);
+ expect(JSON.stringify(db.versions[0])).toBe(before);expect(db.state.coachProfile.population?.kind).toBe('pregnant');
+});
+
+it('regenerates postpartum only after the actual birth event and completed rescreen',async()=>{
+ vi.useFakeTimers();vi.setSystemTime(new Date('2026-10-16T10:00:00Z'));vi.spyOn(flags,'isFeatureEnabled').mockReturnValue(true);
+ const db=setup();db.state.coachProfile={...db.state.coachProfile,birthYearMonth:'1996-01',population:{kind:'pregnant',week:20,prenatalCareConfirmed:true,providerCleared:true,contraindicationsConfirmedNone:true,lastScreenedWeek:20},place:'home',householdSupport:true};
+ const candidate=await db.workflow.propose(db.state.coachProfile,'zh',{trainingEngine:true});
+ const original=await db.workflow.adopt(candidate),before=JSON.stringify(original);
+ await db.workflow.reportBirth({delivery:'vaginal',perinealTrauma:false,postnatalCheckDone:false,cleared:false},1);
+ expect(db.state.coachProfile.population).toMatchObject({kind:'postpartum',weeksSinceBirth:0});
+ expect(db.versions).toHaveLength(1);
+ const completed={...db.state.coachProfile,screening:{...db.state.coachProfile.screening!,rescreenRequired:false,completedAt:new Date().toISOString()}};
+ await db.workflow.saveEngineSettings(completed,1);
+ expect(db.versions).toHaveLength(2);expect(db.versions[1].basedOnVersionId).toBe(original.id);
+ expect(JSON.stringify(db.versions[0])).toBe(before);
 });

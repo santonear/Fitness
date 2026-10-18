@@ -1,3 +1,4 @@
+import { loadedPreference } from "../candidates/loaded-preference";
 import type {
   EnginePlan,
   EngineProfile,
@@ -39,6 +40,9 @@ export function substituteItem(
   const pool = candidatesFor(slot, p, ctx.gate, ctx).filter(
       (e) =>
         e.id !== item.exerciseId &&
+        (!FOCUS.upper.includes(original.primary_pattern) ||
+          (FOCUS.upper.includes(e.primary_pattern) &&
+            ["strength", "power", "isometric"].includes(e.modality))) &&
         ((!original.flags.includes("walking_carry") &&
           !p.preferences.cannotDo.includes("walking_carry")) ||
           !e.flags.includes("walking_carry")) &&
@@ -84,63 +88,72 @@ export function substituteItem(
           r,
           ctx.gate.restrictions.user,
         ),
-    choice = ranked.find(
-      ({
-        exercise,
-        row,
-      }: {
-        exercise: Exercise;
-        row?: { dose?: { seconds?: { min: number; max: number } } };
-      }) => {
-        if (pregnancyRow) {
-          const preview = retainSource(
-              prescribe(
-                exercise,
-                p,
-                r,
-                ctx.gate.restrictions,
-                effectiveGoalRole(i, p, r),
-                item.sets,
+    choice = ranked
+      .sort((a: { exercise: Exercise }, b: { exercise: Exercise }) =>
+        pregnancyRow || p.cautions.length
+          ? 0
+          : Number(b.exercise.primary_pattern === original.primary_pattern) -
+              Number(a.exercise.primary_pattern === original.primary_pattern) ||
+            loadedPreference(b.exercise, p, r) -
+              loadedPreference(a.exercise, p, r),
+      )
+      .find(
+        ({
+          exercise,
+          row,
+        }: {
+          exercise: Exercise;
+          row?: { dose?: { seconds?: { min: number; max: number } } };
+        }) => {
+          if (pregnancyRow) {
+            const preview = retainSource(
+                prescribe(
+                  exercise,
+                  p,
+                  r,
+                  ctx.gate.restrictions,
+                  effectiveGoalRole(i, p, r),
+                  item.sets,
+                ),
+                i,
               ),
-              i,
-            ),
-            template = {
-              id: "pregnancy-substitute",
-              name: "",
-              estimatedMinutes: p.sessionMinutes,
-              items: [preview],
-            },
-            plan: EnginePlan = {
-              weeklyTarget: p.daysPerWeek,
-              sessionMinutes: p.sessionMinutes,
-              templates: [template],
-              meta: {
-                engineVersion: "2",
-                rulesVersion: r.data.rulesVersion,
-                seed: ctx.profileHash,
+              template = {
+                id: "pregnancy-substitute",
+                name: "",
+                estimatedMinutes: p.sessionMinutes,
+                items: [preview],
               },
-              trace: [],
-              notices: [],
-              gates: ctx.gate.reasons,
-            };
-          if (
-            checkHard(plan, p, ctx.gate, r).some(
-              (issue) =>
-                issue.severity === "error" && issue.itemIndex !== undefined,
+              plan: EnginePlan = {
+                weeklyTarget: p.daysPerWeek,
+                sessionMinutes: p.sessionMinutes,
+                templates: [template],
+                meta: {
+                  engineVersion: "2",
+                  rulesVersion: r.data.rulesVersion,
+                  seed: ctx.profileHash,
+                },
+                trace: [],
+                notices: [],
+                gates: ctx.gate.reasons,
+              };
+            if (
+              checkHard(plan, p, ctx.gate, r).some(
+                (issue) =>
+                  issue.severity === "error" && issue.itemIndex !== undefined,
+              )
             )
-          )
-            return false;
-        }
-        if (!row?.dose?.seconds || exercise.modality !== "isometric")
-          return true;
-        const source = r.get("dose.isometric"),
-          range = source[p.level].hold_s;
-        return (
-          Math.max(row.dose.seconds.min, range[0]) <=
-          Math.min(row.dose.seconds.max, range[1], source.hold_s_max)
-        );
-      },
-    ),
+              return false;
+          }
+          if (!row?.dose?.seconds || exercise.modality !== "isometric")
+            return true;
+          const source = r.get("dose.isometric"),
+            range = source[p.level].hold_s;
+          return (
+            Math.max(row.dose.seconds.min, range[0]) <=
+            Math.min(row.dose.seconds.max, range[1], source.hold_s_max)
+          );
+        },
+      ),
     replacement = choice?.exercise;
   if (!replacement) return result(structuredClone(item), [], r, p);
   const next = retainSource(

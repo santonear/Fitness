@@ -138,6 +138,11 @@ export const timerStateSchema = z.strictObject({
 });
 const v8Minutes = z.number().int().min(10).max(120);
 const v8AdjustmentMinutes = z.number().int().min(10).max(120);
+/** Untargeted source courses retain real elapsed minutes; ordinary courses keep their existing bounds. */
+export function validateTemplateMinutes(template:{estimatedMinutes:number;durationScope?:'untargeted';targetMinutes?:number},ctx:z.RefinementCtx){
+ if(template.durationScope==='untargeted'&&template.targetMinutes===undefined)return;
+ if(!v8AdjustmentMinutes.safeParse(template.estimatedMinutes).success)ctx.addIssue({code:'custom',path:['estimatedMinutes'],message:'Invalid estimated duration'});
+}
 const v8PreferredDays = z.array(z.enum(['mon','tue','wed','thu','fri','sat','sun'])).max(7).optional();
 export const v8PlanVersionSchema = z.strictObject({
   enginePlan:enginePlanSchema.optional(),
@@ -145,9 +150,9 @@ export const v8PlanVersionSchema = z.strictObject({
   scheduleOriginalText: z.string(), sessionMinutes: v8Minutes,
   preferredDays: v8PreferredDays,
   scheduleRecovery:z.strictObject({raw:z.string(),recoveredAt:utcTimestampSchema}).optional(),
-  templates: z.array(z.strictObject({ weekday:z.enum(['mon','tue','wed','thu','fri','sat','sun']).optional(), id: z.string().min(1), name: z.string().min(1), estimatedMinutes: v8AdjustmentMinutes, estimatedSeconds:z.number().positive().optional(),durationScope:z.literal('untargeted').optional(),targetMinutes:z.number().int().min(10).max(90).optional(),
+  templates: z.array(z.strictObject({ weekday:z.enum(['mon','tue','wed','thu','fri','sat','sun']).optional(), id: z.string().min(1), name: z.string().min(1), estimatedMinutes: z.number().int().positive().max(120), estimatedSeconds:z.number().positive().optional(),durationScope:z.literal('untargeted').optional(),targetMinutes:z.number().int().min(10).max(90).optional(),
     items: z.array(z.strictObject({ exerciseId: exerciseIdSchema, equipment: z.string(), sets: positive, target: setMetricsSchema, prescription:prescriptionSchema.optional() })).min(1),
-  })).min(1), createdAt: utcTimestampSchema, origin: z.enum(['onboard', 'coach_change', 'review_suggestion', 'manual', 'migrated']),
+  }).superRefine(validateTemplateMinutes)).min(1), createdAt: utcTimestampSchema, origin: z.enum(['onboard', 'coach_change', 'review_suggestion', 'manual', 'migrated']),
   reviewRule: z.enum(['time','progression','frequency','restart','discomfort']).optional(),
   changeSummary: z.array(z.string()), basedOnVersionId: uuidSchema.optional(), source: z.enum(['local', 'ai']).optional(),
 });
