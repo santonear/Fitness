@@ -1,0 +1,18 @@
+/* 芽芽 mascot (docs/design/v9/Yaya.dc.html). Sizes derive from --yaya-size; colors from theme tokens. */
+.v9-yaya { position: relative; display: inline-flex; flex: none; align-items: center; justify-content: center; inline-size: var(--yaya-size); block-size: var(--yaya-size); }
+.v9-yaya-full {
+  display: block; block-size: 100%; inline-size: auto; max-inline-size: 100%; object-fit: contain;
+  filter: drop-shadow(0 calc(var(--yaya-size) / 20) calc(var(--yaya-size) / 10) var(--yaya-shadow))
+    drop-shadow(0 0 calc(var(--yaya-size) / 14) color-mix(in srgb, var(--yaya-accent) 33%, transparent));
+}
+.v9-yaya-full[data-float="on"] { animation: v9-yaya-float var(--float-cycle) ease-in-out infinite; }
+.v9-yaya-disc {
+  position: relative; display: block; inline-size: 100%; block-size: 100%; overflow: hidden; border-radius: 50%;
+  background: var(--yaya-disc);
+  box-shadow: 0 0 0 max(1.5px, calc(var(--yaya-size) / 36)) var(--yaya-accent),
+    0 0 calc(var(--yaya-size) / 4) color-mix(in srgb, var(--yaya-accent) 40%, transparent);
+}
+.v9-yaya-head { position: absolute; display: block; inline-size: 96%; block-size: auto; left: 50%; top: 52%; transform: translate(-50%, -50%); }
+@keyframes v9-yaya-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3%); } }
+@media (prefers-reduced-motion: reduce) { .v9-yaya-full[data-float="on"] { animation: none; } }
+[data-training-active="true"] .v9-yaya-full { animation: none; }

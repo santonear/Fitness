@@ -13,7 +13,7 @@ function readBrowserTheme(): ThemeId {
   try { return readTheme(window.localStorage); } catch { return defaultThemeId; }
 }
 
-/** Mount once around the future V8 routes; never key children by the selected theme. */
+/** Mount once around the routes; never key children by the selected theme. */
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [selectedTheme, setTheme] = useState(readBrowserTheme);
   const discovery = useSyncExternalStore(subscribeFeatureFlags, () => isFeatureEnabled('themeDiscovery'), () => false);
@@ -29,11 +29,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, []);
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
-    const fontTokens = theme in tokens.themes ? tokens.themes[theme as keyof typeof tokens.themes].font : undefined;
-    for (const [property, name] of [['--f-body', 'body'], ['--f-display', 'display'], ['--f-num', 'num']] as const) {
-      if (compactFonts && fontTokens && theme !== 'zhuangse') document.documentElement.style.setProperty(property, fontTokens[name].replace('Noto Sans SC', 'Noto Sans SC Compact').replace('Noto Serif SC', 'Noto Serif SC Compact'));
-      else document.documentElement.style.removeProperty(property);
-    }
+    // V9 themes need weights beyond the compact Sans subset, so the full local faces always apply.
+    for (const property of ['--f-body', '--f-display', '--f-num']) document.documentElement.style.removeProperty(property);
     document.documentElement.style.colorScheme = getTheme(theme).colorScheme;
     let meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
     if (!meta) {
@@ -57,3 +54,7 @@ export function useTheme(): ThemeContextValue {
   return context;
 }
 
+/** Shared components may render in fixtures without a provider; they fall back to the default theme. */
+export function useOptionalTheme(): ThemeContextValue | null {
+  return useContext(Context);
+}

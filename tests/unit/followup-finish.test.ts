@@ -5,8 +5,8 @@ import sources from '../../src/themes/fonts/compact-sources.json';
 import { getAvailableThemes, fullthemes } from '../../src/themes/registry';
 
 describe('followup finish resources', () => {
- it('keeps the baseline four themes when discovery is disabled', () => {
-  expect(getAvailableThemes(false).map(t => t.id)).toEqual(['qingci','liubai','jingshe','zhuangse']);
+ it('keeps the five V9 themes when discovery is disabled', () => {
+  expect(getAvailableThemes(false).map(t => t.id)).toEqual(['pop','vivid','gentle','data','fire']);
   expect(getAvailableThemes(true)).toBe(fullthemes);
  });
  it('preserves required glyph coverage with traceable compact assets and strict decimal budgets', () => {

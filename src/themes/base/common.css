@@ -90,3 +90,8 @@
 /* Lining, equal-width numerals remain legible during training in every theme. */
 .v8-stat dd, .v8-minutes, .v8-set-value, .v8-rest time, input[type="number"] { font-variant-numeric: lining-nums tabular-nums slashed-zero; }
 input[type="number"] { font-family: var(--f-num); }
+
+/* V9 type roles: pages add these classes instead of naming fonts. */
+.v9-num { font-family: var(--f-num); font-style: var(--f-num-style); font-stretch: var(--f-num-stretch); font-weight: var(--w-num); font-variant-numeric: lining-nums tabular-nums; }
+.v9-display { font-family: var(--f-display); font-weight: var(--w-display); letter-spacing: var(--tr-display); line-height: var(--lh-tight); }
+.v9-body { font-family: var(--f-body); font-weight: var(--w-body); letter-spacing: var(--tr-body); }

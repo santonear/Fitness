@@ -20,10 +20,13 @@ test('errors and input fixtures do not use the full prose list; output still doe
 
 test('rejects new literal colors and fonts in pages', () => {
   assert.deepEqual(violations('src/ui/pages/Next.tsx', 'color:#ffffff; font-family:serif'), ['literal-color', 'font-family']);
+  assert.deepEqual(violations('src/ui/components/kit/kit.css', 'a{background:rgba(0,0,0,.2)}'), ['literal-color']);
 });
 test('theme selectors are restricted to theme tokens', () => {
   assert.deepEqual(violations('src/ui/base.css', '[data-theme=x] {}'), ['theme-selector']);
-  assert.deepEqual(violations('src/themes/qingci/tokens.css', '[data-theme=x] {}'), []);
+  assert.deepEqual(violations('src/themes/pop/tokens.css', '[data-theme=x] {}'), []);
+  assert.deepEqual(violations('src/themes/token-css.ts', '[data-theme=x] {}'), []);
+  assert.deepEqual(violations('src/themes/pop/slots/slots.css', '[data-theme=x] {}'), ['theme-selector']);
 });
 test('rejects developer entry and coach banned text', () => {
   assert.deepEqual(violations('src/admin/Panel.tsx', 'AI 架构评审'), ['developer-entry']);
