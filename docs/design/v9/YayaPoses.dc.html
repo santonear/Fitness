@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>芽芽动作</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><style>body{margin:0}</style></helmet>
+<div style="width: 760px; height: 400px; box-sizing: border-box; padding: 20px 24px; background: #FFFFFF; font-family: 'PingFang SC','Noto Sans SC',sans-serif; display: grid; grid-template-columns: repeat(5, 1fr); row-gap: 12px; column-gap: 8px">
+<div style="display: flex; flex-direction: column; align-items: center; gap: 6px"><dc-import name="Yaya" pose="front" tk="pop" px="{{120}}" hint-size="120px,120px"></dc-import><span style="font-size: 14px; font-weight: 700; color: #16161A">默认站立</span><span style="font-size: 12px; color: #6B6B76; text-align: center">首页、通用</span></div>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 6px"><dc-import name="Yaya" pose="head" tk="pop" px="{{120}}" hint-size="120px,120px"></dc-import><span style="font-size: 14px; font-weight: 700; color: #16161A">头像</span><span style="font-size: 12px; color: #6B6B76; text-align: center">悬浮助手、聊天、小图标</span></div>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 6px"><dc-import name="Yaya" pose="wave" tk="pop" px="{{120}}" hint-size="120px,120px"></dc-import><span style="font-size: 14px; font-weight: 700; color: #16161A">打招呼</span><span style="font-size: 12px; color: #6B6B76; text-align: center">欢迎、引导第一步</span></div>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 6px"><dc-import name="Yaya" pose="cheer" tk="pop" px="{{120}}" hint-size="120px,120px"></dc-import><span style="font-size: 14px; font-weight: 700; color: #16161A">加油</span><span style="font-size: 12px; color: #6B6B76; text-align: center">训练中、开练按钮</span></div>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 6px"><dc-import name="Yaya" pose="think" tk="pop" px="{{120}}" hint-size="120px,120px"></dc-import><span style="font-size: 14px; font-weight: 700; color: #16161A">思考</span><span style="font-size: 12px; color: #6B6B76; text-align: center">计划生成、数据回顾</span></div>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 6px"><dc-import name="Yaya" pose="thanks" tk="pop" px="{{120}}" hint-size="120px,120px"></dc-import><span style="font-size: 14px; font-weight: 700; color: #16161A">拜托/谢谢</span><span style="font-size: 12px; color: #6B6B76; text-align: center">完成反馈、设置页</span></div>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 6px"><dc-import name="Yaya" pose="care" tk="pop" px="{{120}}" hint-size="120px,120px"></dc-import><span style="font-size: 14px; font-weight: 700; color: #16161A">关心</span><span style="font-size: 12px; color: #6B6B76; text-align: center">安全提示、休息提醒</span></div>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 6px"><dc-import name="Yaya" pose="celebrate" tk="pop" px="{{120}}" hint-size="120px,120px"></dc-import><span style="font-size: 14px; font-weight: 700; color: #16161A">庆祝</span><span style="font-size: 12px; color: #6B6B76; text-align: center">练完、达成目标</span></div>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 6px"><dc-import name="Yaya" pose="side" tk="pop" px="{{120}}" hint-size="120px,120px"></dc-import><span style="font-size: 14px; font-weight: 700; color: #16161A">侧身</span><span style="font-size: 12px; color: #6B6B76; text-align: center">转场、空状态</span></div>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 6px"><dc-import name="Yaya" pose="back" tk="pop" px="{{120}}" hint-size="120px,120px"></dc-import><span style="font-size: 14px; font-weight: 700; color: #16161A">背面</span><span style="font-size: 12px; color: #6B6B76; text-align: center">离开/再见、加载</span></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":760,"height":400}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

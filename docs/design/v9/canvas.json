@@ -1,0 +1,168 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "Admin.dc.html": {
+      "expand": "fill",
+      "h": 1000,
+      "is_interactive": true,
+      "title": "后台总览（宽屏）",
+      "w": 1440,
+      "x": 790,
+      "y": 0
+    },
+    "Data.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "风格四：专业数据（组件）",
+      "w": 390,
+      "x": 3720,
+      "y": 0
+    },
+    "Fire.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "风格五：燃动挑战（组件）",
+      "w": 390,
+      "x": 4190,
+      "y": 0
+    },
+    "Gallery-Data.dc.html": {
+      "h": 972,
+      "is_interactive": true,
+      "title": "风格四：专业数据型",
+      "w": 4460,
+      "x": 0,
+      "y": 4656
+    },
+    "Gallery-Fire.dc.html": {
+      "h": 972,
+      "is_interactive": true,
+      "title": "风格五：燃动挑战型",
+      "w": 4460,
+      "x": 0,
+      "y": 5748
+    },
+    "Gallery-Gentle.dc.html": {
+      "h": 972,
+      "is_interactive": true,
+      "title": "风格三：温和陪伴型",
+      "w": 4460,
+      "x": 0,
+      "y": 3564
+    },
+    "Gallery-Pop.dc.html": {
+      "h": 972,
+      "is_interactive": true,
+      "title": "风格一：柔光拟物型（默认）",
+      "w": 4460,
+      "x": 0,
+      "y": 1380
+    },
+    "Gallery-Vivid.dc.html": {
+      "h": 972,
+      "is_interactive": true,
+      "title": "风格二：山野暖阳型",
+      "w": 4460,
+      "x": 0,
+      "y": 2472
+    },
+    "Gentle.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "风格三：温和陪伴（组件）",
+      "w": 390,
+      "x": 3250,
+      "y": 0
+    },
+    "Main.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "可交互原型（默认柔光拟物，可在“我的”里切换风格）",
+      "w": 390,
+      "x": 0,
+      "y": 0
+    },
+    "Orb.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "芽芽悬浮助手（可拖动、点开快捷面板）",
+      "w": 390,
+      "x": 4660,
+      "y": 0
+    },
+    "Pop.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "风格一：柔光拟物（默认）（组件）",
+      "w": 390,
+      "x": 2310,
+      "y": 0
+    },
+    "Vivid.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "风格二：山野暖阳（组件）",
+      "w": 390,
+      "x": 2780,
+      "y": 0
+    },
+    "Yaya.dc.html": {
+      "h": 240,
+      "title": "芽芽形象（3D 渲染，按风格换眼睛颜色）",
+      "w": 240,
+      "x": 470,
+      "y": 0
+    },
+    "YayaPoses.dc.html": {
+      "h": 400,
+      "title": "芽芽十个动作与使用场景（每个动作都有五套眼睛颜色）",
+      "w": 760,
+      "x": 5130,
+      "y": 0
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-10-19T09:00:00Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "t1": {
+      "kind": "title1",
+      "maxW": 5900,
+      "text": "Fitness 新版：可交互原型、芽芽与后台",
+      "x": 0,
+      "y": -300
+    },
+    "t2": {
+      "kind": "title1",
+      "maxW": 4460,
+      "text": "五套风格，各 10 个关键页面",
+      "x": 0,
+      "y": 1120
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "Yaya.dc.html",
+    "Orb.dc.html",
+    "Admin.dc.html",
+    "Pop.dc.html",
+    "Vivid.dc.html",
+    "Gentle.dc.html",
+    "Data.dc.html",
+    "Fire.dc.html",
+    "Gallery-Pop.dc.html",
+    "Gallery-Vivid.dc.html",
+    "Gallery-Gentle.dc.html",
+    "Gallery-Data.dc.html",
+    "Gallery-Fire.dc.html",
+    "YayaPoses.dc.html"
+  ],
+  "pages": [],
+  "title": "Fitness 新版设计稿"
+}

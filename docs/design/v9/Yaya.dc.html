@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>芽芽</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+.yy-float{animation:yyfloat 3.4s ease-in-out infinite}
+@keyframes yyfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3%)}}
+@media (prefers-reduced-motion: reduce){.yy-float{animation:none}}
+</style>
+</helmet>
+<div style="{{box}}">
+<sc-if value="{{full}}" hint-placeholder-val="{{true}}">
+<img class="yy-float" src="{{src}}" alt="芽芽" style="{{fullImg}}">
+</sc-if>
+<sc-if value="{{head}}" hint-placeholder-val="{{false}}">
+<div style="{{disc}}"><img src="{{src}}" alt="芽芽" style="{{headImg}}"></div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"tk":{"editor":"enum","options":["pop","vivid","gentle","data","fire"],"default":"pop"},"px":{"editor":"int","min":24,"max":400,"default":240},"pose":{"editor":"enum","options":["front","head","wave","cheer","think","thanks","care","celebrate","side","back"],"default":"front"},"$preview":{"width":240,"height":240}}'>
+class Component extends DCLogic {
+renderVals() {
+const A = {
+pop: ['/_blob/fb6a0db08518142487dc8fee207afb43', '#FFB534', 'radial-gradient(circle at 35% 30%, #FFFFFF, #EDECEA)'],
+vivid: ['/_blob/50041df4fc5079a4fc3c72572eb81e88', '#E0745A', 'radial-gradient(circle at 50% 35%, #FFF9F2, #F6D9C6)'],
+gentle: ['/_blob/e3b8ba3c4eceba89114e8600ab6e5452', '#B5E040', 'radial-gradient(circle at 50% 35%, #FFFFFF, #E8F3D6)'],
+data: ['/_blob/46e4365f15d2321a12048a646437ff01', '#3FE3E6', 'radial-gradient(circle at 50% 35%, #24406F, #0E1A33)'],
+fire: ['/_blob/2515a93cbe123dd6f2617364cc204089', '#FF3B3B', 'radial-gradient(circle at 50% 35%, #2A2A2A, #0A0A0A)']
+};
+const a = A[this.props.tk] || A.pop;
+const P = {"back": ["2148e82cfccf263f64dcc53caf4447ca", "9efd21c8bcdb090326f12b0ad55121ba", "0b867718ab3230644851f713018b48e2", "8c43813c7f1d3e11e94555ac9d3c9527", "75374bda77511b56b84b7971d42d1601"], "care": ["da2587b75d69bfd823fb3b8e1b9777de", "8e04e8fd9ccc408aa22b1282ed6411eb", "958f8f9b8d642622263e1cf2d5cf9813", "526249f29c4c99c881da3a22ba7dfce9", "9d1f8eea85edf38c0950b69c8d8796fa"], "celebrate": ["79c9ed2e4bc3bf6d9e1c265879b4ad08", "5fb2eccf69a2ce690ac11239009f609f", "b3dbc5ac932870c29124df457a0a5a20", "25c0f3de7f73f920c987021e4401106e", "a9db44bdbe3394529f4b8b322e4c4bbc"], "cheer": ["f4bad329be851ae1a5e58a8c0ef9fb6b", "452eed6bcd940f2443ed6720b8f43b43", "98b91f446d0e0aebf89e7062a1a55935", "07b6529365a3ac6895749e37345e9a4c", "717d25b75b33481a03eb16c7f6fa73ec"], "front": ["8b55731401e737375d04a98b5783ab87", "9bd270eb05ed6cd9efee17ed3a931b45", "fdfed1ed4b26a9e6623f1711c4e97200", "8a44d4a3e6039d38e7cf387c75626a21", "c97d09fda9ece81821452720f4e8a8fa"], "head": ["93e6ed7846ae52e8bce099394965d0d8", "136e7cccec7e5b46bdd8dad59f274a21", "1752974b2cfe4c141dc381cb8ff04b8f", "4e1bfc612298ee21ec6e29bd497ab73a", "923ec3492c8d5868665f98ffc4f95ae9"], "side": ["e984c1e7bf38e4122d8f93ed5d2c1311", "096813ded3060bc2962b04798028b37c", "337d33d8d2430e29f77676fa20e3166d", "f56d99698ab4800f4d304d906d6fa7a9", "2ced1fd72a8efa9c80678bf1c3b3acce"], "thanks": ["44400af050ec131d13491adaed5ade7d", "89256bd05ae63b7332da61fd7c055b3f", "4da97a876b66c4214ff67bcaf7a1499d", "c4b5031bdaa3031107f82ce2c81c568d", "647a49ad12d1fa4b6f768e0e0f18e2d2"], "think": ["7c37b96686ad111fe87ee7b82b2da46e", "7e0a5b67d7ee888b6390318159fd83c6", "c3ae8bc108953af257068f4335d16e44", "b6aea4e1f69e44bfb3c250ef450d88e0", "2734ed1c6db4beb5428ec6ff3fe1f626"], "wave": ["5d106e9e9963554f7e7f515a45a20ef6", "7ecc1d511c5c19016f141840feefa013", "9af7ef0a47dc4b4781c874bdf7c0d385", "65b291fc1862b5e94ff9133a60334bfd", "ce2388a8eebb67c4a7d9cb10d4d73d00"]};
+const ti = ['pop','vivid','gentle','data','fire'].indexOf(this.props.tk); const k = ti < 0 ? 0 : ti;
+const C = {wave:[93.9,0.4,-4.2],cheer:[88.6,5.7,-3.1],think:[88.7,5.7,-1.7],thanks:[88.9,5.5,-3.4],care:[89.9,4.6,-3.1],celebrate:[88.9,5.5,-2.7]};
+const pose = P[this.props.pose] ? this.props.pose : 'front';
+const px = this.props.px ?? 240;
+const full = px >= 110;
+const ring = Math.max(1.5, px / 36);
+return {
+src: '/_blob/' + P[full ? pose : (C[pose] ? pose : 'head')][k], full: full, head: !full,
+box: 'width: ' + px + 'px; height: ' + px + 'px; display: flex; align-items: center; justify-content: center; position: relative',
+fullImg: 'height: 100%; width: auto; max-width: 100%; object-fit: contain; display: block; filter: drop-shadow(0 ' + Math.round(px / 20) + 'px ' + Math.round(px / 10) + 'px rgba(0,0,0,.28)) drop-shadow(0 0 ' + Math.round(px / 14) + 'px ' + a[1] + '55)',
+disc: 'position: relative; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; background: ' + a[2] + '; box-shadow: 0 0 0 ' + ring + 'px ' + a[1] + ', 0 0 ' + Math.round(px / 4) + 'px ' + a[1] + '66',
+headImg: C[pose] && !full ? 'position: absolute; height: auto; width: ' + C[pose][0] + '%; left: ' + C[pose][1] + '%; top: ' + C[pose][2] + '%; display: block' : 'position: absolute; width: 96%; height: auto; left: 50%; top: 52%; transform: translate(-50%, -50%); display: block'
+};
+}
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>专业数据型</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 4460px; height: 972px; box-sizing: border-box; padding: 40px 64px; background: #0A1120; font-family: Noto Sans SC, sans-serif; color: #E8EDF2; display: flex; gap: 48px">
+<sc-for list="{{screens}}" as="x" hint-placeholder-count="10">
+<div style="display: flex; flex-direction: column; gap: 14px; width: 390px; flex: none">
+<span style="font-size: 18px; font-weight: 700">{{x.label}}</span>
+<div style="width: 390px; height: 844px; border-radius: 36px; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,.5)">
+<dc-import name="Main" theme="{{tk}}" start-screen="{{x.k}}" autoplay="{{no}}" hint-size="390px,844px"></dc-import>
+</div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":4460,"height":972}}'>
+class Component extends DCLogic {
+renderVals() {
+const S = [['welcome', '1 欢迎'], ['onboard', '2 引导：一题一屏'], ['plan', '3 第一周计划'], ['home', '4 今天'], ['player', '5 训练中'], ['rest', '6 组间休息'], ['finish', '7 练完了'], ['review', '8 回顾'], ['chat', '9 芽芽'], ['settings', '10 我的']];
+return { tk: 'data', no: false, screens: S.map(function (s) { return { k: s[0], label: s[1] }; }) };
+}
+}
+</script>
+</body>
+</html>
