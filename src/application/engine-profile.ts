@@ -105,6 +105,20 @@ export function historyPainState(
   );
 }
 
+/** Read projection of the old age-group selector; the original answers remain intact. */
+export function legacyAgePopulation(
+  population: EngineProfile["population"] | undefined,
+  birthYearMonth: string | undefined,
+  asOfDate: string,
+): EngineProfile["population"] | undefined {
+  if(population?.kind!=="older_adult" || !birthYearMonth)return population;
+  const [year,month]=birthYearMonth.split("-").map(Number);
+  const [nowYear,nowMonth]=asOfDate.split("-").map(Number);
+  const years=nowYear-year-(nowMonth<month?1:0);
+  const threshold=DATA.rules.find(row=>row.id==="older.activation")!.value!.trigger.any[0].gte;
+  return years<threshold?{kind:"general"}:population;
+}
+
 /** Local-only source. Never spread this object into a coach/network request. */
 export type EngineProfileFields = Partial<
   Pick<
@@ -347,7 +361,7 @@ export function toEngineProfile(
       space: "small",
     },
     cautions: profile.cautions,
-    population: source.population,
+    population: legacyAgePopulation(source.population,source.birthYearMonth,options.asOfDate),
     screening,
     preferences: enginePreferences(profile, options.notes),
     birthYearMonth: source.birthYearMonth,

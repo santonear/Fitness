@@ -539,3 +539,282 @@ Latest user ruling supersedes prior performance stop:219–305ms/79s accepted; n
 同一次旧CI日志继续按共因收尾：安全测试的外网阻断器改用实际baseURL origin，不再写死本地端口；capacity手工新版envelope引用当前版本常量；旧DB7迁移独立预期新增trainingCheckins空表，其他旧表逐字节比较；guided历史断言引用备份常量。默认套件收集训练spec时沿用专用套件既有120秒多步骤预算，不改变功能断言或计时指标。
 
 定向结果：容量/事务/DB7迁移15项通过；安全入口/产后证据/guided流程16项通过；默认训练4个原失败用例全部通过（含真实筛查四主题截图35.8秒、危险信号持久化与恢复16.9秒）；前轮4个迁移用例在WebKit也通过。完整类型检查通过。全部改动仅测试及记录，不再手工重跑2200画像或性能。
+
+
+### 2026-10-18 engine-followup（进行中）
+
+唯一分支 `codex/engine-followup`；原任务及追加的本地身体变化识别共用一个 PR，先预览验收，不合并、不修改生产。
+- 保留新手第 1–2 周最多两次力量训练；第 3 周起在配额内均分；无力量配额日不以拉伸凑时长。
+- 本地识别不修改人群、孕周或筛查。用户澄清：聊天原文照常发送，只有识别结果、命中词不能进入请求、提示词或其他后端字段；自查资料沿用既有隐私边界。
+- 当前已实现关键词规则数据、25 个命中/排除/状态一致单测和卡片初接线。网络、浏览器及更新后重新生成路径仍待验证，不声明完成。
+- 原任务五项修复、固定画像及最终全量仍待完成。
+- 生产开启仅用于测试；对外开放或商用前，专业审核和 RepDB 许可仍为必须项。
+
+进度证据（未完成验收）：本地识别25项、拦截/既有训练界面相关22项通过；Chromium新增卡片/跳转/对话不中断/请求无识别字段1项通过。资料保存后的孕期版本重生及既有孕13/28周复查、分娩周0流程合计51项通过；仅覆盖测试声明范围，不代表所有设置浏览器流程已测。
+动作标注：7个下犬式动作补 inverted；鸽子式补 deep_knee_flexion；英雄坐已有排除标记不改数值。3项目录与既有过滤回归通过，复核队列追加来源。
+补时：按批准拆分低强度有氧、平衡/呼吸、拉伸阶段；加入总活动度预算，生成拟合与独立容量检查分别执行。初跑80画像无硬违规/空计划，覆盖率和±10%时长均100%；另加总量专项找到59号画像末段拟合扩大拉伸，已加统一候选接收检查，正在复验。80画像一个测试超过默认5秒，改为80个独立用例，保留原断言与超时。
+老旧 older_adult 兼容采用只读投影：孕产下拉框显示非孕产；按出生年月纠正不符合年龄的旧分类，缺失出生年月不猜测、不删除原始老年答案。不新增数据库结构，原记录不改写。此方案待在PR待审项披露。
+待办：补完均分力量、同模式上肢替换、负重偏好；补齐阻断修改后的浏览器回归和设置保存/迁移浏览器证据；检查本地卡片跨路由生命周期。随后定向类型/单元/画像比较，最后一次2200全量、CI、预览场景及同一PR。
+
+
+### 2026-10-18 engine-followup 验证收尾（草稿，尚未完成发布验收）
+
+聊天原文照常外发；本地识别类别/关键词不进入请求或历史。35项识别单测与实际浏览器请求断言通过。卡片不更改健康事实；保存已完成的孕产关卡才走原有版本重生，实际分娩事件保持原有专用流程。
+
+| 验证 | 本次结果 |
+|---|---|
+| 功能单测 | 3504通过；29项既有外部/付费条件测试未运行，本轮未新增skip |
+| 完整诊断断言 | 2通过，使用本次2200画像证据 |
+| 本轮Chromium真实交互 | 7通过；另有产检否→是提示清理定向用例通过 |
+| 类型、构建、样式、规则数据、客户端提示词边界 | 通过 |
+| golden20 / 固定80 / 问题177 | 硬违规、异常空计划、活动度超限均0；格式化前后全部结果逐字节一致 |
+| 全量2200 | 硬违规0、异常空计划0、非确定性0、拉伸超限0；95条硬规则覆盖状态true |
+| 质量中位数 / P10 | 0.769246 / 0.600516 |
+| 覆盖率 | 100.00% |
+| 原始±10%时长达标率 | 96.83%，基线97.95%，不满足“不下降”要求 |
+| 短课单列口径 | 97.19%；真实分布有意缩短6/2000（0.3%），低于50%的画像0 |
+
+时长指标差异待审，不声称全部验收完成：329号旧课拉伸2251秒、按新规上限888.75秒；修正后课程实际2180秒，独立容量核实为合法短课。不能以恢复超量拉伸维持旧指标。其余差异尚不能全部归因为这一项，保留原始指标，等待时长验收裁定。全量耗时136.55秒发生于本地功能测试并行期间，性能不作为阻断门槛，也不冒充独占冷启动测量；不反复重测。
+
+#### 20份golden输出变化
+
+| 画像 | 原因 |
+|---|---|
+| home-dumbbell-knee-3x40 | 膝注意过滤深屈膝；保留缺失模式来源槽；按新版顺序及活动度预算补时。 |
+| quiet-bodyweight-2x20 | 仅规则内容版本hash变化；计划其余字段逐字节相同。 |
+| pregnancy-week20-confirmed | 倒置目录过滤、按配额分配力量及活动度预算共同改变合法内容。 |
+| cesarean-week8-confirmed | 不改阶段剂量；补时内容按有氧/平衡呼吸/拉伸分开排序并受总量限制。 |
+| older70-cautious-balance | 仅规则内容版本hash变化；计划其余字段逐字节相同。 |
+| gym-intermediate-muscle4x45 | 同模式候选增加真实负重器械偏好，其他模式仍按原质量边际比较。 |
+| bodyweight-health3x30 | 仅规则内容版本hash变化；计划其余字段逐字节相同。 |
+| first-week-health2x20 | 动作集合不变；在既有新手上限内按新版阶段顺序分配剂量。 |
+| strength1x10 | 仅规则内容版本hash变化；计划其余字段逐字节相同。 |
+| mobility6x90 | 活动度总量预算和合法暖身内容限制替代旧的大量拉伸补时。 |
+| bands-fat-loss3x45 | 仅规则内容版本hash变化；计划其余字段逐字节相同。 |
+| start-moving2x10 | 保留源槽缺失模式，短课补时按实际可接受增量闭合。 |
+| all-cautions-no-floor | 动作集合不变；合法定时剂量不再为几秒误差反复削减。 |
+| under18-blocked | 仅规则内容版本hash变化；计划其余字段逐字节相同。 |
+| symptoms-blocked | 仅规则内容版本hash变化；计划其余字段逐字节相同。 |
+| inactive-known-condition-blocked | 仅规则内容版本hash变化；计划其余字段逐字节相同。 |
+| pregnancy-provider-missing | 仅规则内容版本hash变化；计划其余字段逐字节相同。 |
+| cesarean6-not-cleared | 仅规则内容版本hash变化；计划其余字段逐字节相同。 |
+| pregnancy28-confirmed | 倒置动作过滤和活动度预算；保留孕期重确认及全部既有安全剂量。 |
+| older70-unrestricted | 仅规则内容版本hash变化；计划其余字段逐字节相同。 |
+
+#### 标注核对
+
+7项下犬式补inverted：downward-dog-to-low-lunge、downward-dog-to-plank、downward-dog-to-upward-dog、downward-dog-knee-tuck、downward-dog-to-knee-drive、downward-dog、downward-dog-pedal；pigeon-stretch补deep_knee_flexion；英雄坐已有跪姿/深屈膝标签，本次不改数值。复核队列追加8项；并未替代持证教练审核。
+
+| golden画像 | 因新增标注不再出现的旧动作 |
+|---|---|
+| pregnancy-week20-confirmed | downward-dog-to-low-lunge |
+| mobility6x90 | downward-dog-to-low-lunge |
+| pregnancy28-confirmed | downward-dog-to-low-lunge |
+
+新旧变化涉及重新选取多个动作，不宣称逐条一对一替换；新增动作及剂量都经过完整安全回归。负重偏好为同模式候选附加0→0.02，目标规则权重全部不变。
+
+引擎源码按Prettier输出逐文件核算均≤400行。完整文件行数表随PR生成；本次仅抽取纯FOCUS常量和拟合上下文构造以控制单文件，不改流程结构。
+
+回滚先远程关闭trainingEngine，不删除历史；如确需代码回退，使用兼容DB20且支持既有untargeted真实短时长校验的客户端。生产开启仅用于测试；对外开放或商用前，专业审核和 RepDB 许可仍为必须项。
+
+#### 引擎逐文件格式化行数
+
+统计排除 generated/、测试与规则数据；使用同一Prettier解析后的文本计数，无压缩语句。
+
+| 文件 | 行数 |
+|---|---:|
+| src/engine/candidates/caution-substitutions.ts | 111 |
+| src/engine/candidates/eligibility.ts | 329 |
+| src/engine/candidates/focus.ts | 20 |
+| src/engine/candidates/loaded-preference.ts | 25 |
+| src/engine/candidates.ts | 144 |
+| src/engine/checkHard/cardio-duration.ts | 51 |
+| src/engine/checkHard/coverage.ts | 129 |
+| src/engine/checkHard/eligibility.ts | 230 |
+| src/engine/checkHard/item-context.ts | 28 |
+| src/engine/checkHard/item-dose.ts | 275 |
+| src/engine/checkHard/item-structure.ts | 281 |
+| src/engine/contracts/api.ts | 127 |
+| src/engine/contracts/pipeline.ts | 125 |
+| src/engine/contracts/plan.ts | 164 |
+| src/engine/contracts/profile.ts | 309 |
+| src/engine/contracts.ts | 18 |
+| src/engine/data.ts | 400 |
+| src/engine/dose/assign.ts | 113 |
+| src/engine/dose/budget.ts | 72 |
+| src/engine/dose/capacity-types.ts | 31 |
+| src/engine/dose/capacity.ts | 328 |
+| src/engine/dose/floor-order.ts | 147 |
+| src/engine/dose/limits.ts | 59 |
+| src/engine/dose/prescribe.ts | 273 |
+| src/engine/dose/rep-ranges.ts | 117 |
+| src/engine/dose/roles.ts | 94 |
+| src/engine/dose/transforms.ts | 59 |
+| src/engine/dose/types.ts | 12 |
+| src/engine/dose/volume.ts | 68 |
+| src/engine/dose/warmup-fold.ts | 63 |
+| src/engine/dose/warmup-identity.ts | 26 |
+| src/engine/dose/warmup-realize.ts | 182 |
+| src/engine/dose/warmup-source.ts | 201 |
+| src/engine/dose.ts | 21 |
+| src/engine/environment.ts | 185 |
+| src/engine/equipment.ts | 27 |
+| src/engine/fill.ts | 259 |
+| src/engine/fit/cardio-cap.ts | 67 |
+| src/engine/fit/elapsed-time.ts | 236 |
+| src/engine/fit/estimate.ts | 109 |
+| src/engine/fit/finalize.ts | 97 |
+| src/engine/fit/fitting.ts | 388 |
+| src/engine/fit/item-order.ts | 13 |
+| src/engine/fit/mobility-budget.ts | 59 |
+| src/engine/fit/plan-context.ts | 26 |
+| src/engine/fit/refill-proposals.ts | 202 |
+| src/engine/fit/refill.ts | 75 |
+| src/engine/fit/requirements.ts | 92 |
+| src/engine/fit/types.ts | 3 |
+| src/engine/fit.ts | 4 |
+| src/engine/gates/population-limits.ts | 139 |
+| src/engine/gates/redflag-review.ts | 197 |
+| src/engine/gates/state.ts | 343 |
+| src/engine/gates/strength-scoring-population.ts | 130 |
+| src/engine/gates/strength-scoring.ts | 389 |
+| src/engine/gates.ts | 77 |
+| src/engine/hard-checks.ts | 393 |
+| src/engine/history-checks.ts | 353 |
+| src/engine/improve.ts | 287 |
+| src/engine/index.ts | 86 |
+| src/engine/notices.ts | 193 |
+| src/engine/operations/adjust.ts | 167 |
+| src/engine/operations/modify.ts | 133 |
+| src/engine/operations/result.ts | 72 |
+| src/engine/operations/shared.ts | 78 |
+| src/engine/operations/substitute.ts | 222 |
+| src/engine/operations.ts | 4 |
+| src/engine/pipeline.ts | 344 |
+| src/engine/postpartum-risk.ts | 98 |
+| src/engine/power.ts | 104 |
+| src/engine/pregnancy-limits.ts | 38 |
+| src/engine/progression/confirmed-pain.ts | 239 |
+| src/engine/progression/fatigue.ts | 77 |
+| src/engine/progression/feedback.ts | 93 |
+| src/engine/progression/finalize.ts | 70 |
+| src/engine/progression/item-actions.ts | 106 |
+| src/engine/progression/legacy-blocks.ts | 352 |
+| src/engine/progression/legacy-candidates.ts | 247 |
+| src/engine/progression/legacy-cooldown-ensure.ts | 231 |
+| src/engine/progression/legacy-cooldown-plan.ts | 388 |
+| src/engine/progression/legacy-cooldown.ts | 163 |
+| src/engine/progression/legacy-target.ts | 334 |
+| src/engine/progression/legacy-warmup.ts | 191 |
+| src/engine/progression/load-step.ts | 81 |
+| src/engine/progression/recovery-guards.ts | 116 |
+| src/engine/progression/schedule.ts | 28 |
+| src/engine/progression.ts | 400 |
+| src/engine/score/batch-helpers.ts | 103 |
+| src/engine/score/evaluate.ts | 54 |
+| src/engine/score/facts.ts | 191 |
+| src/engine/score/goal-items.ts | 105 |
+| src/engine/score/helpers.ts | 81 |
+| src/engine/score/marginal.ts | 217 |
+| src/engine/score/math.ts | 21 |
+| src/engine/score/registry.ts | 179 |
+| src/engine/score/targets-01.ts | 58 |
+| src/engine/score/targets-02.ts | 8 |
+| src/engine/score/targets-03.ts | 68 |
+| src/engine/score/targets-04.ts | 158 |
+| src/engine/score/targets-05.ts | 60 |
+| src/engine/score/targets-06.ts | 72 |
+| src/engine/score/targets-07.ts | 29 |
+| src/engine/score/targets-08.ts | 33 |
+| src/engine/score/targets-09.ts | 58 |
+| src/engine/score/targets-10.ts | 27 |
+| src/engine/score/types.ts | 92 |
+| src/engine/score.ts | 83 |
+| src/engine/skeleton.ts | 334 |
+| src/engine/source-warmup.ts | 6 |
+| src/engine/structure.ts | 169 |
+| src/engine/validation/cardio-duration.ts | 209 |
+| src/engine/validation/pregnancy.ts | 50 |
+| src/engine/validation/refill-capacity.ts | 225 |
+
+末轮词表审查补充：8个反例先证明失败，再修正“刚生成/刚生效/发生了/产生了/医生完成”等非生育表达，并排除明显的概念提问；识别测试现43项通过。仅改本地词表及测试，不改引擎、接口、话术或外发流程；原引擎输出证据复用，远程CI在最终提交重新完整验证。
+
+
+### 2026-10-18 PR #62 复测修正
+- 登山跑原目录步骤为高位平板快速交替、brisk pace；补running，保留impact1。ACE将其用于心肺/高强度自重训练，但不把引用解释为所有速度均为同一临床强度。当前原型按跑步类保守排除孕期，不用裁剪RPE假称动作已改变。
+- 检索637条来源动作的真实步骤：平板姿势且快速/跳跃的条目为登山跑和波比跳；波比跳已有jumping/impact2，保持。目录无独立plank jack。平板支撑收膝步骤要求受控、不跳，慢速熊式也保持非跑步标注，不把所有平板动作一刀切。
+- pregnancy.exclude.fall_risk原有13周扶持、28周排除含义不改。原modify.cue未执行，现登记规则数据中的支撑物及已核实树式变式，生成实际equipment和既有safetyCue；没有可用支撑或没有证据能扶持的动作排除，已存在扶墙平衡动作仍可选。
+- 候选、处方、hard检查及独立校验分别核实支撑证据与提示，不能只放字符串。普通/老年分支不因树式登记而被放宽；没有修改旧supported_variant_available。
+- 复用本次用户要求的“扶墙或扶椅”及等义英文，不新增临床数值。计划和草案避免因没有负荷描述而显示重复分隔符；训练详情沿用原安全提示位置。
+- 浏览器夹具最初错误地假设自动规划必须选树式；改为明确的合成用户选择，经真实引擎修改和workflow.adopt校验。Chromium/WebKit均通过，不写原始数据库，不强制点击，不绕过校验。
+- 遗留：力量目标且平时活跃者的力量天数是否应等于可训练天数；缩短训练时有意义的单组时长下限（例如有氧不少于30秒）。本轮不擅自实现这些新规则。
+- 完整结果与孕期替换清单由本次210个孕期画像前后比较补充；不合并、不动生产，先交付更新预览。
+
+
+#### PR #62 复测完整验证与孕期替换清单
+
+比较b87ed92至本次规则：同一20261015种子，全量2000真实分布+200极端中共210个孕期画像（160真实分布、50极端），输入逐条相同。下表为前后多重集减少的条目，不能理解为一一对应替换或各行画像数可相加；除登山跑外，其余为13周起未登记可扶持变式的balance_demand动作，保守换成已有的支撑选项，不宣称它们在任何情况下都不能扶着完成。
+
+| 动作 | 真实分布涉及画像 | 极端涉及画像 | 减少条目 |
+|---|---:|---:|---:|
+| 战士三式 (warrior-three) | 30 | 0 | 40 |
+| 站姿股四头肌拉伸 (standing-quad-stretch) | 31 | 0 | 43 |
+| 单腿罗马尼亚硬拉静态保持 (single-leg-rdl-hold) | 18 | 0 | 22 |
+| 登山跑 (mountain-climbers) | 3 | 0 | 8 |
+| 舞王式 (dancer-pose) | 13 | 0 | 24 |
+| 鹰式 (eagle-pose) | 12 | 0 | 23 |
+| 半月式 (half-moon-pose) | 14 | 0 | 19 |
+| 脚跟脚尖交替走 (heel-to-toe-walk) | 3 | 0 | 4 |
+| 单臂单腿哑铃罗马尼亚式硬拉 (one-arm-single-leg-dumbbell-romanian-deadlift) | 8 | 0 | 8 |
+| 站姿分腿 (standing-split) | 3 | 0 | 3 |
+| 扭转新月式弓步 (revolved-crescent-lunge) | 2 | 0 | 2 |
+| 新月式弓步 (crescent-lunge) | 2 | 0 | 2 |
+| 保加利亚分腿深蹲 (bulgarian-split-squat) | 1 | 0 | 1 |
+
+原含登山跑的画像新增的合法有氧包括：无跳跃踏步开合、安静原地踏步、坐姿踏步、站姿轻空拳；并按原补时顺序重排其他合法力量、扶持平衡及有上限的灵活性内容，不承诺每一个旧条目恰好替换成一个新条目。全量孕期结果不含登山跑，波比跳继续被原规则排除。
+
+验证：新增11项单测；初始7项中6项先复现失败，修复后11项均通过；相关17项定向测试通过；20份golden及结构/专项合计80项通过。固定80和问题177均硬违规/异常空计划0、覆盖100%。完整功能3523通过，29项原有外部/付费条件测试未运行，无新增skip；Chromium/WebKit的孕20周真实选择树式、正常修改/采用及可见提示均通过。类型和样式检查通过，单文件格式化统计均≤400行。
+
+本次一次全量：2000+200画像，硬违规0、异常空计划0、非确定性0、拉伸超限0、95硬规则覆盖状态true；质量中位数0.768961、P10为0.600004；覆盖100%，原始±10%时长96.83%，短课单列97.25%，有意缩短7/2000（0.35%），低于50%的画像0。接受过的时长验收裁定保持，不继续追查；没有放宽拉伸、有氧、强度或孕产安全上限。
+
+### 2026-10-18 用户裁定：孕20周无支撑物的覆盖矩阵
+
+三个原矩阵场景（徒手、弹力带、居家哑铃/凳）均不假定墙或椅，孕20周平衡合法候选原始数量保持0，登记environmentLimited；原因是孕13–27周平衡动作必须有真实支撑。新增墙、椅各三个明确提供支撑的对照格子，每格5个合法候选，继续要求至少2个，逐个执行“扶墙或扶椅”及等义英文处方提示。无支撑的安全非空草案沿用既有可应用流程；独立校验完整重算候选池和仅环境放宽后的候选池，不信生成标记。计划页使用已批准的平衡缺支撑提示，点击到环境设置；打开开关沿既有保存路径生成新版本并补回支撑平衡，旧版本与训练事实不改。
+
+实现涉及rules-ch11.yaml、coverage.ts、environment.ts、skeleton.ts、fit/requirements.ts、独立质量校验及回归测试；不新增临床阈值或用户话术。统计保留原始不足19格；既有carry等效口径与本次3格environmentLimited单列后，真正闸门失败0。
+
+以上裁定后的最终结果见后续同名验证节；上一节数字属于裁定前的验证批次，不作为当前构建的证据。
+
+#### PR #62 支撑裁定后的失败与修复
+- 全量首轮发现170、1778两个合成画像：新增平衡补回槽不可删减，分别挤破孕期递增上限和短课时长。修正补回槽为在安全时长内拟合的补充内容，不新增孕期平衡频率硬要求；原有老年平衡保留规则不变。两份输入存入tests/fixtures/training-engine/review62-time-regressions.json，通用拟合逻辑处理，不按画像编号分支。
+- 完整功能测试还发现原覆盖测试把所有原始缺口固定为16个carry；已保留这16个断言，另明确断言3个原始平衡0格和6个有支撑对照≥2。硬规则文档使用既有runtime分类，避免把ID登记当行为认证。结构快照新增的是孕期可选的扶持平衡槽，不更新安全阈值。
+- 浏览器首次失败是测试遗漏真实导航的#environment锚点；改为精确断言该锚点，保留点击、保存、新版本及可见提示断言。
+
+#### PR #62 最终冻结验证（覆盖前述中间批次）
+
+| 孕期替换前的动作 | 真实分布涉及画像 | 极端涉及画像 | 减少条目 |
+|---|---:|---:|---:|
+| 战士三式 (warrior-three) | 30 | 0 | 40 |
+| 站姿股四头肌拉伸 (standing-quad-stretch) | 31 | 0 | 43 |
+| 单腿罗马尼亚硬拉静态保持 (single-leg-rdl-hold) | 18 | 0 | 22 |
+| 登山跑 (mountain-climbers) | 3 | 0 | 8 |
+| 舞王式 (dancer-pose) | 13 | 0 | 24 |
+| 鹰式 (eagle-pose) | 12 | 0 | 23 |
+| 半月式 (half-moon-pose) | 14 | 0 | 19 |
+| 脚跟脚尖交替走 (heel-to-toe-walk) | 3 | 0 | 4 |
+| 单臂单腿哑铃罗马尼亚式硬拉 (one-arm-single-leg-dumbbell-romanian-deadlift) | 8 | 0 | 8 |
+| 站姿分腿 (standing-split) | 3 | 0 | 3 |
+| 树式 (tree-pose) | 4 | 0 | 4 |
+| 扭转新月式弓步 (revolved-crescent-lunge) | 2 | 0 | 2 |
+| 新月式弓步 (crescent-lunge) | 2 | 0 | 2 |
+| 保加利亚分腿深蹲 (bulgarian-split-squat) | 1 | 0 | 1 |
+
+同一输入210个孕期画像（160真实分布、50极端）相对b87ed92比较；多重集减少不等同一一对应替换，各行不能相加为去重画像数。
+
+2000+200最终画像：硬违规0、异常空计划0、非确定性0、拉伸超限0；覆盖100%，原始时长96.77%，短课单列97.19%，有意缩短7/2000（0.35%），低于50%数量0；质量中位数0.768529、P10 0.600004，95硬规则覆盖状态true。当前原始时长与复测前96.83%有约0.06个百分点的变化，仍严格高于90%门槛；不下降已按用户裁定转为后续目标。
+
+最终补回槽在规则数据声明：最短允许课时仍可由拟合删减，其他课时保留已补入的扶持平衡；不把默认补回挤成新的剂量或时长例外。最终120项相关测试、Chromium/WebKit各两项扶持流程均通过；其余未变场景的14项浏览器通过结果复用，不把旧批次失败记为通过。
+
+表中树式的4条减少属于本次补回与拟合后的合法重新选配，不代表树式被一律排除：有真实支撑时树式仍为合法候选，单元和两种浏览器均验证实际采用后显示扶持提示。其他有支撑的自定义平衡动作也逐项带提示。
+
+最终冻结版本 npm test：3529项功能通过、2项完整诊断通过；29项原有外部/付费条件测试未运行，本轮无新增skip。类型检查、样式检查、构建通过；实际格式化后所有引擎文件≤400行。完整诊断复用与当前源码/画像绑定的2200画像证据，未再次本地重跑全量；远程CI仍按既有流程独立全量。

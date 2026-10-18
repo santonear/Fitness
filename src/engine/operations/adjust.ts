@@ -71,6 +71,22 @@ export function adjust(
   const pool = candidatesFor(slot, profile, ctx.gate, ctx).filter((e) =>
     patterns.includes(e.primary_pattern),
   );
+  if (req.focus === "upper") {
+    const retained = new Set(items.map((item) => item.exerciseId));
+    const missing = original
+      .filter((item) => !retained.has(item.exerciseId))
+      .flatMap((item) => {
+        const exercise = r.byExercise.get(item.exerciseId);
+        return exercise && FOCUS.upper.includes(exercise.primary_pattern)
+          ? [exercise.primary_pattern]
+          : [];
+      });
+    pool.sort(
+      (a, b) =>
+        Number(missing.includes(b.primary_pattern)) -
+        Number(missing.includes(a.primary_pattern)),
+    );
+  }
   if (!items.length && pool.length) {
     const draft = fillSlots([slot], ctx, { score: scorePlan, marginal });
     items.push(

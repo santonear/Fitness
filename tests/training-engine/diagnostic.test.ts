@@ -31,6 +31,7 @@ it('diagnoses 2000 explicit seeded profiles without treating blocked or limited 
 it('meets all requested quality gates for every eligible plan while reporting health blocks separately',()=>{
  expect(report.totals.fail).toBe(0);
  expect(report.empty).toBe(0);
+ expect(report.mobilityBudget.exceedances).toEqual([]);
  expect(report.environmentLimited.withinWeightedLimit).toBe(true);
  expect(report.scoreUnmeasured).toBe(0);
  expect(report.qualityMedian).toBeGreaterThanOrEqual(.75);

@@ -1,4 +1,7 @@
-import { pregnancyStandingCap } from "../pregnancy-limits";
+import {
+  pregnancyBalanceSupport,
+  pregnancyStandingCap,
+} from "../pregnancy-limits";
 import { powerLoadIssue } from "../power";
 
 import { stretchHoldRange } from "../data";
@@ -21,6 +24,20 @@ export function checkItemDose({
   intro,
   add,
 }: ItemCheckContext) {
+  const support = pregnancyBalanceSupport(e, p, r);
+  if (
+    support.required &&
+    (!support.available.includes(item.equipment) ||
+      pres?.safetyCue?.zh !== support.copy?.zh ||
+      pres?.safetyCue?.en !== support.copy?.en)
+  )
+    add(
+      "pregnancy_balance_support",
+      "pregnancy.exclude.fall_risk",
+      "required physical support or cue missing",
+      t.id,
+      index,
+    );
   const standingCap = pregnancyStandingCap(e, p, r);
   if (
     standingCap !== undefined &&

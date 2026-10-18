@@ -1,17 +1,16 @@
 import { z } from 'zod';
 import {engineProfileSchema,prescriptionSchema} from '../engine/contracts';
-import { exerciseIdSchema, setMetricsSchema, timeZoneSchema } from '../domain/schemas';
+import { exerciseIdSchema, setMetricsSchema, timeZoneSchema,validateTemplateMinutes } from '../domain/schemas';
 
 /** Wave 0 wire contract only. No model calls, authorization or writes. */
 const text = z.string().min(1).max(8000);
 const id = z.uuid();
 const count = z.number().int().nonnegative();
 const minutes = z.number().int().min(10).max(120);
-const adjustmentMinutes = z.number().int().min(10).max(120);
 const preferredDays = z.array(z.enum(['mon','tue','wed','thu','fri','sat','sun'])).max(7).optional();
 const target = z.strictObject({ planId: id, versionId: id, revision: count });
 const item = z.strictObject({ exerciseId: exerciseIdSchema, equipment: text, sets: z.number().int().min(1), target: setMetricsSchema, prescription:prescriptionSchema.optional() });
-export const sessionTemplateSchema = z.strictObject({ weekday:z.enum(['mon','tue','wed','thu','fri','sat','sun']).optional(), id: text, name: text, estimatedMinutes: adjustmentMinutes, estimatedSeconds:z.number().positive().optional(), durationScope:z.literal('untargeted').optional(), targetMinutes:z.number().int().min(10).max(90).optional(), items: z.array(item).min(1) });
+export const sessionTemplateSchema = z.strictObject({ weekday:z.enum(['mon','tue','wed','thu','fri','sat','sun']).optional(), id: text, name: text, estimatedMinutes: z.number().int().positive().max(120), estimatedSeconds:z.number().positive().optional(), durationScope:z.literal('untargeted').optional(), targetMinutes:z.number().int().min(10).max(90).optional(), items: z.array(item).min(1) }).superRefine(validateTemplateMinutes);
 export const planProposalSchema = z.strictObject({
   goalText: text, weeklyTarget: z.number().int().min(1).max(7), scheduleOriginalText: z.string().max(8000),
   preferredDays,

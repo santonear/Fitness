@@ -7,3 +7,7 @@
 .assistant-input{flex:none;background:var(--c-surface);padding-block:var(--s2) env(safe-area-inset-bottom)}
 .assistant-details[open]{max-height:calc(var(--s6)*6);overflow-y:auto}
 .assistant-history{padding:0;list-style:none}.assistant-history li{display:flex;align-items:center;gap:var(--s2);min-width:0}.assistant-history li>button:first-child{min-width:0;flex:1;text-align:start}.assistant-history-title{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.assistant-history time{display:block;color:var(--c-ink-muted);font-size:var(--t2)}
+
+/* The composer stays available; long local controls and proposals share one scroll area. */
+.assistant-scroll > *{flex-shrink:0}
+.assistant-scroll .assistant-messages{flex:0 0 auto;overflow:visible}

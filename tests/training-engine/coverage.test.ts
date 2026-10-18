@@ -8,7 +8,10 @@ describe('approved carry-or-ground coverage without rewriting raw carry',()=>{
  it('retains every raw shortage while passing only the specifically approved equivalence',()=>{
   expect(contract.carryEquivalentAuthorized).toBe(true);expect(contract.carryEquivalentPatterns).toEqual(['carry','locomotion_ground']);
   expect(rules.rules.find(row=>row.id===contract.carryEquivalentSourceRuleId)?.value).toMatchObject({patterns:contract.carryEquivalentPatterns});
-  expect(report.rawFailures).toHaveLength(16);expect(report.rawFailures.every(row=>row.pattern==='carry'&&row.count===0)).toBe(true);
+  expect(report.rawFailures.filter(row=>row.pattern==='carry')).toHaveLength(16);expect(report.rawFailures.filter(row=>row.pattern==='carry').every(row=>row.count===0)).toBe(true);
+  expect(report.rawFailures.filter(row=>row.pattern!=='carry')).toEqual(contract.scenarios.map(s=>({scenario:s.id,pattern:'balance',restriction:'pregnancy',count:0})));
+  expect(report.environmentLimited).toHaveLength(3);expect(report.environmentLimited.every(row=>row.pattern==='balance'&&row.restriction==='pregnancy'&&row.count===0)).toBe(true);
+  expect(report.supportControls).toHaveLength(6);for(const cell of report.supportControls){expect(cell.count).toBeGreaterThanOrEqual(contract.minimumPerCell);expect(['wall','chair']).toContain(cell.support);}
   expect(report.failures).toEqual([]);
   for(const scenario of report.reports)for(const row of scenario.rows)for(const restriction of contract.restrictions){
    const key=restriction as keyof typeof row.counts;

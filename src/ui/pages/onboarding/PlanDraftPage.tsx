@@ -40,7 +40,7 @@ export function PlanDraftPage({ locale, candidate, basic = false, busy = false, 
       {plan.templates.map(template => <section key={template.id} className="v8-draft-template"><h2>{templateLabel(template,locale)}</h2><p>{count(t.minutes, template.estimatedMinutes)}</p>
         {template.items.map((item, index) => { const text = exerciseText(item.exerciseId), target = item.target; return <button type="button" className="v8-draft-exercise" key={`${item.exerciseId}-${index}`} onClick={event=>{trigger.current=event.currentTarget;setDetail(item.exerciseId);}}><strong>{text.name}</strong><span>{count(t.sets, item.sets)}</span>
           <span>{equipmentLabel(item.equipment, locale)}</span><span>{'reps' in target && count(t.reps, target.reps)}{'loadGrams' in target && ` · ${target.loadGrams>0?count(t.kg, target.loadGrams / 1000):item.prescription?.loadDescription?.[locale]??guideCopy.chooseLoad}`}{'durationSeconds' in target && durationText(target.durationSeconds,locale)}{'distanceMeters' in target && target.distanceMeters !== undefined && !(candidate.profile?.place==='home'&&item.exerciseId===EXERCISE_IDS.walking) && ` · ${count(t.meters, target.distanceMeters)}`}</span>
-          {item.prescription?.safetyCue&&<span>{item.prescription.loadDescription?.[locale]} · {item.prescription.safetyCue[locale]}</span>}
+          {item.prescription?.safetyCue&&<span>{[item.prescription.loadDescription?.[locale],item.prescription.safetyCue[locale]].filter(Boolean).join(' · ')}</span>}
         </button>; })}
       </section>)}
       {onEditCautions&&<aside><p>{t.safetyExcluded}</p><Button onClick={onEditCautions}>{t.editCautions}</Button></aside>}

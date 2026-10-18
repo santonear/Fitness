@@ -1,3 +1,4 @@
+import { withinMobilityBudget } from "./fit/mobility-budget";
 import { beginDefaultScorerBatch } from "./score";
 import type {
   PipelineContext,
@@ -152,6 +153,7 @@ export function improve(
           )
         )
           return;
+        if (next.templates.some((t) => !withinMobilityBudget(t, r))) return;
         for (const t of next.templates) {
           t.estimatedSeconds = estimateSeconds(t, r);
           t.estimatedMinutes = Math.ceil(t.estimatedSeconds / 60);

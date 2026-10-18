@@ -1,3 +1,4 @@
+import { pregnancyBalanceSupport } from "../pregnancy-limits";
 import { ownedEquipment } from "../equipment";
 import type {
   Caution,
@@ -245,6 +246,8 @@ function computeEligibility(e: Exercise, ctx: SelectionContext): boolean {
   }
   const boundUser = {
     ...s.user,
+    pregnancy_balance_supported:
+      pregnancyBalanceSupport(e, p, r).available.length > 0,
     exercise: {
       supported_variant_available: e.supported_variant_available === true,
     },

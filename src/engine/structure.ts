@@ -31,8 +31,14 @@ export function buildWeek(
   }
   if (g.population === "older_adult")
     cap = Math.min(cap, rules.get("older.week.strength").days_per_week.max);
-  if (g.population === "pregnant")
-    cap = rules.get("pregnancy.week.target").strength_days_per_week_default;
+  if (
+    g.population === "pregnant" &&
+    !allocation.distribute_strength_across_available_days
+  )
+    cap = Math.min(
+      cap,
+      rules.get("pregnancy.week.target").strength_days_per_week_default,
+    );
   if (g.population === "postpartum" && g.phase === 2)
     cap = rules.get("postpartum.phase2").strength_days_per_week;
   const rtDays = Math.min(p.daysPerWeek, cap),

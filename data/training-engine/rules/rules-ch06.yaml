@@ -68,6 +68,11 @@
   chapter: 6
   type: formula
   value:
+    loaded_preference:
+      goals: [muscle, strength]
+      modalities: [strength, power, isometric]
+      equipment: [dumbbell, kettlebell, barbell, resistance-band, loop-band, ez-bar, trap-bar, plates, cable, smith-machine, chest-press-machine, lat-pulldown-machine, leg-press, leg-curl, leg-extension, hack-squat, hip-abduction-machine, hip-adduction-machine, bicep-curl-machine, standing-calf-raise-machine, chest-fly-machine, preacher-curl-machine, ab-crunch-machine, shoulder-press-machine, tricep-extension-machine, pec-deck, donkey-calf-raise-machine, hip-thrust-machine, plate-loaded-lateral-raise-machine, shrug-machine, seated-calf-raise-machine, backpack, water-bottles, sled]
+      marginal_bonus: 0.02
     sort_keys_in_order:
       - "abs(difficulty - target_difficulty) asc"
       - "main slots: laterality == bilateral first; nsca_class == compound first"

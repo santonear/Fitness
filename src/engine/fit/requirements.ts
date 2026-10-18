@@ -1,4 +1,5 @@
 import { type SessionDraft, type PipelineContext } from "../contracts";
+import { condition } from "../data";
 import { sourceCorePatternGroups } from "../skeleton";
 
 /** Preserve an already represented source requirement; absence never becomes a fabricated success. */
@@ -15,7 +16,15 @@ export function retainsRequirements(
           i.prescription?.block !== "cooldown",
       );
   if (
-    ctx.gate.restrictions.population === "older_adult" &&
+    (ctx.gate.restrictions.population === "older_adult" ||
+      (ctx.profile.population.kind === "pregnant" &&
+        ctx.profile.sessionMinutes >
+          r.get("session.durations.allowed").minutes[0] &&
+        condition(
+          r.get("pregnancy.exclude.fall_risk").restore_slot.when,
+          r.data.exercises[0],
+          { gestation_week: ctx.profile.population.week },
+        ))) &&
     balance(before) &&
     !balance(after)
   )

@@ -1,3 +1,5 @@
+import { fittingPlan } from "./plan-context";
+import { withinMobilityBudget, trimMobilityBudget } from "./mobility-budget";
 import { cardioWorkCap, capCardioItems } from "./cardio-cap";
 import { pregnancyRampMinutes } from "../pregnancy-limits";
 import { fillSafeBudget } from "./refill";
@@ -28,7 +30,11 @@ export function fitDuration(
     ),
     distance = (s: SessionDraft) => Math.abs(estimateSeconds(s, r) - T),
     accept = (next: SessionDraft) => {
-      if (!retainsRequirements(out, next, ctx)) return false;
+      if (
+        !retainsRequirements(out, next, ctx) ||
+        !withinMobilityBudget(next, r)
+      )
+        return false;
       const before = estimateSeconds(out, r),
         after = estimateSeconds(next, r);
       if (before <= pregnancyCeiling && after > pregnancyCeiling) return false;
@@ -77,24 +83,28 @@ export function fitDuration(
           : week.sets_per_exercise
         : Infinity,
     );
-  const planFor = (session: SessionDraft) =>
-    Object.freeze({
-      ...ctx.plan!,
-      weeklyTarget: p.daysPerWeek,
-      sessionMinutes: target,
-      templates: [
-        ...(ctx.plan?.templates.filter((t) => t.id !== session.id) ?? []),
-        session,
-      ],
-      meta: ctx.plan?.meta ?? {
-        engineVersion: "2",
-        rulesVersion: r.data.rulesVersion,
-        seed: ctx.profileHash,
-      },
-      trace: ctx.trace,
-      notices: [],
-      gates: ctx.gate.reasons,
+  const planFor = (session: SessionDraft) => fittingPlan(session, ctx, target);
+  out = trimMobilityBudget(out, r, locked, (before, next) => {
+    if (!retainsRequirements(before, next, ctx)) return false;
+    const unsafe = checkHard(planFor(next), p, ctx.gate, r, true).some(
+      (issue) =>
+        issue.severity === "error" &&
+        !["duration_tolerance", "balance_days"].includes(issue.code),
+    );
+    if (unsafe) return false;
+    ctx.trace.push({
+      ruleId: "duration.cardio.cap",
+      step: "fit",
+      reason: "mobility content budget",
+      note: r.byExercise.get(
+        before.items.find(
+          (item) =>
+            !next.items.some((row) => row.exerciseId === item.exerciseId),
+        )!.exerciseId,
+      )?.slug,
     });
+    return true;
+  });
   // Remove one optional action at a time, choosing the smallest true quality loss.
   while (estimateSeconds(out, r) > Math.min(T * band[1], pregnancyCeiling)) {
     const plan = planFor(out),
@@ -311,6 +321,14 @@ export function fitDuration(
               ? [1, cardioWorkCap(e, p, r, ctx.gate) / (i.sets * side)]
               : e.default_dose[p.level]?.seconds;
     if (!range) continue;
+    if (
+      e.modality === "mobility" &&
+      delta < 0 &&
+      r.get("duration.cardio.cap").refill
+        .preserve_mobility_dose_inside_tolerance &&
+      estimateSeconds(out, r) <= Math.min(T * band[1], pregnancyCeiling)
+    )
+      continue;
     item.target.durationSeconds = Math.max(
       Math.ceil(range[0]),
       Math.min(
@@ -320,6 +338,8 @@ export function fitDuration(
     );
     accept(next);
   }
+  // Timed-dose fitting can reopen capacity; close it using the same bounded, hard-checked order.
+  fillSafeBudget(() => out, T, ctx, locked, accept);
   // Only repair a remaining hard-duration overflow after all ordinary fitting stages.
   const hardHigh =
     target === r.get("session.durations.allowed").minutes[0]

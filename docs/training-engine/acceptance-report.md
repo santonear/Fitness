@@ -1,16 +1,18 @@
 # Training engine V2 acceptance report
 
+生产开启仅用于测试；对外开放或商用前，专业审核和 RepDB 许可仍为必须项。
+
 Functional correctness evidence. Timing is informational only; engine:perf reports three independent cold 80-profile runs separately.
 
 ```json
 {
   "version": 3,
-  "sourceHash": "96eb6553bfca72301ed634e623573bacc6fc41abd5d73883e94e9e5d6d336ff8",
+  "sourceHash": "6c4db1895a2d8d4fa0b85dc9c737dc818e573ef73c1f6fbec1754ca09a6e877d",
   "inputHash": "58eec36583cead086e435eeb3ceb10bcbf82c9ecf911bd4dcfb509a0bff10332",
   "seed": 20261015,
   "nodeVersion": "v24.14.0",
   "runtimeFingerprint": "670a0b0516d2baa29f38405873b784232e6c52e72a83907905cd2e2906ca7dc5",
-  "wallMs": 110446.40893554688,
+  "wallMs": 86809.30200195312,
   "report": {
     "stage": "V2 diagnostic",
     "pregnancyRamp": {
@@ -27,17 +29,17 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
           "courses": [
             {
               "templateId": "day-96438042",
-              "actualSeconds": 1765,
+              "actualSeconds": 1800,
               "targetMinutes": 30
             },
             {
               "templateId": "day-5240d69f",
-              "actualSeconds": 1714,
+              "actualSeconds": 1797,
               "targetMinutes": 30
             },
             {
               "templateId": "day-52479264",
-              "actualSeconds": 1735,
+              "actualSeconds": 1750,
               "targetMinutes": 30
             }
           ],
@@ -74,7 +76,7 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
           "courses": [
             {
               "templateId": "day-8fe7438a",
-              "actualSeconds": 1678,
+              "actualSeconds": 1735,
               "targetMinutes": 30
             }
           ],
@@ -106,27 +108,27 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
           "courses": [
             {
               "templateId": "day-b210fb72",
-              "actualSeconds": 1800,
+              "actualSeconds": 1799,
               "targetMinutes": 30
             },
             {
               "templateId": "day-ae0eb68f",
-              "actualSeconds": 1800,
+              "actualSeconds": 1707,
               "targetMinutes": 30
             },
             {
               "templateId": "day-ae170554",
-              "actualSeconds": 1790,
-              "targetMinutes": 30
-            },
-            {
-              "templateId": "day-f2139ec9",
               "actualSeconds": 1800,
               "targetMinutes": 30
             },
             {
+              "templateId": "day-f2139ec9",
+              "actualSeconds": 1770,
+              "targetMinutes": 30
+            },
+            {
               "templateId": "day-f21bed8e",
-              "actualSeconds": 1785,
+              "actualSeconds": 1757,
               "targetMinutes": 30
             }
           ],
@@ -178,12 +180,12 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
           "courses": [
             {
               "templateId": "day-a1634396",
-              "actualSeconds": 1709,
+              "actualSeconds": 1713,
               "targetMinutes": 30
             },
             {
               "templateId": "day-dd5fd073",
-              "actualSeconds": 1679,
+              "actualSeconds": 1800,
               "targetMinutes": 30
             },
             {
@@ -193,12 +195,12 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
             },
             {
               "templateId": "day-e165e6ed",
-              "actualSeconds": 1800,
+              "actualSeconds": 1707,
               "targetMinutes": 30
             },
             {
               "templateId": "day-a158b63a",
-              "actualSeconds": 1800,
+              "actualSeconds": 1707,
               "targetMinutes": 30
             },
             {
@@ -224,17 +226,17 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
             },
             {
               "templateId": "day-0b627f63",
-              "actualSeconds": 571,
-              "targetMinutes": 10
-            },
-            {
-              "templateId": "day-0b693b28",
               "actualSeconds": 600,
               "targetMinutes": 10
             },
             {
+              "templateId": "day-0b693b28",
+              "actualSeconds": 596,
+              "targetMinutes": 10
+            },
+            {
               "templateId": "day-cf669e1d",
-              "actualSeconds": 555,
+              "actualSeconds": 600,
               "targetMinutes": 10
             },
             {
@@ -244,7 +246,7 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
             },
             {
               "templateId": "day-0b57f207",
-              "actualSeconds": 600,
+              "actualSeconds": 571,
               "targetMinutes": 10
             }
           ],
@@ -260,12 +262,12 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
           "courses": [
             {
               "templateId": "day-5ef6bf86",
-              "actualSeconds": 1772,
+              "actualSeconds": 1672.5,
               "targetMinutes": 30
             },
             {
               "templateId": "day-5af47aa3",
-              "actualSeconds": 1644,
+              "actualSeconds": 1775.5,
               "targetMinutes": 30
             }
           ],
@@ -281,17 +283,17 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
           "courses": [
             {
               "templateId": "day-404ff659",
-              "actualSeconds": 1799.5,
+              "actualSeconds": 1800,
               "targetMinutes": 30
             },
             {
               "templateId": "day-fc51c9e4",
-              "actualSeconds": 1650.5,
+              "actualSeconds": 1664.5,
               "targetMinutes": 30
             },
             {
               "templateId": "day-fc4b0e1f",
-              "actualSeconds": 1715,
+              "actualSeconds": 1681.5,
               "targetMinutes": 30
             }
           ],
@@ -323,7 +325,7 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
           "courses": [
             {
               "templateId": "day-b726c54c",
-              "actualSeconds": 1451,
+              "actualSeconds": 1485,
               "targetMinutes": 25
             },
             {
@@ -338,7 +340,7 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
             },
             {
               "templateId": "day-f7206e47",
-              "actualSeconds": 1499,
+              "actualSeconds": 1380,
               "targetMinutes": 25
             }
           ],
@@ -354,17 +356,17 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
           "courses": [
             {
               "templateId": "day-bd8eb145",
-              "actualSeconds": 1772,
+              "actualSeconds": 1773,
               "targetMinutes": 30
             },
             {
               "templateId": "day-f9914e50",
-              "actualSeconds": 1678,
+              "actualSeconds": 1709,
               "targetMinutes": 30
             },
             {
               "templateId": "day-f988ff8b",
-              "actualSeconds": 1730,
+              "actualSeconds": 1800,
               "targetMinutes": 30
             }
           ],
@@ -401,7 +403,7 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
             },
             {
               "templateId": "day-d08122b5",
-              "actualSeconds": 1714,
+              "actualSeconds": 1698,
               "targetMinutes": 30
             },
             {
@@ -411,7 +413,7 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
             },
             {
               "templateId": "day-0c7d03fb",
-              "actualSeconds": 1785,
+              "actualSeconds": 1760,
               "targetMinutes": 30
             },
             {
@@ -421,7 +423,7 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
             },
             {
               "templateId": "day-1076fa19",
-              "actualSeconds": 1785,
+              "actualSeconds": 1800,
               "targetMinutes": 30
             }
           ],
@@ -478,12 +480,12 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
           "courses": [
             {
               "templateId": "day-f4699e58",
-              "actualSeconds": 1730,
+              "actualSeconds": 1800,
               "targetMinutes": 30
             },
             {
               "templateId": "day-f867660d",
-              "actualSeconds": 1740,
+              "actualSeconds": 1732,
               "targetMinutes": 30
             }
           ],
@@ -504,12 +506,12 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
             },
             {
               "templateId": "day-0ed3cd4a",
-              "actualSeconds": 1679,
+              "actualSeconds": 1663,
               "targetMinutes": 30
             },
             {
               "templateId": "day-4ed670a1",
-              "actualSeconds": 1705,
+              "actualSeconds": 1714,
               "targetMinutes": 30
             }
           ],
@@ -525,27 +527,27 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
           "courses": [
             {
               "templateId": "day-8743898a",
-              "actualSeconds": 1779,
+              "actualSeconds": 1800,
               "targetMinutes": 30
             },
             {
               "templateId": "day-834144a7",
-              "actualSeconds": 1711,
+              "actualSeconds": 1800,
               "targetMinutes": 30
             },
             {
               "templateId": "day-c348652c",
-              "actualSeconds": 1800,
+              "actualSeconds": 1721,
               "targetMinutes": 30
             },
             {
               "templateId": "day-c7462ce1",
-              "actualSeconds": 1800,
+              "actualSeconds": 1770,
               "targetMinutes": 30
             },
             {
               "templateId": "day-874e16e6",
-              "actualSeconds": 1650,
+              "actualSeconds": 1714,
               "targetMinutes": 30
             },
             {
@@ -566,17 +568,17 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
           "courses": [
             {
               "templateId": "day-f781625c",
-              "actualSeconds": 1360,
+              "actualSeconds": 1500,
               "targetMinutes": 25
             },
             {
               "templateId": "day-bb7ec551",
-              "actualSeconds": 1400,
+              "actualSeconds": 1485,
               "targetMinutes": 25
             },
             {
               "templateId": "day-bb7c86ba",
-              "actualSeconds": 1500,
+              "actualSeconds": 1420,
               "targetMinutes": 25
             }
           ],
@@ -592,27 +594,27 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
           "courses": [
             {
               "templateId": "day-38f02733",
-              "actualSeconds": 1796,
+              "actualSeconds": 1791,
               "targetMinutes": 30
             },
             {
               "templateId": "day-fcf20756",
-              "actualSeconds": 1697,
+              "actualSeconds": 1679,
               "targetMinutes": 30
             },
             {
               "templateId": "day-3cf4aaad",
-              "actualSeconds": 1785,
+              "actualSeconds": 1800,
               "targetMinutes": 30
             },
             {
               "templateId": "day-38f6e2f8",
-              "actualSeconds": 1800,
+              "actualSeconds": 1742,
               "targetMinutes": 30
             },
             {
               "templateId": "day-38e599d7",
-              "actualSeconds": 1800,
+              "actualSeconds": 1681,
               "targetMinutes": 30
             }
           ],
@@ -628,22 +630,22 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
           "courses": [
             {
               "templateId": "day-a1c74069",
-              "actualSeconds": 1500,
+              "actualSeconds": 1465,
               "targetMinutes": 25
             },
             {
               "templateId": "day-ddc9dd74",
-              "actualSeconds": 1498,
+              "actualSeconds": 1500,
               "targetMinutes": 25
             },
             {
               "templateId": "day-ddc321af",
-              "actualSeconds": 1395,
+              "actualSeconds": 1450,
               "targetMinutes": 25
             },
             {
               "templateId": "day-e1c56692",
-              "actualSeconds": 1380,
+              "actualSeconds": 1500,
               "targetMinutes": 25
             },
             {
@@ -664,12 +666,12 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
           "courses": [
             {
               "templateId": "day-b2da39fb",
-              "actualSeconds": 1723,
+              "actualSeconds": 1749,
               "targetMinutes": 30
             },
             {
               "templateId": "day-b6dc7ede",
-              "actualSeconds": 1776,
+              "actualSeconds": 1799.5,
               "targetMinutes": 30
             }
           ],
@@ -695,17 +697,17 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
             },
             {
               "templateId": "day-2dc6a922",
-              "actualSeconds": 1665,
+              "actualSeconds": 1754,
               "targetMinutes": 30
             },
             {
               "templateId": "day-69c4c8ff",
-              "actualSeconds": 1665,
+              "actualSeconds": 1664,
               "targetMinutes": 30
             },
             {
               "templateId": "day-69d61220",
-              "actualSeconds": 1665,
+              "actualSeconds": 1799,
               "targetMinutes": 30
             }
           ],
@@ -721,12 +723,12 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
           "courses": [
             {
               "templateId": "day-58668171",
-              "actualSeconds": 1421,
+              "actualSeconds": 1499,
               "targetMinutes": 25
             },
             {
               "templateId": "day-146854fc",
-              "actualSeconds": 1402,
+              "actualSeconds": 1365,
               "targetMinutes": 25
             },
             {
@@ -736,12 +738,12 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
             },
             {
               "templateId": "day-586442da",
-              "actualSeconds": 1499,
+              "actualSeconds": 1438,
               "targetMinutes": 25
             },
             {
               "templateId": "day-1870aa0d",
-              "actualSeconds": 1500,
+              "actualSeconds": 1497,
               "targetMinutes": 25
             }
           ],
@@ -762,22 +764,22 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
             },
             {
               "templateId": "day-9c456c54",
-              "actualSeconds": 1124,
+              "actualSeconds": 1200,
               "targetMinutes": 20
             },
             {
               "templateId": "day-9c3d1d8f",
-              "actualSeconds": 1200,
+              "actualSeconds": 1199,
               "targetMinutes": 20
             },
             {
               "templateId": "day-a03f6272",
-              "actualSeconds": 1198,
+              "actualSeconds": 1152,
               "targetMinutes": 20
             },
             {
               "templateId": "day-e04c9325",
-              "actualSeconds": 1200,
+              "actualSeconds": 1144,
               "targetMinutes": 20
             }
           ],
@@ -793,12 +795,12 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
           "courses": [
             {
               "templateId": "day-b02f30d0",
-              "actualSeconds": 1758,
+              "actualSeconds": 1797,
               "targetMinutes": 30
             },
             {
               "templateId": "day-742c93c5",
-              "actualSeconds": 1696,
+              "actualSeconds": 1706,
               "targetMinutes": 30
             }
           ],
@@ -824,17 +826,17 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
             },
             {
               "templateId": "day-31b52cc2",
-              "actualSeconds": 1700,
+              "actualSeconds": 1705,
               "targetMinutes": 30
             },
             {
               "templateId": "day-edb2831f",
-              "actualSeconds": 1700,
+              "actualSeconds": 1800,
               "targetMinutes": 30
             },
             {
               "templateId": "day-edc3cc40",
-              "actualSeconds": 1700,
+              "actualSeconds": 1705,
               "targetMinutes": 30
             },
             {
@@ -855,27 +857,27 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
           "courses": [
             {
               "templateId": "day-8157f385",
-              "actualSeconds": 1788,
+              "actualSeconds": 1778,
               "targetMinutes": 30
             },
             {
               "templateId": "day-bd5a9090",
-              "actualSeconds": 1800,
+              "actualSeconds": 1750,
               "targetMinutes": 30
             },
             {
               "templateId": "day-bd53d4cb",
-              "actualSeconds": 1800,
+              "actualSeconds": 1799,
               "targetMinutes": 30
             },
             {
               "templateId": "day-8155b4ee",
-              "actualSeconds": 1785,
+              "actualSeconds": 1781,
               "targetMinutes": 30
             },
             {
               "templateId": "day-814ef929",
-              "actualSeconds": 1790,
+              "actualSeconds": 1800,
               "targetMinutes": 30
             }
           ],
@@ -918,6 +920,10 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       "environment_unavailable": 0
     },
     "empty": 0,
+    "mobilityBudget": {
+      "exceedanceCount": 0,
+      "exceedances": []
+    },
     "unsafe": [],
     "environmentUnmet": [],
     "actionableHardViolations": [],
@@ -934,11 +940,11 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "index": 9,
-        "score": 0.5888612726818135
+        "score": 0.5900628930792821
       },
       {
         "index": 28,
-        "score": 0.4578125
+        "score": 0.4626736111111111
       },
       {
         "index": 42,
@@ -954,11 +960,11 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "index": 70,
-        "score": 0.4952489484448561
+        "score": 0.49561846099199175
       },
       {
         "index": 125,
-        "score": 0.5511113288052943
+        "score": 0.553195853792547
       },
       {
         "index": 128,
@@ -986,7 +992,7 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "index": 185,
-        "score": 0.4541034691260891
+        "score": 0.4700003973119012
       },
       {
         "index": 188,
@@ -995,6 +1001,10 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       {
         "index": 189,
         "score": 0
+      },
+      {
+        "index": 205,
+        "score": 0.5929473019414453
       },
       {
         "index": 235,
@@ -1006,11 +1016,7 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "index": 260,
-        "score": 0.5812256543899703
-      },
-      {
-        "index": 263,
-        "score": 0.5996710894839592
+        "score": 0.5813740226909065
       },
       {
         "index": 266,
@@ -1022,11 +1028,11 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "index": 279,
-        "score": 0.49328593195365344
+        "score": 0.47695778211894807
       },
       {
         "index": 294,
-        "score": 0.5262252944003016
+        "score": 0.5249461285383215
       },
       {
         "index": 318,
@@ -1046,7 +1052,7 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "index": 357,
-        "score": 0.5480651340996169
+        "score": 0.5502775934061689
       },
       {
         "index": 360,
@@ -1055,6 +1061,10 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       {
         "index": 400,
         "score": 0.5433220582205822
+      },
+      {
+        "index": 416,
+        "score": 0.5987791538735269
       },
       {
         "index": 433,
@@ -1070,7 +1080,7 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "index": 481,
-        "score": 0.5809445179189896
+        "score": 0.5848667703180492
       },
       {
         "index": 488,
@@ -1113,28 +1123,24 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
         "score": 0.5338875205254515
       },
       {
-        "index": 595,
-        "score": 0.5978855815597465
-      },
-      {
         "index": 635,
         "score": 0
       },
       {
         "index": 640,
-        "score": 0.5890603578642408
+        "score": 0.5913359879072745
       },
       {
         "index": 652,
-        "score": 0.5883652833163135
+        "score": 0.5849484647355393
       },
       {
         "index": 655,
-        "score": 0.5844155193411075
+        "score": 0.5912413106999951
       },
       {
         "index": 656,
-        "score": 0.5943386428221921
+        "score": 0.5942330434253171
       },
       {
         "index": 660,
@@ -1142,15 +1148,15 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "index": 664,
-        "score": 0.5341756854256854
+        "score": 0.5326248817130462
       },
       {
         "index": 673,
-        "score": 0.5887757904863168
+        "score": 0.5852403326487762
       },
       {
         "index": 689,
-        "score": 0.5936590886098015
+        "score": 0.5918864018053206
       },
       {
         "index": 698,
@@ -1158,11 +1164,11 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "index": 705,
-        "score": 0.5058703703703704
+        "score": 0.503989865095979
       },
       {
         "index": 714,
-        "score": 0.49185210075667063
+        "score": 0.48854166666666665
       },
       {
         "index": 735,
@@ -1178,7 +1184,7 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "index": 756,
-        "score": 0.5708821329237729
+        "score": 0.5721758855981417
       },
       {
         "index": 758,
@@ -1205,12 +1211,16 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
         "score": 0.583915770609319
       },
       {
+        "index": 837,
+        "score": 0.5998693110106154
+      },
+      {
         "index": 846,
         "score": 0.5026041666666666
       },
       {
         "index": 847,
-        "score": 0.5752200888192267
+        "score": 0.580948275862069
       },
       {
         "index": 858,
@@ -1218,19 +1228,15 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "index": 867,
-        "score": 0.5782893826135105
+        "score": 0.5814472591362126
       },
       {
         "index": 886,
         "score": 0.5673166100017215
       },
       {
-        "index": 887,
-        "score": 0.5994586891780488
-      },
-      {
         "index": 907,
-        "score": 0.5762064146679532
+        "score": 0.5767311750885995
       },
       {
         "index": 920,
@@ -1245,16 +1251,16 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
         "score": 0.5928540785683643
       },
       {
-        "index": 965,
-        "score": 0.5972649489073463
-      },
-      {
         "index": 966,
         "score": 0.5896875
       },
       {
+        "index": 970,
+        "score": 0.5803906327415806
+      },
+      {
         "index": 993,
-        "score": 0.5966192684955612
+        "score": 0.5980722348028794
       },
       {
         "index": 994,
@@ -1278,7 +1284,7 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "index": 1115,
-        "score": 0.5959299917039478
+        "score": 0.59686975015313
       },
       {
         "index": 1120,
@@ -1298,15 +1304,11 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "index": 1151,
-        "score": 0.5263772175536882
+        "score": 0.5788798852874484
       },
       {
         "index": 1154,
         "score": 0.5057407407407407
-      },
-      {
-        "index": 1160,
-        "score": 0.5974499950975586
       },
       {
         "index": 1166,
@@ -1326,7 +1328,7 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "index": 1216,
-        "score": 0.5762256784434203
+        "score": 0.5841538802603465
       },
       {
         "index": 1226,
@@ -1334,7 +1336,7 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "index": 1234,
-        "score": 0.5751913093992916
+        "score": 0.561108440988176
       },
       {
         "index": 1235,
@@ -1342,11 +1344,11 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "index": 1245,
-        "score": 0.5924942765567766
+        "score": 0.597203073089701
       },
       {
         "index": 1255,
-        "score": 0.5780595788945738
+        "score": 0.5790573004837587
       },
       {
         "index": 1266,
@@ -1358,11 +1360,19 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "index": 1322,
-        "score": 0.5669919163357201
+        "score": 0.5673829823873379
       },
       {
         "index": 1335,
         "score": 0
+      },
+      {
+        "index": 1355,
+        "score": 0.5980808384077009
+      },
+      {
+        "index": 1362,
+        "score": 0.5983684577434577
       },
       {
         "index": 1371,
@@ -1386,7 +1396,7 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "index": 1411,
-        "score": 0.5890644102039259
+        "score": 0.5973441019669034
       },
       {
         "index": 1435,
@@ -1394,7 +1404,7 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "index": 1454,
-        "score": 0.5925511664005835
+        "score": 0.5940299551516464
       },
       {
         "index": 1460,
@@ -1406,7 +1416,7 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "index": 1514,
-        "score": 0.5957429185856661
+        "score": 0.5926743864954828
       },
       {
         "index": 1522,
@@ -1438,11 +1448,15 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "index": 1589,
-        "score": 0.5603951326751003
+        "score": 0.5572586595943128
+      },
+      {
+        "index": 1627,
+        "score": 0.5946470883847853
       },
       {
         "index": 1633,
-        "score": 0.581962434664927
+        "score": 0.584538735172784
       },
       {
         "index": 1635,
@@ -1458,15 +1472,15 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "index": 1677,
-        "score": 0.586871921182266
+        "score": 0.5887529309722319
       },
       {
         "index": 1684,
-        "score": 0.47074172915328283
+        "score": 0.47664615577812325
       },
       {
         "index": 1697,
-        "score": 0.5919733044733045
+        "score": 0.5909399801587302
       },
       {
         "index": 1708,
@@ -1478,7 +1492,7 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "index": 1770,
-        "score": 0.5032260435038213
+        "score": 0.5120726724769584
       },
       {
         "index": 1776,
@@ -1486,7 +1500,7 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "index": 1784,
-        "score": 0.5831330273839815
+        "score": 0.582127319647059
       },
       {
         "index": 1835,
@@ -1498,7 +1512,7 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "index": 1844,
-        "score": 0.5933858166922683
+        "score": 0.5997444164631663
       },
       {
         "index": 1846,
@@ -1510,15 +1524,15 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "index": 1883,
-        "score": 0.5735276415860708
+        "score": 0.5737168740707669
       },
       {
         "index": 1895,
-        "score": 0.44300646867824517
+        "score": 0.44535592653408745
       },
       {
         "index": 1904,
-        "score": 0.560984571247854
+        "score": 0.564207326918109
       },
       {
         "index": 1910,
@@ -1542,11 +1556,11 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "index": 1943,
-        "score": 0.451675925925926
+        "score": 0.4605732226899354
       },
       {
         "index": 1945,
-        "score": 0.5902504730965501
+        "score": 0.5954457420331403
       },
       {
         "index": 1960,
@@ -1554,56 +1568,211 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "index": 1963,
-        "score": 0.5802671254529096
+        "score": 0.577483415940361
       },
       {
         "index": 1994,
-        "score": 0.5994574067476355
+        "score": 0.5936787598908743
       }
     ],
-    "qualityMedian": 0.7682782191992092,
-    "qualityP10": 0.6008838752166401,
-    "within10Rate": 0.9794776119402985,
+    "qualityMedian": 0.7685290697674418,
+    "qualityP10": 0.6000036845239897,
+    "within10Rate": 0.9676616915422885,
     "timingBreakdown": {
       "originalEligible": 1608,
-      "intentionalShort": 0,
-      "nonShortEligible": 1608,
-      "nonShortWithin10": 1575,
-      "nonShortWithin10Rate": 0.9794776119402985,
-      "shortageFraction": 0,
+      "intentionalShort": 7,
+      "nonShortEligible": 1601,
+      "nonShortWithin10": 1556,
+      "nonShortWithin10Rate": 0.9718925671455341,
+      "shortageFraction": 0.0035,
       "shortageFractionLimit": 0.05,
-      "minimumDurationRatio": 0.9,
+      "minimumDurationRatio": 0.5597222222222222,
       "below50Count": 0,
-      "minimumExtremeDurationRatio": 0.905,
+      "minimumExtremeDurationRatio": 0.5083333333333333,
       "extremeBelow50Count": 0,
-      "extremeIntentionalShortCount": 0,
-      "shortageProfiles": [],
-      "averageGapSeconds": 0,
-      "maxGapSeconds": 0
+      "extremeIntentionalShortCount": 7,
+      "shortageProfiles": [
+        {
+          "index": 229,
+          "qualified": true,
+          "minimumRatio": 0.7430555555555556,
+          "below50": false,
+          "population": "older_adult",
+          "level": "other",
+          "equipment": "adjustable-bench+anchor-point+barbell+cable+chair+dumbbell+flat-bench+kettlebell+lat-pulldown-machine+leg-curl+leg-extension+leg-press+none+pull-up-bar+squat-rack+wall",
+          "space": "medium",
+          "targetMinutes": 60,
+          "reasons": [
+            "duration.cardio.cap",
+            "select.pipeline"
+          ],
+          "proofs": [
+            {
+              "templateId": "day-6cd07965",
+              "missingSeconds": 925,
+              "ratio": 0.7430555555555556
+            }
+          ]
+        },
+        {
+          "index": 329,
+          "qualified": true,
+          "minimumRatio": 0.6055555555555555,
+          "below50": false,
+          "population": "older_adult",
+          "level": "other",
+          "equipment": "adjustable-bench+anchor-point+barbell+cable+chair+dumbbell+flat-bench+kettlebell+lat-pulldown-machine+leg-curl+leg-extension+leg-press+none+pull-up-bar+squat-rack+wall",
+          "space": "mat",
+          "targetMinutes": 60,
+          "reasons": [
+            "duration.cardio.cap",
+            "select.pipeline"
+          ],
+          "proofs": [
+            {
+              "templateId": "day-649c4483",
+              "missingSeconds": 1420,
+              "ratio": 0.6055555555555555
+            }
+          ]
+        },
+        {
+          "index": 359,
+          "qualified": true,
+          "minimumRatio": 0.7458333333333333,
+          "below50": false,
+          "population": "older_adult",
+          "level": "other",
+          "equipment": "adjustable-bench+anchor-point+barbell+cable+chair+dumbbell+flat-bench+kettlebell+lat-pulldown-machine+leg-curl+leg-extension+leg-press+none+pull-up-bar+squat-rack+wall",
+          "space": "large",
+          "targetMinutes": 60,
+          "reasons": [
+            "duration.cardio.cap",
+            "select.pipeline"
+          ],
+          "proofs": [
+            {
+              "templateId": "day-f4ccc364",
+              "missingSeconds": 915,
+              "ratio": 0.7458333333333333
+            }
+          ]
+        },
+        {
+          "index": 929,
+          "qualified": true,
+          "minimumRatio": 0.5597222222222222,
+          "below50": false,
+          "population": "older_adult",
+          "level": "other",
+          "equipment": "adjustable-bench+anchor-point+barbell+cable+chair+dumbbell+flat-bench+kettlebell+lat-pulldown-machine+leg-curl+leg-extension+leg-press+none+pull-up-bar+squat-rack+wall",
+          "space": "small",
+          "targetMinutes": 60,
+          "reasons": [
+            "duration.cardio.cap",
+            "select.pipeline"
+          ],
+          "proofs": [
+            {
+              "templateId": "day-763bf0cf",
+              "missingSeconds": 1585,
+              "ratio": 0.5597222222222222
+            }
+          ]
+        },
+        {
+          "index": 1059,
+          "qualified": true,
+          "minimumRatio": 0.7430555555555556,
+          "below50": false,
+          "population": "older_adult",
+          "level": "other",
+          "equipment": "adjustable-bench+anchor-point+barbell+cable+chair+dumbbell+flat-bench+kettlebell+lat-pulldown-machine+leg-curl+leg-extension+leg-press+none+pull-up-bar+squat-rack+wall",
+          "space": "mat",
+          "targetMinutes": 60,
+          "reasons": [
+            "duration.cardio.cap",
+            "select.pipeline"
+          ],
+          "proofs": [
+            {
+              "templateId": "day-48fa3490",
+              "missingSeconds": 925,
+              "ratio": 0.7430555555555556
+            }
+          ]
+        },
+        {
+          "index": 1429,
+          "qualified": true,
+          "minimumRatio": 0.7694444444444445,
+          "below50": false,
+          "population": "older_adult",
+          "level": "other",
+          "equipment": "adjustable-bench+anchor-point+barbell+cable+chair+dumbbell+flat-bench+kettlebell+lat-pulldown-machine+leg-curl+leg-extension+leg-press+none+pull-up-bar+squat-rack+wall",
+          "space": "small",
+          "targetMinutes": 60,
+          "reasons": [
+            "duration.cardio.cap",
+            "select.pipeline"
+          ],
+          "proofs": [
+            {
+              "templateId": "day-fcafdc77",
+              "missingSeconds": 830,
+              "ratio": 0.7694444444444445
+            }
+          ]
+        },
+        {
+          "index": 1667,
+          "qualified": true,
+          "minimumRatio": 0.8604166666666667,
+          "below50": false,
+          "population": "older_adult",
+          "level": "other",
+          "equipment": "loop-band+none+resistance-band",
+          "space": "mat",
+          "targetMinutes": 40,
+          "reasons": [
+            "duration.cardio.cap",
+            "select.pipeline"
+          ],
+          "proofs": [
+            {
+              "templateId": "day-938f79ef",
+              "missingSeconds": 335,
+              "ratio": 0.8604166666666667
+            }
+          ]
+        }
+      ],
+      "averageGapSeconds": 990.7142857142857,
+      "maxGapSeconds": 1585
     },
     "coverageRate": 1,
     "notices": {
-      "engine.copy.target_volume": 1764,
-      "engine.copy.target_aerobic": 1849,
-      "session.copy.short_stretch_target": 736,
+      "engine.copy.target_volume": 1725,
+      "engine.copy.target_aerobic": 1876,
+      "session.copy.short_stretch_target": 725,
       "safety.copy.clearance_needed": 610,
       "safety.copy.age45_advisory": 350,
       "pregnancy.stop.copy.stop": 210,
-      "session.copy.intentional_short": 39,
-      "pregnancy.pelvic_floor.copy": 95,
-      "postpartum.copy.urgent.urgent": 151,
+      "session.copy.intentional_short": 64,
+      "pregnancy.pelvic_floor.copy": 87,
+      "postpartum.copy.urgent.urgent": 150,
       "engine.copy.target_balance": 24,
       "postpartum.gate.pre_check.copy": 70,
       "safety.copy.illness_pause": 89,
-      "postpartum.pelvic_floor.copy": 52,
+      "postpartum.pelvic_floor.copy": 53,
       "postpartum.physio_offer.offer": 22,
-      "pregnancy.copy.long_session.copy": 15
+      "pregnancy.copy.long_session.copy": 17
     },
     "noticeCounts": {
       "0": 0,
       "1": 16,
-      "2": 449,
-      "3": 1535
+      "2": 453,
+      "3": 1531
     },
     "extremeNoticeCounts": {
       "0": 0,
@@ -1615,51 +1784,51 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
     "lowScoreLoss": [
       {
         "id": "goal.floor.all",
-        "weightedLoss": 222.0047787608918
+        "weightedLoss": 227.86670867924354
       },
       {
         "id": "dose.sets_week.intermediate",
-        "weightedLoss": 204.2367424242424
+        "weightedLoss": 205.83273809523808
       },
       {
         "id": "balance.week.hinge_knee",
-        "weightedLoss": 161.7414238422642
+        "weightedLoss": 162.3680129394415
       },
       {
         "id": "goal.aerobic.baseline",
-        "weightedLoss": 157.015
+        "weightedLoss": 159.2491111111111
       },
       {
         "id": "aerobic.target.weekly",
-        "weightedLoss": 157.015
+        "weightedLoss": 159.2491111111111
       },
       {
         "id": "dose.sets_week.beginner",
-        "weightedLoss": 154.8472222222222
+        "weightedLoss": 157.74305555555554
       },
       {
         "id": "session.warmup.general",
-        "weightedLoss": 140.25314814814817
+        "weightedLoss": 143.3722222222222
       },
       {
         "id": "dose.sets_week.goal_matrix",
-        "weightedLoss": 118.84270833333333
+        "weightedLoss": 121.37986111111111
       },
       {
         "id": "session.warmup.dynamic",
-        "weightedLoss": 99.76740740740739
-      },
-      {
-        "id": "goal.params.health",
-        "weightedLoss": 77.98786745980571
+        "weightedLoss": 100.32777777777777
       },
       {
         "id": "session.cooldown.stretch",
-        "weightedLoss": 75.99738095238094
+        "weightedLoss": 76.85376984126982
       },
       {
         "id": "week.frequency.per_muscle",
-        "weightedLoss": 74
+        "weightedLoss": 76
+      },
+      {
+        "id": "goal.params.health",
+        "weightedLoss": 75.5909921013979
       },
       {
         "id": "duration.fit.tolerance",
@@ -1667,39 +1836,39 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "id": "goal.params.muscle",
-        "weightedLoss": 62.78405144988922
+        "weightedLoss": 66.88739735111929
       },
       {
         "id": "goal.params.fat_loss",
-        "weightedLoss": 48.80983051143062
+        "weightedLoss": 48.799419076664506
       },
       {
         "id": "goal.params.mobility",
-        "weightedLoss": 41.263540784208594
+        "weightedLoss": 41.862275510547974
       },
       {
         "id": "select.unilateral.weekly",
         "weightedLoss": 36
       },
       {
-        "id": "balance.week.core_three",
-        "weightedLoss": 33
+        "id": "caution.back.keep_active",
+        "weightedLoss": 31.798722222222217
       },
       {
-        "id": "caution.back.keep_active",
-        "weightedLoss": 31.738333333333333
+        "id": "balance.week.core_three",
+        "weightedLoss": 30
       },
       {
         "id": "goal.params.strength",
-        "weightedLoss": 23.11445993528833
-      },
-      {
-        "id": "older.week.flexibility",
-        "weightedLoss": 16.75
+        "weightedLoss": 24.01406072469895
       },
       {
         "id": "older.week.aerobic",
-        "weightedLoss": 16.73777777777778
+        "weightedLoss": 16.726666666666667
+      },
+      {
+        "id": "older.week.flexibility",
+        "weightedLoss": 16.666666666666664
       },
       {
         "id": "session.warmup.balance_older",
@@ -1707,11 +1876,7 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "id": "goal.params.start_moving",
-        "weightedLoss": 15.598052883215239
-      },
-      {
-        "id": "safety.session.warmup_cooldown",
-        "weightedLoss": 12.919861111111112
+        "weightedLoss": 14.525080405371039
       },
       {
         "id": "older.week.strength",
@@ -1719,23 +1884,27 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "id": "postpartum.weekly_target",
-        "weightedLoss": 9.938500000000001
+        "weightedLoss": 10.973
+      },
+      {
+        "id": "safety.session.warmup_cooldown",
+        "weightedLoss": 10.555972222222222
       },
       {
         "id": "progression.new.weekly_sets",
-        "weightedLoss": 7.927083333333333
+        "weightedLoss": 8.927083333333332
       },
       {
         "id": "pregnancy.week.target",
-        "weightedLoss": 7.400000000000001
+        "weightedLoss": 8.788888888888891
       },
       {
         "id": "dose.sets_exercise",
-        "weightedLoss": 7.012743362378177
+        "weightedLoss": 7.144556477982851
       },
       {
         "id": "week.coverage.patterns",
-        "weightedLoss": 2.666666666666665
+        "weightedLoss": 2.4999999999999987
       },
       {
         "id": "balance.week.pull_push",
@@ -1753,82 +1922,82 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
     "topLoss": [
       {
         "id": "dose.sets_week.intermediate",
-        "weightedLoss": 1182.6629527083571,
-        "count": 752,
+        "weightedLoss": 1171.5896380994188,
+        "count": 748,
         "applicableCount": 816,
-        "averageWeightedLoss": 1.4493418538092613
+        "averageWeightedLoss": 1.4357716153179152
       },
       {
         "id": "goal.params.fat_loss",
-        "weightedLoss": 377.24702215134647,
+        "weightedLoss": 382.037386846514,
         "count": 284,
         "applicableCount": 284,
-        "averageWeightedLoss": 1.3283345850399524
+        "averageWeightedLoss": 1.3452020663609647
       },
       {
         "id": "goal.params.muscle",
-        "weightedLoss": 362.95372234861884,
+        "weightedLoss": 368.4572364970676,
         "count": 283,
         "applicableCount": 283,
-        "averageWeightedLoss": 1.282521987097593
+        "averageWeightedLoss": 1.3019690335585428
       },
       {
         "id": "goal.params.health",
-        "weightedLoss": 333.9427869490542,
+        "weightedLoss": 336.3995180567428,
         "count": 265,
         "applicableCount": 265,
-        "averageWeightedLoss": 1.2601614601851103
+        "averageWeightedLoss": 1.2694321436103502
       },
       {
         "id": "dose.sets_week.beginner",
-        "weightedLoss": 898.0292652679187,
-        "count": 712,
+        "weightedLoss": 887.6364081250614,
+        "count": 713,
         "applicableCount": 778,
-        "averageWeightedLoss": 1.1542792612698185
+        "averageWeightedLoss": 1.1409208330656315
       },
       {
         "id": "goal.params.mobility",
-        "weightedLoss": 254.63218153187177,
+        "weightedLoss": 267.63708894862873,
         "count": 249,
         "applicableCount": 249,
-        "averageWeightedLoss": 1.022619202939244
+        "averageWeightedLoss": 1.0748477467816415
       },
       {
         "id": "session.warmup.balance_older",
-        "weightedLoss": 228.66666666666666,
+        "weightedLoss": 228.61666666666665,
         "count": 229,
         "applicableCount": 229,
-        "averageWeightedLoss": 0.9985443959243085
+        "averageWeightedLoss": 0.9983260553129548
       },
       {
         "id": "older.week.flexibility",
-        "weightedLoss": 237.99999999999983,
+        "weightedLoss": 237.7499999999999,
         "count": 242,
         "applicableCount": 242,
-        "averageWeightedLoss": 0.9834710743801646
-      },
-      {
-        "id": "goal.params.start_moving",
-        "weightedLoss": 239.6718914635015,
-        "count": 247,
-        "applicableCount": 247,
-        "averageWeightedLoss": 0.9703315443866458
+        "averageWeightedLoss": 0.9824380165289252
       },
       {
         "id": "goal.aerobic.baseline",
-        "weightedLoss": 1553.9701111111144,
+        "weightedLoss": 1557.3927777777794,
         "count": 1608,
         "applicableCount": 1608,
-        "averageWeightedLoss": 0.9663993228302951
+        "averageWeightedLoss": 0.9685278468767285
+      },
+      {
+        "id": "aerobic.target.weekly",
+        "weightedLoss": 1557.3927777777794,
+        "count": 1608,
+        "applicableCount": 1608,
+        "averageWeightedLoss": 0.9685278468767285
       }
     ],
     "performance": {
-      "totalMs": 110446.40893554688,
-      "p95Ms": 656.4555000000109,
-      "generationP95Ms": 656.4555000000109,
-      "classificationP95Ms": 661.1410000000033,
-      "parallelAuditWallMs": 108950.7222,
-      "workerContentionP95Ms": 656.4555000000109
+      "totalMs": 86809.30200195312,
+      "p95Ms": 444.59059999999954,
+      "generationP95Ms": 444.59059999999954,
+      "classificationP95Ms": 449.229800000001,
+      "parallelAuditWallMs": 84920.0079,
+      "workerContentionP95Ms": 444.59059999999954
     }
   }
 }

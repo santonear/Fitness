@@ -258,9 +258,31 @@
         - all:
             - {flag: balance_demand}
             - {user: gestation_week, gte: 28}
+        - all:
+            - {any: [{flag: balance_demand}, {field: primary_pattern, eq: balance}]}
+            - {user: gestation_week, gte: 13}
+            - {not: {user: pregnancy_balance_supported, is: true}}
     modify:
-      - when: {all: [{flag: balance_demand}, {user: gestation_week, gte: 13}]}
+      - when: {all: [{any: [{flag: balance_demand}, {field: primary_pattern, eq: balance}]}, {user: gestation_week, gte: 13}]}
         cue: hold_wall_or_chair
+        support_equipment: [wall, chair, counter]
+        supported_exercise_ids: [ad39549b-108d-5810-85d3-a2ea5ca3e4e1]
+    environment_exception:
+      kind: coverage
+      patterns: [balance]
+      issue_codes: [pregnancy_balance_environment]
+      warning_code: pregnancy_balance.environment_exempt
+      when: {all: [{user: gestation_week, gte: 13}, {user: gestation_week, lt: 28}]}
+      relax: {equipment: all_catalogue, space: large, householdSupport: true}
+      notice_key: engine.copy.environment_balance
+    restore_slot:
+      when: {all: [{user: gestation_week, gte: 13}, {user: gestation_week, lt: 28}]}
+      pattern: [balance]
+      role: balance
+      optional_at_shortest_duration: true
+    support_copy:
+      zh: 扶墙或扶椅
+      en: Hold a wall or chair for support.
   evidence: A
   professional_review: true
   sources: [E05:Mottola2018, E05:ACOG804]

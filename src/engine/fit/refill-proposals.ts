@@ -1,3 +1,4 @@
+import { withinMobilityBudget } from "./mobility-budget";
 import { insertBeforeCooldown } from "./item-order";
 import type { EnginePlan, EngineProfile, GateOutcome } from "../contracts";
 import { type Rules, stretchHoldRange } from "../data";
@@ -13,6 +14,8 @@ export type RefillPhase =
   | "existing_sets"
   | "missing_patterns"
   | "low_intensity"
+  | "balance_breathing"
+  | "stretch"
   | "warmup_cooldown";
 /** Finite source-bounded proposals only. The caller must check the complete plan. */
 export function* refillProposals(
@@ -32,7 +35,20 @@ export function* refillProposals(
       ((source.explicit_low_intensity_slugs ?? []).includes(e.slug) ||
         (e.flags.includes(source.low_intensity.required_flag) &&
           e.impact === source.low_intensity.impact)));
+  const phaseMatches = (e: (typeof r.data.exercises)[number]) =>
+    phase === "existing_sets"
+      ? ["strength", "power", "isometric"].includes(e.modality)
+      : phase === "low_intensity"
+        ? e.modality === "cardio" && low(e)
+        : phase === "balance_breathing"
+          ? e.primary_pattern === "balance" || e.flags.includes("breathing")
+          : phase === "stretch"
+            ? e.modality === "mobility" &&
+              e.primary_pattern !== "balance" &&
+              !e.flags.includes("breathing")
+            : true;
   const withinBlocks = (next: Template) => {
+    if (!withinMobilityBudget(next, r)) return false;
     if (phase !== "warmup_cooldown") return true;
     const row = timingRow(
         durationTier(t.targetMinutes ?? p.sessionMinutes, p, r),
@@ -60,7 +76,7 @@ export function* refillProposals(
     if (
       phase === "missing_patterns" ||
       boundary !== (phase === "warmup_cooldown") ||
-      (phase === "low_intensity" && !low(e))
+      !phaseMatches(e)
     )
       continue;
     const max =
@@ -104,7 +120,16 @@ export function* refillProposals(
       if (withinBlocks(next)) yield next;
     }
   }
-  if (!["missing_patterns", "low_intensity"].includes(phase)) return;
+  if (
+    ![
+      "missing_patterns",
+      "low_intensity",
+      "balance_breathing",
+      "stretch",
+      "warmup_cooldown",
+    ].includes(phase)
+  )
+    return;
   if (
     phase === "missing_patterns" &&
     !t.items.some((i) =>
@@ -131,15 +156,23 @@ export function* refillProposals(
         patterns.has(e.primary_pattern))
     )
       continue;
-    if (phase === "low_intensity" && !low(e)) continue;
+    if (!phaseMatches(e)) continue;
+    if (
+      phase === "warmup_cooldown" &&
+      (!e.use.includes("warmup") ||
+        !source.refill.new_warmup_modalities.includes(e.modality))
+    )
+      continue;
     const role =
-      phase === "missing_patterns"
-        ? "accessory"
-        : e.modality === "cardio"
-          ? "conditioning"
-          : e.primary_pattern === "balance"
-            ? "balance"
-            : "mobility";
+      phase === "warmup_cooldown"
+        ? "warmup"
+        : phase === "missing_patterns"
+          ? "accessory"
+          : e.modality === "cardio"
+            ? "conditioning"
+            : e.primary_pattern === "balance"
+              ? "balance"
+              : "mobility";
     const item = prescribe(e, p, r, g.restrictions, role, 1);
     if (e.modality === "cardio" && "durationSeconds" in item.target) {
       item.target.durationSeconds = Math.min(
@@ -158,7 +191,12 @@ export function* refillProposals(
       ];
     }
     const next = structuredClone(t);
-    insertBeforeCooldown({ ...next, slots: [] }, item);
-    yield next;
+    if (role === "warmup") {
+      const firstWork = next.items.findIndex(
+        (row) => row.prescription?.block !== "warmup",
+      );
+      next.items.splice(firstWork < 0 ? next.items.length : firstWork, 0, item);
+    } else insertBeforeCooldown({ ...next, slots: [] }, item);
+    if (withinBlocks(next)) yield next;
   }
 }

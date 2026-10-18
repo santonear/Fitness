@@ -198,3 +198,17 @@ test("database19 upgrade preserves an unanswered prenatal field and applied plan
     result.after.state[0].coachProfile.population.prenatalCareConfirmed,
   ).toBeUndefined();
 });
+
+
+test("changing prenatal no to yes clears the old local blocking copy and the selector has no age group",async({page})=>{
+ await page.evaluate(async()=>{const path='/tests/e2e/helpers/acog-pregnancy-seed.ts';await(await import(/* @vite-ignore */path)).seedAcogPregnancy(true);});
+ await page.goto('/settings/engine');
+ const question=page.getByRole('combobox',{name:'你现在在定期做产检吗？',exact:true});
+ await question.selectOption('false');
+ const reason=page.getByText('请先在产检时和医生或助产士聊聊运动的事，确认后回来告诉我们，我们再为你安排。',{exact:true});
+ await expect(reason).toBeVisible();
+ await question.selectOption('true');
+ await expect(reason).toHaveCount(0);
+ const population=page.getByRole('combobox',{name:'孕期 / 产后状态',exact:true});
+ await expect(population.locator('option[value="older_adult"]')).toHaveCount(0);
+});

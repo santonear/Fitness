@@ -11,6 +11,8 @@
   type: formula
   value:
     rt_days: "min(days_available, goal.rt_sessions_week.max, phase_cap)"
+    distribute_strength_across_available_days: true
+    preserve_introductory_frequency_caps: true
     rt_days_floor: "min(days_available, goal.rt_sessions_week.min)"
     phase_cap_ref: progression.new.week_caps      # 新手第 1 周 2 次等
     other_days_type:

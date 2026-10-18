@@ -1,3 +1,4 @@
+import { loadedPreference } from "./candidates/loaded-preference";
 import type {
   Candidate,
   Pattern,
@@ -64,6 +65,20 @@ function coverageCandidates(
         : [];
     });
   if (missing.length) {
+    const originalMissing = missing.filter((pattern) =>
+      slot.patterns.includes(pattern),
+    );
+    if (originalMissing.length) {
+      const sourceCandidates = candidatesFor(
+        { ...slot, patterns: originalMissing },
+        ctx.profile,
+        ctx.gate,
+        ctx,
+      ).filter((candidate) =>
+        originalMissing.includes(candidate.primary_pattern),
+      );
+      if (sourceCandidates.length) return sourceCandidates;
+    }
     const promoted = candidatesFor(
       { ...slot, patterns: missing },
       ctx.profile,
@@ -140,6 +155,15 @@ export function fillSlots(
     let best: SessionDraft["items"][number] | undefined,
       bestScore = -Infinity,
       bestTie = -Infinity;
+    const patternChoices = new Map<
+      Pattern,
+      {
+        item: SessionDraft["items"][number];
+        score: number;
+        rank: number;
+        tie: number;
+      }
+    >();
     for (const candidate of candidates) {
       const source = /-(main|acc)_(\d+)$/.exec(slot.id),
         role =
@@ -181,11 +205,30 @@ export function fillSlots(
           ctx.profile,
           ctx.rules,
         ),
-        tie = ctx.rng();
-      if (score > bestScore || (score === bestScore && tie > bestTie)) {
-        best = item;
-        bestScore = score;
-        bestTie = tie;
+        tie = ctx.rng(),
+        rank = score + loadedPreference(candidate, ctx.profile, ctx.rules);
+      const previous = patternChoices.get(candidate.primary_pattern);
+      if (
+        !previous ||
+        rank > previous.rank ||
+        (rank === previous.rank && tie > previous.tie)
+      )
+        patternChoices.set(candidate.primary_pattern, {
+          item,
+          score,
+          rank,
+          tie,
+        });
+    }
+    // The equipment bonus ranks alternatives within one pattern, never substitutes coverage.
+    for (const choice of patternChoices.values()) {
+      if (
+        choice.score > bestScore ||
+        (choice.score === bestScore && choice.tie > bestTie)
+      ) {
+        best = choice.item;
+        bestScore = choice.score;
+        bestTie = choice.tie;
       }
     }
     if (best) {

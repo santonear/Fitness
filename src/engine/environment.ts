@@ -183,3 +183,28 @@ export function applicableEnginePlan(
     plan.quality?.status !== "unavailable"
   );
 }
+
+/** Source-scoped absence is a warning, never permission to forgive a safety violation. */
+export function pregnancyEnvironmentIssues(
+  p: EngineProfile,
+  g: GateOutcome,
+  r: Rules,
+): ValidationIssue[] {
+  const proof = proveEnvironmentCoverage(
+    p,
+    g,
+    r,
+    "pregnancy.exclude.fall_risk",
+  );
+  return proof
+    ? [
+        {
+          code: proof.warningCode,
+          ruleId: proof.ruleId,
+          severity: "warning",
+          reason:
+            "complete legal balance pool empty only because support is unavailable",
+        },
+      ]
+    : [];
+}

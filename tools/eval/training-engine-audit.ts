@@ -1,3 +1,4 @@
+import { mobilityBudgetExceedances } from "./training-engine-mobility-budget";
 import {
   intentionalShortFacts,
   pregnancyRampFacts,
@@ -290,6 +291,9 @@ export async function audit(
       environment_limited: 0,
       environment_unavailable: 0,
     },
+    mobilityBudgetViolations: ({ index: number } & ReturnType<
+      typeof mobilityBudgetExceedances
+    >[number])[] = [],
     unsafe: { index: number; reason: string; ruleId?: string }[] = [],
     environmentUnmet: {
       index: number;
@@ -364,6 +368,12 @@ export async function audit(
       const observation = observations[localIndex];
       if (observation.error !== undefined) throw new Error(observation.error);
       const r = observation.result!;
+      mobilityBudgetViolations.push(
+        ...mobilityBudgetExceedances(r.plan, rules).map((row) => ({
+          index,
+          ...row,
+        })),
+      );
       totals[r.status]++;
       times.push(r.durationMs);
       generationTimes.push(r.generationMs);
@@ -509,6 +519,10 @@ export async function audit(
     ),
     totals,
     empty,
+    mobilityBudget: {
+      exceedanceCount: mobilityBudgetViolations.length,
+      exceedances: mobilityBudgetViolations,
+    },
     unsafe,
     environmentUnmet,
     actionableHardViolations,
@@ -642,7 +656,7 @@ export async function fullAudit(options: AuditOptions = {}) {
     JSON.stringify(evidence, null, 2),
   );
   const body =
-    "# Training engine V2 acceptance report\n\nFunctional correctness evidence. Timing is informational only; engine:perf reports three independent cold 80-profile runs separately.\n\n" +
+    "# Training engine V2 acceptance report\n\n生产开启仅用于测试；对外开放或商用前，专业审核和 RepDB 许可仍为必须项。\n\nFunctional correctness evidence. Timing is informational only; engine:perf reports three independent cold 80-profile runs separately.\n\n" +
     "```json\n" +
     JSON.stringify(evidence, null, 2) +
     "\n```\n";
