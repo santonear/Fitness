@@ -68,6 +68,11 @@ jobs:
             echo '```'
             echo "If this release needs undoing, run **Roll back Fitness production** with a version id from above."
           } >> "$GITHUB_STEP_SUMMARY"
+      - name: Provision the approved separate operations database
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: node tools/release/provision-ops.mjs
       - name: Show pending D1 migrations
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
