@@ -65,7 +65,10 @@ test('previous plans can be read and deleted, while individual version detail ha
 });
 
 test('deleting a plan without workout records keeps the home empty after reload',async({page})=>{
- await createPlan(page);expect((await records(page)).workouts).toHaveLength(0);await removeCurrentPlan(page);await page.goto('/');await page.reload();
+ await createPlan(page);expect((await records(page)).workouts).toHaveLength(0);await removeCurrentPlan(page);await page.goto('/');
+ // Let the new document commit its application state before interrupting it
+ // with another navigation; retain the real reload and all persistence checks.
+ await expect(page.getByRole('button',{name:'重新制定计划',exact:true})).toBeVisible();await page.reload();
  await expect(page).toHaveURL(/\/$/);await expect(page.getByRole('button',{name:'重新制定计划',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'手动训练',exact:true})).toBeVisible();expect((await records(page)).workouts).toHaveLength(0);
 });
 

@@ -46,11 +46,19 @@ async function screenAndDraft(page:Page,loaded=false){
 }
 function namedValues(node:unknown,key:string,out:unknown[]=[]):unknown[]{if(node&&typeof node==='object')for(const [name,value]of Object.entries(node)){if(name===key)out.push(value);namedValues(value,key,out);}return out;}
 
+async function offlineTempoPage(page:Page,path:string){
+ // Complete the mocked offline response before navigating away. WebKit can
+ // otherwise report an access-control error for an interrupted interception.
+ const pending=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/v1/announcement');
+ await page.goto(path);
+ const response=await pending;expect(response.status()).toBe(503);await response.finished();
+}
+
 async function setupSyntheticMobilityTempo(page:Page){
  const errors:string[]=[],modelAttempts:string[]=[];
  page.on('pageerror',error=>errors.push(error.message));
  await page.route('**/api/**',route=>{if(/assistant|coach|chat|completion/i.test(new URL(route.request().url()).pathname))modelAttempts.push(route.request().url());return route.fulfill({status:503,json:{error:'LOCAL_OFFLINE_TEMPO_TEST'}});});
- await localFeatures(page);await page.clock.setFixedTime(new Date('2026-06-11T03:00:00.000Z'));await page.goto('/manual');await expect(page.getByRole('searchbox')).toBeVisible();
+ await localFeatures(page);await page.clock.setFixedTime(new Date('2026-06-11T03:00:00.000Z'));await offlineTempoPage(page,'/manual');await expect(page.getByRole('searchbox')).toBeVisible();
  // Canonical source30: explicit synthetic preference for the unit-tested bodyweight squat slot.
  const rules=new Rules(),bodyweightSquat=rules.data.exercises.find(exercise=>exercise.slug==='bodyweight-squat')!;
  const synthetic=baseProfile({goal:'mobility',level:'intermediate',trainingAgeWeeks:18,daysPerWeek:6,sessionMinutes:30,preferences:{excludedExerciseIds:rules.data.exercises.filter(exercise=>exercise.primary_pattern==='squat'&&exercise.id!==bodyweightSquat.id).map(exercise=>exercise.id),cannotDo:[]}});
@@ -107,17 +115,17 @@ async function setupSyntheticMobilityTempo(page:Page){
 }
 test('synthetic source30 preferred-squat Next renders fixed tempo and preserves it in downloaded backup',async({page},info)=>{
  const {identity,errors,modelAttempts}=await setupSyntheticMobilityTempo(page);
- await page.goto('/');await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
+ await offlineTempoPage(page,'/');await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
  const phase=/≈3 \/ ≈1 \/ 0 秒/;
  for(const [theme,label]of [['qingci','青瓷'],['liubai','留白'],['jingshe','静奢'],['zhuangse','撞色']]){
-  await page.goto('/settings/appearance');await page.getByRole('button',{name:label,exact:true}).click();await page.goto('/');
+  await offlineTempoPage(page,'/settings/appearance');await page.getByRole('button',{name:label,exact:true}).click();await offlineTempoPage(page,'/');
   const detail=page.locator('details').filter({has:page.locator('summary').filter({hasText:identity.name})}).first();await expect(detail).toHaveCount(1);await detail.locator('summary').click();
   await expect(detail.getByText('离心 / 向心 / 停顿',{exact:true}).first()).toBeVisible();await expect(detail.getByText(phase).last()).toBeVisible();
   const warm=detail.getByRole('region',{name:'专项热身组',exact:true});await expect(warm).toBeVisible();await expect(warm.getByText(phase)).toBeVisible();
   const unauthenticated=page.locator('details').filter({has:page.locator('summary').filter({hasText:identity.unauthenticatedName})}).first();await expect(unauthenticated).toHaveCount(1);await expect(unauthenticated.getByRole('region',{name:'专项热身组',exact:true,includeHidden:true})).toHaveCount(0);
   for(const width of [375,1280]){await page.setViewportSize({width,height:844});await page.screenshot({path:info.outputPath(`tempo-next-${theme}-${width}.png`),fullPage:true,animations:'disabled'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);}
  }
- await page.goto('/settings');await page.getByRole('button',{name:'备份恢复',exact:true}).click();const pending=page.waitForEvent('download');await page.getByRole('button',{name:'导出 JSON 备份',exact:true}).click();const backupPath=info.outputPath('synthetic-mobility-tempo-backup.json');await(await pending).saveAs(backupPath);
+ await offlineTempoPage(page,'/settings');await page.getByRole('button',{name:'备份恢复',exact:true}).click();const pending=page.waitForEvent('download');await page.getByRole('button',{name:'导出 JSON 备份',exact:true}).click();const backupPath=info.outputPath('synthetic-mobility-tempo-backup.json');await(await pending).saveAs(backupPath);
  const backup=JSON.parse(await readFile(backupPath,'utf8'));expect(namedValues(backup,'tempo')).toContainEqual({eccentricSeconds:3,concentricSeconds:1,pauseSeconds:0});expect(namedValues(backup,'enginePlan').length).toBeGreaterThan(0);expect(errors).toEqual([]);expect(modelAttempts).toEqual([]);
  await info.attach('synthetic-mobility-tempo-scope',{body:JSON.stringify({scope:'synthetic workflow, desktop Chromium viewports; not onboarding or phone hardware',identity,errors,modelAttempts},null,2),contentType:'application/json'});
 });
