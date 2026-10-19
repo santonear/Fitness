@@ -71,3 +71,7 @@ export function restVisible(plan: RestPlan | undefined, now: number, dismissed: 
   if (!plan || dismissed || !Number.isFinite(plan.completedAt)) return false;
   return now - plan.completedAt < (restTotal(plan) + REST_LINGER_SECONDS) * 1000;
 }
+/** Only one hold countdown may run: pauses every running timer except `keepKey`. */
+export function pauseOtherHolds(holds: Record<string, HoldTimer>, now: number, keepKey?: string): Record<string, HoldTimer> {
+  return Object.fromEntries(Object.entries(holds).map(([key, timer]) => [key, key === keepKey ? timer : holdPause(timer, now)]));
+}

@@ -32,7 +32,7 @@ import {CoachVisual} from '../../components/CoachVisual';
 import {ExerciseGuidePanel} from '../../components/ExerciseGuide';
 import {getExerciseGuide} from '../../../catalog/exercise-guide';
 import {manualTrainingItems} from '../../../application/rules/manual-items';
-import {holdIdle,holdStart,holdPause,holdStatus,holdRemaining,holdSecondsToRecord,recommendedRestSeconds,restRemaining,restDone,restExtend,restVisible,restTotal,type HoldTimer,type RestPlan} from './timer-logic';
+import {holdIdle,holdStart,holdPause,holdStatus,holdRemaining,holdSecondsToRecord,recommendedRestSeconds,restRemaining,restDone,restExtend,restVisible,restTotal,pauseOtherHolds,type HoldTimer,type RestPlan} from './timer-logic';
 import guideZh from '../../../i18n/features/training/guide.zh.json';
 import guideEn from '../../../i18n/features/training/guide.en.json';
 import playerZh from '../../../i18n/features/training/player.zh.json';
@@ -123,7 +123,7 @@ export function WorkoutPage(){
  const holdKey=`${active.id}:${index}:${done}`,hold=holds[holdKey];
  const timer=timed?(hold&&hold.total===value?hold:holdIdle(value)):undefined;
  const timerStatus=timer?holdStatus(timer,now):'idle';
- const setHold=(next:HoldTimer)=>setHolds(prior=>({...prior,[holdKey]:next}));
+ const setHold=(next:HoldTimer)=>setHolds(prior=>({...(next.startedAt!==undefined?pauseOtherHolds(prior,Date.now(),holdKey):prior),[holdKey]:next}));
  const recordValue=timer?holdSecondsToRecord(timer,now):value;
  const loadText=relativePower&&prescription?.loadDescription?prescription.loadDescription[locale]:needsLoad?(hasLoad?`${load} ${t.kg}`:engineEnabled&&prescription?.loadDescription?prescription.loadDescription[locale]:copy.chooseLoad):t.bodyweight;
  const targetText=`${timed?durationText(value,locale):`${value} ${t.reps}`}${exercise.metricType==='duration_distance'&&distance!==undefined&&Number.isFinite(distance)?` · ${distance} ${t.meters}`:''}`;
@@ -196,7 +196,7 @@ export function WorkoutPage(){
  {painPreview&&<PainFeedbackPanel key={painPreview.eventId} preview={painPreview.value} locale={locale} busy={busy||painPreviewLoading} name={name} confirmLabel={t.confirm} onAnswersChange={answers=>{const serial=++painSequence.current;if(!painPreview.value.questions.every(question=>typeof answers[question.key]==='boolean')){setPainPreviewLoading(false);setPainPreview({...painPreview,value:{...painPreview.value,replacement:undefined,redFlagsRequired:true}});return;}setPainPreviewLoading(true);void workflow.painFeedbackPreview(active.id,painPreview.eventId,answers).then(value=>{if(serial===painSequence.current){setPainPreview({eventId:painPreview.eventId,value});setPainPreviewLoading(false);}}).catch(()=>{if(serial===painSequence.current){setPainPreview(undefined);setPainPreviewLoading(false);}});}} onApply={answers=>void run(async()=>{await workflow.applyPainFeedback(active.id,painPreview.eventId,data.metadata.dataRevision,answers);})}/>}
  {(active.painReviewRequired||data.state?.trainingPause)&&<><p role="status">{engineCopy('redflag.copy.paused_banner',locale)}</p><Button onClick={()=>navigate(`/workout/${active.id}/finish`)}>{engineCopyText.end}</Button></>}
  {(active.painReviewRequired||data.state?.trainingPause)&&data.state?.coachProfile?.healthStorageConsent?.acceptedAt&&data.state.coachProfile.screening?.completedAt&&data.state.coachProfile.screening.parqAnswers?.length===7&&data.state.coachProfile.screening.rescreenRequired!==true&&(!data.state.trainingPause||Date.parse(data.state.coachProfile.screening.completedAt)>=Date.parse(data.state.trainingPause.requiredAt))&&<PainProfessionalConfirmation pauseRequiredAt={data.state?.trainingPause?.requiredAt} review={historyDangerReview(data.workouts,data.state.coachProfile.screening?.redFlagReview)} locale={locale} busy={busy} confirmLabel={t.confirm} onConfirm={()=>void run(async()=>{await workflow.confirmPainProfessionalSeen(data.metadata.dataRevision);})}/>}
- <div className="v8-capsules wk-capsules" aria-label={t.actions}>{items.map((row,i)=><Chip key={row.itemIndex} selected={i===index} disabled={excluded.has(row.itemIndex)} onClick={()=>{setIndex(i);setPanel(undefined);if(restKey)setRestClosed(prior=>[...prior,restKey]);}}>{setsOf(row.itemIndex)>=row.plannedSetCount?'✓ ':''}{name(exerciseIdOf(row.itemIndex,row.exerciseId))}</Chip>)}</div>
+ <div className="v8-capsules wk-capsules" aria-label={t.actions}>{items.map((row,i)=><Chip key={row.itemIndex} selected={i===index} disabled={excluded.has(row.itemIndex)} onClick={()=>{if(i!==index)setHolds(prior=>pauseOtherHolds(prior,Date.now()));setIndex(i);setPanel(undefined);if(restKey)setRestClosed(prior=>[...prior,restKey]);}}>{setsOf(row.itemIndex)>=row.plannedSetCount?'✓ ':''}{name(exerciseIdOf(row.itemIndex,row.exerciseId))}</Chip>)}</div>
  <ExerciseGuidePanel id={guideId??effectiveId} locale={locale} open={guideOpen} onClose={()=>setGuideOpen(false)} triggerRef={guideTrigger}/>
  <MorphPanel open={!!panel} placement={panel==='pause'||panel==='safety'?'bottom':'center'} title={panel==='pause'?t.pauseTitle:panel==='edit'?t.edit:panel==='safety'?p.unwellTitle:t.changeExercise} closeLabel={t.close} triggerRef={panelTrigger} onClose={()=>setPanel(undefined)}><div className="v8-pause-actions">
  {panel==='safety'?<div className="wk-safety">
