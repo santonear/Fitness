@@ -267,13 +267,13 @@ test('positive pain review blocks further training and survives the downloaded b
  const before=await page.evaluate(async()=>{const path='/src/ui/mainline/context.tsx';return (await(await import(/* @vite-ignore */path)).workflow.snapshot()).active;});
  await page.getByRole('button',{name:'不舒服',exact:true}).click();await page.getByLabel('疼痛评分（0–10）',{exact:true}).fill('6');await page.getByLabel('部位',{exact:true}).selectOption('knee');await page.getByRole('button',{name:'记录',exact:true}).click();
  const no=page.getByRole('button',{name:'否',exact:true}),yes=page.getByRole('button',{name:'是',exact:true}),confirm=page.getByRole('button',{name:'确定',exact:true});
- await expect(no).toHaveCount(7);await expect(confirm).toBeDisabled();await expect(page.locator('.v8-button-workout')).toBeDisabled();
+ await expect(no).toHaveCount(7);await expect(confirm).toBeDisabled();await expect(page.locator('.wk-complete')).toBeDisabled();
  await yes.first().click();for(let index=1;index<7;index++)await no.nth(index).click();
- await expect(confirm).toBeEnabled();await confirm.click();await expect(page.locator('.v8-button-workout')).toBeDisabled();
+ await expect(confirm).toBeEnabled();await confirm.click();await expect(page.locator('.wk-complete')).toBeDisabled();
  // A disabled training button also covers an in-flight save. Wait for the actual
  // safety transaction before navigating away, then still assert reload durability.
  await expect.poll(()=>page.evaluate(async id=>{const path='/src/persistence/repository.ts';return(await(await import(/* @vite-ignore */path)).repository.db.v8Workouts.get(id))?.painReviewRequired;},before.id)).toBe(true);
- await page.reload();await expect(page.locator('.v8-button-workout')).toBeDisabled();
+ await page.reload();await expect(page.locator('.wk-complete')).toBeDisabled();
  const after=await page.evaluate(async()=>{const path='/src/ui/mainline/context.tsx';const data=await(await import(/* @vite-ignore */path)).workflow.snapshot();return {active:data.active,review:data.state.coachProfile?.screening?.redFlagReview};});
  expect(after.active.sets).toEqual(before.sets);expect(after.active.status).toBe(before.status);expect(after.active.plannedSetCount).toBe(before.plannedSetCount);expect(after.active.painReviewRequired).toBe(true);expect(after.active.painActions).toHaveLength(1);expect(Object.values(after.review.answers)).toContain(true);
  for(const width of [375,1280,390,1440]){await page.setViewportSize({width,height:844});await page.screenshot({path:info.outputPath(`positive-pain-${width}.png`),fullPage:true});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);}

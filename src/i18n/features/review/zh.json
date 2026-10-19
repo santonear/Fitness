@@ -36,5 +36,32 @@
   "noPlanNext": "现在没有当前计划，可以手动训练，或重新制定计划。",
   "manualTraining": "手动训练",
   "newPlan": "重新制定计划",
-  "overnight": "凌晨"
+  "overnight": "凌晨",
+  "metric": "看哪一项",
+  "sessions": "次数",
+  "volume": "总重量",
+  "minutesMetric": "分钟",
+  "sessionsUnit": "次",
+  "volumeUnit": "公斤",
+  "minutesUnit": "分钟",
+  "chartWeek": "本周每天",
+  "chartMonth": "本月每周",
+  "chartEmpty": "这段时间还没有训练记录。",
+  "chartTotal": "合计",
+  "weekdays": [
+    "一",
+    "二",
+    "三",
+    "四",
+    "五",
+    "六",
+    "日"
+  ],
+  "weekOf": "{date} 那周",
+  "progress": "本周目标 {target} 次，已练 {done} 次，还可以再练 {left} 次。",
+  "progressPartial": "本周目标 {target} 次，已练 {done} 次（{partial} 次练了一部分），还可以再练 {left} 次。",
+  "progressMet": "本周目标 {target} 次，已练 {done} 次，目标达成了。",
+  "monthProgress": "这个月练了 {done} 次。",
+  "monthProgressPartial": "这个月练了 {done} 次，其中 {partial} 次练了一部分。",
+  "patternsLater": "记满 {count} 次训练后，这里会显示你的训练规律。"
 }

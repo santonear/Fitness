@@ -4,8 +4,11 @@ import { trainingMinutes } from '../../../application/workout-duration';
 import { countUsage } from '../../../application/monitoring-client';
 import { lifestyleCopy } from '../../../i18n/features/settings/lifestyle';
 import { useFeature } from '../../useFeature';
-import { useEffect, useState, type CSSProperties } from 'react';
-import { Button,Stat,Sheet,Chip,Toast } from '../../components/common';
+import { useEffect, useState } from 'react';
+import { Button,Stat,Sheet,Toast } from '../../components/common';
+import { ChoiceChip } from '../../components/kit';
+import { ReviewChart } from './ReviewChart';
+import { chartSeries, dayBuckets, weekBuckets, weeklyRemaining, PATTERN_MIN_COUNT, PATTERN_MIN_SESSIONS } from '../../../application/review/charts';
 import { useMainline,format } from '../../mainline/context';
 import { recurringDiscomfort, suggestChange } from '../../../application/review/suggest';
 import { activityDate } from '../../../application/v8-activity';
@@ -39,16 +42,26 @@ export function ReviewPage(){
  const bodyEnabled=useFeature('bodyProfile'),body=data?.profile?.bodyDetails;
  const weightDue=bodyEnabled&&!monthly&&body?.confirmedAt&&Date.now()-Date.parse(body.weightPromptAt??body.updatedAt)>=28*86400000;
  if(!facts)return null;
- return <main><div className="v8-row"><Chip selected={!monthly} onClick={()=>c.setReviewKind('week')}>{r.week}</Chip><Chip selected={monthly} onClick={()=>c.setReviewKind('month')}>{r.month}</Chip></div>
+ // V9 #13: a partial session counts as done toward the weekly target; missingCount stays a coach-only fact.
+ const target=data?.version?.weeklyTarget??0,week=weeklyRemaining(target,facts.complete,facts.partial);
+ const progressText=!hasCurrentPlan?format(r.noPlanFacts,{complete:facts.complete,partial:facts.partial}):monthly?format(facts.partial?r.monthProgressPartial:r.monthProgress,{done:week.done,partial:facts.partial}):format(week.left===0?r.progressMet:facts.partial?r.progressPartial:r.progress,{target,done:week.done,partial:facts.partial,left:week.left});
+ const timeZone=data?.profile?.timeZone??'Asia/Shanghai';
+ const buckets=monthly?weekBuckets(facts.from,facts.to).map(bucket=>({...bucket,from:bucket.from<facts.from?facts.from:bucket.from,to:bucket.to>facts.to?facts.to:bucket.to})):dayBuckets(facts.from);
+ const points=chartSeries(historyInPeriod(history,facts.from,facts.to,timeZone),buckets,timeZone);
+ const chartLabels=monthly?points.map(point=>point.from.slice(5).replace('-','/')):r.weekdays;
+ // Timing patterns need enough sessions and at least two occurrences in one slot; otherwise say nothing about patterns.
+ const savedSessions=facts.complete+facts.partial+facts.notStarted;
+ const patternLines=(['weekday','weekend'] as const).flatMap(day=>(['overnight','morning','daytime','evening'] as const).map(band=>{const n=facts.incompleteTiming[day][band]??{partial:0,notStarted:0};return n.partial+n.notStarted>=PATTERN_MIN_COUNT?<p key={day+band}>{format(r.pattern,{day:r[day],band:r[band],count:n.partial+n.notStarted})}</p>:null;})).filter(Boolean);
+ return <main className="rv-page"><div className="v8-row"><ChoiceChip selected={!monthly} onClick={()=>c.setReviewKind('week')}>{r.week}</ChoiceChip><ChoiceChip selected={monthly} onClick={()=>c.setReviewKind('month')}>{r.month}</ChoiceChip></div>
  <h1>{monthly?r.month:r.week}</h1><p>{facts.from} — {facts.to}</p>
  <c.slots.FeatureCard context="review" motionReduced={false} trainingActive={!!data?.active}>
  <p>{format(monthly?r.monthOpening:r.weekOpening,{count:facts.movementCount})}</p><p>{r.encouragement}</p>
- <p>{format(hasCurrentPlan?r.gap:r.noPlanFacts,{complete:facts.complete,partial:facts.partial,missing:facts.missingCount})}</p>
+ <p>{progressText}</p>
  <p>{!hasCurrentPlan?r.noPlanNext:suggestion?suggestionText(suggestion):r.continuePlan}</p>
  {!hasCurrentPlan&&<div className="v8-row"><Button onClick={()=>c.navigate('/manual')}>{r.manualTraining}</Button><Button onClick={c.restartPlanning}>{r.newPlan}</Button></div>}
  <div className="v8-facts"><Stat label={t.complete} value={facts.complete}/><Stat label={t.partial} value={facts.partial}/><Stat label={t.movement} value={facts.movementCount}/><Stat label={t.minutes} value={trainingMinutes(facts.trainingSeconds)}/><Stat label={r.activityMinutes} value={facts.activityMinutes}/></div></c.slots.FeatureCard>
- {monthly&&c.monthFacts&&<section className="v8-month-chart" aria-label={r.month}>{c.monthFacts.weeks.map(w=><div key={w.from}><div className="v8-month-column" role="img" aria-label={`${w.from}: ${t.complete} ${w.complete}, ${t.partial} ${w.partial}`} style={{'--complete-ratio':w.complete/Math.max(7,...c.monthFacts!.weeks.map(x=>x.complete+x.partial)),'--partial-ratio':w.partial/Math.max(7,...c.monthFacts!.weeks.map(x=>x.complete+x.partial))} as CSSProperties}><span className="v8-month-complete"/><span className="v8-month-partial"/></div><p>{w.from.slice(5)}<br/>{w.complete} / {w.partial}</p></div>)}</section>}
- <section><h2>{r.patterns}</h2>{(['weekday','weekend'] as const).flatMap(day=>(['overnight','morning','daytime','evening'] as const).map(band=>{const n=facts.incompleteTiming[day][band]??{partial:0,notStarted:0};return n.partial+n.notStarted>0?<p key={day+band}>{format(r.pattern,{day:r[day],band:r[band],count:n.partial+n.notStarted})}</p>:null;}))}</section>
+ <ReviewChart key={monthly?'month':'week'} title={monthly?r.chartMonth:r.chartWeek} points={points} labels={chartLabels} copy={r}/>
+ {savedSessions<PATTERN_MIN_SESSIONS?<section className="rv-patterns"><h2>{r.patterns}</h2><p>{format(r.patternsLater,{count:PATTERN_MIN_SESSIONS})}</p></section>:patternLines.length>0&&<section className="rv-patterns"><h2>{r.patterns}</h2>{patternLines}</section>}
  {!facts.hasBodyWeight&&<p>{r.noWeight}</p>}{!dietDays&&/减脂|体重|weight|fat/i.test(data?.version?.goalText??'')&&<p>{r.diet}</p>}
  {discomfort.length>0&&<p>{discomfort.map(name).join(' / ')} · {r.discomfort}</p>}
  <Toast message={saved?r.versionSaved:null} onDismiss={()=>setSaved(false)}/>

@@ -48,7 +48,7 @@ test('review has one factual feature card and finish includes elapsed time and p
   await repository.db.v8Workouts.update(current.id,{startedAt:new Date(Date.now()-7*60000).toISOString()});return current.id;
  });
  await page.goto(`/workout/${activeId}/finish`);await expect(page.getByText('本次用时 7 分钟',{exact:true})).toBeVisible();await expect(page.getByText('这是你本周第 3 次训练。',{exact:true})).toBeVisible();
- await page.getByRole('button',{name:'记下来',exact:true}).click();await expect(page.locator('[data-context="review"]')).toHaveCount(1);await expect(page.getByText('这周你动了 3 次。',{exact:true})).toBeVisible();await expect(page.getByText('完成了 0 次，部分完成 1 次，还差 3 次。',{exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'记下来',exact:true}).click();await expect(page.locator('[data-context="review"]')).toHaveCount(1);await expect(page.getByText('这周你动了 3 次。',{exact:true})).toBeVisible();await expect(page.getByText('本周目标 3 次，已练 1 次（1 次练了一部分），还可以再练 2 次。',{exact:true})).toBeVisible();await expect(page.getByText(/还差/)).toHaveCount(0);
  await page.getByRole('button',{name:'本月回顾',exact:true}).click();await expect(page.getByText('这个月你动了 3 次。',{exact:true})).toBeVisible();await expect(page.locator('[data-context="review"]')).toHaveCount(1);
  for(const width of [390,1440]){await page.setViewportSize({width,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:`outputs/polish-coach/review-${width}.png`,fullPage:true});}
 });
