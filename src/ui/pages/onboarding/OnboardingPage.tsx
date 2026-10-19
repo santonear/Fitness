@@ -15,7 +15,7 @@ import { HealthCheckWizard } from './HealthCheckWizard';
 import './onboarding.css';
 
 /** Uninterpreted answers. The integration layer resolves them before any model request. */
-export type OnboardingAnswers = Pick<CoachProfile, 'goalText' | 'scheduleOriginalText' | 'adultConfirmed' | 'cautions'> & EngineProfileFields & {
+export type OnboardingAnswers = Pick<CoachProfile, 'goalText' | 'scheduleOriginalText' | 'adultConfirmed' | 'cautions' | 'cautionNote'> & EngineProfileFields & {
   placeEquipmentText: string; body?: BodyValues; bodyText?: string;
   safetyAnswered?: boolean;
 };
