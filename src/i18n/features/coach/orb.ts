@@ -1,7 +1,7 @@
 /** 芽芽悬浮助手文案（docs/design/v9/Orb.dc.html 与各主题稿 OT 表）。 */
 export const orbCopy = {
-  zh: { orb: '芽芽助手，按住可上下拖动', title: '芽芽', close: '收起', closeTip: '收起提示', openChat: '打开对话', tuck: '靠边', panel: '芽芽快捷助手' },
-  en: { orb: 'Yaya assistant, drag up or down to move', title: 'Yaya', close: 'Close', closeTip: 'Dismiss tip', openChat: 'Open chat', tuck: 'Tuck away', panel: 'Yaya quick help' },
+  zh: { orb: '芽芽助手，按住可上下拖动', title: '芽芽', close: '收起', closeTip: '收起提示', openChat: '打开对话', tuck: '靠边', panel: '芽芽快捷助手', nutrition: '吃什么、喝多少' },
+  en: { orb: 'Yaya assistant, drag up or down to move', title: 'Yaya', close: 'Close', closeTip: 'Dismiss tip', openChat: 'Open chat', tuck: 'Tuck away', panel: 'Yaya quick help', nutrition: 'What to eat and drink' },
 } as const;
 
 export type OrbContextId = 'home' | 'plan' | 'review' | 'settings' | 'finish' | 'other';

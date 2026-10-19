@@ -4,7 +4,8 @@ import { Yaya } from './Yaya';
 import './orb.css';
 
 export type OrbContext = OrbContextId;
-export interface OrbAction { label: string; /** Text placed in the chat composer; defaults to the label. */ prompt?: string }
+export interface OrbAction { label: string; /** Text placed in the chat composer; defaults to the label. */ prompt?: string;
+  /** Opens another place instead of the training chat (e.g. 营养建议). */ onSelect?: () => void }
 export interface OrbProps {
   locale?: 'zh' | 'en';
   /** Picks the design's default tip and quick actions. */
@@ -165,7 +166,7 @@ export function Orb({ locale = 'zh', context = 'other', tip, actions, onAction, 
         <button type="button" className="v9-orb-icon" aria-label={t.close} onClick={() => { setOpen(false); button.current?.focus(); }}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg></button></div>
       {tipText && <p>{tipText}</p>}
       <div className="v9-orb-actions">{list.map(action => <button key={action.label} type="button" className="v9-orb-action"
-        onClick={() => { setOpen(false); onAction(action.prompt ?? action.label); }}><span>{action.label}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg></button>)}</div>
+        onClick={() => { setOpen(false); if (action.onSelect) action.onSelect(); else onAction(action.prompt ?? action.label); }}><span>{action.label}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg></button>)}</div>
       <div className="v9-orb-footer">
         <button type="button" className="v9-orb-chat" onClick={() => { setOpen(false); onOpenChat(); }}>{t.openChat}</button>
         <button type="button" className="v9-orb-tuck" onClick={() => { setOpen(false); setTucked(true); }}>{t.tuck}</button>

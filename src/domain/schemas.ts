@@ -112,7 +112,8 @@ export const legacyBackupScheduleSchema = z.strictObject({
   startTime: schedulingFields.startTime, durationMinutes: z.unknown().optional(), status: z.enum(['pending', 'skipped']),
   completedSessionId: uuidSchema.optional(), hiddenAt: utcTimestampSchema.optional(),
 });
-export const bodyWeightObservationSchema = z.strictObject({ ...entityFields, localDate: localDateSchema, timeZone: timeZoneSchema, weightGrams: positive });
+/** bodyFatPercent: optional, user-entered (我的变化); absent on older rows means not measured. */
+export const bodyWeightObservationSchema = z.strictObject({ ...entityFields, localDate: localDateSchema, timeZone: timeZoneSchema, weightGrams: positive, bodyFatPercent: z.number().min(3).max(70).optional() });
 export const metadataSchema = z.strictObject({
   schemaVersion: positive, localProfileId: uuidSchema, catalogVersion: positive, revision: nonnegative, dataRevision: nonnegative,
   importedAt: utcTimestampSchema.optional(), upgradedAt: utcTimestampSchema.optional(),

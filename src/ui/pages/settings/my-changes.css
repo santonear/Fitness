@@ -1,0 +1,27 @@
+/* 我的 › 我的变化. Tokens only. */
+.v9-changes { display: flex; flex-direction: column; gap: var(--s4); }
+.v9-changes-head { display: grid; gap: var(--s1); justify-items: start; padding-block-start: var(--s3); }
+.v9-changes .v9-changes-head h1 { margin: 0; font-size: var(--t7); line-height: var(--lh-tight); letter-spacing: var(--tr-display); }
+.v9-changes-head p { margin: 0; font-size: var(--t2); color: var(--c-ink-muted); }
+.v9-change-card { display: grid; gap: var(--s3); }
+.v9-change-card h2, .v9-change-card h3 { margin: 0; font-size: var(--t4); font-weight: var(--w-strong); }
+.v9-change-card h3 { font-size: var(--t2); color: var(--c-ink-muted); }
+.v9-change-line { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s1) var(--s3); }
+.v9-change-value { font-size: var(--t6); color: var(--c-accent-text); line-height: 1; }
+.v9-change-value small { margin-inline-start: var(--s1); font-size: var(--t2); color: var(--c-ink-muted); }
+.v9-change-delta { font-size: var(--t2); color: var(--c-ink); }
+.v9-change-note { margin: 0; font-size: var(--t2); line-height: var(--lh-body); color: var(--c-ink-muted); }
+.v9-change-error { margin: 0; font-size: var(--t2); color: var(--c-warn); }
+.v9-change-lifts { display: grid; gap: var(--s4); margin: 0; padding: 0; list-style: none; }
+.v9-change-lifts li { display: grid; gap: var(--s2); }
+.v9-change-lifts strong { font-size: var(--t3); }
+.v9-change-months { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s3); }
+.v9-change-month { display: grid; gap: var(--s2); justify-items: center; padding: var(--s3); border-radius: var(--r-panel); background: var(--c-inset); box-shadow: var(--el-inset); }
+.v9-change-month ul { margin: 0; padding: 0; list-style: none; display: grid; gap: calc(var(--s1) / 2); text-align: center; font-size: var(--t2); color: var(--c-ink-muted); }
+.v9-change-axis { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); margin: 0; padding: 0; list-style: none; text-align: center; font-size: var(--t1); color: var(--c-ink-muted); }
+.v9-change-axis span { display: block; font-size: var(--t2); color: var(--c-ink); }
+.v9-change-actions { display: flex; flex-wrap: wrap; gap: var(--s2); }
+.v9-change-form { display: grid; gap: var(--s3); }
+.v9-change-form label { display: grid; gap: var(--s1); font-size: var(--t2); color: var(--c-ink-muted); }
+.v9-change-form input { box-sizing: border-box; inline-size: 100%; min-block-size: var(--touch-min); padding: 0 var(--s3); border: var(--bw) solid var(--card-border); border-radius: var(--r-control); background: var(--c-inset); box-shadow: var(--el-inset); color: var(--c-ink); font: inherit; }
+.v9-change-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(calc(var(--s8) * 1.25), 1fr)); gap: var(--s3); }

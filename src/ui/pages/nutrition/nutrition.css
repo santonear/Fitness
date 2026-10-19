@@ -1,0 +1,24 @@
+/* 营养建议: nutrition chat and local food records. Tokens only. */
+.v9-nutrition { display: flex; flex-direction: column; gap: var(--s4); }
+.v9-nutrition-head { display: grid; gap: var(--s1); justify-items: start; padding-block-start: var(--s3); }
+.v9-nutrition .v9-nutrition-head h1 { margin: 0; font-size: var(--t7); line-height: var(--lh-tight); letter-spacing: var(--tr-display); }
+.v9-nutrition-head p { margin: 0; font-size: var(--t3); line-height: var(--lh-body); color: var(--c-ink-muted); }
+.v9-nutrition-chat, .v9-nutrition-section, .v9-nutrition-module { display: grid; gap: var(--s3); }
+.v9-nutrition-chat-head { display: flex; align-items: center; gap: var(--s3); }
+.v9-nutrition-chat-head > div { flex: 1; min-inline-size: 0; display: grid; gap: calc(var(--s1) / 2); }
+.v9-nutrition h2 { margin: 0; font-size: var(--t4); font-weight: var(--w-strong); }
+.v9-nutrition-chat-head span { font-size: var(--t1); color: var(--c-ink-muted); }
+.v9-nutrition-note { margin: 0; font-size: var(--t2); line-height: var(--lh-body); color: var(--c-ink-muted); }
+.v9-nutrition-banner { margin: 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s2); padding: var(--s3); border-radius: var(--r-panel); background: var(--c-warn-soft); font-size: var(--t2); color: var(--c-ink); }
+.v9-nutrition-log { display: grid; gap: var(--s2); max-block-size: 60vh; overflow-y: auto; }
+.v9-nutrition-bubble { display: grid; gap: calc(var(--s1) / 2); padding: var(--s3) var(--s4); border-radius: var(--r-panel); background: var(--c-inset); box-shadow: var(--el-inset); max-inline-size: 90%; }
+.v9-nutrition-bubble[data-role="user"] { justify-self: end; background: var(--card-bg); box-shadow: var(--el-1); }
+.v9-nutrition-bubble p { margin: 0; font-size: var(--t3); line-height: var(--lh-reading); white-space: pre-wrap; }
+.v9-nutrition-speaker { font-size: var(--t1); color: var(--c-ink-muted); }
+.v9-nutrition-quick { display: flex; flex-wrap: wrap; gap: var(--s2); }
+.v9-nutrition-records, .v9-nutrition-form { display: grid; gap: var(--s3); }
+.v9-nutrition-form label { display: grid; gap: var(--s1); font-size: var(--t2); color: var(--c-ink-muted); }
+.v9-nutrition-form fieldset { margin: 0; padding: 0; border: 0; display: grid; gap: var(--s2); min-inline-size: 0; font-size: var(--t2); color: var(--c-ink-muted); }
+.v9-nutrition-form input, .v9-nutrition-form textarea { box-sizing: border-box; inline-size: 100%; min-block-size: var(--touch-min); padding: var(--s2) var(--s3); border: var(--bw) solid var(--card-border); border-radius: var(--r-control); background: var(--c-inset); box-shadow: var(--el-inset); color: var(--c-ink); font: inherit; }
+.v9-nutrition-list { margin: 0; padding: 0; list-style: none; display: grid; gap: var(--s2); font-size: var(--t2); }
+.v9-nutrition-list li { padding: var(--s2) var(--s3); border-radius: var(--r-control); background: var(--c-inset); }

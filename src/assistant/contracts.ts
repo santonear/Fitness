@@ -12,6 +12,8 @@ export const assistantRequestSchema = z.strictObject({
   locale: z.enum(['zh', 'en']), timeZone: timeZoneSchema, adultConfirmed: z.boolean(),
   messages: z.array(z.strictObject({ role: z.enum(['user', 'assistant']), content: z.string().min(1).max(4000) })).min(1).max(20),
   context: coachRequestSchema.optional(),
+  /** 营养建议: a diet/intake/nutrition conversation. It carries no training context or records; see src/nutrition/module-boundary.ts. */
+  topic: z.literal('nutrition').optional(),
   engineCandidateIds:z.array(exerciseIdSchema).max(60).optional(),
   preferences: z.array(z.strictObject({kind:z.enum(['dislike_exercise','cannot_do','caution_area','preferred_days','equipment']),value:z.union([z.string().max(200),z.array(z.string().max(80)).max(7)])})).max(30).optional(),
   consent: z.strictObject({ body: z.boolean(), history: z.boolean(), health:z.boolean().optional(), nutrition:z.boolean().optional() }).optional(),
@@ -23,6 +25,7 @@ export const assistantRequestSchema = z.strictObject({
     })).max(500), remainingSets: z.number().int().nonnegative().max(1000),
   }).optional(),
 }).refine(value => value.messages.at(-1)?.role === 'user', 'Latest message must be from user')
+  .refine(value => value.topic !== 'nutrition' || (!value.context && !value.currentWorkout && !value.engineCandidateIds), 'A nutrition conversation carries no training context')
   .superRefine((value,ctx) => {
     if(!value.currentWorkout) return;
     if(value.context?.task !== 'ADJUST_TODAY' || !value.context.workoutId) { ctx.addIssue({code:'custom',path:['currentWorkout'],message:'Current workout requires matching active adjustment context'}); return; }
