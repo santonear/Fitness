@@ -1,5 +1,7 @@
 import { engineCopy } from "../../../coach/engine-copy";
-import { EnginePlanNotices } from "../../components/EnginePlanNotices";
+import { PlanStops, PlanTip } from "./WeekPlan";
+import { weekdayIndex } from "../../../application/plan-presentation";
+import { Card, PrimaryButton } from "../../components/kit";
 import { useFeature } from "../../useFeature";
 import { useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -124,11 +126,7 @@ export function PlanRoute({ versions = false }: { versions?: boolean }) {
     <main>
       {prenatalPrompt}
       {engineEnabled && selected?.enginePlan && (
-        <EnginePlanNotices
-          plan={selected.enginePlan}
-          locale={c.locale}
-          onEditEnvironment={() => c.navigate("/settings/engine#environment")}
-        />
+        <PlanStops plan={selected.enginePlan} locale={c.locale} />
       )}
       {selected ? (
         <PlanPage
@@ -138,6 +136,7 @@ export function PlanRoute({ versions = false }: { versions?: boolean }) {
           exerciseName={c.name}
           onVersions={() => c.navigate(`/plans/versions${selectedQuery}`)}
           onExercises={() => c.navigate("/exercises")}
+          today={weekdayIndex(new Date(), c.data?.profile?.timeZone ?? "Asia/Shanghai")}
           onExercise={(v, id, index, trigger) => {
             triggerRef.current = trigger ?? null;
             setExercise(
@@ -146,13 +145,17 @@ export function PlanRoute({ versions = false }: { versions?: boolean }) {
             setOpen(true);
           }}
         />
-      ) : (
+      ) : null}
+      {selected && engineEnabled && selected.enginePlan && (
+        <PlanTip plan={selected.enginePlan} locale={c.locale} onEditEnvironment={() => c.navigate("/settings/engine#environment")} />
+      )}
+      {selected ? null : (
         <>
-          <h1>{c.t.plan}</h1>
+          <h1 className="v9-display">{c.t.plan}</h1>
           <p>{life.empty}</p>
-          <Button onClick={() => c.navigate("/onboarding")}>
+          <PrimaryButton onClick={() => c.navigate("/onboarding")}>
             {life.create}
-          </Button>
+          </PrimaryButton>
         </>
       )}
       <ExerciseGuidePanel
@@ -162,22 +165,22 @@ export function PlanRoute({ versions = false }: { versions?: boolean }) {
         onClose={() => setOpen(false)}
         triggerRef={triggerRef}
       />
-      <section>
-        <Button onClick={() => c.navigate("/settings#reminders")}>
+      <Card variant="inset" padding="md" as="section" className="v9-plan-more">
+        <PrimaryButton tone="quiet" size="sm" onClick={() => c.navigate("/settings#reminders")}>
           {copy.reminder}
-        </Button>
+        </PrimaryButton>
         <p>{copy.reminderHint}</p>
-      </section>
+      </Card>
       {query.has("version") || query.has("plan") ? (
         <Button onClick={() => setQuery({})}>{life.back}</Button>
       ) : (
-        <section aria-labelledby="previous-plans-title">
+        <section aria-labelledby="previous-plans-title" className="v9-plan-more">
           <h2 id="previous-plans-title">{life.previous}</h2>
           {!previous.length && <p>{life.noPrevious}</p>}
           {previous.map((plan) => {
             const created = creationDate(plan.id);
             return (
-              <Sheet key={plan.id}>
+              <Card key={plan.id} variant="raised" padding="md">
                 <h3>{plan.name}</h3>
                 <p>
                   {created ? (
@@ -207,7 +210,7 @@ export function PlanRoute({ versions = false }: { versions?: boolean }) {
                   {life.delete}
                 </Button>
                 {activePlanId === plan.id && <p>{life.active}</p>}
-              </Sheet>
+              </Card>
             );
           })}
         </section>

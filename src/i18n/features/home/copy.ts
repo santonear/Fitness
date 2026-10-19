@@ -1,0 +1,13 @@
+/** V9 今天 (home) copy. Lines never state facts the app does not have. */
+export const homeCopy = {
+  zh: {
+    title: '今天', today: '今天的训练', nextOn: '下一次 · {day}', suggested: '建议', parts: '主要部位',
+    applied: '计划已经用上了。第一节随时可以开始，按今天的状态来。', checkin: '练之前，看看状态', week: '本周', after: '再下一次',
+    afterLine: '{day} · {name} · {minutes} 分钟', chat: '跟芽芽说说今天的情况',
+  },
+  en: {
+    title: 'Today', today: "Today's session", nextOn: 'Next · {day}', suggested: 'suggested ', parts: 'Main areas',
+    applied: 'Your plan is ready. Start the first session whenever you like, at your own pace.', checkin: 'Before you start, a quick check-in', week: 'This week', after: 'After that',
+    afterLine: '{day} · {name} · {minutes} min', chat: 'Tell Yaya how today is going',
+  },
+} as const;

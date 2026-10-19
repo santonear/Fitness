@@ -5,7 +5,7 @@ export const v8Routes = [
   { id: 'activityImport', path: '/settings/import', page: 'settings/ActivityImportPage', namespace: 'settings', owner: 'followup' },
   { id: 'onboarding', path: '/onboarding', page: 'onboarding/OnboardingPage', namespace: 'onboarding', owner: 'E' },
   { id: 'draft', path: '/plan-draft', page: 'onboarding/PlanDraftPage', namespace: 'onboarding', owner: 'E' },
-  { id: 'next', path: '/', page: 'training/NextPage', namespace: 'training', owner: 'E' },
+  { id: 'next', path: '/', page: 'home/HomePage', namespace: 'training', owner: 'E' },
   { id: 'workout', path: '/workout/:id', page: 'training/WorkoutPage', namespace: 'training', owner: 'E' },
   { id: 'finish', path: '/workout/:id/finish', page: 'training/FinishPage', namespace: 'training', owner: 'E' },
   { id: 'activity', path: '/activity', page: 'training/ActivityPage', namespace: 'training', owner: 'E' },

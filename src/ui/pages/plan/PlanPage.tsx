@@ -1,7 +1,10 @@
 import {templateLabel,estimatedDurationLabel} from '../../../i18n/features/plan/labels';
 import type { PlannedItem, PlanVersion } from '../../../domain/v8/contracts';
 import { planMessages, type PlanLanguage } from '../../../i18n/features/plan/messages';
-import { Button, Chip, Row, Sheet } from '../../components/common';
+import { PrimaryButton } from '../../components/kit';
+import { WeekPlan, PlanReasons, SessionItems, type WeekPlanProps } from './WeekPlan';
+import { planViewCopy } from '../../../i18n/features/plan/view';
+import { planReasons } from '../../../application/plan-presentation';
 import './plan.css';
 import guideZh from '../../../i18n/features/training/guide.zh.json';
 import guideEn from '../../../i18n/features/training/guide.en.json';
@@ -43,21 +46,21 @@ export function preferredDaysLabel(days:PlanVersion['preferredDays'],language:Pl
  const names:{[K in typeof dayOrder[number]]:string}={mon:'Mon',tue:'Tue',wed:'Wed',thu:'Thu',fri:'Fri',sat:'Sat',sun:'Sun'};
  return selected.map(day=>names[day]).join('/');
 }
-export function PlanPage({ version, currentVersionId, language, exerciseName, onVersions, onExercises, onExercise, onDiscuss }: PlanPageProps) {
-  const t = planMessages[language], current = version.id === currentVersionId;
-  const sourceCopy=language==='zh'?guideZh:guideEn;
-  const source=[t.origins[version.origin],version.source==='local'?sourceCopy.basic:version.source==='ai'?sourceCopy.ai:''].filter(Boolean).join(' · ');
-  return <section className="plan-page" aria-labelledby="plan-title">
-    <header><h1 id="plan-title">{t.title}</h1>
-      <p className="plan-muted">{t.version(version.versionNumber)} · <time dateTime={version.createdAt}>{new Intl.DateTimeFormat(language, { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(version.createdAt))}</time> · {source}{!current && ` · ${t.readOnly}`}</p>
+export function PlanPage({ version, currentVersionId, language, exerciseName, onVersions, onExercises, onExercise, onDiscuss, today, done, focusId }: PlanPageProps & { today?: number; done?: WeekPlanProps['done']; focusId?: string }) {
+  const t = planMessages[language], v = planViewCopy[language], current = version.id === currentVersionId;
+  const date = new Intl.DateTimeFormat(language, { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(version.createdAt));
+  return <section className="plan-page v9-plan-page" aria-labelledby="plan-title">
+    <header className="v9-plan-head">
+      <span className="v9-plan-kicker">{t.version(version.versionNumber)} · <time dateTime={version.createdAt}>{date}</time> · {t.origins[version.origin]}{!current && ` · ${t.readOnly}`}</span>
+      <h1 id="plan-title" className="v9-display">{v.planTitle}</h1>
+      <p className="v9-plan-kicker">{t.goal} · {version.goalText}</p>
+      <p className="v9-plan-kicker">{version.preferredDays?.length ? preferredDaysLabel(version.preferredDays, language) : language === 'zh' ? `每周 ${version.weeklyTarget} 次` : `${version.weeklyTarget} times a week`} · {estimatedDurationLabel(version.templates, language)}</p>
     </header>
-    <div className="plan-overview"><Sheet><dl className="plan-summary"><dt>{t.goal}</dt><dd>{version.goalText}</dd></dl></Sheet><Sheet><dl className="plan-summary"><dt>{t.rhythm}</dt><dd>{version.preferredDays?.length?preferredDaysLabel(version.preferredDays,language):language==='zh'?`每周 ${version.weeklyTarget} 次`:`${version.weeklyTarget} times a week`}</dd><dd className="plan-muted">{estimatedDurationLabel(version.templates,language)}</dd></dl></Sheet></div>
-    {version.templates.map(template => <section className="plan-session" key={template.id} aria-label={templateLabel(template, language)}>
-      <Row><h2>{templateLabel(template, language)}</h2><span className="plan-muted">{t.minutes(template.estimatedMinutes)}</span></Row>
-      <div className="plan-items">{template.items.map((item, index) => <Chip key={`${item.exerciseId}-${index}`} selected={false}
-        onClick={event => onExercise(version, template.id, index, event.currentTarget)}>{exerciseName(item.exerciseId)} · {itemTarget(item, language, item.exerciseId===EXERCISE_IDS.walking&&/室内|indoor/i.test(template.name))}</Chip>)}</div>
-    </section>)}
-    <nav className="plan-actions" aria-label={t.title}><Button onClick={onVersions}>{t.history}</Button><Button onClick={onExercises}>{t.library}</Button></nav>
-    {current && onDiscuss && <Button variant="primary" onClick={() => { if (version.id === currentVersionId) onDiscuss(version); }}>{t.chat}</Button>}
+    <WeekPlan plan={version} locale={language} today={today} done={done} focusId={focusId} details={template => <SessionItems template={template} locale={language} name={exerciseName}
+      hideDistance={id => id === EXERCISE_IDS.walking && /室内|indoor/i.test(template.name)}
+      onExercise={(_id, index, element) => onExercise(version, template.id, index, element)} />} />
+    <PlanReasons reasons={planReasons(version, language)} locale={language} />
+    <nav className="v9-plan-tools" aria-label={t.title}><PrimaryButton tone="quiet" size="sm" onClick={onVersions}>{t.history}</PrimaryButton><PrimaryButton tone="quiet" size="sm" onClick={onExercises}>{t.library}</PrimaryButton></nav>
+    {current && onDiscuss && <PrimaryButton onClick={() => { if (version.id === currentVersionId) onDiscuss(version); }}>{t.chat}</PrimaryButton>}
   </section>;
 }
