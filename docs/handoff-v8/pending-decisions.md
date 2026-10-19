@@ -543,3 +543,11 @@ Bo 已定版 V9 设计并授权推进；计时规则按 Bo 当日决定改写（
 - 理由：今天与各状态在任何主题下都靠明暗与形状一眼可辨，不只靠色相；主题差异仍只在令牌与签名组件里，页面与共享组件只读变量。
 - 涉及文件：docs/handoff-v8/02-design-tokens.json、src/themes/{token-css,contract}.ts、src/themes/*/tokens.css、src/themes/vivid/slots/slots.css、src/themes/base/common.css、src/ui/{shared.css,mainline/mainline.css}、src/ui/components/{kit/kit.css,scene.css,training-calendar.css,TrainingCalendar.tsx}、src/ui/pages/plan/{MonthPlan.tsx,week-plan.css}、src/i18n/features/plan/calendar.ts、tests/unit/v9-calendar-contrast.test.ts、tools/preview/vivid-d-calendars/。
 - 待 Bo 确认：五套主题的月历取色（尤其 pop 的计划日琥珀浅底、data / fire 的今天外圈用金黄 / 橙色）；今天页本周条也换成同一画法（今天不再整块主按钮色，改为外圈 + 日期标签墨色底）；“什么时候练”里今天以前的日子用次要字色而不是更淡的灰（为满足 4.5:1）。
+
+## 2026-10-20 · 月历“今天”改为下划光条 + 星星（V9.0.10）
+
+- 情况：Bo 认为今天的黑色圆章不够高级，要求切合主题、醒目、不用黑圈，给 4 版选。预览 A–D 后选 D，并要求配色与背景协调、星星不加圆底，授权直接开发上线。
+- 决定：新增 `--cal-today-from/to/halo/glow/lift`（令牌 JSON calendar 节），取各主题“练完了”色系；计划 › 月、草案月历与选训练日日历同一画法；今天格不再画点选外框；今天页本周条暂不改。
+- 理由：只在令牌里区分主题，页面只读变量；星星是图形，中英文一致。
+- 涉及文件：docs/handoff-v8/02-design-tokens.json、src/themes/{token-css,contract}.ts、src/themes/*/tokens.css、src/ui/pages/plan/week-plan.css、src/ui/components/training-calendar.css、tests/unit/v9-calendar-contrast.test.ts、规范 V9.13。
+- 待 Bo 确认：今天页本周条是否也换成同款星星与短条。

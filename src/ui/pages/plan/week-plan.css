@@ -85,13 +85,20 @@
 [data-state="planned"] > .v9-month-mark { background: var(--cal-planned-ring); }
 :is([data-state="done"], [data-state="partial"]) > .v9-month-mark { background: var(--cal-done-ink); }
 .v9-month-day[aria-pressed="true"] { outline: 2px solid var(--cal-selected-ring); outline-offset: 1px; }
-.v9-month-day[aria-current="date"] { outline: 3px solid var(--cal-today-ring); outline-offset: 1px; z-index: 1; }
-.v9-month-day[aria-current="date"] .v9-month-number { background: var(--cal-today-bg); color: var(--cal-today-ink); box-shadow: 0 0 0 2px var(--cal-today-ink); font-weight: var(--w-strong); }
+/* Today (Bo 2026-10-20, D 下划光条): the cell lifts, a glowing bar replaces the dot, a star sits on the top-right corner.
+   Colours come from the theme's own 练完了 family; on done / partial cells the bar takes the done ink so it stays visible. */
+.v9-month-day[aria-current="date"] { outline: none; z-index: 1; transform: translateY(calc(var(--s1) * -.75)); box-shadow: var(--cal-today-lift); }
+.v9-month-day[aria-current="date"] .v9-month-number { font-weight: var(--w-strong); }
+.v9-month-day[aria-current="date"] > .v9-month-mark { visibility: visible; inline-size: var(--s5); block-size: calc(var(--s1) * 1.25); border-radius: var(--s1); background: linear-gradient(90deg, var(--cal-today-from), var(--cal-today-to)); box-shadow: 0 0 0 1.5px var(--cal-today-halo), 0 0 10px 1px var(--cal-today-glow); }
+.v9-month-day[aria-current="date"]:is([data-state="done"], [data-state="partial"]) > .v9-month-mark { background: var(--cal-done-ink); }
+.v9-month-day[aria-current="date"]::before, .v9-month-day[aria-current="date"]::after { content: ""; position: absolute; z-index: 2; pointer-events: none; clip-path: polygon(50% 0, 63% 35%, 100% 38%, 71% 61%, 81% 100%, 50% 78%, 19% 100%, 29% 61%, 0 38%, 37% 35%); }
+.v9-month-day[aria-current="date"]::before { inset-block-start: calc(var(--s2) * -1.375); inset-inline-end: calc(var(--s2) * -1.375); inline-size: var(--s5); block-size: var(--s5); background: var(--cal-today-halo); }
+.v9-month-day[aria-current="date"]::after { inset-block-start: calc(var(--s2) * -1); inset-inline-end: calc(var(--s2) * -1); inline-size: calc(var(--s5) * .75); block-size: calc(var(--s5) * .75); background: linear-gradient(160deg, var(--cal-today-from), var(--cal-today-to)); }
 .v9-month-day:focus-visible { outline: 3px solid var(--c-focus); outline-offset: 2px; }
 .v9-month-legend { display: flex; flex-wrap: wrap; gap: var(--s2) var(--s4); margin: 0; padding: 0; list-style: none; font-size: var(--t1); color: var(--c-ink); }
 .v9-month-legend li { display: inline-flex; align-items: center; gap: calc(var(--s1) * 1.5); }
 .v9-month-legend .v9-month-mark { inline-size: calc(var(--s4) + var(--s1)); block-size: var(--s4); border-radius: calc(var(--cal-r) / 2); border: 2px solid transparent; }
-.v9-month-legend [data-state="today"] .v9-month-mark { inline-size: var(--s4); border-radius: 50%; background: var(--cal-today-bg); border: 0; outline: 2px solid var(--cal-today-ring); outline-offset: 1px; }
+.v9-month-legend [data-state="today"] .v9-month-mark { position: relative; inline-size: calc(var(--s4) + var(--s1)); block-size: calc(var(--s1) * 1.25); border: 0; border-radius: var(--s1); background: linear-gradient(90deg, var(--cal-today-from), var(--cal-today-to)); box-shadow: 0 0 6px var(--cal-today-glow); }
 .v9-month-legend [data-state="done"] .v9-month-mark { background: var(--cal-done-bg); }
 .v9-month-legend [data-state="partial"] .v9-month-mark { background: linear-gradient(0deg, var(--cal-done-bg) 0 45%, var(--cal-partial-rest) 45% 100%); border-color: var(--cal-done-bg); }
 .v9-month-legend [data-state="planned"] .v9-month-mark { background: var(--cal-planned-bg); border-color: var(--cal-planned-ring); }
