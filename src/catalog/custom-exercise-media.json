@@ -1,0 +1,156 @@
+{
+ "provenance": "fitness-original",
+ "notice": "/media/NOTICE.md",
+ "generator": "tools/catalog/fitness-illustrations",
+ "professionalReview": "not-reviewed",
+ "exercises": {
+  "custom-backpack-suitcase-walk": {
+   "main": "/exercise-media/fitness/custom-backpack-suitcase-walk-main.webp"
+  },
+  "custom-band-high-pulldown": {
+   "start": "/exercise-media/fitness/custom-band-high-pulldown-start.webp",
+   "peak": "/exercise-media/fitness/custom-band-high-pulldown-peak.webp"
+  },
+  "custom-band-self-anchored-row": {
+   "start": "/exercise-media/fitness/custom-band-self-anchored-row-start.webp",
+   "peak": "/exercise-media/fitness/custom-band-self-anchored-row-peak.webp"
+  },
+  "custom-bottle-farmer-walk": {
+   "main": "/exercise-media/fitness/custom-bottle-farmer-walk-main.webp"
+  },
+  "custom-chair-sit-to-stand": {
+   "start": "/exercise-media/fitness/custom-chair-sit-to-stand-start.webp",
+   "peak": "/exercise-media/fitness/custom-chair-sit-to-stand-peak.webp"
+  },
+  "custom-forearm-ground-step": {
+   "start": "/exercise-media/fitness/custom-forearm-ground-step-start.webp",
+   "peak": "/exercise-media/fitness/custom-forearm-ground-step-peak.webp"
+  },
+  "custom-forearm-wall-push": {
+   "start": "/exercise-media/fitness/custom-forearm-wall-push-start.webp",
+   "peak": "/exercise-media/fitness/custom-forearm-wall-push-peak.webp"
+  },
+  "custom-high-wall-sit": {
+   "start": "/exercise-media/fitness/custom-high-wall-sit-start.webp",
+   "peak": "/exercise-media/fitness/custom-high-wall-sit-peak.webp"
+  },
+  "custom-kneeling-forearm-crawl": {
+   "start": "/exercise-media/fitness/custom-kneeling-forearm-crawl-start.webp",
+   "peak": "/exercise-media/fitness/custom-kneeling-forearm-crawl-peak.webp"
+  },
+  "custom-kneeling-knuckle-push-up": {
+   "start": "/exercise-media/fitness/custom-kneeling-knuckle-push-up-start.webp",
+   "peak": "/exercise-media/fitness/custom-kneeling-knuckle-push-up-peak.webp"
+  },
+  "custom-kneeling-side-bridge": {
+   "start": "/exercise-media/fitness/custom-kneeling-side-bridge-start.webp",
+   "peak": "/exercise-media/fitness/custom-kneeling-side-bridge-peak.webp"
+  },
+  "custom-quiet-march": {
+   "start": "/exercise-media/fitness/custom-quiet-march-start.webp",
+   "peak": "/exercise-media/fitness/custom-quiet-march-peak.webp"
+  },
+  "custom-quiet-shadow-boxing": {
+   "start": "/exercise-media/fitness/custom-quiet-shadow-boxing-start.webp",
+   "peak": "/exercise-media/fitness/custom-quiet-shadow-boxing-peak.webp"
+  },
+  "custom-seated-march": {
+   "start": "/exercise-media/fitness/custom-seated-march-start.webp",
+   "peak": "/exercise-media/fitness/custom-seated-march-peak.webp"
+  },
+  "custom-seated-self-overhead-press": {
+   "start": "/exercise-media/fitness/custom-seated-self-overhead-press-start.webp",
+   "peak": "/exercise-media/fitness/custom-seated-self-overhead-press-peak.webp"
+  },
+  "custom-seated-self-resisted-leg-curl": {
+   "main": "/exercise-media/fitness/custom-seated-self-resisted-leg-curl-main.webp"
+  },
+  "custom-self-resisted-chest-press": {
+   "start": "/exercise-media/fitness/custom-self-resisted-chest-press-start.webp",
+   "peak": "/exercise-media/fitness/custom-self-resisted-chest-press-peak.webp"
+  },
+  "custom-self-resisted-overhead-press": {
+   "start": "/exercise-media/fitness/custom-self-resisted-overhead-press-start.webp",
+   "peak": "/exercise-media/fitness/custom-self-resisted-overhead-press-peak.webp"
+  },
+  "custom-self-resisted-pulldown": {
+   "start": "/exercise-media/fitness/custom-self-resisted-pulldown-start.webp",
+   "peak": "/exercise-media/fitness/custom-self-resisted-pulldown-peak.webp"
+  },
+  "custom-self-resisted-pulldown-hold": {
+   "main": "/exercise-media/fitness/custom-self-resisted-pulldown-hold-main.webp"
+  },
+  "custom-shallow-split-squat": {
+   "start": "/exercise-media/fitness/custom-shallow-split-squat-start.webp",
+   "peak": "/exercise-media/fitness/custom-shallow-split-squat-peak.webp"
+  },
+  "custom-slow-bear-step": {
+   "start": "/exercise-media/fitness/custom-slow-bear-step-start.webp",
+   "peak": "/exercise-media/fitness/custom-slow-bear-step-peak.webp"
+  },
+  "custom-slow-walking-in-place": {
+   "start": "/exercise-media/fitness/custom-slow-walking-in-place-start.webp",
+   "peak": "/exercise-media/fitness/custom-slow-walking-in-place-peak.webp"
+  },
+  "custom-standing-cross-press-brace": {
+   "main": "/exercise-media/fitness/custom-standing-cross-press-brace-main.webp"
+  },
+  "custom-standing-heel-drag-hold": {
+   "main": "/exercise-media/fitness/custom-standing-heel-drag-hold-main.webp"
+  },
+  "custom-standing-self-antileaning": {
+   "main": "/exercise-media/fitness/custom-standing-self-antileaning-main.webp"
+  },
+  "custom-standing-self-antirotation": {
+   "main": "/exercise-media/fitness/custom-standing-self-antirotation-main.webp"
+  },
+  "custom-standing-self-row": {
+   "start": "/exercise-media/fitness/custom-standing-self-row-start.webp",
+   "peak": "/exercise-media/fitness/custom-standing-self-row-peak.webp"
+  },
+  "custom-standing-self-row-hold": {
+   "main": "/exercise-media/fitness/custom-standing-self-row-hold-main.webp"
+  },
+  "custom-standing-side-resistance-hold": {
+   "main": "/exercise-media/fitness/custom-standing-side-resistance-hold-main.webp"
+  },
+  "custom-standing-upper-back-stretch": {
+   "main": "/exercise-media/fitness/custom-standing-upper-back-stretch-main.webp"
+  },
+  "custom-step-jack": {
+   "start": "/exercise-media/fitness/custom-step-jack-start.webp",
+   "peak": "/exercise-media/fitness/custom-step-jack-peak.webp"
+  },
+  "custom-supported-heel-raise": {
+   "start": "/exercise-media/fitness/custom-supported-heel-raise-start.webp",
+   "peak": "/exercise-media/fitness/custom-supported-heel-raise-peak.webp"
+  },
+  "custom-supported-low-step-up": {
+   "start": "/exercise-media/fitness/custom-supported-low-step-up-start.webp",
+   "peak": "/exercise-media/fitness/custom-supported-low-step-up-peak.webp"
+  },
+  "custom-supported-tandem-stand": {
+   "main": "/exercise-media/fitness/custom-supported-tandem-stand-main.webp"
+  },
+  "custom-supported-wide-static-stand": {
+   "main": "/exercise-media/fitness/custom-supported-wide-static-stand-main.webp"
+  },
+  "custom-wall-antirotation-press": {
+   "main": "/exercise-media/fitness/custom-wall-antirotation-press-main.webp"
+  },
+  "custom-wall-plank": {
+   "main": "/exercise-media/fitness/custom-wall-plank-main.webp"
+  },
+  "custom-wall-side-brace": {
+   "main": "/exercise-media/fitness/custom-wall-side-brace-main.webp"
+  },
+  "custom-wall-supported-shallow-stepback": {
+   "start": "/exercise-media/fitness/custom-wall-supported-shallow-stepback-start.webp",
+   "peak": "/exercise-media/fitness/custom-wall-supported-shallow-stepback-peak.webp"
+  },
+  "custom-wall-supported-single-leg-stand": {
+   "start": "/exercise-media/fitness/custom-wall-supported-single-leg-stand-start.webp",
+   "peak": "/exercise-media/fitness/custom-wall-supported-single-leg-stand-peak.webp"
+  }
+ }
+}

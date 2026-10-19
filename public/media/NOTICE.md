@@ -11,3 +11,7 @@ These four SVG files were drawn directly with geometric SVG primitives for Fitne
 - Generation used two calls. The existing geometric SVG originals remain archived; application media resolution no longer selects them. Exact matching RepDB media is reused separately under its own license and attribution.
 
 RepDB license clause 5 prohibits its images as generative input/reference/conditioning: https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md . Provider assets remain separate and retain https://repdb.co/ attribution.
+
+## Fitness original pose illustrations — 2026-10-19
+
+`/exercise-media/fitness/*.webp` (listed in `src/catalog/custom-exercise-media.json`) are original illustrations for the Fitness-authored supplementary exercises. They are rendered by `tools/catalog/fitness-illustrations/` from geometric SVG primitives: a parametric figure posed by joint angles and reach targets, plus simple props (chair, wall, step, band, backpack, bottle) and effort arrows. No RepDB or other third-party image was copied, traced or used as input or reference; only generic presentation choices (512×512 canvas, flat colours, light background with a floor shadow) were matched so the library looks consistent. These are not RepDB assets and carry no RepDB attribution. Movement form has not been professionally reviewed.

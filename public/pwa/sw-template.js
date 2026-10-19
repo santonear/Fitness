@@ -2,7 +2,7 @@
 const CACHE = 'fitness-pwa-__FITNESS_REVISION__';
 const ASSETS = __FITNESS_ASSETS__;
 const paths = new Set(ASSETS);
-const mediaPath = pathname => /^\/exercise-media\/repdb\/[a-zA-Z0-9_./-]+\.(?:png|jpg|jpeg|webp)$/.test(pathname);
+const mediaPath = pathname => /^\/exercise-media\/(?:repdb|fitness)\/[a-zA-Z0-9_./-]+\.(?:png|jpg|jpeg|webp)$/.test(pathname);
 const appRoute = pathname => pathname === '/' || /^\/(?:onboarding|plan-draft|workout|activity|manual|plans|exercises|review|settings)(?:\/|$)/.test(pathname);
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));

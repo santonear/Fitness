@@ -7,12 +7,12 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
 ```json
 {
   "version": 3,
-  "sourceHash": "6c4db1895a2d8d4fa0b85dc9c737dc818e573ef73c1f6fbec1754ca09a6e877d",
+  "sourceHash": "05595ab38595e1067d0a24dd3d6ad548a1f4f790e3c58d66ad625224eaa17879",
   "inputHash": "58eec36583cead086e435eeb3ceb10bcbf82c9ecf911bd4dcfb509a0bff10332",
   "seed": 20261015,
   "nodeVersion": "v24.14.0",
   "runtimeFingerprint": "670a0b0516d2baa29f38405873b784232e6c52e72a83907905cd2e2906ca7dc5",
-  "wallMs": 86809.30200195312,
+  "wallMs": 73809.875,
   "report": {
     "stage": "V2 diagnostic",
     "pregnancyRamp": {
@@ -1992,12 +1992,12 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       }
     ],
     "performance": {
-      "totalMs": 86809.30200195312,
-      "p95Ms": 444.59059999999954,
-      "generationP95Ms": 444.59059999999954,
-      "classificationP95Ms": 449.229800000001,
-      "parallelAuditWallMs": 84920.0079,
-      "workerContentionP95Ms": 444.59059999999954
+      "totalMs": 73809.875,
+      "p95Ms": 378.31699999999546,
+      "generationP95Ms": 378.31699999999546,
+      "classificationP95Ms": 382.25390000000334,
+      "parallelAuditWallMs": 72702.25180000001,
+      "workerContentionP95Ms": 378.31699999999546
     }
   }
 }
