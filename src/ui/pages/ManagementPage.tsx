@@ -1,7 +1,8 @@
 import {useFeature} from '../useFeature';
 import { ApplicationsTable } from '../admin/ApplicationsTable';
 import { AdminShell } from '../admin/shell/AdminShell';
-import { adminTokens } from '../admin/tokens';
+import { adminTokens, adminWorkspaceTokens } from '../admin/tokens';
+import '../admin/shell/admin-shell.css';
 import '../admin/admin.css';
 import { AppIcon, StatusIcon } from '../components/AppIcon';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
@@ -17,7 +18,7 @@ export function ManagementPage() {
   const {i18n}=useTranslation();const zh=i18n.resolvedLanguage!=='en';
   useEffect(()=>{void refreshFeatureFlags(fetch,true)},[]);
   if(new URLSearchParams(location.search).has('legacy'))return <LegacyManagementPage/>;
-  const frame=(content:React.ReactNode)=><div className={`admin-workspace admin-access-state${hasValidRemoteConfig()?' admin-access-inline':''}`}><main><header><strong>Fitness · {zh?'管理工作台':'Administration'}</strong></header>{content}</main></div>;
+  const frame=(content:React.ReactNode)=><div className={`admin-workspace admin-access-state${hasValidRemoteConfig()?' admin-access-inline':''}`} style={adminWorkspaceTokens}><main><header><strong>Fitness · {zh?'管理工作台':'Administration'}</strong></header>{content}</main></div>;
   const notice=state==='error'?frame(<section className="admin-card" role="alert"><h1>{zh?'暂时无法读取后台配置':'Admin configuration unavailable'}</h1><p>{zh?'请确认登录仍然有效，然后重试。':'Check that you are still signed in, then retry.'}</p><button className="primary" onClick={()=>void refreshFeatureFlags()}>{zh?'重试':'Retry'}</button></section>):null;
   if(enabled)return <>{notice}<AdminShell/></>;
   if(!hasValidRemoteConfig())return notice??frame(<section className="admin-card" role="status">{zh?'正在读取后台配置…':'Loading admin configuration…'}</section>);
