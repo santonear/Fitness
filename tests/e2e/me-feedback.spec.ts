@@ -39,7 +39,11 @@ test('我的: no 界面风格 or training reminders by default; 给我们留言 
   const history = page.getByRole('region', { name: /你发过的留言/ });
   await expect(history.getByText('希望能把计划同步到手机日历')).toBeVisible();
   await expect(page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).resolves.toBe(true);
-  await page.screenshot({ path: test.info().outputPath('me-feedback-pop-320.png'), fullPage: true });
+  for (const width of [390, 1440]) {
+    await page.setViewportSize({ width, height: width > 1000 ? 900 : 844 });
+    await page.getByLabel('想说的话').scrollIntoViewIfNeeded();
+    await page.screenshot({ path: test.info().outputPath(`me-feedback-pop-${width}.png`) });
+  }
   await page.reload();
   await page.getByRole('button', { name: /^给我们留言/ }).click();
   await expect(page.getByRole('region', { name: /你发过的留言/ }).getByText('希望能把计划同步到手机日历')).toBeVisible();
