@@ -14,6 +14,7 @@ import {
   assertPregnancyItems,
 } from "./pregnancy-safety";
 import { createOlderSafety } from "./older-safety";
+import { createWorkoutTimes } from "./workout-times";
 import { createTrainingStop } from "./training-stop";
 import {
   createPostpartumSafety,
@@ -1363,6 +1364,7 @@ export function createV8Workflow(repo: Repository) {
   const pain = createTrainingPain(repo);
   return {
     changeStartDate,
+    correctWorkoutTimes: createWorkoutTimes(repo).correct,
     reviewCaution: caution.review,
     reportCautionMorning: caution.reportMorning,
     reconcileCaution: caution.reconcile,
