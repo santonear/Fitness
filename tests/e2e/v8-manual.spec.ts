@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import {showShared} from './helpers/home-coach';
 
 test('manual search, multi-select, filters and shared estimate lead to a multi-action workout', async ({ page }) => {
   await page.goto('/manual');
@@ -129,7 +130,7 @@ for(const mode of ['success','denied','failure','reject','stale','stale-start'] 
  await seedManual(page);
  const snapshot=()=>page.evaluate(async()=>{const path='/src/ui/mainline/context.tsx';const s=await(await import(/* @vite-ignore */ path)).workflow.snapshot();return{versions:s.versions,active:s.active};});
  const before=await snapshot();await page.getByRole('button',{name:'芽芽帮配',exact:true}).click();expect(calls).toBe(0);
- await expect(page.getByRole('dialog').getByText('查看发送内容',{exact:true})).toBeVisible();
+ await showShared(page);await expect(page.getByRole('dialog').getByText('查看发送内容',{exact:true})).toBeVisible();
  if(mode==='reject'){await page.getByRole('dialog').getByRole('button',{name:'关闭',exact:true}).click();expect(calls).toBe(0);expect(await snapshot()).toEqual(before);return;}
  await page.getByRole('dialog').getByRole('textbox').fill('搭配本次训练');await page.getByRole('dialog').getByRole('button',{name:'发送',exact:true}).click();
  if(mode==='denied'||mode==='failure'){

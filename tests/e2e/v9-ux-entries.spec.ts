@@ -12,7 +12,7 @@ const noAccess = (page: Page) => page.route('**/api/v1/trial/**', route => {
 });
 const localDate = (offset = 0) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(Date.now() + offset * 86400000));
 
-async function toReady(page: Page) {
+async function toReady(page: Page, planMode: 'local' | 'stop' = 'local') {
   await startOnboarding(page);
   await page.getByRole('radio', { name: '想有些力量，不再容易累', exact: true }).click();
   await nextButton(page).click();
@@ -21,14 +21,14 @@ async function toReady(page: Page) {
   await page.getByRole('button', { name: '3 次', exact: true }).click(); await page.getByRole('button', { name: '45 分钟', exact: true }).click();
   await nextButton(page).click();
   await answerTexts(page, ['在家，有一对哑铃']);
-  await engineSafety(page);
+  await engineSafety(page, { planMode });
 }
 
 test('onboarding: 芽芽 asks AI or local; AI without access guides activation, local continues offline', async ({ page }) => {
   await flags(page, { aiAssistantV2: true }); await noAccess(page);
   let modelCalls = 0; await page.route('**/api/v1/assistant/**', route => { modelCalls++; return route.abort(); });
   await page.setViewportSize({ width: 390, height: 844 });
-  await toReady(page);
+  await toReady(page, 'stop');
   await expect(page.getByRole('heading', { name: '想让我怎么帮你排计划？' })).toBeVisible();
   await expect(nextButton(page)).toBeDisabled();
   await page.getByRole('radio', { name: /用 AI 帮我排/ }).click();
@@ -98,6 +98,9 @@ test('今天: one AI entry (the orb), theme button switches style, 动作怎么�
   await expect(page.getByText('跟芽芽说说今天的情况')).toHaveCount(0);
   await expect(main.getByRole('textbox')).toHaveCount(0);
   await expect(page.getByRole('button', { name: '芽芽助手，按住可上下拖动' })).toHaveCount(1);
+  await page.screenshot({ path: test.info().outputPath('home-pop-390.png') });
+  await page.setViewportSize({ width: 1440, height: 900 }); await page.screenshot({ path: test.info().outputPath('home-pop-1440.png') });
+  await page.setViewportSize({ width: 390, height: 844 });
   // Theme: visible on 今天, applies live.
   await page.getByRole('button', { name: '换风格', exact: true }).click();
   const themes = page.getByRole('dialog', { name: '选一个你喜欢的样子' });

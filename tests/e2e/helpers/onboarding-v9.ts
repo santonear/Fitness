@@ -32,10 +32,21 @@ export async function ensurePressed(page: Page, name: string | RegExp) {
   await expect(choice).toBeVisible();
   if ((await choice.getAttribute('aria-pressed')) !== 'true') await choice.click();
 }
-export async function basicSafety(page: Page, caution?: string) {
+export async function basicSafety(page: Page, caution?: string, planMode: PlanModeChoice = 'local') {
   await ensurePressed(page, '我已年满 18 岁');
   await nextButton(page).click();
   await cautions(page, caution);
+  await choosePlanMode(page, planMode);
+}
+/** V9.0.2: when AI exists in the deployment, 芽芽 asks AI-or-local before the ready screen. */
+export type PlanModeChoice = 'local' | 'stop';
+export async function choosePlanMode(page: Page, planMode: PlanModeChoice = 'local') {
+  const ready = page.getByRole('heading', { name: '都准备好了', exact: true }), ask = page.getByRole('heading', { name: '想让我怎么帮你排计划？', exact: true });
+  await expect(ready.or(ask)).toBeVisible();
+  if (planMode === 'stop' || !(await ask.isVisible())) return;
+  await page.getByRole('radio', { name: /先用本地计划/ }).click();
+  await nextButton(page).click();
+  await expect(ready).toBeVisible();
 }
 export async function cautions(page: Page, caution?: string) {
   if (caution) { await page.getByRole('radio', { name: '有，选一下部位' }).click(); await page.getByRole('button', { name: caution, exact: true }).click(); }
@@ -44,7 +55,7 @@ export async function cautions(page: Page, caution?: string) {
 }
 export async function generate(page: Page) { await page.getByRole('button', { name: '生成计划', exact: true }).click(); }
 
-export interface EngineSafetyOptions { birth?: string; population?: '都不是' | '在孕期' | '在产后'; activity?: '是' | '没有或不确定'; bp?: '低于 160/90' | '160/90 或更高' | '不知道'; falls?: boolean[]; caution?: string; skipPopulation?: boolean; prefs?: (page: Page) => Promise<void> }
+export interface EngineSafetyOptions { planMode?: PlanModeChoice; birth?: string; population?: '都不是' | '在孕期' | '在产后'; activity?: '是' | '没有或不确定'; bp?: '低于 160/90' | '160/90 或更高' | '不知道'; falls?: boolean[]; caution?: string; skipPopulation?: boolean; prefs?: (page: Page) => Promise<void> }
 /** Training-engine safety, every screening answer explicit; stops on the ready screen. */
 export async function engineSafety(page: Page, options: EngineSafetyOptions = {}) {
   await ensurePressed(page, '我已年满 18 岁');
@@ -72,6 +83,7 @@ export async function engineSafety(page: Page, options: EngineSafetyOptions = {}
   await expect(page.getByRole('heading', { name: '最后，说说训练条件' })).toBeVisible();
   await options.prefs?.(page);
   await nextButton(page).click();
+  await choosePlanMode(page, options.planMode);
 }
 
 /** Whole basic flow for the common test profile; ends on the plan draft. */

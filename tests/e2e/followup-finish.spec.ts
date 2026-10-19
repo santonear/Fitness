@@ -1,4 +1,5 @@
 import {test,expect,type Page} from '@playwright/test';
+import {openHomeCoach} from './helpers/home-coach';
 import {mkdirSync,writeFileSync,readFileSync} from 'node:fs';
 import {answerTexts,basicSafety,generate} from './helpers/onboarding-v9';
 const o=JSON.parse(readFileSync('src/i18n/features/onboarding/zh.json','utf8'));
@@ -39,7 +40,7 @@ for(const theme of ['pop', 'vivid', 'gentle', 'data', 'fire'])test(`${theme} coa
  await page.setViewportSize({width:320,height:844});await page.goto('/');
  await page.getByRole('button',{name:'开始',exact:true}).click();await answerTexts(page,['保持力量','每周3次，每次30分钟','在家，只有瑜伽垫']);await basicSafety(page);await generate(page);await page.getByRole('button',{name:o.accept,exact:true}).click();
  await expect(page.getByRole('button',{name:t.start,exact:true})).toBeVisible();
- await page.getByRole('button',{name:t.askCoach,exact:true}).click();await page.getByRole('dialog').getByRole('textbox').fill('保留本地草稿');
+ await openHomeCoach(page);await page.getByRole('dialog').getByRole('textbox').fill('保留本地草稿');
  await capture(page,`${info.project.name}-${theme}-320-coach`);
 });
 test('fifth folder discovery and remote kill preserve saved preference',async({page})=>{

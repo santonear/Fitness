@@ -1,4 +1,5 @@
 import { fillBirthMonth } from './helpers/birth-month';
+import {openHomeCoach,openQuickAdjust} from './helpers/home-coach';
 import {Rules} from '../../src/engine/data';
 import {answerTexts,basicSafety,engineSafety,generate,startOnboarding} from './helpers/onboarding-v9';
 import {baseProfile} from '../../tools/eval/training-engine-profiles';
@@ -185,9 +186,8 @@ test('actual screening UI generates deterministic local drafts and preserves eng
   await openSourceWarmup(page);
   for(const width of [375,1280,390,1440]){await page.setViewportSize({width,height:844});await expect(page.getByRole('heading',{name:'今天',exact:true})).toBeVisible();await page.screenshot({path:info.outputPath(`${theme}-${width}.png`),fullPage:true});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);}
  }
- await page.getByRole('button',{name:'和芽芽聊聊',exact:true}).first().click();
- const adjustment=page.getByRole('dialog',{name:'芽芽',exact:true});
- await adjustment.getByRole('button',{name:'只练上肢',exact:true}).click();
+ const adjustment=await openHomeCoach(page);
+ await (await openQuickAdjust(page)).getByRole('button',{name:'只练上肢',exact:true}).click();
  const localAdjustment=await page.evaluate(async templateId=>{
   const paths=['/src/ui/mainline/context.tsx','/src/coach/request-builder.ts','/src/application/engine-plan.ts'];
   const [context,builder,adapter]=await Promise.all(paths.map(path=>import(/* @vite-ignore */path))),snapshot=await context.workflow.snapshot(),request=builder.buildCoachRequest({task:'ADJUST_TODAY',data:snapshot,templateId});
@@ -198,7 +198,7 @@ test('actual screening UI generates deterministic local drafts and preserves eng
  // This45-minute upper-only request cannot satisfy the source duration boundary; keep its safe no-op.
  expect(localAdjustment.upper.noop).toBe(true);await expect(adjustment.getByRole('alert')).toBeVisible();await expect(adjustment.locator('.assistant-attachment')).toHaveCount(0);
  // A separate source-legal30-minute local request must still produce an actionable attachment.
- expect(localAdjustment.shorter.noop).toBe(false);await adjustment.getByRole('combobox',{name:'分钟',exact:true}).selectOption('30');await adjustment.getByRole('button',{name:'缩短到所选时长',exact:true}).click();
+ expect(localAdjustment.shorter.noop).toBe(false);{const tools=await openQuickAdjust(page);await tools.getByRole('combobox',{name:'分钟',exact:true}).selectOption('30');await tools.getByRole('button',{name:'缩短到所选时长',exact:true}).click();}
  await expect(adjustment.locator('.assistant-attachment')).toBeVisible();
  await expect(adjustment.getByRole('button',{name:'应用建议',exact:true})).toBeVisible();
  await adjustment.getByRole('button',{name:'关闭',exact:true}).click();
@@ -246,7 +246,7 @@ test('actual screening UI generates deterministic local drafts and preserves eng
  expect(recorded.events?.every(event=>event.itemIndex===recorded.sets![0].itemIndex&&event.setIndex===recorded.sets![0].setIndex)).toBe(true);
  await page.locator('main[data-training-active]').getByRole('button',{name:'和芽芽聊聊',exact:true}).click();
  const locked=page.getByRole('dialog',{name:'芽芽',exact:true});
- await locked.getByRole('button',{name:'换掉所选动作',exact:true}).click();
+ await (await openQuickAdjust(page)).getByRole('button',{name:'换掉所选动作',exact:true}).click();
  await expect(locked.getByRole('alert')).toHaveText('这次没能生成调整，点重试');
  await expect(locked.locator('.assistant-attachment')).toHaveCount(0);
  await locked.getByRole('button',{name:'关闭',exact:true}).click();
@@ -346,9 +346,9 @@ test('home today_adjust intent from 芽芽 becomes a confirmable card for the ne
  await page.getByRole('button',{name:'就用这份计划',exact:true}).click();await expect(page.getByRole('heading',{name:'今天',exact:true})).toBeVisible();
  const before=await page.evaluate(async()=>{const path='/src/ui/mainline/context.tsx';const data=await(await import(/* @vite-ignore */path)).workflow.snapshot();return {version:JSON.stringify(data.version),override:data.state.nextWorkoutOverride};});
  expect(before.override).toBeUndefined();
- await page.getByRole('textbox',{name:'跟芽芽说'}).fill('今天只有20分钟，帮我调一下今天的训练');
- await page.getByRole('button',{name:'发送',exact:true}).click();
- const dialog=page.getByRole('dialog',{name:'芽芽',exact:true});
+ const dialog=await openHomeCoach(page);
+ await dialog.getByRole('textbox').fill('今天只有20分钟，帮我调一下今天的训练');
+ await dialog.getByRole('button',{name:'发送',exact:true}).click();
  await expect(dialog.locator('.assistant-attachment')).toBeVisible();
  await expect(dialog.locator('.assistant-attachment')).toContainText('只调整这次训练');
  // Network payload stays health-scoped; the card is assembled from the local engine profile.

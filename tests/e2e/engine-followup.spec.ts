@@ -1,4 +1,5 @@
 import {test,expect} from '@playwright/test';
+import {openQuickAdjust} from './helpers/home-coach';
 
 test.beforeEach(async({page})=>{
   await page.clock.setFixedTime(new Date('2026-10-18T02:00:00Z'));
@@ -55,7 +56,7 @@ test('upper-only local action uses the shared engine and only changes the active
   await page.goto(`/workout/${prepared.active.id}`);
   await page.getByRole('button',{name:'和芽芽聊聊',exact:true}).click();
   const dialog=page.getByRole('dialog');
-  await dialog.getByRole('button',{name:'只练上肢',exact:true}).click();
+  await (await openQuickAdjust(page)).getByRole('button',{name:'只练上肢',exact:true}).click();
   const apply=dialog.getByRole('button',{name:'应用建议',exact:true});
   await expect(apply).toBeVisible();
   for(const width of [375,1280]){
