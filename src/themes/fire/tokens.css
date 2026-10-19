@@ -109,6 +109,11 @@
   --cal-today-bg: #F5F5F3;
   --cal-today-ink: #0A0A0A;
   --cal-today-ring: #FFB23F;
+  --cal-today-from: #FF5A4F;
+  --cal-today-to: #D91A1F;
+  --cal-today-halo: #161616;
+  --cal-today-glow: rgba(255,45,45,.55);
+  --cal-today-lift: 0 0 18px 3px rgba(255,45,45,.45);
   --cal-planned-bg: #4A1818;
   --cal-planned-ink: #F5F5F3;
   --cal-planned-ring: #FF5A4F;

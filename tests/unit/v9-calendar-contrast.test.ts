@@ -22,12 +22,13 @@ describe('V9 month calendar contrast', () => {
     const grounds = { bg: color.bg, surface: color.surface };
 
     it(`${id}: calendar colours are plain hex values exposed as --cal-* tokens`, () => {
-      const colours = Object.entries(cal).filter(([key]) => !['radius', 'doneShadow'].includes(key));
+      const colours = Object.entries(cal).filter(([key]) => !['radius', 'doneShadow', 'todayGlow', 'todayLift'].includes(key));
       for (const [key, value] of colours) expect(value, `${id} calendar.${key}`).toMatch(hex);
       const tokens = themeTokens(id);
       expect(tokens['--cal-today-bg']).toBe(cal.todayBg);
       expect(tokens['--cal-done-bg']).toBe(cal.doneBg);
       expect(tokens['--cal-planned-ring']).toBe(cal.plannedRing);
+      expect(tokens['--cal-today-to']).toBe(cal.todayTo);
     });
 
     it(`${id}: every day number is readable on its state (≥ 4.5:1)`, () => {
@@ -48,6 +49,7 @@ describe('V9 month calendar contrast', () => {
       for (const [name, ground] of Object.entries(grounds)) {
         expect(ratio(cal.todayRing, ground), `${id} today ring on ${name}`).toBeGreaterThanOrEqual(3);
         expect(ratio(cal.todayBg, ground), `${id} today badge on ${name}`).toBeGreaterThanOrEqual(3);
+        expect(ratio(cal.todayTo, ground), `${id} today star and bar on ${name}`).toBeGreaterThanOrEqual(3);
         expect(ratio(cal.doneBg, ground), `${id} done fill on ${name}`).toBeGreaterThanOrEqual(3);
         expect(ratio(cal.plannedRing, ground), `${id} planned ring on ${name}`).toBeGreaterThanOrEqual(3);
         expect(ratio(cal.missedLine, ground), `${id} missed dash on ${name}`).toBeGreaterThanOrEqual(3);

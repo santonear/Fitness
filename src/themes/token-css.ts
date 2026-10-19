@@ -48,6 +48,7 @@ export function themeTokens(id: BuiltinThemeId): Partial<Record<ThemeTokenName, 
     '--hero-hatch': h.hatch, '--hero-blend': h.blend,
     // Month calendar states (计划 › 月, plan draft, training-day picker, 今天 week strip).
     '--cal-r': cal.radius, '--cal-today-bg': cal.todayBg, '--cal-today-ink': cal.todayInk, '--cal-today-ring': cal.todayRing,
+    '--cal-today-from': cal.todayFrom, '--cal-today-to': cal.todayTo, '--cal-today-halo': cal.todayHalo, '--cal-today-glow': cal.todayGlow, '--cal-today-lift': cal.todayLift,
     '--cal-planned-bg': cal.plannedBg, '--cal-planned-ink': cal.plannedInk, '--cal-planned-ring': cal.plannedRing,
     '--cal-done-bg': cal.doneBg, '--cal-done-ink': cal.doneInk, '--cal-done-shadow': cal.doneShadow,
     '--cal-partial-rest': cal.partialRest, '--cal-partial-ink': cal.partialInk,
