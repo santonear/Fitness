@@ -168,11 +168,10 @@ export function startDateLabel(date: string, today: string | undefined, locale: 
 }
 export interface PlanWeekDay { date: string; day: Weekday }
 /**
- * The seven days a week view shows. Before the plan starts it is the first plan week (from the start date);
- * afterwards it is the current Monday-to-Sunday week. Without dates it is a plain Monday week.
+ * Dated days for a plan that has not started yet: the first plan week, from the start date. Once the plan
+ * has started (or without dates) the view stays the plain Monday-to-Sunday week, so every session is listed.
  */
 export function planWeekDays(startDate: string | undefined, today: string | undefined): (PlanWeekDay & { beforeStart: boolean })[] | undefined {
-  if (!startDate || !today) return undefined;
-  const first = startDate > today ? startDate : addDays(today, -weekdays.indexOf(weekdayOf(today)));
-  return Array.from({ length: 7 }, (_, index) => { const date = addDays(first, index); return { date, day: weekdayOf(date), beforeStart: date < startDate }; });
+  if (!startDate || !today || startDate <= today) return undefined;
+  return Array.from({ length: 7 }, (_, index) => { const date = addDays(startDate, index); return { date, day: weekdayOf(date), beforeStart: false }; });
 }

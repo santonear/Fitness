@@ -79,12 +79,12 @@ describe('start date presentation',()=>{
   expect(startDateLabel('2026-10-19',undefined,'zh',false)).toBe('10月19日');
   expect(weekdayOf('2026-10-25')).toBe('sun');
  });
- it('shows the first plan week from a future start, and the current week with earlier days off after it starts',()=>{
+ it('shows the first plan week from a future start, and the plain week once it has started',()=>{
   const future=planWeekDays('2026-10-22','2026-10-19')!;
   expect(future.map(day=>day.date)).toEqual(['2026-10-22','2026-10-23','2026-10-24','2026-10-25','2026-10-26','2026-10-27','2026-10-28']);
   expect(future[0].day).toBe('thu');expect(future.every(day=>!day.beforeStart)).toBe(true);
-  const started=planWeekDays('2026-10-21','2026-10-23')!;
-  expect(started[0].date).toBe('2026-10-19');expect(started.filter(day=>day.beforeStart).map(day=>day.date)).toEqual(['2026-10-19','2026-10-20']);
+  // Once started, the plain weekly view lists every session again.
+  expect(planWeekDays('2026-10-21','2026-10-23')).toBeUndefined();expect(planWeekDays('2026-10-19','2026-10-19')).toBeUndefined();
   expect(planWeekDays(undefined,'2026-10-19')).toBeUndefined();
  });
 });

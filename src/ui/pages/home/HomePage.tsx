@@ -75,7 +75,8 @@ export function HomePage(){
  const monday=new Date(Date.parse(localDay(timeZone,now)+'T00:00:00Z')-todayIndex*86400000);
  const weekDates=weekdays.map((_,index)=>new Date(monday.getTime()+index*86400000).toISOString().slice(0,10));
  const doneDays:Partial<Record<Weekday,'done'|'partial'>>={};
- const beforeStart=(index:number)=>!!startDate&&weekDates[index]<startDate;
+ // Only an explicitly chosen start date hides this week's earlier sessions; older plans keep their full week.
+ const beforeStart=(index:number)=>!!version?.startDate&&weekDates[index]<version.startDate;
  for(const workout of data?.workouts??[]){const index=weekDates.indexOf(workout.localDate);if(index<0)continue;if(workout.status==='complete')doneDays[weekdays[index]]='done';else if(workout.status==='partial'&&doneDays[weekdays[index]]!=='done')doneDays[weekdays[index]]='partial';}
  const nextSession=schedule.sessions.find(session=>weekdays.indexOf(session.day)>todayIndex&&!beforeStart(weekdays.indexOf(session.day)))??schedule.sessions[0];
  const following=templates.length&&selected?templates[(templates.findIndex(item=>item.id===selected.id)+1)%templates.length]:undefined;

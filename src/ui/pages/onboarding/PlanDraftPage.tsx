@@ -49,7 +49,7 @@ export function PlanDraftPage({ locale, candidate, busy = false, error, exercise
     <PlanTip plan={candidate.enginePlan} locale={locale} onEditEnvironment={()=>window.location.assign('/settings/engine#environment')}/>
     {error && <p role="alert">{error}</p>}
     <footer className="v9-plan-actions" data-orb-avoid="">
-      <PrimaryButton disabled={busy || !plan.templates.length} onClick={() => { if (!busy && plan.templates.length) onConfirm({ ...candidate, startDate } as OnboardingProposal); }}>{busy ? t.saving : t.accept}</PrimaryButton>
+      <PrimaryButton disabled={busy || !plan.templates.length} onClick={() => { if (!busy && plan.templates.length) onConfirm(onStartDate ? { ...candidate, startDate } as OnboardingProposal : candidate); }}>{busy ? t.saving : t.accept}</PrimaryButton>
       <PrimaryButton tone="quiet" disabled={busy} onClick={onDiscuss}>{t.discuss}</PrimaryButton>
       {onDiscard&&<PrimaryButton tone="text" size="md" disabled={busy} onClick={onDiscard}>{planLifecycleCopy[locale].discard}</PrimaryButton>}
     </footer>
