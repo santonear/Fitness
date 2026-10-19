@@ -527,3 +527,11 @@ Bo 已定版 V9 设计并授权推进；计时规则按 Bo 当日决定改写（
 - 理由：不丢数据、不编造数据、完成记录只读、计划修改生成新版本；新增可选字段按 2026-10-10 授权记录后实施。
 - 涉及文件：src/application/{training-dates,plan-calendar,v8-workflow,v8-review}.ts、src/application/rules/local-profile.ts、src/domain/{schemas.ts,v8/contracts.ts}、src/ui/components/{TrainingCalendar,StartTimeField,HomeExit,BirthMonthField}.tsx、src/ui/components/training-calendar.css、src/ui/pages/onboarding/{OnboardingPage,OnboardingFrame,HealthCheckWizard,PlanDraftPage}.tsx、src/ui/pages/plan/{PlanPage,PlanRoute,MonthPlan,WeekPlan,ExercisesPage}.tsx、src/ui/pages/home/{HomePage,DayTimeline}.tsx、src/ui/pages/training/{ManualPage,ActivityPage}.tsx、src/ui/mainline/{MainlineApp,context}.tsx、src/i18n/features/plan/training-days.ts。
 - 待 Bo 确认：两周内开始与 30 天跨度的规则；“每 7 天至少休息 1 天”的说明文案；开始时间三个预设；周文字计划草案默认“周”；“回到今天”的位置（初见左上角、其他子页面右上角）；计划页新增“重新制定计划”按钮。
+
+## 2026-10-19 · 选好训练日后芽芽仍问休息日（V9.0.7）
+
+- 情况：Bo 在月历上选好训练日后，芽芽仍问“哪两天休息”，说“按我的时间表来”后仍按默认保守安排。原因：发给 AI 的资料只有每周次数（所选日期只在本地），提示里也被去掉了排期原文；服务端会按模型给的星期几另排。另：月历上的计划日只是小描边点，看不出日期已占用。
+- 决定：新增可选请求字段 `schedule`（所选日期、开始时间；排期信息，不含健康资料），ONBOARD_PLAN 取草案 / 初见回答，MODIFY_PLAN 取当前版本；提示词写成硬约束。服务端在用户没有明确说出星期几或每周次数时忽略模型给的天数与星期；AI 方案应用到草案、首版或新版本时保留所选日期、开始日与开始时间，只有用户明确要求且方案确实改了才改用每周安排，确认卡写明保留或更改。月历计划日改为实心填色。
+- 理由：所选日期是用户的明确输入，不得被默认值覆盖；AI 仍无写入权限，改动需确认并生成新版本。
+- 涉及文件：src/application/picked-schedule.ts（新）、src/coach/{contracts,request-builder}.ts、src/backend/assistant/{assemble,engine-assemble,prompts}.ts、src/application/v8-workflow.ts、src/ui/mainline/{MainlineApp,context}.tsx、src/ui/components/AssistantAttachment.tsx、src/ui/pages/plan/week-plan.css。
+- 待 Bo 确认：确认卡“训练日：…”两句文案；“明确要求改训练日”的判断（说出星期几或每周次数）；旧版 v8 coach 接口提示词未加此约束（请求里已带 schedule）。

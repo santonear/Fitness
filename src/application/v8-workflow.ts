@@ -16,6 +16,7 @@ import {
 import { createOlderSafety } from "./older-safety";
 import { createWorkoutTimes } from "./workout-times";
 import { createTrainingStop } from "./training-stop";
+import { scheduleAfterProposal } from "./picked-schedule";
 import {
   createPostpartumSafety,
   assertPostpartumItems,
@@ -1147,8 +1148,21 @@ export function createV8Workflow(repo: Repository) {
     const response = adaptCoachResponse(request, raw);
     if (request.task === "ONBOARD_PLAN" && response.type === "plan_proposal") {
       const state = await db.v8State.get("v8");
+      const picked = request.schedule
+        ? scheduleAfterProposal(
+            {
+              startDate: request.schedule.trainingDates[0],
+              trainingDates: [...request.schedule.trainingDates],
+              ...(request.schedule.startTime ? { startTime: request.schedule.startTime } : {}),
+            },
+            request,
+            request.profile,
+            response.proposal,
+          )
+        : {};
       return adopt({
         ...response,
+        ...picked,
         source: "ai",
         expectedRevision,
         enginePlan,
@@ -1287,7 +1301,8 @@ export function createV8Workflow(repo: Repository) {
             : "coach_change",
         basedOnVersionId: version.id,
         ...(acceptedEnginePlan ? { enginePlan: acceptedEnginePlan } : {}),
-        ...carriedSchedule(version),
+        // Picked calendar days stay unless the user explicitly asked to change days in this conversation.
+        ...scheduleAfterProposal(carriedSchedule(version), request, version, proposal),
         changeSummary:
           response.type === "change_proposal"
             ? response.changes

@@ -22,6 +22,12 @@ const profile = z.strictObject({
   scheduleOriginalText: text, place: z.enum(['home', 'gym', 'outdoor', 'mixed']), equipment: z.array(text),
   adultConfirmed: z.literal(true), cautions: z.array(z.enum(['knee', 'back', 'shoulder', 'wrist', 'other'])), cautionNote: text.optional(),
 });
+/** Training days the user picked on the calendar (scheduling only, not health data); fixed unless the user asks to change days. */
+export const pickedScheduleSchema = z.strictObject({
+  trainingDates: z.array(z.iso.date()).min(1).max(30),
+  startTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).optional(),
+});
+export type PickedSchedule = z.infer<typeof pickedScheduleSchema>;
 const common = {
   trainingEngine:z.boolean().optional(), engineProfile:engineProfileSchema.optional(),
   candidateContext: z.strictObject({ equipment: z.array(z.string()).max(60), cautions: profile.shape.cautions, preferences: z.array(z.strictObject({kind:z.enum(['dislike_exercise','cannot_do','caution_area','preferred_days','equipment']),value:z.union([z.string().max(200),z.array(z.string().max(80)).max(7)])})).max(30).optional() }).optional(),
@@ -30,6 +36,7 @@ const common = {
   locale: z.enum(['zh', 'en']), timeZone: timeZoneSchema, adultConfirmed: z.literal(true),
   messages: z.array(z.strictObject({ role: z.enum(['user', 'assistant']), content: z.string().max(1600) })).max(8),
   body: z.record(z.string(), z.json()).optional(), history: z.string().max(32000).optional(),
+  schedule: pickedScheduleSchema.optional(),
   nutrition: z.array(z.strictObject({localDate:z.iso.date(),meal:z.enum(['breakfast','lunch','dinner','snack']),portion:z.string().max(500).optional(),calories:z.number().int().nonnegative().max(10000).optional()})).max(100).optional(),
 };
 const timingCounts = z.strictObject({ partial: count, notStarted: count });

@@ -77,7 +77,12 @@
 .v9-month-filler { color: var(--c-faint); font-size: var(--t2); }
 .v9-month-number { font-size: var(--t3); line-height: 1; }
 .v9-month-mark { display: inline-block; inline-size: var(--s2); block-size: var(--s2); border-radius: 50%; }
-[data-state="planned"] > .v9-month-mark, .v9-month-legend [data-state="planned"] .v9-month-mark { background: var(--card-bg); border: calc(var(--bw) * 2) solid var(--c-accent-text); box-sizing: border-box; }
+/* Planned (occupied) days are filled like the chosen days of the picker, so they stand apart from free days (Bo 2026-10-19). */
+.v9-month-day[data-state="planned"] { background: var(--mat-primary); color: var(--c-on-primary); box-shadow: var(--el-primary); font-weight: var(--w-strong); }
+.v9-month-day[data-state="planned"][aria-pressed="true"] { border-color: var(--c-ink); }
+.v9-month-day[data-state="planned"][aria-current="date"] { border-color: var(--c-accent-text); }
+[data-state="planned"] > .v9-month-mark { background: var(--c-on-primary); }
+.v9-month-legend [data-state="planned"] .v9-month-mark { inline-size: var(--s3); block-size: var(--s3); border-radius: var(--r-control); background: var(--mat-primary); box-shadow: var(--el-primary); }
 [data-state="done"] > .v9-month-mark, .v9-month-legend [data-state="done"] .v9-month-mark { background: var(--c-done); box-shadow: 0 0 var(--glow-blur) var(--glow); }
 [data-state="partial"] > .v9-month-mark, .v9-month-legend [data-state="partial"] .v9-month-mark { background: linear-gradient(90deg, var(--c-done) 50%, var(--c-inset) 50%); border: var(--bw) solid var(--c-done); box-sizing: border-box; }
 [data-state="missed"] > .v9-month-mark, .v9-month-legend [data-state="missed"] .v9-month-mark { background: transparent; border: var(--bw) dashed var(--c-ink-muted); box-sizing: border-box; }
