@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>本日标识 · 四版设计</title>
+<style>
+  :root {
+    --bg: #f6f5f2; --panel: #ffffff; --ink: #24242a; --muted: #5f5e66; --line: #e2e0db; --tag: #efede8;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #15161a; --panel: #1e2026; --ink: #ecedf1; --muted: #a6a8b2; --line: #30333b; --tag: #2a2d35; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.6 system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  main { max-width: 1480px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { margin: 0 0 8px; font-size: 26px; }
+  .intro { margin: 0 0 8px; color: var(--muted); max-width: 70ch; }
+  section { margin-top: 28px; padding: 20px; border: 1px solid var(--line); border-radius: 16px; background: var(--panel); }
+  section h2 { margin: 0; font-size: 20px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .key { display: inline-grid; place-items: center; min-width: 28px; height: 28px; padding: 0 8px; border-radius: 8px; background: var(--ink); color: var(--panel); font-size: 15px; }
+  section p { margin: 6px 0 16px; color: var(--muted); }
+  .row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+  figure { margin: 0; }
+  figure img { display: block; width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); }
+  figcaption { margin-top: 6px; font-size: 13px; color: var(--muted); text-align: center; }
+  details { margin-top: 14px; }
+  summary { cursor: pointer; color: var(--muted); font-size: 14px; }
+  details img { display: block; width: min(100%, 390px); height: auto; margin-top: 10px; border-radius: 12px; border: 1px solid var(--line); }
+  .note { font-size: 13px; color: var(--muted); margin-top: 28px; }
+  @media (max-width: 900px) { .row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 520px) { .row { grid-template-columns: 1fr; } section { padding: 16px; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>本日标识 · 四版设计</h1>
+  <p class="intro">计划 › 月，390×844 真机截图（上海时区）。今天是 10 月 20 日（有计划），旁边依次有练完、练了一部分、没练和计划日。每版都按主题取色：柔光拟物用橙陶色、暖阳柔木用鼠尾草绿、温和陪伴用暖阳黄、专业数据用金色、燃动挑战用琥珀火色，不再用黑色圆章；当天原有的状态填色保留不动。</p>
+
+  <section>
+    <h2><span class="key">现</span>现在的版本</h2>
+    <p>日期数字上是墨色实心圆章，外面再加一圈 3px 描边，看上去像一个黑圈。</p>
+    <div class="row">
+      <figure><img src="img/current-pop.webp" alt="现在的版本，柔光拟物" loading="lazy"><figcaption>柔光拟物</figcaption></figure>
+      <figure><img src="img/current-vivid.webp" alt="现在的版本，暖阳柔木" loading="lazy"><figcaption>暖阳柔木</figcaption></figure>
+      <figure><img src="img/current-gentle.webp" alt="现在的版本，温和陪伴" loading="lazy"><figcaption>温和陪伴</figcaption></figure>
+      <figure><img src="img/current-data.webp" alt="现在的版本，专业数据" loading="lazy"><figcaption>专业数据</figcaption></figure>
+      <figure><img src="img/current-fire.webp" alt="现在的版本，燃动挑战" loading="lazy"><figcaption>燃动挑战</figcaption></figure>
+    </div>
+    <details><summary>整页截图（柔光拟物）</summary><img src="img/current-pop-full.webp" alt="现在的版本整页截图" loading="lazy"></details>
+  </section>
+
+  <section>
+    <h2><span class="key">A</span>光晕胶囊</h2>
+    <p>数字放进主题色渐变胶囊，带柔和光晕；下方的小字“今天”沿用当天状态的文字色。</p>
+    <div class="row">
+      <figure><img src="img/a-pop.webp" alt="A 光晕胶囊，柔光拟物" loading="lazy"><figcaption>柔光拟物</figcaption></figure>
+      <figure><img src="img/a-vivid.webp" alt="A 光晕胶囊，暖阳柔木" loading="lazy"><figcaption>暖阳柔木</figcaption></figure>
+      <figure><img src="img/a-gentle.webp" alt="A 光晕胶囊，温和陪伴" loading="lazy"><figcaption>温和陪伴</figcaption></figure>
+      <figure><img src="img/a-data.webp" alt="A 光晕胶囊，专业数据" loading="lazy"><figcaption>专业数据</figcaption></figure>
+      <figure><img src="img/a-fire.webp" alt="A 光晕胶囊，燃动挑战" loading="lazy"><figcaption>燃动挑战</figcaption></figure>
+    </div>
+    <details><summary>整页截图（柔光拟物）</summary><img src="img/a-pop-full.webp" alt="A 整页截图" loading="lazy"></details>
+  </section>
+
+  <section>
+    <h2><span class="key">B</span>角标缎带</h2>
+    <p>格子右上角挂一条燕尾书签缎带，边框换成主题色，数字加粗放大。最安静、最像纸质日历。</p>
+    <div class="row">
+      <figure><img src="img/b-pop.webp" alt="B 角标缎带，柔光拟物" loading="lazy"><figcaption>柔光拟物</figcaption></figure>
+      <figure><img src="img/b-vivid.webp" alt="B 角标缎带，暖阳柔木" loading="lazy"><figcaption>暖阳柔木</figcaption></figure>
+      <figure><img src="img/b-gentle.webp" alt="B 角标缎带，温和陪伴" loading="lazy"><figcaption>温和陪伴</figcaption></figure>
+      <figure><img src="img/b-data.webp" alt="B 角标缎带，专业数据" loading="lazy"><figcaption>专业数据</figcaption></figure>
+      <figure><img src="img/b-fire.webp" alt="B 角标缎带，燃动挑战" loading="lazy"><figcaption>燃动挑战</figcaption></figure>
+    </div>
+    <details><summary>整页截图（柔光拟物）</summary><img src="img/b-pop-full.webp" alt="B 整页截图" loading="lazy"></details>
+  </section>
+
+  <section>
+    <h2><span class="key">C</span>宝石镶边</h2>
+    <p>主题色外框和格子之间留一道底色细缝，像宝石镶托。各主题效果不同：柔光拟物是浮雕，暖阳柔木是木印章，温和陪伴是暖光，两套深色主题是霓虹。</p>
+    <div class="row">
+      <figure><img src="img/c-pop.webp" alt="C 宝石镶边，柔光拟物" loading="lazy"><figcaption>柔光拟物</figcaption></figure>
+      <figure><img src="img/c-vivid.webp" alt="C 宝石镶边，暖阳柔木" loading="lazy"><figcaption>暖阳柔木</figcaption></figure>
+      <figure><img src="img/c-gentle.webp" alt="C 宝石镶边，温和陪伴" loading="lazy"><figcaption>温和陪伴</figcaption></figure>
+      <figure><img src="img/c-data.webp" alt="C 宝石镶边，专业数据" loading="lazy"><figcaption>专业数据</figcaption></figure>
+      <figure><img src="img/c-fire.webp" alt="C 宝石镶边，燃动挑战" loading="lazy"><figcaption>燃动挑战</figcaption></figure>
+    </div>
+    <details><summary>整页截图（柔光拟物）</summary><img src="img/c-pop-full.webp" alt="C 整页截图" loading="lazy"></details>
+  </section>
+
+  <section>
+    <h2><span class="key">D</span>下划光条</h2>
+    <p>格子微微抬起，数字下面是一条发光的主题色光条，左上角加一枚“今”字小印。</p>
+    <div class="row">
+      <figure><img src="img/d-pop.webp" alt="D 下划光条，柔光拟物" loading="lazy"><figcaption>柔光拟物</figcaption></figure>
+      <figure><img src="img/d-vivid.webp" alt="D 下划光条，暖阳柔木" loading="lazy"><figcaption>暖阳柔木</figcaption></figure>
+      <figure><img src="img/d-gentle.webp" alt="D 下划光条，温和陪伴" loading="lazy"><figcaption>温和陪伴</figcaption></figure>
+      <figure><img src="img/d-data.webp" alt="D 下划光条，专业数据" loading="lazy"><figcaption>专业数据</figcaption></figure>
+      <figure><img src="img/d-fire.webp" alt="D 下划光条，燃动挑战" loading="lazy"><figcaption>燃动挑战</figcaption></figure>
+    </div>
+    <details><summary>整页截图（柔光拟物）</summary><img src="img/d-pop-full.webp" alt="D 整页截图" loading="lazy"></details>
+  </section>
+
+  <p class="note">只是预览：样式在 tools/preview/today-marker/today-variants.css，只在截图时注入，App 里不会用到。选定后再改到正式样式里，并同步计划草案日历、选训练日日历和今天页本周条。</p>
+</main>
+</body>
+</html>

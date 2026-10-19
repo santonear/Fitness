@@ -1,0 +1,96 @@
+/*
+ * Preview only: four candidate "today" markers for 计划 › 月 (Bo 2026-10-20).
+ * Injected by capture.spec.ts; nothing in the app loads this file or sets data-today-variant.
+ *   <html data-today-variant="a|b|c|d">  A 光晕胶囊 · B 角标缎带 · C 宝石镶边 · D 下划光条
+ * Per-theme --tm-* tokens: fill gradient (a1→a2), ink on the fill (on, ≥4.5:1),
+ * edge (≥3:1 against the card), halo (card colour used as a separating gap), glow, theme effect.
+ */
+:root[data-theme="pop"] {
+  --tm-a1: #C94A12; --tm-a2: #A9370A; --tm-on: #FFFFFF; --tm-edge: #A9370A; --tm-halo: #F6F5F3;
+  --tm-glow: rgba(201, 72, 15, .45); --tm-ribbon-fold: #7A2806;
+  --tm-fx: 5px 5px 10px rgba(120, 110, 95, .32), -4px -4px 9px rgba(255, 255, 255, .95);
+  --tm-lift: 0 8px 16px rgba(120, 110, 95, .35), -3px -3px 8px rgba(255, 255, 255, .9);
+}
+:root[data-theme="vivid"] {
+  --tm-a1: #527262; --tm-a2: #3B5547; --tm-on: #FBF6EE; --tm-edge: #4C6A5B; --tm-halo: #FBF3E8;
+  --tm-glow: rgba(47, 82, 72, .40); --tm-ribbon-fold: #24382E;
+  --tm-fx: inset 0 0 0 1px rgba(255, 255, 255, .55), 0 3px 0 5px #2F4A3E, 0 6px 10px 3px rgba(54, 36, 31, .25);
+  --tm-lift: 0 3px 0 #8E5130, 0 9px 14px rgba(54, 36, 31, .30);
+}
+:root[data-theme="gentle"] {
+  --tm-a1: #FFC765; --tm-a2: #F2A23A; --tm-on: #1F2A1C; --tm-edge: #B45F14; --tm-halo: #FFFFFF;
+  --tm-glow: rgba(242, 162, 58, .55); --tm-ribbon-fold: #8A4810;
+  --tm-fx: 0 6px 16px rgba(242, 162, 58, .45);
+  --tm-lift: 0 8px 18px rgba(242, 162, 58, .45);
+}
+:root[data-theme="data"] {
+  --tm-a1: #FFD27A; --tm-a2: #FFAA2E; --tm-on: #060A13; --tm-edge: #FFC857; --tm-halo: #111827;
+  --tm-glow: rgba(255, 200, 87, .60); --tm-ribbon-fold: #A86A0A;
+  --tm-fx: 0 0 14px 3px rgba(255, 200, 87, .55), inset 0 0 8px rgba(255, 200, 87, .35);
+  --tm-lift: 0 0 16px 2px rgba(255, 200, 87, .45);
+}
+:root[data-theme="fire"] {
+  --tm-a1: #FFC24F; --tm-a2: #FF8A1F; --tm-on: #0A0A0A; --tm-edge: #FFB23F; --tm-halo: #161616;
+  --tm-glow: rgba(255, 138, 31, .70); --tm-ribbon-fold: #A84A00;
+  --tm-fx: 0 0 16px 4px rgba(255, 138, 31, .60), inset 0 0 10px rgba(255, 178, 63, .35);
+  --tm-lift: 0 0 18px 3px rgba(255, 138, 31, .55);
+}
+
+/* Shared reset: drop the ink badge, the ring and (on today only) the ink selection outline. */
+:root[data-today-variant] .v9-month-day[aria-current="date"] { outline: none; }
+:root[data-today-variant] .v9-month-day[aria-current="date"] .v9-month-number { background: none; color: inherit; box-shadow: none; }
+:root[data-today-variant] .v9-month-legend [data-state="today"] .v9-month-mark { outline: none; border: 0; }
+
+/* A 光晕胶囊: accent gradient capsule behind the number, soft glow, "今天" micro-label under it in the day's own ink. */
+:root[data-today-variant="a"] .v9-month-day[aria-current="date"] .v9-month-number {
+  inline-size: calc(var(--s5) + 12px); border-radius: 999px; font-weight: 800;
+  background: linear-gradient(160deg, var(--tm-a1), var(--tm-a2)); color: var(--tm-on);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35), 0 0 0 2px var(--tm-halo), 0 4px 12px var(--tm-glow);
+}
+:root[data-today-variant="a"] .v9-month-day[aria-current="date"] > .v9-month-mark {
+  visibility: visible; inline-size: auto; block-size: auto; background: none; border-radius: 0;
+  font-size: 9px; line-height: 1; font-weight: 800; letter-spacing: .08em; color: currentColor;
+}
+:root[data-today-variant="a"] .v9-month-day[aria-current="date"] > .v9-month-mark::before { content: "今天"; }
+:root[data-today-variant="a"] .v9-month-legend [data-state="today"] .v9-month-mark { inline-size: calc(var(--s4) + 8px); border-radius: 999px; background: linear-gradient(160deg, var(--tm-a1), var(--tm-a2)); box-shadow: 0 2px 6px var(--tm-glow); }
+
+/* B 角标缎带: swallow-tail ribbon hanging over the top-right corner, heavier and larger number. */
+:root[data-today-variant="b"] .v9-month-day[aria-current="date"] { overflow: visible; z-index: 1; border-color: var(--tm-edge); }
+:root[data-today-variant="b"] .v9-month-day[aria-current="date"] .v9-month-number { font-weight: 900; transform: scale(1.14); }
+:root[data-today-variant="b"] .v9-month-day[aria-current="date"]::after {
+  content: ""; position: absolute; inset-block-start: -6px; inset-inline-end: -5px; inline-size: 12px; block-size: 22px;
+  background: linear-gradient(180deg, var(--tm-a1), var(--tm-a2));
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 74%, 0 100%);
+  filter: drop-shadow(0 2px 3px var(--tm-glow));
+}
+:root[data-today-variant="b"] .v9-month-day[aria-current="date"]::before {
+  content: ""; position: absolute; inset-block-start: -6px; inset-inline-end: 7px; inline-size: 4px; block-size: 6px;
+  background: var(--tm-ribbon-fold); clip-path: polygon(100% 0, 100% 100%, 0 100%);
+}
+:root[data-today-variant="b"] .v9-month-legend [data-state="today"] .v9-month-mark { inline-size: 10px; block-size: 16px; border-radius: 0; background: linear-gradient(180deg, var(--tm-a1), var(--tm-a2)); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 74%, 0 100%); }
+
+/* C 宝石镶边: accent outer frame with a card-coloured gap (like a jewel setting) plus a theme effect:
+   soft relief (pop), stamped wood edge (vivid), warm halo (gentle), neon (data / fire). */
+:root[data-today-variant="c"] .v9-month-day[aria-current="date"] {
+  z-index: 1; box-shadow: 0 0 0 2px var(--tm-halo), 0 0 0 5px var(--tm-edge), var(--tm-fx);
+}
+:root[data-theme="gentle"][data-today-variant="c"] .v9-month-day[aria-current="date"] { box-shadow: 0 0 0 2px var(--tm-halo), 0 0 0 4.5px var(--tm-a2), 0 0 0 5.5px var(--tm-edge), var(--tm-fx); }
+:root[data-today-variant="c"] .v9-month-day[aria-current="date"] .v9-month-number { font-weight: 900; }
+:root[data-today-variant="c"] .v9-month-day[aria-current="date"] > .v9-month-mark { visibility: visible; background: var(--tm-edge); box-shadow: 0 0 0 1.5px var(--tm-halo); }
+:root[data-today-variant="c"] .v9-month-legend [data-state="today"] .v9-month-mark { background: transparent; border-radius: 5px; box-shadow: 0 0 0 1.5px var(--tm-halo), 0 0 0 3.5px var(--tm-edge); }
+
+/* D 下划光条: cell lifts, a glowing accent bar replaces the dot, and a small "今" seal sits on the top-left corner. */
+:root[data-today-variant="d"] .v9-month-day[aria-current="date"] { overflow: visible; z-index: 1; transform: translateY(-3px); box-shadow: var(--tm-lift); }
+:root[data-today-variant="d"] .v9-month-day[aria-current="date"] .v9-month-number { font-weight: 900; }
+:root[data-today-variant="d"] .v9-month-day[aria-current="date"] > .v9-month-mark {
+  visibility: visible; inline-size: 24px; block-size: 5px; border-radius: 3px;
+  background: linear-gradient(90deg, var(--tm-a1), var(--tm-a2));
+  box-shadow: 0 0 0 1.5px var(--tm-halo), 0 0 10px 1px var(--tm-glow);
+}
+:root[data-today-variant="d"] .v9-month-day[aria-current="date"]::after {
+  content: "今"; position: absolute; inset-block-start: -7px; inset-inline-start: -5px; display: grid; place-items: center;
+  inline-size: 17px; block-size: 17px; border-radius: 50%; font-size: 10px; font-weight: 800; line-height: 1;
+  background: linear-gradient(160deg, var(--tm-a1), var(--tm-a2)); color: var(--tm-on);
+  box-shadow: 0 0 0 1.5px var(--tm-halo), 0 2px 6px var(--tm-glow);
+}
+:root[data-today-variant="d"] .v9-month-legend [data-state="today"] .v9-month-mark { inline-size: calc(var(--s4) + 4px); block-size: 5px; border-radius: 3px; background: linear-gradient(90deg, var(--tm-a1), var(--tm-a2)); box-shadow: 0 0 6px var(--tm-glow); }
