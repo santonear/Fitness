@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>山野暖阳 · 四版重设计</title>
+<style>
+:root { --bg: #f6f6f4; --panel: #ffffff; --ink: #1d1d1b; --muted: #5d5d58; --line: #dcdcd6; --tag: #1d1d1b; --tag-ink: #ffffff; color-scheme: light; }
+@media (prefers-color-scheme: dark) { :root { --bg: #161615; --panel: #212120; --ink: #ededea; --muted: #a8a8a2; --line: #3a3a37; --tag: #ededea; --tag-ink: #161615; color-scheme: dark; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }
+main { max-width: 1760px; margin: 0 auto; padding: 32px 16px 64px; }
+h1 { margin: 0 0 8px; font-size: 28px; line-height: 1.25; }
+.intro { max-width: 760px; color: var(--muted); margin: 0 0 8px; }
+.intro b { color: var(--ink); }
+nav.jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 8px; }
+nav.jump a { color: var(--ink); text-decoration: none; border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; background: var(--panel); font-size: 14px; }
+.variant { margin-top: 28px; padding: 20px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); }
+.variant.current { border-style: dashed; }
+.vhead { display: flex; gap: 14px; align-items: flex-start; }
+.tag { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 10px; background: var(--tag); color: var(--tag-ink); font-weight: 700; font-size: 18px; }
+.vhead h2 { margin: 0; font-size: 22px; line-height: 1.3; }
+.vhead small { font-size: 14px; font-weight: 400; color: var(--muted); margin-left: 6px; }
+.vhead p { margin: 4px 0 0; color: var(--muted); }
+.swatches { display: flex; flex-wrap: wrap; gap: 10px 16px; list-style: none; padding: 0; margin: 14px 0 6px; }
+.swatches li { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.swatches i { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--line); }
+.contrast { margin: 6px 0 4px; font-size: 14px; color: var(--muted); }
+.contrast summary { cursor: pointer; }
+.contrast ul { display: flex; flex-wrap: wrap; gap: 8px 18px; list-style: none; padding: 0; margin: 8px 0 0; }
+.contrast li { display: flex; align-items: center; gap: 6px; }
+.contrast b { color: var(--ink); }
+.pair { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 6px; font-weight: 700; border: 1px solid var(--line); }
+.shots { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-top: 16px; }
+figure { margin: 0; min-width: 0; }
+figure img { display: block; width: 100%; height: auto; border-radius: 18px; border: 1px solid var(--line); background: var(--bg); }
+figcaption { margin-top: 6px; text-align: center; font-size: 14px; color: var(--muted); }
+footer { margin-top: 32px; color: var(--muted); font-size: 14px; }
+@media (max-width: 900px) { .shots { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .shots { grid-template-columns: 1fr; } .variant { padding: 14px; } h1 { font-size: 24px; } }
+</style>
+</head>
+<body>
+<main>
+<h1>山野暖阳 · 四版重设计</h1>
+<p class="intro">按 Bo 的意见重做“山野暖阳”：<b>木质版画</b>的刻线与浮雕（卡片有刻出的边、短而实的投影与高光），背景加<b>细木纹</b>（程序生成的原创纹理），<b>层次</b>拉开；月历里<b>今天</b>用墨色凸起的印章标出，<b>练完 / 练了一部分 / 计划 / 没练</b>分别是实心块 / 下半填色 / 描边 / 虚线；整体降低饱和度与亮度，去掉大面积暖色，减轻久看疲劳。</p>
+<p class="intro">以下都是真实应用截图（390×844，同一份数据：10 月 12、14、16、19 日练完，18 日练了一部分，今天 10 月 20 日）。最上面是现在的版本，供对比。选定一版后再正式上线。</p>
+<nav class="jump" aria-label="跳到"><a href="#current">现在</a><a href="#vivid-a">A · 浅色原木</a><a href="#vivid-b">B · 胡桃深木</a><a href="#vivid-c">C · 雕版套色</a><a href="#vivid-d">D · 暖阳柔木</a></nav>
+<section class="variant current" id="current">
+  <header class="vhead"><span class="tag">现</span><div><h2>现在的山野暖阳 <small>对比用</small></h2><p>平面、偏亮的暖杏底；月历今天只有一圈看不见的描边，计划日没有标记。</p></div></header>
+  <div class="shots"><figure><img src="img/current-home.webp" width="390" height="844" loading="lazy" alt="现在的山野暖阳 · 今天"><figcaption>今天</figcaption></figure><figure><img src="img/current-month.webp" width="390" height="844" loading="lazy" alt="现在的山野暖阳 · 计划 · 月"><figcaption>计划 · 月</figcaption></figure><figure><img src="img/current-player.webp" width="390" height="844" loading="lazy" alt="现在的山野暖阳 · 训练中"><figcaption>训练中</figcaption></figure><figure><img src="img/current-review.webp" width="390" height="844" loading="lazy" alt="现在的山野暖阳 · 回顾"><figcaption>回顾</figcaption></figure></div>
+</section>
+
+<section class="variant" id="vivid-a">
+  <header class="vhead">
+    <span class="tag">A</span>
+    <div><h2>浅色原木 <small>Birch · 浅色</small></h2><p>桦木浅底配深墨描边，卡片像刻好的木牌，阴影短而实；整体降饱和、无大面积暖色。</p></div>
+  </header>
+  <ul class="swatches" aria-label="主要颜色"><li><i style="background:#E6DCCB"></i><code>#E6DCCB</code></li><li><i style="background:#F4EDE2"></i><code>#F4EDE2</code></li><li><i style="background:#2B2119"></i><code>#2B2119</code></li><li><i style="background:#3F5E4E"></i><code>#3F5E4E</code></li><li><i style="background:#B0603A"></i><code>#B0603A</code></li><li><i style="background:#C9A06A"></i><code>#C9A06A</code></li></ul>
+  <details class="contrast"><summary>对比度（WCAG AA 要求正文 ≥ 4.5）</summary><ul><li><span class="pair" style="background:#F4EDE2;color:#2B2119">字</span>正文 / 卡片 <b>13.5</b></li><li><span class="pair" style="background:#F4EDE2;color:#584739">字</span>次要字 / 卡片 <b>7.6</b></li><li><span class="pair" style="background:#E6DCCB;color:#6E5D4F">字</span>淡字 / 底色 <b>4.6</b></li><li><span class="pair" style="background:#F4EDE2;color:#93401F">字</span>强调字 / 卡片 <b>6</b></li><li><span class="pair" style="background:#3F5E4E;color:#F6F0E4">字</span>主按钮 <b>6.3</b></li><li><span class="pair" style="background:#2B2119;color:#F6F0E4">字</span>今日 <b>13.9</b></li><li><span class="pair" style="background:#9C512D;color:#FFF6EC">字</span>已完成日 <b>5.4</b></li></ul></details>
+  <div class="shots"><figure><img src="img/vivid-a-home.webp" width="390" height="844" loading="lazy" alt="浅色原木 · 今天"><figcaption>今天</figcaption></figure><figure><img src="img/vivid-a-month.webp" width="390" height="844" loading="lazy" alt="浅色原木 · 计划 · 月"><figcaption>计划 · 月</figcaption></figure><figure><img src="img/vivid-a-player.webp" width="390" height="844" loading="lazy" alt="浅色原木 · 训练中"><figcaption>训练中</figcaption></figure><figure><img src="img/vivid-a-review.webp" width="390" height="844" loading="lazy" alt="浅色原木 · 回顾"><figcaption>回顾</figcaption></figure></div>
+</section>
+<section class="variant" id="vivid-b">
+  <header class="vhead">
+    <span class="tag">B</span>
+    <div><h2>胡桃深木 <small>Walnut · 深色</small></h2><p>深胡桃木底、奶油色字，像夜里的木刻；暗而不黑，低眩光，适合长时间看。</p></div>
+  </header>
+  <ul class="swatches" aria-label="主要颜色"><li><i style="background:#231913"></i><code>#231913</code></li><li><i style="background:#33261D"></i><code>#33261D</code></li><li><i style="background:#EDE2CF"></i><code>#EDE2CF</code></li><li><i style="background:#A9C2A8"></i><code>#A9C2A8</code></li><li><i style="background:#D79E63"></i><code>#D79E63</code></li><li><i style="background:#8FAE95"></i><code>#8FAE95</code></li></ul>
+  <details class="contrast"><summary>对比度（WCAG AA 要求正文 ≥ 4.5）</summary><ul><li><span class="pair" style="background:#33261D;color:#EDE2CF">字</span>正文 / 卡片 <b>11.4</b></li><li><span class="pair" style="background:#33261D;color:#C9B79E">字</span>次要字 / 卡片 <b>7.5</b></li><li><span class="pair" style="background:#231913;color:#A8957D">字</span>淡字 / 底色 <b>6</b></li><li><span class="pair" style="background:#33261D;color:#E8B57E">字</span>强调字 / 卡片 <b>7.9</b></li><li><span class="pair" style="background:#A9C2A8;color:#1C1510">字</span>主按钮 <b>9.4</b></li><li><span class="pair" style="background:#EDE2CF;color:#1C1510">字</span>今日 <b>14.1</b></li><li><span class="pair" style="background:#D79E63;color:#21170F">字</span>已完成日 <b>7.5</b></li></ul></details>
+  <div class="shots"><figure><img src="img/vivid-b-home.webp" width="390" height="844" loading="lazy" alt="胡桃深木 · 今天"><figcaption>今天</figcaption></figure><figure><img src="img/vivid-b-month.webp" width="390" height="844" loading="lazy" alt="胡桃深木 · 计划 · 月"><figcaption>计划 · 月</figcaption></figure><figure><img src="img/vivid-b-player.webp" width="390" height="844" loading="lazy" alt="胡桃深木 · 训练中"><figcaption>训练中</figcaption></figure><figure><img src="img/vivid-b-review.webp" width="390" height="844" loading="lazy" alt="胡桃深木 · 回顾"><figcaption>回顾</figcaption></figure></div>
+</section>
+<section class="variant" id="vivid-c">
+  <header class="vhead">
+    <span class="tag">C</span>
+    <div><h2>雕版套色 <small>Block print · 浅色</small></h2><p>宣纸底、墨黑加朱砂两色套印，边框方正、带一点套色错位；木纹只用在按钮与导航这些“木块”上。</p></div>
+  </header>
+  <ul class="swatches" aria-label="主要颜色"><li><i style="background:#EEE7D7"></i><code>#EEE7D7</code></li><li><i style="background:#F7F2E6"></i><code>#F7F2E6</code></li><li><i style="background:#1F1C18"></i><code>#1F1C18</code></li><li><i style="background:#A8341F"></i><code>#A8341F</code></li><li><i style="background:#6B6258"></i><code>#6B6258</code></li><li><i style="background:#3E5A73"></i><code>#3E5A73</code></li></ul>
+  <details class="contrast"><summary>对比度（WCAG AA 要求正文 ≥ 4.5）</summary><ul><li><span class="pair" style="background:#F7F2E6;color:#1F1C18">字</span>正文 / 卡片 <b>15.2</b></li><li><span class="pair" style="background:#F7F2E6;color:#4F4840">字</span>次要字 / 卡片 <b>8.1</b></li><li><span class="pair" style="background:#EEE7D7;color:#6B6258">字</span>淡字 / 底色 <b>4.9</b></li><li><span class="pair" style="background:#F7F2E6;color:#A8341F">字</span>强调字 / 卡片 <b>5.9</b></li><li><span class="pair" style="background:#2A2622;color:#F7F2E6">字</span>主按钮 <b>13.4</b></li><li><span class="pair" style="background:#1F1C18;color:#F7F2E6">字</span>今日 <b>15.2</b></li><li><span class="pair" style="background:#A8341F;color:#FBF5EA">字</span>已完成日 <b>6.1</b></li></ul></details>
+  <div class="shots"><figure><img src="img/vivid-c-home.webp" width="390" height="844" loading="lazy" alt="雕版套色 · 今天"><figcaption>今天</figcaption></figure><figure><img src="img/vivid-c-month.webp" width="390" height="844" loading="lazy" alt="雕版套色 · 计划 · 月"><figcaption>计划 · 月</figcaption></figure><figure><img src="img/vivid-c-player.webp" width="390" height="844" loading="lazy" alt="雕版套色 · 训练中"><figcaption>训练中</figcaption></figure><figure><img src="img/vivid-c-review.webp" width="390" height="844" loading="lazy" alt="雕版套色 · 回顾"><figcaption>回顾</figcaption></figure></div>
+</section>
+<section class="variant" id="vivid-d">
+  <header class="vhead">
+    <span class="tag">D</span>
+    <div><h2>暖阳柔木 <small>Soft sun · 浅色</small></h2><p>保留现在的暖杏与鼠尾草绿，但压低亮度和饱和度，加木纹、浅浮雕和清楚的描边，今日和状态一眼可辨。</p></div>
+  </header>
+  <ul class="swatches" aria-label="主要颜色"><li><i style="background:#F0E2D0"></i><code>#F0E2D0</code></li><li><i style="background:#F9F0E4"></i><code>#F9F0E4</code></li><li><i style="background:#36241F"></i><code>#36241F</code></li><li><i style="background:#4C6A5B"></i><code>#4C6A5B</code></li><li><i style="background:#C0764A"></i><code>#C0764A</code></li><li><i style="background:#E2C0A2"></i><code>#E2C0A2</code></li></ul>
+  <details class="contrast"><summary>对比度（WCAG AA 要求正文 ≥ 4.5）</summary><ul><li><span class="pair" style="background:#F9F0E4;color:#36241F">字</span>正文 / 卡片 <b>13</b></li><li><span class="pair" style="background:#F9F0E4;color:#654A40">字</span>次要字 / 卡片 <b>7.1</b></li><li><span class="pair" style="background:#F0E2D0;color:#765A4E">字</span>淡字 / 底色 <b>4.9</b></li><li><span class="pair" style="background:#F9F0E4;color:#A0432C">字</span>强调字 / 卡片 <b>5.6</b></li><li><span class="pair" style="background:#4C6A5B;color:#FBF6EE">字</span>主按钮 <b>5.5</b></li><li><span class="pair" style="background:#4C6A5B;color:#FBF6EE">字</span>今日 <b>5.5</b></li><li><span class="pair" style="background:#A35A33;color:#FFF7EF">字</span>已完成日 <b>4.9</b></li></ul></details>
+  <div class="shots"><figure><img src="img/vivid-d-home.webp" width="390" height="844" loading="lazy" alt="暖阳柔木 · 今天"><figcaption>今天</figcaption></figure><figure><img src="img/vivid-d-month.webp" width="390" height="844" loading="lazy" alt="暖阳柔木 · 计划 · 月"><figcaption>计划 · 月</figcaption></figure><figure><img src="img/vivid-d-player.webp" width="390" height="844" loading="lazy" alt="暖阳柔木 · 训练中"><figcaption>训练中</figcaption></figure><figure><img src="img/vivid-d-review.webp" width="390" height="844" loading="lazy" alt="暖阳柔木 · 回顾"><figcaption>回顾</figcaption></figure></div>
+</section>
+<footer>预览专用，不会出现在应用的“换风格”里。代码：src/themes/vivid-previews/（每版一个 CSS + 共用的浮雕层），生成脚本在 tools/preview/vivid-redesign/。</footer>
+</main>
+</body>
+</html>

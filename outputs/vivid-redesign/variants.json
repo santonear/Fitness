@@ -1,0 +1,238 @@
+[
+  {
+    "id": "vivid-a",
+    "name": "浅色原木",
+    "en": "Birch",
+    "description": "桦木浅底配深墨描边，卡片像刻好的木牌，阴影短而实；整体降饱和、无大面积暖色。",
+    "scheme": "light",
+    "swatches": [
+      "#E6DCCB",
+      "#F4EDE2",
+      "#2B2119",
+      "#3F5E4E",
+      "#B0603A",
+      "#C9A06A"
+    ],
+    "contrast": [
+      {
+        "label": "正文 / 卡片",
+        "fg": "#2B2119",
+        "bg": "#F4EDE2",
+        "ratio": 13.5
+      },
+      {
+        "label": "次要字 / 卡片",
+        "fg": "#584739",
+        "bg": "#F4EDE2",
+        "ratio": 7.6
+      },
+      {
+        "label": "淡字 / 底色",
+        "fg": "#6E5D4F",
+        "bg": "#E6DCCB",
+        "ratio": 4.6
+      },
+      {
+        "label": "强调字 / 卡片",
+        "fg": "#93401F",
+        "bg": "#F4EDE2",
+        "ratio": 6
+      },
+      {
+        "label": "主按钮",
+        "fg": "#F6F0E4",
+        "bg": "#3F5E4E",
+        "ratio": 6.3
+      },
+      {
+        "label": "今日",
+        "fg": "#F6F0E4",
+        "bg": "#2B2119",
+        "ratio": 13.9
+      },
+      {
+        "label": "已完成日",
+        "fg": "#FFF6EC",
+        "bg": "#9C512D",
+        "ratio": 5.4
+      }
+    ]
+  },
+  {
+    "id": "vivid-b",
+    "name": "胡桃深木",
+    "en": "Walnut",
+    "description": "深胡桃木底、奶油色字，像夜里的木刻；暗而不黑，低眩光，适合长时间看。",
+    "scheme": "dark",
+    "swatches": [
+      "#231913",
+      "#33261D",
+      "#EDE2CF",
+      "#A9C2A8",
+      "#D79E63",
+      "#8FAE95"
+    ],
+    "contrast": [
+      {
+        "label": "正文 / 卡片",
+        "fg": "#EDE2CF",
+        "bg": "#33261D",
+        "ratio": 11.4
+      },
+      {
+        "label": "次要字 / 卡片",
+        "fg": "#C9B79E",
+        "bg": "#33261D",
+        "ratio": 7.5
+      },
+      {
+        "label": "淡字 / 底色",
+        "fg": "#A8957D",
+        "bg": "#231913",
+        "ratio": 6
+      },
+      {
+        "label": "强调字 / 卡片",
+        "fg": "#E8B57E",
+        "bg": "#33261D",
+        "ratio": 7.9
+      },
+      {
+        "label": "主按钮",
+        "fg": "#1C1510",
+        "bg": "#A9C2A8",
+        "ratio": 9.4
+      },
+      {
+        "label": "今日",
+        "fg": "#1C1510",
+        "bg": "#EDE2CF",
+        "ratio": 14.1
+      },
+      {
+        "label": "已完成日",
+        "fg": "#21170F",
+        "bg": "#D79E63",
+        "ratio": 7.5
+      }
+    ]
+  },
+  {
+    "id": "vivid-c",
+    "name": "雕版套色",
+    "en": "Block print",
+    "description": "宣纸底、墨黑加朱砂两色套印，边框方正、带一点套色错位；木纹只用在按钮与导航这些“木块”上。",
+    "scheme": "light",
+    "swatches": [
+      "#EEE7D7",
+      "#F7F2E6",
+      "#1F1C18",
+      "#A8341F",
+      "#6B6258",
+      "#3E5A73"
+    ],
+    "contrast": [
+      {
+        "label": "正文 / 卡片",
+        "fg": "#1F1C18",
+        "bg": "#F7F2E6",
+        "ratio": 15.2
+      },
+      {
+        "label": "次要字 / 卡片",
+        "fg": "#4F4840",
+        "bg": "#F7F2E6",
+        "ratio": 8.1
+      },
+      {
+        "label": "淡字 / 底色",
+        "fg": "#6B6258",
+        "bg": "#EEE7D7",
+        "ratio": 4.9
+      },
+      {
+        "label": "强调字 / 卡片",
+        "fg": "#A8341F",
+        "bg": "#F7F2E6",
+        "ratio": 5.9
+      },
+      {
+        "label": "主按钮",
+        "fg": "#F7F2E6",
+        "bg": "#2A2622",
+        "ratio": 13.4
+      },
+      {
+        "label": "今日",
+        "fg": "#F7F2E6",
+        "bg": "#1F1C18",
+        "ratio": 15.2
+      },
+      {
+        "label": "已完成日",
+        "fg": "#FBF5EA",
+        "bg": "#A8341F",
+        "ratio": 6.1
+      }
+    ]
+  },
+  {
+    "id": "vivid-d",
+    "name": "暖阳柔木",
+    "en": "Soft sun",
+    "description": "保留现在的暖杏与鼠尾草绿，但压低亮度和饱和度，加木纹、浅浮雕和清楚的描边，今日和状态一眼可辨。",
+    "scheme": "light",
+    "swatches": [
+      "#F0E2D0",
+      "#F9F0E4",
+      "#36241F",
+      "#4C6A5B",
+      "#C0764A",
+      "#E2C0A2"
+    ],
+    "contrast": [
+      {
+        "label": "正文 / 卡片",
+        "fg": "#36241F",
+        "bg": "#F9F0E4",
+        "ratio": 13
+      },
+      {
+        "label": "次要字 / 卡片",
+        "fg": "#654A40",
+        "bg": "#F9F0E4",
+        "ratio": 7.1
+      },
+      {
+        "label": "淡字 / 底色",
+        "fg": "#765A4E",
+        "bg": "#F0E2D0",
+        "ratio": 4.9
+      },
+      {
+        "label": "强调字 / 卡片",
+        "fg": "#A0432C",
+        "bg": "#F9F0E4",
+        "ratio": 5.6
+      },
+      {
+        "label": "主按钮",
+        "fg": "#FBF6EE",
+        "bg": "#4C6A5B",
+        "ratio": 5.5
+      },
+      {
+        "label": "今日",
+        "fg": "#FBF6EE",
+        "bg": "#4C6A5B",
+        "ratio": 5.5
+      },
+      {
+        "label": "已完成日",
+        "fg": "#FFF7EF",
+        "bg": "#A35A33",
+        "ratio": 4.9
+      }
+    ]
+  }
+]
