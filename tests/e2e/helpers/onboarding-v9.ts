@@ -7,7 +7,7 @@ export const nextButton = (page: Page) => page.getByRole('button', { name: '下�
 /** Fresh user lands on the welcome screen at /onboarding and taps 开始. */
 export async function startOnboarding(page: Page, path = '/') {
   await page.goto(path);
-  await expect(page).toHaveURL(/onboarding/);
+  await expect(page).toHaveURL(/onboarding/, { timeout: 20_000 }); // first load opens the local database before redirecting
   await page.getByRole('button', { name: '开始', exact: true }).click();
 }
 
