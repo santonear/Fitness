@@ -54,7 +54,8 @@ test('我的: grouped sections with 我 first; 我的变化 shows measurements, 
   const groups = await page.locator('main.v9-settings > section.v9-settings-group > h2').allInnerTexts();
   expect(groups).toEqual(['我', '营养建议', '训练设置', '芽芽与 AI', '数据与隐私', '通用']);
   await expect(page.getByRole('button', { name: '运动前自查与训练偏好' })).toHaveCount(1);
-  await expect(page.getByRole('radiogroup', { name: '界面风格' })).toBeVisible();
+  await expect(page.getByRole('radiogroup', { name: '界面风格' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /^给我们留言/ })).toHaveCount(1);
   const summary = page.locator('section.v9-change-summary');
   await expect(summary.getByText('这个月', { exact: true })).toBeVisible();
   await page.screenshot({ path: test.info().outputPath('me-pop-390.png'), fullPage: true });

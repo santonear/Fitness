@@ -53,6 +53,8 @@ test('an explicitly authorized home send is consumed once and excludes optional 
  await page.goto('/tests/fixtures/v8-coach/index.html');await enableAssistant(page);await page.getByRole('button',{name:'首页发送'}).click();await expect(page.getByText('想在哪里练？',{exact:true})).toBeVisible();await page.keyboard.press('Escape');await page.getByRole('button',{name:'首页发送'}).click();await expect(page.getByText('想在哪里练？',{exact:true})).toBeVisible();await page.getByRole('textbox').fill('仅修改草稿');expect(calls).toBe(1);
 });
 test('reminder settings expose quiet-time conflicts and legacy zero caps',async({page})=>{
+ // Training reminders are behind an off-by-default flag (Bo 2026-10-19).
+ await page.route('**/api/v1/features',route=>route.fulfill({json:{version:1,flags:{trainingReminders:true},expiresAt:Date.now()+60000}}));
  await page.goto('/settings#reminders');await page.getByLabel('时间',{exact:true}).fill('06:00');await expect(page.getByText('这个提醒时间在静默时段内，静默期间不会显示提醒。可以调整提醒时间或静默时段。')).toBeVisible();await page.getByLabel('静默结束时间').fill('06:00');await expect(page.getByText('这个提醒时间在静默时段内，静默期间不会显示提醒。可以调整提醒时间或静默时段。')).not.toBeVisible();await page.getByLabel('每天最多提醒几次').selectOption('0');await expect(page.getByText('每日上限为0，不会显示提醒。')).toBeVisible();await expect(page.getByRole('button',{name:'试用资格与邀请码'})).toBeVisible();
 });
 test('body fields are individually opt-in and only the selected subset is sent',async({page})=>{

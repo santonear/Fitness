@@ -21,7 +21,8 @@ import guideZh from "../../../i18n/features/training/guide.zh.json";
 import guideEn from "../../../i18n/features/training/guide.en.json";
 export function PlanRoute({ versions = false }: { versions?: boolean }) {
   const enabled = useFeature("planLifecycle"),
-    engineEnabled = useFeature("trainingEngine");
+    engineEnabled = useFeature("trainingEngine"),
+    remindersEnabled = useFeature("trainingReminders");
   const c = useMainline(),
     [query, setQuery] = useSearchParams(),
     [exercise, setExercise] = useState<string>();
@@ -189,12 +190,14 @@ export function PlanRoute({ versions = false }: { versions?: boolean }) {
         onClose={() => setOpen(false)}
         triggerRef={triggerRef}
       />
-      <Card variant="inset" padding="md" as="section" className="v9-plan-more">
-        <PrimaryButton tone="quiet" size="sm" onClick={() => c.navigate("/settings#reminders")}>
-          {copy.reminder}
-        </PrimaryButton>
-        <p>{copy.reminderHint}</p>
-      </Card>
+      {remindersEnabled && (
+        <Card variant="inset" padding="md" as="section" className="v9-plan-more">
+          <PrimaryButton tone="quiet" size="sm" onClick={() => c.navigate("/settings#reminders")}>
+            {copy.reminder}
+          </PrimaryButton>
+          <p>{copy.reminderHint}</p>
+        </Card>
+      )}
       {query.has("version") || query.has("plan") ? (
         <Button onClick={() => setQuery({})}>{life.back}</Button>
       ) : (

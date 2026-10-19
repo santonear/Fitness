@@ -12,6 +12,7 @@ const paths={
  refresh:'M20 11a8 8 0 0 0-14.3-4.9L4 8M4 4v4h4M4 13a8 8 0 0 0 14.3 4.9L20 16M20 20v-4h-4',
  menu:'M4 7h16M4 12h16M4 17h16',
  close:'M6 6l12 12M18 6L6 18',
+ message:'M4 5h16v11H9l-5 4zM8 9h8M8 12h5',
 } as const;
 export type AdminIconName=keyof typeof paths;
 export function AdminIcon({name}:{name:AdminIconName}){return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d={paths[name]}/></svg>}

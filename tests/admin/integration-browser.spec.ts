@@ -9,7 +9,7 @@ test('real signed Access rejects missing and invalid signatures',async({page})=>
   await page.request.post('/__test/session',{data:{mode:'fresh'}});expect(await (await page.request.get('/api/v1/management/console/session')).json()).toMatchObject({fresh:true,environment:'preview'});
 });
 
-const pages=['todo','applications','users','ledger','releases','coach','errors','settings'] as const;
+const pages=['todo','applications','users','feedback','ledger','releases','coach','errors','settings'] as const;
 for(const width of [390,320,1440,1024])for(const route of pages)test(`real ${route} at ${width}`,async({page})=>{
   await page.setViewportSize({width,height:900});const errors:string[]=[];
   page.on('pageerror',error=>errors.push(error.message));page.on('response',response=>{if(response.url().includes('/api/v1/management/console/')&&!response.ok())errors.push(`${response.status()} ${new URL(response.url()).pathname}`);});
@@ -205,4 +205,21 @@ test('review evidence 50 percent budget dismisses but 80 percent stays actionabl
  await page.goto('/admin/todo');await expect(page.getByRole('heading',{name:'本月预算已用 50%（¥17.50 / ¥35.00）',exact:true})).toHaveCount(0);
  await page.request.post('/__test/parity-fixture',{data:{mode:'budget80'}});await page.reload();await expect(page.getByRole('heading',{name:'本月预算已用 80%（¥28.00 / ¥35.00）',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'关闭本月 50% 提醒',exact:true})).toHaveCount(0);
  await page.goto('/admin/ledger');await expect(page.getByRole('progressbar')).toHaveAttribute('value','2800');await expect(page.getByRole('button',{name:'关闭本月 50% 预算提示',exact:true})).toHaveCount(0);
+});
+
+test('user feedback reaches the 留言 page with an open badge and can be marked handled',async({page})=>{
+  // The loopback harness maps its own origin to the worker origin, as the real proxy would.
+  const sent=await page.request.post('/api/v1/feedback',{headers:{Origin:`http://127.0.0.1:${process.env.ADMIN_INTEGRATION_PORT??'5397'}`},data:{id:crypto.randomUUID(),message:'希望能把计划同步到手机日历',contact:'me@example.com',locale:'zh'}});
+  expect(sent.status()).toBe(201);
+  expect((await page.request.post('/api/v1/feedback',{headers:{Origin:'https://evil.test'},data:{id:crypto.randomUUID(),message:'x',locale:'zh'}})).status()).toBe(403);
+  await page.setViewportSize({width:1440,height:900});await page.goto('/admin/todo');
+  const nav=page.getByRole('navigation',{name:'后台导航'});await expect(nav.getByRole('link',{name:/留言\s*1/})).toBeVisible();
+  await nav.getByRole('link',{name:/留言/}).click();await expect(page.getByRole('heading',{level:1,name:'留言'})).toBeVisible();
+  await expect(page.getByText(/用户发送前已被告知会发给运营者/)).toBeVisible();
+  const row=page.getByRole('row',{name:/希望能把计划同步到手机日历/});await expect(row).toContainText('匿名');await expect(row).toContainText('me@example.com');await expect(row).toContainText('未处理');
+  await expect(page.getByRole('button',{name:/^未处理 1/})).toHaveAttribute('aria-pressed','true');
+  const write=page.waitForResponse(r=>r.url().endsWith('/console/feedback/status')&&r.request().method()==='POST');await row.getByRole('button',{name:'标为已处理'}).click();expect((await write).status()).toBe(200);
+  await expect(page.getByText('没有未处理的留言。')).toBeVisible();await expect(nav.getByRole('link',{name:/留言\s*1/})).toHaveCount(0);
+  await page.getByRole('button',{name:/^全部/}).click();await expect(page.getByRole('row',{name:/希望能把计划同步到手机日历/})).toContainText('已处理');
+  const evidence=await (await page.request.get('/__test/evidence')).json();expect(evidence.migrations).toContain('6_user_feedback.sql');expect(evidence.audit).toContainEqual(expect.objectContaining({action:'feedback-handled',result:'success'}));
 });

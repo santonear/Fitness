@@ -29,11 +29,11 @@ import { createV8DataService } from '../../../persistence/v8-access';
 import { repository } from '../../../persistence/repository';
 import { CoachVisual } from '../../components/CoachVisual';
 export function NextPage(){
- const engineEnabled=useFeature('trainingEngine');
+ const engineEnabled=useFeature('trainingEngine'),remindersEnabled=useFeature('trainingReminders');
  const [preview,setPreview]=useState<{revision:number;versionId:string;templateId:string;value:Awaited<ReturnType<typeof workflow.nextTargetPreview>>}>();
  const {data,facts,t,slots,name,start,navigate,busy,run,openCoach,locale,sendHomeCoach,restartPlanning}=useMainline(); const [choice,setChoice]=useState<string>();
  const [message,setMessage]=useState('');const coachCopy=locale==='zh'?coachZh:coachEn;
- const version=data?.version, templates=version?.templates??[];
+ const version=data?.version, templates=version?.templates??[];const legacyDates=remindersEnabled&&!!data?.hasFutureLegacyDates;
  const last=data?.workouts.filter(w=>w.planVersionId===version?.id&&w.status!=='in_progress'&&w.status!=='abandoned').sort((a,b)=>b.startedAt.localeCompare(a.startedAt))[0];
  const suggested=templates[(templates.findIndex(s=>s.id===last?.templateId)+1)%Math.max(1,templates.length)];
  const original=templates.find(s=>s.id===choice)??suggested;
@@ -55,10 +55,10 @@ export function NextPage(){
  {data?.state?.trainingPause&&<p role="status">{engineCopy('redflag.copy.paused_banner',locale)}</p>}
  {data?.state?.trainingPause&&data.state.coachProfile?.healthStorageConsent&&data.state.coachProfile.screening?.completedAt&&data.state.coachProfile.screening.parqAnswers?.length===7&&data.state.coachProfile.screening.rescreenRequired!==true&&Date.parse(data.state.coachProfile.screening.completedAt)>=Date.parse(data.state.trainingPause.requiredAt)&&<PainProfessionalConfirmation pauseRequiredAt={data.state.trainingPause.requiredAt} review={historyDangerReview(data.workouts,data.state.coachProfile.screening.redFlagReview)} locale={locale} busy={busy} confirmLabel={t.confirm} onConfirm={()=>void run(async()=>{await workflow.confirmPainProfessionalSeen(data.metadata.dataRevision);})}/>}
  <CautionMorningControls/><PreTrainingCheckin/>
- {data?.state?.notice&&!data.state.notice.acknowledged&&(data.state.notice.planCount>1||data.hasFutureLegacyDates)&&<section className="v8-inline-panel">
+ {data?.state?.notice&&!data.state.notice.acknowledged&&(data.state.notice.planCount>1||legacyDates)&&<section className="v8-inline-panel">
  {data.state.notice.planCount>1&&<p>{format(t.migrationPlans,{count:data.state.notice.planCount,name:data.state.notice.currentPlanName??data.plan?.name??''})}</p>}
- {data.hasFutureLegacyDates&&<><p>{t.migrationDates}</p><Button onClick={()=>acknowledge(true)}>{t.setReminder}</Button></>}
- <Button onClick={()=>acknowledge()}>{data.hasFutureLegacyDates?t.dismissMigration:t.understood}</Button></section>}
+ {legacyDates&&<><p>{t.migrationDates}</p><Button onClick={()=>acknowledge(true)}>{t.setReminder}</Button></>}
+ <Button onClick={()=>acknowledge()}>{legacyDates?t.dismissMigration:t.understood}</Button></section>}
  {facts&&version&&<slots.WeekProgress complete={facts.complete} partial={facts.partial} target={version.weeklyTarget} label={format(t.week,{complete:facts.complete,partial:facts.partial})}/>}
  {data?.active&&<Button onClick={()=>navigate(`/workout/${data.active!.id}`)}>{t.ongoing}</Button>}
  {selected?<><slots.FeatureCard context="next" motionReduced={false} trainingActive={false}><slots.StartHero {...selected} templateId={selected.id} templateLabel={templateLabel(selected,locale)} nextLabel={t.next} startLabel={t.start} disabled={busy||!!data?.active||previewBlocked||previewPending} onStart={()=>{if(!previewBlocked&&!previewPending)void start(selected.id)}}/><p className="v8-center">{!last?t.firstWorkoutReason:lastSelected?.status==='partial'?t.partialReason:format(t.reason,{minutes:selected.estimatedMinutes})}</p></slots.FeatureCard>
