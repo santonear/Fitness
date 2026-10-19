@@ -45,20 +45,20 @@
   --tabbar-h: 72px;
 }
 .v9-scene[data-scene="dawn"] {
-  --scene-sky: #F6CBAA;
-  --scene-haze: #FADCC2;
-  --scene-sun: #FFF3E2;
-  --scene-far: #E89D80;
-  --scene-mid: #CB735B;
-  --scene-lake: #A2CEC4;
-  --scene-pine: #3E5E4F;
-  --scene-hill1: #87A271;
-  --scene-hill2: #5F7D52;
-  --scene-treeA: #C6C47E;
-  --scene-treeB: #E2826A;
+  --scene-sky: #EFCFB3;
+  --scene-haze: #F4DEC9;
+  --scene-sun: #FBF0E0;
+  --scene-far: #D9A189;
+  --scene-mid: #B97A62;
+  --scene-lake: #A6C4BB;
+  --scene-pine: #3E5A4C;
+  --scene-hill1: #869D73;
+  --scene-hill2: #5F7A53;
+  --scene-treeA: #BFBC83;
+  --scene-treeB: #D08A70;
   --scene-trunk: #5B3F33;
-  --scene-bird: #3A2723;
-  --scene-flower: #F4B393;
+  --scene-bird: #36241F;
+  --scene-flower: #E7B091;
 }
 .v9-scene[data-scene="lake"] {
   --scene-sky: #EEF1E6;

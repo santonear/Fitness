@@ -535,3 +535,11 @@ Bo 已定版 V9 设计并授权推进；计时规则按 Bo 当日决定改写（
 - 理由：所选日期是用户的明确输入，不得被默认值覆盖；AI 仍无写入权限，改动需确认并生成新版本。
 - 涉及文件：src/application/picked-schedule.ts（新）、src/coach/{contracts,request-builder}.ts、src/backend/assistant/{assemble,engine-assemble,prompts}.ts、src/application/v8-workflow.ts、src/ui/mainline/{MainlineApp,context}.tsx、src/ui/components/AssistantAttachment.tsx、src/ui/pages/plan/week-plan.css。
 - 待 Bo 确认：确认卡“训练日：…”两句文案；“明确要求改训练日”的判断（说出星期几或每周次数）；旧版 v8 coach 接口提示词未加此约束（请求里已带 schedule）。
+
+## 2026-10-20 · 山野暖阳“暖阳柔木”上线与五套主题月历（V9.0.9）
+
+- 情况：Bo 在 4 个山野暖阳预览候选中选 D“暖阳柔木”，并要求“请查看其他所有风格的月日历视图，要求一目了然”。原月历今天只有一圈细描边，练完 / 部分只靠小圆点，计划日与主按钮同色实心，状态主要靠色相区分；预览分支里的浮雕规则只在 `data-vivid-variant` 下生效。
+- 决定：D 的取值写入令牌 JSON `themes.vivid`（未合并预览分支，A–C 与预览 CSS 不上线）；新增纹理、浮雕、拱窗与插画墨线变量，非 vivid 主题取 `none` / `transparent` / `0`，共享组件按“纹理层 + 原底色”绘制，外观不变；vivid 特有的拱窗、芽芽一句话卡、休息屏、导航与拱形周进度规则放进 `src/themes/vivid/slots/slots.css`，插画墨线放进共享 `scene.css`（只读变量）。五套主题新增 `--cal-*` 月历变量：今天 = 墨色圆章 + 外圈（格子仍显示当天状态），计划 = 浅色填色 + 描边，练完 = 深色实心，部分 = 下方实心、上方浅底，没练 = 虚线；图例加“今天”。计划 › 月、草案、选训练日的日历与今天页本周条用同一画法；补位日不显示数字；日历数字改用正文字体。单元测试逐主题检查文字 ≥4.5:1、形状 ≥3:1 与填色亮度差。
+- 理由：今天与各状态在任何主题下都靠明暗与形状一眼可辨，不只靠色相；主题差异仍只在令牌与签名组件里，页面与共享组件只读变量。
+- 涉及文件：docs/handoff-v8/02-design-tokens.json、src/themes/{token-css,contract}.ts、src/themes/*/tokens.css、src/themes/vivid/slots/slots.css、src/themes/base/common.css、src/ui/{shared.css,mainline/mainline.css}、src/ui/components/{kit/kit.css,scene.css,training-calendar.css,TrainingCalendar.tsx}、src/ui/pages/plan/{MonthPlan.tsx,week-plan.css}、src/i18n/features/plan/calendar.ts、tests/unit/v9-calendar-contrast.test.ts、tools/preview/vivid-d-calendars/。
+- 待 Bo 确认：五套主题的月历取色（尤其 pop 的计划日琥珀浅底、data / fire 的今天外圈用金黄 / 橙色）；今天页本周条也换成同一画法（今天不再整块主按钮色，改为外圈 + 日期标签墨色底）；“什么时候练”里今天以前的日子用次要字色而不是更淡的灰（为满足 4.5:1）。

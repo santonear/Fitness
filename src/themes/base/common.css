@@ -41,7 +41,7 @@
 .v8-link { color: var(--c-primary); border-color: transparent; background: transparent; box-shadow: none; text-underline-offset: var(--s1); }
 .v8-sheet {
   padding: var(--s5); border: var(--bw) solid var(--c-line); border-radius: var(--r-panel);
-  background: var(--mat-surface); box-shadow: var(--el-1); color: var(--c-ink);
+  background: var(--grain-card), var(--mat-surface); box-shadow: var(--el-1); color: var(--c-ink);
   font-family: var(--f-body); font-size: var(--t3); line-height: var(--lh-body);
 }
 .v8-row { display: flex; align-items: center; gap: var(--s3); min-block-size: var(--touch-row); border-block-end: var(--bw) solid var(--c-line); }

@@ -1,21 +1,25 @@
 /* Training-day picker (tap or drag on a month calendar) and the birth month picker. Tokens only. */
-.v9-days { display: grid; gap: var(--s3); min-inline-size: 0; padding: var(--s4); border-radius: var(--r-panel); background: var(--card-bg); border: var(--bw) solid var(--card-border); box-shadow: var(--el-1); }
+.v9-days { display: grid; gap: var(--s3); min-inline-size: 0; padding: var(--s4); border-radius: var(--r-panel); background: var(--grain-card), var(--card-bg); border: var(--bw) solid var(--card-border); box-shadow: var(--el-1); }
 .v9-days-head { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); }
 .v9-days-head h2.v9-days-title { margin: 0; font-size: var(--t4); font-weight: var(--w-strong); }
 .v9-days-hint { margin: 0; font-size: var(--t2); color: var(--c-ink-muted); line-height: var(--lh-body); }
-.v9-days-weekdays, .v9-days-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: var(--s1); }
+.v9-days-weekdays, .v9-days-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: calc(var(--s1) * 1.5); }
 .v9-days-weekdays span { text-align: center; font-size: var(--t1); color: var(--c-ink-muted); }
 .v9-days-grid { margin: 0; padding: 0; list-style: none; user-select: none; -webkit-user-select: none; }
 .v9-days-grid li { display: grid; min-inline-size: 0; }
-.v9-days-day, .v9-days-filler { box-sizing: border-box; white-space: nowrap; overflow-wrap: normal; display: grid; place-items: center; min-block-size: var(--touch-min); border-radius: var(--r-control); font-size: var(--t3); }
-.v9-days-day { border: var(--bw) solid transparent; background: transparent; color: var(--c-ink); font: inherit; cursor: pointer; touch-action: none; -webkit-touch-callout: none; }
-.v9-days-day[aria-current="date"] { border-color: var(--c-accent-text); }
-.v9-days-day[aria-pressed="true"] { background: var(--mat-primary); color: var(--c-on-primary); box-shadow: var(--el-primary); font-weight: var(--w-strong); }
-.v9-days-day[data-preview="add"] { background: var(--c-inset); box-shadow: var(--el-inset); border-color: var(--c-accent-text); }
+/* Same day language as 计划 › 月 (--cal-* tokens): chosen = planned cell, today = ink badge + ring. */
+.v9-days-day, .v9-days-filler { box-sizing: border-box; position: relative; white-space: nowrap; overflow-wrap: normal; display: grid; place-items: center; min-block-size: var(--touch-min); border-radius: var(--cal-r); font-size: var(--t3); }
+.v9-days-day { border: 2px solid transparent; background: transparent; color: var(--c-ink); font: inherit; cursor: pointer; touch-action: none; -webkit-touch-callout: none; }
+.v9-days-day > .v9-days-number { display: grid; place-items: center; inline-size: var(--s5); block-size: var(--s5); border-radius: 50%; font-variant-numeric: lining-nums tabular-nums; }
+.v9-days-day[aria-pressed="true"] { background: var(--cal-planned-bg); border-color: var(--cal-planned-ring); color: var(--cal-planned-ink); font-weight: var(--w-strong); }
+.v9-days-day[aria-pressed="true"] > .v9-days-number { font-weight: var(--w-strong); }
+.v9-days-day[data-preview="add"] { background: var(--cal-partial-rest); border-style: dashed; border-color: var(--cal-planned-ring); color: var(--cal-planned-ink); }
 .v9-days-day[data-preview="remove"] { background: var(--c-inset); color: var(--c-ink-muted); text-decoration: line-through; }
-.v9-days-day[aria-disabled="true"] { color: var(--c-faint); cursor: default; }
-.v9-days-day:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 1px; }
-.v9-days-filler { color: var(--c-faint); opacity: 0.5; }
+.v9-days-day[aria-disabled="true"] { color: var(--c-ink-muted); cursor: default; }
+.v9-days-day[aria-current="date"] { outline: 3px solid var(--cal-today-ring); outline-offset: 1px; z-index: 1; }
+.v9-days-day[aria-current="date"] > .v9-days-number { background: var(--cal-today-bg); color: var(--cal-today-ink); box-shadow: 0 0 0 2px var(--cal-today-ink); font-weight: var(--w-strong); }
+.v9-days-day:focus-visible { outline: 3px solid var(--c-focus); outline-offset: 2px; }
+.v9-days-filler { visibility: hidden; }
 .v9-days-summary { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s2); }
 .v9-days-summary p { margin: 0; font-size: var(--t2); font-weight: var(--w-strong); color: var(--c-ink); }
 .v9-days-notice { margin: 0; padding: var(--s3) var(--s4); border-radius: var(--r-panel); background: var(--c-warn-soft); color: var(--c-ink); font-size: var(--t2); line-height: var(--lh-body); }
@@ -24,7 +28,7 @@
 
 /* Birth year-month picker: year header with ‹ ›, a 12-year grid to jump decades, and a month grid. */
 .v9-birth { display: grid; gap: var(--s3); min-inline-size: 0; }
-.v9-birth-pick { display: grid; gap: var(--s3); padding: var(--s4); border-radius: var(--r-panel); background: var(--card-bg); border: var(--bw) solid var(--card-border); box-shadow: var(--el-1); }
+.v9-birth-pick { display: grid; gap: var(--s3); padding: var(--s4); border-radius: var(--r-panel); background: var(--grain-card), var(--card-bg); border: var(--bw) solid var(--card-border); box-shadow: var(--el-1); }
 .v9-birth-head { display: flex; align-items: center; justify-content: space-between; gap: var(--s2); }
 .v9-birth-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s2); margin: 0; padding: 0; list-style: none; }
 .v9-birth-grid li { display: grid; min-inline-size: 0; }

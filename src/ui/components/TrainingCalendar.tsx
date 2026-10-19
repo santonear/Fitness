@@ -120,7 +120,7 @@ export function TrainingCalendar({ locale, today, value, onChange, disabled = fa
         onPointerDown={event => down(event, date)}
         onClick={event => { if (event.detail === 0) toggle(date); }}
         onKeyDown={event => keyMove(event, date)} onFocus={() => setFocus(date)}>
-        <span className="v9-num">{Number(date.slice(8))}</span>
+        <span className="v9-body v9-days-number">{Number(date.slice(8))}</span>
       </button></li>;
     })}</ol>
     <div className="v9-days-summary">

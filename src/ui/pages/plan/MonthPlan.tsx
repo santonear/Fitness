@@ -45,10 +45,10 @@ export function MonthPlan({ plan, workouts, locale, todayDate, startDate, timeZo
       <ol className="v9-month-grid">{days.map(day => <li key={day.date} data-in-month={day.inMonth ? 'true' : 'false'}>
         {day.inMonth ? <button type="button" className="v9-month-day v8-press" data-state={day.state} data-date={day.date}
           aria-pressed={day.date === selected} aria-current={day.date === todayDate ? 'date' : undefined} aria-label={describe(day)} onClick={() => setSelected(day.date)}>
-          <span className="v9-num v9-month-number">{Number(day.date.slice(8))}</span><span className="v9-month-mark" aria-hidden="true" />
+          <span className="v9-body v9-month-number">{Number(day.date.slice(8))}</span><span className="v9-month-mark" aria-hidden="true" />
         </button> : <span className="v9-month-filler v9-num" aria-hidden="true">{Number(day.date.slice(8))}</span>}
       </li>)}</ol>
-      <ul className="v9-month-legend" aria-label={t.legend}>{(['done', 'partial', 'planned', 'missed'] as const).map(state => <li key={state} data-state={state}><span className="v9-month-mark" aria-hidden="true" />{t.states[state]}</li>)}</ul>
+      <ul className="v9-month-legend" aria-label={t.legend}><li data-state="today"><span className="v9-month-mark" aria-hidden="true" />{t.today}</li>{(['done', 'partial', 'planned', 'missed'] as const).map(state => <li key={state} data-state={state}><span className="v9-month-mark" aria-hidden="true" />{t.states[state]}</li>)}</ul>
       <p className="v9-month-counts">{fill(t.counts, counts)}</p>
     </Card>
     {chosen ? <MonthDayDetail day={chosen} t={t} locale={locale} todayDate={todayDate} startDate={startDate} timeZone={timeZone} view={view} details={details} /> : <p className="v9-month-counts">{t.pick}</p>}

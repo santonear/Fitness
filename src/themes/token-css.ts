@@ -3,7 +3,7 @@ import type { BuiltinThemeId, SceneVariant, ThemeTokenName } from './contract';
 
 /** The JSON is the only value source; this adapter only assigns frozen CSS names. */
 export function themeTokens(id: BuiltinThemeId): Partial<Record<ThemeTokenName, string | number>> {
-  const { color: c, font: f, shape: s, tracking: t, material: m, effects: e, gradient: g, glass, card, meter, chart, mascot: y } = source.themes[id];
+  const { color: c, font: f, shape: s, tracking: t, material: m, effects: e, gradient: g, glass, card, meter, chart, mascot: y, texture: x, relief, hero: h, calendar: cal } = source.themes[id];
   const pressScale = e.pressScale ?? source.shared.motion.pressScale;
   return {
     '--c-bg': c.bg, '--c-bg-grad': c.bgGradient, '--c-surface': c.surface,
@@ -40,6 +40,18 @@ export function themeTokens(id: BuiltinThemeId): Partial<Record<ThemeTokenName, 
       ? `translate(${source.shared.motion.sinkTranslate}, ${source.shared.motion.sinkTranslate}) scale(${source.shared.motion.sinkScale})`
       : `scale(${pressScale})`,
     '--press-shadow': e.pressStyle === 'sink' ? source.shared.motion.sinkShadow : m.pressInset,
+    // V9 暖阳柔木: textures and relief (other themes set none / transparent and keep their look).
+    '--c-ai-panel': c.aiPanel, '--grain-card': x.cardGrain, '--grain-wood': x.woodGrain, '--emboss': x.emboss,
+    '--relief-hi': relief.highlight, '--relief-drop': relief.drop,
+    '--hero-bw': h.border, '--hero-frame': h.frame, '--hero-shadow': h.shadow, '--hero-inner-line': h.innerLine,
+    '--hero-text-shadow': h.textShadow, '--hero-muted': h.muted, '--hero-line': h.line, '--hero-line-w': h.lineWidth,
+    '--hero-hatch': h.hatch, '--hero-blend': h.blend,
+    // Month calendar states (计划 › 月, plan draft, training-day picker, 今天 week strip).
+    '--cal-r': cal.radius, '--cal-today-bg': cal.todayBg, '--cal-today-ink': cal.todayInk, '--cal-today-ring': cal.todayRing,
+    '--cal-planned-bg': cal.plannedBg, '--cal-planned-ink': cal.plannedInk, '--cal-planned-ring': cal.plannedRing,
+    '--cal-done-bg': cal.doneBg, '--cal-done-ink': cal.doneInk, '--cal-done-shadow': cal.doneShadow,
+    '--cal-partial-rest': cal.partialRest, '--cal-partial-ink': cal.partialInk,
+    '--cal-missed-line': cal.missedLine, '--cal-missed-ink': cal.missedInk, '--cal-selected-ring': cal.selectedRing,
   };
 }
 
