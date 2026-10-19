@@ -105,3 +105,28 @@ export async function toFirstQuestion(page: Page) {
   }
   await expect(goal).toBeVisible();
 }
+
+/** Schedule step as a weekly rhythm in the user's own words (自己写一句); does not press 下一步. */
+export async function weeklySchedule(page: Page, weekly: number, minutes: number) {
+  const custom = page.getByRole('button', { name: /自己写一句|收起/ });
+  if ((await custom.getAttribute('aria-pressed')) !== 'true') await custom.click();
+  await page.getByLabel('你的回答', { exact: true }).fill(`每周 ${weekly} 次，每次 ${minutes} 分钟`);
+}
+/** Local date in Asia/Shanghai, `offset` days from today. */
+export const shanghaiDate = (offset = 0) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(Date.now() + offset * 86400000));
+/** Schedule step on the calendar: taps each date (moving months as needed) and picks minutes. */
+export async function pickTrainingDays(page: Page, dates: readonly string[], minutes = 30) {
+  const calendar = page.getByRole('region', { name: /训练日$/ });
+  for (const date of dates) {
+    for (let i = 0; i < 3 && !(await calendar.locator(`[data-date="${date}"]`).count()); i++) await calendar.getByRole('button', { name: '下个月' }).click();
+    const day = calendar.locator(`[data-date="${date}"]`);
+    if ((await day.getAttribute('aria-pressed')) !== 'true') await day.click();
+  }
+  await page.getByRole('button', { name: `${minutes} 分钟`, exact: true }).click();
+}
+/** 重新制定计划 / 生成新计划 asks first when earlier answers exist (Bo 2026-10-19); confirms if asked. */
+export async function confirmReplan(page: Page) {
+  const ask = page.getByRole('dialog', { name: '重新制定计划？' });
+  await expect(ask.or(page.locator('main.v9-onboarding, main.v9-welcome')).first()).toBeVisible();
+  if (await ask.isVisible()) await ask.getByRole('button', { name: '清空并重新开始', exact: true }).click();
+}

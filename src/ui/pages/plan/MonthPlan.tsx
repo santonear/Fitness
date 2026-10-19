@@ -7,11 +7,14 @@ import { planCalendarCopy } from '../../../i18n/features/plan/calendar';
 import { fill } from '../../../i18n/features/onboarding/entry';
 import { Card, PrimaryButton } from '../../components/kit';
 import { usePlanView } from './WeekPlan';
+import { monthTitle } from '../../components/TrainingCalendar';
 import './week-plan.css';
 
 export interface MonthPlanProps {
-  plan: Pick<PlanVersion, 'weeklyTarget' | 'preferredDays' | 'templates'>;
+  plan: Pick<PlanVersion, 'weeklyTarget' | 'preferredDays' | 'templates'> & Partial<Pick<PlanVersion, 'trainingDates'>>;
   workouts: readonly WorkoutRecord[];
+  /** Day selected (and month shown) first; defaults to today. */
+  initialDate?: string;
   locale: 'zh' | 'en';
   todayDate: string;
   startDate?: string;
@@ -20,13 +23,11 @@ export interface MonthPlanProps {
   details?: (template: SessionTemplate) => ReactNode;
 }
 
-const monthTitle = (month: string, locale: 'zh' | 'en') =>
-  new Intl.DateTimeFormat(locale === 'zh' ? 'zh-CN' : 'en', { timeZone: 'UTC', year: 'numeric', month: 'long' }).format(new Date(`${month}-01T00:00:00Z`));
 
 /** Month calendar of the plan: each day marked done / partly done / planned / not trained; tap a day for its session. */
-export function MonthPlan({ plan, workouts, locale, todayDate, startDate, timeZone, details }: MonthPlanProps) {
+export function MonthPlan({ plan, workouts, locale, todayDate, startDate, timeZone, details, initialDate }: MonthPlanProps) {
   const t = planCalendarCopy[locale], view = usePlanView(plan, locale);
-  const [month, setMonth] = useState(monthOf(todayDate)), [selected, setSelected] = useState<string>(todayDate);
+  const [month, setMonth] = useState(monthOf(initialDate ?? todayDate)), [selected, setSelected] = useState<string>(initialDate ?? todayDate);
   const days = useMemo(() => monthCalendar({ plan, workouts, month, today: todayDate, startDate }), [plan, workouts, month, todayDate, startDate]);
   const counts = monthCounts(days), title = monthTitle(month, locale);
   const chosen = days.find(day => day.date === selected && day.inMonth);

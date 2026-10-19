@@ -93,3 +93,4 @@
 .v9-month-recorded ul { display: grid; gap: var(--s2); margin: 0; padding: 0; list-style: none; }
 .v9-month-recorded li { display: flex; flex-wrap: wrap; gap: var(--s1) var(--s3); align-items: baseline; padding: var(--s3) var(--s4); border-radius: var(--r-panel); background: var(--c-inset); box-shadow: var(--el-inset); font-size: var(--t2); }
 .v9-month-planned { display: grid; gap: var(--s2); }
+.v9-plan-nav { display: flex; justify-content: flex-end; align-items: center; gap: var(--s2); }

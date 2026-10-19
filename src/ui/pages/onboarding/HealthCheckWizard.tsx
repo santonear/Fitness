@@ -29,6 +29,8 @@ export interface HealthCheckWizardProps {
   mode: 'ai' | 'basic'; busy: boolean; error?: string; step: number; total: number; complete: boolean;
   sendFields: [string, string | number][];
   onChange: (answers: OnboardingAnswers) => void; onExit: () => void; onGenerate: () => void; onManual: () => void;
+  /** 回到今天 (after confirming, unsaved answers are cleared). */
+  onHome?: () => void;
   /** Starting screen id (tests and resuming); defaults to the first screen. */
   initialScreen?: string;
   /** AI planning exists in this deployment: 芽芽 asks AI-or-local before the ready screen. */
@@ -147,7 +149,7 @@ export function HealthCheckWizard(props: HealthCheckWizardProps) {
   const answered = (name: Group) => groups[name].every(item => typeof item.value === 'boolean');
   const nextButton = (enabled: boolean, label: string = t.next) => <PrimaryButton disabled={busy || !enabled} onClick={() => go(1)}>{label}</PrimaryButton>;
   const frame = (title: ReactNode, body: ReactNode, footer?: ReactNode, sub?: ReactNode, counter?: string) => <OnboardingFrame locale={locale} step={step} total={total} within={(index + 1) / screens.length}
-    screenKey={screen.id} title={title} sub={sub} counter={counter} onBack={() => go(-1)} backDisabled={busy} footer={footer} busy={busy}>{body}</OnboardingFrame>;
+    screenKey={screen.id} title={title} sub={sub} counter={counter} onBack={() => go(-1)} backDisabled={busy} onHome={props.onHome} footer={footer} busy={busy}>{body}</OnboardingFrame>;
   const groupCopy: Record<Group, { title: string; sub?: string }> = {
     parq: t.parq, cmr: t.cmr, other: { title: t.other.title }, preg: { title: t.pregnancyList, sub: engineCopy('pregnancy.gate.copy.intro', locale) },
     falls: { title: engineCopy('older.screen.copy.intro', locale) }, redflag: t.redflag,

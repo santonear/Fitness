@@ -1,9 +1,10 @@
 import type { PlanVersion, WorkoutRecord } from '../domain/v8/contracts';
-import { addDays, weekSchedule, weekdayOf, weekdays } from './plan-presentation';
+import { addDays, weekdayOf, weekdays } from './plan-presentation';
+import { sessionForDate } from './training-dates';
 
 /**
- * Month calendar of a plan (计划 › 月). Read-only projection: dates come from the plan's weekly
- * schedule from its start date, states from recorded workouts. Nothing here is stored.
+ * Month calendar of a plan (计划 › 月). Read-only projection: dates come from the chosen training days,
+ * or the plan's weekly schedule from its start date; states from recorded workouts. Nothing here is stored.
  */
 export type CalendarDayState = 'done' | 'partial' | 'planned' | 'missed' | 'rest';
 export interface CalendarDay {
@@ -37,7 +38,7 @@ export function monthGridDates(month: string): string[] {
 const finished = (workout: WorkoutRecord) => workout.status === 'complete' || workout.status === 'partial';
 
 export function monthCalendar({ plan, workouts, month, today, startDate }: {
-  plan: Pick<PlanVersion, 'weeklyTarget' | 'preferredDays' | 'templates'>;
+  plan: Pick<PlanVersion, 'weeklyTarget' | 'preferredDays' | 'templates'> & Partial<Pick<PlanVersion, 'trainingDates'>>;
   workouts: readonly WorkoutRecord[];
   month: string;
   /** Today's local date (YYYY-MM-DD): earlier planned days without a record are "missed". */
@@ -45,16 +46,15 @@ export function monthCalendar({ plan, workouts, month, today, startDate }: {
   /** Plan start (chosen or creation day); nothing is planned before it. */
   startDate?: string;
 }): CalendarDay[] {
-  const schedule = weekSchedule(plan);
   const byDate = new Map<string, WorkoutRecord[]>();
   for (const workout of workouts) if (finished(workout)) byDate.set(workout.localDate, [...(byDate.get(workout.localDate) ?? []), workout]);
   return monthGridDates(month).map(date => {
     const recorded = (byDate.get(date) ?? []).slice().sort((a, b) => b.startedAt.localeCompare(a.startedAt));
-    const planned = !startDate || date >= startDate ? schedule.sessions.find(session => session.day === weekdayOf(date)) : undefined;
+    const templateId = sessionForDate(plan, date, startDate);
     const state: CalendarDayState = recorded.some(workout => workout.status === 'complete') ? 'done'
       : recorded.length ? 'partial'
-      : planned ? (date < today ? 'missed' : 'planned') : 'rest';
-    return { date, inMonth: monthOf(date) === month, state, templateId: planned?.templateId, workouts: recorded };
+      : templateId ? (date < today ? 'missed' : 'planned') : 'rest';
+    return { date, inMonth: monthOf(date) === month, state, templateId, workouts: recorded };
   });
 }
 

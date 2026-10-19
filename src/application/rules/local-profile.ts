@@ -2,6 +2,7 @@ import type {EngineProfileFields} from '../engine-profile';
 import {bodyValuesSchema,type BodyValues,type BodyField} from '../../domain/body-profile';
 import type { CoachProfile } from '../../domain/v8/contracts';
 import { sessionDuration } from './session-duration';
+import { weeklyTargetFromDates } from '../training-dates';
 import { EQUIPMENT, equipmentLabel } from '../../catalog/taxonomy';
 
 const counts: Record<string,number> = {一:1,二:2,两:2,三:3,四:4,五:5,六:6,七:7,one:1,two:2,three:3,four:4,five:5,six:6,seven:7,once:1,twice:2};
@@ -39,7 +40,7 @@ export function cautionFields(cautions: CoachProfile['cautions'], note?: string)
 }
 
 /** Conservative local proposal parameters; original answers remain intact. */
-export function localProfile(answers: { goalText: string; scheduleOriginalText: string; placeEquipmentText: string; adultConfirmed: boolean; cautions: CoachProfile['cautions']; cautionNote?: string } & EngineProfileFields): CoachProfile & EngineProfileFields {
+export function localProfile(answers: { goalText: string; scheduleOriginalText: string; placeEquipmentText: string; adultConfirmed: boolean; cautions: CoachProfile['cautions']; cautionNote?: string; trainingDates?: readonly string[] } & EngineProfileFields): CoachProfile & EngineProfileFields {
   const minutes = sessionDuration(answers.scheduleOriginalText) ?? 30;
   const equipment = EQUIPMENT.filter(key => key !== 'none' && [key, equipmentLabel(key, 'zh'), equipmentLabel(key, 'en')].some(label => {
     const text=answers.placeEquipmentText.toLowerCase(),at=text.indexOf(label.toLowerCase());
@@ -49,10 +50,12 @@ export function localProfile(answers: { goalText: string; scheduleOriginalText: 
 
   const places = [ /在家|家里|家中|居家|home/i.test(answers.placeEquipmentText) && 'home', /健身房|gym/i.test(answers.placeEquipmentText) && 'gym', /户外|outdoor/i.test(answers.placeEquipmentText) && 'outdoor' ].filter(Boolean);
   if (!places.length) throw new Error('LOCAL_PLACE_UNRESOLVED');
-  const preferredDays=preferredTrainingDays(answers.scheduleOriginalText);
+  // Calendar-picked days set the frequency (busiest 7 days); they are dates, not weekly weekdays.
+  const dated=!!answers.trainingDates?.length;
+  const preferredDays=dated?[]:preferredTrainingDays(answers.scheduleOriginalText);
   const {goal,level,constraints,population,screening,preferences,birthYearMonth,equipmentLoadsKg,painState,healthStorageConsent}=answers;
   return { ...Object.fromEntries(Object.entries({goal,level,constraints,population,screening,preferences,birthYearMonth,equipmentLoadsKg,painState,healthStorageConsent}).filter(([,value])=>value!==undefined)), goalText: answers.goalText, scheduleOriginalText: answers.scheduleOriginalText,
-    weeklyTarget: weeklyFrequency(answers.scheduleOriginalText),
+    weeklyTarget: dated?weeklyTargetFromDates(answers.trainingDates!):weeklyFrequency(answers.scheduleOriginalText),
     ...(preferredDays.length?{preferredDays}:{}),
     sessionMinutes: minutes,
     place: places.length > 1 ? 'mixed' : places[0] as CoachProfile['place'], equipment: ['none', ...equipment],

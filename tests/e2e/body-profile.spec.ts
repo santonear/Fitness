@@ -1,6 +1,6 @@
 import {test,expect,type Page} from '@playwright/test';
 import {openHomeCoach,showShared} from './helpers/home-coach';
-import {answerText,answerTexts,cautions,ensurePressed,generate,nextButton,startOnboarding} from './helpers/onboarding-v9';
+import {answerText,answerTexts,cautions,confirmReplan,ensurePressed,generate,nextButton,startOnboarding,toFirstQuestion} from './helpers/onboarding-v9';
 async function enable(page:Page,theme='pop'){
  await page.addInitScript(theme=>localStorage.setItem('fitness-theme',theme),theme);
  await page.route('**/api/v1/features',route=>route.fulfill({json:{version:1,flags:{bodyProfile:true,themeDiscovery:true,planLifecycle:true},expiresAt:Date.now()+60000}}));
@@ -35,7 +35,7 @@ test('legacy body migration requires confirmation and sending remains per field'
  await page.goto('/settings');await page.getByRole('combobox').selectOption('zh');await expect(page.getByText('找到了你以前填写的身体资料，请核对后确认。',{exact:true})).toBeVisible();await page.getByRole('button',{name:'身体资料',exact:true}).last().click();await expect(page.getByRole('heading',{name:'身体资料',exact:true})).toBeVisible();
  await page.getByRole('button',{name:'保存身体资料'}).click();await expect(page.getByRole('status')).toHaveText('身体资料已保存');await page.goto('/settings');await expect(page.getByText('找到了你以前填写的身体资料，请核对后确认。',{exact:true})).toHaveCount(0);
  // Fresh complete plan, with the confirmed canonical details retained.
- await page.getByRole('button',{name:'生成新计划',exact:true}).click();await answerText(page,'保持力量');await page.getByLabel('说说你的身体情况').fill('男，34岁，167，70公斤，腰围80厘米');await draft(page);await page.getByRole('button',{name:'就用这份计划'}).click();
+ await page.getByRole('button',{name:'生成新计划',exact:true}).click();await confirmReplan(page);await toFirstQuestion(page);await answerText(page,'保持力量');await page.getByLabel('说说你的身体情况').fill('男，34岁，167，70公斤，腰围80厘米');await draft(page);await page.getByRole('button',{name:'就用这份计划'}).click();
  await page.route('**/api/v1/trial/access-status',route=>route.fulfill({json:{qualification:'active',sessionValid:true,expiresAt:Date.now()+86400000,aiEnabled:true,planningBudgetDisabled:true}}));
  await page.evaluate(async()=>{const p='/src/application/feature-flags.ts';await(await import(/* @vite-ignore */ p)).refreshFeatureFlags(async()=>Response.json({version:1,flags:{bodyProfile:true,aiAssistantV2:true},expiresAt:Date.now()+60000}));});
  let sent:any;await page.route('**/api/v1/assistant/chat',route=>{sent=route.request().postDataJSON().context;return route.fulfill({status:503,json:{error:'AI_DISABLED'}})});

@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { BACKUP_VERSION } from '../../src/domain/storage-version';
 import type { Page } from '@playwright/test';
 import { mockActiveCoachAccess } from './helpers/coach-access';
-import { answerTexts, basicSafety, generate, nextButton, startOnboarding } from './helpers/onboarding-v9';
+import { answerTexts, basicSafety, confirmReplan, generate, nextButton, pickTrainingDays, shanghaiDate, startOnboarding } from './helpers/onboarding-v9';
 import { openHomeCoach } from './helpers/home-coach';
 async function enableAssistant(page:Page){await page.evaluate(async()=>{const path='/src/application/feature-flags.ts';await(await import(/* @vite-ignore */ path)).refreshFeatureFlags(async()=>Response.json({version:1,flags:{aiAssistantV2:true},expiresAt:Date.now()+60000}));});}
 
@@ -138,9 +138,10 @@ test('manual timed distance exercise preserves edited measurements after reload'
 
 test('onboarding is resumable and adult confirmation is required for basic generation', async ({ page }) => {
   await startOnboarding(page); await answerTexts(page, ['保持活动']);
-  await page.getByRole('button', { name: '3 次', exact: true }).click(); await page.getByRole('button', { name: '30 分钟', exact: true }).click(); await page.reload();
-  // A tapped answer is restored as selected, never as a placeholder.
-  await expect(page.getByRole('button', { name: '3 次', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  const days = [shanghaiDate(0)];
+  await pickTrainingDays(page, days, 30); await page.reload();
+  // Tapped answers (calendar days, minutes) are restored as selected, never as a placeholder.
+  for (const day of days) await expect(page.locator(`.v9-days-day[data-date="${day}"]`)).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByRole('button', { name: '30 分钟', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect(nextButton(page)).toBeEnabled();
   await nextButton(page).click(); await answerTexts(page, ['在家']);
@@ -236,9 +237,9 @@ test('server-revoked access replaces local entitlement and blocks paid requests'
  await page.goto('/');await openHomeCoach(page);await page.getByRole('dialog').getByRole('textbox').fill('今天时间不够');await page.getByRole('dialog').getByRole('button',{name:'发送',exact:true}).click();await expect(page.getByRole('dialog').getByRole('status')).toContainText('现在用的是本地建议 · 资格无效');expect(modelCalls).toBe(0);
 });
 
-test('activities require an explicit type and replanning starts with previous answers',async({page})=>{
+test('activities require an explicit type and replanning starts from empty answers (Bo 2026-10-19)',async({page})=>{
  await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();await page.goto('/activity');await expect(page.getByRole('button',{name:'记下来',exact:true})).toBeDisabled();await page.getByRole('button',{name:'散步',exact:true}).click();await expect(page.getByRole('button',{name:'记下来',exact:true})).toBeEnabled();
- await page.goto('/settings');await page.getByRole('button',{name:'生成新计划',exact:true}).click();await expect(page.getByRole('radio',{name:'想有些力量，不再容易累'})).toHaveAttribute('aria-checked','true');await expect(nextButton(page)).toBeEnabled();
+ await page.goto('/settings');await page.getByRole('button',{name:'生成新计划',exact:true}).click();await confirmReplan(page);await expect(page.getByRole('radio',{name:'想有些力量，不再容易累'})).toHaveAttribute('aria-checked','false');await expect(nextButton(page)).toBeDisabled();
 });
 
 test('favorite exercises roundtrip through a downloaded backup without changing workout facts',async({page})=>{

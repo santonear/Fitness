@@ -4,6 +4,8 @@ import { activityDate, createActivityService } from '../../../application/v8-act
 import { repository } from '../../../persistence/repository';
 import { Button, Chip } from '../../components/common';
 import { useMainline } from '../../mainline/context';
+import { HomeExit } from '../../components/HomeExit';
+import '../plan/week-plan.css';
 import zh from '../../../i18n/features/training/activity.zh.json';
 import en from '../../../i18n/features/training/activity.en.json';
 const types = ['walk','run','cycle','swim','yoga','stairs','other'] as const;
@@ -14,7 +16,7 @@ export function ActivityPage() {
  const [type,setType]=useState<ActivityRecord['type']>(),[minutes,setMinutes]=useState(30),[customName,setCustomName]=useState(''),[feel,setFeel]=useState<Feel>(),[note,setNote]=useState('');
  const zone=c.data?.profile?.timeZone??'Asia/Shanghai', today=activityDate(zone);
  const [when,setWhen]=useState('now'),[date,setDate]=useState(today);
- return <main><Button onClick={()=>c.navigate('/')}>{c.t.back}</Button><h1>{t.title}</h1>
+ return <main><nav className="v9-plan-nav" aria-label={t.title}><HomeExit locale={c.locale} dirty={!!type||!!note.trim()||!!customName.trim()} onLeave={()=>c.navigate('/')}/></nav><Button onClick={()=>c.navigate('/')}>{c.t.back}</Button><h1>{t.title}</h1>
  <fieldset><legend>{t.type}</legend><div className="v8-capsules">{types.map(k=><Chip key={k} selected={type===k} onClick={()=>setType(k)}>{t.types[k]}</Chip>)}</div></fieldset>
  {type==='other'&&<label>{t.customName}<input value={customName} onChange={e=>setCustomName(e.target.value)}/></label>}
  <label>{t.duration}<input type="number" min={5} step={1} required value={Number.isNaN(minutes)?'':minutes} onChange={e=>setMinutes(e.target.valueAsNumber)}/></label>

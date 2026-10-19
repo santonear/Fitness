@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { answerTexts, engineSafety, nextButton, startOnboarding } from './helpers/onboarding-v9';
+import { answerTexts, engineSafety, nextButton, startOnboarding, weeklySchedule } from './helpers/onboarding-v9';
 
 /** Bo 2026-10-19: 我的 grouped (我 first, with 我的变化), and a separate 营养建议 entry with its own AI chat. */
 test.setTimeout(150000);
@@ -18,7 +18,7 @@ async function toPlan(page: Page) {
   await nextButton(page).click();
   await page.getByLabel('说说你的身体情况').fill('女，34岁，165厘米，60公斤');
   await nextButton(page).click();
-  await page.getByRole('button', { name: '3 次', exact: true }).click(); await page.getByRole('button', { name: '45 分钟', exact: true }).click();
+  await weeklySchedule(page, 3, 45);
   await nextButton(page).click();
   await answerTexts(page, ['在家，有一对哑铃']);
   await engineSafety(page, { planMode: 'local' });

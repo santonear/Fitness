@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { answerTexts, engineSafety, nextButton, startOnboarding } from './helpers/onboarding-v9';
+import { answerTexts, engineSafety, nextButton, startOnboarding, weeklySchedule } from './helpers/onboarding-v9';
 
 /** Bo 2026-10-19 UX fixes: start date, AI-or-local onboarding, one AI entry on 今天, theme on 今天, tools outside the chat. */
 test.setTimeout(120000);
@@ -18,7 +18,7 @@ async function toReady(page: Page, planMode: 'local' | 'stop' = 'local') {
   await nextButton(page).click();
   await page.getByLabel('说说你的身体情况').fill('女，34岁，165厘米，60公斤');
   await nextButton(page).click();
-  await page.getByRole('button', { name: '3 次', exact: true }).click(); await page.getByRole('button', { name: '45 分钟', exact: true }).click();
+  await weeklySchedule(page, 3, 45);
   await nextButton(page).click();
   await answerTexts(page, ['在家，有一对哑铃']);
   await engineSafety(page, { planMode });

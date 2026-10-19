@@ -118,8 +118,14 @@ function useController() {
  const name=(id:string)=>exercises.find(e=>e.id===id)?.name[locale]??id;
  const start=(templateId?:string,manualId?:string)=>run(async()=>{const record=await workflow.start(templateId,manualId);setWorkoutValues({});setFocusIndex(0);navigate(`/workout/${record.id}`);});
  const startManual=(ids:string[],selection?:ManualSelection)=>run(async()=>{const record=await workflow.start(undefined,undefined,ids,selection);setWorkoutValues({});setFocusIndex(0);navigate(`/workout/${record.id}`);});
- const restartPlanning=()=>{setStep(0);setCandidate(undefined);setDraftDiscarded(false);navigate('/onboarding');};
- return {homeTemplateId,setHomeTemplateId,coachDraft,openCoachWithDraft,refreshCoachContext,restartPlanning,draftDiscarded,setDraftDiscarded,deletedNotice,setDeletedNotice,deletePlan,undoPlan,coachInitialSend,sendHomeCoach,reviewKind,setReviewKind,coachOpen,setCoachOpen,coachRequest,coachRevision,coachTrigger,openCoach,completedWeeks,monthFacts,previousFacts,workoutValues,setWorkoutValues,focusIndex,setFocusIndex,data,facts,answers,setAnswers,step,setStep,candidate,setCandidate,busy,error,locale,t,slots,name,navigate,run,reload,start,startManual,appearance};
+ /** Clears onboarding answers, the unconfirmed draft and its local copy. Saved plans and workouts stay. */
+ const resetOnboarding=()=>{const fresh={...blank,...(data?.profile?.bodyDetails?.values?{body:data.profile.bodyDetails.values}:{})};setAnswers(fresh);setStep(0);setCandidate(undefined);try{localStorage.setItem(draftKey.current,JSON.stringify({answers:fresh,step:0,updatedAt:new Date().toISOString()}));}catch{/* The state above is already cleared. */}};
+ const onboardingDirty=()=>!!candidate||step>0||!!answers.goalText.trim()||!!answers.scheduleOriginalText.trim()||!!answers.placeEquipmentText.trim()||!!answers.trainingDates?.length;
+ /** 重新制定计划 starts from the first question (Bo 2026-10-19); with earlier answers it asks first. */
+ const [replanAsk,setReplanAsk]=useState(false);
+ const startFresh=()=>{setReplanAsk(false);resetOnboarding();setDraftDiscarded(false);navigate('/onboarding');};
+ const restartPlanning=()=>{if(onboardingDirty())setReplanAsk(true);else startFresh();};
+ return {resetOnboarding,onboardingDirty,replanAsk,setReplanAsk,startFresh,homeTemplateId,setHomeTemplateId,coachDraft,openCoachWithDraft,refreshCoachContext,restartPlanning,draftDiscarded,setDraftDiscarded,deletedNotice,setDeletedNotice,deletePlan,undoPlan,coachInitialSend,sendHomeCoach,reviewKind,setReviewKind,coachOpen,setCoachOpen,coachRequest,coachRevision,coachTrigger,openCoach,completedWeeks,monthFacts,previousFacts,workoutValues,setWorkoutValues,focusIndex,setFocusIndex,data,facts,answers,setAnswers,step,setStep,candidate,setCandidate,busy,error,locale,t,slots,name,navigate,run,reload,start,startManual,appearance};
 }
 const Context=createContext<ReturnType<typeof useController>|null>(null);
 export const useMainline=()=>{const value=useContext(Context);if(!value)throw new Error('Missing mainline provider');return value;};
