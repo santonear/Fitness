@@ -43,6 +43,9 @@ test("inactive pregnancy first week adopts a bounded plan and preserves the ramp
     expect(t.estimatedSeconds).toBeLessThanOrEqual(600);
   }
   await page.goto("/plans");
+  // V9: only one tip is open at the bottom; the rest stay readable under “还有 N 条说明”.
+  await expect(page.locator(".v9-plan-tip")).toBeVisible();
+  if (await page.locator(".v9-plan-tip summary").count()) await page.locator(".v9-plan-tip summary").click();
   await expect(
     page.getByText("这次安排比你预留的时间短，先按这份练就好。", {
       exact: true,

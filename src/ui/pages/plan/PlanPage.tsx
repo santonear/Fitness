@@ -53,8 +53,8 @@ export function PlanPage({ version, currentVersionId, language, exerciseName, on
     <header className="v9-plan-head">
       <span className="v9-plan-kicker">{t.version(version.versionNumber)} · <time dateTime={version.createdAt}>{date}</time> · {t.origins[version.origin]}{!current && ` · ${t.readOnly}`}</span>
       <h1 id="plan-title" className="v9-display">{v.planTitle}</h1>
-      <p className="v9-plan-kicker">{t.goal} · {version.goalText}</p>
-      <p className="v9-plan-kicker">{version.preferredDays?.length ? preferredDaysLabel(version.preferredDays, language) : language === 'zh' ? `每周 ${version.weeklyTarget} 次` : `${version.weeklyTarget} times a week`} · {estimatedDurationLabel(version.templates, language)}</p>
+      <p className="v9-plan-kicker">{t.goal} · <span>{version.goalText}</span></p>
+      <dl className="plan-summary v9-plan-rhythm"><dt>{t.rhythm}</dt><dd>{version.preferredDays?.length ? preferredDaysLabel(version.preferredDays, language) : language === 'zh' ? `每周 ${version.weeklyTarget} 次` : `${version.weeklyTarget} times a week`}</dd><dd className="plan-muted">{estimatedDurationLabel(version.templates, language)}</dd></dl>
     </header>
     <WeekPlan plan={version} locale={language} today={today} done={done} focusId={focusId} details={template => <SessionItems template={template} locale={language} name={exerciseName}
       hideDistance={id => id === EXERCISE_IDS.walking && /室内|indoor/i.test(template.name)}

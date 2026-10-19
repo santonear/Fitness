@@ -11,7 +11,7 @@ async function plan(page:Page){
  await expect(page.getByRole('heading',{name:'今天',exact:true})).toBeVisible();
 }
 test('plan details morph from a chip, preserve read-only versions, and restore keyboard focus',async({page})=>{
- await plan(page);await page.goto('/plans');const chip=page.locator('.plan-items button').first();await chip.click();
+ await plan(page);await page.goto('/plans');await page.locator('.v9-session summary').first().click();const chip=page.locator('button.v9-item').first();await chip.click();
  const dialog=page.getByRole('dialog');await expect(dialog).toBeVisible();await expect(dialog.locator('ol li').first()).toBeVisible();
  for(const width of [390,1440]){await page.setViewportSize({width,height:844});await dialog.evaluate(async element=>{await Promise.all(element.getAnimations().map(a=>a.finished));});await page.screenshot({path:`tests/fixtures/v8-plan-review/qingci-${width}.png`,fullPage:true});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);}
  await page.keyboard.press('Escape');await expect(dialog).not.toBeVisible();await expect(chip).toBeFocused();

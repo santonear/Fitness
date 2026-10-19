@@ -31,7 +31,7 @@ for (const zh of [false, true]) test(`active trial enters planning and refreshes
   await page.goto('/trial');
   await page.getByRole('button', { name: zh ? '返回训练' : 'Return to training', exact: true }).click();
   await expect(page).toHaveURL(/\/$/);
-  await expect(page.getByRole('heading',{name:zh?'下一次':'Next workout',exact:true})).toBeVisible();
+  await expect(page.getByRole('heading',{name:zh?'今天':'Today',exact:true})).toBeVisible();
   await page.goto('/trial'); await expect(page.getByRole('button', { name: zh ? '返回训练' : 'Return to training', exact: true })).toBeEnabled();
   await page.reload();await expect(page).toHaveURL(/\/trial$/); await expect(page.getByRole('button', { name: zh ? '返回训练' : 'Return to training', exact: true })).toBeEnabled();
   expect(writes).toBe(0);
@@ -159,7 +159,7 @@ for (const zh of [false, true]) {
     await page.getByRole('button', { name: zh ? '领取并启用' : 'Claim and activate', exact: true }).click();
     await expect(page.getByText(zh ? 'AI 试用有效' : 'Your AI trial is active',{exact:true})).toBeVisible();
     await page.getByRole('button',{name:zh?'返回训练':'Return to training',exact:true}).click();
-    await expect(page).toHaveURL(/\/$/);await expect(page.getByRole('heading',{name:zh?'下一次':'Next workout',exact:true})).toBeVisible();
+    await expect(page).toHaveURL(/\/$/);await expect(page.getByRole('heading',{name:zh?'今天':'Today',exact:true})).toBeVisible();
     await page.goto('/trial'); await expect(page.getByRole('button', { name: zh ? '申请延期 30 天' : 'Request 30-day extension' })).toBeVisible();
     await expect(page.getByRole('button', { name: zh ? '申请 AI 试用' : 'Apply for AI trial', exact: true })).toHaveCount(0);
   });

@@ -37,7 +37,7 @@ async function screenAndDraft(page:Page,loaded=false){
   });
   await test.info().attach('synthetic-generation-diagnostic',{body:JSON.stringify(diagnostic,null,2),contentType:'application/json'});throw error;
  }
- return page.locator('.v8-draft-template').allTextContents();
+ return page.locator('.v9-session-details').allTextContents();
 }
 function namedValues(node:unknown,key:string,out:unknown[]=[]):unknown[]{if(node&&typeof node==='object')for(const [name,value]of Object.entries(node)){if(name===key)out.push(value);namedValues(value,key,out);}return out;}
 

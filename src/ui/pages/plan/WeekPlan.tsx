@@ -55,10 +55,13 @@ export function WeekPlan({ plan, locale, today, done = {}, focusId, details }: W
     <ol className="v9-session-list">{view.schedule.sessions.map((session, index) => {
       const template = view.byId.get(session.templateId)!, focus = index === Math.max(0, focusId ? view.schedule.sessions.findIndex(item => item.templateId === focusId) : 0);
       const parts = regionLabels(template, locale);
+      // Safety cues (e.g. 扶墙或扶椅) stay visible on the folded row, not only inside the details.
+      const cues = [...new Set(template.items.map(item => item.prescription?.safetyCue?.[locale]).filter((cue): cue is string => !!cue))];
       const head = <>
         <span className="v9-session-dot" aria-hidden="true" />
         <span className="v9-session-text"><span className="v9-session-day">{weekdayLabel(session.day, locale)}{today === weekdays.indexOf(session.day) ? ` · ${t.today}` : ''}</span><span className="v9-session-name">{view.name(template)}</span>
-          {parts.length > 0 && <span className="v9-session-parts">{parts.join(' · ')}</span>}</span>
+          {parts.length > 0 && <span className="v9-session-parts">{parts.join(' · ')}</span>}
+          {cues.length > 0 && <span className="v9-session-cue">{cues.join(' · ')}</span>}</span>
         <span className="v9-num v9-session-minutes">{template.estimatedMinutes}<small>′</small></span>
       </>;
       return <li key={`${session.day}-${template.id}`} className="v9-session" data-focus={focus ? 'true' : 'false'}>

@@ -8,12 +8,13 @@ test('V8 JSON download and File restore cross origins and reset a sibling withou
  const url=new URL('/settings',page.url().replace('127.0.0.1','localhost')).href;
  const other=await context.newPage();await other.goto(url);
  const sibling=await context.newPage();await sibling.addInitScript(()=>Object.defineProperty(window,'BroadcastChannel',{value:undefined}));await sibling.goto(new URL('/onboarding',url).href);
+ const startButton=sibling.getByRole('button',{name:/^(Start|开始)$/}),own=sibling.getByRole('button',{name:/^(Write my own|自己写一句)$/});await expect(startButton.or(own).first()).toBeVisible();if(await startButton.isVisible())await startButton.click();await own.click();
  await sibling.getByRole('textbox').fill('Unsaved stale form');
  await other.getByRole('button',{name:'Backup and restore',exact:true}).click();await other.getByLabel('Restore JSON file',{exact:true}).setInputFiles(file);
  await expect(other.getByText('Backup validated, including its data references.',{exact:true})).toBeVisible();await expect(other.getByRole('button',{name:'Replace local data',exact:true,includeHidden:true})).toBeDisabled();
  await other.getByRole('button',{name:'Next: keep current data',exact:true}).click();const old=other.waitForEvent('download');await other.getByRole('button',{name:'Download current data before replacement',exact:true}).click();await old;
  await other.getByLabel('I have downloaded and kept the current backup',{exact:true}).check();await other.getByRole('button',{name:'Next: confirm replacement',exact:true}).click();await other.getByLabel('I confirm replacing all local data',{exact:true}).check();await other.getByRole('button',{name:'Replace local data',exact:true}).click();
- await expect(sibling.getByRole('textbox')).not.toHaveValue('Unsaved stale form');
+ await expect.poll(()=>sibling.evaluate(()=>[...document.querySelectorAll('textarea')].some(t=>t.value==='Unsaved stale form'))).toBe(false);
  await expect.poll(()=>other.evaluate(async()=>{const p='/src/application/profile.ts';return(await(await import(/* @vite-ignore */ p)).profileService.getProfile())?.trainingPreferences?.goal;})).toBe('Portable facts');
  await other.reload();await expect(other.getByRole('heading',{name:'Me',exact:true})).toBeVisible();
 });

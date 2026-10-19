@@ -28,6 +28,7 @@
 .v9-session-day { font-size: var(--t1); color: var(--c-ink-muted); }
 .v9-session-name { font-size: var(--t4); font-weight: var(--w-strong); }
 .v9-session-parts { font-size: var(--t2); color: var(--c-ink-muted); }
+.v9-session-cue { font-size: var(--t1); color: var(--c-warn); line-height: var(--lh-body); }
 .v9-session-minutes { flex: none; font-size: var(--t5); color: var(--c-accent-text); }
 .v9-session-minutes small { font-size: var(--t2); }
 .v9-session-details { padding: 0 var(--s4) var(--s4); }
@@ -53,3 +54,6 @@
 .v9-plan-more .v9-card p { margin: 0; font-size: var(--t2); color: var(--c-ink-muted); }
 @media (min-width: 960px) { .v9-plan-screen { max-inline-size: var(--layout-desktop-main); } }
 .v9-plan-tip-link { block-size: auto; min-block-size: var(--touch-min); padding: 0; text-align: start; justify-content: flex-start; white-space: normal; text-decoration: underline; text-underline-offset: var(--s1); }
+.v9-plan-head .v9-plan-rhythm { flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: var(--s2); }
+.v9-plan-head .v9-plan-rhythm dt, .v9-plan-head .v9-plan-rhythm dd { font-size: var(--t2); color: var(--c-ink-muted); }
+.v9-plan-head .v9-plan-rhythm dd:not(:last-child)::after { content: ' ·'; }

@@ -28,7 +28,20 @@ import {ExerciseGuidePanel} from '../../components/ExerciseGuide';
 import {useMainline,workflow,format} from '../../mainline/context';
 import {createV8DataService} from '../../../persistence/v8-access';
 import {repository} from '../../../persistence/repository';
-import {PlanStops,PlanTip,SessionItems} from '../plan/WeekPlan';
+import {PlanStops,PlanTip} from '../plan/WeekPlan';
+import {SourceWarmupSteps} from '../training/SourceWarmupSteps';
+import {PrescriptionTempo} from '../training/PrescriptionDetails';
+import {durationText} from '../../components/ExerciseTargets';
+import {engineTrainingCopy} from '../../../i18n/features/training/engine';
+import {effortWords} from '../../../i18n/features/plan/view';
+import {exercises} from '../../../catalog/exercises';
+import type {PlannedItem} from '../../../domain/v8/contracts';
+
+/** Plain-language prescription: cue, load, rest and effort in words (no RIR). */
+function ItemPrescription({item,locale}:{item:PlannedItem;locale:'zh'|'en'}){
+ const p=item.prescription;if(!p)return null;const t=engineTrainingCopy[locale],strength=['main','accessory'].includes(p.block);
+ return <dl>{p.safetyCue&&<dd>{p.safetyCue[locale]}</dd>}{p.loadDescription&&<><dt>{t.load}</dt><dd>{p.loadDescription[locale]}</dd></>}{strength&&<><dt>{t.rest}</dt><dd>{durationText(p.restSeconds,locale,true)}</dd></>}<PrescriptionTempo prescription={p} locale={locale}/>{strength&&<dd>{effortWords(p.rir,locale)}</dd>}</dl>;
+}
 import './home.css';
 
 const localDay=(timeZone:string,date=new Date())=>new Intl.DateTimeFormat('en-CA',{timeZone,year:'numeric',month:'2-digit',day:'2-digit'}).format(date);
@@ -89,8 +102,12 @@ export function HomePage(){
   <p className="v9-home-reason">{!last?t.firstWorkoutReason:lastSelected?.status==='partial'?t.partialReason:format(t.reason,{minutes:selected.estimatedMinutes})}</p>
  </slots.FeatureCard>
  {engineEnabled&&currentPreview&&<><TargetChanges suggestions={currentPreview.suggestions} templateId={selected.id} locale={locale} name={name}/><PlanTip plan={{...currentPreview,notices:currentPreview.notices.filter(notice=>!['pregnancy.pelvic_floor.copy','postpartum.pelvic_floor.copy'].includes(notice.code))}} locale={locale} onEditEnvironment={()=>navigate('/settings/engine#environment')}/></>}
- <Card variant="raised" padding="md" as="section" className="v9-home-panel"><details className="v9-home-details"><summary>{t.details} · {fill(pv.exercises,{count:selected.items.length})}</summary>
-  <SessionItems template={selected} locale={locale} name={name} onExercise={(id,_index,element)=>{trigger.current=element;setDetail(id);}}/></details></Card>
+ <Card variant="raised" padding="md" as="section" className="v9-home-panel" aria-labelledby="v9-home-items-title"><h2 id="v9-home-items-title" className="v9-home-items-title">{t.details} · {fill(pv.exercises,{count:selected.items.length})}</h2>
+  <ul className="v9-home-items">{selected.items.map((item,index)=><li key={index}><details><summary>{name(item.exerciseId)} · {item.sets} {t.sets}</summary>
+   <p>{exercises.find(e=>e.id===item.exerciseId)?.steps[locale].join(' ')}</p>
+   {engineEnabled&&<><SourceWarmupSteps template={selected} itemIndex={index}/><ItemPrescription item={item} locale={locale}/></>}
+   <PrimaryButton tone="text" size="sm" onClick={event=>{trigger.current=event.currentTarget;setDetail(item.exerciseId);}}>{h.guide}</PrimaryButton>
+  </details></li>)}</ul></Card>
  <div className="v9-home-row"><PrimaryButton tone="quiet" size="sm" disabled={templates.length<2} onClick={()=>setChoice(templates[(templates.findIndex(item=>item.id===selected.id)+1)%templates.length].id)}>{t.switch}</PrimaryButton><PrimaryButton tone="quiet" size="sm" onClick={()=>navigate('/manual')}>{t.manual}</PrimaryButton><PrimaryButton tone="quiet" size="sm" onClick={()=>navigate('/activity')}>{t.recordActivity}</PrimaryButton></div>
  </>:<Card variant="raised" padding="lg" as="section" className="v9-home-empty"><Yaya pose="side" size={120} alt=""/><p>{planLifecycleCopy[locale].empty}</p><PrimaryButton onClick={restartPlanning}>{planLifecycleCopy[locale].create}</PrimaryButton><div className="v9-home-row"><PrimaryButton tone="quiet" size="sm" onClick={()=>navigate('/manual')}>{t.manual}</PrimaryButton><PrimaryButton tone="quiet" size="sm" onClick={()=>navigate('/activity')}>{t.recordActivity}</PrimaryButton></div></Card>}
  <Card variant="raised" padding="md" as="section" className="v9-home-checkin" aria-labelledby="v9-home-checkin-title"><h2 id="v9-home-checkin-title">{h.checkin}</h2><CautionMorningControls/><PreTrainingCheckin/></Card>

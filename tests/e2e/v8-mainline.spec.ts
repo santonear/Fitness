@@ -222,8 +222,8 @@ test('current-week overnight patterns, replacement review and localized names',a
  await page.getByRole('button',{name:'就这样调整',exact:true}).click();await page.getByRole('button',{name:'就这样调整',exact:true}).click();await expect(page.getByRole('status')).toHaveText('已保存为新的计划版本。');
  const current=await page.evaluate(async()=>{const path='/src/persistence/db.ts',db=(await import(/* @vite-ignore */ path)).database;return(await db.v8PlanVersions.toArray()).find((v:{versionNumber:number})=>v.versionNumber===2)});
  expect(current.templates.map((t:{id:string})=>t.id)).toEqual(before.templates.map((t:{id:string})=>t.id));expect(current.templates[0].estimatedMinutes).toBeLessThan(before.templates[0].estimatedMinutes);
- await page.goto('/plans');await expect(page.getByRole('heading',{name:`${current.templates[0].estimatedMinutes} 分钟`,exact:true})).toBeVisible();
- await page.goto('/settings');await page.getByRole('combobox',{name:'语言',exact:true}).selectOption('en');await page.goto('/plans');await expect(page.getByRole('heading',{name:`${current.templates[0].estimatedMinutes} min`,exact:true})).toBeVisible();await page.getByRole('button',{name:'View previous versions',exact:true}).click();await expect(page.getByText('Replaced the corresponding workout with a shorter session.',{exact:true})).toBeVisible();
+ await page.goto('/plans');await expect(page.locator('.v9-session-minutes').first()).toContainText(String(current.templates[0].estimatedMinutes));await expect(page.locator('.v9-session-name').first()).not.toHaveText(/分钟/);
+ await page.goto('/settings');await page.getByRole('combobox',{name:'语言',exact:true}).selectOption('en');await page.goto('/plans');await expect(page.locator('.v9-session-minutes').first()).toContainText(String(current.templates[0].estimatedMinutes));await expect(page.locator('.v9-session-name').first()).not.toHaveText(/[一-鿿]/);await page.getByRole('button',{name:'View previous versions',exact:true}).click();await expect(page.getByText('Replaced the corresponding workout with a shorter session.',{exact:true})).toBeVisible();
 });
 
 test('server-revoked access replaces local entitlement and blocks paid requests',async({page})=>{
