@@ -91,6 +91,10 @@ test("replacement browser cannot offer or apply a running movement to a quiet no
     return result;
   });
   await page.goto("/workout/" + seeded.workoutId);
+  // A set saved moments ago opens on the V9 rest countdown; skipping returns to the player.
+  const skip = page.getByRole("button", { name: "跳过休息", exact: true });
+  await expect(page.getByRole("button", { name: /^(跳过休息|换动作)$/ }).first()).toBeVisible();
+  if (await skip.isVisible()) await skip.click();
   await page.getByRole("button", { name: "换动作", exact: true }).click();
   await page.getByRole("searchbox").fill("高抬腿");
   await expect(
