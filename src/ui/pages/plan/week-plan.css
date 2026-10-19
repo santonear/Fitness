@@ -5,7 +5,7 @@
 .v9-plan-head h1:focus { outline: none; }
 .v9-plan-kicker { font-size: var(--t2); color: var(--c-ink-muted); }
 .v9-plan-line { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); font-size: var(--t2); color: var(--c-ink-muted); }
-.v9-plan-actions { position: sticky; inset-block-end: 0; display: grid; gap: var(--s3); padding-block: var(--s3) calc(var(--s3) + env(safe-area-inset-bottom)); background: linear-gradient(to top, var(--c-bg) 75%, transparent); }
+.v9-plan-actions { display: grid; gap: var(--s3); padding-block: var(--s2) calc(var(--s3) + env(safe-area-inset-bottom)); }
 .v9-plan-actions .v9-btn[data-tone="text"] { justify-self: center; }
 .v9-plan-stop { border-inline-start: calc(var(--s1) * .75) solid var(--c-warn); background: var(--c-warn-soft); color: var(--c-ink); font-size: var(--t3); line-height: var(--lh-body); }
 .v9-week-plan { display: grid; gap: var(--s4); }
