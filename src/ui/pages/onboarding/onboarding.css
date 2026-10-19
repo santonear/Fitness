@@ -1,7 +1,7 @@
 /* V9 entry flows (docs/design/v9 welcome / onboard / plan). Values come only from theme tokens. */
 
 /* Welcome ------------------------------------------------------------------ */
-.v9-welcome { position: relative; box-sizing: border-box; display: flex; flex-direction: column; min-block-size: 100dvh; max-inline-size: var(--layout-mobile-max); margin-inline: auto; padding: calc(var(--s7) + var(--s2)) calc(var(--s5) + var(--s1)) calc(var(--s6) + env(safe-area-inset-bottom)); color: var(--c-ink); overflow: hidden; }
+.v9-welcome, .v8-shell main.v9-welcome { position: relative; box-sizing: border-box; display: flex; flex-direction: column; min-block-size: 100dvh; max-inline-size: var(--layout-mobile-max); margin-inline: auto; padding: calc(var(--s7) + var(--s2)) calc(var(--s5) + var(--s1)) calc(var(--s6) + env(safe-area-inset-bottom)); color: var(--c-ink); overflow: hidden; }
 .v9-welcome > * { position: relative; }
 .v9-welcome-scene { position: absolute; inset: auto 0 0 0; block-size: 40%; opacity: .5; pointer-events: none; }
 .v9-welcome-head { display: flex; flex-direction: column; gap: calc(var(--s1) / 2); }
@@ -18,7 +18,7 @@ h1.v9-welcome-title { margin: calc(var(--s6) + var(--s1)) 0 0; font-size: var(--
 .v9-welcome-actions { display: grid; gap: var(--s2); justify-items: center; }
 
 /* Onboarding frame ----------------------------------------------------------- */
-.v9-onboarding { box-sizing: border-box; display: flex; flex-direction: column; min-block-size: 100dvh; max-inline-size: var(--layout-mobile-max); margin-inline: auto; color: var(--c-ink); overflow-wrap: anywhere; }
+.v9-onboarding, .v8-shell main.v9-onboarding { box-sizing: border-box; display: flex; gap: 0; padding: 0; flex-direction: column; min-block-size: 100dvh; max-inline-size: var(--layout-mobile-max); margin-inline: auto; color: var(--c-ink); overflow-wrap: anywhere; }
 .v9-onboarding-top { display: flex; align-items: center; gap: calc(var(--s3) + var(--s1) / 2); padding: calc(var(--s7) - var(--s1)) var(--s5) 0; }
 .v9-round { box-sizing: border-box; flex: none; display: inline-flex; align-items: center; justify-content: center; inline-size: var(--touch-min); block-size: var(--touch-min); padding: 0; border: var(--bw) solid var(--card-border); border-radius: 50%; background: var(--mat-surface); color: var(--c-ink); box-shadow: var(--el-1); font-size: var(--t5); line-height: 1; }
 .v9-round svg { inline-size: var(--s5); block-size: var(--s5); fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }

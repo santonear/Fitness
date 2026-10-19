@@ -1,5 +1,5 @@
 /* V9 plan (docs/design/v9 plan screen): week summary, session tiles, reasons, one tip. Tokens only. */
-.v9-plan-screen { box-sizing: border-box; display: flex; flex-direction: column; gap: var(--s5); max-inline-size: var(--layout-mobile-max); margin-inline: auto; padding: calc(var(--s7) - var(--s1)) var(--s5) var(--s5); color: var(--c-ink); overflow-wrap: anywhere; }
+.v9-plan-screen, .v8-shell main.v9-plan-screen { box-sizing: border-box; display: flex; flex-direction: column; gap: var(--s5); max-inline-size: var(--layout-mobile-max); margin-inline: auto; padding: calc(var(--s7) - var(--s1)) var(--s5) var(--s5); color: var(--c-ink); overflow-wrap: anywhere; }
 .v9-plan-head { display: flex; flex-direction: column; gap: var(--s2); }
 .v9-plan-head h1.v9-display { margin: 0; font-size: var(--t7); line-height: var(--lh-tight); letter-spacing: var(--tr-display); }
 .v9-plan-head h1:focus { outline: none; }
