@@ -17,7 +17,7 @@ export function statusCards(data:StatusData,language:FinanceLanguage){
  const t=copy[language],money=(n:number)=>`¥ ${(n/100).toFixed(2)}`;
  const review=data.todos?.items.some(i=>i.id==='finance-ledger-reconciliation');
  const errorCount=data.errors?.groups.reduce((sum,g)=>sum+g.trend.reduce((n,b)=>n+b.count,0),0),spike=data.errors?.groups.some(g=>g.spike);
- const budget=data.config?.current.config.monthlyBudgetFen,remaining=budget!==undefined&&data.ledger?Math.max(0,budget-data.ledger.settledFen-data.ledger.pendingFen):undefined;
+ const budget=data.config?.current?.config?.monthlyBudgetFen,remaining=budget!==undefined&&data.ledger?Math.max(0,budget-data.ledger.settledFen-data.ledger.pendingFen):undefined;
  return [
   {id:'ai',label:t.ai,value:data.ai?aiSwitchLabel(data.ai,language==='zh'):data.aiEnabled===undefined?t.unavailable:data.aiEnabled?t.enabled:t.disabled,note:t.aiNote,status:data.aiEnabled===undefined?'unknown':data.aiEnabled?'ok':'warn'},
   {id:'ledger',label:t.ledger,value:review===undefined?t.unavailable:review?t.review:t.clear,note:t.ledgerNote,status:review===undefined?'unknown':review?'alert':'ok'},

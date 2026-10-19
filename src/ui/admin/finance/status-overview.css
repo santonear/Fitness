@@ -1,1 +1,10 @@
-.finance-status-overview{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-block:16px}.finance-status-item{min-width:0;padding:16px;background:var(--a-surface);border-radius:var(--a-radius);border-top:4px solid var(--a-ok);overflow-wrap:anywhere}.finance-status-item[data-status=unknown]{border-top-color:var(--a-muted)}.finance-status-item[data-status=warn]{border-top-color:var(--a-warn)}.finance-status-item[data-status=alert]{border-top-color:var(--a-alert)}.finance-status-item h2{margin:0;color:var(--a-muted);font-size:var(--a-body)}.finance-status-item strong{display:block;margin-block:8px;font-size:var(--a-heading);font-variant-numeric:tabular-nums}.finance-status-item p{margin:0;font-size:var(--a-body);color:var(--a-muted)}@media(max-width:959px){.finance-status-overview{grid-template-columns:repeat(2,minmax(0,1fr))}.finance-status-item:last-child{grid-column:1/-1}}
+.finance-status-overview{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;align-content:start}
+.finance-status-item{min-width:0;padding:22px 24px;background:var(--a-surface);border-radius:var(--a-radius);box-shadow:var(--a-shadow);overflow-wrap:anywhere;display:flex;flex-direction:column;gap:10px}
+.admin-workspace .finance-status-item h2{margin:0;display:flex;align-items:center;gap:8px;color:var(--a-muted);font-size:14px;font-weight:500}
+.admin-workspace .finance-status-item h2::before{content:'';width:10px;height:10px;border-radius:999px;background:var(--a-ok);flex:none}
+.admin-workspace .finance-status-item[data-status=unknown] h2::before{background:var(--a-quiet)}
+.admin-workspace .finance-status-item[data-status=warn] h2::before{background:var(--a-accent)}
+.admin-workspace .finance-status-item[data-status=alert] h2::before{background:var(--a-alert)}
+.finance-status-item strong{display:block;font-size:28px;line-height:1.15;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.finance-status-item p{margin:0;font-size:14px;color:var(--a-muted)}
+@media(max-width:959px){.finance-status-overview{grid-template-columns:minmax(0,1fr);gap:12px}.finance-status-item{padding:18px 20px}.finance-status-item strong{font-size:var(--a-h2)}}

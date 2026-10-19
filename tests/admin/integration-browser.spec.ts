@@ -14,8 +14,9 @@ for(const width of [390,320,1440,1024])for(const route of pages)test(`real ${rou
   await page.setViewportSize({width,height:900});const errors:string[]=[];
   page.on('pageerror',error=>errors.push(error.message));page.on('response',response=>{if(response.url().includes('/api/v1/management/console/')&&!response.ok())errors.push(`${response.status()} ${new URL(response.url()).pathname}`);});
   await page.goto(`/admin/${route}`);await page.waitForLoadState('networkidle');
-  if(width>=960)await expect(page.getByRole('navigation',{name:'手机后台导航',includeHidden:true})).toBeHidden();else await expect(page.getByRole('navigation',{name:'手机后台导航'})).toBeVisible();
-  if(route==='users'){await page.getByRole('button',{name:/20000000-000/}).click();await expect(page.getByRole('heading',{name:'流水与求助排查'})).toBeVisible();await page.waitForLoadState('networkidle');}
+  if(width>=960){await expect(page.getByRole('navigation',{name:'后台导航'})).toBeVisible();await expect(page.getByRole('button',{name:'菜单'})).toBeHidden();}else{await expect(page.getByRole('navigation',{name:'后台导航'})).toBeHidden();await page.getByRole('button',{name:'菜单'}).click();await expect(page.getByRole('navigation',{name:'后台导航'})).toBeVisible();await page.keyboard.press('Escape');await expect(page.getByRole('navigation',{name:'后台导航'})).toBeHidden();}
+  await expect(page.getByRole('heading',{level:1})).toHaveCount(1);await expect(page.getByRole('button',{name:'刷新'})).toHaveCount(1);
+  if(route==='users'){await page.getByRole('button',{name:/· 20000000 ·/}).click();await expect(page.getByRole('heading',{name:'使用与操作记录'})).toBeVisible();await page.waitForLoadState('networkidle');}
   expect(errors).toEqual([]);await expect(page.locator('[role="alert"]')).toHaveCount(0);
   const overflow=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,offenders:[...document.querySelectorAll('main *')].filter(element=>{const r=element.getBoundingClientRect();return r.width>0&&(r.right>innerWidth+1||r.left< -1);}).slice(0,5).map(element=>({tag:element.tagName,text:element.textContent?.slice(0,80)}))}));
   expect(overflow.scroll,JSON.stringify(overflow)).toBeLessThanOrEqual(width);
@@ -24,11 +25,11 @@ for(const width of [390,320,1440,1024])for(const route of pages)test(`real ${rou
 
 test('application approval persists through real console and removes its todo',async({page})=>{
   await page.goto('/admin/todo');await expect(page.getByRole('heading',{name:'新申请',exact:true})).toBeVisible();await page.getByRole('link',{name:'逐个审核',exact:true}).click();
-  await expect(page.getByRole('heading',{name:/合成申请人/})).toBeVisible();await page.getByRole('button',{name:'批准',exact:true}).click();await expect(page.getByRole('dialog')).toBeVisible();
+  await expect(page.getByRole('row',{name:/合成申请人/})).toBeVisible();await expect(page.getByRole('button',{name:/^待处理/})).toHaveAttribute('aria-pressed','true');await page.getByRole('button',{name:'批准',exact:true}).click();await expect(page.getByRole('dialog')).toBeVisible();
   const write=page.waitForResponse(response=>response.url().endsWith('/console/users/action')&&response.request().method()==='POST');await page.getByRole('button',{name:'确认',exact:true}).click();expect((await write).status()).toBe(200);
-  await expect(page.getByRole('button',{name:'批准',exact:true})).toHaveCount(0);await expect(page.locator('article').filter({has:page.getByRole('heading',{name:/合成申请人/})})).toContainText('已批准');
+  await expect(page.getByRole('button',{name:'批准',exact:true})).toHaveCount(0);await expect(page.getByText('没有待处理的申请。')).toBeVisible();await page.getByRole('button',{name:/^已批准/}).click();await expect(page.getByRole('row',{name:/合成申请人/})).toContainText('已批准');
   const evidence=await (await page.request.get('/__test/evidence')).json();expect(evidence.applicationState).toBe('approved');expect(evidence.revision).toBeGreaterThan(0);expect(evidence.audit).toContainEqual(expect.objectContaining({actor:'admin@integration.test',action:'approve',result:'success'}));expect(evidence.migrations).toEqual(expect.arrayContaining(['1_core.sql','2_releases.sql','3_finance.sql','4_quality.sql']));
-  await page.getByRole('navigation',{name:'手机后台导航'}).getByRole('link',{name:/待办/}).click();await expect(page.getByText('当前没有需要处理的待办')).toBeVisible();expect((await (await page.request.get('/api/v1/management/console/todos')).json()).items).toEqual([]);
+  await page.getByRole('button',{name:'菜单'}).click();await page.getByRole('navigation',{name:'后台导航'}).getByRole('link',{name:/待办/}).click();await expect(page.getByText('当前没有需要处理的待办')).toBeVisible();expect((await (await page.request.get('/api/v1/management/console/todos')).json()).items).toEqual([]);
   await page.reload();await expect(page.getByText('当前没有需要处理的待办')).toBeVisible();
 });
 
@@ -81,21 +82,21 @@ test('real management entry carries Access cookie and retries unavailable config
   await page.request.post('/__test/features-mode',{data:{fail:false}});
   const loaded=page.waitForResponse(r=>r.url().endsWith('/api/v1/features')&&r.status()===200);
   await page.getByRole('button',{name:'重试',exact:true}).click();await loaded;
-  await expect(page.locator('.admin-bottom')).toBeVisible();
+  await expect(page.getByRole('button',{name:'菜单'})).toBeVisible();
   expect(await page.evaluate(async()=> (await fetch('/api/v1/features',{credentials:'omit'})).status)).toBe(403);
 });
 
 test('revoked access does not advertise remaining days',async({page})=>{
  await page.goto('/admin/users');await page.getByRole('button',{name:/20000000.*有效/}).click();
  await page.getByRole('button',{name:'作废资格',exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:'确认',exact:true}).click();
- const user=page.getByRole('button',{name:/20000000.*已作废/});await expect(user).toBeVisible();await expect(user).not.toContainText('剩余');
+ const user=page.getByRole('button',{name:/20000000.*已作废/});await expect(user).toBeVisible();await expect(page.getByRole('row',{name:/20000000.*已作废/}).locator('[data-column=days]')).toHaveText('—');
 });
 
 test('unknown preview restoration retries its original receipt after reopening without another credit',async({page})=>{
  await page.request.post('/__test/parity-fixture',{data:{mode:'quota-unknown'}});await page.goto('/admin/users');
  await page.getByRole('button',{name:/预览合成 · 额度恢复结果未知/}).click();
- await expect(page.getByText(/资格到期：/)).toBeVisible();await expect(page.getByText(/本月计划生成已用 \/ 总数：2 \/ 6/)).toBeVisible();
- await expect(page.getByRole('button',{name:/额度恢复结果未知.*剩余 1 天/})).toBeVisible();
+ await expect(page.getByText('资格到期',{exact:true})).toBeVisible();await expect(page.locator('dt',{hasText:'本月计划生成已用 / 总数'}).locator('+ dd')).toHaveText('2 / 6');
+ await expect(page.getByRole('row',{name:/额度恢复结果未知/}).locator('[data-column=days]')).toHaveText('1 天');
  await expect(page.getByRole('button',{name:'刷新额度',exact:true})).toBeDisabled();
  await expect(page.getByText(/沿用原请求编号重试，不会再次恢复额度/)).toBeVisible();
  const before=await(await page.request.get('/__test/evidence')).json();await page.reload();

@@ -15,7 +15,7 @@ test('disable is confirmed first, needs no freshness, and unknown retry reuses r
 test('console disable removes stale controls if the next read is unavailable',async({page})=>{
  let disabled=false;const data=fixture();data.features[0].name='adminConsole';data.features[0].sensitive=false;data.features[0].states[1].enabled=true;
  await page.route('**/api/v1/management/console/releases**',async route=>{if(route.request().method()==='POST'){disabled=true;return route.fulfill({json:{status:'applied'}});}return route.fulfill(disabled?{status:404,json:{error:'NOT_FOUND'}}:{json:data});});
- await page.goto('/harness');await expect(page.getByRole('heading',{name:'新版后台'})).toBeVisible();await expect(page.getByText('关闭后停止访问新版后台；需要通过受控维护重新开启。')).toBeVisible();await page.getByRole('button',{name:'关闭',exact:true}).click();await page.getByRole('button',{name:'确认',exact:true}).click();await expect(page.getByRole('alert')).toContainText('后台可能已关闭');await expect(page.getByRole('button',{name:'开启',exact:true})).toHaveCount(0);
+ await page.goto('/harness');await expect(page.getByRole('heading',{name:'新版后台'})).toBeVisible();await expect(page.getByText('关闭后这个后台立即无法打开；要重新开启，需要在服务器配置里操作。')).toBeVisible();await expect(page.getByText('受控维护')).toHaveCount(0);await page.getByRole('button',{name:'关闭',exact:true}).click();await page.getByRole('button',{name:'确认',exact:true}).click();await expect(page.getByRole('alert')).toContainText('后台可能已关闭');await expect(page.getByRole('button',{name:'开启',exact:true})).toHaveCount(0);
 });
 test('rollback then renders checks and prompt rollback submits registered version',async({page})=>{
  const data=fixture();let posted:Record<string,unknown>|null=null;await page.route('**/api/v1/management/console/releases**',async route=>{if(route.request().method()==='GET')return route.fulfill({json:data});posted=route.request().postDataJSON();return route.fulfill({json:{status:'applied'}});});
@@ -32,7 +32,7 @@ for(const width of [320,390,1024,1440])test(`layout ${width} stays within viewpo
 test('smoke reasons distinguish Access login blocks from service faults and legacy checks',async({page})=>{
  const base=fixture();const smoke=[{check_id:'application',status:'unavailable',reason:'access_login_required',http_status:302},{check_id:'features',status:'failed',reason:'http_error',http_status:503},{check_id:'managementAccess',status:'passed',reason:'access_protected',http_status:307}].map(row=>({...row,environment:'production',release_id:'release-current',checked_at:'2026-10-12T00:00:00Z'}));
  await page.route('**/api/v1/management/console/releases',route=>route.fulfill({json:{...base,smoke}}));await page.goto('/harness');
- await expect(page.getByText(/应用页面：登录拦截，内容未验证/)).toBeVisible();await expect(page.getByText(/功能配置：需要处理.*服务返回错误响应.*503/)).toBeVisible();await expect(page.getByText(/管理入口保护：通过.*Access 登录保护已生效.*307/)).toBeVisible();
+ await expect(page.getByText(/应用页面：需要登录，内容未确认/)).toBeVisible();await expect(page.getByText(/功能配置：需要处理.*服务返回错误响应.*503/)).toBeVisible();await expect(page.getByText(/后台登录保护：通过.*登录保护已生效.*307/)).toBeVisible();await expect(page.locator('main')).not.toContainText('Access');
 });
 test('rollback is disabled with a stated reason when no valid previous version is registered',async({page})=>{
  const data=fixture();delete (data.registered[0] as {previous?:unknown}).previous;
