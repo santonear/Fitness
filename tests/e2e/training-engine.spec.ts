@@ -1,4 +1,5 @@
 import {Rules} from '../../src/engine/data';
+import {answerTexts,basicSafety,engineSafety,generate,startOnboarding} from './helpers/onboarding-v9';
 import {baseProfile} from '../../tools/eval/training-engine-profiles';
 import {expect,test,type Page} from '@playwright/test';
 import {readFile} from 'node:fs/promises';
@@ -14,17 +15,11 @@ async function localFeatures(page:Page){
  await page.clock.setFixedTime(new Date('2026-10-15T03:00:00.000Z'));
 }
 async function screenAndDraft(page:Page,loaded=false){
- await page.goto('/');await expect(page).toHaveURL(/onboarding/);
- for(const answer of ['保持健康，规律训练',loaded?'每周3次，每次45分钟':'每周3次，每次30分钟','在家，有哑铃、弹力带和凳子']){await page.getByLabel('你的回答').fill(answer);await page.getByRole('button',{name:'继续',exact:true}).click();}
- await page.getByLabel('我已年满 18 岁').check();
- const generate=page.getByRole('button',{name:'生成新计划',exact:true});await expect(generate).toBeDisabled();
- await page.getByRole('checkbox',{name:/同意将运动前自查/}).check();await page.getByLabel('出生年月',{exact:true}).fill('1991-06');
- const questions=page.getByRole('group',{name:'PAR-Q+',exact:true}).getByRole('combobox');await expect(questions).toHaveCount(20);
- for(let index=0;index<18;index++)await questions.nth(index).selectOption('false');
- await questions.nth(18).selectOption('active');await page.getByRole('combobox',{name:/孕期 \/ 产后状态/}).selectOption('general');
- // An unanswered extra screening item remains incomplete; unchecked controls never mean “no”.
- await expect(generate).toBeDisabled();await questions.nth(19).selectOption('known_below_threshold');
- await expect(generate).toBeEnabled();await generate.click();
+ await startOnboarding(page);
+ await answerTexts(page,['保持健康，规律训练',loaded?'每周3次，每次45分钟':'每周3次，每次30分钟','在家，有哑铃、弹力带和凳子']);
+ await engineSafety(page);
+ // Every screening answer above was explicit; the ready screen only then allows generation.
+ const generate=page.getByRole('button',{name:'生成计划',exact:true});await expect(generate).toBeEnabled();await generate.click();
  try{await expect(page.getByRole('heading',{name:'你的第一版计划',exact:true})).toBeVisible();}catch(error){
   const diagnostic=await page.evaluate(async()=>{
    const paths=['/src/application/rules/local-profile.ts','/src/application/engine-profile.ts','/src/engine/index.ts','/src/ui/mainline/context.tsx','/src/persistence/repository.ts'];
@@ -42,7 +37,7 @@ async function screenAndDraft(page:Page,loaded=false){
   });
   await test.info().attach('synthetic-generation-diagnostic',{body:JSON.stringify(diagnostic,null,2),contentType:'application/json'});throw error;
  }
- return page.locator('.v8-draft-template').allTextContents();
+ return page.locator('.v9-session-details').allTextContents();
 }
 function namedValues(node:unknown,key:string,out:unknown[]=[]):unknown[]{if(node&&typeof node==='object')for(const [name,value]of Object.entries(node)){if(name===key)out.push(value);namedValues(value,key,out);}return out;}
 
@@ -115,7 +110,7 @@ async function setupSyntheticMobilityTempo(page:Page){
 }
 test('synthetic source30 preferred-squat Next renders fixed tempo and preserves it in downloaded backup',async({page},info)=>{
  const {identity,errors,modelAttempts}=await setupSyntheticMobilityTempo(page);
- await offlineTempoPage(page,'/');await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
+ await offlineTempoPage(page,'/');await expect(page.getByRole('heading',{name:'今天',exact:true})).toBeVisible();
  const phase=/≈3 \/ ≈1 \/ 0 秒/;
  for(const [theme,label]of [['pop','柔光拟物'],['vivid','山野暖阳'],['gentle','温和陪伴'],['data','专业数据'],['fire','燃动挑战']]){
   await offlineTempoPage(page,'/settings/appearance');await page.getByRole('radio',{name:label,exact:true}).click();await offlineTempoPage(page,'/');
@@ -131,7 +126,7 @@ test('synthetic source30 preferred-squat Next renders fixed tempo and preserves 
 });
 test('synthetic source30 preferred-squat workout renders authenticated fixed tempo after real start',async({page},info)=>{
  const {identity,errors,modelAttempts}=await setupSyntheticMobilityTempo(page),phase=/≈3 \/ ≈1 \/ 0 秒/;
- await page.goto('/');await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
+ await page.goto('/');await expect(page.getByRole('heading',{name:'今天',exact:true})).toBeVisible();
  await page.getByRole('button',{name:'开始训练',exact:true}).click();await expect(page).toHaveURL(/workout\//);const activeUrl=page.url();
  for(const [theme,label]of [['pop','柔光拟物'],['vivid','山野暖阳'],['gentle','温和陪伴'],['data','专业数据'],['fire','燃动挑战']]){
   await page.goto('/settings/appearance');await page.getByRole('radio',{name:label,exact:true}).click();await page.goto(activeUrl);await page.locator('.v8-capsules').getByRole('button',{name:identity.name,exact:true}).click();
@@ -159,7 +154,7 @@ test('actual screening UI generates deterministic local drafts and preserves eng
  const first=await screenAndDraft(page,true);expect(first.length).toBeGreaterThan(0);
  const other=await browser.newContext({viewport:{width:375,height:844}}),otherPage=await other.newPage();
  try{await localFeatures(otherPage);expect(await screenAndDraft(otherPage,true)).toEqual(first);}finally{await other.close();}
- await page.getByRole('button',{name:'就用这份计划',exact:true}).click();await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'就用这份计划',exact:true}).click();await expect(page.getByRole('heading',{name:'今天',exact:true})).toBeVisible();
  const saved=await page.evaluate(async()=>{const path='/src/ui/mainline/context.tsx';const data=await(await import(/* @vite-ignore */path)).workflow.snapshot();return {screening:data.state.coachProfile?.screening,birth:data.state.coachProfile?.birthYearMonth,engine:!!data.version?.enginePlan};});
  expect(saved.birth).toBe('1991-06');expect(saved.screening?.parqAnswers).toEqual(Array(7).fill(false));expect(saved.screening?.completedAt).toBeTruthy();expect(saved.engine).toBe(true);
  // Explicit synthetic user-recorded loads make percentage ramps meaningful; no plan is fabricated.
@@ -186,7 +181,7 @@ test('actual screening UI generates deterministic local drafts and preserves eng
  for(const [theme,label]of [['pop','柔光拟物'],['vivid','山野暖阳'],['gentle','温和陪伴'],['data','专业数据'],['fire','燃动挑战']]){
   await page.goto('/settings/appearance');await page.getByRole('radio',{name:label,exact:true}).click();await page.goto('/');
   await openSourceWarmup(page);
-  for(const width of [375,1280,390,1440]){await page.setViewportSize({width,height:844});await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();await page.screenshot({path:info.outputPath(`${theme}-${width}.png`),fullPage:true});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);}
+  for(const width of [375,1280,390,1440]){await page.setViewportSize({width,height:844});await expect(page.getByRole('heading',{name:'今天',exact:true})).toBeVisible();await page.screenshot({path:info.outputPath(`${theme}-${width}.png`),fullPage:true});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);}
  }
  await page.getByRole('button',{name:'和芽芽聊聊',exact:true}).first().click();
  const adjustment=page.getByRole('dialog',{name:'芽芽',exact:true});
@@ -313,8 +308,8 @@ test('pre-training joint danger persists as a minimal pause until fresh screenin
  await page.route('**/api/**',route=>{if(/assistant|coach|chat|completion/i.test(new URL(route.request().url()).pathname))modelAttempts.push(route.request().url());return route.fulfill({status:503,json:{error:'OFFLINE_SAFETY_TEST'}});});
  await page.route('**/api/v1/features',route=>route.fulfill({json:{version:1,flags:{trainingEngine:enabled,aiAssistantV2:false,bodyProfile:false},expiresAt:Date.now()+3600000}}));await page.route('**/api/v1/trial/access-status',route=>route.fulfill({json:{qualification:'none',sessionValid:false,aiEnabled:false}}));
  // A normal flag-off basic plan supplies a saved profile; no engine-ready plan or database seed is needed.
- await page.goto('/');for(const text of ['保持健康，规律训练','每周3次，每次30分钟','在家，只有瑜伽垫']){await page.getByLabel('你的回答').fill(text);await page.getByRole('button',{name:'继续',exact:true}).click();}await page.getByRole('button',{name:'没有',exact:true}).click();await page.getByLabel('我已年满 18 岁').check();await page.getByRole('button',{name:'生成新计划',exact:true}).click();await page.getByRole('button',{name:'就用这份计划',exact:true}).click();
- await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
+ await startOnboarding(page);await answerTexts(page,['保持健康，规律训练','每周3次，每次30分钟','在家，只有瑜伽垫']);await basicSafety(page);await generate(page);await page.getByRole('button',{name:'就用这份计划',exact:true}).click();
+ await expect(page.getByRole('heading',{name:'今天',exact:true})).toBeVisible();
  await page.goto('/manual');await page.getByRole('searchbox').fill('自阻力划船');await page.getByRole('button',{name:'自阻力划船',exact:true}).click();await page.getByRole('button',{name:'开始',exact:true}).click();await page.getByRole('button',{name:'完成这一组',exact:true}).click();await page.getByRole('button',{name:'暂停或结束',exact:true}).click();await page.getByRole('button',{name:'结束并记下',exact:true}).click();await page.getByRole('button',{name:'记下来',exact:true}).click();
  const facts=await page.evaluate(async()=>{const p='/src/persistence/repository.ts';return(await import(/* @vite-ignore */p)).repository.db.v8Workouts.toArray();});expect(facts).toHaveLength(1);expect(facts[0].sets).toHaveLength(1);
  enabled=true;await page.goto('/settings/engine');await page.reload();
@@ -346,7 +341,7 @@ test('home today_adjust intent from 芽芽 becomes a confirmable card for the ne
   await route.fulfill({contentType:'text/event-stream',body:events.map(event=>'data: '+JSON.stringify(event)+'\n\n').join('')});
  });
  await screenAndDraft(page,true);
- await page.getByRole('button',{name:'就用这份计划',exact:true}).click();await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'就用这份计划',exact:true}).click();await expect(page.getByRole('heading',{name:'今天',exact:true})).toBeVisible();
  const before=await page.evaluate(async()=>{const path='/src/ui/mainline/context.tsx';const data=await(await import(/* @vite-ignore */path)).workflow.snapshot();return {version:JSON.stringify(data.version),override:data.state.nextWorkoutOverride};});
  expect(before.override).toBeUndefined();
  await page.getByRole('textbox',{name:'跟芽芽说'}).fill('今天只有20分钟，帮我调一下今天的训练');

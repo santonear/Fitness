@@ -1,0 +1,59 @@
+/* V9 plan (docs/design/v9 plan screen): week summary, session tiles, reasons, one tip. Tokens only. */
+.v9-plan-screen, .v8-shell main.v9-plan-screen { box-sizing: border-box; display: flex; flex-direction: column; gap: var(--s5); max-inline-size: var(--layout-mobile-max); margin-inline: auto; padding: calc(var(--s7) - var(--s1)) var(--s5) var(--s5); color: var(--c-ink); overflow-wrap: anywhere; }
+.v9-plan-head { display: flex; flex-direction: column; gap: var(--s2); }
+.v9-plan-head h1.v9-display { margin: 0; font-size: var(--t7); line-height: var(--lh-tight); letter-spacing: var(--tr-display); }
+.v9-plan-head h1:focus { outline: none; }
+.v9-plan-kicker { font-size: var(--t2); color: var(--c-ink-muted); }
+.v9-plan-line { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); font-size: var(--t2); color: var(--c-ink-muted); }
+.v9-plan-actions { display: grid; gap: var(--s3); padding-block: var(--s2) calc(var(--s3) + env(safe-area-inset-bottom)); }
+.v9-plan-actions .v9-btn[data-tone="text"] { justify-self: center; }
+.v9-plan-stop { border-inline-start: calc(var(--s1) * .75) solid var(--c-warn); background: var(--c-warn-soft); color: var(--c-ink); font-size: var(--t3); line-height: var(--lh-body); }
+.v9-week-plan { display: grid; gap: var(--s4); }
+.v9-week-summary { display: grid; gap: var(--s4); }
+.v9-week-summary-head { display: flex; align-items: baseline; gap: var(--s3); flex-wrap: wrap; }
+.v9-week-summary-label { font-size: var(--t2); color: var(--c-ink-muted); }
+.v9-week-summary-count { font-size: var(--t7); color: var(--c-accent-text); line-height: 1; }
+.v9-week-summary-count small { margin-inline-start: var(--s1); font-size: var(--t2); color: var(--c-ink-muted); font-style: normal; }
+.v9-week-summary-minutes { margin-inline-start: auto; font-size: var(--t3); color: var(--c-ink-muted); }
+.v9-week-note { margin: 0; font-size: var(--t1); color: var(--c-ink-muted); }
+.v9-session-list { display: grid; gap: var(--s3); margin: 0; padding: 0; list-style: none; }
+.v9-session > details, .v9-session-row { border-radius: calc(var(--r-panel) * .9); background: var(--c-inset); box-shadow: var(--el-inset); }
+.v9-session[data-focus="true"] > details, .v9-session[data-focus="true"] .v9-session-row { background: var(--card-bg); box-shadow: var(--card-shadow); border: var(--bw) solid var(--card-border); }
+.v9-session summary, .v9-session-row { display: flex; align-items: center; gap: calc(var(--s3) + var(--s1) / 2); min-block-size: var(--touch-row); padding: var(--s4) calc(var(--s4) + var(--s1)); cursor: pointer; list-style: none; }
+.v9-session summary::-webkit-details-marker { display: none; }
+.v9-session summary:focus-visible { outline: 2px solid var(--c-focus); outline-offset: var(--s1); border-radius: inherit; }
+.v9-session-dot { flex: none; inline-size: var(--s3); block-size: var(--s3); border-radius: 50%; background: var(--c-inset); box-shadow: var(--el-inset); }
+.v9-session[data-focus="true"] .v9-session-dot { background: var(--c-signature); box-shadow: 0 0 var(--glow-blur) var(--glow); }
+.v9-session-text { flex: 1; min-inline-size: 0; display: flex; flex-direction: column; gap: calc(var(--s1) / 2); }
+.v9-session-day { font-size: var(--t1); color: var(--c-ink-muted); }
+.v9-session-name { font-size: var(--t4); font-weight: var(--w-strong); }
+.v9-session-parts { font-size: var(--t2); color: var(--c-ink-muted); }
+.v9-session-cue { font-size: var(--t1); color: var(--c-warn); line-height: var(--lh-body); }
+.v9-session-minutes { flex: none; font-size: var(--t5); color: var(--c-accent-text); }
+.v9-session-minutes small { font-size: var(--t2); }
+.v9-session-details { padding: 0 var(--s4) var(--s4); }
+.v9-items { display: grid; gap: var(--s2); margin: 0; padding: 0; list-style: none; }
+.v9-item { box-sizing: border-box; display: grid; gap: calc(var(--s1) / 2); inline-size: 100%; padding: var(--s3) var(--s4); border: var(--bw) solid var(--card-border); border-radius: var(--r-panel); background: var(--card-bg); color: var(--c-ink); box-shadow: var(--el-1); text-align: start; font: inherit; }
+.v9-item-name { font-size: var(--t3); font-weight: var(--w-strong); }
+.v9-item-target { font-size: var(--t2); color: var(--c-accent-text); }
+.v9-item-equipment { font-size: var(--t1); color: var(--c-ink-muted); }
+.v9-item-note { font-size: var(--t1); color: var(--c-ink-muted); line-height: var(--lh-body); }
+.v9-card.v9-reasons h2 { margin: 0 0 var(--s3); font-size: var(--t2); font-weight: var(--w-strong); color: var(--c-ink-muted); }
+.v9-reasons ul { display: grid; gap: var(--s2); margin: 0; padding-inline-start: var(--s5); font-size: var(--t3); line-height: var(--lh-reading); }
+.v9-plan-tip { display: flex; align-items: flex-start; gap: var(--s3); }
+.v9-plan-tip-text { display: grid; gap: var(--s1); min-inline-size: 0; font-size: var(--t2); line-height: var(--lh-reading); }
+.v9-plan-tip-text strong { color: var(--c-accent-text); font-weight: var(--w-strong); }
+.v9-plan-tip-text p { margin: 0; }
+.v9-plan-tip-text summary { min-block-size: var(--touch-min); display: flex; align-items: center; cursor: pointer; color: var(--c-ink-muted); }
+.v9-plan-tip-text ul { margin: 0; padding-inline-start: var(--s5); display: grid; gap: var(--s1); }
+.v9-plan-page { display: flex; flex-direction: column; gap: var(--s5); }
+.v9-plan-tools { display: flex; flex-wrap: wrap; gap: var(--s2); }
+.v9-plan-more { display: grid; gap: var(--s3); }
+.v9-plan-more h2.v9-plan-h, .v9-plan-more h2, .v9-plan-more h3 { margin: 0; font-size: var(--t4); }
+.v9-plan-more .v9-card { display: grid; gap: var(--s2); }
+.v9-plan-more .v9-card p { margin: 0; font-size: var(--t2); color: var(--c-ink-muted); }
+@media (min-width: 960px) { .v9-plan-screen { max-inline-size: var(--layout-desktop-main); } }
+.v9-plan-tip-link { block-size: auto; min-block-size: var(--touch-min); padding: 0; text-align: start; justify-content: flex-start; white-space: normal; text-decoration: underline; text-underline-offset: var(--s1); }
+.v9-plan-head .v9-plan-rhythm { flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: var(--s2); }
+.v9-plan-head .v9-plan-rhythm dt, .v9-plan-head .v9-plan-rhythm dd { font-size: var(--t2); color: var(--c-ink-muted); }
+.v9-plan-head .v9-plan-rhythm dd:not(:last-child)::after { content: ' ·'; }

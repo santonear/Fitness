@@ -1,19 +1,20 @@
 import {test,expect,type Page} from '@playwright/test';
+import {answerText,answerTexts,cautions,ensurePressed,generate,nextButton,startOnboarding} from './helpers/onboarding-v9';
 async function enable(page:Page,theme='pop'){
  await page.addInitScript(theme=>localStorage.setItem('fitness-theme',theme),theme);
  await page.route('**/api/v1/features',route=>route.fulfill({json:{version:1,flags:{bodyProfile:true,themeDiscovery:true,planLifecycle:true},expiresAt:Date.now()+60000}}));
  await page.route('**/api/v1/trial/access-status',route=>route.fulfill({json:{qualification:'none',sessionValid:false,aiEnabled:false}}));
 }
-async function bodyStep(page:Page){await page.goto('/');await page.getByLabel('你的回答').fill('想有些力量');await page.getByRole('button',{name:'继续',exact:true}).click();await expect(page.getByRole('heading',{name:'身体情况',exact:true})).toBeVisible()}
-async function draft(page:Page){await page.getByRole('button',{name:'继续',exact:true}).click();await page.getByLabel('你的回答').fill('每周2次，每次30分钟');await page.getByRole('button',{name:'继续',exact:true}).click();await page.getByLabel('你的回答').fill('在家，只有瑜伽垫');await page.getByRole('button',{name:'继续',exact:true}).click();await page.getByRole('button',{name:'膝盖',exact:true}).click();await page.getByRole('button',{name:'肩',exact:true}).click();await page.getByRole('button',{name:'手腕',exact:true}).click();await page.getByLabel('我已年满 18 岁').check();await page.getByRole('button',{name:'生成新计划'}).click();await expect(page.getByRole('heading',{name:'你的第一版计划'})).toBeVisible()}
+async function bodyStep(page:Page){await startOnboarding(page);await answerText(page,'想有些力量');await expect(page.getByRole('heading',{name:'身体情况',exact:true})).toBeVisible()}
+async function draft(page:Page){await nextButton(page).click();await answerTexts(page,['每周2次，每次30分钟','在家，只有瑜伽垫']);await ensurePressed(page,'我已年满 18 岁');await nextButton(page).click();await page.getByRole('radio',{name:'有，选一下部位'}).click();for(const part of ['膝盖','肩','手腕'])await page.getByRole('button',{name:part,exact:true}).click();await nextButton(page).click();await generate(page);await expect(page.getByRole('button',{name:'就用这份计划'})).toBeVisible();}
 for(const theme of ['pop', 'vivid', 'gentle', 'data', 'fire'])for(const width of [375,1280])test(`body and draft ${theme} ${width}`,async({page},info)=>{
  await enable(page,theme);await page.setViewportSize({width,height:900});await bodyStep(page);
- await expect(page.getByRole('button',{name:'继续',exact:true})).toBeDisabled();await expect(page.getByRole('status')).toContainText('再告诉我');
- await page.getByLabel('说说你的身体情况').fill('男，34岁，167，70公斤');await expect(page.getByRole('button',{name:'身高（厘米） · 167 厘米',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'继续',exact:true})).toBeEnabled();
+ await expect(page.getByRole('button',{name:'下一步',exact:true})).toBeDisabled();await expect(page.getByRole('status')).toContainText('再告诉我');
+ await page.getByLabel('说说你的身体情况').fill('男，34岁，167，70公斤');await expect(page.getByRole('button',{name:'身高（厘米） · 167 厘米',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'下一步',exact:true})).toBeEnabled();
  await page.screenshot({path:`outputs/production-review/body-${theme}-${width}-${info.project.name}.png`,fullPage:true});
  await page.reload();await expect(page.getByLabel('说说你的身体情况')).toHaveValue('男，34岁，167，70公斤');
- await draft(page);await expect(page.locator('.v8-draft-template')).toHaveCount(1);await expect(page.getByText('根据你选的注意部位，排除了部分动作',{exact:true})).toBeVisible();
- const card=page.locator('button.v8-draft-exercise').first();expect(await card.evaluate(e=>parseFloat(getComputedStyle(e).paddingLeft))).toBeGreaterThan(0);await expect(card.locator('button')).toHaveCount(0);expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+ await draft(page);await expect(page.locator('.v9-session').first()).toBeVisible();await expect(page.getByText('已按你选的注意部位换掉了部分动作。',{exact:false})).toBeVisible();await page.locator('.v9-session summary').first().click();
+ const card=page.locator('button.v9-item').first();expect(await card.evaluate(e=>parseFloat(getComputedStyle(e).paddingLeft))).toBeGreaterThan(0);await expect(card.locator('button')).toHaveCount(0);expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
  await page.screenshot({path:`outputs/production-review/draft-${theme}-${width}-${info.project.name}.png`,fullPage:true});await card.click();await expect(page.getByRole('dialog')).toBeVisible();await page.getByRole('dialog').getByRole('button',{name:'关闭',exact:true}).click();await expect(card).toBeFocused();
  await page.getByRole('button',{name:'修改注意部位'}).click();await expect(page.getByRole('button',{name:'膝盖',exact:true})).toHaveAttribute('aria-pressed','true');
 });
@@ -27,13 +28,13 @@ test('body rollers, weight append, backup roundtrip and explicit deletion',async
 });
 
 test('legacy body migration requires confirmation and sending remains per field',async({page})=>{
- await enable(page);await page.goto('/');await expect(page.getByLabel('你的回答')).toBeVisible();
+ await enable(page);await page.goto('/');await expect(page.getByRole('button',{name:'开始',exact:true})).toBeVisible();
  const {readFileSync}=await import('node:fs');const backup=JSON.parse(readFileSync('tests/fixtures/legacy-backups/v5-onboarding.json','utf8'));
  await page.evaluate(async backup=>{const p='/src/application/backup.ts',service=(await import(/* @vite-ignore */ p)).backupService;const input=await service.validateBackup(new File([JSON.stringify(backup)],'legacy.json'));await service.importBackup(input,{backupExported:true,replacementConfirmed:true,expectedRevision:input.expectedRevision})},backup);
  await page.goto('/settings');await page.getByRole('combobox').selectOption('zh');await expect(page.getByText('找到了你以前填写的身体资料，请核对后确认。',{exact:true})).toBeVisible();await page.getByRole('button',{name:'身体资料',exact:true}).last().click();await expect(page.getByRole('heading',{name:'身体资料',exact:true})).toBeVisible();
  await page.getByRole('button',{name:'保存身体资料'}).click();await expect(page.getByRole('status')).toHaveText('身体资料已保存');await page.goto('/settings');await expect(page.getByText('找到了你以前填写的身体资料，请核对后确认。',{exact:true})).toHaveCount(0);
  // Fresh complete plan, with the confirmed canonical details retained.
- await page.getByRole('button',{name:'生成新计划',exact:true}).click();await page.getByLabel('你的回答').fill('保持力量');await page.getByRole('button',{name:'继续',exact:true}).click();await page.getByLabel('说说你的身体情况').fill('男，34岁，167，70公斤，腰围80厘米');await draft(page);await page.getByRole('button',{name:'就用这份计划'}).click();
+ await page.getByRole('button',{name:'生成新计划',exact:true}).click();await answerText(page,'保持力量');await page.getByLabel('说说你的身体情况').fill('男，34岁，167，70公斤，腰围80厘米');await draft(page);await page.getByRole('button',{name:'就用这份计划'}).click();
  await page.route('**/api/v1/trial/access-status',route=>route.fulfill({json:{qualification:'active',sessionValid:true,expiresAt:Date.now()+86400000,aiEnabled:true,planningBudgetDisabled:true}}));
  await page.evaluate(async()=>{const p='/src/application/feature-flags.ts';await(await import(/* @vite-ignore */ p)).refreshFeatureFlags(async()=>Response.json({version:1,flags:{bodyProfile:true,aiAssistantV2:true},expiresAt:Date.now()+60000}));});
  let sent:any;await page.route('**/api/v1/assistant/chat',route=>{sent=route.request().postDataJSON().context;return route.fulfill({status:503,json:{error:'AI_DISABLED'}})});
@@ -42,9 +43,9 @@ test('legacy body migration requires confirmation and sending remains per field'
 
 
 test('known minor cannot confirm adult access and may continue manually',async({page})=>{
- await enable(page);await bodyStep(page);await page.getByLabel('说说你的身体情况').fill('女，12岁，150，40公斤');await page.getByRole('button',{name:'继续',exact:true}).click();
- for(const answer of ['每周2次，每次30分钟','在家，瑜伽垫']){await page.getByLabel('你的回答').fill(answer);await page.getByRole('button',{name:'继续',exact:true}).click();}
- await expect(page.getByLabel('我已年满 18 岁')).toBeDisabled();await expect(page.getByRole('button',{name:'生成新计划'})).toBeDisabled();await expect(page.getByRole('button',{name:/手动训练/})).toBeEnabled();
+ await enable(page);await bodyStep(page);await page.getByLabel('说说你的身体情况').fill('女，12岁，150，40公斤');await page.getByRole('button',{name:'下一步',exact:true}).click();
+ await answerTexts(page,['每周2次，每次30分钟','在家，瑜伽垫']);
+ await expect(page.getByRole('button',{name:'我已年满 18 岁'})).toBeDisabled();await expect(nextButton(page)).toBeDisabled();await expect(page.getByRole('button',{name:'先自己练练'})).toBeEnabled();
 });
 test('four-week weight entry is optional and dismissed across reloads; stale body cannot be sent',async({page})=>{
  await enable(page);await bodyStep(page);await page.getByLabel('说说你的身体情况').fill('男，34岁，167，70公斤');await draft(page);await page.getByRole('button',{name:'就用这份计划'}).click();

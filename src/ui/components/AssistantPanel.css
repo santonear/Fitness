@@ -11,3 +11,23 @@
 /* The composer stays available; long local controls and proposals share one scroll area. */
 .assistant-scroll > *{flex-shrink:0}
 .assistant-scroll .assistant-messages{flex:0 0 auto;overflow:visible}
+
+/* V9 芽芽 chat (docs/design/v9 chat): header, bubbles, quick replies, pill composer. Tokens only. */
+.assistant-head{display:flex;align-items:center;gap:var(--s3)}
+.assistant-head-text{display:grid;gap:calc(var(--s1)/2);min-width:0}
+.assistant-head-text strong{font-size:var(--t4);font-weight:var(--w-strong)}
+.assistant-head-text span{font-size:var(--t1);color:var(--c-ink-muted)}
+.assistant-toolbar .v8-control{min-block-size:var(--touch-min);border-radius:var(--r-chip);font-size:var(--t2)}
+.assistant-bubble{padding:var(--s3) calc(var(--s4) + var(--s1));border-radius:calc(var(--r-panel)*.85);background:var(--card-bg);box-shadow:var(--el-1);border:var(--bw) solid var(--card-border);line-height:var(--lh-body)}
+.assistant-bubble--assistant{border-end-start-radius:var(--s1)}
+.assistant-bubble--user{background:var(--mat-primary);color:var(--c-on-primary);box-shadow:var(--el-primary);border-color:transparent;border-end-end-radius:var(--s1)}
+.assistant-bubble--user .assistant-speaker{color:inherit;opacity:.8}
+.assistant-attachment{border:var(--bw) solid var(--card-border);background:var(--card-bg);box-shadow:var(--card-shadow)}
+.assistant-quick{display:flex;gap:var(--s2);overflow-x:auto;padding-block:var(--s1) var(--s2);scrollbar-width:none}
+.assistant-quick::-webkit-scrollbar{display:none}
+.assistant-quick .v9-chip{flex:none}
+.assistant-input .v8-composer{display:flex;align-items:center;gap:var(--s2);padding:var(--s1) var(--s1) var(--s1) var(--s4);border-radius:var(--r-chip);background:var(--c-inset);box-shadow:var(--el-inset)}
+.assistant-input .v8-composer input{flex:1;min-width:0;min-block-size:var(--touch-min);border:0;background:transparent;box-shadow:none;color:var(--c-ink);font:inherit;padding:0}
+.assistant-input .v8-composer input:focus-visible{outline:none}
+.assistant-input .v8-composer:focus-within{box-shadow:var(--el-inset),0 0 0 2px var(--c-focus)}
+.assistant-input .v8-composer button{border-radius:var(--r-chip);min-block-size:var(--touch-min)}

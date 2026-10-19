@@ -28,6 +28,7 @@ vi.mock("../../src/ui/mainline/context", () => ({
     run: vi.fn(),
     busy: false,
     restartPlanning: vi.fn(),
+    appearance: { theme: "pop", change: vi.fn() },
   }),
 }));
 vi.mock("../../src/ui/components/AccessStatusCard", () => ({

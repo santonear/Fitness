@@ -40,7 +40,7 @@ test('every UI-exported legacy and V8 backup restores through new envelope witho
   expect(sources.some(source => source.name === 'v807-mainline.json')).toBe(true);
   expect(sources.some(source => source.name === 'followup-preview-v9.json')).toBe(true);
   expect(sources.some(source => source.name === 'pr52-before-plan-delete.json')).toBe(true);
-  await page.goto('/settings'); await expect(page.getByRole('heading', {name:'设置',exact:true})).toBeVisible();
+  await page.goto('/settings'); await expect(page.getByRole('heading', {name:'我的',exact:true})).toBeVisible();
   for (const source of sources) {
     const result = await page.evaluate(async ({ name, value }) => {
       const p='/src/application/backup.ts', service=(await import(/* @vite-ignore */ p)).backupService;
@@ -66,7 +66,7 @@ test('every UI-exported legacy and V8 backup restores through new envelope witho
   }
 });
 test('lifestyle transaction failure and stale generation never partially write', async ({ page }) => {
-  await page.goto('/settings'); await expect(page.getByRole('heading', {name:'设置',exact:true})).toBeVisible();
+  await page.goto('/settings'); await expect(page.getByRole('heading', {name:'我的',exact:true})).toBeVisible();
   const result = await page.evaluate(async () => {
     const rp='/src/persistence/repository.ts', ip='/src/application/activity-import.ts', np='/src/application/nutrition.ts';
     const {repository:repo}=await import(/* @vite-ignore */ rp), {createActivityImportService}=await import(/* @vite-ignore */ ip), {createNutritionService}=await import(/* @vite-ignore */ np);

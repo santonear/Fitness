@@ -10,8 +10,8 @@
   "apply": "Apply changes",
   "cancel": "Stop waiting",
   "offline": "Yaya is unavailable. Your records are unaffected.",
-  "unavailable": "Create a basic plan before making adjustments.",
-  "qualification": "AI access is unavailable. Basic plans and local training remain available.",
+  "unavailable": "Create a plan before making adjustments.",
+  "qualification": "AI access is unavailable. Planning and training still work as usual.",
   "saved": "Saved",
   "thinking": "Yaya is thinking…",
   "fields": {
@@ -42,7 +42,7 @@
   "yes": "Yes",
   "no": "No",
   "empty": "None",
-  "localPlan": "Use a basic plan",
+  "localPlan": "Create a plan",
   "localReview": "View local review",
   "stale": "Your details or plan changed. Review a fresh suggestion.",
   "taskNames": {

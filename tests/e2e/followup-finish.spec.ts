@@ -1,5 +1,6 @@
 import {test,expect,type Page} from '@playwright/test';
 import {mkdirSync,writeFileSync,readFileSync} from 'node:fs';
+import {answerTexts,basicSafety,generate} from './helpers/onboarding-v9';
 const o=JSON.parse(readFileSync('src/i18n/features/onboarding/zh.json','utf8'));
 const t=JSON.parse(readFileSync('src/i18n/features/training/zh.json','utf8'));
 async function enable(page:Page,flags:Record<string,boolean>){
@@ -17,9 +18,8 @@ for(const theme of ['pop', 'vivid', 'gentle', 'data', 'fire'])for(const width of
  await page.addInitScript(theme=>localStorage.setItem('fitness-theme',theme),theme);
  await page.setViewportSize({width,height:900});await page.emulateMedia({reducedMotion:'reduce'});
  await page.goto('/');await enable(page,{fontSubset:true,exercisePanel:true});
- for(const answer of ['保持力量','每周3次，每次30分钟','在家，只有瑜伽垫']){await page.getByLabel(o.answer,{exact:true}).fill(answer);await page.getByRole('button',{name:o.next,exact:true}).click();}
- await page.getByLabel(o.adult).check();await page.getByRole('button',{name:o.generate,exact:true}).click();await page.getByRole('button',{name:o.accept,exact:true}).click();
- await expect(page.getByRole('heading',{name:t.next,exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'开始',exact:true}).click();await answerTexts(page,['保持力量','每周3次，每次30分钟','在家，只有瑜伽垫']);await basicSafety(page);await generate(page);await page.getByRole('button',{name:o.accept,exact:true}).click();
+ await expect(page.getByRole('heading',{name:'今天',exact:true})).toBeVisible();
  const prefix=`${info.project.name}-${theme}-${width}`;await capture(page,`${prefix}-next`);
  await page.goto('/exercises');await enable(page,{fontSubset:true,exercisePanel:true});
  const detail = await page.evaluate(async()=>{const path='/src/catalog/registry.ts';const map=(await import(/* @vite-ignore */path)).catalogMetadata;return [...map.values()].find((x:any)=>x.media.start&&x.media.peak)?.id;});
@@ -37,8 +37,7 @@ for(const theme of ['pop', 'vivid', 'gentle', 'data', 'fire'])for(const width of
 for(const theme of ['pop', 'vivid', 'gentle', 'data', 'fire'])test(`${theme} coach 320`,async({page},info)=>{
  await page.addInitScript(theme=>localStorage.setItem('fitness-theme',theme),theme);
  await page.setViewportSize({width:320,height:844});await page.goto('/');
- for(const answer of ['保持力量','每周3次，每次30分钟','在家，只有瑜伽垫']){await page.getByLabel(o.answer,{exact:true}).fill(answer);await page.getByRole('button',{name:o.next,exact:true}).click();}
- await page.getByLabel(o.adult).check();await page.getByRole('button',{name:o.generate,exact:true}).click();await page.getByRole('button',{name:o.accept,exact:true}).click();
+ await page.getByRole('button',{name:'开始',exact:true}).click();await answerTexts(page,['保持力量','每周3次，每次30分钟','在家，只有瑜伽垫']);await basicSafety(page);await generate(page);await page.getByRole('button',{name:o.accept,exact:true}).click();
  await expect(page.getByRole('button',{name:t.start,exact:true})).toBeVisible();
  await page.getByRole('button',{name:t.askCoach,exact:true}).click();await page.getByRole('dialog').getByRole('textbox').fill('保留本地草稿');
  await capture(page,`${info.project.name}-${theme}-320-coach`);

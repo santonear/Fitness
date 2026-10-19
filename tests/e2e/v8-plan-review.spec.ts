@@ -1,16 +1,17 @@
 import { readFileSync } from 'node:fs';
+import {answerTexts,basicSafety,generate,startOnboarding,toFirstQuestion} from './helpers/onboarding-v9';
 import { test, expect, type Page } from '@playwright/test';
 // Sunday in UTC and Monday in Shanghai: keep the week-boundary regression deterministic.
 test.beforeEach(async({page})=>{await page.clock.setFixedTime(new Date('2026-10-11T20:00:00Z'));});
 async function plan(page:Page){
- await page.goto('/');await page.getByLabel('你的回答').fill('保持力量');await page.getByRole('button',{name:'继续',exact:true}).click();
- await page.getByLabel('你的回答').fill('每周3次，每次30分钟');await page.getByRole('button',{name:'继续',exact:true}).click();
- await page.getByLabel('你的回答').fill('在家，只有瑜伽垫');await page.getByRole('button',{name:'继续',exact:true}).click();
- await page.getByLabel('我已年满 18 岁',{exact:false}).check();await page.getByRole('button',{name:'生成新计划'}).click();await page.getByRole('button',{name:'就用这份计划'}).click();
- await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
+ await startOnboarding(page);await answerTexts(page,['保持力量']);
+ await answerTexts(page,['每周3次，每次30分钟']);
+ await answerTexts(page,['在家，只有瑜伽垫']);
+ await basicSafety(page);await generate(page);await page.getByRole('button',{name:'就用这份计划'}).click();
+ await expect(page.getByRole('heading',{name:'今天',exact:true})).toBeVisible();
 }
 test('plan details morph from a chip, preserve read-only versions, and restore keyboard focus',async({page})=>{
- await plan(page);await page.goto('/plans');const chip=page.locator('.plan-items button').first();await chip.click();
+ await plan(page);await page.goto('/plans');await page.locator('.v9-session summary').first().click();const chip=page.locator('button.v9-item').first();await chip.click();
  const dialog=page.getByRole('dialog');await expect(dialog).toBeVisible();await expect(dialog.locator('ol li').first()).toBeVisible();
  for(const width of [390,1440]){await page.setViewportSize({width,height:844});await dialog.evaluate(async element=>{await Promise.all(element.getAnimations().map(a=>a.finished));});await page.screenshot({path:`tests/fixtures/v8-plan-review/qingci-${width}.png`,fullPage:true});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);}
  await page.keyboard.press('Escape');await expect(dialog).not.toBeVisible();await expect(chip).toBeFocused();
@@ -85,6 +86,6 @@ test('legacy workout notes and metrics appear in both review periods without rew
 });
 test('all retained plan versions remain readable and library filters retain attribution in English',async({page})=>{
  await plan(page);await page.evaluate(async()=>{const p='/src/persistence/db.ts',db=(await import(/* @vite-ignore */ p)).database;const current=(await db.v8PlanVersions.toArray())[0];const planId=crypto.randomUUID(),versionId=crypto.randomUUID();await db.transaction('rw',db.v8Plans,db.v8PlanVersions,async()=>{await db.v8Plans.add({id:planId,currentVersionId:versionId,name:'Earlier retained plan',readOnly:true});await db.v8PlanVersions.add({...current,id:versionId,planId,goalText:'Earlier retained plan',origin:'migrated',versionNumber:1});});const profile=await db.profiles.toCollection().first();await db.profiles.put({...profile,locale:'en'});});
- await page.goto('/plans');const retained=page.locator('section').filter({has:page.getByRole('heading',{name:'Previous plans',exact:true})}).locator('.v8-sheet').filter({has:page.getByText('Earlier retained plan',{exact:true})});await retained.getByRole('button',{name:'View',exact:true}).click();await page.getByRole('button',{name:'View previous versions',exact:true}).click();await page.locator('.plan-timeline li').filter({has:page.getByText('Earlier retained plan',{exact:true})}).getByRole('button',{name:'View plan',exact:true}).click();await expect(page.getByText('Earlier retained plan',{exact:true})).toBeVisible();await expect(page.getByText(/Read only/)).toBeVisible();
+ await page.goto('/plans');const retained=page.locator('section').filter({has:page.getByRole('heading',{name:'Previous plans',exact:true})}).locator('.v9-card').filter({has:page.getByText('Earlier retained plan',{exact:true})});await retained.getByRole('button',{name:'View',exact:true}).click();await page.getByRole('button',{name:'View previous versions',exact:true}).click();await page.locator('.plan-timeline li').filter({has:page.getByText('Earlier retained plan',{exact:true})}).getByRole('button',{name:'View plan',exact:true}).click();await expect(page.getByText('Earlier retained plan',{exact:true})).toBeVisible();await expect(page.getByText(/Read only/)).toBeVisible();
  await page.goto('/exercises');await expect(page.getByRole('link',{name:'RepDB',exact:true})).toBeVisible();await page.getByRole('searchbox').fill('Self-resisted Row');await page.getByRole('button',{name:'No equipment',exact:true}).click();await expect(page.getByRole('button',{name:'Self-resisted Row',exact:true})).toBeVisible();await page.getByRole('button',{name:'No equipment',exact:true}).click();await page.getByRole('button',{name:'dumbbell',exact:true}).click();await expect(page.getByRole('button',{name:'Self-resisted Row',exact:true})).toHaveCount(0);
 });

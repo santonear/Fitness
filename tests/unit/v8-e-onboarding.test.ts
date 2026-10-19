@@ -10,24 +10,27 @@ const slots: Pick<ThemeSlots, 'BrandMark' | 'AiLine' | 'Suggestions'> = {
 const answers: OnboardingAnswers = { goalText: '<script>private words</script>', scheduleOriginalText: '15 minutes', placeEquipmentText: 'My equipment', adultConfirmed: false, cautions: [] };
 describe('onboarding presentation boundaries', () => {
   it('recognizes explicit knee injuries but does not infer a limitation from an unrelated goal',()=>{expect(cautionsFromGoal('膝盖以前伤过，想练力量')).toEqual(['knee']);expect(cautionsFromGoal('提高力量和耐力')).toEqual([])});
-  it('shows old answers only as a placeholder and lists body details once in sending consent',()=>{
+  it('shows the stored answer as the value, never a placeholder, and lists body details once in sending consent',()=>{
     const old={...answers,goalText:'想练力量',scheduleOriginalText:'每周两次',placeEquipmentText:'在家',adultConfirmed:true,body:{biologicalSex:'男性' as const,age:34,heightCm:175,weightKg:82,waistCm:92}};
     const input=renderToStaticMarkup(h(OnboardingPage,{locale:'zh',step:2,bodyEnabled:true,answers:old,slots,mode:'ai',onChange(){},onStep(){},onGenerate(){},onManual(){}}));
-    expect(input).toMatch(/<textarea[^>]*placeholder="每周两次"[^>]*><\/textarea>/);
-    const consent=renderToStaticMarkup(h(OnboardingPage,{locale:'zh',step:4,bodyEnabled:true,answers:old,slots,mode:'ai',onChange(){},onStep(){},onGenerate(){},onManual(){}}));
+    expect(input).toMatch(/<textarea[^>]*>每周两次<\/textarea>/);expect(input).not.toContain('placeholder="每周两次"');
+    const composed=renderToStaticMarkup(h(OnboardingPage,{locale:'zh',step:2,bodyEnabled:true,answers:{...old,scheduleOriginalText:'每周 3 次，每次 45 分钟'},slots,mode:'ai',onChange(){},onStep(){},onGenerate(){},onManual(){}}));
+    expect(composed).toMatch(/aria-pressed="true"[^>]*>3 次</);expect(composed).toMatch(/aria-pressed="true"[^>]*>45 分钟</);expect(composed).not.toContain('<textarea');
+    const consent=renderToStaticMarkup(h(OnboardingPage,{locale:'zh',step:4,bodyEnabled:true,answers:old,slots,mode:'ai',initialSafetyScreen:'ready',onChange(){},onStep(){},onGenerate(){},onManual(){}}));
     for(const label of ['性别','年龄','身高（厘米）','体重（公斤）','腰围（厘米）'])expect(consent).toContain(`<dt>${label}</dt>`);
-    expect(consent.match(/我已年满 18 岁/g)).toHaveLength(1);
+    const intro=renderToStaticMarkup(h(OnboardingPage,{locale:'zh',step:4,bodyEnabled:true,answers:old,slots,mode:'ai',onChange(){},onStep(){},onGenerate(){},onManual(){}}));
+    expect(intro.match(/我已年满 18 岁/g)).toHaveLength(1);
   });
   it('rendering safety never generates and escapes original text in the consent list', () => {
     let calls = 0;
-    const html = renderToStaticMarkup(h(OnboardingPage, { locale: 'en', step: 3, answers, slots, mode: 'ai', onChange() {}, onStep() {}, onGenerate() { calls++; }, onManual() {} }));
+    const html = renderToStaticMarkup(h(OnboardingPage, { locale: 'en', step: 3, answers, slots, mode: 'ai', initialSafetyScreen: 'ready', onChange() {}, onStep() {}, onGenerate() { calls++; }, onManual() {} }));
     expect(calls).toBe(0); expect(html).toContain('&lt;script&gt;private words&lt;/script&gt;');
     expect(html).not.toContain('<script>'); expect(html).toContain('15 minutes');
-    expect(html).toMatch(/<button[^>]*disabled[^>]*>Generate a new plan/);
+    expect(html).toMatch(/<button[^>]*disabled[^>]*>Create my plan/);
   });
   it('incomplete answers cannot generate even with an adult declaration', () => {
-    const html = renderToStaticMarkup(h(OnboardingPage, { locale: 'en', step: 3, answers: { ...answers, adultConfirmed: true, goalText: '   ' }, slots, mode: 'basic', onChange() {}, onStep() {}, onGenerate() {}, onManual() {} }));
-    expect(html).toMatch(/<button[^>]*disabled[^>]*>Generate a new plan/); expect(html).not.toContain('<details>');
+    const html = renderToStaticMarkup(h(OnboardingPage, { locale: 'en', step: 3, answers: { ...answers, adultConfirmed: true, goalText: '   ' }, slots, mode: 'basic', initialSafetyScreen: 'ready', onChange() {}, onStep() {}, onGenerate() {}, onManual() {} }));
+    expect(html).toMatch(/<button[^>]*disabled[^>]*>Create my plan/); expect(html).not.toContain('<details');
   });
   it('draft render never saves and shows metric values without translating custom text', () => {
     let saves = 0;
@@ -37,8 +40,8 @@ describe('onboarding presentation boundaries', () => {
     for (const [code, label] of [['none', '无需器械'], ['dumbbell', '哑铃'], ['custom-equipment', 'custom-equipment']]) {
       candidate.proposal.templates[0].items[0].equipment = code;
       const localized = renderToStaticMarkup(h(PlanDraftPage, { locale: 'zh', candidate, slots, exerciseText: () => ({ name: '动作', instructions: '要领' }), onConfirm() {}, onDiscuss() {} }));
-      expect(localized).toContain(`<span>${label}</span>`);
-      if (code !== label) expect(localized).not.toContain(`<span>${code}</span>`);
+      expect(localized).toContain(`<span class="v9-item-equipment">${label}</span>`);
+      if (code !== label) expect(localized).not.toContain(`<span class="v9-item-equipment">${code}</span>`);
     }
   });
 });
