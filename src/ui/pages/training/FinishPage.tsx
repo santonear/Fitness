@@ -32,7 +32,7 @@ export function FinishPage(){
  const volume=volumeKg(active),moves=new Set(active.sets.map(s=>`${s.itemIndex}`)).size;
  const template=active.templateSnapshot??data.versions.find(v=>v.id===active.planVersionId)?.templates.find(s=>s.id===active.templateId);
  return <main className="wk-page wk-finish">
- <p className="wk-muted">{template?templateLabel(template,locale):t.manual} · {today}</p>
+ <p className="wk-muted">{template?templateLabel(template,locale,data.versions.find(v=>v.id===active.planVersionId)?.templates):t.manual} · {today}</p>
  <Card variant="hero" padding="lg" className="wk-finish-hero" as="section" aria-labelledby="wk-finish-title">
   <div><h1 id="wk-finish-title" className="v9-display">{done===0?copy.titleZero:complete?copy.titleComplete:copy.titlePartial}</h1>
    <span className="wk-finish-time v9-num">{formatClock(seconds)}</span><span className="wk-muted">{elapsed>0?format(copy.elapsed,{minutes:elapsed}):copy.elapsedShort}</span></div>

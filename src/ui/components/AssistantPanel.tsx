@@ -1,3 +1,4 @@
+import {answerText} from '../../application/preset-text';
 import {readBodyReferral,writeBodyReferral,clearBodyReferral} from '../../assistant/body-change-session';
 import {detectBodyChange,type BodyChange} from '../../assistant/body-change';
 import {bodyChangeCopy} from '../../i18n/features/coach/body-change';
@@ -146,7 +147,7 @@ export function AssistantPanel(props:CoachPanelProps){
   if(result.noop)setError(engineCopy('assistant.copy.engine_noop',locale));else setError('');
  }
  const response=candidate?.response,proposal=response&&('proposal' in response?response.proposal:response.type==='review_summary'?response.suggestion?.proposal:undefined),templates=proposal?.templates??(response?.type==='today_adjustment'?[response.template]:[]);
- const contextSummary=request?.task==='MODIFY_PLAN'?`${request.plan.goalText} · ${request.plan.templates.length} ${locale==='zh'?'份训练单':'training templates'}`:request?.task==='ADJUST_TODAY'?request.template.name:request?.task==='ONBOARD_PLAN'?request.profile.goalText:request?.task==='PERIOD_REVIEW'?`${request.facts.from} — ${request.facts.to}`:'';
+ const contextSummary=request?.task==='MODIFY_PLAN'?`${answerText(request.plan.goalText,locale)} · ${request.plan.templates.length} ${locale==='zh'?'份训练单':'training templates'}`:request?.task==='ADJUST_TODAY'?request.template.name:request?.task==='ONBOARD_PLAN'?request.profile.goalText:request?.task==='PERIOD_REVIEW'?`${request.facts.from} — ${request.facts.to}`:'';
  const bodyLabels=(locale==='zh'?coachZh:coachEn).detailLabels;
  const canApply=response&&(['plan_proposal','change_proposal','today_adjustment'].includes(response.type)||response.type==='review_summary'&&response.suggestion);
  const rememberedText=remembered?.items.map(item=>item.kind==='dislike_exercise'?(locale==='zh'?`以后不安排 ${exercises.find(e=>e.id===item.value)?.name.zh??item.value}`:`Avoid ${exercises.find(e=>e.id===item.value)?.name.en??item.value}`):item.kind==='preferred_days'?(locale==='zh'?'训练日已记住':'Training days remembered'):item.kind==='cannot_do'?(item.value==='walking_carry'?(locale==='zh'?'以后不安排负重行走':'Avoid walking carries'):(locale==='zh'?'避免跳跃':'Avoid jumping')):item.kind==='caution_area'?(locale==='zh'?'注意部位已记住':'Caution area remembered'):(locale==='zh'?'器械已记住':'Equipment remembered')).join(' · ');

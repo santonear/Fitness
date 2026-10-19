@@ -16,6 +16,7 @@ import { TrainingCalendar } from '../../components/TrainingCalendar';
 import { StartTimeField } from '../../components/StartTimeField';
 import { trainingDaysCopy } from '../../../i18n/features/plan/training-days';
 import { weeklyTargetFromDates } from '../../../application/training-dates';
+import { presetIn } from '../../../application/preset-text';
 import './onboarding.css';
 
 /** Uninterpreted answers. The integration layer resolves them before any model request. */
@@ -77,7 +78,9 @@ export function OnboardingPage({ engineEnabled=false, locale, step, answers, mod
   const [customOpen, setCustomOpen] = useState<Record<string, boolean>>({});
   const [schedule, setSchedule] = useState<{ weekly?: number; minutes?: number }>(composed ?? {});
   const value = answers[key];
-  const custom = customOpen[key] ?? (value.trim().length > 0 && (key === 'scheduleOriginalText' ? !composed : !options.includes(value)));
+  // A preset tapped in the other language is still that preset (stored text is kept until the user changes it).
+  const shown = key === 'scheduleOriginalText' ? value : presetIn(value, locale) ?? value;
+  const custom = customOpen[key] ?? (value.trim().length > 0 && (key === 'scheduleOriginalText' ? !composed : !options.includes(shown)));
   const engineComplete=!engineEnabled||!!answers.healthStorageConsent&&!!answers.screening?.completedAt&&!!answers.population&&!!answers.birthYearMonth;
   const complete = engineComplete&&fields.every(field => answers[field].trim().length > 0)&&(!bodyEnabled||bodyComplete(answers.body??{}));
   const updateText = (text: string) => onChange({ ...answers, [key]: text });
@@ -127,9 +130,9 @@ export function OnboardingPage({ engineEnabled=false, locale, step, answers, mod
   const copy = key === 'goalText' ? t.goal : t.place;
   return <OnboardingFrame {...frame} title={copy.title} sub={copy.sub}>
     <div className="v9-choices" role="radiogroup" aria-label={copy.title}>
-      {options.map(option => <BigChoice key={option} label={option} selected={!custom && value === option} disabled={busy} onClick={() => { setCustomOpen(open => ({ ...open, [key]: false })); updateText(option); }} />)}
+      {options.map(option => <BigChoice key={option} label={option} selected={!custom && shown === option} disabled={busy} onClick={() => { setCustomOpen(open => ({ ...open, [key]: false })); updateText(option); }} />)}
     </div>
     <CustomAnswer locale={locale} value={custom ? value : ''} disabled={busy} open={custom} onChange={updateText}
-      onToggle={() => { const open = !custom; setCustomOpen(state => ({ ...state, [key]: open })); if (open && options.includes(value)) updateText(''); }} />
+      onToggle={() => { const open = !custom; setCustomOpen(state => ({ ...state, [key]: open })); if (open && options.includes(shown)) updateText(''); }} />
   </OnboardingFrame>;
 }

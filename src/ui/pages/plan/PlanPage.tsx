@@ -1,3 +1,4 @@
+import {answerText} from '../../../application/preset-text';
 import { useState, type ReactNode } from 'react';
 import {templateLabel,estimatedDurationLabel} from '../../../i18n/features/plan/labels';
 import type { PlannedItem, PlanVersion, WorkoutRecord } from '../../../domain/v8/contracts';
@@ -75,7 +76,7 @@ export function PlanPage({ version, currentVersionId, language, exerciseName, on
     <header className="v9-plan-head">
       <span className="v9-plan-kicker">{t.version(version.versionNumber)} · <time dateTime={version.createdAt}>{date}</time> · {t.origins[version.origin]}{!current && ` · ${t.readOnly}`}</span>
       <h1 id="plan-title" className="v9-display">{v.planTitle}</h1>
-      <p className="v9-plan-kicker">{t.goal} · <span>{version.goalText}</span></p>
+      <p className="v9-plan-kicker">{t.goal} · <span>{answerText(version.goalText,language)}</span></p>
       {startDate && todayDate && <div className="v9-plan-start"><span>{sd.current} · <strong data-testid="plan-start-date">{startDateLabel(startDate, todayDate, language)}</strong></span>
         {current && onChangeStart && <PrimaryButton tone="text" size="sm" disabled={!!changeStartBlocked} onClick={event => onChangeStart(event.currentTarget)}>{sd.change}</PrimaryButton>}
         {current && changeStartBlocked && <small>{changeStartBlocked}</small>}</div>}

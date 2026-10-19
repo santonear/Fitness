@@ -1,3 +1,4 @@
+import {answerText} from '../../../application/preset-text';
 import {engineDisplayNotices} from '../../../application/engine-presentation';
 import {localDateIn,planReasons,startDateLabel,weekdayIndex} from '../../../application/plan-presentation';
 import { StartDatePicker } from '../../components/StartDatePicker';
@@ -55,7 +56,7 @@ export function PlanDraftPage({ locale, candidate, busy = false, error, exercise
       onExercise={(id,_index,element)=>{trigger.current=element;setDetail(id);}}/>;
   return <main className="v9-plan-screen" lang={locale} aria-busy={busy}>
     {onHome&&<nav className="v9-plan-nav" aria-label={d.draftCalendar}><HomeExit locale={locale} dirty disabled={busy} onLeave={onHome}/></nav>}
-    <header className="v9-plan-head"><span className="v9-plan-kicker">{plan.goalText}</span><h1 ref={heading} tabIndex={-1} className="v9-display">{t.draftTitle}</h1></header>
+    <header className="v9-plan-head"><span className="v9-plan-kicker">{answerText(plan.goalText,locale)}</span><h1 ref={heading} tabIndex={-1} className="v9-display">{t.draftTitle}</h1></header>
     <PlanStops plan={candidate.enginePlan} locale={locale}/>
     {days.length>0?<p className="v9-plan-line" data-testid="draft-days">{fill(days.length===1?d.daysOne:d.days,{count:days.length,from:startDateLabel(days[0],todayDate,locale,false),to:startDateLabel(days.at(-1)!,todayDate,locale,false)})}{candidate.startTime&&<> · {fill(d.startsAt,{time:candidate.startTime})}</>}
       {onEditDays&&<> <PrimaryButton tone="text" size="sm" disabled={busy} onClick={onEditDays}>{d.editDays}</PrimaryButton></>}</p>

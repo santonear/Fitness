@@ -142,7 +142,7 @@ export function WorkoutPage(){
  const restNext=restNextIndex>=0?items[restNextIndex]:undefined;
  const leaveRest=()=>{setRestClosed(prior=>[...prior,restKey]);if(restNextIndex>=0)setIndex(restNextIndex);};
  const progressLabel=format(p.progress,{current:index+1,total:items.length});
- const nextText=():string=>{if(allDone)return p.allDoneNext;if(!thisDone&&done+1<item.plannedSetCount)return `${p.upNext}：${name(effectiveId)} · ${format(t.setCount,{current:done+2,total:item.plannedSetCount})}`;const upcoming=nextOpen(index);const row=upcoming>=0&&upcoming!==index?items[upcoming]:undefined;return row?`${p.upNext}：${name(exerciseIdOf(row.itemIndex,row.exerciseId))}`:p.lastOne;};
+ const colon=locale==='zh'?'：':': ';const nextText=():string=>{if(allDone)return p.allDoneNext;if(!thisDone&&done+1<item.plannedSetCount)return `${p.upNext}${colon}${name(effectiveId)} · ${format(t.setCount,{current:done+2,total:item.plannedSetCount})}`;const upcoming=nextOpen(index);const row=upcoming>=0&&upcoming!==index?items[upcoming]:undefined;return row?`${p.upNext}${colon}${name(exerciseIdOf(row.itemIndex,row.exerciseId))}`:p.lastOne;};
  const top=<header className="wk-top">
   <button type="button" className="wk-round v8-press" aria-label={t.pause} onClick={event=>showPanel('pause',event.currentTarget)}><Icon d="M6 6l12 12M18 6L6 18"/></button>
   <div className="wk-progress" role="progressbar" aria-label={progressLabel} aria-valuemin={0} aria-valuemax={items.length} aria-valuenow={items.filter(isDone).length}>{items.map((row,i)=><span key={row.itemIndex} data-state={isDone(row)?'done':i===index&&!restShown?'current':'todo'}/>)}</div>
@@ -190,7 +190,7 @@ export function WorkoutPage(){
  {top}
  {timer?.startedAt!==undefined&&<CueAt dueAt={timer.startedAt+timer.total*1000-timer.accumulatedMs} active={!panel}/>}
  {restShown&&restPlan&&<CueAt dueAt={restPlan.completedAt+restTotal(restPlan)*1000} active/>}
- <p className="wk-template wk-muted">{template?templateLabel(template,locale):t.manual} · {progressLabel}</p>
+ <p className="wk-template wk-muted">{template?templateLabel(template,locale,data?.versions.find(v=>v.id===active.planVersionId)?.templates):t.manual} · {progressLabel}</p>
  {safetyAttention&&<section className="wk-safety-inline" ref={safetyInline} tabIndex={-1} aria-label={p.signals}>{safetyPanels}</section>}
  {body}
  {painPreview&&<PainFeedbackPanel key={painPreview.eventId} preview={painPreview.value} locale={locale} busy={busy||painPreviewLoading} name={name} confirmLabel={t.confirm} onAnswersChange={answers=>{const serial=++painSequence.current;if(!painPreview.value.questions.every(question=>typeof answers[question.key]==='boolean')){setPainPreviewLoading(false);setPainPreview({...painPreview,value:{...painPreview.value,replacement:undefined,redFlagsRequired:true}});return;}setPainPreviewLoading(true);void workflow.painFeedbackPreview(active.id,painPreview.eventId,answers).then(value=>{if(serial===painSequence.current){setPainPreview({eventId:painPreview.eventId,value});setPainPreviewLoading(false);}}).catch(()=>{if(serial===painSequence.current){setPainPreview(undefined);setPainPreviewLoading(false);}});}} onApply={answers=>void run(async()=>{await workflow.applyPainFeedback(active.id,painPreview.eventId,data.metadata.dataRevision,answers);})}/>}

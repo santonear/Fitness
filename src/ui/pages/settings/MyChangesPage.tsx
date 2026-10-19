@@ -12,6 +12,7 @@ import { useMainline } from '../../mainline/context';
 import './my-changes.css';
 
 type Locale = 'zh' | 'en';
+const listSeparator=(locale:'zh'|'en')=>locale==='zh'?'，':', ';
 const signed = (value: number) => `${value > 0 ? '+' : ''}${value}`;
 const dateText = (date: string, locale: Locale) => { const [, m, d] = date.split('-').map(Number); return locale === 'zh' ? `${m}月${d}日` : `${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][m - 1]} ${d}`; };
 const monthText = (month: string, locale: Locale) => new Intl.DateTimeFormat(locale === 'zh' ? 'zh-CN' : 'en', { timeZone: 'UTC', month: 'short' }).format(new Date(`${month}-01T00:00:00Z`));
@@ -64,20 +65,20 @@ export function MyChangesPage() {
     </header>
     <Card variant="raised" padding="md" as="section" className="v9-change-card" aria-labelledby="v9-change-weight">
       <h2 id="v9-change-weight">{t.weight}</h2>
-      {weight.last ? <><TrendLine trend={weight} unit={t.kg} locale={locale} /><TrendChart points={weight.points} tone={1} label={`${t.weight} · ${weight.points.map(point => `${dateText(point.date, locale)} ${point.value}${t.kg}`).join('，')}`} /></>
+      {weight.last ? <><TrendLine trend={weight} unit={t.kg} locale={locale} /><TrendChart points={weight.points} tone={1} label={`${t.weight} · ${weight.points.map(point => `${dateText(point.date, locale)} ${point.value}${t.kg}`).join(listSeparator(locale))}`} /></>
         : body.loaded && <p className="v9-change-note">{t.emptyBody}</p>}
       <PrimaryButton tone="quiet" size="sm" onClick={event => openForm(event.currentTarget)}>{t.add}</PrimaryButton>
     </Card>
     <Card variant="raised" padding="md" as="section" className="v9-change-card" aria-labelledby="v9-change-fat">
       <h2 id="v9-change-fat">{t.bodyFat}</h2>
-      {fat.last ? <><TrendLine trend={fat} unit={t.percent} locale={locale} /><TrendChart points={fat.points} tone={2} label={`${t.bodyFat} · ${fat.points.map(point => `${dateText(point.date, locale)} ${point.value}%`).join('，')}`} /></>
+      {fat.last ? <><TrendLine trend={fat} unit={t.percent} locale={locale} /><TrendChart points={fat.points} tone={2} label={`${t.bodyFat} · ${fat.points.map(point => `${dateText(point.date, locale)} ${point.value}%`).join(listSeparator(locale))}`} /></>
         : body.loaded && <p className="v9-change-note">{t.emptyFat}</p>}
     </Card>
     <Card variant="raised" padding="md" as="section" className="v9-change-card" aria-labelledby="v9-change-strength">
       <h2 id="v9-change-strength">{t.strength}</h2>
       {lifts.length ? <><ul className="v9-change-lifts">{lifts.map((lift, index) => <li key={lift.exerciseId}>
         <strong>{c.name(lift.exerciseId)}</strong><TrendLine trend={lift} unit={t.kg} locale={locale} />
-        <TrendChart points={lift.points} tone={(3 + (index % 2)) as 3 | 4} label={`${c.name(lift.exerciseId)} · ${lift.points.map(point => `${dateText(point.date, locale)} ${point.value}${t.kg}`).join('，')}`} />
+        <TrendChart points={lift.points} tone={(3 + (index % 2)) as 3 | 4} label={`${c.name(lift.exerciseId)} · ${lift.points.map(point => `${dateText(point.date, locale)} ${point.value}${t.kg}`).join(listSeparator(locale))}`} />
       </li>)}</ul><p className="v9-change-note">{t.strengthHint}</p></> : <p className="v9-change-note">{t.emptyStrength}</p>}
     </Card>
     <Card variant="raised" padding="md" as="section" className="v9-change-card" aria-labelledby="v9-change-month">
@@ -87,7 +88,7 @@ export function MyChangesPage() {
         <ul><li>{fill(t.monthMinutes, { count: row.minutes })}</li><li>{fill(t.monthSets, { count: row.sets })}</li>{row.weightChange !== undefined && <li>{fill(t.monthWeight, { value: signed(row.weightChange) })}</li>}</ul>
       </div>)}</div>
       <h3>{t.perMonth}</h3>
-      <TrendChart points={perMonth} variant="bars" tone={1} label={`${t.perMonth} · ${perMonth.map(point => `${monthText(point.date, locale)} ${point.value}`).join('，')}`} />
+      <TrendChart points={perMonth} variant="bars" tone={1} label={`${t.perMonth} · ${perMonth.map(point => `${monthText(point.date, locale)} ${point.value}`).join(listSeparator(locale))}`} />
       <ol className="v9-change-axis" aria-hidden="true">{perMonth.map(point => <li key={point.date}><span className="v9-num">{point.value}</span>{monthText(point.date, locale)}</li>)}</ol>
       <div className="v9-change-actions">
         <PrimaryButton tone="quiet" size="sm" onClick={() => { c.setReviewKind('month'); c.navigate('/review'); }}>{t.monthReview}</PrimaryButton>
@@ -122,7 +123,7 @@ export function MyChangesCard() {
       {weight.last && <StatTile label={t.weight} value={weight.change !== undefined ? signed(weight.change) : weight.last.value} unit={t.kg} />}
       {lift?.last && <StatTile label={c.name(lift.exerciseId)} value={lift.change !== undefined ? signed(lift.change) : lift.last.value} unit={t.kg} />}
     </div>
-    {weight.points.length > 1 && <TrendChart points={weight.points} tone={1} label={`${t.weight} · ${weight.points.map(point => `${dateText(point.date, locale)} ${point.value}${t.kg}`).join('，')}`} />}
+    {weight.points.length > 1 && <TrendChart points={weight.points} tone={1} label={`${t.weight} · ${weight.points.map(point => `${dateText(point.date, locale)} ${point.value}${t.kg}`).join(listSeparator(locale))}`} />}
     {body.loaded && !weight.last && <p className="v9-change-note">{t.emptyBody}</p>}
   </Card>;
 }

@@ -53,7 +53,7 @@ export const entryCopy = {
     delivery: { title: 'Type of delivery', vaginal: 'Vaginal', assisted: 'Assisted or perineal injury', cesarean: 'Cesarean' },
     pregnancyInfo: 'During pregnancy', pregnancyList: 'Do any of these apply?',
     age45: { title: 'About intensity', ack: 'I understand' },
-    cautions: { title: 'Any areas that need care?', sub: 'Unsuitable exercises are swapped out automatically.', none: 'No', some: 'Yes, choose areas', otherLabel: 'Which area?', otherPlaceholder: 'e.g. ankle', otherHint: 'Knee, back, shoulder and wrist swap exercises automatically; other areas are noted for 芽芽, and you can tap “Feeling unwell?” any time during training.' },
+    cautions: { title: 'Any areas that need care?', sub: 'Unsuitable exercises are swapped out automatically.', none: 'No', some: 'Yes, choose areas', otherLabel: 'Which area?', otherPlaceholder: 'e.g. ankle', otherHint: 'Knee, back, shoulder and wrist swap exercises automatically; other areas are noted for Yaya, and you can tap “Feeling unwell?” any time during training.' },
     redflag: { title: 'A few checks about the area', sub: 'If any apply, pause training that area and check with a doctor.' },
     prefs: { title: 'Last, your training conditions', sub: 'All optional. You can change them in Me.', level: 'Level', beginner: 'Just starting', intermediate: 'Trained for a while', limits: 'Limits', noJump: 'No jumping', quiet: 'Needs to be quiet', space: 'Space', spaces: ['A mat', 'Small', 'Medium', 'Large'] },
     ready: { title: 'All set', sub: 'Yaya will plan your first week from your answers.', generate: 'Create my plan', manual: 'Train on my own first', working: 'Yaya is planning…' },
