@@ -1,7 +1,7 @@
 type Labels = Record<string, readonly [string, string]>;
 export const userLabels = {
   preview: { finance:['预览合成 · 费用样本','Synthetic preview · Finance sample'], normal:['预览合成 · 正常','Synthetic preview · Active'], expiring:['预览合成 · 即将到期','Synthetic preview · Expiring soon'], 'quota-unknown':['预览合成 · 额度恢复结果未知','Synthetic preview · Quota restoration unconfirmed'] },
-  applicationState: { pending:['待审核','Awaiting review'], approved:['已批准','Approved'], rejected:['已拒绝','Declined'], claimed:['已领取资格','Access claimed'] },
+  applicationState: { pending:['待处理','Awaiting review'], approved:['已批准','Approved'], rejected:['已拒绝','Declined'], claimed:['已领取资格','Access claimed'] },
   applicationKind: { new:['首次申请','New application'], extend:['延长资格','Access extension'], replace:['补领激活码','Replacement code'] },
   operation: { understand:['理解目标','Goal interpretation'], generate:['生成计划','Plan generation'], summary:['阶段回顾','Period review'], ONBOARD_PLAN:['生成计划','Plan generation'], ADJUST_TODAY:['调整今天','Today adjustment'], MODIFY_PLAN:['修改计划','Plan modification'], PERIOD_REVIEW:['阶段回顾','Period review'] },
   requestStatus: { reserved:['已预留费用','Cost reserved'], submitted:['已发送，等待结果','Submitted, awaiting result'], pending:['结果待核对','Result needs reconciliation'], settled:['已核算','Reconciled'], released:['预留已释放','Reservation released'], success:['已完成','Completed'], timeout:['等待超时','Timed out'], budget_blocked:['预算限制，未调用','Not called: budget limit'], quota_blocked:['额度已用完，未调用','Not called: quota used'], wording_blocked:['话术检查未通过','Wording needs review'], provider_error:['服务商暂不可用','Provider unavailable'] },
