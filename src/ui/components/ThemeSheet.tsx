@@ -4,7 +4,7 @@ import { isFeatureEnabled, subscribeFeatureFlags } from '../../application/featu
 import { useOptionalTheme } from '../../themes/ThemeProvider';
 import { themeEntryCopy } from '../../i18n/features/home/theme';
 import { MorphPanel } from './common';
-import { PrimaryButton } from './kit';
+import { PrimaryButton, SegmentedTabs } from './kit';
 import { ThemePicker } from './ThemePicker';
 import './theme-sheet.css';
 
@@ -16,7 +16,9 @@ export function useThemeChoices() {
 }
 
 /** Small, always-visible 换风格 button that opens the theme picker with live previews in a sheet. */
-export function ThemeButton({ locale, label }: { locale: 'zh' | 'en'; /** Visible text; defaults to 换风格. */ label?: string }) {
+export interface LanguageChoice { onChange: (next: 'zh' | 'en') => void; busy?: boolean }
+/** Language lives here too, so it is reachable from 今天 and the welcome page (Bo 2026-10-19). */
+export function ThemeButton({ locale, label, language }: { locale: 'zh' | 'en'; /** Visible text; defaults to 换风格. */ label?: string; language?: LanguageChoice }) {
   const t = themeEntryCopy[locale], appearance = useOptionalTheme(), themes = useThemeChoices();
   const [open, setOpen] = useState(false), trigger = useRef<HTMLElement | null>(null);
   if (!appearance) return null;
@@ -28,6 +30,7 @@ export function ThemeButton({ locale, label }: { locale: 'zh' | 'en'; /** Visibl
     <MorphPanel open={open} onClose={() => setOpen(false)} triggerRef={trigger} title={t.title} closeLabel={t.done}>
       <p className="v9-theme-sheet-hint">{t.hint}</p>
       <ThemePicker themes={themes} value={appearance.theme} onChange={appearance.change} locale={locale} label={t.title} />
+      {language && <div className="v9-theme-sheet-language"><span>{t.language}</span><SegmentedTabs label={t.language} value={locale} disabled={language.busy} options={[{ value: 'zh', label: '中文' }, { value: 'en', label: 'English' }]} onChange={value => language.onChange(value === 'en' ? 'en' : 'zh')} /></div>}
       <PrimaryButton onClick={() => setOpen(false)}>{t.done}</PrimaryButton>
     </MorphPanel>
   </>;
