@@ -107,7 +107,11 @@ test('我的: grouped sections with 我 first; 我的变化 shows measurements, 
 
   // 今天's 芽芽 orb also opens 营养建议.
   await page.getByRole('navigation', { name: '主导航' }).getByRole('button', { name: '今天' }).click();
-  await page.getByRole('button', { name: '芽芽助手，按住可上下拖动' }).click();
+  // The orb may still be tucked aside on a busy runner; a tap first brings it out, the next opens the panel.
+  await expect(async () => {
+    if (!await page.getByRole('dialog', { name: '芽芽快捷助手' }).isVisible()) await page.getByRole('button', { name: '芽芽助手，按住可上下拖动' }).click();
+    await expect(page.getByRole('dialog', { name: '芽芽快捷助手' })).toBeVisible({ timeout: 2_000 });
+  }).toPass({ timeout: 20_000 });
   await page.getByRole('dialog', { name: '芽芽快捷助手' }).getByRole('button', { name: '吃什么、喝多少' }).click();
   await expect(page.getByRole('heading', { name: '营养建议', exact: true })).toBeVisible();
 });
