@@ -23,7 +23,7 @@ async function finishOneSet(page:Page){
  await page.getByRole('button',{name:'暂停或结束',exact:true}).click();
  await page.getByRole('dialog').getByRole('button',{name:'结束并记下',exact:true}).click();
  await page.getByRole('button',{name:'记下来',exact:true}).click();
- await expect(page.locator('.v8-facts dd')).toHaveCount(5);await expect(page.locator('.v8-facts dd').nth(1)).toHaveText('1');
+ await expect(page.locator('.rv-facts dd')).toHaveCount(5);await expect(page.locator('.rv-facts dd').nth(1)).toHaveText('1');
 }
 async function removeCurrentPlan(page:Page){
  await page.goto('/plans');await page.getByRole('button',{name:'不再使用这份计划',exact:true}).click();
@@ -41,14 +41,14 @@ test('deleting the current plan preserves its versions and undo restores the sam
 });
 
 test('deleted plans leave workout facts and weekly totals intact and restore from settings',async({page})=>{
- await createPlan(page);await finishOneSet(page);const totals=await page.locator('.v8-facts dd').allTextContents();const before=await records(page);expect(before.workouts).toHaveLength(1);expect(before.workouts[0].sets).toHaveLength(1);
+ await createPlan(page);await finishOneSet(page);const totals=await page.locator('.rv-facts dd').allTextContents();const before=await records(page);expect(before.workouts).toHaveLength(1);expect(before.workouts[0].sets).toHaveLength(1);
  await removeCurrentPlan(page);await page.goto('/');
  await expect(page.getByRole('button',{name:'重新制定计划',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'手动训练',exact:true})).toBeVisible();
- await page.goto('/review');await expect(page.locator('.v8-facts dd')).toHaveText(totals);expect((await records(page)).workouts).toEqual(before.workouts);
+ await page.goto('/review');await expect(page.locator('.rv-facts dd')).toHaveText(totals);expect((await records(page)).workouts).toEqual(before.workouts);
  await page.goto('/settings');await page.getByRole('button',{name:'已删除的计划',exact:true}).click();await page.getByRole('button',{name:'恢复',exact:true}).click();
  await expect.poll(async()=>(await records(page)).plans[0].deletedAt).toBeUndefined();
  const restored=await records(page);expect(restored.versions).toEqual(before.versions);expect(restored.workouts).toEqual(before.workouts);
- await page.goto('/review');await expect(page.locator('.v8-facts dd')).toHaveText(totals);
+ await page.goto('/review');await expect(page.locator('.rv-facts dd')).toHaveText(totals);
 });
 
 test('previous plans can be read and deleted, while individual version detail has no delete action',async({page})=>{

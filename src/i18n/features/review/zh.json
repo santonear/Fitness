@@ -63,5 +63,20 @@
   "progressMet": "本周目标 {target} 次，已练 {done} 次，目标达成了。",
   "monthProgress": "这个月练了 {done} 次。",
   "monthProgressPartial": "这个月练了 {done} 次，其中 {partial} 次练了一部分。",
-  "patternsLater": "记满 {count} 次训练后，这里会显示你的训练规律。"
+  "patternsLater": "记满 {count} 次训练后，这里会显示你的训练规律。",
+  "period": "回顾范围",
+  "weekTab": "本周",
+  "monthTab": "本月",
+  "emptyHint": "练完一次，这里就会出现图表。",
+  "ringWeek": "次",
+  "ringMonth": "周有训练",
+  "ringDays": "天有训练",
+  "ringMet": "目标达成",
+  "legendComplete": "完整",
+  "legendPartial": "练了一部分",
+  "streak": "连续 {count} 周",
+  "tileMoves": "动了几次",
+  "tileMinutes": "训练分钟",
+  "tileActivity": "活动分钟",
+  "bodyParts": "练到的部位"
 }

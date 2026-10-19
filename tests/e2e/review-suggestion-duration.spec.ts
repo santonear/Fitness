@@ -14,10 +14,10 @@ test('month facts use the month while suggestions retain the approved recent-wee
   await repository.db.v8Workouts.bulkAdd(days.map(day=>{const date=`2026-10-${String(day).padStart(2,'0')}`;return {id:crypto.randomUUID(),planVersionId:version.id,templateId:template.id,startedAt:`${date}T04:00:00Z`,endedAt:`${date}T04:05:00Z`,localDate:date,timeZone:'Asia/Shanghai',status:'partial',plannedSetCount:template.items.reduce((n:any,i:any)=>n+i.sets,0),sets:[{exerciseId:template.items[0].exerciseId,itemIndex:0,setIndex:0,reps:8,completedAt:`${date}T04:01:00Z`}],feedback:{reasons:['time']}};}));
   return JSON.stringify(version);
  },days);
- const original=await seed([5,6]);await page.goto('/review');await page.getByRole('button',{name:'本月回顾',exact:true}).click();
- await expect(page.getByText('这个月你动了 2 次。',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'就这样调整',exact:true})).toHaveCount(0);
- await seed([20,21]);await page.reload();await page.getByRole('button',{name:'本月回顾',exact:true}).click();
- await expect(page.getByText('这个月你动了 4 次。',{exact:true})).toBeVisible();await expect(page.getByText('工作日那次，换成 15 分钟的短训练。',{exact:true}).first()).toBeVisible();
+ const original=await seed([5,6]);await page.goto('/review');await page.getByRole('radio',{name:'本月',exact:true}).click();
+ await expect(page.locator('.rv-tiles dd').first()).toHaveText('2');await expect(page.getByRole('button',{name:'就这样调整',exact:true})).toHaveCount(0);
+ await seed([20,21]);await page.reload();await page.getByRole('radio',{name:'本月',exact:true}).click();
+ await expect(page.locator('.rv-tiles dd').first()).toHaveText('4');await expect(page.getByText('工作日那次，换成 15 分钟的短训练。',{exact:true}).first()).toBeVisible();
  await page.getByRole('button',{name:'就这样调整',exact:true}).click();await expect(page.getByRole('heading',{name:'15 分钟 · 15'})).toBeVisible();
  const saved=await page.evaluate(async()=>{const rp='/src/persistence/repository.ts';const {repository}=await import(/* @vite-ignore */ rp);return JSON.stringify((await repository.db.v8PlanVersions.toArray())[0]);});expect(saved).toBe(original);
 });

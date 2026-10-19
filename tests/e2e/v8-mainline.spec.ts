@@ -34,7 +34,7 @@ test('monthly review sends the visible month instead of the current week',async(
  await page.route('**/api/v1/assistant/chat',async route=>{received=route.request().postDataJSON().context;await route.fulfill({status:503,json:{error:'AI_DISABLED'}});});
  await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();
  await expect(page.getByRole('heading',{name:'今天',exact:true})).toBeVisible();
- await page.goto('/review');await page.getByRole('button',{name:'本月回顾',exact:true}).click();
+ await page.goto('/review');await page.getByRole('radio',{name:'本月',exact:true}).click();
  await enableAssistant(page);
  await page.getByRole('button',{name:'和芽芽聊聊',exact:true}).click();
  await page.getByRole('dialog').getByRole('textbox').fill('看看这个月');await page.getByRole('dialog').getByRole('button',{name:'发送',exact:true}).click();
@@ -208,7 +208,7 @@ test('review adjustment is previewed then saved as a new version without rewriti
  await page.getByRole('button',{name:'就这样调整',exact:true}).click();await expect(page.getByRole('status')).toHaveText('已保存为新的计划版本。');
  const after=await page.evaluate(async()=>{const p='/src/persistence/db.ts';const db=(await import(/* @vite-ignore */ p)).database;return {workouts:await db.v8Workouts.toArray(),versions:await db.v8PlanVersions.toArray()};});
  expect(after.workouts).toEqual(before.workouts);expect(after.versions).toHaveLength(2);expect(after.versions.find((v:{id:string})=>v.id===before.versions[0].id)).toEqual(before.versions[0]);
- await page.getByRole('button',{name:'本月回顾',exact:true}).click();await expect(page.getByRole('heading',{name:'本月回顾',exact:true})).toBeVisible();
+ await page.getByRole('radio',{name:'本月',exact:true}).click();await expect(page.getByRole('heading',{name:'本月回顾',exact:true})).toBeVisible();
  await page.goto('/plans/versions');await expect(page.getByRole('button',{name:'查看计划',exact:true})).toHaveCount(2);
 });
 
@@ -218,7 +218,7 @@ test('current-week overnight patterns, replacement review and localized names',a
  const before=await page.evaluate(async()=>{const path='/src/persistence/db.ts',db=(await import(/* @vite-ignore */ path)).database;const profile=await db.profiles.toCollection().first();await db.profiles.put({...profile,timeZone:'Asia/Shanghai'});const version=(await db.v8PlanVersions.toArray())[0];
   const dates=['2026-10-11T15:59:00Z','2026-10-11T16:01:00Z','2026-10-12T16:01:00Z'];await db.v8Workouts.bulkAdd(dates.map(startedAt=>({id:crypto.randomUUID(),planVersionId:version.id,templateId:version.templates[0].id,startedAt,endedAt:new Date(Date.parse(startedAt)+600000).toISOString(),localDate:startedAt.slice(0,10),timeZone:'UTC',status:'partial',plannedSetCount:8,sets:[{exerciseId:version.templates[0].items[0].exerciseId,itemIndex:0,setIndex:0,reps:8,completedAt:new Date(Date.parse(startedAt)+60000).toISOString()}],feedback:{reasons:['time']}})));return version;
  });
- await page.goto('/review');await expect(page.getByText('记满 4 次训练后，这里会显示你的训练规律。',{exact:true})).toBeVisible();await expect(page.getByText(/没练完/)).toHaveCount(0);await expect(page.locator('.v8-facts dd')).toHaveText(['0','2','2','20','0']);
+ await page.goto('/review');await expect(page.getByText('记满 4 次训练后，这里会显示你的训练规律。',{exact:true})).toBeVisible();await expect(page.getByText(/没练完/)).toHaveCount(0);await expect(page.locator('.rv-facts dd')).toHaveText(['0','2','2','20','0']);
  await page.getByRole('button',{name:'就这样调整',exact:true}).click();await page.getByRole('button',{name:'就这样调整',exact:true}).click();await expect(page.getByRole('status')).toHaveText('已保存为新的计划版本。');
  const current=await page.evaluate(async()=>{const path='/src/persistence/db.ts',db=(await import(/* @vite-ignore */ path)).database;return(await db.v8PlanVersions.toArray()).find((v:{versionNumber:number})=>v.versionNumber===2)});
  expect(current.templates.map((t:{id:string})=>t.id)).toEqual(before.templates.map((t:{id:string})=>t.id));expect(current.templates[0].estimatedMinutes).toBeLessThan(before.templates[0].estimatedMinutes);
