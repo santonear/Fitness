@@ -1,5 +1,6 @@
 import { engineCopy } from "../../../coach/engine-copy";
 import { PlanStops, PlanTip } from "./WeekPlan";
+import { weekDoneDays } from "../../../application/plan-calendar";
 import { localDateIn, planStartDate, startDateLabel, weekdayIndex } from "../../../application/plan-presentation";
 import { startDateCopy } from "../../../i18n/features/plan/start-date";
 import { exerciseToolsCopy } from "../../../i18n/features/plan/exercise-tools";
@@ -150,6 +151,9 @@ export function PlanRoute({ versions = false }: { versions?: boolean }) {
           today={weekdayIndex(new Date(), timeZone)}
           startDate={planStartDate(selected, timeZone)}
           todayDate={todayDate}
+          timeZone={timeZone}
+          workouts={c.data?.workouts}
+          done={selected.id === c.data?.version?.id ? weekDoneDays(c.data?.workouts ?? [], todayDate) : undefined}
           exerciseActions={tools.buttons}
           changeStartBlocked={c.data?.active ? sd.busyWorkout : undefined}
           onChangeStart={(trigger) => {

@@ -481,3 +481,13 @@ Bo 已定版 V9 设计并授权推进；计时规则按 Bo 当日决定改写（
 - 理由：不丢数据、不编造数据；计划修改仍生成新版本；AI 返回仍需确认；健康资料外发规则不变。
 - 涉及文件：src/domain/{schemas.ts,v8/contracts.ts}、src/application/{v8-workflow,v8-review,plan-presentation}.ts、src/ui/components/{AssistantPanel,CoachPanel,ExerciseTools,StartDatePicker,ThemeSheet}.tsx、src/ui/pages/{home,plan,onboarding}/*、src/ui/mainline/*、src/i18n/features/{plan/start-date,plan/exercise-tools,home/theme,onboarding/plan-mode,coach/chat}.ts；测试 tests/unit/{plan-start-date,onboarding-plan-mode}.test.ts、tests/e2e/v9-ux-entries.spec.ts。
 - 待 Bo 确认：新增中英文案与芽芽的问法；开始日期范围 14 天；提前开始不阻断；换动作在非引擎模式下的默认目标；欢迎页不单独加一屏选风格。
+
+### 2026-10-19 计划月视图与今天日视图（规范 V9.8，V9.0.3）保守决定
+- 情况：Bo 反馈“计划部分仅有周视图，缺月视图”；“选择今天以后，没有日视图，也没有时间窗格，无法得知、记录起止时间，也不清楚计划里的动作该按什么顺序进行”。
+- 决定（月视图）：计划日按当前查看版本的每周安排投影到日历，从开始日（旧版本为创建日）起；过去的日子也用当前版本投影（不按当时生效的历史版本回推），因为旧版本的生效区间没有单独记录，回推会编造。“没练”只是事实描述，不带评价；放弃和未开始的训练不算记录。
+- 决定（日视图顺序与时间）：顺序就是训练单动作顺序（训练时也按这个顺序），不重新排序；热身 / 放松分段只取处方 block。基础计划没有热身 / 放松动作时，只用时长估算本来留出的空余时间显示“开始前活动一下 / 练完放松一下”，没有空余就不加，不延长时长，也不写入计划。每步时长是估算，按训练单预计时长等比缩放，与其他页面的分钟数一致。
+- 决定（计划开始时刻）：默认现在（向上取整 5 分钟），用户可改；只存本机当天（localStorage，读写失败不影响显示），不写进训练记录，也不外发。
+- 决定（实际时间与手动改）：实际开始 / 结束直接用训练记录已有的 startedAt / endedAt；每步完成时刻用该动作最后一组的 completedAt。手动改时间新增可选字段 `WorkoutRecord.timeCorrections: {startedAt, endedAt, createdAt}[]`（只追加，最新一条用于显示），不改 startedAt / endedAt、组记录或状态；无迁移（旧记录没有该字段即没有修改），备份沿用同一 schema 自动包含。校验：仅已结束（完成 / 部分 / 未开始）的训练，结束晚于开始、不晚于现在、不超过 12 小时，带数据版本校验。回顾与统计暂不改用修改后的时间（回顾页正由另一条工作线重做），只在今天页与计划月历显示。
+- 理由：不丢数据、不编造数据、完成事实只读；新增可选字段按 2026-10-10 授权记录后实施。
+- 涉及文件：src/application/{plan-calendar,day-timeline,workout-times,v8-workflow}.ts、src/domain/{schemas.ts,v8/contracts.ts}、src/ui/pages/plan/{PlanPage,PlanRoute,MonthPlan}.tsx、src/ui/pages/plan/week-plan.css、src/ui/pages/home/{HomePage,DayTimeline}.tsx、src/ui/pages/home/day-timeline.css、src/i18n/features/{plan/calendar,home/day-view}.ts；测试 tests/unit/plan-day-views.test.ts、tests/e2e/v9-plan-day-views.spec.ts。
+- 待 Bo 确认：月历状态的说法（练完了 / 练了一部分 / 计划 / 没练）；“开始前活动一下 / 练完放松一下”两步的显示条件；修改后的时间是否也用于回顾统计。

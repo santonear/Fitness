@@ -179,6 +179,7 @@ export const v8WorkoutSchema = z.strictObject({
   plannedExercises: z.array(z.strictObject({ exerciseId: exerciseIdSchema, itemIndex: nonnegative, plannedSetCount: nonnegative })).optional(),
   substitutions: z.array(z.strictObject({ fromExerciseId: exerciseIdSchema, toExerciseId: exerciseIdSchema, itemIndex: nonnegative, reason: z.enum(['discomfort', 'other']), createdAt: utcTimestampSchema })).optional(),
   appendedNotes: z.array(z.strictObject({ text: z.string(), createdAt: utcTimestampSchema })).optional(),
+  timeCorrections: z.array(z.strictObject({ startedAt: utcTimestampSchema, endedAt: utcTimestampSchema, createdAt: utcTimestampSchema })).optional(),
 }).superRefine((record,ctx)=>{
  const seen=new Set<string>();
  for(const [index,action] of (record.painActions??[]).entries()){

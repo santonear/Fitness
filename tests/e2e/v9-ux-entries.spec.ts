@@ -96,7 +96,8 @@ test('今天: one AI entry (the orb), theme button switches style, 动作怎么�
   const main = page.locator('main.v9-home');
   await expect(main.getByRole('button', { name: '和芽芽聊聊' })).toHaveCount(0);
   await expect(page.getByText('跟芽芽说说今天的情况')).toHaveCount(0);
-  await expect(main.getByRole('textbox')).toHaveCount(0);
+  // No chat box on 今天; the day view's planned start time (a time input) is the only field.
+  await expect(main.getByRole('textbox').and(page.locator('textarea, input:not([type="time"])'))).toHaveCount(0);
   await expect(page.getByRole('button', { name: '芽芽助手，按住可上下拖动' })).toHaveCount(1);
   await page.screenshot({ path: test.info().outputPath('home-pop-390.png') });
   await page.setViewportSize({ width: 1440, height: 900 }); await page.screenshot({ path: test.info().outputPath('home-pop-1440.png') });

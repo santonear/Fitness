@@ -48,7 +48,10 @@ export interface WorkoutRecord {
   templateSnapshot?: SessionTemplate;
   /** Append only after completion; all other completed facts remain immutable. */
   appendedNotes?: AppendedNote[];
+  /** User corrections of the start/end time, appended after training; the recorded startedAt/endedAt stay unchanged. Latest wins for display. */
+  timeCorrections?: WorkoutTimeCorrection[];
 }
+export interface WorkoutTimeCorrection { startedAt: string; endedAt: string; createdAt: string }
 export interface PainAction {eventId:string;appliedAt:string;kind:'substitute'|'exclude'|'review';pattern:Pattern;itemIndex:number;replacement?:PlannedItem;excludedItemIndexes?:number[];redFlagAnswers?:Record<string,boolean>}
 export interface SetFeedbackEvent {
   id:string; itemIndex:number; setIndex:number; exerciseId:string; createdAt:string;
