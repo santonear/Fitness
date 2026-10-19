@@ -1,0 +1,15 @@
+/** V9 plan start date: picked on the draft, changeable on 计划 (saved as a new version). */
+export const startDateCopy = {
+  zh: {
+    label: '从哪天开始', hint: '默认今天，也可以往后挑，最多两周内。', firstWeek: '第一周 · {date} 起', startsOn: '{date} 开始',
+    current: '开始日期', change: '改开始日期', sheetTitle: '改开始日期', sheetHint: '会保存成新的一版计划，动作不变。',
+    save: '就从这天开始', saved: '开始日期已更新', summary: '开始日期改为 {date}', busyWorkout: '训练进行中，练完再改。',
+    notStarted: '还没到开始的日子，想提前练也可以。',
+  },
+  en: {
+    label: 'Start date', hint: 'Today by default, or pick a day within the next two weeks.', firstWeek: 'First week · from {date}', startsOn: 'Starts {date}',
+    current: 'Start date', change: 'Change start date', sheetTitle: 'Change start date', sheetHint: 'This saves a new plan version. The exercises stay the same.',
+    save: 'Start on this day', saved: 'Start date updated', summary: 'Start date changed to {date}', busyWorkout: 'A workout is in progress. Change it after you finish.',
+    notStarted: 'The plan has not started yet. You can still train early if you like.',
+  },
+} as const;

@@ -143,3 +143,36 @@ export function planReasons(plan: Pick<PlanVersion, 'weeklyTarget' | 'preferredD
   }
   return reasons;
 }
+
+/* ---------- Start date (V9: the user picks when the plan starts) ---------- */
+/** Local calendar date (YYYY-MM-DD) in the given time zone. */
+export const localDateIn = (timeZone: string, date = new Date()) =>
+  new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
+export const addDays = (date: string, days: number) => new Date(Date.parse(`${date}T00:00:00Z`) + days * 86400000).toISOString().slice(0, 10);
+export const weekdayOf = (date: string): Weekday => weekdays[(new Date(`${date}T00:00:00Z`).getUTCDay() + 6) % 7];
+/** When the plan starts: the chosen date, or for older versions the day the version was created. */
+export function planStartDate(version: { startDate?: string; createdAt?: string }, timeZone: string): string | undefined {
+  if (version.startDate) return version.startDate;
+  return version.createdAt && Number.isFinite(Date.parse(version.createdAt)) ? localDateIn(timeZone, new Date(version.createdAt)) : undefined;
+}
+/** Today plus the next `days` days, the dates offered by the start-date picker. */
+export const startDateOptions = (today: string, days = 14) => Array.from({ length: days + 1 }, (_, index) => addDays(today, index));
+/** "今天" / "明天" / "10月21日 周二" style label for a date relative to today. */
+export function startDateLabel(date: string, today: string | undefined, locale: 'zh' | 'en', withWeekday = true): string {
+  const day = weekdayLabel(weekdayOf(date), locale);
+  const [, month, dayOfMonth] = date.split('-').map(Number);
+  const calendar = locale === 'zh' ? `${month}月${dayOfMonth}日` : `${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][month - 1]} ${dayOfMonth}`;
+  const relative = !today ? '' : date === today ? (locale === 'zh' ? '今天' : 'Today') : date === addDays(today, 1) ? (locale === 'zh' ? '明天' : 'Tomorrow') : '';
+  const full = withWeekday ? `${calendar} ${day}` : calendar;
+  return relative ? `${relative} · ${full}` : full;
+}
+export interface PlanWeekDay { date: string; day: Weekday }
+/**
+ * The seven days a week view shows. Before the plan starts it is the first plan week (from the start date);
+ * afterwards it is the current Monday-to-Sunday week. Without dates it is a plain Monday week.
+ */
+export function planWeekDays(startDate: string | undefined, today: string | undefined): (PlanWeekDay & { beforeStart: boolean })[] | undefined {
+  if (!startDate || !today) return undefined;
+  const first = startDate > today ? startDate : addDays(today, -weekdays.indexOf(weekdayOf(today)));
+  return Array.from({ length: 7 }, (_, index) => { const date = addDays(first, index); return { date, day: weekdayOf(date), beforeStart: date < startDate }; });
+}
