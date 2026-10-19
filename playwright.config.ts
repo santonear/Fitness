@@ -10,6 +10,8 @@ export default defineConfig({
   use: {
     baseURL: `http://127.0.0.1:${port}`,
     viewport: { width: 320, height: 700 },
+    // The app's calendar days follow the user's zone (default Asia/Shanghai); run the browser there too so day boundaries agree.
+    timezoneId: 'Asia/Shanghai',
     trace: 'retain-on-failure',
   },
   projects: [
