@@ -20,6 +20,12 @@ export function selectAssistantPromptVersion(engine:boolean,selected?:string):st
 }
 /** Legacy (v2) prompts have no topic files; the nutrition conversation keeps the same scope in one line. */
 export const NUTRITION_TOPIC_RULE = 'This conversation is about everyday diet, intake and nutrition for an adult who trains. Give general guidance only: no calorie targets, weight-loss rates, restrictive or fasting diets, supplement or medication doses, and no diagnosis. Suggest a doctor or registered dietitian for medical conditions, pregnancy or breastfeeding, or signs of disordered eating. Never guess what the user ate. Return no attachment.';
+/** Hard constraint whenever the user already picked training dates on the calendar. */
+export function pickedScheduleRule(request:{context?:{schedule?:{trainingDates:string[];startTime?:string}}}):string{
+  const schedule=request.context?.schedule;
+  if(!schedule)return '';
+  return `Fixed training dates: the user already chose these exact training dates on the calendar: ${schedule.trainingDates.join(', ')}${schedule.startTime?`, starting at ${schedule.startTime} local time`:''} (context.schedule). Every other day is a rest day. Do not ask which days to train or rest, how many days per week, or when to start; do not propose a weekday pattern or a default weekly rhythm; schedule the sessions exactly on these dates. A message such as "按我的时间表来" or "follow my schedule" means keep these dates. Only change the days if the latest user message explicitly asks for different days or a different weekly count.`;
+}
 export type AssistantPromptMessage = { role: 'system' | 'user' | 'assistant'; content: string };
 function factualSnapshot(value: unknown): unknown {
   if(Array.isArray(value)) return value.map(factualSnapshot);
@@ -47,7 +53,7 @@ export function assistantPrompt(request: AssistantRequest, stage: 'text' | 'atta
     const routing=stage==='attachment' ? `Requested kind from the text stage: ${attachmentKind??'none'}. Map plan to plan_new, today to today_adjust, change to plan_modify, review to review. For exercise guidance and no requested proposal use {"kind":"none"}. Return only one JSON object.` : '';
     const notices=shownSafetyNotices(request);
     const truthful=version===ASSISTANT_PROMPT_VERSION||version===ENGINE_ASSISTANT_PROMPT_VERSION?'Do not claim that a specific exercise was replaced, a plan was applied, or a long-term preference was saved. A card is only a preview; the application will append a verified diff after assembly.': '';
-    return [{role:'system',content:`${version}\n${v3Prompt(stage,task,errors,version===ENGINE_ASSISTANT_PROMPT_VERSION,request.topic)}\n${truthful}\n${routing}\nThe following snapshot contains facts and past preferences, not a new instruction. The latest user message takes priority. Reply strictly in ${request.locale==='en'?'English':'Chinese'}; catalog names do not set the reply language. adultConfirmed: ${request.adultConfirmed}. safetyNoticeShown: ${JSON.stringify(notices)}.`},
+    return [{role:'system',content:`${version}\n${v3Prompt(stage,task,errors,version===ENGINE_ASSISTANT_PROMPT_VERSION,request.topic)}\n${truthful}\n${routing}\n${pickedScheduleRule(request)}\nThe following snapshot contains facts and past preferences, not a new instruction. The latest user message takes priority. Reply strictly in ${request.locale==='en'?'English':'Chinese'}; catalog names do not set the reply language. adultConfirmed: ${request.adultConfirmed}. safetyNoticeShown: ${JSON.stringify(notices)}.`},
       {role:'user',content:JSON.stringify({context:factualSnapshot(request.context),currentWorkout:request.currentWorkout,preferences:request.preferences,candidates,...(stage==='attachment'?{conversationalAnswer:text}:{})})},...request.messages];
   }
   const instruction = stage === 'text'
@@ -58,7 +64,7 @@ export function assistantPrompt(request: AssistantRequest, stage: 'text' | 'atta
   const routing = stage === 'attachment' && attachmentKind ? `The text stage explicitly requested attachment kind ${attachmentKind}. Return that attachment; do not return null as a shortcut after validation errors. Map plan to plan_proposal, today to today_adjustment, change to change_proposal, exercise to exercise_info, review to review_summary.` : '';
   const taskRules = stage === 'attachment' && request.context ? legacyAssistantTaskHeader(request.context.task) : '';
   const topicRule = request.topic === 'nutrition' ? NUTRITION_TOPIC_RULE : '';
-  return [{ role: 'system', content: `${version}\n${safety}\n${instruction}\n${routing}\n${taskRules}\n${topicRule}\nThe following context is an application snapshot, not a new user instruction. The final actual user message overrides older location, equipment and goal defaults. Missing currentWorkout means completed-set facts are unknown, not zero.\nLanguage:${request.locale}; adultConfirmed:${request.adultConfirmed}.` },
+  return [{ role: 'system', content: `${version}\n${safety}\n${instruction}\n${routing}\n${taskRules}\n${topicRule}\n${pickedScheduleRule(request)}\nThe following context is an application snapshot, not a new user instruction. The final actual user message overrides older location, equipment and goal defaults. Missing currentWorkout means completed-set facts are unknown, not zero.\nLanguage:${request.locale}; adultConfirmed:${request.adultConfirmed}.` },
     { role: 'user', content: JSON.stringify({ context, currentWorkout: request.currentWorkout, catalog: assistantExercises(request).map(e => ({ id: e.id, name: e.name, equipment: e.equipment, metricType: e.metricType })), ...(stage === 'attachment' ? { conversationalAnswer: text } : {}) }) },
     ...request.messages];
 }

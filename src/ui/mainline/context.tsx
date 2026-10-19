@@ -11,7 +11,10 @@ import { optionalCoachBody,optionalCoachHistory } from '../../application/v8-coa
 import { activityDate } from '../../application/v8-activity';
 import { backfillOnboarding } from '../../application/v8-onboarding-backfill';
 import { buildCoachRequest } from '../../coach/request-builder';
-import type { CoachRequest } from '../../coach/contracts';
+import type { CoachRequest, PickedSchedule } from '../../coach/contracts';
+import { pickedSchedule } from '../../application/picked-schedule';
+import { normalizeTrainingDates } from '../../application/training-dates';
+import { localDateIn } from '../../application/plan-presentation';
 import type { CoachProfile } from '../../domain/v8/contracts';
 import i18n from '../../i18n';
 import { profileService } from '../../application/profile';
@@ -48,14 +51,16 @@ function useController() {
  const coachTrigger=useRef<HTMLElement|null>(null);
  const [coachDraft,setCoachDraft]=useState<{nonce:string;text:string}>();
  /** Opens the assistant like openCoach and places a quick-action prompt in the composer without sending it. */
- function openCoachWithDraft(text:string,task?:CoachRequest['task'],profile?:CoachProfile,templateId?:string){openCoach(task,templateId,profile);setCoachDraft({nonce:crypto.randomUUID(),text});}
+ function openCoachWithDraft(text:string,task?:CoachRequest['task'],profile?:CoachProfile,templateId?:string,schedule?:PickedSchedule){openCoach(task,templateId,profile,schedule);setCoachDraft({nonce:crypto.randomUUID(),text});}
  /** Session shown on 今天, so the 芽芽 orb adjusts the same workout the user is looking at. */
  const [homeTemplateId,setHomeTemplateId]=useState<string>();
- function openCoach(task:CoachRequest['task']='MODIFY_PLAN',templateId?:string,profile?:CoachProfile){
+ function openCoach(task:CoachRequest['task']='MODIFY_PLAN',templateId?:string,profile?:CoachProfile,schedule?:PickedSchedule){
   if(!data)return;
+  // A new plan discussed in chat keeps the calendar days already picked (draft first, then the onboarding answers).
+  const picked=task==='ONBOARD_PLAN'?schedule??(candidate?pickedSchedule(candidate):pickedSchedule({...answers,trainingDates:normalizeTrainingDates(answers.trainingDates??[],localDateIn(data.profile?.timeZone??'Asia/Shanghai')).dates})):undefined;
   coachTrigger.current=document.activeElement instanceof HTMLElement?document.activeElement:null;
   const selectedFacts=reviewKind==='month'?monthFacts:facts;
-  const nextRequest=buildCoachRequest({...optionalCoach,task,data,templateId,profile,facts:selectedFacts?{...selectedFacts,improvements:[...selectedFacts.improvements]}:undefined,kind:reviewKind});
+  const nextRequest=buildCoachRequest({...optionalCoach,task,data,templateId,profile,schedule:picked,facts:selectedFacts?{...selectedFacts,improvements:[...selectedFacts.improvements]}:undefined,kind:reviewKind});
   const key=(request:CoachRequest|undefined)=>{if(!request)return '';const{requestId:_requestId,conversationId:_conversationId,...content}=request;return JSON.stringify(content);};
   if(key(nextRequest)!==key(coachRequest)||coachRevision!==data.metadata.dataRevision){
    setCoachRequest(nextRequest);setCoachRevision(data.metadata.dataRevision);

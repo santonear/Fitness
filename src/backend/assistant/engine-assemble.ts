@@ -3,6 +3,7 @@ import {engineAction,enginePlanProposal} from '../../application/engine-plan';
 import type {AssistantIntent,AssistantRequest,AssistantAttachment} from '../../assistant/contracts';
 import type {EngineChange,EnginePlan} from '../../engine/contracts';
 import {exercises} from '../../catalog/exercises';
+import {explicitScheduleChange} from '../../application/picked-schedule';
 
 function exerciseId(value:string|undefined,candidateIds:string[]=[]){
  if(!value)return;
@@ -15,6 +16,8 @@ export function assembleEngineIntent(intent:AssistantIntent,request:AssistantReq
  const context=request.context,profile=context?.engineProfile;
  const empty={attachment:null,dropped:[],repaired:false,notices:[] as string[]};
  if(!context||!profile||!request.adultConfirmed)return empty;
+ // Calendar-picked days are fixed: ignore a model-chosen day count unless the user asked to change days.
+ if((intent.kind==='plan_new'||intent.kind==='plan_modify')&&intent.params&&context.schedule&&!explicitScheduleChange(request.messages.at(-1)?.content??''))intent={...intent,params:{...intent.params,daysPerWeek:undefined,preferredDays:undefined}} as AssistantIntent;
  if(context.task==='ONBOARD_PLAN'&&intent.kind==='plan_new'){
   const {plan,proposal}=enginePlanProposal(context.profile,{...profile,locale:request.locale,daysPerWeek:Math.min(6,intent.params.daysPerWeek??profile.daysPerWeek),sessionMinutes:Math.max(10,Math.min(90,intent.params.minutesPerSession??profile.sessionMinutes))});
   const notices=engineDisplayNotices(plan).map(notice=>notice.message[request.locale]);

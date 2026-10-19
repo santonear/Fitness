@@ -4,6 +4,7 @@ import {diffTemplates} from '../../assistant/template-diff';
 import {sameExerciseFamily} from '../../catalog/exercise-family';
 import {manualTrainingItems} from '../../application/rules/manual-items';
 import {sessionDuration} from '../../application/rules/session-duration';
+import {explicitScheduleChange} from '../../application/picked-schedule';
 import { assistantIntentSchema, type AssistantAttachment, type AssistantIntent, type AssistantRequest } from '../../assistant/contracts';
 import { basicProposal } from '../../application/v8-workflow';
 import { estimatePlannedMinutes } from '../../application/rules/duration-estimate';
@@ -155,6 +156,10 @@ function applyChanges(template:SessionTemplate,changes:Extract<AssistantIntent,{
  }
  return applied;
 }
+/** Picked calendar days stay fixed unless the latest user message explicitly asks to change days. */
+export function daysLocked(request:AssistantRequest):boolean{
+ return !!request.context?.schedule&&!explicitScheduleChange(request.messages.at(-1)?.content??'');
+}
 /** The model may describe changes; identity, metrics and durations come only from code. */
 export function assembleAssistantIntent(raw:unknown,request:AssistantRequest):{attachment:AssistantAttachment|null;dropped:string[];repaired:boolean}{
  const parsed=typeof raw==='string'?JSON.parse(raw):raw;
@@ -168,7 +173,8 @@ export function assembleAssistantIntent(raw:unknown,request:AssistantRequest):{a
  if(explicitReplacements.length&&(intent.kind==='none'||intent.kind==='clarify'))intent={kind:'plan_modify',changes:explicitReplacements};
  const identity={requestId:context.requestId,restoreGeneration:context.restoreGeneration,mutationAllowed:false as const};
  if(intent.kind==='plan_new'&&context.task==='ONBOARD_PLAN'){
-  const p=intent.params,profile={...context.profile,weeklyTarget:p.daysPerWeek??context.profile.weeklyTarget,sessionMinutes:sessionDuration(request.messages.at(-1)?.content??'')??p.minutesPerSession??context.profile.sessionMinutes,
+  // Calendar-picked days are fixed: the model's day count or weekdays never replace them unless the user asked.
+  const p=daysLocked(request)?{...intent.params,daysPerWeek:undefined,preferredDays:undefined}:intent.params,profile={...context.profile,weeklyTarget:p.daysPerWeek??context.profile.weeklyTarget,sessionMinutes:sessionDuration(request.messages.at(-1)?.content??'')??p.minutesPerSession??context.profile.sessionMinutes,
    place:context.profile.place,equipment:context.profile.equipment,
    preferredDays:p.preferredDays?.filter(day=>['mon','tue','wed','thu','fri','sat','sun'].includes(day)) as typeof context.profile.preferredDays??context.profile.preferredDays,
    cautions:[...new Set([...context.profile.cautions,...(p.cautionAreas??[]).filter(area=>['knee','back','shoulder','wrist','other'].includes(area))])] as typeof context.profile.cautions};
@@ -233,6 +239,7 @@ export function assembleAssistantIntent(raw:unknown,request:AssistantRequest):{a
   }
   const proposal=structuredClone(context.plan);
   const explicitMinutes=sessionDuration(context.instruction);
+  if(intent.params&&daysLocked(request))intent={...intent,params:{...intent.params,daysPerWeek:undefined,preferredDays:undefined}};
   if(intent.params?.daysPerWeek)proposal.weeklyTarget=intent.params.daysPerWeek;
   if(intent.params?.daysPerWeek&&proposal.preferredDays&&proposal.preferredDays.length!==proposal.weeklyTarget){
    const order=['mon','tue','wed','thu','fri','sat','sun'] as const;

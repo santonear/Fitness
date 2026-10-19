@@ -5,12 +5,15 @@ import zh from '../i18n/features/coach/zh.json';
 import en from '../i18n/features/coach/en.json';
 import type { createV8Workflow } from '../application/v8-workflow';
 import type { CoachProfile } from '../domain/v8/contracts';
-import { coachRequestSchema, reviewFactsSchema, type CoachRequest } from './contracts';
+import { coachRequestSchema, reviewFactsSchema, type CoachRequest, type PickedSchedule } from './contracts';
+import { pickedSchedule } from '../application/picked-schedule';
 import type { ReviewFacts } from '../application/review/contracts';
 
 type Snapshot = Awaited<ReturnType<ReturnType<typeof createV8Workflow>['snapshot']>>;
 export type CoachRequestInput = { task: CoachRequest['task']; data: Snapshot; conversationId?: string; instruction?: string; templateId?: string;
- profile?: CoachProfile; facts?: ReviewFacts; kind?:'week'|'month'; body?:CoachRequest['body']; history?:string };
+ profile?: CoachProfile; facts?: ReviewFacts;
+ /** ONBOARD_PLAN: calendar-picked days of the draft being discussed (MODIFY_PLAN reads them from the current version). */
+ schedule?: PickedSchedule; kind?:'week'|'month'; body?:CoachRequest['body']; history?:string };
 /** Explicit long-term wording takes precedence over a simultaneous reference to today. */
 export const assistantPlanIntentDuringWorkout=(message:string)=>{
  if(/今天|这次|\btoday\b|this (?:time|workout|session)/i.test(message)&&!/以后|今后|每次|每周|from now on|every (?:time|week)/i.test(message))return false;
@@ -30,7 +33,8 @@ export function buildCoachRequest(input:CoachRequestInput):CoachRequest|undefine
  if(task==='ONBOARD_PLAN'){
   const {goalText,weeklyTarget,sessionMinutes,scheduleOriginalText,preferredDays,place,equipment,adultConfirmed,cautions,cautionNote}=profile;
   const sharedProfile={goalText,weeklyTarget,sessionMinutes,scheduleOriginalText,preferredDays,place,equipment,adultConfirmed,cautions,cautionNote};
-  return coachRequestSchema.parse({...common,task,profile:sharedProfile});
+  const schedule=pickedSchedule(input.schedule);
+  return coachRequestSchema.parse({...common,task,profile:sharedProfile,...(schedule?{schedule}:{})});
  }
  if(!data.plan||!data.version)return;
  // Never substitute the current plan's first template for an older active workout.
@@ -41,7 +45,8 @@ export function buildCoachRequest(input:CoachRequestInput):CoachRequest|undefine
  const instruction=input.instruction?.trim()||copy.defaultInstruction;
  if(task==='MODIFY_PLAN'){
   const {goalText,weeklyTarget,preferredDays,scheduleOriginalText,sessionMinutes,templates}=data.version;
-  return coachRequestSchema.parse({...common,task,target,instruction,plan:{goalText,weeklyTarget,preferredDays,scheduleOriginalText,sessionMinutes,templates,reasons:['','',''].map(()=>copy.currentPlan)}});
+  const schedule=pickedSchedule(data.version);
+  return coachRequestSchema.parse({...common,task,target,instruction,...(schedule?{schedule}:{}),plan:{goalText,weeklyTarget,preferredDays,scheduleOriginalText,sessionMinutes,templates,reasons:['','',''].map(()=>copy.currentPlan)}});
  }
  const selectedId=input.templateId??data.active?.templateId??data.version.templates[0]?.id;
  const override=data.state?.nextWorkoutOverride;
