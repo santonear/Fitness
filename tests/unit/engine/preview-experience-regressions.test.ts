@@ -109,7 +109,7 @@ it("source-only metadata does not inflate the visible change list", () => {
     ).changes,
   ).toHaveLength(1);
 });
-it("warmup and cooldown guidance never displays resistance RIR or rest", () => {
+it("warmup and cooldown guidance never displays resistance effort or rest", () => {
   const prescription: EnginePrescription = {
     pattern: "cardio_cyclic",
     block: "warmup",
@@ -120,7 +120,7 @@ it("warmup and cooldown guidance never displays resistance RIR or rest", () => {
     renderToStaticMarkup(
       createElement(PrescriptionDetails, { prescription, locale: "zh" }),
     ),
-  ).not.toContain("RIR");
+  ).not.toContain("还能再做");
   expect(
     renderToStaticMarkup(
       createElement(PrescriptionDetails, { prescription, locale: "zh" }),
@@ -133,5 +133,5 @@ it("warmup and cooldown guidance never displays resistance RIR or rest", () => {
         locale: "zh",
       }),
     ),
-  ).toContain("RIR");
+  ).toContain("每组做到还能再做 4 次时停");
 });

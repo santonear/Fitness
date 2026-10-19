@@ -89,9 +89,9 @@ describe('training engine feedback and prescription UI',()=>{
   const html=renderToStaticMarkup(createElement(SetFeedback,{fact,events,locale:'en',busy:false,onAppend:()=>{}}));
   expect(html).toMatch(/aria-pressed="true"[^>]*>Too light/);expect(fact).toEqual(before);expect(events).toHaveLength(1);
  });
- it('shows relative load, prescription rest, tempo and RIR without inventing kilogram values',()=>{
+ it('shows relative load, prescription rest and effort in plain words without inventing kilogram values',()=>{
   const html=renderToStaticMarkup(createElement(PrescriptionDetails,{prescription,locale:'zh'}));
-  expect(html).toContain('轻负荷');expect(html).toContain('1 分钟 15 秒');expect(html).toContain('每次用时');expect(html).toContain('4');expect(html).toContain('3–4');expect(html).not.toContain('0 公斤');
+  expect(html).toContain('轻负荷');expect(html).toContain('1 分钟 15 秒');expect(html).not.toContain('每次用时');expect(html).not.toContain('RIR');expect(html).toContain('每组做到还能再做 3–4 次时停');expect(html).not.toContain('0 公斤');
   expect(renderToStaticMarkup(createElement(PrescriptionDetails,{locale:'zh'}))).toBe('');
  });
  it('keeps the start control disabled until the matching engine preview has arrived',()=>{
