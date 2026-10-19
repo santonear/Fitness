@@ -1,12 +1,13 @@
 import {test,expect} from '@playwright/test';
+import {answerTexts,basicSafety,generate,startOnboarding,toFirstQuestion} from './helpers/onboarding-v9';
 
 test('month facts use the month while suggestions retain the approved recent-week window and actual duration',async({page})=>{
  await page.clock.install({time:new Date('2026-10-25T04:00:00Z')});
- await page.goto('/');await page.getByLabel('你的回答').fill('保持力量');await page.getByRole('button',{name:'继续',exact:true}).click();
- await page.getByLabel('你的回答').fill('每周3次，每次30分钟');await page.getByRole('button',{name:'继续',exact:true}).click();
- await page.getByLabel('你的回答').fill('在家，只有瑜伽垫');await page.getByRole('button',{name:'继续',exact:true}).click();
- await page.getByLabel('我已年满 18 岁',{exact:false}).check();await page.getByRole('button',{name:'生成新计划'}).click();await page.getByRole('button',{name:'就用这份计划'}).click();
- await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
+ await startOnboarding(page);await answerTexts(page,['保持力量']);
+ await answerTexts(page,['每周3次，每次30分钟']);
+ await answerTexts(page,['在家，只有瑜伽垫']);
+ await basicSafety(page);await generate(page);await page.getByRole('button',{name:'就用这份计划'}).click();
+ await expect(page.getByRole('heading',{name:'今天',exact:true})).toBeVisible();
  const seed=async(days:number[])=>page.evaluate(async days=>{
   const rp='/src/persistence/repository.ts';const {repository}=await import(/* @vite-ignore */ rp);
   const state=await repository.db.v8State.get('v8'),plan=await repository.db.v8Plans.get(state.currentPlanId),version=await repository.db.v8PlanVersions.get(plan.currentVersionId),template=version.templates[0];

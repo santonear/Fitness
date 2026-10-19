@@ -170,7 +170,7 @@ for (const zh of [false, true]) {
     await expect(page.getByRole('alert')).toBeVisible();
     await page.goto('/');
     await expect(page.locator('.trial-access')).toHaveCount(0);
-    await expect(page.locator('.v8-onboarding')).toBeVisible();await expect(page.getByRole('textbox')).toBeEnabled();
+    await expect(page.locator('.v9-welcome')).toBeVisible();await page.getByRole('button',{name:/^(开始|Start)$/}).click();await expect(page.locator('.v9-onboarding')).toBeVisible();await expect(page.getByRole('radio').first()).toBeEnabled();
   });
 }
 test('management shows real report values, review actions and responsive layout', async ({ page }) => {
@@ -219,11 +219,11 @@ for (const zh of [false, true]) test(`visible invitation entry starts planning w
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({ path: test.info().outputPath(`invitation-entry-${zh ? 'zh' : 'en'}.png`), fullPage: true });
   await activate.click();
-  await expect(page).toHaveURL(/\/onboarding$/); await expect(page.locator('.v8-onboarding')).toBeVisible();
+  await expect(page).toHaveURL(/\/onboarding$/); await expect(page.locator('.v9-welcome, .v9-onboarding').first()).toBeVisible();
   expect(writes).toEqual(['/api/v1/trial/redeem']);
   expect(await page.evaluate(() => localStorage.getItem('fitness-trial-display-name-v1'))).toBe('Synthetic member');
   expect(await page.evaluate(() => Object.values(localStorage).some(v => v.includes('a'.repeat(64))))).toBe(false);
-  await page.reload(); await expect(page.locator('.v8-onboarding')).toBeVisible(); expect(writes).toHaveLength(1);
+  await page.reload(); await expect(page.locator('.v9-welcome, .v9-onboarding').first()).toBeVisible(); expect(writes).toHaveLength(1);
 });
 
 for (const zh of [false, true]) test(`pending applicants can enter a code and invalid codes do not activate (${zh ? 'zh' : 'en'})`, async ({ page }) => {

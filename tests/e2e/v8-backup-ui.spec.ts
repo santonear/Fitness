@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 test('V8 JSON download and File restore cross origins and reset a sibling without BroadcastChannel', async ({page,context})=>{
  await context.addInitScript(()=>localStorage.setItem('fitness.language','en'));
- await page.goto('/settings');await expect(page.getByRole('heading',{name:'Settings',exact:true})).toBeVisible();
+ await page.goto('/settings');await expect(page.getByRole('heading',{name:'Me',exact:true})).toBeVisible();
  await page.evaluate(async()=>{const p='/src/application/profile.ts';const service=(await import(/* @vite-ignore */ p)).profileService;const profile=await service.getProfile();await service.saveProfile({locale:profile.locale,timeZone:profile.timeZone,units:profile.units,trainingPreferences:{goal:'Portable facts',updatedAt:new Date().toISOString()}},profile.revision);});
  await page.getByRole('button',{name:'Backup and restore',exact:true}).click();
  const pending=page.waitForEvent('download');await page.getByRole('button',{name:'Export JSON backup',exact:true}).click();const file=await(await pending).path();if(!file)throw Error('Missing downloaded JSON');
@@ -15,5 +15,5 @@ test('V8 JSON download and File restore cross origins and reset a sibling withou
  await other.getByLabel('I have downloaded and kept the current backup',{exact:true}).check();await other.getByRole('button',{name:'Next: confirm replacement',exact:true}).click();await other.getByLabel('I confirm replacing all local data',{exact:true}).check();await other.getByRole('button',{name:'Replace local data',exact:true}).click();
  await expect(sibling.getByRole('textbox')).not.toHaveValue('Unsaved stale form');
  await expect.poll(()=>other.evaluate(async()=>{const p='/src/application/profile.ts';return(await(await import(/* @vite-ignore */ p)).profileService.getProfile())?.trainingPreferences?.goal;})).toBe('Portable facts');
- await other.reload();await expect(other.getByRole('heading',{name:'Settings',exact:true})).toBeVisible();
+ await other.reload();await expect(other.getByRole('heading',{name:'Me',exact:true})).toBeVisible();
 });

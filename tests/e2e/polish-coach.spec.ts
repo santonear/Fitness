@@ -1,4 +1,5 @@
 import {test,expect} from '@playwright/test';
+import {answerTexts,basicSafety,generate,startOnboarding,toFirstQuestion} from './helpers/onboarding-v9';
 test('missing plan uses conservative local pain response and review navigation without network',async({page})=>{
  let calls=0;await page.route('**/api/v1/plans/generate',async route=>{calls++;await route.abort();});
  await page.goto('/tests/fixtures/v8-coach/index.html?missing');await page.getByRole('button',{name:'跟芽芽说',exact:true}).click();
@@ -32,11 +33,11 @@ for(const status of ['none','unknown','offline'])test(`access ${status} returns 
  await expect(page.getByText('现在用的是本地建议',{exact:false})).toBeVisible();await expect(page.getByText('芽芽暂时连不上，你的记录不受影响',{exact:true})).toHaveCount(0);
 });
 test('review has one factual feature card and finish includes elapsed time and partial sessions in its ordinal',async({page})=>{
- await page.goto('/');await page.getByLabel('你的回答').fill('保持力量');await page.getByRole('button',{name:'继续',exact:true}).click();
- await page.getByLabel('你的回答').fill('每周3次，每次30–45分钟');await page.getByRole('button',{name:'继续',exact:true}).click();
- await page.getByLabel('你的回答').fill('在家，只有瑜伽垫');await page.getByRole('button',{name:'继续',exact:true}).click();
- await page.getByLabel('我已年满 18 岁',{exact:false}).check();await page.getByRole('button',{name:'生成新计划'}).click();await page.getByRole('button',{name:'就用这份计划'}).click();
- await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
+ await startOnboarding(page);await answerTexts(page,['保持力量']);
+ await answerTexts(page,['每周3次，每次30–45分钟']);
+ await answerTexts(page,['在家，只有瑜伽垫']);
+ await basicSafety(page);await generate(page);await page.getByRole('button',{name:'就用这份计划'}).click();
+ await expect(page.getByRole('heading',{name:'今天',exact:true})).toBeVisible();
  const activeId=await page.evaluate(async()=>{
   const rp='/src/persistence/repository.ts',wp='/src/application/v8-workflow.ts',ep='/src/catalog/exercises.ts';
   const {repository}=await import(/* @vite-ignore */ rp),{createV8Workflow}=await import(/* @vite-ignore */ wp),{EXERCISE_IDS}=await import(/* @vite-ignore */ ep);
@@ -54,10 +55,10 @@ test('review has one factual feature card and finish includes elapsed time and p
 });
 
 test('week and month reviews without a current plan retain facts and offer manual or new planning',async({page})=>{
- await page.goto('/onboarding');
- for(const answer of ['保持力量','每周3次，每次30分钟','在家，只有瑜伽垫']){await page.getByLabel('你的回答').fill(answer);await page.getByRole('button',{name:'继续',exact:true}).click();}
- await page.getByLabel('我已年满 18 岁',{exact:false}).check();await page.getByRole('button',{name:'生成新计划',exact:true}).click();await page.getByRole('button',{name:'就用这份计划',exact:true}).click();
- await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
+ await page.goto('/onboarding');await toFirstQuestion(page);
+ await answerTexts(page,['保持力量','每周3次，每次30分钟','在家，只有瑜伽垫']);
+ await basicSafety(page);await generate(page);await page.getByRole('button',{name:'就用这份计划',exact:true}).click();
+ await expect(page.getByRole('heading',{name:'今天',exact:true})).toBeVisible();
  await page.evaluate(async()=>{const rp='/src/persistence/repository.ts',wp='/src/application/v8-workflow.ts';const {repository}=await import(/* @vite-ignore */ rp),{createV8Workflow}=await import(/* @vite-ignore */ wp);const flow=createV8Workflow(repository),s=await flow.snapshot();const w=await flow.start(s.version.templates[0].id);await flow.recordSet(w.id,0,0,{reps:8});await flow.finish(w.id,{reasons:['time']});});
  await page.goto('/review');await expect(page.locator('.v8-facts dd')).toHaveCount(5);const before=await page.locator('.v8-facts dd').allTextContents();
  await page.evaluate(async()=>{const rp='/src/persistence/repository.ts',wp='/src/application/v8-workflow.ts';const {repository}=await import(/* @vite-ignore */ rp),{createV8Workflow}=await import(/* @vite-ignore */ wp);const flow=createV8Workflow(repository),s=await flow.snapshot();await flow.deletePlan(s.plan.id,s.metadata.dataRevision);});

@@ -1,13 +1,14 @@
 import { readFileSync } from 'node:fs';
+import {answerTexts,basicSafety,generate,startOnboarding,toFirstQuestion} from './helpers/onboarding-v9';
 import { test, expect, type Page } from '@playwright/test';
 // Sunday in UTC and Monday in Shanghai: keep the week-boundary regression deterministic.
 test.beforeEach(async({page})=>{await page.clock.setFixedTime(new Date('2026-10-11T20:00:00Z'));});
 async function plan(page:Page){
- await page.goto('/');await page.getByLabel('你的回答').fill('保持力量');await page.getByRole('button',{name:'继续',exact:true}).click();
- await page.getByLabel('你的回答').fill('每周3次，每次30分钟');await page.getByRole('button',{name:'继续',exact:true}).click();
- await page.getByLabel('你的回答').fill('在家，只有瑜伽垫');await page.getByRole('button',{name:'继续',exact:true}).click();
- await page.getByLabel('我已年满 18 岁',{exact:false}).check();await page.getByRole('button',{name:'生成新计划'}).click();await page.getByRole('button',{name:'就用这份计划'}).click();
- await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
+ await startOnboarding(page);await answerTexts(page,['保持力量']);
+ await answerTexts(page,['每周3次，每次30分钟']);
+ await answerTexts(page,['在家，只有瑜伽垫']);
+ await basicSafety(page);await generate(page);await page.getByRole('button',{name:'就用这份计划'}).click();
+ await expect(page.getByRole('heading',{name:'今天',exact:true})).toBeVisible();
 }
 test('plan details morph from a chip, preserve read-only versions, and restore keyboard focus',async({page})=>{
  await plan(page);await page.goto('/plans');const chip=page.locator('.plan-items button').first();await chip.click();

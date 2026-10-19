@@ -43,9 +43,9 @@ test('duplicate apply is locked and a failed save retains the candidate without 
  await apply.click();await expect(page.getByText('已应用',{exact:true})).toBeVisible();expect(applyCalls).toBe(2);expect(modelCalls).toBe(1);
 });
 test('settings language persists and keeps the backup panel in the same language',async({page})=>{
- await page.goto('/settings');await page.getByRole('combobox',{name:'语言'}).selectOption('en');await expect(page.getByRole('heading',{name:'Settings',exact:true})).toBeVisible();
+ await page.goto('/settings');await page.getByRole('combobox',{name:'语言'}).selectOption('en');await expect(page.getByRole('heading',{name:'Me',exact:true})).toBeVisible();
  await page.getByRole('button',{name:'Backup and restore',exact:true}).click();await expect(page.getByRole('heading',{name:'Backup and restore',exact:true})).toBeVisible();
- await page.reload();await expect(page.getByRole('combobox',{name:'Language'})).toHaveValue('en');await page.getByRole('combobox',{name:'Language'}).selectOption('zh');await expect(page.getByRole('heading',{name:'设置',exact:true})).toBeVisible();
+ await page.reload();await expect(page.getByRole('combobox',{name:'Language'})).toHaveValue('en');await page.getByRole('combobox',{name:'Language'}).selectOption('zh');await expect(page.getByRole('heading',{name:'我的',exact:true})).toBeVisible();
 });
 test('an explicitly authorized home send is consumed once and excludes optional fields',async({page})=>{
  let calls=0;await page.route('**/api/v1/assistant/chat',async route=>{calls++;const sent=route.request().postDataJSON();expect(sent.context.body).toBeUndefined();expect(sent.context.history).toBeUndefined();expect(sent.context.messages.at(-1).content).toBe('首页已确认的话');await reply(route,{json:{requestId:sent.requestId,context:{restoreGeneration:0,inputDigest:sent.sendConfirmation},accounting:'settled',result:{requestId:sent.requestId,restoreGeneration:0,mutationAllowed:false,type:'clarify',question:'想在哪里练？'}}});});

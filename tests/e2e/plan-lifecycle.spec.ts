@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import {answerTexts,basicSafety,generate,startOnboarding,toFirstQuestion} from './helpers/onboarding-v9';
 
 // Whole journeys perform several IndexedDB transactions and page reloads under CI WebKit.
 test.setTimeout(60000);
@@ -8,15 +9,13 @@ test.afterEach(()=>expect(aiCalls).toBe(0));
 
 async function draft(page:Page,goal='保持力量'){
  await page.goto('/onboarding');
- if(goal!=='保持力量')await expect(page.getByRole('button',{name:'生成新计划',exact:true})).toBeVisible();
- await expect(page.getByRole('heading').first()).toBeVisible();
- for(let step=0;step<3&&await page.getByRole('button',{name:'上一步',exact:true}).count();step++)await page.getByRole('button',{name:'上一步',exact:true}).click();
- for(const answer of [goal,'每周3次，每次30分钟','在家，只有瑜伽垫']){await page.getByLabel('你的回答').fill(answer);await page.getByRole('button',{name:'继续',exact:true}).click();}
- await page.getByLabel('我已年满 18 岁',{exact:false}).check();
- await page.getByRole('button',{name:'生成新计划',exact:true}).click();
+ if(goal!=='保持力量')await expect(page.getByRole('heading',{name:'开始前，确认几件事',exact:true})).toBeVisible();
+ await toFirstQuestion(page);
+ await answerTexts(page,[goal,'每周3次，每次30分钟','在家，只有瑜伽垫']);
+ await basicSafety(page);await generate(page);
  await expect(page.getByRole('button',{name:'就用这份计划',exact:true})).toBeVisible();
 }
-async function createPlan(page:Page){await draft(page);await page.getByRole('button',{name:'就用这份计划',exact:true}).click();await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();}
+async function createPlan(page:Page){await draft(page);await page.getByRole('button',{name:'就用这份计划',exact:true}).click();await expect(page.getByRole('heading',{name:'今天',exact:true})).toBeVisible();}
 async function records(page:Page){return page.evaluate(async()=>{const path='/src/persistence/repository.ts';const {repository}=await import(/* @vite-ignore */ path);return{plans:await repository.db.v8Plans.toArray(),versions:await repository.db.v8PlanVersions.toArray(),workouts:await repository.db.v8Workouts.toArray(),state:await repository.db.v8State.get('v8'),revision:(await repository.readMetadata()).dataRevision};});}
 async function finishOneSet(page:Page){
  await page.getByRole('button',{name:'开始训练',exact:true}).first().click();
@@ -54,7 +53,7 @@ test('deleted plans leave workout facts and weekly totals intact and restore fro
 
 test('previous plans can be read and deleted, while individual version detail has no delete action',async({page})=>{
  await createPlan(page);const before=await records(page);
- await draft(page,'第二份训练计划');await page.getByRole('button',{name:'就用这份计划',exact:true}).click();await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();
+ await draft(page,'第二份训练计划');await page.getByRole('button',{name:'就用这份计划',exact:true}).click();await expect(page.getByRole('heading',{name:'今天',exact:true})).toBeVisible();
  await page.goto('/plans');await expect(page.getByRole('heading',{name:'以前的计划',exact:true})).toBeVisible();
  await page.getByRole('button',{name:'查看',exact:true}).first().click();await expect(page.getByText('保持力量',{exact:true})).toBeVisible();
  await page.goto(`/plans?version=${before.versions[0].id}`);await expect(page.getByRole('heading',{name:'我的计划',exact:true})).toBeVisible();
@@ -111,7 +110,7 @@ test('cached deletion and recovery entries remain offline and after 90 seconds i
 });
 
 test('reuse requires confirmation when replacing current, preserves records and keeps the former current in previous plans',async({page})=>{
- await createPlan(page);const first=await records(page);await draft(page,'第二份训练计划');await page.getByRole('button',{name:'就用这份计划',exact:true}).click();await expect(page.getByRole('heading',{name:'下一次',exact:true})).toBeVisible();const before=await records(page);
+ await createPlan(page);const first=await records(page);await draft(page,'第二份训练计划');await page.getByRole('button',{name:'就用这份计划',exact:true}).click();await expect(page.getByRole('heading',{name:'今天',exact:true})).toBeVisible();const before=await records(page);
  await page.goto('/plans');await page.getByRole('button',{name:'重新使用',exact:true}).click();await expect(page.getByRole('dialog')).toContainText('当前计划会移到以前的计划');expect((await records(page)).state.currentPlanId).toBe(before.state.currentPlanId);
  await page.keyboard.press('Escape');expect((await records(page)).state.currentPlanId).toBe(before.state.currentPlanId);await page.getByRole('button',{name:'重新使用',exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:'确认使用',exact:true}).click();await expect.poll(async()=>(await records(page)).state.currentPlanId).toBe(first.state.currentPlanId);const after=await records(page);expect(after.workouts).toEqual(before.workouts);expect(after.versions).toEqual(before.versions);expect(after.plans.find((p:any)=>p.id===before.state.currentPlanId).readOnly).toBe(true);
 });
