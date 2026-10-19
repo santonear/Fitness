@@ -1,4 +1,24 @@
 {
   "elapsed": "Time spent: {minutes} minutes",
-  "ordinal": "This is session {count} for you this week."
+  "ordinal": "This is session {count} for you this week.",
+  "titleComplete": "Workout done",
+  "titlePartial": "Part of it done",
+  "titleZero": "That's it for now",
+  "time": "Time",
+  "partialMessage": "You completed {count} sets. That counts.",
+  "sets": "Sets done",
+  "volume": "Total lifted",
+  "kg": "kg",
+  "moves": "Exercises done",
+  "thisWeek": "This week",
+  "weekDone": "{done} of {target} sessions this week",
+  "weekDoneNoTarget": "{done} sessions this week",
+  "weekLeft": "{left} more to go",
+  "weekMet": "Weekly goal reached",
+  "streak": "{weeks} weeks in a row",
+  "weekdays": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+  "dayDone": "{day}: done",
+  "dayPartial": "{day}: partly done",
+  "dayRest": "{day}: no workout",
+  "today": "Today"
 }

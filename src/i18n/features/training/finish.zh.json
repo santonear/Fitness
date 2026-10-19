@@ -1,4 +1,24 @@
 {
   "elapsed": "本次用时 {minutes} 分钟",
-  "ordinal": "这是你本周第 {count} 次训练。"
+  "ordinal": "这是你本周第 {count} 次训练。",
+  "titleComplete": "练完了",
+  "titlePartial": "练了一部分",
+  "titleZero": "这次先到这里",
+  "time": "用时",
+  "partialMessage": "练了 {count} 组，也算数。",
+  "sets": "完成组数",
+  "volume": "总重量",
+  "kg": "公斤",
+  "moves": "做了几个动作",
+  "thisWeek": "本周",
+  "weekDone": "本周练了 {done} 次，目标 {target} 次",
+  "weekDoneNoTarget": "本周练了 {done} 次",
+  "weekLeft": "还可以再练 {left} 次",
+  "weekMet": "本周目标达成了",
+  "streak": "已经连续 {weeks} 周在练",
+  "weekdays": ["一", "二", "三", "四", "五", "六", "日"],
+  "dayDone": "{day}：练完了",
+  "dayPartial": "{day}：练了一部分",
+  "dayRest": "{day}：没有训练",
+  "today": "今天"
 }
