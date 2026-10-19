@@ -34,7 +34,7 @@ export type MetricInput =
   | { metricType: 'duration'; durationSeconds: NumericInput }
   | { metricType: 'duration_distance'; durationSeconds: NumericInput; distanceKm?: NumericInput };
 export type ProfileInput = Pick<LocalProfile, 'locale' | 'timeZone' | 'units' | 'trainingPreferences'>;
-export type BodyWeightInput = Pick<BodyWeightObservation, 'localDate' | 'timeZone' | 'weightGrams'> & { id?: string };
+export type BodyWeightInput = Pick<BodyWeightObservation, 'localDate' | 'timeZone' | 'weightGrams' | 'bodyFatPercent'> & { id?: string };
 export interface PlanInput {
   status?: 'draft' | 'active';
   id?: string; name: string; source: Plan['source']; startDate: LocalDate; scheduleTimeZone: string;

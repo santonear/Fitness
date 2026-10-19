@@ -491,3 +491,13 @@ Bo 已定版 V9 设计并授权推进；计时规则按 Bo 当日决定改写（
 - 理由：不丢数据、不编造数据、完成事实只读；新增可选字段按 2026-10-10 授权记录后实施。
 - 涉及文件：src/application/{plan-calendar,day-timeline,workout-times,v8-workflow}.ts、src/domain/{schemas.ts,v8/contracts.ts}、src/ui/pages/plan/{PlanPage,PlanRoute,MonthPlan}.tsx、src/ui/pages/plan/week-plan.css、src/ui/pages/home/{HomePage,DayTimeline}.tsx、src/ui/pages/home/day-timeline.css、src/i18n/features/{plan/calendar,home/day-view}.ts；测试 tests/unit/plan-day-views.test.ts、tests/e2e/v9-plan-day-views.spec.ts。
 - 待 Bo 确认：月历状态的说法（练完了 / 练了一部分 / 计划 / 没练）；“开始前活动一下 / 练完放松一下”两步的显示条件；修改后的时间是否也用于回顾统计。
+### 2026-10-19 “我的”重排、我的变化与营养建议（规范 V9.9，V9.0.4）保守决定
+- 情况：Bo 反馈“我的功能页内容极度混乱……‘我的’区包含身体资料、自查等……在‘我的’功能区能够根据用户的输入展示‘变化’……与回顾内容以及月度总结结合。饮食记录功能应独立设置一个营养建议类入口，用户可以和 AI 沟通饮食、摄入、营养类问题……后续需要和新增的膳食营养模块交互”。
+- 决定（分组）：我 / 营养建议 / 训练设置 / 芽芽与 AI / 数据与隐私 / 通用；“芽芽会看到什么”从芽芽组移到数据与隐私；界面风格移到通用（仍内嵌、仍可见）；“目标”放在“我”的计划卡里（改目标仍走“生成新计划”，计划修改仍生成新版本），不另开目标编辑。
+- 决定（我的变化）：只用本机数据：体重来自已有体重记录（身体资料保存时自动追加的那张表），体脂为新增可选字段 `BodyWeightObservation.bodyFatPercent`（无迁移，旧记录没有该字段即未测；备份沿用同一 schema）。新增记录走已有 `saveBodyWeight`（同一天只一条，再记即更新，带版本校验）；不同步改写身体资料里的体重（身体资料仍在“身体资料”页修改），因此两处可能不同。力量用 Epley 估算、只用 1–12 次的组，不外推；只看 V8 训练记录，旧版（V7 及以前）记录暂不计入。月度对比自己计算（完成 + 部分完成为一次），回顾页正由另一条线重做，这里只链接过去。
+- 决定（营养建议对话）：新增可选请求字段 `topic: "nutrition"`；该话题禁止携带训练上下文、本次训练、动作候选；本版不发送身体资料、训练历史和饮食记录（即使已有饮食记录同意开关），对话不保存在设备上。服务端在 v3 提示词集合中新增 `topics/nutrition.md`，仅该话题追加；旧 v2 回切路径追加同义一句英文规则；该话题强制不生成附件。用量统计仍记为 CHAT。提示词内容属于芽芽话术，**需 Bo 确认**。
+- 决定（入口）：饮食记录移入营养建议页；功能开关不变（nutrition 关闭且没有旧记录时不显示记录区）；营养建议入口在 AI 或饮食记录任一可用时出现。今天页悬浮芽芽快捷动作加第 4 项“吃什么、喝多少”直接打开营养建议页（V9.7 原为 3 项）。
+- 决定（模块接口）：`src/application/nutrition-module.ts` 定义 `DietModule`（页面卡片、需同意的结构化事实、只读饮食记录来源）与注册函数，本版不注册模块。
+- 理由：不丢数据、不编造数据、外发最小化；新增可选字段按授权记录后实施。
+- 涉及文件：src/ui/pages/settings/{SettingsPage,MyChangesPage}.tsx、src/ui/pages/settings/{settings,my-changes}.css、src/ui/pages/nutrition/*、src/ui/components/{TrendChart.tsx,trend-chart.css,Orb.tsx}、src/ui/mainline/MainlineApp.tsx、src/application/{my-changes,nutrition-module}.ts、src/assistant/contracts.ts、src/backend/assistant/{prompts.ts,model.ts,prompts/*}、src/domain/{schemas,models}.ts、src/i18n/features/{settings/me,me/changes,nutrition/advice,coach/orb}.ts；测试 tests/unit/me-reorg-nutrition.test.ts、tests/e2e/v9-me-reorg.spec.ts。
+- 待 Bo 确认：营养话题提示词与芽芽说法；分组名称与顺序；体脂是否需要单独的历史编辑 / 删除；营养对话以后是否允许勾选发送饮食记录；“我的变化”体重是否应同步到身体资料。

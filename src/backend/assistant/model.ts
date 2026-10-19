@@ -110,7 +110,9 @@ export async function* runAssistantModel(input: unknown, options: AssistantModel
       }
     }
     else if (text.includes('<<ATTACH')) text = text.slice(0, text.indexOf('<<ATTACH')).trimEnd();
-    if(isV3&&attachmentKind==='none'&&/(?:介绍|讲讲|动作要领|怎么做|explain|how to do)/i.test(request.messages.at(-1)?.content??''))attachmentKind='exercise';
+    if(isV3&&attachmentKind==='none'&&request.topic!=='nutrition'&&/(?:介绍|讲讲|动作要领|怎么做|explain|how to do)/i.test(request.messages.at(-1)?.content??''))attachmentKind='exercise';
+    // 营养建议 is conversation only: no exercise guide, plan or adjustment cards.
+    if(request.topic==='nutrition')attachmentKind='none';
     if(isV3&&attachmentKind==='none'&&request.adultConfirmed&&request.context){
       const latest=request.messages.at(-1)?.content??'';
       const declined=/(?:不要|先别|不用|撤回|只聊|do not|don't|withdraw|just discuss|no plan)/i.test(latest);
