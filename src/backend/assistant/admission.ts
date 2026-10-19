@@ -1,3 +1,4 @@
+import {shortId} from '../admin/core/short-id';
 import type { AdminDatabase } from '../admin/core/contracts';
 export class AssistantAccessError extends Error { constructor(public code:string,public status:number,public resetAt?:number){super(code)} }
 export interface DailyState {subject_id:string;day:string;time_zone:string;reset_at:number;used:number;active_request:string|null;lease_until:number}
@@ -29,7 +30,7 @@ export class AssistantUsageStore {
  async finish(subjectId:string,requestId:string,task:string,success:boolean,calls:UsageCall[],price:UsagePrice,now:number,result:string){
   const statements=[this.db.prepare("UPDATE assistant_requests SET result=? WHERE subject_id=? AND request_id=? AND result='running'").bind(result,subjectId,requestId),
    this.db.prepare('UPDATE assistant_daily SET used=used+?,active_request=NULL,lease_until=0 WHERE subject_id=? AND active_request=?').bind(success?1:0,subjectId,requestId)];
-  for(const [index,call] of calls.entries())statements.push(this.db.prepare('INSERT OR IGNORE INTO assistant_usage(id,at,subject_short_id,task,stage,input_tokens,output_tokens,estimated_fen,result,pricing_version,failure_detail) VALUES(?,?,?,?,?,?,?,?,?,?,?)').bind(`${subjectId}:${requestId}:${index}`,now,subjectId.slice(0,8),task,call.stage,call.inputTokens??null,call.outputTokens??null,estimateFen(call,price),call.failureCode??call.result,price.version,call.failureDetail??null));
+  for(const [index,call] of calls.entries())statements.push(this.db.prepare('INSERT OR IGNORE INTO assistant_usage(id,at,subject_short_id,task,stage,input_tokens,output_tokens,estimated_fen,result,pricing_version,failure_detail) VALUES(?,?,?,?,?,?,?,?,?,?,?)').bind(`${subjectId}:${requestId}:${index}`,now,shortId(subjectId),task,call.stage,call.inputTokens??null,call.outputTokens??null,estimateFen(call,price),call.failureCode??call.result,price.version,call.failureDetail??null));
   await this.db.batch(statements);
  }
 }

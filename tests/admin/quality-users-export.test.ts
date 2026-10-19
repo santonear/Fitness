@@ -34,7 +34,7 @@ describe('preview-only identities and complete audit export',()=>{
   expect(exported).toHaveLength(2507);expect(new Set(exported).size).toBe(2507);expect(exported).toEqual(Array.from({length:2507},(_,i)=>2506-i));
   expect(pageSizes.every(size=>size<=500)).toBe(true);expect(pageSizes.length).toBe(6);
   expect(text).not.toContain('LATE_BACKDATED_INSERT');expect(text).not.toContain('audit-export');
-  expect(text.includes('12345678-123')).toBe(true);expect(text.includes('12345678-1234-4321')).toBe(false);expect(audits).toEqual(['pending','success']);
+  expect(text.includes('"12345678"')).toBe(true);expect(text.includes('12345678-')).toBe(false);expect(audits).toEqual(['pending','success']);
  });
  it('quotes CSV and neutralizes formula prefixes including leading control characters',async()=>{
   const {sqlite,context}=fixture();sqlite.prepare('INSERT INTO admin_audit(id,actor,at,object_id,action,result) VALUES(?,?,?,?,?,?)').run('one','=HYPERLINK("https://bad")',1,'@formula',' \t+SUM(1,2)','-1+1');

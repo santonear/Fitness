@@ -32,3 +32,8 @@ test('rejects developer entry and coach banned text', () => {
   assert.deepEqual(violations('src/admin/Panel.tsx', 'AI 架构评审'), ['developer-entry']);
   assert.deepEqual(violations('src/i18n/features/coach/zh.json', '{"message":"你必须"}'), ['coach-language-command']);
 });
+test('admin colors stay in the admin token file', () => {
+  assert.deepEqual(violations('src/ui/admin/shell/admin-shell.css', '.x{color:#E8603C}'), ['admin-literal-color']);
+  assert.deepEqual(violations('src/ui/admin/users/UsersPages.tsx', "style={{background:'rgba(0,0,0,.1)'}}"), ['admin-literal-color']);
+  assert.deepEqual(violations('src/ui/admin/tokens.ts', "'--a-accent': '#E8603C'"), []);
+});

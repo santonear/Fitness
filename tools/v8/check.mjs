@@ -14,6 +14,8 @@ export function violations(file, source) {
     if (/#[\da-f]{3,8}\b|\brgba?\(/i.test(source)) found.push('literal-color');
     if (/font-family|fontFamily/.test(source)) found.push('font-family');
   }
+  // Admin console: colors live only in the admin token file (approved V9 admin design).
+  if (/^src\/ui\/admin\//.test(file) && file !== 'src/ui/admin/tokens.ts' && /#[\da-f]{3,8}\b|\brgba?\(/i.test(source)) found.push('admin-literal-color');
   if (ui && /AI\s*架构评审|契约示例|评测面板|Prompt\s*结构/.test(source)) found.push('developer-entry');
   found.push(...coachCopyViolations(file, source));
   return found;

@@ -2,7 +2,7 @@ export const featureCopy:Record<string,[string,string,string,string]>={
   trainingEngine:['训练规则引擎','本机生成、调整与进阶；首次生成前完成运动自查。','Training rule engine','Local plan generation, adjustments and progression; screening is required before first generation.'],
   aiAssistantV2:['芽芽对话新版','每日消息限额、流式对话和只读用量；关闭回到原链路。','Assistant V2','Daily message limits, streaming conversation and read-only usage.'],
   bodyProfile:['身体资料','五步初见与本机身体资料；发送前逐项确认。','Body details','Five-step onboarding and local body details with per-field sending consent.'],
-  adminConsole:['新版后台','关闭后停止访问新版后台；需要通过受控维护重新开启。','Admin console','Turning this off closes the new console. Re-enabling requires controlled maintenance.'],
+  adminConsole:['新版后台','关闭后这个后台立即无法打开；要重新开启，需要在服务器配置里操作。','Admin console','Turning this off closes this console immediately. Turning it back on must be done in the server configuration.'],
   planLifecycle:['计划整理','整理、删除与恢复本机计划。','Plan management','Organize, delete and restore local plans.'],
   themeDiscovery:['主题选择','展示可选主题。','Theme discovery','Show available themes.'],
   fontSubset:['字体优化','使用精简字体资源。','Font optimization','Use compact font assets.'],
