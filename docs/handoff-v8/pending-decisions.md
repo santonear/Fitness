@@ -468,3 +468,16 @@ Bo 已定版 V9 设计并授权推进；计时规则按 Bo 当日决定改写（
 - 涉及文件：src/ui/pages/onboarding/*、src/ui/pages/home/*、src/ui/pages/plan/{PlanPage,PlanRoute,WeekPlan}.tsx、src/ui/pages/settings/{SettingsPage,EngineProfileEditor}.tsx、src/ui/mainline/*、src/ui/components/AssistantPanel.*、src/application/plan-presentation.ts、src/i18n/features/{onboarding/entry,plan/view,home/*,settings/me,coach/chat}.ts。
 - 补充（协调者要求）：“我的 › 训练”新增“计时或休息结束时响一声提示音”开关，绑定 #68 已有的 `fitness.timer-sound`，默认关；底部面板（MorphPanel）在主题材质下垫 `--c-surface` 不透明底，专业数据/燃动挑战的玻璃面板不再透出页面，浅色主题外观不变。未新增令牌。
 - 待 Bo 确认：会话命名规则与“建议日子”的说法；“以上都没有”分组方式；导航是否需要中间“开始”圆钮；新增中英文案。
+
+### 2026-10-19 Bo 线上反馈 6 条（规范 V9.7，V9.0.2）保守决定
+- 情况：开始日期选不了且 AI 重新生成后也改不了；芽芽对话杂乱、动作怎么做点了没反应；今天页两个常驻 AI 入口与悬浮芽芽冲突；AI 激活入口太深、灰按钮无引导；换风格只在“我的”；用户不会先去“我的”。
+- 决定（开始日期）：新增可选字段 `PlanVersion.startDate`（本地日期，`z.iso.date()`），不做迁移，缺省按创建日；草案可选今天起 14 天内；计划页改日期调用新的 `changeStartDate`，复制当前版本生成新版本（origin `manual`、changeSummary 记一句），训练进行中拒绝，失败整体回滚；今天的单次调整随新版本保留。AI 改计划、环境重排、回顾建议生成的新版本沿用开始日。未开始时仍允许提前开始训练（不阻断，只说明）。
+- 决定（动作怎么做根因）：对话里的“动作怎么做”只是把动作写进对话滚动区里一个**折叠的** `<details>`，位置在可视区之外，点击后界面没有可见变化（再次点同一动作连状态都不变）。改为打开带示范图与要点的动作指导面板；AI 回复里提到的动作也改成一个按钮打开同一面板。
+- 决定（对话工具）：本地调整控件不删除（训练中“只练上肢”“缩短”等仍需要），收进对话头部“快速调整”单独面板；结果仍作为需确认的卡片出现在对话里。发送资料勾选折叠，不改变默认不发送与外发范围。
+- 决定（换动作）：今天/计划的换动作复用已有校验路径 `applyCoachCandidate`：引擎开启时用引擎的 replace 修改生成处方；未开启时保留原组数，同类指标沿用原目标，不同指标用保守默认（10 次 / 30 秒 / 5 分钟，负重 0 由用户自选重量）。候选来自已有 `replacementCandidates`（器械、注意部位、安全规则过滤）。
+- 决定（今天）：悬浮芽芽在今天页改为 ADJUST_TODAY 并带上首页当前训练单（之前在今天页打开的是改整份计划），与被删除的“和芽芽聊聊”按钮行为一致。
+- 决定（AI 选择）：只在部署开启 `aiAssistantV2` 时出现；放在健康自查之后、“都准备好了”之前，不改变原有外发同意（生成屏仍列出将发送内容）。训练引擎开启时原代码本就不让 AI 直接出初始计划，保持该安全边界：先本地生成，再打开对话预填一句，用户点发送才外发。选择只存在初见草稿（本机 localStorage），不写入计划数据。
+- 决定（换风格图标）：今天页“换风格”为线性调色板图标 + 文字，内联 SVG、`currentColor`、与悬浮芽芽同线宽，不新增图标依赖；欢迎页同一按钮，文字“先挑个喜欢的样子（可跳过）”，不新增步骤，避免拉长初见。
+- 理由：不丢数据、不编造数据；计划修改仍生成新版本；AI 返回仍需确认；健康资料外发规则不变。
+- 涉及文件：src/domain/{schemas.ts,v8/contracts.ts}、src/application/{v8-workflow,v8-review,plan-presentation}.ts、src/ui/components/{AssistantPanel,CoachPanel,ExerciseTools,StartDatePicker,ThemeSheet}.tsx、src/ui/pages/{home,plan,onboarding}/*、src/ui/mainline/*、src/i18n/features/{plan/start-date,plan/exercise-tools,home/theme,onboarding/plan-mode,coach/chat}.ts；测试 tests/unit/{plan-start-date,onboarding-plan-mode}.test.ts、tests/e2e/v9-ux-entries.spec.ts。
+- 待 Bo 确认：新增中英文案与芽芽的问法；开始日期范围 14 天；提前开始不阻断；换动作在非引擎模式下的默认目标；欢迎页不单独加一屏选风格。
