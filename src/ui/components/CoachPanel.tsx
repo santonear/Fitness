@@ -11,13 +11,15 @@ export type CoachPanelProps = { beforeSend?:(request:CoachRequest)=>Promise<void
   initialSend?:{nonce:string;message:string;request:CoachRequest;expectedRevision:number};
   /** Prefills the composer once per nonce (芽芽 quick actions); the user still reviews and sends it. */
   draft?:{nonce:string;text:string};
-  triggerRef?: RefObject<HTMLElement|null>; onLocalPlan?:()=>void; onLocalReview?:()=>void; locale?:'zh'|'en'; unavailableReason?:string; onApply: (candidate: CoachApplication) => Promise<unknown>; onResponse?: (candidate: CoachApplication) => void };
+  triggerRef?: RefObject<HTMLElement|null>;
+  /** Opens the AI activation (trial access) flow; shown only when access is missing or invalid. */
+  onActivate?:()=>void; onLocalPlan?:()=>void; onLocalReview?:()=>void; locale?:'zh'|'en'; unavailableReason?:string; onApply: (candidate: CoachApplication) => Promise<unknown>; onResponse?: (candidate: CoachApplication) => void };
 
 export function CoachPanel(props:CoachPanelProps){
  const enabled=useFeature('aiAssistantV2'),access=useAccessStatus(props.open),locale=props.locale??props.request?.locale??'zh';
  const invalid=access.status&&(access.status.qualification!=='active'||!access.status.sessionValid),disabled=access.status?.aiEnabled===false;
  const reason=props.unavailableReason??(invalid?accessCopy[locale].reasons.invalid:!enabled||disabled?accessCopy[locale].reasons.disabled:undefined);
- return <AssistantPanel {...props} unavailableReason={reason} localOnly={props.localOnly||!enabled||!!invalid||disabled}/>;
+ return <AssistantPanel {...props} onActivate={enabled&&invalid&&!props.unavailableReason?props.onActivate:undefined} unavailableReason={reason} localOnly={props.localOnly||!enabled||!!invalid||disabled}/>;
 }
 
 import {EQUIPMENT,equipmentLabel} from '../../catalog/taxonomy';
