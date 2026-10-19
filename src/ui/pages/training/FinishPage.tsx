@@ -35,7 +35,7 @@ export function FinishPage(){
  <p className="wk-muted">{template?templateLabel(template,locale):t.manual} · {today}</p>
  <Card variant="hero" padding="lg" className="wk-finish-hero" as="section" aria-labelledby="wk-finish-title">
   <div><h1 id="wk-finish-title" className="v9-display">{done===0?copy.titleZero:complete?copy.titleComplete:copy.titlePartial}</h1>
-   <span className="wk-finish-time v9-num">{formatClock(seconds)}</span>{elapsed>0&&<span className="wk-muted">{format(copy.elapsed,{minutes:elapsed})}</span>}</div>
+   <span className="wk-finish-time v9-num">{formatClock(seconds)}</span><span className="wk-muted">{elapsed>0?format(copy.elapsed,{minutes:elapsed}):copy.elapsedShort}</span></div>
   <Yaya className="wk-finish-yaya" pose={done===0?'care':'celebrate'} size={120} float={false} alt=""/>
  </Card>
  <div className="wk-finish-message"><p>{message}</p>{done>0&&!complete&&<p>{format(copy.ordinal,{count:ordinal})}</p>}</div>

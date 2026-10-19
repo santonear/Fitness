@@ -1,5 +1,6 @@
 {
   "elapsed": "本次用时 {minutes} 分钟",
+  "elapsedShort": "本次用时不到 1 分钟",
   "ordinal": "这是你本周第 {count} 次训练。",
   "titleComplete": "练完了",
   "titlePartial": "练了一部分",

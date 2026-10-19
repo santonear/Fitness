@@ -47,6 +47,9 @@ function useNow(ticking:boolean){
  useEffect(()=>{setNow(Date.now());if(!ticking)return;const timer=window.setInterval(()=>setNow(Date.now()),250);return()=>clearInterval(timer);},[ticking]);
  return now;
 }
+/** Rests the user already left stay closed after a reload in this tab (a per-tab convenience, not a fact). */
+const closedRestKey='fitness.v9.closed-rests';
+function readClosedRests():string[]{try{const value=JSON.parse(sessionStorage.getItem(closedRestKey)??'[]');return Array.isArray(value)?value.filter(item=>typeof item==='string'):[];}catch{return [];}}
 /** Fires the end cue for one countdown; rendered only while that countdown is on screen. */
 function CueAt({dueAt,active}:{dueAt?:number;active:boolean}){useTimerCue(dueAt,active);return null;}
 const Icon=({d}:{d:string})=><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true" focusable="false"><path d={d}/></svg>;
@@ -75,7 +78,8 @@ export function WorkoutPage(){
  const showPanel=(next:Panel,trigger?:HTMLElement)=>{if(trigger)panelTrigger.current=trigger;setPanel(next);};
  const copy=locale==='zh'?guideZh:guideEn,p=locale==='zh'?playerZh:playerEn,engineCopyText=engineTrainingCopy[locale];
  // Timer state is per device and per screen visit; saved facts never depend on it.
- const [holds,setHolds]=useState<Record<string,HoldTimer>>({}),[restExtra,setRestExtra]=useState<Record<string,RestPlan>>({}),[restClosed,setRestClosed]=useState<string[]>([]);
+ const [holds,setHolds]=useState<Record<string,HoldTimer>>({}),[restExtra,setRestExtra]=useState<Record<string,RestPlan>>({}),[restClosed,setRestClosedState]=useState<string[]>(readClosedRests);
+ const setRestClosed=(update:(prior:string[])=>string[])=>setRestClosedState(prior=>{const next=update(prior).slice(-20);try{sessionStorage.setItem(closedRestKey,JSON.stringify(next));}catch{/* Per-tab convenience only. */}return next;});
  const latestSet=active?.sets.at(-1);
  const restKey=active&&latestSet?`${active.id}:${latestSet.itemIndex}:${latestSet.setIndex}:${latestSet.completedAt}`:'';
  const anyHoldRunning=Object.values(holds).some(hold=>hold.startedAt!==undefined);
@@ -179,7 +183,7 @@ export function WorkoutPage(){
    <h2 className="wk-section-title">{copy.points}</h2>
    <ul className="exercise-guide-points" aria-label={copy.points}>{guide.keyPoints.map((point,i)=><li key={i}>{point}</li>)}</ul>
    {(engineEnabled||relativePower)&&<><SourceWarmupSteps template={template} itemIndex={item.itemIndex} exerciseId={effectiveId} unreplayedChanges={Boolean(active.substitutions?.length||active.painActions?.length)}/><PrescriptionDetails prescription={prescription} locale={locale}/></>}
-   <Button onClick={()=>{setReplacement('');setSwapQuery('');setSwapFilters({});setReason('other');showPanel('swap');}} disabled={thisDone||painBlocked}>{t.changeExercise}</Button>
+   <Button onClick={event=>{setReplacement('');setSwapQuery('');setSwapFilters({});setReason('other');showPanel('swap',event.currentTarget);}} disabled={thisDone||painBlocked}>{t.changeExercise}</Button>
   </section>}
  </>;
  return <main className="wk-page" data-training-active="true" data-screen={restShown?'rest':'player'}>

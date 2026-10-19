@@ -1,5 +1,6 @@
 {
   "elapsed": "Time spent: {minutes} minutes",
+  "elapsedShort": "Time spent: under 1 minute",
   "ordinal": "This is session {count} for you this week.",
   "titleComplete": "Workout done",
   "titlePartial": "Part of it done",
