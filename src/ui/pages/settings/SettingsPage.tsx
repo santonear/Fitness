@@ -5,7 +5,7 @@ import { planLifecycleCopy } from '../../../i18n/features/plan/lifecycle';
 import { anonymousUsageEnabled, setAnonymousUsage } from '../../../application/monitoring-client';
 import { operationsCopy } from '../../../i18n/features/settings/operations';
 import { SystemNotifications } from './SystemNotifications';
-import { restVibrationKey } from '../training/useRestVibration';
+import { restVibrationKey, timerSoundKey } from '../training/useRestVibration';
 import settingsZh from '../../../i18n/features/settings/zh.json';
 import settingsEn from '../../../i18n/features/settings/en.json';
 import { meCopy } from '../../../i18n/features/settings/me';
@@ -34,7 +34,7 @@ function Group({ title, children }: { title: string; children: ReactNode }) {
 }
 
 /** 我的 (V9 settings): grouped, each entry once; theme picker inline. */
-export function SettingsPage(){const bodyEnabled=useFeature('bodyProfile');const engineEnabled=useFeature('trainingEngine');const{data,navigate,locale,run,busy,restartPlanning,appearance}=useMainline();const location=useLocation();const[section,setSection]=useState<Section>(location.hash==='#reminders'?'reminders':location.hash==='#backup'?'backup':'');const copy=locale==='zh'?settingsZh:settingsEn,me=meCopy[locale]; const [vibration,setVibration]=useState(()=>{try{return localStorage.getItem(restVibrationKey)==='on';}catch{return false;}}); const planLifecycle=useFeature('planLifecycle'); const analytics=useFeature('anonymousUsage'), errorReports=useFeature('errorReports'); const [optedIn,setOptedIn]=useState(anonymousUsageEnabled); const nutritionEnabled=useFeature('nutrition'), importEnabled=useFeature('activityImport'); const [hasNutrition,setHasNutrition]=useState(false); useEffect(()=>{void import('../../../persistence/repository').then(({repository})=>repository.db.nutritionRecords.count()).then(n=>setHasNutrition(n>0));},[]); const vibrationSupported=typeof navigator.vibrate==='function';
+export function SettingsPage(){const bodyEnabled=useFeature('bodyProfile');const engineEnabled=useFeature('trainingEngine');const{data,navigate,locale,run,busy,restartPlanning,appearance}=useMainline();const location=useLocation();const[section,setSection]=useState<Section>(location.hash==='#reminders'?'reminders':location.hash==='#backup'?'backup':'');const copy=locale==='zh'?settingsZh:settingsEn,me=meCopy[locale]; const [vibration,setVibration]=useState(()=>{try{return localStorage.getItem(restVibrationKey)==='on';}catch{return false;}}); const planLifecycle=useFeature('planLifecycle'); const analytics=useFeature('anonymousUsage'), errorReports=useFeature('errorReports'); const [optedIn,setOptedIn]=useState(anonymousUsageEnabled); const nutritionEnabled=useFeature('nutrition'), importEnabled=useFeature('activityImport'); const [hasNutrition,setHasNutrition]=useState(false); useEffect(()=>{void import('../../../persistence/repository').then(({repository})=>repository.db.nutritionRecords.count()).then(n=>setHasNutrition(n>0));},[]); const vibrationSupported=typeof navigator.vibrate==='function'; const [timerSound,setTimerSound]=useState(()=>{try{return localStorage.getItem(timerSoundKey)==='on';}catch{return false;}});
  const discovery=useSyncExternalStore(subscribeFeatureFlags,()=>isFeatureEnabled('themeDiscovery'),()=>false);
  const builtin=getAvailableThemes(false),extra=getAvailableThemes(discovery).filter(theme=>!builtin.some(item=>item.id===theme.id));
  useEffect(()=>{void i18n.changeLanguage(locale);},[locale]);
@@ -53,6 +53,7 @@ export function SettingsPage(){const bodyEnabled=useFeature('bodyProfile');const
   <Row label={copy.settingsPage0} expanded={section==='reminders'} onClick={()=>toggle('reminders')}><ReminderSettings locale={locale}/></Row>
   {(nutritionEnabled||hasNutrition)&&<Row label={lifestyleCopy[locale].nutrition} onClick={()=>navigate('/settings/nutrition')}/>}
   {importEnabled&&<Row label={lifestyleCopy[locale].importActivity} onClick={()=>navigate('/settings/import')}/>}
+  <li><label className="v9-row v9-row-check"><span>{copy.timerSound}</span><input type="checkbox" checked={timerSound} onChange={event=>{const value=event.target.checked;try{localStorage.setItem(timerSoundKey,value?'on':'off');setTimerSound(value);}catch{/* Keep the saved preference unchanged. */}}}/></label></li>
   <li><label className="v9-row v9-row-check"><span>{copy.restVibration}{!vibrationSupported&&<small>{copy.vibrationUnavailable}</small>}</span><input type="checkbox" checked={vibration} disabled={!vibrationSupported} onChange={event=>{const value=event.target.checked;try{localStorage.setItem(restVibrationKey,value?'on':'off');setVibration(value);}catch{/* Keep the saved preference unchanged. */}}}/></label></li>
  </Group>
  <Group title={me.yaya}>

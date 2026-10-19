@@ -42,6 +42,7 @@
   "quietConflict": "This reminder falls within quiet hours and will not appear during that time. Adjust the reminder time or quiet hours.",
   "zeroLimit": "The daily limit is 0. Reminders will not appear.",
   "trial": "Trial access and invitation code",
+  "timerSound": "Play a short tone when a timer or rest ends (this device, while the app is open)",
   "restVibration": "Vibrate once when a timer or rest ends (this device)",
   "vibrationUnavailable": "Vibration is unavailable on this device."
 }
