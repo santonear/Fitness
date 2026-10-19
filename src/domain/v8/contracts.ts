@@ -21,6 +21,8 @@ export interface PlanVersion {
   id: string; planId: string; versionNumber: number; goalText: string; weeklyTarget: number;
   preferredDays?: ('mon'|'tue'|'wed'|'thu'|'fri'|'sat'|'sun')[];
   scheduleOriginalText: string; sessionMinutes: number; templates: SessionTemplate[];
+  /** Local date (YYYY-MM-DD) the plan starts; absent on older versions means the creation day. */
+  startDate?: string;
   /** Keeps the contaminated chat text when a migration restores the original answer. */
   scheduleRecovery?: { raw: string; recoveredAt: string };
   createdAt: string; origin: 'onboard' | 'coach_change' | 'review_suggestion' | 'manual' | 'migrated';

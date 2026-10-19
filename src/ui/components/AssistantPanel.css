@@ -31,3 +31,27 @@
 .assistant-input .v8-composer input:focus-visible{outline:none}
 .assistant-input .v8-composer:focus-within{box-shadow:var(--el-inset),0 0 0 2px var(--c-focus)}
 .assistant-input .v8-composer button{border-radius:var(--r-chip);min-block-size:var(--touch-min)}
+
+/* V9.x roomy chat (Bo 2026-10-19): the window holds only the conversation and the input.
+   Phone: full-height sheet. Larger screens: a taller, wider panel. Tools open in their own sheet. */
+.v8-morph:has(.assistant-panel){width:min(calc(100vw - var(--s5)),600px);left:calc((100vw - min(100vw - var(--s5),600px))/2);height:min(90dvh,860px);top:calc((100dvh - min(90dvh,860px))/2)}
+@media (max-width:600px){
+ .v8-morph:has(.assistant-panel){inset:0;width:100vw;height:100dvh;max-height:100dvh;border-radius:0;border:0}
+ .v8-morph:has(.assistant-panel) .v8-morph-body{max-height:100dvh;padding:max(var(--s4),env(safe-area-inset-top)) var(--s4) 0}
+ .assistant-panel{max-height:calc(100dvh - var(--s6))}
+}
+.v8-morph:has(.assistant-panel) .v8-morph-body{height:100%}
+.assistant-head{flex-wrap:wrap}
+.assistant-head .assistant-toolbar{margin-inline-start:auto}
+.assistant-banner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--s2);margin:0;padding:var(--s2) var(--s3);border-radius:var(--r-control);background:var(--c-inset);font-size:var(--t2);color:var(--c-ink-muted)}
+.assistant-privacy{margin:0;font-size:var(--t1);color:var(--c-ink-muted);line-height:var(--lh-body)}
+.assistant-pending{margin:0;font-size:var(--t2);color:var(--c-ink-muted)}
+.assistant-scroll .assistant-messages{flex:1 0 auto}
+.assistant-share{font-size:var(--t2)}
+.assistant-share>summary{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--s2);cursor:pointer;min-block-size:var(--touch-min);color:var(--c-ink-muted)}
+.assistant-share>summary .assistant-summary{flex:1 1 0;min-inline-size:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.assistant-share[open]{max-block-size:40dvh;overflow-y:auto}
+.assistant-local{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s2)}
+.assistant-local p{margin:0;font-size:var(--t2);color:var(--c-ink-muted)}
+.assistant-tools fieldset{display:grid;gap:var(--s3);border:0;margin:0;padding:0;min-inline-size:0}
+.assistant-tools label{display:grid;gap:var(--s1);font-size:var(--t2)}

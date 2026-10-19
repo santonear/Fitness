@@ -1,0 +1,17 @@
+/** V9 per-exercise tools on 今天 and 计划 (moved out of the 芽芽 chat). */
+export const exerciseToolsCopy = {
+  zh: {
+    howTo: '动作怎么做', swap: '换动作', swapTitle: '换个动作', close: '关闭', from: '现在是：{name}',
+    todayHint: '只换今天这一次，计划不变。', planHint: '会保存成新的一版计划，以前的版本还在。',
+    loading: '正在找合适的动作…', none: '目前没有符合你的器械和注意部位的替换动作。', choose: '选一个替换动作',
+    more: '看更多', confirm: '换成「{name}」', cancel: '先不换', noop: '这个动作现在换不了，可以试试别的。',
+    unavailable: '现在没法换，先完成或结束进行中的训练再试。', summary: '{before} 换成 {after}', blocked: '训练进行中，练完再换。',
+  },
+  en: {
+    howTo: 'How to do it', swap: 'Swap exercise', swapTitle: 'Swap exercise', close: 'Close', from: 'Current: {name}',
+    todayHint: 'Only for today. Your plan stays the same.', planHint: 'This saves a new plan version. Earlier versions are kept.',
+    loading: 'Finding suitable exercises…', none: 'No replacement matches your equipment and cautions right now.', choose: 'Choose a replacement',
+    more: 'Show more', confirm: 'Swap to “{name}”', cancel: 'Not now', noop: 'This exercise cannot be swapped right now. Try another one.',
+    unavailable: 'Swapping is not available now. Finish or end the workout in progress, then try again.', summary: '{before} → {after}', blocked: 'A workout is in progress. Swap after you finish.',
+  },
+} as const;

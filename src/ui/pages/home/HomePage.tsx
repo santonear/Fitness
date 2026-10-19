@@ -14,17 +14,14 @@ import {planLifecycleCopy} from '../../../i18n/features/plan/lifecycle';
 import {planViewCopy} from '../../../i18n/features/plan/view';
 import {homeCopy} from '../../../i18n/features/home/copy';
 import {fill} from '../../../i18n/features/onboarding/entry';
-import {regionLabels,sessionNames,weekSchedule,weekdayIndex,weekdayLabel,weekdays,type Weekday} from '../../../application/plan-presentation';
-import {useState,useEffect,useRef} from 'react';
+import {planStartDate,regionLabels,sessionNames,startDateLabel,weekSchedule,weekdayIndex,weekdayLabel,weekdays,type Weekday} from '../../../application/plan-presentation';
+import {startDateCopy} from '../../../i18n/features/plan/start-date';
+import {ThemeButton} from '../../components/ThemeSheet';
+import {useExerciseTools} from '../../components/ExerciseTools';
+import {exerciseToolsCopy} from '../../../i18n/features/plan/exercise-tools';
+import {useState,useEffect} from 'react';
 import {useLocation} from 'react-router-dom';
-import {buildCoachRequest} from '../../../coach/request-builder';
-import {coachMessageScope} from '../../../coach/consent';
-import {CoachScopeDisclosure} from '../../components/CoachPanel';
-import coachZh from '../../../i18n/features/coach/zh.json';
-import coachEn from '../../../i18n/features/coach/en.json';
-import {Composer} from '../../components/common';
 import {Card,PrimaryButton,WeekStrip,Yaya} from '../../components/kit';
-import {ExerciseGuidePanel} from '../../components/ExerciseGuide';
 import {useMainline,workflow,format} from '../../mainline/context';
 import {createV8DataService} from '../../../persistence/v8-access';
 import {repository} from '../../../persistence/repository';
@@ -45,14 +42,14 @@ function ItemPrescription({item,locale}:{item:PlannedItem;locale:'zh'|'en'}){
 import './home.css';
 
 const localDay=(timeZone:string,date=new Date())=>new Intl.DateTimeFormat('en-CA',{timeZone,year:'numeric',month:'2-digit',day:'2-digit'}).format(date);
-/** 今天 (V9 home): today's session and start first; status check, week and chat below. Same safety gates as before. */
+/** 今天 (V9 home): today's session and start first; status check and week below. The 芽芽 orb is the only AI entry here. */
 export function HomePage(){
  const engineEnabled=useFeature('trainingEngine');
  const location=useLocation(),applied=(location.state as {applied?:boolean}|null)?.applied===true;
  const [preview,setPreview]=useState<{revision:number;versionId:string;templateId:string;value:Awaited<ReturnType<typeof workflow.nextTargetPreview>>}>();
- const {data,facts,t,slots,name,start,navigate,busy,run,openCoach,locale,sendHomeCoach,restartPlanning}=useMainline(); const [choice,setChoice]=useState<string>();
- const [message,setMessage]=useState('');const coachCopy=locale==='zh'?coachZh:coachEn,h=homeCopy[locale],pv=planViewCopy[locale];
- const [detail,setDetail]=useState<string>(),trigger=useRef<HTMLElement|null>(null);
+ const {data,facts,t,slots,name,start,navigate,busy,run,locale,restartPlanning,setHomeTemplateId}=useMainline(); const [choice,setChoice]=useState<string>();
+ const h=homeCopy[locale],pv=planViewCopy[locale],sd=startDateCopy[locale];
+ const tools=useExerciseTools('today',{swapBlocked:data?.active?exerciseToolsCopy[locale].blocked:undefined});
  const version=data?.version, templates=version?.templates??[];
  const last=data?.workouts.filter(w=>w.planVersionId===version?.id&&w.status!=='in_progress'&&w.status!=='abandoned').sort((a,b)=>b.startedAt.localeCompare(a.startedAt))[0];
  const suggested=templates[(templates.findIndex(s=>s.id===last?.templateId)+1)%Math.max(1,templates.length)];
@@ -65,27 +62,29 @@ export function HomePage(){
  const previewBlocked=!!data?.state?.cardiacPause||!!data?.state?.postpartumSafety?.urgentAt||!!data?.state?.trainingPause||hasPendingPain||!!currentPreview&&'blocked'in currentPreview&&currentPreview.blocked===true;
  const previewPending=engineEnabled&&!!version?.enginePlan&&!currentPreview;
  const selected=currentPreview?.template??baseline;
- const baseRequest=data?buildCoachRequest({task:'ADJUST_TODAY',data,templateId:selected?.id}):undefined;
- const homeRequest=baseRequest?.task==='ADJUST_TODAY'&&selected?{...baseRequest,template:selected}:baseRequest;
- const homePreview=homeRequest?coachMessageScope(homeRequest,message.slice(0,1600)):undefined;
+ useEffect(()=>{setHomeTemplateId(selected?.id);},[selected?.id]);
+ useEffect(()=>()=>setHomeTemplateId(undefined),[]);
  const acknowledge=(reminders=false)=>void run(async()=>{await createV8DataService(repository).acknowledgeMigrationNotice();if(reminders)navigate('/settings#reminders');});
  const lastSelected=data?.workouts.filter(w=>w.templateId===selected?.id&&w.planVersionId===version?.id&&w.status!=='abandoned').sort((a,b)=>b.startedAt.localeCompare(a.startedAt))[0];
  // Presentation only: names, weekdays and this week's done days.
  const timeZone=data?.profile?.timeZone??'Asia/Shanghai',now=new Date(),todayIndex=weekdayIndex(now,timeZone),today=weekdays[todayIndex];
  const names=sessionNames(templates,locale),schedule=version?weekSchedule(version):{sessions:[],chosen:false};
- const scheduledToday=schedule.sessions.some(session=>session.day===today);
+ const todayDate=localDay(timeZone,now),startDate=version?planStartDate(version,timeZone):undefined,notStarted=!!startDate&&startDate>todayDate;
+ const scheduledToday=!notStarted&&schedule.sessions.some(session=>session.day===today);
  const shown=(template?:{id:string})=>template?names.get(template.id)??'':'';
  const monday=new Date(Date.parse(localDay(timeZone,now)+'T00:00:00Z')-todayIndex*86400000);
  const weekDates=weekdays.map((_,index)=>new Date(monday.getTime()+index*86400000).toISOString().slice(0,10));
  const doneDays:Partial<Record<Weekday,'done'|'partial'>>={};
+ // Only an explicitly chosen start date hides this week's earlier sessions; older plans keep their full week.
+ const beforeStart=(index:number)=>!!version?.startDate&&weekDates[index]<version.startDate;
  for(const workout of data?.workouts??[]){const index=weekDates.indexOf(workout.localDate);if(index<0)continue;if(workout.status==='complete')doneDays[weekdays[index]]='done';else if(workout.status==='partial'&&doneDays[weekdays[index]]!=='done')doneDays[weekdays[index]]='partial';}
- const nextSession=schedule.sessions.find(session=>weekdays.indexOf(session.day)>todayIndex)??schedule.sessions[0];
+ const nextSession=schedule.sessions.find(session=>weekdays.indexOf(session.day)>todayIndex&&!beforeStart(weekdays.indexOf(session.day)))??schedule.sessions[0];
  const following=templates.length&&selected?templates[(templates.findIndex(item=>item.id===selected.id)+1)%templates.length]:undefined;
  const parts=selected?regionLabels(selected,locale):[];
  const dateText=new Intl.DateTimeFormat(locale==='zh'?'zh-CN':'en',{timeZone,month:'long',day:'numeric',weekday:'short'}).format(now);
- const strip=weekdays.map((day,index)=>{const planned=schedule.sessions.find(session=>session.day===day);return {key:day,label:weekdayLabel(day,locale,true),state:doneDays[day]??(planned?'planned':'rest'),today:index===todayIndex,description:`${weekdayLabel(day,locale)} · ${doneDays[day]==='done'?pv.done:doneDays[day]==='partial'?pv.partial:planned?shown(templates.find(item=>item.id===planned.templateId)):pv.rest}`} as const;});
+ const strip=weekdays.map((day,index)=>{const planned=beforeStart(index)?undefined:schedule.sessions.find(session=>session.day===day);return {key:day,label:weekdayLabel(day,locale,true),state:doneDays[day]??(planned?'planned':'rest'),today:index===todayIndex,description:`${weekdayLabel(day,locale)} · ${doneDays[day]==='done'?pv.done:doneDays[day]==='partial'?pv.partial:planned?shown(templates.find(item=>item.id===planned.templateId)):pv.rest}`} as const;});
  return <main className="v9-home">
- <header className="v9-home-head"><div><span className="v9-home-date">{dateText}</span><h1 className="v9-display">{h.title}</h1></div><span className="v9-num v9-home-day" aria-hidden="true">{localDay(timeZone,now).slice(8)}</span></header>
+ <header className="v9-home-head"><div><span className="v9-home-date">{dateText}</span><h1 className="v9-display">{h.title}</h1></div><div className="v9-home-head-side"><ThemeButton locale={locale}/><span className="v9-num v9-home-day" aria-hidden="true">{localDay(timeZone,now).slice(8)}</span></div></header>
  {applied&&version&&<Card variant="raised" padding="md" className="v9-home-applied" role="status"><Yaya pose="cheer" size={52} alt=""/><p>{h.applied}</p></Card>}
  <PelvicFloorDailyNotice/><CardiacClearancePanel/><PostpartumSafetyPanel/><PregnancySafetyControls/><PendingPainReview/>
  {data?.state?.trainingPause&&<p role="status">{engineCopy('redflag.copy.paused_banner',locale)}</p>}
@@ -97,8 +96,9 @@ export function HomePage(){
  {data?.active&&<PrimaryButton tone="quiet" onClick={()=>navigate(`/workout/${data.active!.id}`)}>{t.ongoing}</PrimaryButton>}
  {engineEnabled&&currentPreview&&<PlanStops plan={currentPreview} locale={locale}/>}
  {selected?<><slots.FeatureCard context="next" motionReduced={false} trainingActive={false}>
-  <slots.StartHero {...selected} name={shown(selected)} templateId={selected.id} templateLabel={shown(selected)} nextLabel={scheduledToday||!nextSession?h.today:fill(h.nextOn,{day:`${schedule.chosen?'':h.suggested}${weekdayLabel(nextSession.day,locale)}`})} startLabel={t.start} disabled={busy||!!data?.active||previewBlocked||previewPending} onStart={()=>{if(!previewBlocked&&!previewPending)void start(selected.id)}}/>
+  <slots.StartHero {...selected} name={shown(selected)} templateId={selected.id} templateLabel={shown(selected)} nextLabel={notStarted&&startDate?fill(sd.startsOn,{date:startDateLabel(startDate,todayDate,locale)}):scheduledToday||!nextSession?h.today:fill(h.nextOn,{day:`${schedule.chosen?'':h.suggested}${weekdayLabel(nextSession.day,locale)}`})} startLabel={t.start} disabled={busy||!!data?.active||previewBlocked||previewPending} onStart={()=>{if(!previewBlocked&&!previewPending)void start(selected.id)}}/>
   {parts.length>0&&<div className="v9-home-parts" role="group" aria-label={h.parts}>{parts.map(part=><span key={part}>{part}</span>)}</div>}
+  {notStarted&&<p className="v9-home-reason">{sd.notStarted}</p>}
   <p className="v9-home-reason">{!last?t.firstWorkoutReason:lastSelected?.status==='partial'?t.partialReason:format(t.reason,{minutes:selected.estimatedMinutes})}</p>
  </slots.FeatureCard>
  {engineEnabled&&currentPreview&&<><TargetChanges suggestions={currentPreview.suggestions} templateId={selected.id} locale={locale} name={name}/><PlanTip plan={{...currentPreview,notices:currentPreview.notices.filter(notice=>!['pregnancy.pelvic_floor.copy','postpartum.pelvic_floor.copy'].includes(notice.code))}} locale={locale} onEditEnvironment={()=>navigate('/settings/engine#environment')}/></>}
@@ -106,7 +106,7 @@ export function HomePage(){
   <ul className="v9-home-items">{selected.items.map((item,index)=><li key={index}><details><summary>{name(item.exerciseId)} · {item.sets} {t.sets}</summary>
    <p>{exercises.find(e=>e.id===item.exerciseId)?.steps[locale].join(' ')}</p>
    {engineEnabled&&<><SourceWarmupSteps template={selected} itemIndex={index}/><ItemPrescription item={item} locale={locale}/></>}
-   <PrimaryButton tone="text" size="sm" onClick={event=>{trigger.current=event.currentTarget;setDetail(item.exerciseId);}}>{h.guide}</PrimaryButton>
+   <div className="v9-item-actions">{tools.buttons(selected.id,index,item.exerciseId)}</div>
   </details></li>)}</ul></Card>
  <div className="v9-home-row"><PrimaryButton tone="quiet" size="sm" disabled={templates.length<2} onClick={()=>setChoice(templates[(templates.findIndex(item=>item.id===selected.id)+1)%templates.length].id)}>{t.switch}</PrimaryButton><PrimaryButton tone="quiet" size="sm" onClick={()=>navigate('/manual')}>{t.manual}</PrimaryButton><PrimaryButton tone="quiet" size="sm" onClick={()=>navigate('/activity')}>{t.recordActivity}</PrimaryButton></div>
  </>:<Card variant="raised" padding="lg" as="section" className="v9-home-empty"><Yaya pose="side" size={120} alt=""/><p>{planLifecycleCopy[locale].empty}</p><PrimaryButton onClick={restartPlanning}>{planLifecycleCopy[locale].create}</PrimaryButton><div className="v9-home-row"><PrimaryButton tone="quiet" size="sm" onClick={()=>navigate('/manual')}>{t.manual}</PrimaryButton><PrimaryButton tone="quiet" size="sm" onClick={()=>navigate('/activity')}>{t.recordActivity}</PrimaryButton></div></Card>}
@@ -116,8 +116,6 @@ export function HomePage(){
   <WeekStrip label={h.week} days={strip}/>
   {following&&nextSession&&<p className="v9-home-next"><span>{h.after}</span><strong>{fill(h.afterLine,{day:`${schedule.chosen?'':h.suggested}${weekdayLabel(nextSession.day,locale)}`,name:shown(following),minutes:following.estimatedMinutes})}</strong>{regionLabels(following,locale).length>0&&<span>{regionLabels(following,locale).join(' · ')}</span>}</p>}
  </Card>}
- {homePreview&&<Card variant="raised" padding="md" as="section" className="v9-home-chat"><div className="v9-home-chat-head"><Yaya pose="head" size={44} alt=""/><span>{h.chat}</span></div><CoachScopeDisclosure request={homePreview} locale={locale}/><Composer value={message} onChange={value=>setMessage(value.slice(0,1600))} label={coachCopy.input} sendLabel={coachCopy.send} disabled={busy} onSend={()=>{if(homeRequest&&message.trim())sendHomeCoach(homeRequest,message);}}/></Card>}
- <PrimaryButton tone="quiet" disabled={busy} onClick={()=>openCoach('ADJUST_TODAY',selected?.id)}><Yaya pose="head" size={28} alt=""/>{t.askCoach}</PrimaryButton>
- <ExerciseGuidePanel id={detail} locale={locale} open={!!detail} onClose={()=>setDetail(undefined)} triggerRef={trigger}/>
+ {tools.sheets}
  </main>;
 }

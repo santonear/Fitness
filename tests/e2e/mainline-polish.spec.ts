@@ -1,4 +1,5 @@
 import {test,expect,type Page} from '@playwright/test';
+import {openHomeCoach} from './helpers/home-coach';
 import {answerTexts,basicSafety,generate,startOnboarding} from './helpers/onboarding-v9';
 async function shot(page:Page,name:string){
  await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
@@ -46,7 +47,7 @@ test('fresh mainline: duration, local coach, exercise guide, bottom pause, finis
  await shot(page,'draft');
  await page.locator('.v9-session summary').first().click();await page.locator('button.v9-item').first().click();await expect(page.getByRole('dialog')).toContainText('常见错误');await shot(page,'draft-guide');await page.getByRole('dialog').getByRole('button',{name:'关闭',exact:true}).click();
  await page.getByRole('button',{name:'就用这份计划'}).click();await expect(page.getByRole('heading',{name:'今天',exact:true})).toBeVisible();
- await page.getByRole('button',{name:'和芽芽聊聊',exact:true}).first().click();
+ await openHomeCoach(page);
  await page.getByRole('dialog').getByRole('textbox').fill('膝盖不适');await page.getByRole('dialog').getByRole('button',{name:'发送',exact:true}).click();
  await expect(page.getByRole('log')).toContainText('如果疼痛明显或持续，先休息，并请专业人士看看');await expect(page.getByRole('dialog')).toContainText('蚌式');await expect(page.getByRole('dialog')).toContainText('现在用的是本地建议');await expect(page.getByRole('dialog')).not.toContainText('芽芽暂时连不上');await shot(page,'coach-local-pain');
  await page.getByRole('dialog').getByRole('button',{name:'关闭',exact:true}).click();

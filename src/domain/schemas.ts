@@ -149,6 +149,8 @@ export const v8PlanVersionSchema = z.strictObject({
   id: uuidSchema, planId: uuidSchema, versionNumber: positive, goalText: z.string(), weeklyTarget: positive.max(7),
   scheduleOriginalText: z.string(), sessionMinutes: v8Minutes,
   preferredDays: v8PreferredDays,
+  /** Local calendar date the plan starts (V9.x); absent on older versions means it started when created. */
+  startDate: localDateSchema.optional(),
   scheduleRecovery:z.strictObject({raw:z.string(),recoveredAt:utcTimestampSchema}).optional(),
   templates: z.array(z.strictObject({ weekday:z.enum(['mon','tue','wed','thu','fri','sat','sun']).optional(), id: z.string().min(1), name: z.string().min(1), estimatedMinutes: z.number().int().positive().max(120), estimatedSeconds:z.number().positive().optional(),durationScope:z.literal('untargeted').optional(),targetMinutes:z.number().int().min(10).max(90).optional(),
     items: z.array(z.strictObject({ exerciseId: exerciseIdSchema, equipment: z.string(), sets: positive, target: setMetricsSchema, prescription:prescriptionSchema.optional() })).min(1),

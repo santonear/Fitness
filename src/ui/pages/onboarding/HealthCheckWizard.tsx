@@ -13,6 +13,8 @@ import { useEngineProfileDraft, engineFallKeys, engineOlderAge } from '../settin
 import { OnboardingFrame } from './OnboardingFrame';
 import { BirthMonthField } from '../../components/BirthMonthField';
 import type { OnboardingAnswers } from './OnboardingPage';
+import { PlanModeChoice, useAiReadiness } from './PlanModeChoice';
+import { planModeCopy, type MissingKey } from '../../../i18n/features/onboarding/plan-mode';
 
 const rules = new Rules();
 const cmrKeys = rules.get('safety.screen.cmr_symptoms').symptoms as string[];
@@ -29,6 +31,11 @@ export interface HealthCheckWizardProps {
   onChange: (answers: OnboardingAnswers) => void; onExit: () => void; onGenerate: () => void; onManual: () => void;
   /** Starting screen id (tests and resuming); defaults to the first screen. */
   initialScreen?: string;
+  /** AI planning exists in this deployment: 芽芽 asks AI-or-local before the ready screen. */
+  aiAvailable?: boolean;
+  /** Earlier onboarding answers still missing, with the outer step that fixes each. */
+  missingOuter?: { key: MissingKey; step: number }[];
+  onOuterStep?: (step: number) => void;
 }
 
 /** Big 是/否 pair; the parent advances after an answer. */
@@ -123,6 +130,7 @@ export function HealthCheckWizard(props: HealthCheckWizardProps) {
     list.push({ id: 'cautions' });
     if (engine && redKeys.length && screening) group('redflag');
     if (engine) list.push({ id: 'prefs' });
+    if (props.aiAvailable) list.push({ id: 'planMode' });
     list.push({ id: 'ready' });
     return list;
   })();
@@ -145,7 +153,14 @@ export function HealthCheckWizard(props: HealthCheckWizardProps) {
     falls: { title: engineCopy('older.screen.copy.intro', locale) }, redflag: t.redflag,
   };
 
+  const pm = planModeCopy[locale];
+  const ai = useAiReadiness(!!props.aiAvailable && answers.planMode === 'ai');
   switch (true) {
+    case screen.id === 'planMode': {
+      const canGo = answers.planMode === 'local' || answers.planMode === 'ai' && ai.readiness === 'active';
+      return frame(pm.title, <PlanModeChoice locale={locale} value={answers.planMode} busy={busy} engineEnabled={engineEnabled} readiness={ai.readiness} onRefresh={ai.refresh}
+        onChange={planMode => onChange({ ...answers, planMode })} />, nextButton(canGo), pm.sub);
+    }
     case screen.id === 'intro': {
       const ready = answers.adultConfirmed && (!engineEnabled || consent);
       return frame(t.intro.title, <div className="v9-choices">
@@ -262,7 +277,20 @@ export function HealthCheckWizard(props: HealthCheckWizardProps) {
     }
     default: {
       const ready = complete && answers.adultConfirmed && answers.safetyAnswered !== false;
+      // Never a grey button without a reason: list what is missing, each with a way back to it.
+      const has = (id: string) => screens.some(row => row.id === id);
+      const missing: { key: MissingKey; go: () => void }[] = ready ? [] : [
+        ...(props.missingOuter ?? []).map(row => ({ key: row.key, go: () => props.onOuterStep?.(row.step) })),
+        ...(!answers.adultConfirmed ? [{ key: 'adult' as const, go: () => setCurrent('intro') }] : []),
+        ...(engineEnabled && !consent ? [{ key: 'consent' as const, go: () => setCurrent('intro') }] : []),
+        ...(engine && !answers.birthYearMonth && has('birth') ? [{ key: 'birth' as const, go: () => setCurrent('birth') }] : []),
+        ...(engine && answers.birthYearMonth && !answers.screening?.completedAt ? [{ key: 'screening' as const, go: () => setCurrent('group:parq') }] : []),
+        ...(engine && !answers.population && has('population') ? [{ key: 'population' as const, go: () => setCurrent('population') }] : []),
+        ...(answers.safetyAnswered === false ? [{ key: 'cautions' as const, go: () => setCurrent('cautions') }] : []),
+      ];
       return frame(t.ready.title, <div className="v9-choices">
+        {!ready && !busy && missing.length > 0 && <div className="v9-missing" role="status"><p>{pm.missingTitle}</p><ul>{missing.map(row => <li key={row.key}><span>{pm.missing[row.key]}</span>
+          <PrimaryButton tone="text" size="sm" onClick={row.go}>{pm.fix}</PrimaryButton></li>)}</ul></div>}
         <div className="v9-onboarding-yaya"><Yaya pose="think" size={150} alt="" /></div>
         {mode === 'ai' && <details className="v9-consent"><summary>{legacy.consent}</summary><dl>{sendFields.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl></details>}
         {busy && <p role="status">{mode === 'ai' ? legacy.aiWorking : t.ready.working}</p>}

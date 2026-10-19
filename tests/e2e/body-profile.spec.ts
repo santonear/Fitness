@@ -1,4 +1,5 @@
 import {test,expect,type Page} from '@playwright/test';
+import {openHomeCoach,showShared} from './helpers/home-coach';
 import {answerText,answerTexts,cautions,ensurePressed,generate,nextButton,startOnboarding} from './helpers/onboarding-v9';
 async function enable(page:Page,theme='pop'){
  await page.addInitScript(theme=>localStorage.setItem('fitness-theme',theme),theme);
@@ -38,7 +39,7 @@ test('legacy body migration requires confirmation and sending remains per field'
  await page.route('**/api/v1/trial/access-status',route=>route.fulfill({json:{qualification:'active',sessionValid:true,expiresAt:Date.now()+86400000,aiEnabled:true,planningBudgetDisabled:true}}));
  await page.evaluate(async()=>{const p='/src/application/feature-flags.ts';await(await import(/* @vite-ignore */ p)).refreshFeatureFlags(async()=>Response.json({version:1,flags:{bodyProfile:true,aiAssistantV2:true},expiresAt:Date.now()+60000}));});
  let sent:any;await page.route('**/api/v1/assistant/chat',route=>{sent=route.request().postDataJSON().context;return route.fulfill({status:503,json:{error:'AI_DISABLED'}})});
- await page.getByRole('button',{name:'和芽芽聊聊',exact:true}).click();const dialog=page.getByRole('dialog');const fieldset=dialog.getByRole('group',{name:'发送身体资料'});await expect(fieldset.getByRole('checkbox')).toHaveCount(5);for(const box of await fieldset.getByRole('checkbox').all())await expect(box).not.toBeChecked();await expect(fieldset).toContainText('来自你的身体资料');await expect(fieldset).not.toContainText('biologicalSex');await expect(fieldset).not.toContainText('waistCm');await fieldset.getByLabel(/腰围（厘米）/).check();await dialog.getByRole('textbox').fill('今天少练一点');await dialog.getByRole('button',{name:'发送',exact:true}).click();await expect.poll(()=>sent?.body).toEqual({waistCm:80});expect(sent.history).toBeUndefined();
+ const dialog=await openHomeCoach(page);await showShared(page);const fieldset=dialog.getByRole('group',{name:'发送身体资料'});await expect(fieldset.getByRole('checkbox')).toHaveCount(5);for(const box of await fieldset.getByRole('checkbox').all())await expect(box).not.toBeChecked();await expect(fieldset).toContainText('来自你的身体资料');await expect(fieldset).not.toContainText('biologicalSex');await expect(fieldset).not.toContainText('waistCm');await fieldset.getByLabel(/腰围（厘米）/).check();await dialog.getByRole('textbox').fill('今天少练一点');await dialog.getByRole('button',{name:'发送',exact:true}).click();await expect.poll(()=>sent?.body).toEqual({waistCm:80});expect(sent.history).toBeUndefined();
 });
 
 

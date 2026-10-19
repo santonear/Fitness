@@ -48,7 +48,9 @@ function useController() {
  const coachTrigger=useRef<HTMLElement|null>(null);
  const [coachDraft,setCoachDraft]=useState<{nonce:string;text:string}>();
  /** Opens the assistant like openCoach and places a quick-action prompt in the composer without sending it. */
- function openCoachWithDraft(text:string,task?:CoachRequest['task'],profile?:CoachProfile){openCoach(task,undefined,profile);setCoachDraft({nonce:crypto.randomUUID(),text});}
+ function openCoachWithDraft(text:string,task?:CoachRequest['task'],profile?:CoachProfile,templateId?:string){openCoach(task,templateId,profile);setCoachDraft({nonce:crypto.randomUUID(),text});}
+ /** Session shown on 今天, so the 芽芽 orb adjusts the same workout the user is looking at. */
+ const [homeTemplateId,setHomeTemplateId]=useState<string>();
  function openCoach(task:CoachRequest['task']='MODIFY_PLAN',templateId?:string,profile?:CoachProfile){
   if(!data)return;
   coachTrigger.current=document.activeElement instanceof HTMLElement?document.activeElement:null;
@@ -117,7 +119,7 @@ function useController() {
  const start=(templateId?:string,manualId?:string)=>run(async()=>{const record=await workflow.start(templateId,manualId);setWorkoutValues({});setFocusIndex(0);navigate(`/workout/${record.id}`);});
  const startManual=(ids:string[],selection?:ManualSelection)=>run(async()=>{const record=await workflow.start(undefined,undefined,ids,selection);setWorkoutValues({});setFocusIndex(0);navigate(`/workout/${record.id}`);});
  const restartPlanning=()=>{setStep(0);setCandidate(undefined);setDraftDiscarded(false);navigate('/onboarding');};
- return {coachDraft,openCoachWithDraft,refreshCoachContext,restartPlanning,draftDiscarded,setDraftDiscarded,deletedNotice,setDeletedNotice,deletePlan,undoPlan,coachInitialSend,sendHomeCoach,reviewKind,setReviewKind,coachOpen,setCoachOpen,coachRequest,coachRevision,coachTrigger,openCoach,completedWeeks,monthFacts,previousFacts,workoutValues,setWorkoutValues,focusIndex,setFocusIndex,data,facts,answers,setAnswers,step,setStep,candidate,setCandidate,busy,error,locale,t,slots,name,navigate,run,reload,start,startManual,appearance};
+ return {homeTemplateId,setHomeTemplateId,coachDraft,openCoachWithDraft,refreshCoachContext,restartPlanning,draftDiscarded,setDraftDiscarded,deletedNotice,setDeletedNotice,deletePlan,undoPlan,coachInitialSend,sendHomeCoach,reviewKind,setReviewKind,coachOpen,setCoachOpen,coachRequest,coachRevision,coachTrigger,openCoach,completedWeeks,monthFacts,previousFacts,workoutValues,setWorkoutValues,focusIndex,setFocusIndex,data,facts,answers,setAnswers,step,setStep,candidate,setCandidate,busy,error,locale,t,slots,name,navigate,run,reload,start,startManual,appearance};
 }
 const Context=createContext<ReturnType<typeof useController>|null>(null);
 export const useMainline=()=>{const value=useContext(Context);if(!value)throw new Error('Missing mainline provider');return value;};

@@ -76,6 +76,8 @@ export type LocalCandidate = Extract<
   profile: CoachProfile;
   source?: "local" | "ai";
   enginePlan?: EnginePlan;
+  /** Chosen on the draft; local date YYYY-MM-DD. Absent means today. */
+  startDate?: string;
 };
 export type ManualSelection = {
   adultConfirmed: boolean;
@@ -148,6 +150,8 @@ export function basicProposal(profile: CoachProfile, locale = "zh") {
     ] as [string, string, string],
   };
 }
+/** Days after today a plan may start (V9 start-date picker). */
+export const START_DATE_WINDOW_DAYS = 14;
 function localDate(timeZone: string) {
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone,
@@ -348,6 +352,7 @@ export function createV8Workflow(repo: Repository) {
           basedOnVersionId: version.id,
           changeSummary: [],
           enginePlan: generated.plan,
+          ...(version.startDate ? { startDate: version.startDate } : {}),
         });
         await db.v8PlanVersions.add(nextVersion);
         await db.v8Plans.put({ ...plan, currentVersionId: nextVersion.id });
@@ -590,6 +595,7 @@ export function createV8Workflow(repo: Repository) {
         source: candidate.source ?? "local",
         changeSummary: [],
         ...(acceptedEnginePlan ? { enginePlan: acceptedEnginePlan } : {}),
+        ...(candidate.startDate ? { startDate: candidate.startDate } : {}),
       });
       await db.v8Plans.toCollection().modify({ readOnly: true });
       await db.v8Plans.add({
@@ -1262,6 +1268,7 @@ export function createV8Workflow(repo: Repository) {
             : "coach_change",
         basedOnVersionId: version.id,
         ...(acceptedEnginePlan ? { enginePlan: acceptedEnginePlan } : {}),
+        ...(version.startDate ? { startDate: version.startDate } : {}),
         changeSummary:
           response.type === "change_proposal"
             ? response.changes
@@ -1309,8 +1316,53 @@ export function createV8Workflow(repo: Repository) {
       return prior;
     }, expectedRevision);
   }
+  /** Moves the current plan's start date. Plans are never edited in place: this saves a new version. */
+  async function changeStartDate({
+    startDate,
+    expectedRevision,
+    summary,
+  }: {
+    startDate: string;
+    expectedRevision: number;
+    summary: string;
+  }) {
+    return repo.write(async () => {
+      const local = await db.profiles.toCollection().first();
+      const today = localDate(local?.timeZone ?? "Asia/Shanghai");
+      const latest = new Date(Date.parse(`${today}T00:00:00Z`) + START_DATE_WINDOW_DAYS * 86400000)
+        .toISOString()
+        .slice(0, 10);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(startDate) || startDate < today || startDate > latest)
+        return invalid("INVALID_START_DATE");
+      const state = await db.v8State.get("v8");
+      const plan = state?.currentPlanId ? await db.v8Plans.get(state.currentPlanId) : undefined;
+      const version = plan ? await db.v8PlanVersions.get(plan.currentVersionId) : undefined;
+      if (!state || !plan || !version || plan.readOnly || plan.deletedAt) return invalid("PLAN_UNAVAILABLE");
+      if (await db.v8Workouts.where("status").equals("in_progress").count())
+        throw new DomainError("CONFLICT", "TRAINING_CHANGED");
+      if (version.startDate === startDate) return version;
+      const next = v8PlanVersionSchema.parse({
+        ...version,
+        id: crypto.randomUUID(),
+        versionNumber: version.versionNumber + 1,
+        createdAt: new Date().toISOString(),
+        origin: "manual",
+        basedOnVersionId: version.id,
+        reviewRule: undefined,
+        changeSummary: [summary.slice(0, 200)],
+        startDate,
+      });
+      await db.v8PlanVersions.add(next);
+      await db.v8Plans.put({ ...plan, currentVersionId: next.id });
+      // A today-only adjustment of the same plan stays attached to the new version.
+      if (state.nextWorkoutOverride?.planVersionId === version.id)
+        await db.v8State.put({ ...state, nextWorkoutOverride: { ...state.nextWorkoutOverride, planVersionId: next.id } });
+      return next;
+    }, expectedRevision);
+  }
   const pain = createTrainingPain(repo);
   return {
+    changeStartDate,
     reviewCaution: caution.review,
     reportCautionMorning: caution.reportMorning,
     reconcileCaution: caution.reconcile,

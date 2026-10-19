@@ -1,4 +1,5 @@
 import {test,expect} from '@playwright/test';
+import {showShared} from './helpers/home-coach';
 import {answerTexts,basicSafety,generate,startOnboarding,toFirstQuestion} from './helpers/onboarding-v9';
 test('missing plan uses conservative local pain response and review navigation without network',async({page})=>{
  let calls=0;await page.route('**/api/v1/plans/generate',async route=>{calls++;await route.abort();});
@@ -70,7 +71,7 @@ test('week and month reviews without a current plan retain facts and offer manua
 test('coach consent shows a repeated instruction once and a readable time zone while retaining raw fields',async({page})=>{
  await page.goto('/tests/fixtures/v8-coach/index.html?local-adjust');await page.getByRole('button',{name:'跟芽芽说',exact:true}).click();
  await page.getByRole('textbox').fill('今天时间不够');
- const panel=page.getByRole('dialog');await panel.getByText('查看发送内容',{exact:true}).click();
+ const panel=page.getByRole('dialog');await showShared(page);await panel.getByText('查看发送内容',{exact:true}).click();
  await expect(panel.locator('dd:visible').filter({hasText:'今天时间不够'})).toHaveCount(1);
  await expect(panel.getByText('东八区（UTC+8）',{exact:true})).toBeVisible();
  await expect(panel).not.toContainText('Asia/Shanghai');
