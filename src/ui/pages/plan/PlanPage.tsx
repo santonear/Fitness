@@ -1,10 +1,12 @@
+import type React from 'react';
 import {templateLabel,estimatedDurationLabel} from '../../../i18n/features/plan/labels';
 import type { PlannedItem, PlanVersion } from '../../../domain/v8/contracts';
 import { planMessages, type PlanLanguage } from '../../../i18n/features/plan/messages';
 import { PrimaryButton } from '../../components/kit';
 import { WeekPlan, PlanReasons, SessionItems, type WeekPlanProps } from './WeekPlan';
 import { planViewCopy } from '../../../i18n/features/plan/view';
-import { planReasons } from '../../../application/plan-presentation';
+import { planReasons, startDateLabel } from '../../../application/plan-presentation';
+import { startDateCopy } from '../../../i18n/features/plan/start-date';
 import './plan.css';
 import guideZh from '../../../i18n/features/training/guide.zh.json';
 import guideEn from '../../../i18n/features/training/guide.en.json';
@@ -46,7 +48,12 @@ export function preferredDaysLabel(days:PlanVersion['preferredDays'],language:Pl
  const names:{[K in typeof dayOrder[number]]:string}={mon:'Mon',tue:'Tue',wed:'Wed',thu:'Thu',fri:'Fri',sat:'Sat',sun:'Sun'};
  return selected.map(day=>names[day]).join('/');
 }
-export function PlanPage({ version, currentVersionId, language, exerciseName, onVersions, onExercises, onExercise, onDiscuss, today, done, focusId }: PlanPageProps & { today?: number; done?: WeekPlanProps['done']; focusId?: string }) {
+export function PlanPage({ version, currentVersionId, language, exerciseName, onVersions, onExercises, onExercise, onDiscuss, today, done, focusId, startDate, todayDate, onChangeStart, changeStartBlocked, exerciseActions }: PlanPageProps & { today?: number; done?: WeekPlanProps['done']; focusId?: string;
+  /** Plan start date and today's local date; shown with a change button for the current version. */
+  startDate?: string; todayDate?: string; onChangeStart?: (trigger: HTMLElement) => void; changeStartBlocked?: string;
+  /** Per-exercise tools (动作怎么做 / 换动作) rendered under each session's exercise list. */
+  exerciseActions?: (templateId: string, itemIndex: number, exerciseId: string) => React.ReactNode }) {
+  const sd = startDateCopy[language];
   const t = planMessages[language], v = planViewCopy[language], current = version.id === currentVersionId;
   const date = new Intl.DateTimeFormat(language, { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(version.createdAt));
   return <section className="plan-page v9-plan-page" aria-labelledby="plan-title">
@@ -54,10 +61,14 @@ export function PlanPage({ version, currentVersionId, language, exerciseName, on
       <span className="v9-plan-kicker">{t.version(version.versionNumber)} · <time dateTime={version.createdAt}>{date}</time> · {t.origins[version.origin]}{!current && ` · ${t.readOnly}`}</span>
       <h1 id="plan-title" className="v9-display">{v.planTitle}</h1>
       <p className="v9-plan-kicker">{t.goal} · <span>{version.goalText}</span></p>
+      {startDate && todayDate && <div className="v9-plan-start"><span>{sd.current} · <strong data-testid="plan-start-date">{startDateLabel(startDate, todayDate, language)}</strong></span>
+        {current && onChangeStart && <PrimaryButton tone="text" size="sm" disabled={!!changeStartBlocked} onClick={event => onChangeStart(event.currentTarget)}>{sd.change}</PrimaryButton>}
+        {current && changeStartBlocked && <small>{changeStartBlocked}</small>}</div>}
       <dl className="plan-summary v9-plan-rhythm"><dt>{t.rhythm}</dt><dd>{version.preferredDays?.length ? preferredDaysLabel(version.preferredDays, language) : language === 'zh' ? `每周 ${version.weeklyTarget} 次` : `${version.weeklyTarget} times a week`}</dd><dd className="plan-muted">{estimatedDurationLabel(version.templates, language)}</dd></dl>
     </header>
-    <WeekPlan plan={version} locale={language} today={today} done={done} focusId={focusId} details={template => <SessionItems template={template} locale={language} name={exerciseName}
+    <WeekPlan plan={version} locale={language} today={today} done={done} focusId={focusId} startDate={startDate} todayDate={todayDate} details={template => <SessionItems template={template} locale={language} name={exerciseName}
       hideDistance={id => id === EXERCISE_IDS.walking && /室内|indoor/i.test(template.name)}
+      actions={current && exerciseActions ? (item, index) => exerciseActions(template.id, index, item.exerciseId) : undefined}
       onExercise={(_id, index, element) => onExercise(version, template.id, index, element)} />} />
     <PlanReasons reasons={planReasons(version, language)} locale={language} />
     <nav className="v9-plan-tools" aria-label={t.title}><PrimaryButton tone="quiet" size="sm" onClick={onVersions}>{t.history}</PrimaryButton><PrimaryButton tone="quiet" size="sm" onClick={onExercises}>{t.library}</PrimaryButton></nav>

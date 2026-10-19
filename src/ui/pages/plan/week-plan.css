@@ -57,3 +57,5 @@
 .v9-plan-head .v9-plan-rhythm { flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: var(--s2); }
 .v9-plan-head .v9-plan-rhythm dt, .v9-plan-head .v9-plan-rhythm dd { font-size: var(--t2); color: var(--c-ink-muted); }
 .v9-plan-head .v9-plan-rhythm dd:not(:last-child)::after { content: ' ·'; }
+.v9-week-date { display: block; font-size: var(--t1); color: var(--c-ink-muted); }
+.v9-item-actions { display: flex; flex-wrap: wrap; gap: var(--s2); padding-block: var(--s1) var(--s2); }

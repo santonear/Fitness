@@ -1,0 +1,6 @@
+/* V9 start-date picker: one scrollable row of day chips. Tokens only. */
+.v9-start-date { display: grid; gap: var(--s2); min-inline-size: 0; }
+.v9-start-date-label { font-size: var(--t3); font-weight: var(--w-strong); color: var(--c-ink); }
+.v9-start-date-hint { font-size: var(--t2); color: var(--c-ink-muted); line-height: var(--lh-body); }
+.v9-start-date-row { display: flex; gap: var(--s2); overflow-x: auto; padding-block: var(--s1) var(--s2); scrollbar-width: thin; overscroll-behavior-x: contain; }
+.v9-start-date-row .v9-chip { flex: none; white-space: nowrap; }

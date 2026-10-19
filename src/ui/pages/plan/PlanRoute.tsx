@@ -1,6 +1,11 @@
 import { engineCopy } from "../../../coach/engine-copy";
 import { PlanStops, PlanTip } from "./WeekPlan";
-import { weekdayIndex } from "../../../application/plan-presentation";
+import { localDateIn, planStartDate, startDateLabel, weekdayIndex } from "../../../application/plan-presentation";
+import { startDateCopy } from "../../../i18n/features/plan/start-date";
+import { exerciseToolsCopy } from "../../../i18n/features/plan/exercise-tools";
+import { StartDatePicker } from "../../components/StartDatePicker";
+import { useExerciseTools } from "../../components/ExerciseTools";
+import { fill } from "../../../i18n/features/onboarding/entry";
 import { Card, PrimaryButton } from "../../components/kit";
 import { useFeature } from "../../useFeature";
 import { useRef, useState } from "react";
@@ -39,6 +44,12 @@ export function PlanRoute({ versions = false }: { versions?: boolean }) {
       setActivating({ id, revision: c.data.metadata.dataRevision });
     else void activate(id, c.data.metadata.dataRevision);
   };
+  const timeZone = c.data?.profile?.timeZone ?? "Asia/Shanghai",
+    todayDate = localDateIn(timeZone),
+    sd = startDateCopy[c.locale];
+  const tools = useExerciseTools("plan", { swapBlocked: c.data?.active ? exerciseToolsCopy[c.locale].blocked : undefined });
+  const startTrigger = useRef<HTMLElement | null>(null),
+    [startDraft, setStartDraft] = useState<string>();
   const copy = c.locale === "zh" ? guideZh : guideEn,
     life = planLifecycleCopy[c.locale];
   const plans = c.data?.plans ?? [],
@@ -136,7 +147,16 @@ export function PlanRoute({ versions = false }: { versions?: boolean }) {
           exerciseName={c.name}
           onVersions={() => c.navigate(`/plans/versions${selectedQuery}`)}
           onExercises={() => c.navigate("/exercises")}
-          today={weekdayIndex(new Date(), c.data?.profile?.timeZone ?? "Asia/Shanghai")}
+          today={weekdayIndex(new Date(), timeZone)}
+          startDate={planStartDate(selected, timeZone)}
+          todayDate={todayDate}
+          exerciseActions={tools.buttons}
+          changeStartBlocked={c.data?.active ? sd.busyWorkout : undefined}
+          onChangeStart={(trigger) => {
+            startTrigger.current = trigger;
+            const current = planStartDate(selected, timeZone) ?? todayDate;
+            setStartDraft(current < todayDate ? todayDate : current);
+          }}
           onExercise={(v, id, index, trigger) => {
             triggerRef.current = trigger ?? null;
             setExercise(
@@ -242,6 +262,38 @@ export function PlanRoute({ versions = false }: { versions?: boolean }) {
           {activePlanId === selectedPlan.id && <p>{life.active}</p>}
         </>
       )}
+      {tools.sheets}
+      <MorphPanel
+        open={!!startDraft}
+        title={sd.sheetTitle}
+        closeLabel={life.cancel}
+        onClose={() => {
+          if (!c.busy) setStartDraft(undefined);
+        }}
+        triggerRef={startTrigger}
+      >
+        <p>{sd.sheetHint}</p>
+        {startDraft && (
+          <StartDatePicker value={startDraft} today={todayDate} locale={c.locale} disabled={c.busy} onChange={setStartDraft} />
+        )}
+        <PrimaryButton
+          disabled={c.busy || !startDraft || !!c.data?.active}
+          onClick={() => {
+            if (!startDraft || !c.data) return;
+            const date = startDraft;
+            void c.run(async () => {
+              await workflow.changeStartDate({
+                startDate: date,
+                expectedRevision: c.data!.metadata.dataRevision,
+                summary: fill(sd.summary, { date: startDateLabel(date, undefined, c.locale) }),
+              });
+              setStartDraft(undefined);
+            });
+          }}
+        >
+          {sd.save}
+        </PrimaryButton>
+      </MorphPanel>
       <MorphPanel
         open={enabled && !!target}
         title={life.confirmTitle}

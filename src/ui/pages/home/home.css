@@ -29,8 +29,6 @@
 .v9-home .v9-home-week h2 { margin: 0; font-size: var(--t4); font-weight: var(--w-strong); }
 .v9-home-next { margin: 0; display: grid; gap: calc(var(--s1) / 2); font-size: var(--t2); color: var(--c-ink-muted); }
 .v9-home-next strong { font-size: var(--t3); color: var(--c-ink); font-weight: var(--w-strong); }
-.v9-home-chat { display: grid; gap: var(--s3); }
-.v9-home-chat-head { display: flex; align-items: center; gap: var(--s3); font-size: var(--t3); }
 .v9-home-items { display: grid; gap: var(--s2); margin: 0; padding: 0; list-style: none; }
 .v9-home-items details { border-radius: var(--r-panel); background: var(--c-inset); box-shadow: var(--el-inset); padding: 0 var(--s4); }
 .v9-home-items summary { min-block-size: var(--touch-min); display: flex; align-items: center; cursor: pointer; font-size: var(--t3); }
@@ -40,3 +38,5 @@
 .v9-home-items dt { font-size: var(--t1); color: var(--c-ink-muted); }
 .v9-home-items section h3 { margin: var(--s2) 0 var(--s1); font-size: var(--t2); }
 .v9-home .v9-home-items-title { margin: 0; font-size: var(--t3); font-weight: var(--w-strong); }
+.v9-home-head-side { display: flex; flex-direction: column; align-items: flex-end; gap: var(--s2); }
+.v9-home-items .v9-item-actions { display: flex; flex-wrap: wrap; gap: var(--s2); padding-block-start: var(--s2); }
