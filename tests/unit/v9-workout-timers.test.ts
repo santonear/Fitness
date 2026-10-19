@@ -72,3 +72,14 @@ describe('V9 rest countdown', () => {
     expect(restVisible(undefined, 0, false)).toBe(false);
   });
 });
+
+describe('only one hold countdown runs', () => {
+  it('pauses every running timer except the one kept', async () => {
+    const { holdStart, holdIdle, holdStatus, pauseOtherHolds } = await import('../../src/ui/pages/training/timer-logic');
+    const a = holdStart(holdIdle(30), 0), b = holdStart(holdIdle(40), 0);
+    const next = pauseOtherHolds({ a, b }, 5000, 'b');
+    expect(holdStatus(next.a, 6000)).toBe('paused');
+    expect(holdStatus(next.b, 6000)).toBe('running');
+    expect(holdStatus(pauseOtherHolds({ a, b }, 5000).b, 6000)).toBe('paused');
+  });
+});

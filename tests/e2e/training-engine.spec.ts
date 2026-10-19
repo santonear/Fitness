@@ -8,7 +8,8 @@ import type {SetFact,SetFeedbackEvent} from '../../src/domain/v8/contracts';
 
 // This file is also discovered by the shared suite: retain the dedicated
 // suite's budget for real IndexedDB histories and multi-theme screenshots.
-test.setTimeout(120000);
+// The full screening and backup journeys run several onboardings; CI runners need the headroom.
+test.setTimeout(240000);
 
 async function localFeatures(page:Page){
  await page.route('**/api/v1/features',route=>route.fulfill({json:{version:1,flags:{trainingEngine:true,aiAssistantV2:false,bodyProfile:false},expiresAt:Date.now()+3600000}}));
