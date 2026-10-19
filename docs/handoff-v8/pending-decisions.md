@@ -501,3 +501,15 @@ Bo 已定版 V9 设计并授权推进；计时规则按 Bo 当日决定改写（
 - 理由：不丢数据、不编造数据、外发最小化；新增可选字段按授权记录后实施。
 - 涉及文件：src/ui/pages/settings/{SettingsPage,MyChangesPage}.tsx、src/ui/pages/settings/{settings,my-changes}.css、src/ui/pages/nutrition/*、src/ui/components/{TrendChart.tsx,trend-chart.css,Orb.tsx}、src/ui/mainline/MainlineApp.tsx、src/application/{my-changes,nutrition-module}.ts、src/assistant/contracts.ts、src/backend/assistant/{prompts.ts,model.ts,prompts/*}、src/domain/{schemas,models}.ts、src/i18n/features/{settings/me,me/changes,nutrition/advice,coach/orb}.ts；测试 tests/unit/me-reorg-nutrition.test.ts、tests/e2e/v9-me-reorg.spec.ts。
 - 待 Bo 确认：营养话题提示词与芽芽说法；分组名称与顺序；体脂是否需要单独的历史编辑 / 删除；营养对话以后是否允许勾选发送饮食记录；“我的变化”体重是否应同步到身体资料。
+### 2026-10-19 “我的”去掉界面风格、训练提醒暂停与给我们留言（规范 V9.10，V9.0.5）保守决定
+- 情况：Bo 反馈“我的页面可以隐藏界面风格入口，与主页切换风格入口冲突”；“我的页面，应支持用户留言功能，支持用户输入，同时在后台增加查看用户留言功能”；“设置训练提醒功能暂时关闭，不再显示，后续应开发支持移动端用户将相关计划同步到本机日历功能”。
+- 决定（界面风格）：只删“我的”里的入口；`/settings/appearance` 路由与“更多模板”页保留（旧链接、测试和今天页换风格面板仍可用），不改主题偏好数据。
+- 决定（训练提醒开关）：新增远程功能开关 `trainingReminders`（默认关闭，后台“开关与发布”可按环境打开）。关闭时隐藏：我的 › 提醒、应用内提醒条 `V8Reminder`（不再评估、不再弹系统通知）、系统通知区里的“允许通知 / 后台提醒”按钮、计划页“设为提醒”卡、今天页迁移提示里“以前排的日期可以改成提醒”。已保存的提醒设置、提醒记录和迁移提示都不改、不删，开关打开后原样出现；已开启后台推送的用户仍能看到“停止”按钮自行关闭（不自动退订，避免未经同意改写）。
+- 决定（留言外发）：属于外发，但是 Bo 明确要求的功能；发送前在表单上方写明收件人（运营者）与发送内容，只发送输入框文字、选填联系方式与界面语言；不附带训练、身体、聊天或任何本机数据。有有效试用资格 cookie 时只附 8 位资格编号（与后台其他页面相同长度），否则匿名。
+- 决定（服务端）：`POST /api/v1/feedback`（同源、https、JSON ≤ 8 KB、字段严格校验：留言 1–1000 字、联系方式 ≤ 100 字）；请求 ID 去重（丢响应后重试只存一次、不重复计数）；限流每个发送者每小时 5 条（试用资格按资格，匿名按连接地址的 HMAC 摘要，不存原始 IP），全站每天 500 条；超限 429，内容保留在草稿。留言存后台 D1 新表 `user_feedback`，限流计数在 `user_feedback_rate`（超过一天的桶在写入时清理）；迁移 `migrations/admin/6_user_feedback.sql` 全部 `IF NOT EXISTS`，测试中连跑两次。日志不记录留言内容。
+- 决定（“我发过的留言”）：匿名用户无法从服务端取回自己的留言，故只在本机 localStorage 保存最近 20 条副本（不进备份、不再外发），清除浏览器数据即消失。
+- 决定（后台）：留言只有“未处理 / 已处理”两态（“标为已处理 / 改回未处理”，写操作记录），不做回复功能；后台隐私说明加上“用户主动发来的留言”。
+- 后续（不在本 PR）：计划同步到手机日历。建议方向：① 计划页“导出到日历”生成 `.ics` 文件（每个计划日一条 VEVENT，标题为训练名，时长取预计时长，可带 VALARM），完全本机生成、不外发；② 进阶为日历订阅（webcal URL），需要服务端按用户生成只读日程，涉及外发计划内容与长期链接，需先经 Bo 确认隐私方案。iOS Safari 对 `.ics` 下载会直接弹出“添加到日历”，Android 需交给日历应用打开。
+- 理由：不丢数据、不编造数据、外发最小化且发送前明示；新增开关与可选表按授权记录后实施。
+- 涉及文件：src/domain/feature-flags.ts、src/ui/admin/releases/copy.ts、src/ui/pages/settings/{SettingsPage,FeedbackPanel,SystemNotifications}.tsx、src/ui/pages/settings/settings.css、src/ui/components/V8Reminder.tsx、src/ui/pages/{home/HomePage,training/NextPage,plan/PlanRoute}.tsx、src/application/feedback.ts、src/i18n/features/settings/feedback.ts、src/backend/{feedback,fitness-worker}.ts、src/backend/admin/{feedback/index,core/console}.ts、src/ui/admin/{feedback/FeedbackPage,shell/AdminShell,shell/AdminIcon}.tsx、migrations/admin/6_user_feedback.sql。
+- 待 Bo 确认：留言说明文案与“发送给运营者”按钮说法；限流（每小时 5 条 / 全站每天 500 条）；有试用资格时附 8 位编号是否可以；后台是否需要回复功能；日历同步走 .ics 导出还是订阅。

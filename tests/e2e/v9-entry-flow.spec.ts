@@ -53,7 +53,8 @@ test('fresh user: welcome → tap onboarding → one-question health check → p
   await page.getByRole('navigation', { name: '主导航' }).getByRole('button', { name: '我的' }).click();
   await expect(page.getByRole('heading', { name: '我的', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: '运动前自查与训练偏好' })).toHaveCount(1);
-  await expect(page.getByRole('radiogroup', { name: '界面风格' })).toBeVisible();
+  // Bo 2026-10-19: themes change from 今天's 换风格 only; 我的 has no 界面风格 entry.
+  await expect(page.getByRole('radiogroup', { name: '界面风格' })).toHaveCount(0);
   expect(modelCalls).toBe(0);
   // Target: a new user gets a plan in about three minutes; scripted taps are far quicker.
   expect(Date.now() - started).toBeLessThan(180000);

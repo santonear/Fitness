@@ -46,9 +46,12 @@ const localDay=(timeZone:string,date=new Date())=>new Intl.DateTimeFormat('en-CA
 /** 今天 (V9 home): today's session and start first; status check and week below. The 芽芽 orb is the only AI entry here. */
 export function HomePage(){
  const engineEnabled=useFeature('trainingEngine');
+ // Training reminders are off by default (Bo 2026-10-19); old dates stay saved until they return.
+ const remindersEnabled=useFeature('trainingReminders');
  const location=useLocation(),applied=(location.state as {applied?:boolean}|null)?.applied===true;
  const [preview,setPreview]=useState<{revision:number;versionId:string;templateId:string;value:Awaited<ReturnType<typeof workflow.nextTargetPreview>>}>();
  const {data,facts,t,slots,name,start,navigate,busy,run,locale,restartPlanning,setHomeTemplateId}=useMainline(); const [choice,setChoice]=useState<string>();
+ const legacyDates=remindersEnabled&&!!data?.hasFutureLegacyDates;
  const h=homeCopy[locale],pv=planViewCopy[locale],sd=startDateCopy[locale];
  const tools=useExerciseTools('today',{swapBlocked:data?.active?exerciseToolsCopy[locale].blocked:undefined});
  const version=data?.version, templates=version?.templates??[];
@@ -93,10 +96,10 @@ export function HomePage(){
  <PelvicFloorDailyNotice/><CardiacClearancePanel/><PostpartumSafetyPanel/><PregnancySafetyControls/><PendingPainReview/>
  {data?.state?.trainingPause&&<p role="status">{engineCopy('redflag.copy.paused_banner',locale)}</p>}
  {data?.state?.trainingPause&&data.state.coachProfile?.healthStorageConsent&&data.state.coachProfile.screening?.completedAt&&data.state.coachProfile.screening.parqAnswers?.length===7&&data.state.coachProfile.screening.rescreenRequired!==true&&Date.parse(data.state.coachProfile.screening.completedAt)>=Date.parse(data.state.trainingPause.requiredAt)&&<PainProfessionalConfirmation pauseRequiredAt={data.state.trainingPause.requiredAt} review={historyDangerReview(data.workouts,data.state.coachProfile.screening.redFlagReview)} locale={locale} busy={busy} confirmLabel={t.confirm} onConfirm={()=>void run(async()=>{await workflow.confirmPainProfessionalSeen(data.metadata.dataRevision);})}/>}
- {data?.state?.notice&&!data.state.notice.acknowledged&&(data.state.notice.planCount>1||data.hasFutureLegacyDates)&&<Card variant="raised" padding="md" as="section" className="v9-home-panel">
+ {data?.state?.notice&&!data.state.notice.acknowledged&&(data.state.notice.planCount>1||legacyDates)&&<Card variant="raised" padding="md" as="section" className="v9-home-panel">
  {data.state.notice.planCount>1&&<p>{format(t.migrationPlans,{count:data.state.notice.planCount,name:data.state.notice.currentPlanName??data.plan?.name??''})}</p>}
- {data.hasFutureLegacyDates&&<><p>{t.migrationDates}</p><PrimaryButton tone="quiet" size="sm" onClick={()=>acknowledge(true)}>{t.setReminder}</PrimaryButton></>}
- <PrimaryButton tone="quiet" size="sm" onClick={()=>acknowledge()}>{data.hasFutureLegacyDates?t.dismissMigration:t.understood}</PrimaryButton></Card>}
+ {legacyDates&&<><p>{t.migrationDates}</p><PrimaryButton tone="quiet" size="sm" onClick={()=>acknowledge(true)}>{t.setReminder}</PrimaryButton></>}
+ <PrimaryButton tone="quiet" size="sm" onClick={()=>acknowledge()}>{legacyDates?t.dismissMigration:t.understood}</PrimaryButton></Card>}
  {data?.active&&<PrimaryButton tone="quiet" onClick={()=>navigate(`/workout/${data.active!.id}`)}>{t.ongoing}</PrimaryButton>}
  {engineEnabled&&currentPreview&&<PlanStops plan={currentPreview} locale={locale}/>}
  <DayActual workouts={trainedToday} templates={templates} locale={locale} name={name} sessionName={id=>id?names.get(id)??'':''} busy={busy} onCorrect={correctTimes}/>

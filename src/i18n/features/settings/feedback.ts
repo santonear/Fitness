@@ -1,0 +1,31 @@
+/** 我的 → 给我们留言 (Bo 2026-10-19). The note says plainly who receives the message and what is sent. */
+export const feedbackCopy = {
+  zh: {
+    row: '给我们留言', rowHint: '意见、问题或想要的功能',
+    notice: '留言会发送给 Fitness 的运营者（开发团队），只用来改进应用。只发送你在下面写的内容，不会附带你的训练、身体或聊天记录；如果这个浏览器有试用资格，会附带资格的 8 位编号，方便我们定位问题。',
+    privacy: '请不要写密码、证件号等敏感信息。',
+    message: '想说的话', placeholder: '比如：哪里不好用、想要什么功能',
+    count: '{count}/{max}',
+    contact: '联系方式（选填）', contactHint: '邮箱或微信号，方便我们回复你',
+    send: '发送给运营者', sending: '正在发送…',
+    sent: '已发送，谢谢你。每一条留言我们都会看。',
+    rate: '发送得有点频繁，请过一会儿再试；内容已保留。',
+    unavailable: '暂时发不出去，请稍后再试；内容已保留。',
+    invalid: '留言需要 1–{max} 个字。',
+    history: '你发过的留言', historyHint: '只保存在这台设备上',
+  },
+  en: {
+    row: 'Send us a message', rowHint: 'Feedback, problems or feature ideas',
+    notice: 'Your message goes to the people who run Fitness (the development team) and is used only to improve the app. Only what you write below is sent — never your training, body or chat records. If this browser has trial access, its 8-character ID is included so we can look into problems.',
+    privacy: 'Please do not include passwords, ID numbers or other sensitive details.',
+    message: 'Your message', placeholder: 'For example: what is hard to use, or a feature you want',
+    count: '{count}/{max}',
+    contact: 'Contact (optional)', contactHint: 'Email or another handle so we can reply',
+    send: 'Send to the team', sending: 'Sending…',
+    sent: 'Sent. Thank you — we read every message.',
+    rate: 'That was a lot of messages in a short time. Please try again later; your text is kept.',
+    unavailable: 'The message could not be sent right now. Please try again later; your text is kept.',
+    invalid: 'Messages need 1–{max} characters.',
+    history: 'Messages you sent', historyHint: 'Saved on this device only',
+  },
+} as const;

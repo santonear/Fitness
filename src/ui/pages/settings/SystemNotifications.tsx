@@ -8,7 +8,7 @@ import { coachReminderService } from '../../../application/coach-reminders';
 import type { CoachPreferences } from '../../../domain/coach-reminders';
 import type { PushUnavailableReason } from '../../../domain/push-status';
 export function SystemNotifications({locale}:{locale:'zh'|'en'}) {
- const t=operationsCopy[locale], offline=useFeature('pwaOffline'), enabled=useFeature('systemNotifications');
+ const t=operationsCopy[locale], offline=useFeature('pwaOffline'), reminders=useFeature('trainingReminders'), enabled=useFeature('systemNotifications')&&reminders;
  const [pendingRemoval,setPendingRemoval]=useState(false);
  const [message,setMessage]=useState(''),[publicKey,setPublicKey]=useState<string>(),[pushUnavailable,setPushUnavailable]=useState<PushUnavailableReason>(),[schedule,setSchedule]=useState<CoachPreferences>(),[subscribed,setSubscribed]=useState(backgroundPushEnabled);
  useEffect(()=>{let alive=true;const refresh=()=>{void coachReminderService.preferences().then(value=>{if(alive)setSchedule(value.preferences);});setSubscribed(backgroundPushEnabled());};refresh();void backgroundPushConfig().then(config=>{if(alive){setPublicKey(config.enabled?config.publicKey:undefined);setPushUnavailable(config.enabled?undefined:config.reason);}}).catch(()=>{});window.addEventListener('fitness:coach-preferences',refresh);return()=>{alive=false;window.removeEventListener('fitness:coach-preferences',refresh);};},[enabled]);

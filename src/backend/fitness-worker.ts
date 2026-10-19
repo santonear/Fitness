@@ -12,6 +12,7 @@ import { runAdminSchedule } from './admin/core/schedule';
 import { resolveRuntimeEnv,activeAnnouncement } from './admin/finance';
 import { collectError, errorCollectionEnabled } from './admin/quality';
 import { anonymousBatchSchema, TelemetryStore } from './telemetry-store';
+import { handleFeedback } from './feedback';
 export interface FitnessWorkerEnv extends DeepSeekWorkerEnv, ManagementEnv, FeatureConfigEnv, AdminEnvironment, ConsoleEnv {
   ASSETS?: { fetch(request: Request): Promise<Response> };
   FITNESS_TELEMETRY?: { send(event: unknown): Promise<void> };
@@ -28,6 +29,8 @@ export function createFitnessWorker(control = createDeepSeekWorker(), authentica
     }
     if(path==='/api/v1/trial/access-status'&&(await readFeatureFlags(env)).aiAssistantV2)return assistantAccessStatus(request,env);
     if(path==='/api/v1/assistant/chat'){if(!(await readFeatureFlags(env)).aiAssistantV2)return adminJson({error:'AI_DISABLED'},503);return handleAssistant(request,env)}
+    // 我的 → 给我们留言: the user's own explicitly sent message, stored for the operator only.
+    if(path==='/api/v1/feedback')return handleFeedback(request,env);
     if(path==='/api/v1/announcement'&&request.method==='GET') {try{return adminJson({announcement:env.ADMIN_CONSOLE_ENABLED==='true'?await activeAnnouncement(env):null})}catch{return adminJson({announcement:null})}}
     // Disabled collection drops reports quietly (204) instead of adding a console error to every failure.
     if(path==='/api/v1/telemetry/errors'&&env.ADMIN_CONSOLE_ENABLED==='true')return await errorCollectionEnabled(env)?collectError(request,env):new Response(null,{status:204});

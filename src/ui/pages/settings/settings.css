@@ -1,4 +1,4 @@
-/* V9 我的 (docs/design/v9 settings): header, profile card, theme picker, grouped rows. Tokens only. */
+/* V9 我的 (docs/design/v9 settings): header, profile card, grouped rows, 给我们留言. Tokens only. */
 .v9-settings { display: flex; flex-direction: column; gap: var(--s5); }
 .v9-settings-head { display: flex; flex-direction: column; gap: calc(var(--s1) / 2); padding-block-start: var(--s4); }
 .v9-settings-kicker { font-size: var(--t1); color: var(--c-ink-muted); }
@@ -42,5 +42,22 @@
 /* 我 section: profile, changes summary and personal rows stay together on top. */
 .v9-settings-me { gap: var(--s3); }
 .v9-settings-profile-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); }
-.v9-settings-theme { display: grid; gap: var(--s2); }
-.v9-settings .v9-settings-theme h3 { margin: 0; font-size: var(--t3); font-weight: var(--w-strong); }
+/* 给我们留言: who receives it is stated before the form; the user's own sent copies below. */
+.v9-feedback { display: grid; gap: var(--s3); }
+.v9-feedback p { margin: 0; }
+.v9-feedback-notice { color: var(--c-ink); }
+.v9-feedback-muted, .v9-feedback-count { font-size: var(--t1); color: var(--c-ink-muted); }
+.v9-feedback-form { display: grid; gap: var(--s2); }
+.v9-feedback-field { display: grid; gap: var(--s1); color: var(--c-ink-muted); }
+.v9-feedback-field textarea, .v9-feedback-field input { box-sizing: border-box; inline-size: 100%; min-block-size: var(--touch-min); padding: var(--s2) var(--s3); border: var(--bw) solid var(--card-border); border-radius: var(--r-control); background: var(--c-inset); box-shadow: var(--el-inset); color: var(--c-ink); font: inherit; }
+.v9-feedback-field textarea { border-radius: var(--r-panel); resize: vertical; }
+.v9-feedback-field textarea:focus-visible, .v9-feedback-field input:focus-visible { outline: 2px solid var(--c-focus); outline-offset: var(--s1); }
+.v9-feedback-count { justify-self: end; }
+.v9-feedback-status:empty { display: none; }
+.v9-feedback-history { display: grid; gap: var(--s2); }
+.v9-settings .v9-feedback-history h3 { display: grid; gap: calc(var(--s1) / 2); margin: 0; font-size: var(--t2); font-weight: var(--w-strong); }
+.v9-feedback-history h3 small { font-weight: var(--w-body); font-size: var(--t1); color: var(--c-ink-muted); }
+.v9-feedback-history ul { display: grid; gap: var(--s2); margin: 0; padding: 0; list-style: none; }
+.v9-feedback-history li { display: grid; gap: calc(var(--s1) / 2); padding: var(--s2) var(--s3); border-radius: var(--r-control); background: var(--c-inset); overflow-wrap: anywhere; }
+.v9-feedback-history time, .v9-feedback-history small { font-size: var(--t1); color: var(--c-ink-muted); }
+.v9-feedback-history p { white-space: pre-wrap; }
