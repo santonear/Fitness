@@ -23,6 +23,10 @@ export interface PlanVersion {
   scheduleOriginalText: string; sessionMinutes: number; templates: SessionTemplate[];
   /** Local date (YYYY-MM-DD) the plan starts; absent on older versions means the creation day. */
   startDate?: string;
+  /** Training days the user picked on the calendar (sorted local dates, 1–30); absent means the weekly rhythm. */
+  trainingDates?: string[];
+  /** Planned start time of day (HH:MM, local); absent means not chosen. */
+  startTime?: string;
   /** Keeps the contaminated chat text when a migration restores the original answer. */
   scheduleRecovery?: { raw: string; recoveredAt: string };
   createdAt: string; origin: 'onboard' | 'coach_change' | 'review_suggestion' | 'manual' | 'migrated';

@@ -9,6 +9,9 @@ import { WeekPlan, PlanReasons, SessionItems, type WeekPlanProps } from './WeekP
 import { planViewCopy } from '../../../i18n/features/plan/view';
 import { planReasons, startDateLabel } from '../../../application/plan-presentation';
 import { startDateCopy } from '../../../i18n/features/plan/start-date';
+import { trainingDaysCopy } from '../../../i18n/features/plan/training-days';
+import { planLifecycleCopy } from '../../../i18n/features/plan/lifecycle';
+import { fill } from '../../../i18n/features/onboarding/entry';
 import './plan.css';
 import guideZh from '../../../i18n/features/training/guide.zh.json';
 import guideEn from '../../../i18n/features/training/guide.en.json';
@@ -26,6 +29,8 @@ export interface PlanPageProps {
   /** Opens read-only details; any proposed edits require the host's separate confirmation flow. */
   onExercise: (version: PlanVersion, templateId: string, itemIndex: number, trigger?: HTMLElement) => void;
   onDiscuss?: (version: PlanVersion) => void;
+  /** 重新制定计划: start the questions fresh (the host confirms first). */
+  onReplan?: () => void;
 }
 
 export function itemTarget(item: PlannedItem, language: PlanLanguage, hideDistance = false): string {
@@ -50,7 +55,7 @@ export function preferredDaysLabel(days:PlanVersion['preferredDays'],language:Pl
  const names:{[K in typeof dayOrder[number]]:string}={mon:'Mon',tue:'Tue',wed:'Wed',thu:'Thu',fri:'Fri',sat:'Sat',sun:'Sun'};
  return selected.map(day=>names[day]).join('/');
 }
-export function PlanPage({ version, currentVersionId, language, exerciseName, onVersions, onExercises, onExercise, onDiscuss, today, done, focusId, startDate, todayDate, onChangeStart, changeStartBlocked, exerciseActions, workouts, timeZone }: PlanPageProps & { today?: number; done?: WeekPlanProps['done']; focusId?: string;
+export function PlanPage({ version, currentVersionId, language, exerciseName, onVersions, onExercises, onExercise, onDiscuss, onReplan, today, done, focusId, startDate, todayDate, onChangeStart, changeStartBlocked, exerciseActions, workouts, timeZone }: PlanPageProps & { today?: number; done?: WeekPlanProps['done']; focusId?: string;
   /** Recorded workouts and the user's time zone: enable the month view (计划 › 月). */
   workouts?: readonly WorkoutRecord[]; timeZone?: string;
   /** Plan start date and today's local date; shown with a change button for the current version. */
@@ -60,7 +65,8 @@ export function PlanPage({ version, currentVersionId, language, exerciseName, on
   const sd = startDateCopy[language];
   const t = planMessages[language], v = planViewCopy[language], current = version.id === currentVersionId;
   const date = new Intl.DateTimeFormat(language, { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(version.createdAt));
-  const cal = planCalendarCopy[language], [view, setView] = useState<'week' | 'month'>('week');
+  // Calendar-picked plans open on the month view (Bo 2026-10-19); weekly plans keep the week first.
+  const cal = planCalendarCopy[language], d = trainingDaysCopy[language], days = version.trainingDates ?? [], [view, setView] = useState<'week' | 'month'>(days.length ? 'month' : 'week');
   const details = (template: PlanVersion['templates'][number]) => <SessionItems template={template} locale={language} name={exerciseName}
     hideDistance={id => id === EXERCISE_IDS.walking && /室内|indoor/i.test(template.name)}
     actions={current && exerciseActions ? (item, index) => exerciseActions(template.id, index, item.exerciseId) : undefined}
@@ -73,14 +79,16 @@ export function PlanPage({ version, currentVersionId, language, exerciseName, on
       {startDate && todayDate && <div className="v9-plan-start"><span>{sd.current} · <strong data-testid="plan-start-date">{startDateLabel(startDate, todayDate, language)}</strong></span>
         {current && onChangeStart && <PrimaryButton tone="text" size="sm" disabled={!!changeStartBlocked} onClick={event => onChangeStart(event.currentTarget)}>{sd.change}</PrimaryButton>}
         {current && changeStartBlocked && <small>{changeStartBlocked}</small>}</div>}
+      {days.length > 0 && todayDate && <p className="v9-plan-line" data-testid="plan-days">{fill(days.length === 1 ? d.daysOne : d.days, { count: days.length, from: startDateLabel(days[0], todayDate, language, false), to: startDateLabel(days.at(-1)!, todayDate, language, false) })}{version.startTime && <> · {fill(d.startsAt, { time: version.startTime })}</>}</p>}
+      {!days.length && version.startTime && <p className="v9-plan-line">{fill(d.startsAt, { time: version.startTime })}</p>}
       <dl className="plan-summary v9-plan-rhythm"><dt>{t.rhythm}</dt><dd>{version.preferredDays?.length ? preferredDaysLabel(version.preferredDays, language) : language === 'zh' ? `每周 ${version.weeklyTarget} 次` : `${version.weeklyTarget} times a week`}</dd><dd className="plan-muted">{estimatedDurationLabel(version.templates, language)}</dd></dl>
     </header>
     {workouts && todayDate && timeZone && <SegmentedTabs label={cal.view} value={view} onChange={value => setView(value === 'month' ? 'month' : 'week')} options={[{ value: 'week', label: cal.week }, { value: 'month', label: cal.month }]} />}
     {view === 'month' && workouts && todayDate && timeZone
-      ? <MonthPlan plan={version} workouts={workouts} locale={language} todayDate={todayDate} startDate={startDate} timeZone={timeZone} details={details} />
+      ? <MonthPlan plan={version} workouts={workouts} locale={language} todayDate={todayDate} startDate={startDate} timeZone={timeZone} details={details} initialDate={days[0] && days[0] > todayDate ? days[0] : undefined} />
       : <WeekPlan plan={version} locale={language} today={today} done={done} focusId={focusId} startDate={startDate} todayDate={todayDate} details={details} />}
     <PlanReasons reasons={planReasons(version, language)} locale={language} />
-    <nav className="v9-plan-tools" aria-label={t.title}><PrimaryButton tone="quiet" size="sm" onClick={onVersions}>{t.history}</PrimaryButton><PrimaryButton tone="quiet" size="sm" onClick={onExercises}>{t.library}</PrimaryButton></nav>
+    <nav className="v9-plan-tools" aria-label={t.title}><PrimaryButton tone="quiet" size="sm" onClick={onVersions}>{t.history}</PrimaryButton><PrimaryButton tone="quiet" size="sm" onClick={onExercises}>{t.library}</PrimaryButton>{current && onReplan && <PrimaryButton tone="quiet" size="sm" onClick={onReplan}>{planLifecycleCopy[language].create}</PrimaryButton>}</nav>
     {current && onDiscuss && <PrimaryButton onClick={() => { if (version.id === currentVersionId) onDiscuss(version); }}>{t.chat}</PrimaryButton>}
   </section>;
 }

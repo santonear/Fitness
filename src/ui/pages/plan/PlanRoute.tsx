@@ -5,6 +5,7 @@ import { localDateIn, planStartDate, startDateLabel, weekdayIndex } from "../../
 import { startDateCopy } from "../../../i18n/features/plan/start-date";
 import { exerciseToolsCopy } from "../../../i18n/features/plan/exercise-tools";
 import { StartDatePicker } from "../../components/StartDatePicker";
+import { HomeExit } from "../../components/HomeExit";
 import { useExerciseTools } from "../../components/ExerciseTools";
 import { fill } from "../../../i18n/features/onboarding/entry";
 import { Card, PrimaryButton } from "../../components/kit";
@@ -121,6 +122,7 @@ export function PlanRoute({ versions = false }: { versions?: boolean }) {
   if (versions)
     return (
       <main>
+        <nav className="v9-plan-nav" aria-label={c.t.plan}><HomeExit locale={c.locale} onLeave={() => c.navigate("/")} /></nav>
         {prenatalPrompt}
         <VersionsPage
           versions={(c.data?.versions ?? []).filter(
@@ -149,6 +151,7 @@ export function PlanRoute({ versions = false }: { versions?: boolean }) {
           exerciseName={c.name}
           onVersions={() => c.navigate(`/plans/versions${selectedQuery}`)}
           onExercises={() => c.navigate("/exercises")}
+          onReplan={c.restartPlanning}
           today={weekdayIndex(new Date(), timeZone)}
           startDate={planStartDate(selected, timeZone)}
           todayDate={todayDate}
@@ -178,7 +181,7 @@ export function PlanRoute({ versions = false }: { versions?: boolean }) {
         <>
           <h1 className="v9-display">{c.t.plan}</h1>
           <p>{life.empty}</p>
-          <PrimaryButton onClick={() => c.navigate("/onboarding")}>
+          <PrimaryButton onClick={c.restartPlanning}>
             {life.create}
           </PrimaryButton>
         </>

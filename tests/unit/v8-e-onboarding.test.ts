@@ -14,8 +14,9 @@ describe('onboarding presentation boundaries', () => {
     const old={...answers,goalText:'想练力量',scheduleOriginalText:'每周两次',placeEquipmentText:'在家',adultConfirmed:true,body:{biologicalSex:'男性' as const,age:34,heightCm:175,weightKg:82,waistCm:92}};
     const input=renderToStaticMarkup(h(OnboardingPage,{locale:'zh',step:2,bodyEnabled:true,answers:old,slots,mode:'ai',onChange(){},onStep(){},onGenerate(){},onManual(){}}));
     expect(input).toMatch(/<textarea[^>]*>每周两次<\/textarea>/);expect(input).not.toContain('placeholder="每周两次"');
-    const composed=renderToStaticMarkup(h(OnboardingPage,{locale:'zh',step:2,bodyEnabled:true,answers:{...old,scheduleOriginalText:'每周 3 次，每次 45 分钟'},slots,mode:'ai',onChange(){},onStep(){},onGenerate(){},onManual(){}}));
-    expect(composed).toMatch(/aria-pressed="true"[^>]*>3 次</);expect(composed).toMatch(/aria-pressed="true"[^>]*>45 分钟</);expect(composed).not.toContain('<textarea');
+    const composed=renderToStaticMarkup(h(OnboardingPage,{locale:'zh',step:2,bodyEnabled:true,answers:{...old,scheduleOriginalText:'每周 2 次，每次 45 分钟，共 2 天',trainingDates:['2026-10-20','2026-10-22']},today:'2026-10-19',slots,mode:'ai',onChange(){},onStep(){},onGenerate(){},onManual(){}}));
+    // Calendar-picked days and minutes come back selected (Bo 2026-10-19: no fixed weekly count chips).
+    expect(composed).toMatch(/data-date="2026-10-20" aria-pressed="true"/);expect(composed).toMatch(/data-date="2026-10-22" aria-pressed="true"/);expect(composed).not.toMatch(/>3 次</);expect(composed).toMatch(/aria-pressed="true"[^>]*>45 分钟</);expect(composed).not.toContain('<textarea');
     const consent=renderToStaticMarkup(h(OnboardingPage,{locale:'zh',step:4,bodyEnabled:true,answers:old,slots,mode:'ai',initialSafetyScreen:'ready',onChange(){},onStep(){},onGenerate(){},onManual(){}}));
     for(const label of ['性别','年龄','身高（厘米）','体重（公斤）','腰围（厘米）'])expect(consent).toContain(`<dt>${label}</dt>`);
     const intro=renderToStaticMarkup(h(OnboardingPage,{locale:'zh',step:4,bodyEnabled:true,answers:old,slots,mode:'ai',onChange(){},onStep(){},onGenerate(){},onManual(){}}));

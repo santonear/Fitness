@@ -2,7 +2,8 @@ import type { ReactNode } from 'react';
 import type { EnginePlan } from '../../../engine/contracts';
 import type { PlanVersion, SessionTemplate } from '../../../domain/v8/contracts';
 import { engineDisplayNotices } from '../../../application/engine-presentation';
-import { planWeekDays, regionLabels, sessionNames, startDateLabel, weekSchedule, weekdayLabel, weekdays, type Weekday } from '../../../application/plan-presentation';
+import { addDays, planWeekDays, regionLabels, sessionNames, startDateLabel, weekSchedule, weekdayLabel, weekdayOf, weekdays, type Weekday } from '../../../application/plan-presentation';
+import { sessionForDate } from '../../../application/training-dates';
 import { startDateCopy } from '../../../i18n/features/plan/start-date';
 import { planViewCopy, effortWords } from '../../../i18n/features/plan/view';
 import { targetText } from '../../components/ExerciseTargets';
@@ -12,7 +13,7 @@ import { Card, PrimaryButton, WeekStrip, Yaya } from '../../components/kit';
 import './plan.css';
 import './week-plan.css';
 
-type PlanShape = Pick<PlanVersion, 'weeklyTarget' | 'preferredDays' | 'templates'>;
+type PlanShape = Pick<PlanVersion, 'weeklyTarget' | 'preferredDays' | 'templates'> & Partial<Pick<PlanVersion, 'trainingDates'>>;
 
 /** Session name map plus per-day schedule, shared by draft, plan and home. */
 export function usePlanView(plan: PlanShape, locale: 'zh' | 'en') {
@@ -37,18 +38,25 @@ export interface WeekPlanProps {
 /** One-week calendar: strip of seven days, then one tile per session with weekday, name, minutes and body parts. */
 export function WeekPlan({ plan, locale, today, done = {}, focusId, details, startDate, todayDate }: WeekPlanProps) {
   const t = planViewCopy[locale], view = usePlanView(plan, locale), s = startDateCopy[locale];
-  const dated = planWeekDays(startDate, todayDate);
-  const future = !!dated && !!startDate && !!todayDate && startDate > todayDate;
+  // Calendar-picked days: the Monday week holding today (or the first day, before the plan starts), real dates.
+  const picked = plan.trainingDates?.length && todayDate ? plan.trainingDates : undefined;
+  const anchor = picked ? (picked[0] > todayDate! ? picked[0] : todayDate!) : undefined;
+  const dated = anchor ? weekdays.map((_, index) => { const date = addDays(anchor, index - weekdays.indexOf(weekdayOf(anchor))); return { date, day: weekdayOf(date), beforeStart: false }; }) : planWeekDays(startDate, todayDate);
+  const first = picked?.[0] ?? startDate;
+  const future = !!dated && !!first && !!todayDate && first > todayDate;
+  const sessionsOn = (entry: { day: Weekday; date: string; beforeStart: boolean }) => entry.beforeStart ? []
+    : picked ? [sessionForDate(plan, entry.date)].filter((id): id is string => !!id).map(templateId => ({ day: entry.day, templateId }))
+    : view.schedule.sessions.filter(session => session.day === entry.day);
   const dayNumber = (date: string) => Number(date.slice(8));
   const max = Math.max(1, ...plan.templates.map(template => template.estimatedMinutes));
   // The week shown: plain Monday week, or real dates (first plan week before the start, current week after).
   const shown = dated ?? weekdays.map(day => ({ day, date: '', beforeStart: false }));
-  const sessions = shown.flatMap(entry => entry.beforeStart ? [] : view.schedule.sessions.filter(session => session.day === entry.day).map(session => ({ ...session, date: entry.date })));
+  const sessions = shown.flatMap(entry => sessionsOn(entry).map(session => ({ ...session, date: entry.date })));
   const total = sessions.reduce((sum, session) => sum + (view.byId.get(session.templateId)?.estimatedMinutes ?? 0), 0);
   const dayName = (entry: { day: Weekday; date: string }, short = false) => entry.date ? `${weekdayLabel(entry.day, locale, short)}${short ? '' : ` · ${startDateLabel(entry.date, todayDate ?? entry.date, locale, false)}`}` : weekdayLabel(entry.day, locale, short);
   const isToday = (entry: { day: Weekday; date: string }) => entry.date ? entry.date === todayDate : today === weekdays.indexOf(entry.day);
   const days = shown.map(entry => {
-    const day = entry.day, session = entry.beforeStart ? undefined : view.schedule.sessions.find(item => item.day === day), template = session && view.byId.get(session.templateId);
+    const day = entry.day, session = sessionsOn(entry)[0], template = session && view.byId.get(session.templateId);
     const state = done[day] ?? (template ? 'planned' : 'rest');
     return { key: entry.date || day, label: entry.date ? <>{weekdayLabel(day, locale, true)}<span className="v9-week-date v9-num">{dayNumber(entry.date)}</span></> : weekdayLabel(day, locale, true), state, today: isToday(entry), level: template ? template.estimatedMinutes / max : 0,
       description: `${dayName(entry)} · ${template ? `${view.name(template)} · ${fill(t.minutes, { count: template.estimatedMinutes })}` : t.rest}${done[day] === 'done' ? ` · ${t.done}` : done[day] === 'partial' ? ` · ${t.partial}` : ''}` } as const;
@@ -56,12 +64,12 @@ export function WeekPlan({ plan, locale, today, done = {}, focusId, details, sta
   return <section className="v9-week-plan" aria-label={t.week}>
     <Card variant="raised" padding="lg" className="v9-week-summary">
       <div className="v9-week-summary-head">
-        <span className="v9-week-summary-label">{future && startDate ? fill(s.firstWeek, { date: startDateLabel(startDate, todayDate!, locale, false) }) : t.thisWeek}</span>
+        <span className="v9-week-summary-label">{future && first ? fill(s.firstWeek, { date: startDateLabel(first, todayDate!, locale, false) }) : t.thisWeek}</span>
         <span className="v9-num v9-week-summary-count">{sessions.length}<small>{t.sessionsUnit}</small></span>
         <span className="v9-num v9-week-summary-minutes">{fill(t.totalMinutes, { count: total })}</span>
       </div>
       <WeekStrip label={t.week} days={days} variant="bars" />
-      {!view.schedule.chosen && <p className="v9-week-note">{t.suggestedDays}</p>}
+      {!view.schedule.chosen && !picked && <p className="v9-week-note">{t.suggestedDays}</p>}
     </Card>
     <ol className="v9-session-list">{sessions.map((session, index) => {
       const template = view.byId.get(session.templateId)!, focus = index === Math.max(0, focusId ? sessions.findIndex(item => item.templateId === focusId) : 0);

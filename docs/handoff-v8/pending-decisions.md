@@ -513,3 +513,17 @@ Bo 已定版 V9 设计并授权推进；计时规则按 Bo 当日决定改写（
 - 理由：不丢数据、不编造数据、外发最小化且发送前明示；新增开关与可选表按授权记录后实施。
 - 涉及文件：src/domain/feature-flags.ts、src/ui/admin/releases/copy.ts、src/ui/pages/settings/{SettingsPage,FeedbackPanel,SystemNotifications}.tsx、src/ui/pages/settings/settings.css、src/ui/components/V8Reminder.tsx、src/ui/pages/{home/HomePage,training/NextPage,plan/PlanRoute}.tsx、src/application/feedback.ts、src/i18n/features/settings/feedback.ts、src/backend/{feedback,fitness-worker}.ts、src/backend/admin/{feedback/index,core/console}.ts、src/ui/admin/{feedback/FeedbackPage,shell/AdminShell,shell/AdminIcon}.tsx、migrations/admin/6_user_feedback.sql。
 - 待 Bo 确认：留言说明文案与“发送给运营者”按钮说法；限流（每小时 5 条 / 全站每天 500 条）；有试用资格时附 8 位编号是否可以；后台是否需要回复功能；日历同步走 .ics 导出还是订阅。
+### 2026-10-19 日历选训练日、上一步 / 回到今天、出生年月、重新制定计划（规范 V9.11，V9.0.6）保守决定
+- 情况：Bo 反馈：基础计划不应固定天数，应让用户在月历上点选或拖动选 1–30 天，选好后再问几点开始；plan-draft 用月历而不是平铺；选择页要有明显的“上一页”，所有分页面要能回到“今天”并清空未保存信息；出生年月要能点选年月（可前后翻年份）并保留手动输入；“你想练成什么样”点“自己写一句”会跳到“动起来，刚刚好”页面且没有输入框；重新制定计划应清空之前的记录从头开始。
+- 决定（选日规则）：第一天在今天起 14 天内（与开始日期规则一致），首末跨度不超过 30 天；任意连续 7 天最多 6 个训练日（训练引擎 daysPerWeek 上限 6），拖动 30 天时每 7 天的最后一天不排进去并在日历下方说明；过去的日子不可选。生成草案时再按当天重新清理一次（恢复的旧草稿里可能有已过去的日子）。
+- 决定（计划生成）：每周次数取所选日子里最忙的连续 7 天（1–6），据此由本地规则或训练引擎生成训练单（安全规则不变）；训练单按日期顺序在所选日子上轮流安排。不在所选日子以外编造训练日。
+- 决定（数据）：新增可选字段 `PlanVersion.trainingDates`、`PlanVersion.startTime`，保存时校验（排序、唯一、1–30、跨度、休息日、HH:MM）；旧计划不迁移。改开始日期时训练日整体平移并生成新版本；AI 改计划、回顾建议、环境重排生成的新版本沿用训练日与时间。
+- 决定（开始时间）：可选，不阻断“下一步”；只用于草案 / 计划显示和今天页“顺序和时间”的默认开始时刻，不提醒、不外发。
+- 决定（草案视图）：按日期选的计划默认“月”，按文字描述每周节奏的计划默认“周”，两者都可切换（保持旧流程与已有测试的一周列表可用）。“改训练日”回到选日那一屏，草案丢弃后按新日期重新生成。
+- 决定（回到今天）：放在初见每一屏、草案、手动训练、记一次运动、动作库、历史版本；“我的”下的子页面由另一条工作线负责，本 PR 未改。有未保存内容才确认；清空范围只是初见回答、未确认草案和本机草稿，已保存的身体资料仍带入，计划与训练记录不动。
+- 决定（自己写一句根因）：欢迎页的显示条件“第 0 步且目标为空且没有计划”在每次渲染时判断；点“自己写一句”会清空所选目标，于是又满足条件、跳回欢迎页（“动起来，刚刚好”，有换风格入口、无输入框）。改为：一旦开始答题（点了“开始”或已有回答），本次就不再回到欢迎页。
+- 决定（重新制定计划）：计划页工具栏新增“重新制定计划”（当前版本可见），与空状态、今天、回顾、“我的”的入口共用同一确认；没有可清空内容时直接开始。
+- 决定（出生年月）：默认“点选”，未选时显示 30 年前；范围沿用手动输入的 110 年。设置页同一组件同时获得两种方式。
+- 理由：不丢数据、不编造数据、完成记录只读、计划修改生成新版本；新增可选字段按 2026-10-10 授权记录后实施。
+- 涉及文件：src/application/{training-dates,plan-calendar,v8-workflow,v8-review}.ts、src/application/rules/local-profile.ts、src/domain/{schemas.ts,v8/contracts.ts}、src/ui/components/{TrainingCalendar,StartTimeField,HomeExit,BirthMonthField}.tsx、src/ui/components/training-calendar.css、src/ui/pages/onboarding/{OnboardingPage,OnboardingFrame,HealthCheckWizard,PlanDraftPage}.tsx、src/ui/pages/plan/{PlanPage,PlanRoute,MonthPlan,WeekPlan,ExercisesPage}.tsx、src/ui/pages/home/{HomePage,DayTimeline}.tsx、src/ui/pages/training/{ManualPage,ActivityPage}.tsx、src/ui/mainline/{MainlineApp,context}.tsx、src/i18n/features/plan/training-days.ts。
+- 待 Bo 确认：两周内开始与 30 天跨度的规则；“每 7 天至少休息 1 天”的说明文案；开始时间三个预设；周文字计划草案默认“周”；“回到今天”的位置（初见左上角、其他子页面右上角）；计划页新增“重新制定计划”按钮。

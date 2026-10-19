@@ -12,6 +12,10 @@ import { entryCopy, fill } from '../../../i18n/features/onboarding/entry';
 import { BigChoice, ChoiceChip, PrimaryButton } from '../../components/kit';
 import { OnboardingFrame } from './OnboardingFrame';
 import { HealthCheckWizard } from './HealthCheckWizard';
+import { TrainingCalendar } from '../../components/TrainingCalendar';
+import { StartTimeField } from '../../components/StartTimeField';
+import { trainingDaysCopy } from '../../../i18n/features/plan/training-days';
+import { weeklyTargetFromDates } from '../../../application/training-dates';
 import './onboarding.css';
 
 /** Uninterpreted answers. The integration layer resolves them before any model request. */
@@ -20,6 +24,10 @@ export type OnboardingAnswers = Pick<CoachProfile, 'goalText' | 'scheduleOrigina
   safetyAnswered?: boolean;
   /** 芽芽's AI-or-local question; undefined until answered (only asked when AI exists here). */
   planMode?: 'ai' | 'local';
+  /** Training days picked on the calendar (sorted local dates, 1–30). */
+  trainingDates?: string[];
+  /** Planned start time of day, HH:MM. */
+  startTime?: string;
 };
 export interface OnboardingPageProps {
   engineEnabled?:boolean; locale: V8Locale; step: 0 | 1 | 2 | 3 | 4; bodyEnabled?: boolean; answers: OnboardingAnswers;
@@ -34,15 +42,19 @@ export interface OnboardingPageProps {
   initialSafetyScreen?: string;
   /** AI planning exists in this deployment (asks AI-or-local before generating). */
   aiAvailable?: boolean;
+  /** Today's local date (YYYY-MM-DD) for the training-day calendar. */
+  today?: string;
+  /** 回到今天: the host clears unsaved answers (after confirming) and opens 今天. */
+  onHome?: () => void;
 }
 const fields = ['goalText', 'scheduleOriginalText', 'placeEquipmentText'] as const;
 export function cautionsFromGoal(goal:string):CoachProfile['cautions'] {
   return /(?:膝(?:盖|关节)|knee).{0,12}(?:伤|疼|痛|不适|受过伤|injur|pain|hurt)|(?:伤|疼|痛|不适|injur|pain|hurt).{0,12}(?:膝(?:盖|关节)|knee)/i.test(goal)?['knee']:[];
 }
-const weeklyOptions = [2, 3, 4, 5] as const, minuteOptions = [20, 30, 45, 60] as const;
-/** Reads back a schedule the chips composed; anything else stays the user's own words. */
+const minuteOptions = [20, 30, 45, 60] as const;
+/** Reads back a schedule the calendar and chips composed; anything else stays the user's own words. */
 export function parseComposedSchedule(text: string): { weekly?: number; minutes?: number } | undefined {
-  const match = text.match(/^每周 (\d) 次，每次 (\d+) 分钟$/) ?? text.match(/^(\d) times a week, (\d+) minutes each time$/);
+  const match = text.match(/^每周 (\d) 次，每次 (\d+) 分钟(?:，共 \d+ 天)?$/) ?? text.match(/^(\d) times a week, (\d+) minutes each time(?:, \d+ days in total)?$/);
   return match ? { weekly: Number(match[1]), minutes: Number(match[2]) } : undefined;
 }
 
@@ -55,8 +67,9 @@ function CustomAnswer({ locale, value, onChange, disabled, open, onToggle }: { l
   </div>;
 }
 
-export function OnboardingPage({ engineEnabled=false, locale, step, answers, mode, bodyEnabled = false, busy = false, error, onChange, onStep, onGenerate, onManual, onExit, initialSafetyScreen, aiAvailable = false }: OnboardingPageProps) {
-  const legacy = locale === 'zh' ? zh : en, t = entryCopy[locale], bt=bodyCopy[locale];
+export function OnboardingPage({ engineEnabled=false, locale, step, answers, mode, bodyEnabled = false, busy = false, error, onChange, onStep, onGenerate, onManual, onExit, initialSafetyScreen, aiAvailable = false, today, onHome }: OnboardingPageProps) {
+  const legacy = locale === 'zh' ? zh : en, t = entryCopy[locale], bt=bodyCopy[locale], d = trainingDaysCopy[locale];
+  const [dayNotice, setDayNotice] = useState('');
   const bodyStep=bodyEnabled&&step===1,questionStep=bodyEnabled&&step>1?step-1:step,lastStep=bodyEnabled?4:3,total=lastStep+1;
   const key = fields[Math.min(questionStep, 2)];
   const options = key === 'goalText' ? legacy.answers[0] as readonly string[] : key === 'placeEquipmentText' ? t.place.options as readonly string[] : [];
@@ -82,27 +95,32 @@ export function OnboardingPage({ engineEnabled=false, locale, step, answers, mod
   ];
   if (step === lastStep) return <HealthCheckWizard locale={locale} answers={answers} engineEnabled={engineEnabled} bodyEnabled={bodyEnabled} mode={mode} busy={busy} error={error}
     aiAvailable={aiAvailable} missingOuter={missingOuter} onOuterStep={next => onStep(next as 0 | 1 | 2 | 3 | 4)}
-    step={step + 1} total={total} complete={complete} sendFields={sendFields} onChange={onChange} onExit={() => onStep((step - 1) as 0 | 1 | 2 | 3)} onGenerate={() => onGenerate(answers)} onManual={onManual} initialScreen={initialSafetyScreen} />;
+    step={step + 1} total={total} complete={complete} sendFields={sendFields} onChange={onChange} onExit={() => onStep((step - 1) as 0 | 1 | 2 | 3)} onGenerate={() => onGenerate(answers)} onManual={onManual} initialScreen={initialSafetyScreen} onHome={onHome} />;
   const next = <PrimaryButton disabled={busy || (bodyStep ? !bodyComplete(answers.body ?? {}) : !value.trim())} onClick={advance}>{t.next}</PrimaryButton>;
-  const frame = { locale, step: step + 1, total, screenKey: `step-${step}`, onBack: step > 0 || onExit ? back : undefined, backDisabled: busy, busy, footer: <>{error && <p role="alert">{error}</p>}{next}</> };
+  const frame = { locale, step: step + 1, total, screenKey: `step-${step}`, onBack: step > 0 || onExit ? back : undefined, backDisabled: busy, busy, onHome, homeDirty: fields.some(field => answers[field].trim().length > 0) || !!answers.trainingDates?.length, footer: <>{error && <p role="alert">{error}</p>}{next}</> };
   if (bodyStep) return <OnboardingFrame {...frame} title={bt.title} sub={bt.why}>
     <BodyConversation locale={locale} values={answers.body??{}} text={answers.bodyText??''} onChange={(body,bodyText)=>onChange({...answers,body,...(bodyText!==undefined?{bodyText}:{})})} busy={busy}/>
   </OnboardingFrame>;
   if (key === 'scheduleOriginalText') {
-    const pick = (next: { weekly?: number; minutes?: number }) => {
-      setSchedule(next); setCustomOpen(open => ({ ...open, [key]: false }));
-      if (next.weekly && next.minutes) updateText(fill(t.schedule.text, { weekly: next.weekly, minutes: next.minutes }));
-      else if (!custom) updateText('');
+    // Bo 2026-10-19: pick 1–30 training days on a calendar (tap or drag), how long each time, then the start time.
+    const dates = custom ? [] : answers.trainingDates ?? [];
+    const minutes = custom ? undefined : schedule.minutes ?? composed?.minutes;
+    const compose = (nextDates: string[], nextMinutes: number | undefined, extra: Partial<OnboardingAnswers> = {}) => {
+      const text = nextDates.length && nextMinutes ? fill(d.text, { weekly: weeklyTargetFromDates(nextDates), minutes: nextMinutes, count: nextDates.length }) : '';
+      const { trainingDates: _dates, ...rest } = answers;
+      onChange({ ...rest, ...extra, ...(nextDates.length ? { trainingDates: nextDates } : {}), scheduleOriginalText: text });
     };
-    const chosen = custom ? {} : composed ?? schedule;
-    return <OnboardingFrame {...frame} title={t.schedule.title} sub={t.schedule.sub}>
+    const pickMinutes = (count: number) => { setSchedule({ minutes: count }); setCustomOpen(open => ({ ...open, [key]: false })); compose(dates, count); };
+    return <OnboardingFrame {...frame} title={t.schedule.title} sub={d.sub}>
       <div className="v9-groups">
-        <div className="v9-group"><span className="v9-group-label">{t.schedule.weekly}</span><div className="v9-chip-row" role="group" aria-label={t.schedule.weekly}>
-          {weeklyOptions.map(count => <ChoiceChip key={count} selected={chosen.weekly === count} disabled={busy} onClick={() => pick({ ...chosen, weekly: count })}>{fill(t.schedule.weeklyOption, { count })}</ChoiceChip>)}</div></div>
-        <div className="v9-group"><span className="v9-group-label">{t.schedule.session}</span><div className="v9-chip-row" role="group" aria-label={t.schedule.session}>
-          {minuteOptions.map(count => <ChoiceChip key={count} selected={chosen.minutes === count} disabled={busy} onClick={() => pick({ ...chosen, minutes: count })}>{fill(t.schedule.sessionOption, { count })}</ChoiceChip>)}</div></div>
+        {!custom && <TrainingCalendar locale={locale} today={today ?? new Date().toISOString().slice(0, 10)} value={dates} disabled={busy}
+          onChange={(next, notice) => { setDayNotice(notice); setCustomOpen(open => ({ ...open, [key]: false })); compose(next, minutes); }} />}
+        {!custom && dayNotice && <p className="v9-days-notice" role="status">{dayNotice}</p>}
+        {!custom && <div className="v9-group"><span className="v9-group-label">{d.minutes}</span><div className="v9-chip-row" role="group" aria-label={d.minutes}>
+          {minuteOptions.map(count => <ChoiceChip key={count} selected={minutes === count} disabled={busy} onClick={() => pickMinutes(count)}>{fill(t.schedule.sessionOption, { count })}</ChoiceChip>)}</div></div>}
+        {!custom && dates.length > 0 && <StartTimeField locale={locale} value={answers.startTime} disabled={busy} onChange={startTime => { const { startTime: _old, ...rest } = answers; onChange(startTime ? { ...rest, startTime } : rest); }} />}
         <CustomAnswer locale={locale} value={custom ? value : ''} disabled={busy} open={custom} onChange={updateText}
-          onToggle={() => { const open = !custom; setCustomOpen(state => ({ ...state, [key]: open })); if (open) { setSchedule({}); updateText(''); } }} />
+          onToggle={() => { const open = !custom; setCustomOpen(state => ({ ...state, [key]: open })); setDayNotice(''); if (open) { setSchedule({}); const { trainingDates: _dates, startTime: _time, ...rest } = answers; onChange({ ...rest, scheduleOriginalText: '' }); } }} />
       </div>
     </OnboardingFrame>;
   }

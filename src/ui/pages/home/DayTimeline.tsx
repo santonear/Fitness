@@ -26,12 +26,14 @@ export interface DayTimelineProps {
   active?: WorkoutRecord;
   /** Expandable content of one exercise step (how-to, prescription, tools). */
   details?: (item: PlannedItem, index: number) => ReactNode;
+  /** Start time chosen with the plan's training days (HH:MM); today's own choice still wins. */
+  planStart?: string;
 }
 
 /** 今天 › 日视图: the session as numbered steps (warm-up → exercises → cool-down) with estimated clock times. */
-export function DayTimeline({ template, locale, timeZone, todayDate, name, active, details }: DayTimelineProps) {
+export function DayTimeline({ template, locale, timeZone, todayDate, name, active, details, planStart }: DayTimelineProps) {
   const t = dayViewCopy[locale], pv = planViewCopy[locale];
-  const [chosen, setChosen] = useState(() => readStart(todayDate) ?? defaultStartClock(timeZone));
+  const [chosen, setChosen] = useState(() => readStart(todayDate) ?? planStart ?? defaultStartClock(timeZone));
   const startClock = active ? clockIn(timeZone, active.startedAt) : chosen;
   const timeline = sessionTimeline(template), total = Math.round(timeline.totalSeconds / 60);
   let previous: TimelinePhase | undefined;

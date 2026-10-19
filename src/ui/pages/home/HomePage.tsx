@@ -16,6 +16,8 @@ import {homeCopy} from '../../../i18n/features/home/copy';
 import {fill} from '../../../i18n/features/onboarding/entry';
 import {planStartDate,regionLabels,sessionNames,startDateLabel,weekSchedule,weekdayIndex,weekdayLabel,weekdays,type Weekday} from '../../../application/plan-presentation';
 import {startDateCopy} from '../../../i18n/features/plan/start-date';
+import {nextTrainingDate,sessionForDate} from '../../../application/training-dates';
+import {addDays} from '../../../application/plan-presentation';
 import {ThemeButton} from '../../components/ThemeSheet';
 import {useExerciseTools} from '../../components/ExerciseTools';
 import {exerciseToolsCopy} from '../../../i18n/features/plan/exercise-tools';
@@ -74,7 +76,9 @@ export function HomePage(){
  const timeZone=data?.profile?.timeZone??'Asia/Shanghai',now=new Date(),todayIndex=weekdayIndex(now,timeZone),today=weekdays[todayIndex];
  const names=sessionNames(templates,locale),schedule=version?weekSchedule(version):{sessions:[],chosen:false};
  const todayDate=localDay(timeZone,now),startDate=version?planStartDate(version,timeZone):undefined,notStarted=!!startDate&&startDate>todayDate;
- const scheduledToday=!notStarted&&schedule.sessions.some(session=>session.day===today);
+ // Calendar-picked days (Bo 2026-10-19) replace the weekly rhythm for 今天 and the week strip.
+ const picked=version?.trainingDates?.length?version.trainingDates:undefined,pickedNext=picked?nextTrainingDate(picked,addDays(todayDate,1)):undefined;
+ const scheduledToday=!notStarted&&(picked?picked.includes(todayDate):schedule.sessions.some(session=>session.day===today));
  const shown=(template?:{id:string})=>template?names.get(template.id)??'':'';
  const monday=new Date(Date.parse(localDay(timeZone,now)+'T00:00:00Z')-todayIndex*86400000);
  const weekDates=weekdays.map((_,index)=>new Date(monday.getTime()+index*86400000).toISOString().slice(0,10));
@@ -89,7 +93,7 @@ export function HomePage(){
  // Finished sessions of today (日视图): real start/end, corrections kept beside the unchanged record.
  const trainedToday=(data?.workouts??[]).filter(w=>w.localDate===todayDate&&(w.status==='complete'||w.status==='partial')).sort((a,b)=>b.startedAt.localeCompare(a.startedAt));
  const correctTimes=async(workout:{id:string},startedAt:string,endedAt:string)=>{let saved=false;await run(async()=>{if(!data)return;await workflow.correctWorkoutTimes({workoutId:workout.id,startedAt,endedAt,expectedRevision:data.metadata.dataRevision});saved=true;});return saved;};
- const strip=weekdays.map((day,index)=>{const planned=beforeStart(index)?undefined:schedule.sessions.find(session=>session.day===day);return {key:day,label:weekdayLabel(day,locale,true),state:doneDays[day]??(planned?'planned':'rest'),today:index===todayIndex,description:`${weekdayLabel(day,locale)} · ${doneDays[day]==='done'?pv.done:doneDays[day]==='partial'?pv.partial:planned?shown(templates.find(item=>item.id===planned.templateId)):pv.rest}`} as const;});
+ const strip=weekdays.map((day,index)=>{const pickedId=picked?sessionForDate(version!,weekDates[index]):undefined;const planned=picked?(pickedId?{day,templateId:pickedId}:undefined):beforeStart(index)?undefined:schedule.sessions.find(session=>session.day===day);return {key:day,label:weekdayLabel(day,locale,true),state:doneDays[day]??(planned?'planned':'rest'),today:index===todayIndex,description:`${weekdayLabel(day,locale)} · ${doneDays[day]==='done'?pv.done:doneDays[day]==='partial'?pv.partial:planned?shown(templates.find(item=>item.id===planned.templateId)):pv.rest}`} as const;});
  return <main className="v9-home">
  <header className="v9-home-head"><div><span className="v9-home-date">{dateText}</span><h1 className="v9-display">{h.title}</h1></div><div className="v9-home-head-side"><ThemeButton locale={locale}/><span className="v9-num v9-home-day" aria-hidden="true">{localDay(timeZone,now).slice(8)}</span></div></header>
  {applied&&version&&<Card variant="raised" padding="md" className="v9-home-applied" role="status"><Yaya pose="cheer" size={52} alt=""/><p>{h.applied}</p></Card>}
@@ -104,13 +108,13 @@ export function HomePage(){
  {engineEnabled&&currentPreview&&<PlanStops plan={currentPreview} locale={locale}/>}
  <DayActual workouts={trainedToday} templates={templates} locale={locale} name={name} sessionName={id=>id?names.get(id)??'':''} busy={busy} onCorrect={correctTimes}/>
  {selected?<><slots.FeatureCard context="next" motionReduced={false} trainingActive={false}>
-  <slots.StartHero {...selected} name={shown(selected)} templateId={selected.id} templateLabel={shown(selected)} nextLabel={notStarted&&startDate?fill(sd.startsOn,{date:startDateLabel(startDate,todayDate,locale)}):scheduledToday||!nextSession?h.today:fill(h.nextOn,{day:`${schedule.chosen?'':h.suggested}${weekdayLabel(nextSession.day,locale)}`})} startLabel={t.start} disabled={busy||!!data?.active||previewBlocked||previewPending} onStart={()=>{if(!previewBlocked&&!previewPending)void start(selected.id)}}/>
+  <slots.StartHero {...selected} name={shown(selected)} templateId={selected.id} templateLabel={shown(selected)} nextLabel={notStarted&&startDate?fill(sd.startsOn,{date:startDateLabel(startDate,todayDate,locale)}):scheduledToday||!nextSession?h.today:picked?pickedNext?fill(h.nextOn,{day:startDateLabel(pickedNext,todayDate,locale)}):h.today:fill(h.nextOn,{day:`${schedule.chosen?'':h.suggested}${weekdayLabel(nextSession.day,locale)}`})} startLabel={t.start} disabled={busy||!!data?.active||previewBlocked||previewPending} onStart={()=>{if(!previewBlocked&&!previewPending)void start(selected.id)}}/>
   {parts.length>0&&<div className="v9-home-parts" role="group" aria-label={h.parts}>{parts.map(part=><span key={part}>{part}</span>)}</div>}
   {notStarted&&<p className="v9-home-reason">{sd.notStarted}</p>}
   <p className="v9-home-reason">{!last?t.firstWorkoutReason:lastSelected?.status==='partial'?t.partialReason:format(t.reason,{minutes:selected.estimatedMinutes})}</p>
  </slots.FeatureCard>
  {engineEnabled&&currentPreview&&<><TargetChanges suggestions={currentPreview.suggestions} templateId={selected.id} locale={locale} name={name}/><PlanTip plan={{...currentPreview,notices:currentPreview.notices.filter(notice=>!['pregnancy.pelvic_floor.copy','postpartum.pelvic_floor.copy'].includes(notice.code))}} locale={locale} onEditEnvironment={()=>navigate('/settings/engine#environment')}/></>}
- <DayTimeline template={selected} locale={locale} timeZone={timeZone} todayDate={todayDate} name={name} active={data?.active} details={(item,index)=><>
+ <DayTimeline planStart={version?.startTime} template={selected} locale={locale} timeZone={timeZone} todayDate={todayDate} name={name} active={data?.active} details={(item,index)=><>
    <p>{exercises.find(e=>e.id===item.exerciseId)?.steps[locale].join(' ')}</p>
    {engineEnabled&&<><SourceWarmupSteps template={selected} itemIndex={index}/><ItemPrescription item={item} locale={locale}/></>}
    <div className="v9-item-actions">{tools.buttons(selected.id,index,item.exerciseId)}</div>

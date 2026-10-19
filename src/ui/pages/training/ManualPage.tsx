@@ -25,9 +25,11 @@ import { initialFilters, recentExerciseIds, toggleSelection } from './manual/sel
 import zh from '../../../i18n/features/manual/zh.json';
 import en from '../../../i18n/features/manual/en.json';
 import './manual/manual.css';
+import '../plan/week-plan.css';
+import { HomeExit } from '../../components/HomeExit';
 
 export function ManualPage() {
-  const { locale, data, answers, startManual, start, busy } = useMainline();
+  const { locale, data, answers, startManual, start, busy, navigate } = useMainline();
   const copy = locale === 'zh' ? zh : en;
   const saved = data?.state?.coachProfile;
   const override = data?.state?.nextWorkoutOverride;
@@ -86,6 +88,7 @@ export function ManualPage() {
   const template = templates.find(item => item.id === templateId);
   const minutes = selected.length ? estimatePlannedMinutes(template?.items ?? manualSelection?.template.items ?? manualTrainingItems(selected)) : 0;
   return <main className="manual-page">
+    <nav className="v9-plan-nav" aria-label={copy.title}><HomeExit locale={locale} dirty={selected.length > 0} onLeave={() => navigate('/')} /></nav>
     <header><h1>{copy.title}</h1><p>{copy.intro}</p></header>
     <PreTrainingCheckin/>
     {(historyPainState(data?.workouts??[],saved?.painState,data?.state?.painFollowupRestrictions)??[]).some(row=>row.remainingSessions>0)&&<p role="status">{engineCopy('pain.copy.drop_pattern',locale)}</p>}

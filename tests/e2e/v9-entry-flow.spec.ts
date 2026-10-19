@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { answerTexts, engineSafety, nextButton, startOnboarding } from './helpers/onboarding-v9';
+import { answerTexts, engineSafety, nextButton, startOnboarding, weeklySchedule } from './helpers/onboarding-v9';
 
 test.setTimeout(90000);
 test('fresh user: welcome → tap onboarding → one-question health check → plan applied → home', async ({ page }) => {
@@ -20,8 +20,7 @@ test('fresh user: welcome → tap onboarding → one-question health check → p
   await nextButton(page).click();
   await page.getByLabel('说说你的身体情况').fill('女，34岁，165厘米，60公斤');
   await nextButton(page).click();
-  await page.getByRole('button', { name: '3 次', exact: true }).click(); await page.getByRole('button', { name: '45 分钟', exact: true }).click();
-  await expect(page.getByRole('button', { name: '3 次', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await weeklySchedule(page, 3, 45);
   await nextButton(page).click();
   await answerTexts(page, ['在家，有一对哑铃']);
   // Health check: one question per screen; follow-ups only after 是; “以上都没有” answers a group at once.

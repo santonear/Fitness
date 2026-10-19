@@ -62,6 +62,7 @@ import { nextTargets, validatePlan } from "../engine";
 import { isFeatureEnabled } from "./feature-flags";
 import { stableString, DATA, condition, type Exercise } from "../engine/data";
 import { EnginePlanUnavailableError } from "./engine-error";
+import { shiftTrainingDates, timePattern, validTrainingDates } from "./training-dates";
 import {
   createTrainingPain,
   activePainReplacement,
@@ -79,7 +80,17 @@ export type LocalCandidate = Extract<
   enginePlan?: EnginePlan;
   /** Chosen on the draft; local date YYYY-MM-DD. Absent means today. */
   startDate?: string;
+  /** Training days picked on the calendar (sorted local dates); absent means the weekly rhythm. */
+  trainingDates?: string[];
+  /** Planned start time of day, HH:MM. */
+  startTime?: string;
 };
+/** Calendar days and time carried unchanged into every later version of the same plan. */
+const carriedSchedule = (version: { startDate?: string; trainingDates?: string[]; startTime?: string }) => ({
+  ...(version.startDate ? { startDate: version.startDate } : {}),
+  ...(version.trainingDates?.length ? { trainingDates: [...version.trainingDates] } : {}),
+  ...(version.startTime ? { startTime: version.startTime } : {}),
+});
 export type ManualSelection = {
   adultConfirmed: boolean;
   template: SessionTemplate;
@@ -353,7 +364,7 @@ export function createV8Workflow(repo: Repository) {
           basedOnVersionId: version.id,
           changeSummary: [],
           enginePlan: generated.plan,
-          ...(version.startDate ? { startDate: version.startDate } : {}),
+          ...carriedSchedule(version),
         });
         await db.v8PlanVersions.add(nextVersion);
         await db.v8Plans.put({ ...plan, currentVersionId: nextVersion.id });
@@ -584,6 +595,10 @@ export function createV8Workflow(repo: Repository) {
         proposal.templates.flatMap((t) => t.items),
         state,
       );
+      if (candidate.trainingDates && !validTrainingDates(candidate.trainingDates))
+        return invalid("INVALID_TRAINING_DATES");
+      if (candidate.startTime && !timePattern.test(candidate.startTime))
+        return invalid("INVALID_START_TIME");
       const id = crypto.randomUUID();
       const { reasons: _reasons, ...content } = proposal;
       const version = v8PlanVersionSchema.parse({
@@ -596,7 +611,10 @@ export function createV8Workflow(repo: Repository) {
         source: candidate.source ?? "local",
         changeSummary: [],
         ...(acceptedEnginePlan ? { enginePlan: acceptedEnginePlan } : {}),
-        ...(candidate.startDate ? { startDate: candidate.startDate } : {}),
+        ...(candidate.trainingDates?.length
+          ? { startDate: candidate.trainingDates[0], trainingDates: candidate.trainingDates }
+          : candidate.startDate ? { startDate: candidate.startDate } : {}),
+        ...(candidate.startTime ? { startTime: candidate.startTime } : {}),
       });
       await db.v8Plans.toCollection().modify({ readOnly: true });
       await db.v8Plans.add({
@@ -1269,7 +1287,7 @@ export function createV8Workflow(repo: Repository) {
             : "coach_change",
         basedOnVersionId: version.id,
         ...(acceptedEnginePlan ? { enginePlan: acceptedEnginePlan } : {}),
-        ...(version.startDate ? { startDate: version.startDate } : {}),
+        ...carriedSchedule(version),
         changeSummary:
           response.type === "change_proposal"
             ? response.changes
@@ -1352,6 +1370,8 @@ export function createV8Workflow(repo: Repository) {
         reviewRule: undefined,
         changeSummary: [summary.slice(0, 200)],
         startDate,
+        // Chosen training days move with the start date; their rhythm stays the same.
+        ...(version.trainingDates?.length ? { trainingDates: shiftTrainingDates(version.trainingDates, startDate) } : {}),
       });
       await db.v8PlanVersions.add(next);
       await db.v8Plans.put({ ...plan, currentVersionId: next.id });

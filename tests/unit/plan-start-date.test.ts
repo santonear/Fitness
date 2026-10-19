@@ -47,6 +47,16 @@ describe('plan start date (V9.x)',()=>{
   await s.workflow.changeStartDate({startDate:target,expectedRevision:s.revision(),summary:'x'});
   expect(s.rows().v8PlanVersions).toHaveLength(before.v8PlanVersions.length+1);
  });
+ it('calendar-picked training days and start time move with the start date into the new version; the old version keeps its days',async()=>{
+  const s=setup(),today=localDateIn(s.timeZone),current=s.rows().v8PlanVersions[0];
+  const days=[addDays(today,1),addDays(today,3),addDays(today,4)];
+  Object.assign(current,{startDate:days[0],trainingDates:days,startTime:'19:00'});
+  expect(()=>v8PlanVersionSchema.parse(current)).not.toThrow();
+  const next=await s.workflow.changeStartDate({startDate:addDays(today,5),expectedRevision:s.revision(),summary:'x'});
+  expect(next.trainingDates).toEqual([addDays(today,5),addDays(today,7),addDays(today,8)]);
+  expect(next.startTime).toBe('19:00');
+  expect(s.rows().v8PlanVersions.find(v=>v.id===current.id).trainingDates).toEqual(days);
+ });
  it('rejects past dates, dates beyond two weeks and stale revisions without writing',async()=>{
   const s=setup(),today=localDateIn(s.timeZone);
   for(const date of [addDays(today,-1),addDays(today,15),'not-a-date']){

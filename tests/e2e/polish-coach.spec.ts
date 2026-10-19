@@ -1,6 +1,6 @@
 import {test,expect} from '@playwright/test';
 import {showShared} from './helpers/home-coach';
-import {answerTexts,basicSafety,generate,startOnboarding,toFirstQuestion} from './helpers/onboarding-v9';
+import {answerTexts,basicSafety,confirmReplan,generate,startOnboarding,toFirstQuestion} from './helpers/onboarding-v9';
 test('missing plan uses conservative local pain response and review navigation without network',async({page})=>{
  let calls=0;await page.route('**/api/v1/plans/generate',async route=>{calls++;await route.abort();});
  await page.goto('/tests/fixtures/v8-coach/index.html?missing');await page.getByRole('button',{name:'跟芽芽说',exact:true}).click();
@@ -65,7 +65,7 @@ test('week and month reviews without a current plan retain facts and offer manua
  await page.evaluate(async()=>{const rp='/src/persistence/repository.ts',wp='/src/application/v8-workflow.ts';const {repository}=await import(/* @vite-ignore */ rp),{createV8Workflow}=await import(/* @vite-ignore */ wp);const flow=createV8Workflow(repository),s=await flow.snapshot();await flow.deletePlan(s.plan.id,s.metadata.dataRevision);});
  await page.reload();
  for(const kind of ['本周','本月']){await page.getByRole('radio',{name:kind,exact:true}).click();await expect(page.locator('.rv-facts dd')).toHaveText(before);await expect(page.getByText(/还差.*次|按现在的计划继续/)).toHaveCount(0);await expect(page.getByRole('progressbar',{name:'完成了 0 次，部分完成 1 次。',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'手动训练',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'重新制定计划',exact:true})).toBeVisible();}
- await page.getByRole('button',{name:'手动训练',exact:true}).click();await expect(page).toHaveURL(/\/manual$/);await page.goto('/review');await page.getByRole('button',{name:'重新制定计划',exact:true}).click();await expect(page).toHaveURL(/\/onboarding$/);
+ await page.getByRole('button',{name:'手动训练',exact:true}).click();await expect(page).toHaveURL(/\/manual$/);await page.goto('/review');await page.getByRole('button',{name:'重新制定计划',exact:true}).click();await confirmReplan(page);await expect(page).toHaveURL(/\/onboarding$/);
 });
 
 test('coach consent shows a repeated instruction once and a readable time zone while retaining raw fields',async({page})=>{
