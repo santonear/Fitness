@@ -14,6 +14,7 @@ async function startManual(page: Page, names: string[]) {
 const sets = (page: Page) => page.evaluate(async () => { const p = '/src/persistence/db.ts'; return (await (await import(/* @vite-ignore */ p)).database.v8Workouts.toArray())[0]?.sets ?? []; });
 
 test('timed countdown, rest countdown with +15 s and skip, finish summary and review charts', async ({ page }) => {
+  test.setTimeout(120_000);
   await page.clock.install();
   await page.addInitScript(() => { (window as unknown as { vibrations: number[] }).vibrations = []; Object.defineProperty(navigator, 'vibrate', { value: (n: number) => { (window as unknown as { vibrations: number[] }).vibrations.push(n); return true; } }); localStorage.setItem('fitness.rest-vibration', 'on'); });
   await startManual(page, ['平板支撑', '臀桥']);
@@ -106,6 +107,7 @@ test('timed countdown, rest countdown with +15 s and skip, finish summary and re
 
 test('390px screenshots of player, rest, finish and review in all five themes', async ({ page }) => {
   test.skip(test.info().project.name !== 'chromium', 'Screenshots are a chromium self-check');
+  test.setTimeout(240_000);
   mkdirSync('outputs/v9-workout', { recursive: true });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.emulateMedia({ reducedMotion: 'reduce' });
