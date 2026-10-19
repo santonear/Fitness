@@ -18,6 +18,8 @@ import './onboarding.css';
 export type OnboardingAnswers = Pick<CoachProfile, 'goalText' | 'scheduleOriginalText' | 'adultConfirmed' | 'cautions' | 'cautionNote'> & EngineProfileFields & {
   placeEquipmentText: string; body?: BodyValues; bodyText?: string;
   safetyAnswered?: boolean;
+  /** 芽芽's AI-or-local question; undefined until answered (only asked when AI exists here). */
+  planMode?: 'ai' | 'local';
 };
 export interface OnboardingPageProps {
   engineEnabled?:boolean; locale: V8Locale; step: 0 | 1 | 2 | 3 | 4; bodyEnabled?: boolean; answers: OnboardingAnswers;
@@ -30,6 +32,8 @@ export interface OnboardingPageProps {
   onExit?: () => void;
   /** Health-check screen to open first (for example `ready`). */
   initialSafetyScreen?: string;
+  /** AI planning exists in this deployment (asks AI-or-local before generating). */
+  aiAvailable?: boolean;
 }
 const fields = ['goalText', 'scheduleOriginalText', 'placeEquipmentText'] as const;
 export function cautionsFromGoal(goal:string):CoachProfile['cautions'] {
@@ -51,7 +55,7 @@ function CustomAnswer({ locale, value, onChange, disabled, open, onToggle }: { l
   </div>;
 }
 
-export function OnboardingPage({ engineEnabled=false, locale, step, answers, mode, bodyEnabled = false, busy = false, error, onChange, onStep, onGenerate, onManual, onExit, initialSafetyScreen }: OnboardingPageProps) {
+export function OnboardingPage({ engineEnabled=false, locale, step, answers, mode, bodyEnabled = false, busy = false, error, onChange, onStep, onGenerate, onManual, onExit, initialSafetyScreen, aiAvailable = false }: OnboardingPageProps) {
   const legacy = locale === 'zh' ? zh : en, t = entryCopy[locale], bt=bodyCopy[locale];
   const bodyStep=bodyEnabled&&step===1,questionStep=bodyEnabled&&step>1?step-1:step,lastStep=bodyEnabled?4:3,total=lastStep+1;
   const key = fields[Math.min(questionStep, 2)];
@@ -71,7 +75,13 @@ export function OnboardingPage({ engineEnabled=false, locale, step, answers, mod
     ...((['biologicalSex','age','heightCm','weightKg','waistCm'] as const).filter(field=>answers.body?.[field]!==undefined).map(field=>[bt.labels[field],String(answers.body?.[field])]) as [string,string][]),
     [legacy.fields[3],answers.cautions.length?answers.cautions.map(part=>legacy.parts[part]).join(' / '):legacy.parts.none]
   ];
+  const fieldStep = (field: typeof fields[number]) => (bodyEnabled ? 1 : 0) + fields.indexOf(field) + (bodyEnabled && field === 'goalText' ? -1 : 0);
+  const missingOuter = [
+    ...fields.filter(field => !answers[field].trim()).map(field => ({ key: field === 'goalText' ? 'goal' as const : field === 'scheduleOriginalText' ? 'schedule' as const : 'place' as const, step: fieldStep(field) })),
+    ...(bodyEnabled && !bodyComplete(answers.body ?? {}) ? [{ key: 'body' as const, step: 1 }] : []),
+  ];
   if (step === lastStep) return <HealthCheckWizard locale={locale} answers={answers} engineEnabled={engineEnabled} bodyEnabled={bodyEnabled} mode={mode} busy={busy} error={error}
+    aiAvailable={aiAvailable} missingOuter={missingOuter} onOuterStep={next => onStep(next as 0 | 1 | 2 | 3 | 4)}
     step={step + 1} total={total} complete={complete} sendFields={sendFields} onChange={onChange} onExit={() => onStep((step - 1) as 0 | 1 | 2 | 3)} onGenerate={() => onGenerate(answers)} onManual={onManual} initialScreen={initialSafetyScreen} />;
   const next = <PrimaryButton disabled={busy || (bodyStep ? !bodyComplete(answers.body ?? {}) : !value.trim())} onClick={advance}>{t.next}</PrimaryButton>;
   const frame = { locale, step: step + 1, total, screenKey: `step-${step}`, onBack: step > 0 || onExit ? back : undefined, backDisabled: busy, busy, footer: <>{error && <p role="alert">{error}</p>}{next}</> };

@@ -2,6 +2,8 @@ import { useEffect, useRef } from 'react';
 import { entryCopy } from '../../../i18n/features/onboarding/entry';
 import { PrimaryButton, ProgressRing, Scene, Yaya } from '../../components/kit';
 import { useOptionalTheme } from '../../../themes/ThemeProvider';
+import { ThemeButton } from '../../components/ThemeSheet';
+import { themeEntryCopy } from '../../../i18n/features/home/theme';
 import './onboarding.css';
 
 /** First launch: one screen that says what the app does, then 开始. Nothing is stored here. */
@@ -15,6 +17,8 @@ export function WelcomePage({ locale, onStart, onRestore }: { locale: 'zh' | 'en
     <p className="v9-welcome-sub">{t.sub}</p>
     <div className="v9-welcome-figure"><ProgressRing value={0.72} size={250} stroke={10}><Yaya pose="wave" size={170} alt={t.yaya} /></ProgressRing></div>
     <ul className="v9-welcome-points">{t.points.map(point => <li key={point}>{point}</li>)}</ul>
+    {/* Offered once on the main flow (Bo 2026-10-19); optional, changes apply at once. */}
+    <div className="v9-welcome-theme"><ThemeButton locale={locale} label={themeEntryCopy[locale].welcome} /></div>
     <footer className="v9-welcome-actions" data-orb-avoid="">
       <PrimaryButton onClick={onStart}>{t.start}</PrimaryButton>
       {onRestore && <PrimaryButton tone="text" size="md" onClick={onRestore}>{t.restore}</PrimaryButton>}

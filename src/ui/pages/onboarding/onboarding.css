@@ -81,3 +81,12 @@ h1.v9-welcome-title { margin: calc(var(--s6) + var(--s1)) 0 0; font-size: var(--
 
 @media (prefers-reduced-motion: reduce) { .v9-track > span { transition: none; } }
 @media (min-width: 960px) { .v9-welcome, .v9-onboarding { max-inline-size: var(--layout-desktop-main); } }
+/* V9.x AI-or-local choice and the "what is missing" list on the ready screen. Tokens only. */
+.v9-plan-mode-status { display: grid; gap: var(--s2); padding: var(--s3) var(--s4); border-radius: var(--r-panel); background: var(--c-inset); box-shadow: var(--el-inset); }
+.v9-plan-mode-status p { margin: 0; font-size: var(--t2); line-height: var(--lh-body); color: var(--c-ink); }
+.v9-missing { display: grid; gap: var(--s2); padding: var(--s3) var(--s4); border-radius: var(--r-panel); background: var(--c-inset); box-shadow: var(--el-inset); }
+.v9-missing p { margin: 0; font-size: var(--t2); color: var(--c-ink-muted); }
+.v9-missing ul { display: grid; gap: var(--s1); margin: 0; padding: 0; list-style: none; }
+.v9-missing li { display: flex; align-items: center; justify-content: space-between; gap: var(--s2); font-size: var(--t3); }
+.v9-welcome-theme { display: grid; gap: var(--s2); inline-size: 100%; }
+.v9-welcome-theme > span { font-size: var(--t2); color: var(--c-ink-muted); }
