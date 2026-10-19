@@ -11,8 +11,6 @@
 .v8-shell fieldset { border: var(--bw) solid var(--c-line); border-radius: var(--r-panel); padding: var(--s4); display: grid; gap: var(--s3); }
 .v8-shell fieldset label { display: flex; align-items: center; min-height: var(--touch-min); }
 .v8-shell .v8-sheet { padding: var(--s5); }
-.v8-shell > nav { display: flex; justify-content: space-around; gap: var(--s3); }
-.v8-shell > nav button { display: grid; justify-items: center; }
 .v8-training-set { display: grid; grid-template-columns: 1fr 1fr; align-items: end; gap: var(--s3); margin-block: var(--s4); }
 .v8-facts { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s4); }
 .v8-shell[data-training-active=true] *, .v8-shell[data-training-active=true] *::before, .v8-shell[data-training-active=true] *::after { animation: none; }
@@ -28,9 +26,6 @@
 .v8-inline-panel { display: grid; gap: var(--s4); background: var(--c-surface); border: var(--bw) solid var(--c-line); border-radius: var(--r-panel); padding: var(--s5); }
 .v8-shell .v8-feature { padding: var(--s5); }
 .v8-shell .v8-button-workout { width: 100%; }
-.v8-shell > nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); box-sizing: border-box; width: 100%; max-width: var(--layout-desktop-main); padding: var(--s2) var(--s4) calc(var(--s2) + env(safe-area-inset-bottom)); background: color-mix(in srgb, var(--c-bg) 90%, transparent); backdrop-filter: blur(var(--s3)); border-top: var(--bw) solid var(--c-line); z-index: 5; }
-.v8-shell > nav button { background: transparent; border: 0; border-radius: 0; box-shadow: none; padding: 0; gap: var(--s1); font-size: var(--t2); }
-.v8-shell > nav .v8-nav-icon { width: var(--s5); height: var(--s5); }
 .v8-shell main { padding-bottom: calc(var(--touch-workout) + var(--s6)); }
 .v8-topline h1 { margin-block: var(--s3); font-size: var(--t5); }
 .v8-capsules > details { padding: var(--s2) var(--s3); flex: 1 1 40%; }
@@ -47,7 +42,22 @@
 .v8-month-complete { height: calc(var(--complete-ratio) * 100%); background: var(--c-primary); }
 .v8-month-partial { height: calc(var(--partial-ratio) * 100%); background: color-mix(in srgb, var(--c-primary) 40%, var(--c-surface)); }
 @media (min-width: 960px) {
-  .v8-shell { padding-left: calc(var(--layout-desktop-rail) + var(--s5)); }
-  .v8-shell > nav { top: 0; bottom: 0; left: 0; transform: none; width: var(--layout-desktop-rail); max-width: none; margin: 0; flex-direction: column; justify-content: center; padding: var(--s4) var(--s2); border-top: 0; border-right: var(--bw) solid var(--c-line); }
+  .v8-shell:not([data-immersive=true]) { padding-left: calc(var(--layout-desktop-rail) + var(--s5)); }
+  .v8-shell > .v9-tabbar { inset: 0 auto 0 0; transform: none; inline-size: var(--layout-desktop-rail); max-inline-size: none; block-size: auto; flex-direction: column; justify-content: center; gap: var(--s4); border-radius: 0; padding: var(--s4) var(--s2); }
   .v8-shell main { padding-bottom: var(--s6); }
 }
+
+/* V9 shell: immersive entry screens own their padding; floating pill tab bar (docs/design/v9 nav). */
+.v8-shell[data-immersive=true] { padding: 0; }
+.v8-shell > .v9-tabbar {
+  position: fixed; z-index: 5; inset-block-end: calc(var(--s4) + env(safe-area-inset-bottom)); inset-inline-start: 50%; transform: translateX(-50%);
+  box-sizing: border-box; display: flex; align-items: center; justify-content: space-around; gap: var(--s1);
+  inline-size: calc(100% - var(--s5) * 2); max-inline-size: calc(var(--layout-mobile-max) - var(--s5) * 2); block-size: var(--tabbar-h); padding: 0 var(--s3);
+  border: var(--bw) solid var(--glass-border); border-radius: var(--r-chip); background: var(--glass-bg); box-shadow: var(--el-2);
+  -webkit-backdrop-filter: blur(var(--glass-blur)); backdrop-filter: blur(var(--glass-blur));
+}
+.v9-tab { flex: 1; min-inline-size: 0; min-block-size: var(--touch-min); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: calc(var(--s1) / 2); padding: var(--s1); border: 0; border-radius: var(--r-chip); background: transparent; box-shadow: none; color: var(--c-ink-muted); font: inherit; font-size: var(--t1); }
+.v9-tab[aria-current=page] { color: var(--c-accent-text); font-weight: var(--w-strong); }
+.v9-tab-icon { display: inline-flex; }
+.v9-tab .v8-nav-icon { inline-size: calc(var(--s5) + var(--s1)); block-size: calc(var(--s5) + var(--s1)); }
+.v8-shell:not([data-immersive=true]) main { padding-bottom: calc(var(--tabbar-h) + var(--s6) + env(safe-area-inset-bottom)); }
