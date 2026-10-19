@@ -35,3 +35,7 @@
 .v9-settings .v9-row-block .v8-sheet h2 { margin: 0 0 var(--s1); font-size: var(--t3); }
 .v9-row-block-empty:empty, .v9-row-block-empty:not(:has(*)) { display: none; }
 @media (prefers-reduced-motion: reduce) { .v9-row svg { transition: none; } }
+/* The row label already names an expanded panel; keep its own first heading for screen readers only. */
+.v9-row-panel > :is(section, div) > :is(h2, h3):first-child {
+  position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
