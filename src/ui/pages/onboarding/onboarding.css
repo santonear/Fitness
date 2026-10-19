@@ -52,6 +52,12 @@ h1.v9-welcome-title { margin: calc(var(--s6) + var(--s1)) 0 0; font-size: var(--
   border-radius: var(--r-panel); background: var(--c-inset); box-shadow: var(--el-inset); color: var(--c-ink); font: inherit; font-size: var(--t4); resize: vertical;
 }
 .v9-field textarea:focus-visible, .v9-field input:focus-visible, .v9-stepper input:focus-visible { outline: var(--bw) solid var(--c-focus); outline-width: 2px; outline-offset: var(--s1); }
+.v9-birth-month { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s3); }
+.v9-birth-month .v9-birth-part { display: grid; gap: var(--s2); }
+.v9-field .v9-birth-month select {
+  box-sizing: border-box; inline-size: 100%; min-block-size: var(--touch-row); padding: var(--s3) var(--s4); border: var(--bw) solid var(--card-border);
+  border-radius: var(--r-panel); background: var(--c-inset); box-shadow: var(--el-inset); color: var(--c-ink); font: inherit; font-size: var(--t4);
+}
 .v9-stepper { display: flex; align-items: center; gap: var(--s4); margin-block-start: var(--s4); }
 .v9-stepper input { flex: 1; text-align: center; font-size: var(--t7); border-radius: var(--r-control); }
 .v9-check-list { display: grid; gap: var(--s3); margin: 0; padding: 0; list-style: none; font-size: var(--t3); line-height: var(--lh-body); }

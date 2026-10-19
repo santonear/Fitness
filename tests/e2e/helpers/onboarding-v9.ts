@@ -1,3 +1,4 @@
+import { fillBirthMonth } from './birth-month';
 import { expect, type Page } from '@playwright/test';
 
 /** V9 entry flow helpers: welcome → tap onboarding → one-question health check. Chinese UI. */
@@ -49,7 +50,7 @@ export async function engineSafety(page: Page, options: EngineSafetyOptions = {}
   await ensurePressed(page, '我已年满 18 岁');
   await ensurePressed(page, /同意将运动前自查/);
   await nextButton(page).click();
-  await page.getByLabel('出生年月', { exact: true }).fill(options.birth ?? '1991-06');
+  await fillBirthMonth(page,options.birth ?? '1991-06');
   await nextButton(page).click();
   for (let group = 0; group < 3; group++) await page.getByRole('button', { name: '以上都没有', exact: true }).click();
   await page.getByRole('radio', { name: options.activity ?? '是', exact: true }).click();

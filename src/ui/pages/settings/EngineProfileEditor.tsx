@@ -14,6 +14,7 @@ import {
   screeningExpired,
 } from "../../../coach/engine-copy";
 import { useState } from "react";
+import { BirthMonthField } from "../../components/BirthMonthField";
 import type { EngineProfileFields } from "../../../application/engine-profile";
 import type { EngineProfile } from "../../../engine/contracts";
 
@@ -269,19 +270,14 @@ export function EngineProfileEditor(props: EngineProfileDraftProps) {
       </label>
       {value.healthStorageConsent && (
         <>
-          <label>
-            {zh ? "出生年月" : "Year and month of birth"}
-            <input
-              type="month"
-              value={value.birthYearMonth ?? ""}
-              onChange={(event) =>
-                onChange({
-                  ...value,
-                  birthYearMonth: event.target.value || undefined,
-                })
-              }
+          <fieldset>
+            <legend>{zh ? "出生年月" : "Year and month of birth"}</legend>
+            <BirthMonthField
+              locale={locale}
+              value={value.birthYearMonth}
+              onChange={(birthYearMonth) => onChange({ ...value, birthYearMonth })}
             />
-          </label>
+          </fieldset>
           <fieldset>
             <legend>PAR-Q+</legend>
             {Array.from({ length: 7 }, (_, index) =>

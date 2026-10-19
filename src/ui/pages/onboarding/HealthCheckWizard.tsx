@@ -11,6 +11,7 @@ import enCopy from '../../../i18n/features/onboarding/en.json';
 import { BigChoice, ChoiceChip, PrimaryButton, Card, Yaya } from '../../components/kit';
 import { useEngineProfileDraft, engineFallKeys, engineOlderAge } from '../settings/EngineProfileEditor';
 import { OnboardingFrame } from './OnboardingFrame';
+import { BirthMonthField } from '../../components/BirthMonthField';
 import type { OnboardingAnswers } from './OnboardingPage';
 
 const rules = new Rules();
@@ -161,7 +162,7 @@ export function HealthCheckWizard(props: HealthCheckWizardProps) {
       <PrimaryButton tone="text" size="md" disabled={busy} onClick={onManual}>{t.ready.manual}</PrimaryButton></>);
     }
     case screen.id === 'birth':
-      return frame(t.birth.title, <label className="v9-field"><span>{t.birth.label}</span><input type="month" value={answers.birthYearMonth ?? ''} disabled={busy} onChange={event => engineChange({ ...answers, birthYearMonth: event.target.value || undefined })} /></label>,
+      return frame(t.birth.title, <div className="v9-field" role="group" aria-label={t.birth.label}><BirthMonthField locale={locale} value={answers.birthYearMonth} disabled={busy} onChange={birthYearMonth => engineChange({ ...answers, birthYearMonth })} /></div>,
         nextButton(!!answers.birthYearMonth), t.birth.sub);
     case screen.id.startsWith('group:'): {
       const name = screen.group!, items = groups[name], open = expanded.has(name), copy = groupCopy[name];
@@ -235,12 +236,18 @@ export function HealthCheckWizard(props: HealthCheckWizardProps) {
     case screen.id === 'cautions':
       return frame(t.cautions.title, <div className="v9-choices">
         <div role="radiogroup" className="v9-choices">
-          <BigChoice label={t.cautions.none} selected={cautionMode === 'none'} disabled={busy} onClick={() => { setCautionMode('none'); onChange({ ...answers, cautions: [], safetyAnswered: true }); }} />
+          <BigChoice label={t.cautions.none} selected={cautionMode === 'none'} disabled={busy} onClick={() => { setCautionMode('none'); onChange({ ...answers, cautions: [], cautionNote: undefined, safetyAnswered: true }); }} />
           <BigChoice label={t.cautions.some} selected={cautionMode === 'some'} disabled={busy} onClick={() => { setCautionMode('some'); onChange({ ...answers, safetyAnswered: answers.cautions.length > 0 ? true : false }); }} />
         </div>
         {cautionMode === 'some' && <div className="v9-chip-row" role="group" aria-label={legacy.cautions}>{parts.map(part => <ChoiceChip key={part} selected={answers.cautions.includes(part)} disabled={busy}
           onClick={() => { const next = answers.cautions.includes(part) ? answers.cautions.filter(value => value !== part) : [...answers.cautions, part]; onChange({ ...answers, cautions: next, safetyAnswered: next.length > 0 }); }}>{legacy.parts[part]}</ChoiceChip>)}</div>}
-      </div>, <PrimaryButton disabled={busy || !(cautionMode === 'none' ? answers.cautions.length === 0 : cautionMode === 'some' && answers.cautions.length > 0)}
+        {cautionMode === 'some' && answers.cautions.includes('other') && <label className="v9-field">
+          <span>{t.cautions.otherLabel}</span>
+          <input type="text" maxLength={60} value={answers.cautionNote ?? ''} placeholder={t.cautions.otherPlaceholder} disabled={busy}
+            onChange={event => onChange({ ...answers, cautionNote: event.target.value || undefined })} />
+          <small>{t.cautions.otherHint}</small>
+        </label>}
+      </div>, <PrimaryButton disabled={busy || !(cautionMode === 'none' ? answers.cautions.length === 0 : cautionMode === 'some' && answers.cautions.length > 0 && (!answers.cautions.includes('other') || !!answers.cautionNote?.trim()))}
         onClick={() => { if (answers.safetyAnswered !== true) onChange({ ...answers, safetyAnswered: true }); go(1); }}>{t.next}</PrimaryButton>, t.cautions.sub);
     case screen.id === 'prefs': {
       const constraints = { noJump: false, quiet: false, space: 'small' as const, ...answers.constraints };

@@ -30,8 +30,16 @@ export function weeklyFrequency(text:string):number {
  return countValue(before?.[1]??after?.[1]??training?.[1]??'2');
 }
 
+/** A typed "other" area that names a supported joint also gets that joint's automatic swaps. */
+export function cautionFields(cautions: CoachProfile['cautions'], note?: string): Pick<CoachProfile, 'cautions' | 'cautionNote'> {
+  const text = cautions.includes('other') ? note?.trim() : undefined;
+  if (!text) return { cautions };
+  const named: CoachProfile['cautions'] = [/膝|knee/i.test(text) && 'knee', /腰|背|back/i.test(text) && 'back', /肩|shoulder/i.test(text) && 'shoulder', /腕|wrist/i.test(text) && 'wrist'].filter(Boolean) as CoachProfile['cautions'];
+  return { cautions: [...new Set([...cautions, ...named])], cautionNote: text };
+}
+
 /** Conservative local proposal parameters; original answers remain intact. */
-export function localProfile(answers: { goalText: string; scheduleOriginalText: string; placeEquipmentText: string; adultConfirmed: boolean; cautions: CoachProfile['cautions'] } & EngineProfileFields): CoachProfile & EngineProfileFields {
+export function localProfile(answers: { goalText: string; scheduleOriginalText: string; placeEquipmentText: string; adultConfirmed: boolean; cautions: CoachProfile['cautions']; cautionNote?: string } & EngineProfileFields): CoachProfile & EngineProfileFields {
   const minutes = sessionDuration(answers.scheduleOriginalText) ?? 30;
   const equipment = EQUIPMENT.filter(key => key !== 'none' && [key, equipmentLabel(key, 'zh'), equipmentLabel(key, 'en')].some(label => {
     const text=answers.placeEquipmentText.toLowerCase(),at=text.indexOf(label.toLowerCase());
@@ -49,7 +57,7 @@ export function localProfile(answers: { goalText: string; scheduleOriginalText: 
     sessionMinutes: minutes,
     place: places.length > 1 ? 'mixed' : places[0] as CoachProfile['place'], equipment: ['none', ...equipment],
     placeEquipmentOriginalText: answers.placeEquipmentText,
-    adultConfirmed: answers.adultConfirmed, cautions: answers.cautions, confirmedAt: new Date().toISOString() };
+    adultConfirmed: answers.adultConfirmed, ...cautionFields(answers.cautions, answers.cautionNote), confirmedAt: new Date().toISOString() };
 }
 
 /** Parse explicit everyday quantities locally; never infer health or fill absent measurements. */
