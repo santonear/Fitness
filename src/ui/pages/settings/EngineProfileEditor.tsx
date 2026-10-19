@@ -28,18 +28,23 @@ const olderAge = new Rules()
   .trigger.any.find((condition: { user?: string }) => condition.user === "age")
   .gte as number;
 
-/** Answers remain incomplete until explicitly supplied; no unchecked box means “no”. */
-export function EngineProfileEditor({
-  value,
-  onChange,
-  locale,
-  ageYears,
-}: {
+export interface EngineProfileDraftProps {
   value: EngineProfileFields;
   onChange: (value: EngineProfileFields) => void;
   locale: "zh" | "en";
   ageYears?: number;
-}) {
+}
+export { fallKeys as engineFallKeys, olderAge as engineOlderAge };
+/**
+ * Shared screening draft for the settings editor and the one-question-per-screen onboarding.
+ * Both write exactly the same fields: screening is only written once every answer is explicit.
+ */
+export function useEngineProfileDraft({
+  value,
+  onChange,
+  locale,
+  ageYears,
+}: EngineProfileDraftProps) {
   const zh = locale === "zh",
     storedScreen = value.screening,
     screen =
@@ -199,6 +204,28 @@ export function EngineProfileEditor({
           : undefined,
     });
   }
+  /** Several contraindication answers at once (for “以上都没有”); same reducer as single answers. */
+  function changePregnancyAll(events: PregnancyReconfirmationEvent[]) {
+    const next = events.reduce(updatePregnancyReconfirmationDraft, pregnancyDraft);
+    setPregnancyDraft(next);
+    setPopulationDraft({ weeks: next.week, provider: next.provider });
+    onChange({ ...value, population: pregnancyPopulationFromDraft(next) });
+  }
+  return {
+    zh, storedScreen, screen, absoluteList, relativeList, pregnancyDraft, setPregnancyDraft,
+    contraindicationAnswers, fallsAnswers, setFallsAnswers, currentAge, populationKind, setPopulationKind,
+    populationDraft, setPopulationDraft, changePregnancy, changePregnancyAll, updatePopulation, answers, extra, cmrAnswers, update,
+  };
+}
+
+/** Answers remain incomplete until explicitly supplied; no unchecked box means “no”. */
+export function EngineProfileEditor(props: EngineProfileDraftProps) {
+  const { value, onChange, locale } = props;
+  const {
+    zh, screen, absoluteList, relativeList, pregnancyDraft, setPregnancyDraft,
+    contraindicationAnswers, fallsAnswers, setFallsAnswers, currentAge, populationKind, setPopulationKind,
+    populationDraft, setPopulationDraft, changePregnancy, updatePopulation, answers, extra, cmrAnswers, update,
+  } = useEngineProfileDraft(props);
   const yesNo = (
     label: string,
     selected: boolean | undefined,
