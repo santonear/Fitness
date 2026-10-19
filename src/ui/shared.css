@@ -10,6 +10,7 @@ input[type=checkbox] { accent-color:var(--c-primary); }
 label:has(input[type=checkbox]) { display:flex; align-items:center; gap:var(--s2); min-height:var(--touch-min); }
 :focus-visible { outline:var(--bw) solid var(--c-focus); outline-offset:var(--s1); }
 h1,h2,h3 { font-family:var(--f-display); line-height:var(--lh-tight); font-weight:var(--w-display); }
+h1,h2 { text-shadow:var(--emboss); }
 h1 { font-size:var(--t6); } h2 { font-size:var(--t5); } h3 { font-size:var(--t4); }
 fieldset { min-width:0; border:var(--bw) solid var(--c-line); border-radius:var(--r-panel); padding:var(--s4); }
 form label { display:grid; gap:var(--s2); margin-block:var(--s3); }

@@ -18,3 +18,6 @@
 .v9-scene-tree-b { fill: var(--scene-treeB); }
 .v9-scene-grass { fill: none; stroke: var(--scene-hill1); stroke-width: 2; stroke-linecap: round; }
 .v9-scene-flower { fill: var(--scene-flower); }
+/* 暖阳柔木 block-print relief: ink outlines and a light gouge hatch from --hero-* tokens (none outside vivid). */
+.v9-scene :is(path, circle, rect, ellipse):not(.v9-scene-bird):not(.v9-scene-glint):not(.v9-scene-grass):not(.v9-scene-sky) { stroke: var(--hero-line); stroke-width: var(--hero-line-w); stroke-linejoin: round; paint-order: stroke; }
+.v9-scene::after { content: ""; position: absolute; inset: 0; background: var(--hero-hatch); mix-blend-mode: var(--hero-blend); pointer-events: none; }
