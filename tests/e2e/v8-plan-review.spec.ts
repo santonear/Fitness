@@ -59,8 +59,8 @@ async function timeEvidence(page:Page){
  });
 }
 test('monthly facts remain visible and adopting a preview adds a version without changing workout facts',async({page})=>{
- await plan(page);const before=await timeEvidence(page);await page.goto('/review');await page.getByRole('button',{name:'本月回顾',exact:true}).click();
- await expect(page.locator('.v8-facts dd')).toHaveText(['0','2','2','20','0']);
+ await plan(page);const before=await timeEvidence(page);await page.goto('/review');await page.getByRole('radio',{name:'本月',exact:true}).click();
+ await expect(page.locator('.rv-facts dd')).toHaveText(['0','2','2','20','0']);
  await expect(page.getByRole('img',{name:/本月每周/})).toBeVisible();expect(await page.locator('.rv-bar').count()).toBeGreaterThanOrEqual(4);
  await page.getByRole('button',{name:'就这样调整',exact:true}).click();await expect(page.getByRole('heading',{name:'核对调整后的计划'})).toBeVisible();await page.getByRole('button',{name:'就这样调整',exact:true}).click();
  await expect(page.getByRole('status')).toHaveText('已保存为新的计划版本。');
@@ -80,7 +80,7 @@ test('legacy workout notes and metrics appear in both review periods without rew
   const sets=data.sets.filter((s:{sessionId:string;completed:boolean})=>s.sessionId===session.id&&s.completed).map((s:object)=>({...s,notes:'旧组原始备注'}));await db.sessions.put(session);await db.sets.bulkPut(sets);return {session,sets};
  },fixture);
  await page.goto('/review');await expect(page.getByText('旧训练原始备注',{exact:true})).toBeVisible();await expect(page.getByText(/旧组原始备注/).first()).toBeVisible();
- await page.getByRole('button',{name:'本月回顾',exact:true}).click();await expect(page.getByText('旧训练原始备注',{exact:true})).toBeVisible();
+ await page.getByRole('radio',{name:'本月',exact:true}).click();await expect(page.getByText('旧训练原始备注',{exact:true})).toBeVisible();
  const after=await page.evaluate(async(id)=>{const p='/src/persistence/db.ts',db=(await import(/* @vite-ignore */ p)).database;return {session:await db.sessions.get(id),sets:await db.sets.where('sessionId').equals(id).toArray()};},before.session.id);
  expect(after.session).toEqual(before.session);expect(after.sets).toEqual(expect.arrayContaining(before.sets));
 });

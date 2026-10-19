@@ -69,7 +69,7 @@ test('review coach remains separate from statistics at narrow widths and after s
   await page.setViewportSize({width,height:original.height});
   for(const scroll of [0,200,600]){
    await page.evaluate(y=>window.scrollTo(0,y),scroll);
-   const coach=await page.getByRole('button',{name:'和芽芽聊聊',exact:true}).boundingBox(),facts=await page.locator('.v8-facts').boundingBox();
+   const coach=await page.getByRole('button',{name:'和芽芽聊聊',exact:true}).boundingBox(),facts=await page.locator('.rv-hero').boundingBox();
    expect(coach).not.toBeNull();expect(facts).not.toBeNull();
    expect(coach!.y+coach!.height<=facts!.y||facts!.y+facts!.height<=coach!.y||coach!.x+coach!.width<=facts!.x||facts!.x+facts!.width<=coach!.x).toBe(true);
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
@@ -95,7 +95,7 @@ test('manual selection to completed record, appearance previews and reminders',a
  await page.goto('/manual');const search=page.getByRole('searchbox',{name:'搜索动作'});await search.fill('squat');await page.getByRole('button',{name:'徒手深蹲',exact:true}).first().click();await shot(page,'manual-search');
  await search.fill('plank');await page.getByRole('button',{name:'平板支撑',exact:true}).first().click();await page.getByRole('button',{name:'清空筛选',exact:true}).click();await page.getByRole('button',{name:'在家',exact:true}).click();await shot(page,'manual-filter');await page.locator('.manual-card').first().scrollIntoViewIfNeeded();await shot(page,'manual-cards');
  await expect(page.locator('.manual-start')).toContainText('已选 2 个动作');await page.getByRole('button',{name:'开始',exact:true}).click();await page.getByRole('button',{name:'完成这一组',exact:true}).click();await page.locator('.v8-capsules').getByRole('button',{name:'平板支撑',exact:true}).click();await expect(page.getByRole('button',{name:'修改数值',exact:true})).toContainText('20 秒');await expect(page.getByRole('timer',{name:'剩余时间'})).toHaveText('0:20');await page.getByRole('button',{name:'暂停或结束',exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:'结束并记下',exact:true}).click();await page.getByRole('button',{name:'记下来',exact:true}).click();
- await expect(page.getByText('这周你动了 1 次。',{exact:true})).toBeVisible();
+ await expect(page.locator('.rv-tiles dd').first()).toHaveText('1');
  await page.goto('/settings/appearance');await expect(page.locator('.v9-theme-option')).toHaveCount(5);await shot(page,'appearance');
  const previewNumerals:Record<string,string>={'柔光拟物':'Jost','山野暖阳':'Cormorant Garamond','温和陪伴':'Jost','专业数据':'Jost','燃动挑战':'Archivo'};
  for(const theme of Object.keys(previewNumerals)){
@@ -117,11 +117,11 @@ test('manual selection to completed record, appearance previews and reminders',a
  if(!process.env.POLISH_BASE_URL)await page.route('**/api/v1/features',r=>r.fulfill({json:{version:1,flags:{planLifecycle:true},expiresAt:Date.now()+60000}}));
  await onboard(page);await page.getByRole('button',{name:'就用这份计划',exact:true}).click();await expect(page.getByRole('heading',{name:'今天',exact:true})).toBeVisible();
  await page.getByRole('button',{name:'开始训练',exact:true}).click();await page.getByRole('button',{name:'完成这一组',exact:true}).click();await page.getByRole('button',{name:'暂停或结束',exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:'结束并记下',exact:true}).click();await page.getByRole('button',{name:'记下来',exact:true}).click();
- await expect(page.locator('.v8-facts dd').nth(1)).toHaveText('1');const before=await page.locator('.v8-facts dd').allTextContents();
+ await expect(page.locator('.rv-facts dd').nth(1)).toHaveText('1');const before=await page.locator('.rv-facts dd').allTextContents();
  const remove=async()=>{await page.goto('/plans');await page.getByRole('button',{name:'不再使用这份计划',exact:true}).click();const dialog=page.getByRole('dialog');await expect(dialog).toContainText('训练记录、回顾统计和进步记录全部保留');await shot(page,'plan-delete-confirm');await dialog.getByRole('button',{name:'确认删除',exact:true}).click();await expect(page.getByText('已删除计划',{exact:true})).toBeVisible();};
  await remove();await page.getByRole('button',{name:'撤销',exact:true}).click();await expect(page.getByRole('button',{name:'不再使用这份计划',exact:true})).toBeVisible();
  await remove();await page.goto('/');await expect(page.getByRole('button',{name:'重新制定计划',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'手动训练',exact:true})).toBeVisible();await shot(page,'no-plan');
- await page.goto('/review');await expect(page.locator('.v8-facts dd')).toHaveText(before);await expect(page.getByText(/还差.*次|按现在的计划继续/)).toHaveCount(0);await shot(page,'no-plan-review');
+ await page.goto('/review');await expect(page.locator('.rv-facts dd')).toHaveText(before);await expect(page.getByText(/还差.*次|按现在的计划继续/)).toHaveCount(0);await shot(page,'no-plan-review');
  await page.goto('/settings');await page.getByRole('button',{name:'已删除的计划',exact:true}).click();await expect(page.getByRole('button',{name:'恢复',exact:true})).toBeVisible();await shot(page,'plan-restore');await page.getByRole('button',{name:'恢复',exact:true}).click();await expect(page.getByText('已恢复到以前的计划',{exact:true})).toBeVisible();
  await page.goto('/plans');await expect(page.getByRole('heading',{name:'以前的计划',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'查看',exact:true})).toBeVisible();await shot(page,'previous-plans');await page.getByRole('button',{name:'重新使用',exact:true}).click();await expect(page.getByRole('button',{name:'不再使用这份计划',exact:true})).toBeVisible();await shot(page,'reused-plan');
  });

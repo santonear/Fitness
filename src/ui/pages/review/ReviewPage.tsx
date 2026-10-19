@@ -4,11 +4,15 @@ import { trainingMinutes } from '../../../application/workout-duration';
 import { countUsage } from '../../../application/monitoring-client';
 import { lifestyleCopy } from '../../../i18n/features/settings/lifestyle';
 import { useFeature } from '../../useFeature';
-import { useEffect, useState } from 'react';
-import { Button,Stat,Sheet,Toast } from '../../components/common';
-import { ChoiceChip } from '../../components/kit';
+import { useEffect, useState, type CSSProperties } from 'react';
+import { Button,Sheet,Toast } from '../../components/common';
+import { AppIcon } from '../../components/AppIcon';
+import { PrimaryButton, ProgressRing, SegmentedTabs, Yaya } from '../../components/kit';
+import { BodyParts, FactTile, PatternProgress, TimingGrid, type TimingCell } from './ReviewVisuals';
+import { activeBuckets, groupSets, regionShares, shortDate } from './visuals';
 import { ReviewChart } from './ReviewChart';
-import { chartSeries, dayBuckets, weekBuckets, weeklyRemaining, PATTERN_MIN_COUNT, PATTERN_MIN_SESSIONS } from '../../../application/review/charts';
+import './review.css';
+import { chartSeries, dayBuckets, weekBuckets, weeklyRemaining, weekStreak, PATTERN_MIN_COUNT, PATTERN_MIN_SESSIONS } from '../../../application/review/charts';
 import { useMainline,format } from '../../mainline/context';
 import { recurringDiscomfort, suggestChange } from '../../../application/review/suggest';
 import { activityDate } from '../../../application/v8-activity';
@@ -51,23 +55,64 @@ export function ReviewPage(){
  const chartLabels=monthly?points.map(point=>point.from.slice(5).replace('-','/')):r.weekdays;
  // Timing patterns need enough sessions and at least two occurrences in one slot; otherwise say nothing about patterns.
  const savedSessions=facts.complete+facts.partial+facts.notStarted;
- const patternLines=(['weekday','weekend'] as const).flatMap(day=>(['overnight','morning','daytime','evening'] as const).map(band=>{const n=facts.incompleteTiming[day][band]??{partial:0,notStarted:0};return n.partial+n.notStarted>=PATTERN_MIN_COUNT?<p key={day+band}>{format(r.pattern,{day:r[day],band:r[band],count:n.partial+n.notStarted})}</p>:null;})).filter(Boolean);
- return <main className="rv-page"><div className="v8-row"><ChoiceChip selected={!monthly} onClick={()=>c.setReviewKind('week')}>{r.week}</ChoiceChip><ChoiceChip selected={monthly} onClick={()=>c.setReviewKind('month')}>{r.month}</ChoiceChip></div>
- <h1>{monthly?r.month:r.week}</h1><p>{facts.from} — {facts.to}</p>
+ const timing:TimingCell[]=(['weekday','weekend'] as const).flatMap(day=>(['overnight','morning','daytime','evening'] as const).map(band=>{const n=facts.incompleteTiming[day][band]??{partial:0,notStarted:0};return {day,band,count:n.partial+n.notStarted};}));
+ const patternLines=timing.filter(cell=>cell.count>=PATTERN_MIN_COUNT).map(cell=>format(r.pattern,{day:r[cell.day],band:r[cell.band],count:cell.count}));
+ const periodRows=historyInPeriod(history,facts.from,facts.to,timeZone);
+ const periodActivities=data?.activities.filter(a=>a.localDate>=facts.from&&a.localDate<=facts.to)??[];
+ const empty=facts.movementCount===0&&savedSessions===0&&periodRows.length===0&&periodActivities.length===0;
+ const today=activityDate(timeZone),streak=weekStreak(history,today,timeZone),active=activeBuckets(points);
+ const shares=regionShares(periodRows.filter(row=>row.status==='complete'||row.status==='partial'));
+ // Ring: week with a plan = sessions done vs weekly target; month = weeks with training; no plan = days with training.
+ const ring=monthly?{value:points.length?active/points.length:0,center:`${active}/${points.length}`,caption:r.ringMonth}:hasCurrentPlan?{value:target>0?week.done/target:0,center:`${week.done}/${target}`,caption:r.ringWeek}:{value:active/7,center:`${active}/7`,caption:r.ringDays};
+ const met=!monthly&&hasCurrentPlan&&target>0&&week.left===0;
+ const setText=(s:ReviewHistoryRow['sets'][number])=>[s.reps!==undefined?`${s.reps} ${t.reps}`:undefined,s.loadGrams!=null?`${s.loadGrams/1000} ${t.kg}`:undefined,s.durationSeconds!==undefined?`${s.durationSeconds} ${t.seconds}`:undefined,s.distanceMeters!==undefined?`${s.distanceMeters} ${r.meters}`:undefined].filter(Boolean).join(' · ');
+ const weightGoal=/减脂|体重|weight|fat/i.test(data?.version?.goalText??'');
+ const notes=[discomfort.length>0&&{tone:'warn',text:`${discomfort.map(name).join(' / ')} · ${r.discomfort}`},!empty&&!facts.hasBodyWeight&&{tone:'info',text:r.noWeight},!dietDays&&weightGoal&&{tone:'info',text:r.diet},dietDays>0&&{tone:'info',text:lifestyleCopy[c.locale].dietBoundary.replace('{days}',String(dietDays))}].filter((note):note is {tone:string;text:string}=>!!note);
+ const noPlanActions=!hasCurrentPlan&&<div className="rv-actions"><PrimaryButton tone="quiet" size="sm" onClick={()=>c.navigate('/manual')}>{r.manualTraining}</PrimaryButton><PrimaryButton tone="quiet" size="sm" onClick={c.restartPlanning}>{r.newPlan}</PrimaryButton></div>;
+ return <main className="rv-page">
+ <header className="rv-head"><h1 className="rv-title">{monthly?r.month:r.week}</h1><p className="rv-range v9-num">{shortDate(facts.from)} – {shortDate(facts.to)}</p></header>
+ <SegmentedTabs label={r.period} value={monthly?'month':'week'} onChange={value=>c.setReviewKind(value==='month'?'month':'week')} options={[{value:'week',label:r.weekTab},{value:'month',label:r.monthTab}]}/>
  <c.slots.FeatureCard context="review" motionReduced={false} trainingActive={!!data?.active}>
- <p>{format(monthly?r.monthOpening:r.weekOpening,{count:facts.movementCount})}</p><p>{r.encouragement}</p>
- <p>{progressText}</p>
- <p>{!hasCurrentPlan?r.noPlanNext:suggestion?suggestionText(suggestion):r.continuePlan}</p>
- {!hasCurrentPlan&&<div className="v8-row"><Button onClick={()=>c.navigate('/manual')}>{r.manualTraining}</Button><Button onClick={c.restartPlanning}>{r.newPlan}</Button></div>}
- <div className="v8-facts"><Stat label={t.complete} value={facts.complete}/><Stat label={t.partial} value={facts.partial}/><Stat label={t.movement} value={facts.movementCount}/><Stat label={t.minutes} value={trainingMinutes(facts.trainingSeconds)}/><Stat label={r.activityMinutes} value={facts.activityMinutes}/></div></c.slots.FeatureCard>
- <ReviewChart key={monthly?'month':'week'} title={monthly?r.chartMonth:r.chartWeek} points={points} labels={chartLabels} copy={r}/>
- {savedSessions<PATTERN_MIN_SESSIONS?<section className="rv-patterns"><h2>{r.patterns}</h2><p>{format(r.patternsLater,{count:PATTERN_MIN_SESSIONS})}</p></section>:patternLines.length>0&&<section className="rv-patterns"><h2>{r.patterns}</h2>{patternLines}</section>}
- {!facts.hasBodyWeight&&<p>{r.noWeight}</p>}{!dietDays&&/减脂|体重|weight|fat/i.test(data?.version?.goalText??'')&&<p>{r.diet}</p>}
- {discomfort.length>0&&<p>{discomfort.map(name).join(' / ')} · {r.discomfort}</p>}
+ {empty?<div className="rv-hero rv-empty">
+  <Yaya pose="side" size={120} float={false} alt=""/>
+  <p className="rv-empty-title">{r.chartEmpty}</p>
+  <p className="rv-caption">{r.emptyHint}</p>
+  {hasCurrentPlan?<PrimaryButton size="sm" onClick={()=>c.navigate('/')}>{t.next}</PrimaryButton>:noPlanActions}
+ </div>:<div className="rv-hero">
+  <div className="rv-hero-main">
+   <ProgressRing value={ring.value} size={132} stroke={11} label={progressText}>
+    <span className="rv-ring-value v9-num" aria-hidden="true">{ring.center}</span>
+    <span className="rv-ring-caption" aria-hidden="true">{met?r.ringMet:ring.caption}</span>
+   </ProgressRing>
+   <dl className="rv-legend rv-facts">
+    <div className="rv-legend-row" data-kind="complete"><dt><span className="rv-swatch" aria-hidden="true"/>{r.legendComplete}</dt><dd className="v9-num">{facts.complete}</dd></div>
+    <div className="rv-legend-row" data-kind="partial"><dt><span className="rv-swatch" aria-hidden="true"/>{r.legendPartial}</dt><dd className="v9-num">{facts.partial}</dd></div>
+   </dl>
+  </div>
+  {streak>=2&&<p className="rv-streak"><span className="rv-streak-icon" aria-hidden="true"><AppIcon name="flame" ceramic/></span><span>{format(r.streak,{count:streak})}</span></p>}
+  <p className="rv-yaya-line"><Yaya pose="think" size={36} alt=""/><span>{r.encouragement}</span></p>
+  {noPlanActions}
+ </div>}
+ </c.slots.FeatureCard>
+ {!empty&&<dl className="rv-tiles rv-facts">
+  <FactTile icon="run" label={r.tileMoves} value={facts.movementCount}/>
+  <FactTile icon="clock" label={r.tileMinutes} value={trainingMinutes(facts.trainingSeconds)}/>
+  <FactTile icon="leaf" label={r.tileActivity} value={facts.activityMinutes}/>
+ </dl>}
+ {!empty&&points.some(point=>point.sessions>0)&&<ReviewChart key={monthly?'month':'week'} title={monthly?r.chartMonth:r.chartWeek} points={points} labels={chartLabels} copy={r} current={today}/>}
+ {shares.length>0&&<BodyParts title={r.bodyParts} unit={t.sets} shares={shares} locale={c.locale}/>}
+ {!empty&&(savedSessions<PATTERN_MIN_SESSIONS?<PatternProgress title={r.patterns} saved={savedSessions} needed={PATTERN_MIN_SESSIONS} caption={format(r.patternsLater,{count:PATTERN_MIN_SESSIONS})}/>:patternLines.length>0&&<TimingGrid title={r.patterns} cells={timing} labels={r} description={patternLines.join(' ')}/>)}
+ {notes.length>0&&<ul className="rv-notes">{notes.map(note=><li key={note.text} data-tone={note.tone}><AppIcon name={note.tone==='warn'?'warning':'info'}/><span>{note.text}</span></li>)}</ul>}
  <Toast message={saved?r.versionSaved:null} onDismiss={()=>setSaved(false)}/>
  {suggestion&&!preview&&<Sheet><h2>{r.suggestion}</h2><p>{suggestionText(suggestion)}</p><div className="v8-row"><Button onClick={()=>setPreview({suggestion,revision:data!.metadata.dataRevision,generation:data!.metadata.restoreGeneration??0})}>{r.accept}</Button><Button onClick={()=>void c.run(async()=>{localStorage.setItem(key,JSON.stringify([...stored,suggestion.id]));setDismissed([...dismissed,suggestion.id]);})}>{r.dismiss}</Button></div></Sheet>}
  {preview&&<Sheet><h2>{r.preview}</h2><p>{r.weekTarget}: {preview.suggestion.proposal.weeklyTarget}</p>{preview.suggestion.proposal.templates.map(template=><section key={template.id}><h3>{templateLabel(template,c.locale)} · {template.estimatedMinutes}</h3>{template.items.map((i,index)=><p key={index}>{name(i.exerciseId)} · {itemTarget(i,c.locale)}</p>)}</section>)}<div className="v8-row"><Button variant="primary" disabled={c.busy} onClick={()=>void c.run(async()=>{await createReviewService(repository).adopt(preview.suggestion,preview.revision,preview.generation,suggestionText(preview.suggestion));setPreview(undefined);setSaved(true);})}>{r.accept}</Button><Button onClick={()=>setPreview(undefined)}>{r.cancel}</Button></div></Sheet>}
- {dietDays>0&&<p>{lifestyleCopy[c.locale].dietBoundary.replace('{days}',String(dietDays))}</p>}
- <h2>{r.activity}</h2>{data?.activities.filter(a=>a.localDate>=facts.from&&a.localDate<=facts.to).map(a=><Sheet key={a.id}><p>{a.localDate} · {a.customName||activities.types[a.type]} · {a.minutes} {c.locale==='zh'?'分钟':'min'}</p>{a.note&&<p>{a.note}</p>}</Sheet>)}
- <h2>{t.history}</h2>{historyError&&<p role="alert">{r.historyError}</p>}{historyInPeriod(history,facts.from,facts.to,data?.profile?.timeZone??'Asia/Shanghai').map(w=><Sheet key={w.id}><p>{w.localDate} · {w.sets.length} / {w.plannedSetCount} {t.sets}</p>{w.sets.map((s,i)=><p key={i}>{name(s.exerciseId)} · {[s.reps!==undefined?`${s.reps} ${t.reps}`:undefined,s.loadGrams!=null?`${s.loadGrams/1000} ${t.kg}`:undefined,s.durationSeconds!==undefined?`${s.durationSeconds} ${t.seconds}`:undefined,s.distanceMeters!==undefined?`${s.distanceMeters} ${r.meters}`:undefined].filter(Boolean).join(' · ')}{w.setNotes?.[i]&&<> · {w.setNotes[i]}</>}</p>)}{w.feedback?.note&&<p>{w.feedback.note}</p>}{w.originalNotes&&<p>{w.originalNotes}</p>}{w.appendedNotes?.map((note,i)=><p key={i}>{note.text}</p>)}</Sheet>)}{weightDue&&<aside><Button onClick={()=>{void c.run(async()=>{await bodyProfileService.dismissWeightPrompt();c.navigate('/settings/body')})}}>{bodyCopy[c.locale].review}</Button><Button onClick={()=>void c.run(async()=>{await bodyProfileService.dismissWeightPrompt()})}>{bodyCopy[c.locale].ignore}</Button></aside>}<Button onClick={()=>c.navigate('/')}>{t.next}</Button></main>;
+ {periodActivities.length>0&&<section className="rv-log-section" aria-label={r.activity}><h2 className="rv-section-title v9-body">{r.activity}</h2><ul className="rv-log-list">{periodActivities.map(a=><li key={a.id} className="rv-log v9-card" data-variant="raised" data-padding="sm">
+  <div className="rv-log-head"><span className="rv-date v9-num">{shortDate(a.localDate)}</span><span className="rv-log-name">{a.customName||activities.types[a.type]}</span><span className="rv-log-meta v9-num">{a.minutes} {r.minutesUnit}</span></div>
+  {a.note&&<p className="rv-log-note">{a.note}</p>}</li>)}</ul></section>}
+ {(historyError||periodRows.length>0)&&<section className="rv-log-section" aria-label={t.history}><h2 className="rv-section-title v9-body">{t.history}</h2>{historyError&&<p role="alert">{r.historyError}</p>}<ul className="rv-log-list">{periodRows.map(w=><li key={w.id} className="rv-log v9-card" data-variant="raised" data-padding="sm" data-status={w.status}>
+  <div className="rv-log-head"><span className="rv-date v9-num">{shortDate(activityDate(timeZone,0,new Date(w.startedAt)))}</span><span className="rv-log-meter" aria-hidden="true"><span style={{'--rv-level':w.plannedSetCount?Math.min(1,w.sets.length/w.plannedSetCount):1} as CSSProperties}/></span><span className="rv-log-meta v9-num">{w.sets.length} / {w.plannedSetCount} {t.sets}</span></div>
+  {w.sets.length>0&&<ul className="rv-sets">{groupSets(w.sets.map((s,i)=>({exerciseId:s.exerciseId,text:setText(s),note:w.setNotes?.[i]}))).map((g,i)=><li key={i}><span className="rv-set-name">{name(g.exerciseId)}</span><span className="rv-set-value">{g.text}</span></li>)}</ul>}
+  {w.feedback?.note&&<p className="rv-log-note">{w.feedback.note}</p>}{w.originalNotes&&<p className="rv-log-note">{w.originalNotes}</p>}{w.appendedNotes?.map((note,i)=><p key={i} className="rv-log-note">{note.text}</p>)}</li>)}</ul></section>}
+ {weightDue&&<aside className="rv-actions"><Button onClick={()=>{void c.run(async()=>{await bodyProfileService.dismissWeightPrompt();c.navigate('/settings/body')})}}>{bodyCopy[c.locale].review}</Button><Button onClick={()=>void c.run(async()=>{await bodyProfileService.dismissWeightPrompt()})}>{bodyCopy[c.locale].ignore}</Button></aside>}
+ {!(empty&&hasCurrentPlan)&&<Button onClick={()=>c.navigate('/')}>{t.next}</Button>}</main>;
 }

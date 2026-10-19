@@ -63,5 +63,20 @@
   "progressMet": "Weekly goal {target}: {done} done. Goal reached.",
   "monthProgress": "{done} sessions this month.",
   "monthProgressPartial": "{done} sessions this month, {partial} of them partly done.",
-  "patternsLater": "Patterns appear here after {count} recorded workouts."
+  "patternsLater": "Patterns appear here after {count} recorded workouts.",
+  "period": "Review period",
+  "weekTab": "Week",
+  "monthTab": "Month",
+  "emptyHint": "Finish a workout and your charts appear here.",
+  "ringWeek": "sessions",
+  "ringMonth": "weeks active",
+  "ringDays": "days active",
+  "ringMet": "Goal met",
+  "legendComplete": "Complete",
+  "legendPartial": "Partly done",
+  "streak": "{count}-week streak",
+  "tileMoves": "Times moved",
+  "tileMinutes": "Training min",
+  "tileActivity": "Activity min",
+  "bodyParts": "Body parts trained"
 }
