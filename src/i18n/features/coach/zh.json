@@ -10,8 +10,8 @@
   "apply": "确认应用",
   "cancel": "取消等待",
   "offline": "芽芽暂时连不上，你的记录不受影响",
-  "unavailable": "还没有可调整的计划，可以先制定基础计划。",
-  "qualification": "暂时没有 AI 资格，基础计划和本地训练仍可使用。",
+  "unavailable": "还没有可调整的计划，可以先排一份计划。",
+  "qualification": "暂时没有 AI 资格，排计划和训练都能照常用。",
   "saved": "已保存",
   "thinking": "芽芽在想…",
   "fields": {
@@ -42,7 +42,7 @@
   "yes": "是",
   "no": "否",
   "empty": "无",
-  "localPlan": "使用基础计划",
+  "localPlan": "先排一份计划",
   "localReview": "查看本地回顾",
   "stale": "资料或计划已变化，请重新查看建议。",
   "taskNames": {

@@ -23,7 +23,7 @@
     "I have your question.",
     "We can start with your existing records and plan.",
     "The coach service is unavailable right now.",
-    "You can view the basic plan or open this week’s review."
+    "You can view your current plan or open this week’s review."
   ],
   "noShort": "You can stop for now and record what you actually completed.",
   "example": "You can try {after}."
