@@ -11,7 +11,7 @@
 .v8-start.v9-fire-start { justify-items: start; text-align: start; gap: var(--s2); }
 .v9-fire-kicker { font-size: var(--t2); letter-spacing: .2em; font-weight: 700; color: var(--c-accent-text); }
 .v8-start.v9-fire-start h2 { font-size: calc(var(--t7) + 4px); line-height: 1.08; font-weight: 900; letter-spacing: -0.02em; white-space: pre-line; }
-.v9-fire-meta { font-size: var(--t5); color: var(--c-ink-muted); }
+.v9-fire-meta { font-size: var(--t6); color: var(--c-ink); }
 .v9-btn.v9-fire-go { margin-block-start: var(--s5); min-block-size: var(--s8); font-weight: 900; font-size: calc(var(--t4) + 2px); }
 .v8-ai-line.v9-fire-ai { padding: var(--s3) var(--s4); border-inline-start: 3px solid var(--c-signature); background: var(--card-bg); border-radius: 0 var(--r-panel) var(--r-panel) 0; font-size: var(--t3); font-weight: 700; }
 .v9-fire-set .v8-set-value { font-size: calc(var(--t8) * 1.3); color: var(--c-ink); }

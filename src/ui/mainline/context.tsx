@@ -130,7 +130,8 @@ function useController() {
  const [replanAsk,setReplanAsk]=useState(false);
  const startFresh=()=>{setReplanAsk(false);resetOnboarding();setDraftDiscarded(false);navigate('/onboarding');};
  const restartPlanning=()=>{if(onboardingDirty())setReplanAsk(true);else startFresh();};
- return {resetOnboarding,onboardingDirty,replanAsk,setReplanAsk,startFresh,homeTemplateId,setHomeTemplateId,coachDraft,openCoachWithDraft,refreshCoachContext,restartPlanning,draftDiscarded,setDraftDiscarded,deletedNotice,setDeletedNotice,deletePlan,undoPlan,coachInitialSend,sendHomeCoach,reviewKind,setReviewKind,coachOpen,setCoachOpen,coachRequest,coachRevision,coachTrigger,openCoach,completedWeeks,monthFacts,previousFacts,workoutValues,setWorkoutValues,focusIndex,setFocusIndex,data,facts,answers,setAnswers,step,setStep,candidate,setCandidate,busy,error,locale,t,slots,name,navigate,run,reload,start,startManual,appearance};
+ const setLanguage=(next:'zh'|'en')=>{if(next!==locale)void run(async()=>{await profileService.setLocale(next);await i18n.changeLanguage(next);});};
+ return {setLanguage,resetOnboarding,onboardingDirty,replanAsk,setReplanAsk,startFresh,homeTemplateId,setHomeTemplateId,coachDraft,openCoachWithDraft,refreshCoachContext,restartPlanning,draftDiscarded,setDraftDiscarded,deletedNotice,setDeletedNotice,deletePlan,undoPlan,coachInitialSend,sendHomeCoach,reviewKind,setReviewKind,coachOpen,setCoachOpen,coachRequest,coachRevision,coachTrigger,openCoach,completedWeeks,monthFacts,previousFacts,workoutValues,setWorkoutValues,focusIndex,setFocusIndex,data,facts,answers,setAnswers,step,setStep,candidate,setCandidate,busy,error,locale,t,slots,name,navigate,run,reload,start,startManual,appearance};
 }
 const Context=createContext<ReturnType<typeof useController>|null>(null);
 export const useMainline=()=>{const value=useContext(Context);if(!value)throw new Error('Missing mainline provider');return value;};

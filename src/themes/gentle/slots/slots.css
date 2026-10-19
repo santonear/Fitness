@@ -11,7 +11,7 @@
 .v8-start.v9-gentle-start { gap: var(--s2); padding-block-start: var(--s1); }
 .v9-gentle-kicker { margin-block-start: var(--s3); font-size: var(--t3); color: var(--c-ink-muted); }
 .v8-start.v9-gentle-start h2 { font-weight: 900; font-size: var(--t6); }
-.v8-start.v9-gentle-start .v8-minutes { font-family: var(--f-body); font-size: var(--t3); color: var(--c-ink-muted); }
+.v8-start.v9-gentle-start .v8-minutes { font-family: var(--f-body); font-size: var(--t5); font-weight: var(--w-strong); color: var(--c-ink); }
 .v8-start.v9-gentle-start .v9-btn { margin-block-start: calc(var(--s5) - 2px); font-size: calc(var(--t4) + 2px); }
 .v8-ai-line.v9-gentle-ai { display: flex; align-items: flex-end; gap: var(--s3); }
 .v8-ai-line.v9-gentle-ai > div { padding: var(--s3) var(--s4); border-radius: calc(var(--s5) - 2px) calc(var(--s5) - 2px) calc(var(--s5) - 2px) var(--s1); background: var(--c-surface); box-shadow: var(--el-2); font-size: var(--t3); line-height: 1.6; }

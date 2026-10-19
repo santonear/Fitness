@@ -52,7 +52,7 @@ export function HomePage(){
  const remindersEnabled=useFeature('trainingReminders');
  const location=useLocation(),applied=(location.state as {applied?:boolean}|null)?.applied===true;
  const [preview,setPreview]=useState<{revision:number;versionId:string;templateId:string;value:Awaited<ReturnType<typeof workflow.nextTargetPreview>>}>();
- const {data,facts,t,slots,name,start,navigate,busy,run,locale,restartPlanning,setHomeTemplateId}=useMainline(); const [choice,setChoice]=useState<string>();
+ const {data,facts,t,slots,name,start,navigate,busy,run,locale,restartPlanning,setHomeTemplateId,setLanguage}=useMainline(); const [choice,setChoice]=useState<string>();
  const legacyDates=remindersEnabled&&!!data?.hasFutureLegacyDates;
  const h=homeCopy[locale],pv=planViewCopy[locale],sd=startDateCopy[locale];
  const tools=useExerciseTools('today',{swapBlocked:data?.active?exerciseToolsCopy[locale].blocked:undefined});
@@ -95,7 +95,7 @@ export function HomePage(){
  const correctTimes=async(workout:{id:string},startedAt:string,endedAt:string)=>{let saved=false;await run(async()=>{if(!data)return;await workflow.correctWorkoutTimes({workoutId:workout.id,startedAt,endedAt,expectedRevision:data.metadata.dataRevision});saved=true;});return saved;};
  const strip=weekdays.map((day,index)=>{const pickedId=picked?sessionForDate(version!,weekDates[index]):undefined;const planned=picked?(pickedId?{day,templateId:pickedId}:undefined):beforeStart(index)?undefined:schedule.sessions.find(session=>session.day===day);return {key:day,label:weekdayLabel(day,locale,true),state:doneDays[day]??(planned?'planned':'rest'),today:index===todayIndex,description:`${weekdayLabel(day,locale)} · ${doneDays[day]==='done'?pv.done:doneDays[day]==='partial'?pv.partial:planned?shown(templates.find(item=>item.id===planned.templateId)):pv.rest}`} as const;});
  return <main className="v9-home">
- <header className="v9-home-head"><div><span className="v9-home-date">{dateText}</span><h1 className="v9-display">{h.title}</h1></div><div className="v9-home-head-side"><ThemeButton locale={locale}/><span className="v9-num v9-home-day" aria-hidden="true">{localDay(timeZone,now).slice(8)}</span></div></header>
+ <header className="v9-home-head"><div><span className="v9-home-date">{dateText}</span><h1 className="v9-display">{h.title}</h1></div><div className="v9-home-head-side"><ThemeButton locale={locale} language={{onChange:setLanguage,busy}}/><span className="v9-num v9-home-day" aria-hidden="true">{localDay(timeZone,now).slice(8)}</span></div></header>
  {applied&&version&&<Card variant="raised" padding="md" className="v9-home-applied" role="status"><Yaya pose="cheer" size={52} alt=""/><p>{h.applied}</p></Card>}
  <PelvicFloorDailyNotice/><CardiacClearancePanel/><PostpartumSafetyPanel/><PregnancySafetyControls/><PendingPainReview/>
  {data?.state?.trainingPause&&<p role="status">{engineCopy('redflag.copy.paused_banner',locale)}</p>}

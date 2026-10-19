@@ -13,9 +13,9 @@
 .v9-vivid-spaced { font-size: var(--t1); letter-spacing: .32em; font-weight: 500; color: var(--hero-muted); }
 .v9-vivid-rule { display: block; inline-size: calc(var(--s6) + var(--s1)); block-size: 1px; background: var(--c-ink-muted); opacity: .45; }
 .v8-start.v9-vivid-start h2 { font-size: calc(var(--t6) + 2px); font-weight: 700; white-space: pre-line; }
-.v9-vivid-stat { display: grid; justify-items: center; gap: 2px; font-size: var(--t1); color: var(--hero-muted); }
+.v9-vivid-stat { display: grid; justify-items: center; gap: 2px; font-size: var(--t3); font-weight: var(--w-strong); color: var(--c-ink-muted); }
 .v9-vivid-stat b, .v9-vivid-set .v8-set-value, .v9-vivid-rest time { font-family: var(--f-num); font-style: italic; font-weight: 600; letter-spacing: -0.02em; }
-.v9-vivid-stat b { font-size: var(--s6); line-height: 1; color: var(--c-ink); }
+.v9-vivid-stat b { font-size: var(--t7); line-height: 1; color: var(--c-ink); }
 .v8-start .v9-btn.v9-vivid-hero-start { color: var(--c-accent-text); font-weight: 700; letter-spacing: var(--tr-button); }
 .v8-ai-line.v9-vivid-ai { display: flex; align-items: center; gap: var(--s4); padding: calc(var(--s4) + 2px) var(--s5) calc(var(--s4) + 2px) var(--s3); border-radius: var(--r-panel); background: var(--grain-card), var(--c-ai-panel); color: var(--c-ink); border: var(--bw) solid var(--card-border); box-shadow: var(--card-shadow); font-size: var(--t4); line-height: 1.55; font-weight: 500; }
 .v9-vivid-set .v8-set-value { font-size: calc(var(--t8) * .8); color: var(--c-accent-text); }
