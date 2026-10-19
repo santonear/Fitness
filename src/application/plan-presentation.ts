@@ -79,6 +79,18 @@ const letters = 'ABCDEFG';
 /** Real session names ("全身 A", "下肢", "有氧") derived from content; repeated kinds get A/B/C. */
 /** Engine/basic placeholder names ("训练", "Training", "30 分钟"); anything else is a real name and is kept verbatim. */
 export const genericSessionName = (name: string) => /^\s*(?:训练|训练单|训练\s*\d+|training|workout|session|\d+\s*(?:分钟|min(?:utes)?))\s*$/i.test(name);
+/**
+ * Names the app itself wrote ("全身 A", "Lower body") follow the current language; a name is only
+ * treated this way when it is exactly a kind name with an optional letter, so the user's own names stay verbatim.
+ */
+export function presetSessionName(name: string, locale: 'zh' | 'en'): string | undefined {
+  const match = name.trim().match(/^(.+?)(?:\s+([A-G]))?$/);
+  if (!match) return undefined;
+  const kind = (Object.keys(kindNames) as SessionKind[]).find(key => kindNames[key].some(label => label.toLowerCase() === match[1].toLowerCase()));
+  if (!kind) return undefined;
+  const label = kindNames[kind][locale === 'zh' ? 0 : 1];
+  return match[2] ? `${label} ${match[2]}` : label;
+}
 export function sessionNames(templates: readonly (Pick<SessionTemplate, 'id' | 'items'> & { name?: string })[], locale: 'zh' | 'en'): Map<string, string> {
   const kinds = templates.map(template => sessionKind(template));
   const totals = new Map<SessionKind, number>(), seen = new Map<SessionKind, number>();
@@ -86,7 +98,7 @@ export function sessionNames(templates: readonly (Pick<SessionTemplate, 'id' | '
   return new Map(templates.map((template, index) => {
     const kind = kinds[index], name = kindNames[kind][locale === 'zh' ? 0 : 1];
     const order = seen.get(kind) ?? 0; seen.set(kind, order + 1);
-    if (template.name && !genericSessionName(template.name)) return [template.id, template.name];
+    if (template.name && !genericSessionName(template.name)) return [template.id, presetSessionName(template.name, locale) ?? template.name];
     return [template.id, (totals.get(kind) ?? 0) > 1 ? `${name} ${letters[order] ?? order + 1}` : name];
   }));
 }

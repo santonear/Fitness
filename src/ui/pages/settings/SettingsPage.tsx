@@ -1,3 +1,4 @@
+import {answerText} from '../../../application/preset-text';
 import {AssistantPreferencesPanel} from './AssistantPreferencesPanel';
 import {AccessStatusCard} from '../../components/AccessStatusCard';
 import { DeletedPlans } from './DeletedPlans';
@@ -48,7 +49,7 @@ export function SettingsPage(){const bodyEnabled=useFeature('bodyProfile');const
  <section className="v9-settings-group v9-settings-me" aria-label={me.me}><h2>{me.me}</h2>
   <Card variant="raised" padding="md" as="section" className="v9-settings-profile" aria-label={me.profile}>
    <Yaya pose="thanks" size={64} alt=""/>
-   <div className="v9-settings-profile-text"><span>{me.goal}</span><strong>{version?.goalText||me.noPlan}</strong>{version&&<span>{me.summary.replace('{weekly}',String(version.weeklyTarget)).replace('{minutes}',String(version.sessionMinutes))}</span>}<span className="v9-settings-thanks">{me.thanks}</span></div>
+   <div className="v9-settings-profile-text"><span>{me.goal}</span><strong>{version?.goalText?answerText(version.goalText,locale):me.noPlan}</strong>{version&&<span>{me.summary.replace('{weekly}',String(version.weeklyTarget)).replace('{minutes}',String(version.sessionMinutes))}</span>}<span className="v9-settings-thanks">{me.thanks}</span></div>
    <div className="v9-settings-profile-actions">{version&&<PrimaryButton tone="text" size="sm" onClick={()=>navigate('/plans')}>{me.goalPlan}</PrimaryButton>}<PrimaryButton tone="quiet" size="sm" onClick={restartPlanning}>{copy.settingsPage3}</PrimaryButton></div>
   </Card>
   <MyChangesCard/>

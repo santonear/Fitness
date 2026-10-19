@@ -31,8 +31,8 @@ import zh from '../../i18n/features/coach/zh.json';
 import en from '../../i18n/features/coach/en.json';
 function readable(value:unknown,copy:typeof zh,locale:'zh'|'en'):string{
  if(value===true)return copy.yes;if(value===false)return copy.no;if(value===null||value===undefined)return copy.empty;
- if(Array.isArray(value))return value.length?value.map(v=>readable(v,copy,locale)).join('；'):copy.empty;
- if(typeof value==='object')return Object.entries(value).filter(([key,v])=>(key!=='loadGrams'||(typeof v==='number'&&v>0))&&!['id','metricType','requestId','conversationId','planVersionId','workoutId','restoreGeneration','inputSnapshot','planId','versionId','templateId','basedOnVersionId','revision'].includes(key)).map(([key,v])=>`${copy.detailLabels[key as keyof typeof copy.detailLabels]??copy.fields[key as keyof typeof copy.fields]??''}${key in copy.detailLabels||key in copy.fields?'：':''}${readable(key==='loadGrams'&&typeof v==='number'?v/1000:v,copy,locale)}`).join('；');
+ if(Array.isArray(value))return value.length?value.map(v=>readable(v,copy,locale)).join(locale==='zh'?'；':'; '):copy.empty;
+ if(typeof value==='object')return Object.entries(value).filter(([key,v])=>(key!=='loadGrams'||(typeof v==='number'&&v>0))&&!['id','metricType','requestId','conversationId','planVersionId','workoutId','restoreGeneration','inputSnapshot','planId','versionId','templateId','basedOnVersionId','revision'].includes(key)).map(([key,v])=>`${copy.detailLabels[key as keyof typeof copy.detailLabels]??copy.fields[key as keyof typeof copy.fields]??''}${key in copy.detailLabels||key in copy.fields?(locale==='zh'?'：':': '):''}${readable(key==='loadGrams'&&typeof v==='number'?v/1000:v,copy,locale)}`).join('；');
  if(typeof value==='string'&&(EQUIPMENT as readonly string[]).includes(value))return equipmentLabel(value,locale);
  if(typeof value==='string')return exercises.find(e=>e.id===value)?.name[locale]??copy.values[value as keyof typeof copy.values]??value;
  return String(value);

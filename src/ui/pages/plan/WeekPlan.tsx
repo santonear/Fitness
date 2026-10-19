@@ -85,7 +85,7 @@ export function WeekPlan({ plan, locale, today, done = {}, focusId, details, sta
         <span className="v9-num v9-session-minutes">{template.estimatedMinutes}<small>′</small></span>
       </>;
       return <li key={`${session.date || session.day}-${template.id}`} className="v9-session" data-focus={focus ? 'true' : 'false'} data-date={session.date || undefined}>
-        {details ? <details><summary aria-label={`${dayName(entry)} ${view.name(template)} · ${fill(t.minutes, { count: template.estimatedMinutes })}${parts.length ? ` · ${parts.join('、')}` : ''}`}>{head}</summary><div className="v9-session-details">{details(template)}</div></details> : <div className="v9-session-row">{head}</div>}
+        {details ? <details><summary aria-label={`${dayName(entry)} ${view.name(template)} · ${fill(t.minutes, { count: template.estimatedMinutes })}${parts.length ? ` · ${parts.join(locale === 'zh' ? '、' : ', ')}` : ''}`}>{head}</summary><div className="v9-session-details">{details(template)}</div></details> : <div className="v9-session-row">{head}</div>}
       </li>;
     })}</ol>
   </section>;
