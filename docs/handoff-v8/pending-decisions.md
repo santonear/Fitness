@@ -551,3 +551,10 @@ Bo 已定版 V9 设计并授权推进；计时规则按 Bo 当日决定改写（
 - 理由：只在令牌里区分主题，页面只读变量；星星是图形，中英文一致。
 - 涉及文件：docs/handoff-v8/02-design-tokens.json、src/themes/{token-css,contract}.ts、src/themes/*/tokens.css、src/ui/pages/plan/week-plan.css、src/ui/components/training-calendar.css、tests/unit/v9-calendar-contrast.test.ts、规范 V9.13。
 - 待 Bo 确认：今天页本周条是否也换成同款星星与短条。
+
+## 2026-10-20 · 新增动作配图按自阻力划船风格重做（V9.0.11）
+
+- 情况：Bo 认为 41 个原创补充动作的几何平面配图太丑，要求完全按“自阻力划船”配图的风格与人物重新生成，设计好后先评审。
+- 决定：66 张全部用图像生成按同一人物与画风重画（参考图仅为 Fitness 自己生成的自阻力划船图），文件名、512×512 WebP、署名“Fitness 原创示意图”不变；Bo 评审后批准提交、PR 与公网发布。
+- 理由：与已有写实人物配图一致；不使用任何 RepDB 图片作参考，符合其许可。
+- 涉及文件：public/exercise-media/fitness/*.webp、src/catalog/custom-exercise-media.json、tools/catalog/fitness-illustrations-v2/、public/media/NOTICE.md、规范 V9.0.11。
