@@ -8,6 +8,14 @@ const cjk = /[\u3400-\u9fff\uf900-\ufaff\u3000-\u303f\uff00-\uffef]/;
 const typedGoal = '我想试试';
 const allowed = [typedGoal, '中文'];
 
+/** WebKit occasionally reports "internal error" on a navigation while the previous page is still busy; retry that one case. */
+async function goto(page: Page, path: string) {
+  try { await page.goto(path); } catch (error) {
+    if (!String(error).includes('WebKit encountered an internal error')) throw error;
+    await page.goto(path);
+  }
+}
+
 async function leaks(page: Page) {
   return page.evaluate(([pattern, allow]) => {
     const re = new RegExp(pattern as string), list = allow as string[];
@@ -39,7 +47,7 @@ test('English UI shows no Chinese across the main flow', async ({ page }) => {
   await page.route('**/api/v1/assistant/**', route => route.abort());
   await page.addInitScript(() => { if (!localStorage.getItem('fitness.language')) localStorage.setItem('fitness.language', 'en'); });
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('/');
+  await goto(page, '/');
   await expect(page).toHaveURL(/onboarding/, { timeout: 20000 });
   await check(page, 'welcome');
   await page.getByRole('button', { name: 'Start', exact: true }).click();
@@ -123,9 +131,9 @@ async function walkEnglish(page: Page, tag: string) {
   await check(page, `${tag} plan month`);
   for (const day of (await page.locator('main [data-date]').all()).slice(0, 12)) { await day.click().catch(() => undefined); }
   await check(page, `${tag} plan month days`);
-  await page.goto('/plans/versions');
+  await goto(page, '/plans/versions');
   await check(page, `${tag} plan versions`);
-  await page.goto('/');
+  await goto(page, '/');
   await nav(page, 'Review');
   await check(page, `${tag} review`);
   await nav(page, 'Me');
@@ -142,14 +150,14 @@ async function walkEnglish(page: Page, tag: string) {
     await page.goBack();
     await expect(page.getByRole('heading', { name: 'Me', exact: true })).toBeVisible();
   }
-  for (const path of ['/activity', '/manual', '/trial']) { await page.goto(path); await check(page, `${tag} ${path}`); }
-  await page.goto('/exercises');
+  for (const path of ['/activity', '/manual', '/trial']) { await goto(page, path); await check(page, `${tag} ${path}`); }
+  await goto(page, '/exercises');
   await check(page, `${tag} exercise library`);
   await page.locator('.manual-pick').first().click();
   await expect(page.getByRole('dialog')).toBeVisible();
   await check(page, `${tag} exercise guide`);
   await page.keyboard.press('Escape');
-  await page.goto('/');
+  await goto(page, '/');
 }
 
 async function workout(page: Page, tag: string) {
