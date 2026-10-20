@@ -1,7 +1,7 @@
 {
  "provenance": "fitness-original",
  "notice": "/media/NOTICE.md",
- "generator": "tools/catalog/fitness-illustrations",
+ "generator": "tools/catalog/fitness-illustrations-v2",
  "professionalReview": "not-reviewed",
  "exercises": {
   "custom-backpack-suitcase-walk": {
