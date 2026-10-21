@@ -1,3 +1,4 @@
+import type { WeeklyBudget } from "../domain/plan-upgrade";
 import { replacementCandidateIds } from "./engine-replacement-candidates";
 import { runGates } from "../engine/gates";
 import { checkHard } from "../engine/hard-checks";
@@ -87,6 +88,9 @@ export type LocalCandidate = Extract<
   startTime?: string;
 };
 /** Calendar days and time carried unchanged into every later version of the same plan. */
+// The optional weekly budget (V9.14) follows the plan into every new version, like the picked days.
+const carriedBudget = (version: { weeklyBudget?: WeeklyBudget }) =>
+  version.weeklyBudget ? { weeklyBudget: { ...version.weeklyBudget } } : {};
 const carriedSchedule = (version: { startDate?: string; trainingDates?: string[]; startTime?: string }) => ({
   ...(version.startDate ? { startDate: version.startDate } : {}),
   ...(version.trainingDates?.length ? { trainingDates: [...version.trainingDates] } : {}),
@@ -366,6 +370,7 @@ export function createV8Workflow(repo: Repository) {
           changeSummary: [],
           enginePlan: generated.plan,
           ...carriedSchedule(version),
+          ...carriedBudget(version),
         });
         await db.v8PlanVersions.add(nextVersion);
         await db.v8Plans.put({ ...plan, currentVersionId: nextVersion.id });
@@ -1303,6 +1308,7 @@ export function createV8Workflow(repo: Repository) {
         ...(acceptedEnginePlan ? { enginePlan: acceptedEnginePlan } : {}),
         // Picked calendar days stay unless the user explicitly asked to change days in this conversation.
         ...scheduleAfterProposal(carriedSchedule(version), request, version, proposal),
+        ...carriedBudget(version),
         changeSummary:
           response.type === "change_proposal"
             ? response.changes
