@@ -147,3 +147,52 @@ export interface BodyChangeEvent {
  * - body sex/height/weight/waist and weight history reuse body-profile and `bodyWeights` unchanged.
  */
 export const PLAN_UPGRADE_DATABASE_VERSION = 21;
+
+// ---- Frozen signatures between lines (implemented by the owning line; stubs return neutral values) ----
+
+/** Component line: src/ui/components/kit/AnatomyMap.tsx */
+export interface AnatomyMapProps {
+  width: number;
+  primary: readonly MuscleGroup[];
+  secondary: readonly MuscleGroup[];
+  shape?: FigureShape;
+  /** Numbered badges with leader lines (the "今天练这里" page); off for small panels. */
+  labels?: boolean;
+  /** Previous weight drawn as a dashed outline (我的山路). */
+  ghostWeightKg?: number;
+}
+
+/** Component line: src/ui/components/kit/HomePanel.tsx */
+export interface HomePanelProps {
+  style: HomePanelStyle;
+  minutes: NowMinutes;
+  onMinutes: (minutes: NowMinutes) => void;
+  onStart: () => void;
+  focus: SessionMuscleFocus;
+  weekLoads: readonly MuscleLoad[];
+  weekDone: number;
+  weekTarget: number;
+  shape?: FigureShape;
+  coachLine?: string;
+}
+
+/** Component line: src/ui/components/kit/JourneyTrail.tsx */
+export interface JourneyStop { label: string; state: 'done' | 'now' | 'next' }
+export interface JourneyTrailProps { stops: readonly JourneyStop[] }
+
+/** Rules line: src/application/rules/plan-upgrade.ts */
+export interface SetEntry { exerciseId: string; completedSets: number }
+export interface LiftEntry { exerciseId: string; localDate: string; weightKg: number; reps: number }
+export interface PersonalRecord { exerciseId: string; e1rmKg: number; localDate: string }
+export interface NowSessionContext { weekLoads: readonly MuscleLoad[]; usedMinutesThisWeek: number; budget?: WeeklyBudget; planId?: string }
+export interface NowSession { exerciseIds: string[]; minutes: number; focus: SessionMuscleFocus }
+export interface BodyAgeResult { years: number; items: number; estimated: true }
+export interface BodyChangeInput {
+  route?: Route;
+  heightCm?: number;
+  weights: readonly { localDate: string; weightKg: number }[];
+  records: readonly PersonalRecord[];
+  tests: readonly FitnessTestRecord[];
+  lastSpokenByKind: Partial<Record<BodyChangeKind, string>>;
+  today: string;
+}
