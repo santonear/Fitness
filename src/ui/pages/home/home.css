@@ -40,3 +40,4 @@
 .v9-home .v9-home-items-title { margin: 0; font-size: var(--t3); font-weight: var(--w-strong); }
 .v9-home-head-side { display: flex; flex-direction: column; align-items: flex-end; gap: var(--s2); }
 .v9-home-items .v9-item-actions { display: flex; flex-wrap: wrap; gap: var(--s2); padding-block-start: var(--s2); }
+.v9-home-now { display: grid; gap: var(--s3); }

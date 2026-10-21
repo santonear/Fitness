@@ -24,6 +24,7 @@ import { Card, PrimaryButton, Yaya } from '../../components/kit';
 import { FeedbackPanel } from './FeedbackPanel';
 import { feedbackCopy } from '../../../i18n/features/settings/feedback';
 import { MyChangesCard } from './MyChangesPage';
+import { PlanDisplaySettings } from './PlanDisplaySettings';
 import './settings.css';
 
 type Section = '' | 'reminders' | 'backup' | 'privacy' | 'assistantPreferences' | 'deletedPlans' | 'feedback';
@@ -65,6 +66,7 @@ export function SettingsPage(){const bodyEnabled=useFeature('bodyProfile');const
  <Group title={me.training}>
   {remindersEnabled&&<Row label={copy.settingsPage0} expanded={section==='reminders'} onClick={()=>toggle('reminders')}><ReminderSettings locale={locale}/></Row>}
   {importEnabled&&<Row label={lifestyleCopy[locale].importActivity} onClick={()=>navigate('/settings/import')}/>}
+  <PlanDisplaySettings locale={locale}/>
   <li><label className="v9-row v9-row-check"><span>{copy.timerSound}</span><input type="checkbox" checked={timerSound} onChange={event=>{const value=event.target.checked;try{localStorage.setItem(timerSoundKey,value?'on':'off');setTimerSound(value);}catch{/* Keep the saved preference unchanged. */}}}/></label></li>
   <li><label className="v9-row v9-row-check"><span>{copy.restVibration}{!vibrationSupported&&<small>{copy.vibrationUnavailable}</small>}</span><input type="checkbox" checked={vibration} disabled={!vibrationSupported} onChange={event=>{const value=event.target.checked;try{localStorage.setItem(restVibrationKey,value?'on':'off');setVibration(value);}catch{/* Keep the saved preference unchanged. */}}}/></label></li>
  </Group>
