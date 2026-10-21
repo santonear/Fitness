@@ -1,45 +1,102 @@
 import { useEffect, useMemo, useState } from 'react';
-import { HomePanel } from '../../components/kit';
+import { Card, ChoiceChip, HomePanel, PrimaryButton } from '../../components/kit';
 import { DEFAULT_HOME_PANEL_STYLE, NOW_MINUTES, type BudgetRequest, type HomePanelStyle, type NowMinutes, type NowSession } from '../../../domain/plan-upgrade';
 import { buildNowSession, sessionMuscleFocus, weeklyMuscleLoad } from '../../../application/rules/plan-upgrade';
 import { homePanelStyle } from '../../../persistence/plan-upgrade-store';
+import { coachReminderService } from '../../../application/coach-reminders';
 import type { SessionTemplate, WorkoutRecord } from '../../../domain/v8/contracts';
-import { figureSex, figureShape, nowCoachLine, usedMinutes, weekSetEntries } from '../plan-upgrade/logic';
-import { lastFigureSex, outlineShown } from '../plan-upgrade/prefs';
+import { yayaV5 } from '../../../i18n/features/coach/yaya-v5';
+import { planPagesCopy } from '../../../i18n/features/plan-upgrade/pages';
+import { figureSex, figureShape, nowCoachLine, remindersUnused, returnLine, usedMinutes, weekSetEntries } from '../plan-upgrade/logic';
+import { intention, lastFigureSex, outlineShown, setIntention } from '../plan-upgrade/prefs';
 import { useMainline } from '../../mainline/context';
+import { useFeature } from '../../useFeature';
 
 const nearest = (minutes: number | undefined): NowMinutes => NOW_MINUTES.reduce((best, value) => Math.abs(value - (minutes ?? 30)) < Math.abs(best - (minutes ?? 30)) ? value : best, NOW_MINUTES[0]);
+type Variant = NonNullable<BudgetRequest['variant']>;
+type Scene = NonNullable<BudgetRequest['scene']>;
+const VARIANTS: readonly Variant[] = ['standard', 'tired', 'no-equipment'];
+const SCENES: readonly Scene[] = ['commute', 'office', 'bedtime'];
 
 /** What 今天 hands to 今天练这里: either a rules-built session or the suggested plan session. */
 export interface FocusState { exerciseIds: string[]; minutes: number; templateId?: string }
 
-/** Rules-built session for the chosen minutes; falls back to the suggested plan session when the rules give none. */
-export function useNowSession(request: BudgetRequest, template: SessionTemplate | undefined, workouts: readonly WorkoutRecord[], weekDates: readonly string[], planId?: string) {
-  const weekLoads = useMemo(() => weeklyMuscleLoad(weekSetEntries(workouts, weekDates)), [workouts, weekDates]);
-  const built = useMemo(() => buildNowSession(request, { weekLoads, usedMinutesThisWeek: usedMinutes(workouts, weekDates), ...(planId ? { planId } : {}) }),
-    [request.minutes, request.variant, request.scene, weekLoads, workouts, weekDates, planId]);
+/** Rules-built session for the chosen minutes, drawn from the plan's (already safety-filtered) exercises; falls back to the suggested plan session. */
+export function useNowSession(request: BudgetRequest, template: SessionTemplate | undefined, workouts: readonly WorkoutRecord[], weekDates: readonly string[], options: { planId?: string; candidateIds?: readonly string[]; avoidJoints?: readonly ('knee' | 'back' | 'shoulder' | 'wrist')[] }) {
+  const weekLoads = useMemo(() => weeklyMuscleLoad(weekSetEntries(workouts, weekDates)), [workouts, weekDates.join()]);
+  const candidates = options.candidateIds?.join(), joints = options.avoidJoints?.join();
+  const built = useMemo(() => buildNowSession(request, {
+    weekLoads, usedMinutesThisWeek: usedMinutes(workouts, weekDates),
+    ...(options.planId ? { planId: options.planId } : {}), ...(options.candidateIds ? { candidateIds: options.candidateIds } : {}), ...(options.avoidJoints?.length ? { avoidJoints: options.avoidJoints } : {}),
+  }), [request.minutes, request.variant, request.scene, weekLoads, workouts, weekDates.join(), options.planId, candidates, joints]);
   const session: (NowSession & { templateId?: string }) | undefined = useMemo(() => {
     if (built?.exerciseIds.length) return built;
-    if (!template) return undefined;
+    if (!template || request.scene) return undefined;
     const ids = [...new Set(template.items.map(item => item.exerciseId))];
     return { exerciseIds: ids, minutes: template.estimatedMinutes, focus: sessionMuscleFocus(ids), templateId: template.id };
-  }, [built, template]);
+  }, [built, template, request.scene]);
   return { session, weekLoads };
 }
 
-/** 今天's single main action: how much time now, then start (UIUX20261008 V9.14). */
-export function NowPanel({ template, weekDates, blocked, onStart }: { template?: SessionTemplate; weekDates: readonly string[]; blocked: boolean; onStart: (state: FocusState) => void }) {
-  const { data, facts, locale } = useMainline();
+/** 今天's single main action: how much time now, then start (UIUX20261008 V9.14), with the M2 extras around it. */
+export function NowPanel({ template, weekDates, blocked, today, onStart }: { template?: SessionTemplate; weekDates: readonly string[]; blocked: boolean; today: string; onStart: (state: FocusState) => void }) {
+  const { data, facts, locale, navigate } = useMainline();
+  const remindersEnabled = useFeature('trainingReminders');
+  const c = planPagesCopy[locale], y = yayaV5[locale];
   const [style, setStyle] = useState<HomePanelStyle>(DEFAULT_HOME_PANEL_STYLE);
   const [minutes, setMinutes] = useState<NowMinutes>(() => nearest(template?.estimatedMinutes));
+  const [variant, setVariant] = useState<Variant>('standard');
+  const [scene, setScene] = useState<Scene>();
+  const [plan, setPlan] = useState(intention);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState('');
+  const [returnClosed, setReturnClosed] = useState(false);
+  const [reminderAsk, setReminderAsk] = useState(false);
   useEffect(() => { let alive = true; void homePanelStyle().then(value => { if (alive) setStyle(value); }).catch(() => undefined); return () => { alive = false; }; }, []);
-  const request = useMemo<BudgetRequest>(() => ({ minutes }), [minutes]);
-  const { session, weekLoads } = useNowSession(request, template, data?.workouts ?? [], weekDates, data?.plan?.id);
+  // v5 §15: only when the person turned reminders on themselves.
+  useEffect(() => {
+    if (!remindersEnabled) return;
+    let alive = true;
+    void coachReminderService.preferences().then(ledger => { if (alive) setReminderAsk(remindersUnused(ledger.preferences.enabled, ledger.records)); }).catch(() => undefined);
+    return () => { alive = false; };
+  }, [remindersEnabled]);
+  const request = useMemo<BudgetRequest>(() => scene ? { minutes: 5, scene } : { minutes, ...(variant !== 'standard' ? { variant } : {}) }, [minutes, variant, scene]);
+  const candidateIds = useMemo(() => [...new Set((data?.version?.templates ?? []).flatMap(item => item.items.map(row => row.exerciseId)))], [data?.version?.id]);
+  const avoidJoints = (data?.state?.coachProfile?.cautions ?? []).filter((joint): joint is 'knee' | 'back' | 'shoulder' | 'wrist' => joint !== 'other');
+  const { session, weekLoads } = useNowSession(request, template, data?.workouts ?? [], weekDates, { ...(data?.plan?.id ? { planId: data.plan.id } : {}), ...(candidateIds.length ? { candidateIds } : {}), avoidJoints });
   const values = data?.profile?.bodyDetails?.values;
   const shape = outlineShown() ? figureShape(values, figureSex(values?.biologicalSex, lastFigureSex())) : undefined;
   const focus = session?.focus ?? { primary: [], secondary: [], byExercise: {} };
-  return <HomePanel style={style} minutes={minutes} onMinutes={setMinutes} focus={focus} weekLoads={weekLoads}
-    weekDone={facts?.complete ?? 0} weekTarget={data?.version?.weeklyTarget ?? 0} {...(shape ? { shape } : {})}
-    coachLine={nowCoachLine(minutes, session?.exerciseIds.length ?? 0, weekLoads, locale)}
-    onStart={() => { if (!blocked && session) onStart({ exerciseIds: session.exerciseIds, minutes: session.templateId ? session.minutes : minutes, ...(session.templateId ? { templateId: session.templateId } : {}) }); }}/>;
+  const welcome = returnClosed ? undefined : returnLine(data?.workouts ?? [], today);
+  const start = () => { if (!blocked && session) onStart({ exerciseIds: session.exerciseIds, minutes: session.templateId ? session.minutes : request.minutes, ...(session.templateId ? { templateId: session.templateId } : {}) }); };
+  const coachLine = scene ? (scene === 'commute' ? y.fragmentStairs : y.fragmentHonest) : variant !== 'standard' ? y.bPlan : nowCoachLine(minutes, session?.exerciseIds.length ?? 0, weekLoads, locale);
+  return <>
+    {welcome && <Card variant="raised" padding="md" as="section" className="v9-home-panel" role="status">
+      <p>{y[welcome]}</p>
+      <div className="v9-home-row">
+        <PrimaryButton size="sm" onClick={() => { setVariant('tired'); setScene(undefined); setMinutes(15); setReturnClosed(true); }}>{welcome === 'returnHello' ? y.returnHelloGo : y.returnEasyGo}</PrimaryButton>
+        <PrimaryButton tone="quiet" size="sm" onClick={() => setReturnClosed(true)}>{welcome === 'returnHello' ? y.returnHelloLater : y.returnEasyFull}</PrimaryButton>
+      </div>
+    </Card>}
+    {plan && !editing && <p className="v9-home-reason">{c.intentionLabel} · {plan} <PrimaryButton tone="text" size="sm" onClick={() => { setDraft(plan); setEditing(true); }}>{c.intentionEdit}</PrimaryButton></p>}
+    <HomePanel style={style} locale={locale} minutes={scene ? 5 : minutes} onMinutes={value => { setScene(undefined); setMinutes(value); }} focus={focus} weekLoads={weekLoads}
+      weekDone={facts?.complete ?? 0} weekTarget={data?.version?.weeklyTarget ?? 0} {...(shape ? { shape } : {})} coachLine={coachLine} onStart={start}/>
+    <div className="v9-home-row" role="group" aria-label={c.variantLabel}>
+      {VARIANTS.map(value => <ChoiceChip key={value} size="sm" selected={!scene && variant === value} onClick={() => { setScene(undefined); setVariant(value); }}>{c.variant[value]}</ChoiceChip>)}
+    </div>
+    <div className="v9-home-row" role="group" aria-label={c.sceneLabel}>
+      {SCENES.map(value => <ChoiceChip key={value} size="sm" selected={scene === value} onClick={() => setScene(scene === value ? undefined : value)}>{c.scene[value]}</ChoiceChip>)}
+    </div>
+    {(!plan || editing) && <Card variant="raised" padding="md" as="section" className="v9-home-panel">
+      <label className="v9-home-intention"><span>{y.intentionAsk}</span><input value={draft} maxLength={80} placeholder={c.intentionPlaceholder} onChange={event => setDraft(event.target.value)}/></label>
+      <PrimaryButton tone="quiet" size="sm" disabled={!draft.trim()} onClick={() => { if (setIntention(draft)) { setPlan(draft.trim().slice(0, 80)); setEditing(false); } }}>{c.intentionSave}</PrimaryButton>
+    </Card>}
+    {reminderAsk && <Card variant="raised" padding="md" as="section" className="v9-home-panel">
+      <p>{y.reminderUnused}</p>
+      <div className="v9-home-row">
+        <PrimaryButton tone="quiet" size="sm" onClick={() => navigate('/settings#reminders')}>{y.reminderMove}</PrimaryButton>
+        <PrimaryButton tone="quiet" size="sm" onClick={() => void coachReminderService.preferences().then(ledger => coachReminderService.preferences({ ...ledger.preferences, enabled: false })).then(() => setReminderAsk(false)).catch(() => undefined)}>{y.reminderOff}</PrimaryButton>
+      </div>
+    </Card>}
+  </>;
 }

@@ -55,12 +55,12 @@ export function JourneyPage() {
     <header className="pu-head"><h1 className="v9-display">{c.journeyTitle}</h1></header>
     {outlineShown() && <>
       <div className="pu-map" ref={mapRef}>
-        <AnatomyMap width={width} primary={[]} secondary={[]} shape={shape} {...(ghost ? { ghostWeightKg: kg(ghost.weightGrams) } : {})}/>
+        <AnatomyMap locale={locale} width={width} primary={[]} secondary={[]} shape={shape} {...(ghost ? { ghostWeightKg: kg(ghost.weightGrams) } : {})}/>
       </div>
       {ghost && <div className="pu-legend" aria-hidden="true"><span><i className="pu-dot"/>{c.now}</span><span><i className="pu-dot" data-role="ghost"/>{fillLine(c.before, { month: monthLabel(ghost.localDate, locale) })}</span></div>}
     </>}
     {loaded && !journey ? <MeetFlow locale={locale} busy={busy} postpartumChecked={data?.state?.coachProfile?.population?.kind === 'postpartum'} onCheck={() => navigate('/settings/engine')} onSaved={() => void reload()}/>
-      : <JourneyTrail stops={journeyStops(journey, locale)}/>}
+      : <JourneyTrail locale={locale} stops={journeyStops(journey, locale)}/>}
     <Card variant="raised" padding="md" as="section" className="pu-card" aria-label={c.recordWeight}>
       {last && <div className="pu-weight">
         <span><strong className="v9-num">{kg(last.weightGrams)}</strong> {c.kg}</span>

@@ -113,7 +113,7 @@ export function HomePage(){
  <DayActual workouts={trainedToday} templates={templates} locale={locale} name={name} sessionName={id=>id?names.get(id)??'':''} busy={busy} onCorrect={correctTimes}/>
  {selected?<><section className="v9-home-now" aria-label={h.today}>
   <p className="v9-home-reason">{notStarted&&startDate?fill(sd.startsOn,{date:startDateLabel(startDate,todayDate,locale)}):scheduledToday||!nextSession?h.today:picked?pickedNext?fill(h.nextOn,{day:startDateLabel(pickedNext,todayDate,locale)}):h.today:fill(h.nextOn,{day:`${schedule.chosen?'':h.suggested}${weekdayLabel(nextSession.day,locale)}`})} · {shown(selected)}</p>
-  <NowPanel template={selected} weekDates={weekDates} blocked={busy||!!data?.active||previewBlocked||previewPending} onStart={startNow}/>
+  <NowPanel template={selected} weekDates={weekDates} today={todayDate} blocked={busy||!!data?.active||previewBlocked||previewPending} onStart={startNow}/>
   {parts.length>0&&<div className="v9-home-parts" role="group" aria-label={h.parts}>{parts.map(part=><span key={part}>{part}</span>)}</div>}
   {notStarted&&<p className="v9-home-reason">{sd.notStarted}</p>}
   <p className="v9-home-reason">{!last?t.firstWorkoutReason:lastSelected?.status==='partial'?t.partialReason:format(t.reason,{minutes:selected.estimatedMinutes})}</p>

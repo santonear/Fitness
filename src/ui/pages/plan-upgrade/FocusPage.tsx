@@ -33,7 +33,7 @@ export function FocusPage() {
         options={[{ value: 'male', label: c.male }, { value: 'female', label: c.female }]}/>
     </header>
     <div className="pu-map" ref={mapRef}>
-      <AnatomyMap width={width} labels primary={shown.primary} secondary={shown.secondary} shape={figureShape(values, sex)}/>
+      <AnatomyMap locale={locale} width={width} labels primary={shown.primary} secondary={shown.secondary} shape={figureShape(values, sex)}/>
     </div>
     <div className="pu-legend" aria-hidden="true"><span><i className="pu-dot"/>{c.primary}</span><span><i className="pu-dot" data-role="secondary"/>{c.secondary}</span></div>
     <ol className="pu-cards">
