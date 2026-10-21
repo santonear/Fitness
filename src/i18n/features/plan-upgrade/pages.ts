@@ -4,7 +4,7 @@ export const planPagesCopy = {
     // Home
     variantLabel: '今天的方案', variant: { standard: '标准', tired: '累了', 'no-equipment': '没器械' },
     sceneLabel: '碎片时间', scene: { commute: '通勤', office: '办公室', bedtime: '睡前' },
-    intentionLabel: '我练的时间和地点', intentionPlaceholder: '比如：周二下班后，客厅', intentionSave: '记下', intentionEdit: '改一下',
+    intentionLabel: '我练的时间和地点', intentionPlaceholder: '比如：周二下班后，客厅', intentionSave: '记下', intentionEdit: '改一下', moreWays: '换个练法', intentionAdd: '写下何时何地练',
     calm: '现在有点烦', journey: '我的山路',
     // Settings › 训练设置
     panelStyle: '首页面板样式', panelStyles: { hero: '大数字', ring: '肌群环', twin: '双表盘' },
@@ -31,7 +31,7 @@ export const planPagesCopy = {
   en: {
     variantLabel: "Today's option", variant: { standard: 'Standard', tired: 'Tired', 'no-equipment': 'No equipment' },
     sceneLabel: 'Spare moments', scene: { commute: 'Commute', office: 'Office', bedtime: 'Bedtime' },
-    intentionLabel: 'When and where I train', intentionPlaceholder: 'e.g. Tuesday after work, living room', intentionSave: 'Save', intentionEdit: 'Edit',
+    intentionLabel: 'When and where I train', intentionPlaceholder: 'e.g. Tuesday after work, living room', intentionSave: 'Save', intentionEdit: 'Edit', moreWays: 'Other ways to train', intentionAdd: 'Set when and where',
     calm: 'Feeling a bit on edge', journey: 'My trail',
     panelStyle: 'Home panel style', panelStyles: { hero: 'Big number', ring: 'Muscle ring', twin: 'Twin dials' },
     showOutline: 'Show body outline', voice: 'Voice cues', voiceHint: 'Uses on-device voices only, no network', voiceUnavailable: 'No on-device voice on this device',

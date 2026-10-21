@@ -50,6 +50,8 @@ export function NowPanel({ template, weekDates, blocked, today, onStart }: { tem
   const [scene, setScene] = useState<Scene>();
   const [plan, setPlan] = useState(intention);
   const [editing, setEditing] = useState(false);
+  // One main action per screen (V9.14): B plan, scenes and the intention prompt stay folded until asked for.
+  const [more, setMore] = useState(false);
   const [draft, setDraft] = useState('');
   const [returnClosed, setReturnClosed] = useState(false);
   const [reminderAsk, setReminderAsk] = useState(false);
@@ -82,15 +84,21 @@ export function NowPanel({ template, weekDates, blocked, today, onStart }: { tem
     {plan && !editing && <p className="v9-home-reason">{c.intentionLabel} · {plan} <PrimaryButton tone="text" size="sm" onClick={() => { setDraft(plan); setEditing(true); }}>{c.intentionEdit}</PrimaryButton></p>}
     <HomePanel style={style} locale={locale} minutes={scene ? 5 : minutes} onMinutes={value => { setScene(undefined); setMinutes(value); }} focus={focus} weekLoads={weekLoads}
       weekDone={facts?.complete ?? 0} weekTarget={data?.version?.weeklyTarget ?? 0} {...(shape ? { shape } : {})} coachLine={coachLine} onStart={start}/>
-    <div className="v9-home-row" role="group" aria-label={c.variantLabel}>
-      {VARIANTS.map(value => <ChoiceChip key={value} size="sm" selected={!scene && variant === value} onClick={() => { setScene(undefined); setVariant(value); }}>{c.variant[value]}</ChoiceChip>)}
+    <div className="v9-home-row">
+      <PrimaryButton tone="text" size="sm" aria-expanded={more || !!scene || variant !== 'standard'} onClick={() => setMore(value => !value)}>{c.moreWays}</PrimaryButton>
+      {!plan && !editing && <PrimaryButton tone="text" size="sm" onClick={() => { setDraft(''); setEditing(true); }}>{c.intentionAdd}</PrimaryButton>}
     </div>
-    <div className="v9-home-row" role="group" aria-label={c.sceneLabel}>
-      {SCENES.map(value => <ChoiceChip key={value} size="sm" selected={scene === value} onClick={() => setScene(scene === value ? undefined : value)}>{c.scene[value]}</ChoiceChip>)}
-      <PrimaryButton tone="text" size="sm" onClick={() => navigate('/calm')}>{c.calm}</PrimaryButton>
-    </div>
+    {(more || !!scene || variant !== 'standard') && <>
+      <div className="v9-home-row" role="group" aria-label={c.variantLabel}>
+        {VARIANTS.map(value => <ChoiceChip key={value} size="sm" selected={!scene && variant === value} onClick={() => { setScene(undefined); setVariant(value); }}>{c.variant[value]}</ChoiceChip>)}
+      </div>
+      <div className="v9-home-row" role="group" aria-label={c.sceneLabel}>
+        {SCENES.map(value => <ChoiceChip key={value} size="sm" selected={scene === value} onClick={() => setScene(scene === value ? undefined : value)}>{c.scene[value]}</ChoiceChip>)}
+        <PrimaryButton tone="text" size="sm" onClick={() => navigate('/calm')}>{c.calm}</PrimaryButton>
+      </div>
+    </>}
     {scene && <EvidenceFold locale={locale} items={['fragment', 'strength']}/>}
-    {(!plan || editing) && <Card variant="raised" padding="md" as="section" className="v9-home-panel">
+    {editing && <Card variant="raised" padding="md" as="section" className="v9-home-panel">
       <label className="v9-home-intention"><span>{y.intentionAsk}</span><input value={draft} maxLength={80} placeholder={c.intentionPlaceholder} onChange={event => setDraft(event.target.value)}/></label>
       <PrimaryButton tone="quiet" size="sm" disabled={!draft.trim()} onClick={() => { if (setIntention(draft)) { setPlan(draft.trim().slice(0, 80)); setEditing(false); } }}>{c.intentionSave}</PrimaryButton>
     </Card>}

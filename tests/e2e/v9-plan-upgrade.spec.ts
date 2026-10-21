@@ -41,6 +41,7 @@ test('今天: minutes panel opens 今天练这里, a card highlights its own gro
 test('今天: B plan, fragment scene with the honest line and its evidence fold; no "X 天没练"', async ({ page }) => {
   await flags(page);
   await toPlan(page);
+  await page.getByRole('button', { name: '换个练法', exact: true }).click();
   await page.getByRole('button', { name: '累了', exact: true }).click();
   await expect(page.getByText('我给今天备了两套方案', { exact: false })).toBeVisible();
   await page.getByRole('button', { name: '办公室', exact: true }).click();
@@ -48,6 +49,7 @@ test('今天: B plan, fragment scene with the honest line and its evidence fold;
   await page.getByText('为什么', { exact: true }).click();
   await expect(page.getByText('中等把握')).toBeVisible();
   await expect(page.getByText(/\d+\s*天没练/)).toHaveCount(0);
+  await page.getByRole('button', { name: '写下何时何地练', exact: true }).click();
   await page.getByLabel('你一般什么时候、在哪儿最可能练？我按这个来排计划 🎯').fill('周二下班后，客厅');
   await page.getByRole('button', { name: '记下', exact: true }).click();
   await expect(page.getByText('周二下班后，客厅', { exact: false })).toBeVisible();
@@ -57,7 +59,7 @@ test('我的 › 训练设置: panel style and outline toggle; 我的山路 resp
   await flags(page);
   await toPlan(page);
   await page.goto('/settings');
-  await page.getByRole('tab', { name: '双表盘' }).or(page.getByRole('button', { name: '双表盘' })).first().click();
+  await page.getByRole('radio', { name: '双表盘' }).click();
   await page.goto('/journey');
   await expect(page.getByRole('heading', { name: '我的山路' })).toBeVisible();
   await expect(page.getByText('轮廓按身高体重估算，仅作示意')).toBeVisible();
@@ -100,10 +102,11 @@ test('现在有点烦: breathing runs locally and the low-mood line has no emoji
   const sent: string[] = [];
   page.on('request', request => { if (request.url().includes('/api/v1/assistant')) sent.push(request.url()); });
   await toPlan(page);
+  await page.getByRole('button', { name: '换个练法', exact: true }).click();
   await page.getByRole('button', { name: '现在有点烦' }).click();
   await expect(page).toHaveURL(/\/calm$/);
   await page.getByRole('button', { name: '慢慢呼吸' }).click();
-  await expect(page.getByText(/吸气|呼气/)).toBeVisible();
+  await expect(page.getByText(/^(吸气|呼气)$/)).toBeVisible();
   await page.getByRole('button', { name: '结束' }).click();
   await page.getByRole('button', { name: '还是很烦' }).click();
   await expect(page.getByText('那今天就别勉强了，好好休息。要是一直这样，找个信得过的人聊聊会好受些。')).toBeVisible();
