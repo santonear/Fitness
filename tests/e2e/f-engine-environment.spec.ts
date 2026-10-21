@@ -1,5 +1,6 @@
 import {test,expect} from '@playwright/test';
 import {answerTexts,engineSafety} from './helpers/onboarding-v9';
+import {homeStart,startToday} from './helpers/home-start';
 test('actual onboarding applies an environment plan and starts and the settings support switch restores balance in a new version',async({page})=>{
  await page.route('**/api/v1/features',route=>route.fulfill({json:{version:1,flags:{trainingEngine:true,aiAssistantV2:false,bodyProfile:false},expiresAt:Date.now()+3600000}}));
  await page.route('**/api/v1/trial/access-status',route=>route.fulfill({json:{qualification:'none',sessionValid:false,aiEnabled:false}}));
@@ -16,7 +17,7 @@ test('actual onboarding applies an environment plan and starts and the settings 
  const first=await page.evaluate(async()=>{const path='/src/ui/mainline/context.tsx',context=await import(/* @vite-ignore */path),snapshot=await context.workflow.snapshot();if(snapshot.version?.enginePlan?.quality?.status!=='environmentLimited')throw Error('Actual UI-applied draft must retain its environment claim');return snapshot.version.id;});
  await page.goto('/plans');const disclosure=page.getByRole('button',{name:/平衡练习需要一个能扶的地方/});await expect(disclosure).toBeVisible();await disclosure.click();await expect(page).toHaveURL(/settings\/engine#environment/);
  const support=page.getByRole('checkbox',{name:'家里有可扶的墙或椅子',exact:true});await expect(support).not.toBeChecked();
- await page.goto('/');const start=page.getByRole('button',{name:'开始训练',exact:true});await expect(start).toBeEnabled();await start.click();await expect(page).toHaveURL(/workout\//);
+ await page.goto('/');const start=homeStart(page);await expect(start).toBeEnabled();await startToday(page);await expect(page).toHaveURL(/workout\//);
  await page.goto('/settings/engine#environment');await page.getByRole('checkbox',{name:'家里有可扶的墙或椅子',exact:true}).check();await page.getByRole('button',{name:'保存',exact:true}).click();await expect(page).toHaveURL(/\/settings$/);
  await page.goto('/plans');await expect(page.getByRole('button',{name:/平衡练习需要一个能扶的地方/})).toHaveCount(0);
  const snapshot=await page.evaluate(async()=>{const path='/src/ui/mainline/context.tsx',c=await import(/* @vite-ignore */path),s=await c.workflow.snapshot();return{version:s.version,versions:s.versions,workouts:s.workouts};});

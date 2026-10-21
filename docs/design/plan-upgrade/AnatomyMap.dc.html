@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>全肌群人体图</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="position:relative;width:{{w}}px;height:{{h}}px">
+<svg width="{{w}}" height="{{h}}" viewBox="{{vb}}" role="img" aria-label="{{aria}}" style="position:absolute;inset:0">
+  <defs><filter id="{{fid}}" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5"></feGaussianBlur></filter></defs>
+  <sc-for list="{{sil}}" as="s" hint-placeholder-count="4"><path d="{{s.d}}" transform="{{s.tf}}" fill="{{base}}" stroke="{{base}}" stroke-width="1.4"></path></sc-for>
+  <sc-for list="{{mus}}" as="m" hint-placeholder-count="60"><path d="{{m.d}}" transform="{{m.tf}}" fill="{{m.fill}}" stroke="{{line}}" stroke-width="1" stroke-linejoin="round"></path></sc-for>
+  <sc-for list="{{glow}}" as="g" hint-placeholder-count="8"><path class="p-glow" d="{{g.d}}" transform="{{g.tf}}" fill="{{hot}}" filter="url(#{{fid}})" style="animation-delay:{{g.delay}}"></path></sc-for>
+  <sc-for list="{{det}}" as="l" hint-placeholder-count="8"><path d="{{l.d}}" transform="{{l.tf}}" fill="none" stroke="{{line}}" stroke-width="1" stroke-linecap="round"></path></sc-for>
+  <sc-for list="{{hair}}" as="r" hint-placeholder-count="4"><path d="{{r.d}}" transform="{{r.tf}}" fill="{{line}}" fill-opacity=".28" stroke="{{line}}" stroke-width="1"></path></sc-for>
+  <sc-for list="{{sil}}" as="s" hint-placeholder-count="4"><path d="{{s.d}}" transform="{{s.tf}}" fill="none" stroke="{{line}}" stroke-width="1.5" stroke-linejoin="round"></path></sc-for>
+  <sc-for list="{{ghost}}" as="o" hint-placeholder-count="4"><path class="p-ghost" d="{{o.d}}" transform="{{o.tf}}" fill="none" stroke="{{gline}}" stroke-opacity=".55" stroke-width="1.4" stroke-dasharray="3 4"></path></sc-for>
+  <sc-for list="{{tags}}" as="t" hint-placeholder-count="4">
+    <g>
+      <path class="p-flow" d="{{t.path}}" fill="none" stroke="{{t.c}}" stroke-width="1.6" stroke-dasharray="4 4" stroke-linecap="round"></path>
+      <circle cx="{{t.ax}}" cy="{{t.ay}}" r="3.5" fill="{{t.c}}" stroke="{{ring}}" stroke-width="1.5"></circle>
+      <circle class="{{t.cls}}" cx="{{t.bx}}" cy="{{t.by}}" r="10" fill="{{t.c}}" style="animation-delay:{{t.delay}}"></circle>
+      <text x="{{t.bx}}" y="{{t.ny}}" text-anchor="middle" font-size="12" font-weight="700" fill="{{t.ink}}" font-family="Jost, sans-serif">{{t.n}}</text>
+      <text x="{{t.tx}}" y="{{t.ny}}" text-anchor="{{t.anchor}}" font-size="14" font-weight="700" fill="{{txt}}" font-family="Noto Sans SC, sans-serif">{{t.name}}</text>
+    </g>
+  </sc-for>
+</svg>
+<div aria-hidden="true" style="position:absolute;inset:0;overflow:hidden;pointer-events:none"><div class="p-scan" style="position:absolute;left:0;right:0;top:0;height:100%;background:linear-gradient(180deg,{{scan}} 0,rgba(0,0,0,0) 18px)"></div></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"w":{"editor":"int","default":390},"sex":{"editor":"enum","options":["m","f"],"default":"m"},"scheme":{"editor":"enum","options":["pop","vivid","gentle","data","fire"],"default":"pop"},"labels":{"editor":"boolean","default":true},"primary":{"editor":"string","default":"lats,calves"},"secondary":{"editor":"string","default":"biceps,traps,abs"},"height":{"editor":"int","default":0},"weight":{"editor":"int","default":0},"ghost":{"editor":"int","default":0},"$preview":{"width":390,"height":373}}'>
+class Component extends DCLogic {
+renderVals() {
+const p = this.props;
+const S = {
+pop: { base: '#E8E6E2', line: '#8C8984', hot: '#FF7A00', sec: '#FFD27A', ink: '#FFFFFF', sink: '#5B3A00', ring: '#EDECEA', txt: '#3C3C40', scan: 'rgba(255,138,0,.28)' },
+vivid: { base: '#F1E5D6', line: '#A0806C', hot: '#B8442A', sec: '#E8B98F', ink: '#FFF6EC', sink: '#4E2A1C', ring: '#F9F0E4', txt: '#36241F', scan: 'rgba(184,68,42,.20)' },
+gentle: { base: '#F1F5EA', line: '#7E8C74', hot: '#FF8A3D', sec: '#D6F263', ink: '#FFFFFF', sink: '#1E3A14', ring: '#FFFFFF', txt: '#1F2A1C', scan: 'rgba(255,138,61,.22)' },
+data: { base: '#142035', line: '#3E5E8C', hot: '#FF5FA2', sec: '#5CF2E6', ink: '#0A1120', sink: '#041018', ring: '#0A1120', txt: '#EEF4FF', scan: 'rgba(92,242,230,.40)' },
+fire: { base: '#1B1B1B', line: '#505050', hot: '#FFD24A', sec: '#FF2D2D', ink: '#1A1200', sink: '#FFF7F5', ring: '#0B0B0B', txt: '#F5F5F3', scan: 'rgba(255,210,74,.30)' }
+};
+const sc = S[p.scheme] || S.pop;
+const fem = (p.sex ?? 'm') === 'f';
+const labels = p.labels ?? true;
+const w = Number(p.w ?? 390);
+const OUT_M = 'M100 12 C90 12 83 20 83 32 C83 36 82 38 81 40 C79 40 78 44 80 48 C81 50 83 50 84 49 C85 54 89 58 91 60 L91 68 C84 74 68 78 56 82 C44 85 36 94 35 108 C34 124 32 150 28 170 C26 180 24 188 22 196 C17 220 12 244 9 266 C6 272 4 282 6 292 C8 300 14 302 16 296 C18 288 18 280 19 274 C24 250 32 226 38 204 C42 186 46 166 50 148 C52 140 54 134 56 128 C58 150 62 175 68 198 C68 212 66 226 66 238 C64 272 64 304 68 326 C66 340 64 352 64 362 C64 380 68 398 70 410 C66 416 62 422 66 426 L88 426 C88 418 86 412 85 408 C88 390 90 368 88 348 C88 340 90 334 90 328 C94 302 97 270 98 252 C99 246 99 242 100 240';
+const OUT_F = 'M100 12 C90 12 84 20 84 32 C84 36 83 38 82 40 C80 41 79 44 81 47 C82 49 84 49 85 48 C86 53 90 57 92 59 L92 68 C86 73 74 77 62 80 C50 83 44 92 43 106 C42 122 40 148 36 168 C34 178 32 186 30 194 C25 218 20 242 17 264 C14 270 12 280 14 290 C16 298 22 300 24 294 C26 286 26 278 27 272 C32 248 40 224 46 202 C50 184 54 164 58 146 C59 138 60 132 61 126 C60 140 62 150 64 158 C66 172 72 186 74 194 C72 208 62 222 58 240 C56 270 60 304 66 328 C64 342 64 352 64 362 C64 380 68 398 70 410 C66 416 62 422 66 426 L88 426 C88 418 86 412 85 408 C88 390 90 368 88 348 C88 340 90 334 90 328 C94 302 97 270 98 252 C99 246 99 242 100 240';
+const FT = { torso: 'matrix(0.86 0 0 1 14 0)', shoulder: 'matrix(0.88 0 0 1 12 0)', arm: 'translate(8 -2)', leg: 'matrix(1.1 0 0 1 -10 0)', hip: 'matrix(1.1 0 0 1 -10 0)', none: '' };
+const MUS = {
+front: [
+['traps', 'torso', 'M91 66 C86 72 74 77 60 81 C72 84 84 82 90 78 C93 75 93 70 93 66 Z'],
+['delts', 'shoulder', 'M58 82 C46 84 36 94 35 108 C35 120 38 126 42 128 C46 112 52 98 66 88 C64 85 61 83 58 82 Z'],
+['chest', 'torso', 'M99 88 L72 86 C62 92 56 108 58 124 C68 136 88 140 99 134 Z'],
+['biceps', 'arm', 'M44 130 C38 144 34 162 32 180 C35 188 42 188 46 180 C50 164 53 148 54 134 Z'],
+['forearms', 'arm', 'M30 198 C22 220 16 242 12 262 L19 266 C26 246 34 224 40 204 C37 198 33 196 30 198 Z'],
+['abs', 'torso', 'M98 140 L82 140 C80 166 81 196 85 220 C91 228 96 230 98 230 Z'],
+['obliques', 'torso', 'M78 138 C68 146 64 170 68 200 C71 212 77 220 84 222 C80 196 78 166 80 140 Z'],
+['quads', 'leg', 'M68 240 C62 270 62 304 72 324 C80 330 89 328 92 320 C95 292 94 268 90 248 C84 238 76 234 68 240 Z'],
+['adductors', 'leg', 'M92 248 C96 258 98 270 98 282 C97 294 95 302 93 310 C95 288 94 266 92 248 Z'],
+['calves', 'none', 'M68 340 C63 358 65 382 71 400 L84 400 C88 382 90 360 87 340 C82 334 73 334 68 340 Z']
+],
+back: [
+['traps', 'torso', 'M99 62 L91 66 C85 74 74 79 60 82 C74 90 86 108 99 146 Z'],
+['delts', 'shoulder', 'M58 82 C46 84 36 94 35 108 C35 120 38 126 42 128 C46 112 52 98 66 88 C64 85 61 83 58 82 Z'],
+['triceps', 'arm', 'M43 130 C37 144 33 162 31 182 C34 190 41 190 45 182 C49 166 52 150 54 134 Z'],
+['forearms', 'arm', 'M30 198 C22 220 16 242 12 262 L19 266 C26 246 34 224 40 204 C37 198 33 196 30 198 Z'],
+['lats', 'torso', 'M58 104 C58 132 62 162 72 192 C82 190 91 180 97 168 C90 146 80 120 68 100 Z'],
+['lowerback', 'torso', 'M97 172 C90 182 84 198 82 214 C88 218 94 218 99 218 L99 172 Z'],
+['glutes', 'hip', 'M66 222 C62 244 68 266 84 270 C94 270 99 262 99 250 L99 220 C88 215 74 215 66 222 Z'],
+['hamstrings', 'leg', 'M66 276 C62 300 66 320 74 330 L90 330 C95 308 95 290 93 274 C83 271 73 271 66 276 Z'],
+['calves', 'none', 'M66 340 C60 356 62 378 70 390 C76 394 85 392 87 382 C89 366 88 348 85 340 C80 335 71 335 66 340 Z']
+]
+};
+const DET = {
+front: [['torso', 'M83 158 L98 158 M82 176 L98 176 M83 194 L98 194'], ['none', 'M78 344 L78 396']].concat(fem ? [['torso', 'M60 120 C64 138 82 146 98 140']] : []),
+back: [['none', 'M77 342 L77 388'], ['torso', 'M99 146 L99 218']]
+};
+const HAIR = fem
+? { front: 'M100 7 C83 7 75 19 75 36 C75 54 73 72 68 88 C75 91 82 89 87 84 C84 70 84 54 86 40 C88 30 94 24 100 24 Z', back: 'M100 7 C83 7 75 19 75 36 C75 54 73 72 68 88 C80 93 92 93 100 93 Z' }
+: { front: 'M100 9 C89 9 81 16 82 30 C85 23 91 20 100 20 Z', back: 'M100 9 C89 9 81 16 82 30 C82 40 85 48 90 52 L100 52 Z' };
+const NAMES = { traps: '斜方肌', delts: '三角肌', chest: '胸大肌', biceps: '肱二头', triceps: '肱三头', forearms: '前臂', abs: '腹肌', obliques: '腹斜肌', quads: '股四头', adductors: '内收肌', calves: '小腿', lats: '背阔肌', lowerback: '下背', glutes: '臀大肌', hamstrings: '腘绳肌' };
+const list = (v) => String(v ?? '').split(',').map((x) => x.trim()).filter(Boolean);
+const prim = list(p.primary ?? 'lats,calves');
+const secd = list(p.secondary ?? 'biceps,traps,abs').filter((k) => prim.indexOf(k) < 0);
+const OX = { front: 30, back: 240 };
+const tfs = (view, cat, mirror) => ('translate(' + OX[view] + ' 0)' + (mirror ? ' matrix(-1 0 0 1 200 0)' : ''));
+const fx = (x, cat) => {
+if (!fem) return x;
+if (cat === 'torso') return 0.86 * x + 14;
+if (cat === 'shoulder') return 0.88 * x + 12;
+if (cat === 'arm') return x + 8;
+if (cat === 'leg' || cat === 'hip') return 1.1 * x - 10;
+return x;
+};
+const fy = (y, cat) => (fem && cat === 'arm') ? y - 2 : y;
+const G = (y, c, sd) => Math.exp(-((y - c) * (y - c)) / (2 * sd * sd));
+const fatOf = (kg) => {
+const cm = Number(p.height ?? 0);
+if (!cm || !kg) return 0;
+const bmi = kg / ((cm / 100) * (cm / 100));
+return Math.max(-0.5, Math.min(1.6, (bmi - 22) / 8));
+};
+const D = (y, f) => {
+if (f === 0 || y < 30) return 0;
+let v;
+if (y < 66) v = 2 * G(y, 52, 8);
+else if (fem) v = (y < 84 ? 2 : 2.5 + 3 * G(y, 135, 15) + 5 * G(y, 195, 25) + 7 * G(y, 240, 25) + 5 * G(y, 285, 30) + (y > 330 ? -1 : 0));
+else v = (y < 84 ? 3 : 3 + 4 * G(y, 120, 22) + 12 * G(y, 195, 32) + 3 * G(y, 240, 20) + 3 * G(y, 275, 30) + (y > 330 ? -1.5 : 0));
+return v * f;
+};
+const AP = fem ? [61, 126, 34 / 146] : [56, 128, 37 / 146];
+const xin = (y) => AP[0] - (y - AP[1]) * AP[2];
+const lerpMap = (y, pts) => { for (let i = 1; i < pts.length; i++) { if (y <= pts[i][0]) { const a = pts[i - 1], b = pts[i]; return a[1] + (y - a[0]) * (b[1] - a[1]) / (b[0] - a[0]); } } const l = pts[pts.length - 1]; return l[1] + (y - l[0]); };
+const YB = [[0, 0], [12, 12], [60, 66], [84, 86], [128, 120], [200, 172], [240, 222], [330, 308], [410, 406], [430, 428]];
+const YA = [[0, 0], [84, 86], [128, 120], [196, 168], [266, 226], [302, 262], [330, 290]];
+const SH = (y) => fem
+? { t: 2 * G(y, 118, 14) - 5 * G(y, 192, 18) + 2 * G(y, 236, 18), l: 3 * G(y, 262, 22) - 3 * G(y, 330, 8) + 3 * G(y, 358, 16) - 2 * G(y, 406, 8), a: 1.5 * G(y, 150, 16) - 1.5 * G(y, 196, 6) + 1.5 * G(y, 214, 12) - 1.5 * G(y, 262, 6) }
+: { t: 3 * G(y, 112, 18) - 4 * G(y, 205, 18), l: 4 * G(y, 262, 22) - 3.5 * G(y, 330, 8) + 4.5 * G(y, 358, 16) - 2.5 * G(y, 406, 8), a: 3 * G(y, 150, 16) - 2 * G(y, 196, 6) + 2.5 * G(y, 214, 12) - 2 * G(y, 262, 6) };
+const warp = (x, y, rule, f) => {
+const sh = SH(y);
+let nx;
+if (rule === 'arm') {
+const shift = D(AP[1], f);
+const thick = f * (y < 200 ? (fem ? 6 : 4) : (fem ? 2.5 : 2));
+const outer = x < xin(y) - 10;
+nx = outer ? x - shift - thick - sh.a : x - shift + sh.a * 0.5;
+return [nx, lerpMap(y, YA)];
+}
+if (rule === 'leg') {
+const d = D(y, f), c = 81;
+nx = x < c ? x - d - sh.l : Math.min(99.6, x + 0.35 * d + sh.l * 0.6);
+return [nx, lerpMap(y, YB)];
+}
+const k = Math.min(1, Math.max(0, (100 - x) / 32));
+nx = x - (D(y, f) + sh.t) * k;
+return [nx, lerpMap(y, YB)];
+};
+const outRule = (x, y) => (y >= 84 && y >= AP[1] && y <= 305 && x < xin(y) + 0.5) ? 'arm' : (y >= 240 ? 'leg' : 'torso');
+const catRule = { arm: 'arm', leg: 'leg', none: 'leg', torso: 'torso', shoulder: 'torso', hip: 'torso' };
+const morph = (d, cat, f) => {
+const tk = d.match(/[MLCZ]|-?\d*\.?\d+/g);
+let out = '', nums = [];
+const flush = () => { for (let i = 0; i + 1 < nums.length; i += 2) { let x = fx(nums[i], cat), y = fy(nums[i + 1], cat); const r = cat === 'outline' ? outRule(x, y) : (cat === 'hair' ? 'torso' : catRule[cat]); const q = warp(x, y, r, f); out += q[0].toFixed(1) + ' ' + q[1].toFixed(1) + ' '; } nums = []; };
+tk.forEach((t) => { if (/[MLCZ]/.test(t)) { flush(); out += t + ' '; } else nums.push(parseFloat(t)); });
+flush();
+return out.trim();
+};
+const fatNow = fatOf(Number(p.weight ?? 0));
+const ghostKg = Number(p.ghost ?? 0);
+const OUT = fem ? OUT_F : OUT_M;
+const sil = [], mus = [], glow = [], det = [], hair = [], ghost = [];
+['front', 'back'].forEach((view) => {
+[false, true].forEach((mir) => {
+const tf = tfs(view, 'none', mir);
+sil.push({ d: morph(OUT, 'outline', fatNow), tf: tf });
+if (ghostKg) ghost.push({ d: morph(OUT, 'outline', fatOf(ghostKg)), tf: tf });
+hair.push({ d: morph(HAIR[view], 'hair', fatNow), tf: tf });
+MUS[view].forEach((m) => {
+const pi = prim.indexOf(m[0]);
+const fill = pi >= 0 ? sc.hot : (secd.indexOf(m[0]) >= 0 ? sc.sec : sc.base);
+const dd = morph(m[2], m[1], fatNow);
+mus.push({ d: dd, tf: tf, fill: fill });
+if (pi >= 0) glow.push({ d: dd, tf: tf, delay: (pi * 0.8) + 's' });
+});
+DET[view].forEach((d) => det.push({ d: morph(d[1], d[0], fatNow), tf: tf }));
+});
+});
+const ANCH = { lats: ['back', 76, 146, 'torso'], calves: ['back', 77, 364, 'none'], traps: ['back', 88, 100, 'torso'], lowerback: ['back', 92, 196, 'torso'], glutes: ['back', 82, 244, 'hip'], hamstrings: ['back', 80, 300, 'leg'], triceps: ['back', 43, 158, 'arm'], biceps: ['front', 44, 158, 'arm'], abs: ['front', 90, 186, 'torso'], chest: ['front', 80, 112, 'torso'], delts: ['front', 46, 104, 'shoulder'], quads: ['front', 78, 284, 'leg'], obliques: ['front', 72, 180, 'torso'], forearms: ['front', 26, 230, 'arm'], adductors: ['front', 95, 280, 'leg'] };
+const SLOTS = { back: [[456, 34], [456, 414]], front: [[14, 34], [14, 414]] };
+const used = { back: 0, front: 0 };
+const tags = [];
+if (labels) {
+const want = prim.concat(secd.filter((k) => k !== 'traps'));
+want.forEach((k, i) => {
+const a = ANCH[k]; if (!a) return;
+const view = a[0]; if (used[view] >= 2) return;
+const slot = SLOTS[view][used[view]++];
+const right = view === 'back';
+const wq = warp(fx(a[1], a[3]), fy(a[2], a[3]), catRule[a[3]], fatNow);
+const ax0 = wq[0];
+const ax = right ? OX.back + 200 - ax0 : OX.front + ax0;
+const ay = wq[1];
+const isP = prim.indexOf(k) >= 0;
+const bx = slot[0], by = slot[1];
+const midY = by;
+const elbowX = right ? Math.max(ax + 14, bx - 50) : Math.min(ax - 14, bx + 50);
+tags.push({
+n: tags.length + 1, name: NAMES[k], bx: bx, by: by, ny: by + 4.5,
+tx: right ? bx - 16 : bx + 16, anchor: right ? 'end' : 'start',
+ax: ax.toFixed(1), ay: ay.toFixed(1),
+path: 'M' + (right ? bx - 12 : bx + 12) + ' ' + (by + (by < 200 ? 14 : -14)) + ' L' + elbowX.toFixed(1) + ' ' + (by + (by < 200 ? 14 : -14)) + ' L' + ax.toFixed(1) + ' ' + ay.toFixed(1),
+c: isP ? sc.hot : sc.sec, ink: isP ? sc.ink : sc.sink,
+cls: isP ? 'p-beat' : '', delay: isP ? (prim.indexOf(k) * 0.8) + 's' : '0s'
+});
+});
+}
+const vb = labels ? '0 0 470 440' : '30 4 410 428';
+const vbw = labels ? 470 : 410, vbh = labels ? 440 : 428;
+const aria = (fem ? '女性' : '男性') + '全身肌群图，正面与背面。主练：' + prim.map((k) => NAMES[k]).join('、') + (secd.length ? '；辅助：' + secd.map((k) => NAMES[k]).join('、') : '');
+return {
+w: w, h: Math.round(w * vbh / vbw), vb: vb, aria: aria,
+base: sc.base, line: sc.line, hot: sc.hot, ring: sc.ring, txt: sc.txt, scan: sc.scan,
+sil: sil, ghost: ghost, gline: sc.txt, mus: mus, glow: glow, det: det, hair: hair, tags: tags,
+fid: 'am-' + (p.scheme || 'pop') + '-' + (fem ? 'f' : 'm') + '-' + w
+};
+}
+}
+</script>
+</body>
+</html>

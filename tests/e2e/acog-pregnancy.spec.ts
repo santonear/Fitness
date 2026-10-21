@@ -189,7 +189,7 @@ test("database19 upgrade preserves an unanswered prenatal field and applied plan
     await upgraded.delete();
     return { original, after, repeated, schema: metadata[0].schemaVersion };
   });
-  expect(result.schema).toBe(20);
+  expect(result.schema).toBe(21);
   expect(result.after).toEqual(result.original);
   expect(result.repeated).toEqual(result.original.state);
   expect(

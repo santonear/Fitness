@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { answerTexts, engineSafety, nextButton, startOnboarding, weeklySchedule } from './helpers/onboarding-v9';
+import {homeStart} from './helpers/home-start';
 
 test.setTimeout(90000);
 test('fresh user: welcome → tap onboarding → one-question health check → plan applied → home', async ({ page }) => {
@@ -43,7 +44,7 @@ test('fresh user: welcome → tap onboarding → one-question health check → p
   // Home: applied feedback, today's session first, start before the status check.
   await expect(page.getByRole('heading', { name: '今天', exact: true })).toBeVisible();
   await expect(page.getByRole('status').filter({ hasText: '计划已经用上了' })).toBeVisible();
-  const start = page.getByRole('button', { name: '开始训练', exact: true });
+  const start = homeStart(page);
   await expect(start).toBeEnabled();
   const checkin = page.getByRole('region', { name: '练之前，看看状态' });
   if (await checkin.count()) expect((await start.boundingBox())!.y).toBeLessThan((await checkin.boundingBox())!.y);

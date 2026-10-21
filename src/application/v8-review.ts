@@ -11,7 +11,7 @@ export function createReviewService(repo: Repository) {
   const previous=await repo.db.v8PlanVersions.get(plan.currentVersionId);
   if(!previous)throw new DomainError('INVALID','MISSING_VERSION');
   const {reasons:_reasons,...proposal}=suggestion.proposal;
-  const version=v8PlanVersionSchema.parse({...proposal,id:crypto.randomUUID(),planId:plan.id,versionNumber:previous.versionNumber+1,createdAt:new Date().toISOString(),origin:'review_suggestion',source:'local',reviewRule:suggestion.rule,changeSummary:[summary],basedOnVersionId:previous.id,...(previous.startDate?{startDate:previous.startDate}:{}),...(previous.trainingDates?.length?{trainingDates:[...previous.trainingDates]}:{}),...(previous.startTime?{startTime:previous.startTime}:{})});
+  const version=v8PlanVersionSchema.parse({...proposal,id:crypto.randomUUID(),planId:plan.id,versionNumber:previous.versionNumber+1,createdAt:new Date().toISOString(),origin:'review_suggestion',source:'local',reviewRule:suggestion.rule,changeSummary:[summary],basedOnVersionId:previous.id,...(previous.startDate?{startDate:previous.startDate}:{}),...(previous.weeklyBudget?{weeklyBudget:{...previous.weeklyBudget}}:{}),...(previous.trainingDates?.length?{trainingDates:[...previous.trainingDates]}:{}),...(previous.startTime?{startTime:previous.startTime}:{})});
   await repo.db.v8PlanVersions.add(version);await repo.db.v8Plans.put({...plan,currentVersionId:version.id});
   if(state && 'nextWorkoutOverride' in state){
    const {nextWorkoutOverride:_override,...retained}=state;

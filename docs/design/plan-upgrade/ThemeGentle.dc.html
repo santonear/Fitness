@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>温和陪伴 · 三种样式</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,800&amp;family=Cormorant+Garamond:ital,wght@1,600&amp;family=Jost:wght@200;300;400;600&amp;family=Noto+Sans+SC:wght@300;500&amp;family=Noto+Serif+SC:wght@500&amp;display=swap">
+<style>
+body{margin:0}
+@keyframes p-spin{to{transform:rotate(360deg)}}
+@keyframes p-scan{0%{transform:translateY(-10%)}100%{transform:translateY(110%)}}
+@keyframes p-pulse{0%,100%{opacity:.5}50%{opacity:1}}
+.p-spin{animation:p-spin 5s linear infinite}
+.p-scan{animation:p-scan 2.8s ease-in-out infinite alternate}
+.p-pulse{animation:p-pulse 2.4s ease-in-out infinite}
+@keyframes p-beat{0%,100%{opacity:.35;transform:scale(1)}50%{opacity:1;transform:scale(1.12)}}
+.p-beat{animation:p-beat 1.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes p-glow{0%,100%{opacity:.15}50%{opacity:.95}}
+.p-glow{animation:p-glow 1.6s ease-in-out infinite}
+@keyframes p-flow{to{stroke-dashoffset:-16}}
+.p-flow{animation:p-flow 1s linear infinite}
+@media (prefers-reduced-motion: reduce){.p-spin,.p-scan,.p-pulse,.p-beat,.p-glow,.p-flow{animation:none !important;opacity:1}}
+</style>
+</helmet>
+<div style="width:1330px;height:844px;display:flex;gap:80px;background:#E5ECDA">
+<dc-import name="Panel" theme="gentle" variant="ring" hint-size="390px,844px"></dc-import>
+<dc-import name="Panel" theme="gentle" variant="twin" hint-size="390px,844px"></dc-import>
+<dc-import name="Panel" theme="gentle" variant="hero" hint-size="390px,844px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1330,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

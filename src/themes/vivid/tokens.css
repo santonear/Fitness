@@ -125,4 +125,13 @@
   --cal-missed-line: #765A4E;
   --cal-missed-ink: #654A40;
   --cal-selected-ring: #36241F;
+  --map-base: #F1E5D6;
+  --map-line: #A0806C;
+  --map-hot: #B8442A;
+  --map-hot-ink: #FFF6EC;
+  --map-sec: #E8B98F;
+  --map-sec-ink: #4E2A1C;
+  --map-ring: #F9F0E4;
+  --map-text: #36241F;
+  --map-scan: rgba(184,68,42,.20);
 }

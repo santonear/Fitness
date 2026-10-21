@@ -61,3 +61,4 @@
 .v9-feedback-history li { display: grid; gap: calc(var(--s1) / 2); padding: var(--s2) var(--s3); border-radius: var(--r-control); background: var(--c-inset); overflow-wrap: anywhere; }
 .v9-feedback-history time, .v9-feedback-history small { font-size: var(--t1); color: var(--c-ink-muted); }
 .v9-feedback-history p { white-space: pre-wrap; }
+.v9-row-block:has(.v9-row-label) { display: grid; gap: var(--s2); }
