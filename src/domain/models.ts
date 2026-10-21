@@ -25,6 +25,12 @@ export type AiMemoryNote = z.infer<typeof schemas.aiMemoryNoteSchema>;
 export type MediaAsset = z.infer<typeof schemas.mediaAssetSchema>;
 export type TimerState = z.infer<typeof schemas.timerStateSchema>;
 export type BackupEnvelope = z.infer<typeof schemas.backupEnvelopeSchema>;
+// V9.14 rows: the frozen shapes live in plan-upgrade.ts; the stored rows must stay assignable to them.
+type Assignable<T extends U, U> = T;
+export type StoredFitnessTest = Assignable<z.infer<typeof schemas.fitnessTestRecordSchema>, import('./plan-upgrade').FitnessTestRecord>;
+export type StoredJourney = Assignable<z.infer<typeof schemas.journeySchema>, import('./plan-upgrade').Journey>;
+export type StoredFutureLetter = Assignable<z.infer<typeof schemas.futureLetterSchema>, import('./plan-upgrade').FutureLetter>;
+export type StoredWeeklyBudget = Assignable<z.infer<typeof schemas.weeklyBudgetSchema>, import('./plan-upgrade').WeeklyBudget>;
 
 export interface CatalogFilters { category?: Exercise['category']; equipment?: Exercise['equipment']; metricType?: MetricType }
 type NumericInput = string | number;

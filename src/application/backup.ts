@@ -110,6 +110,16 @@ export function validateBackupEnvelope(value: unknown): BackupEnvelope {
     const activityIds = new Set(data.v8?.activities.map(row => row.id));
     if (data.activityImportReceipts!.some(row => !activityIds.has(row.activityId))) invalid('Imported activity missing');
   } else if (data.nutritionRecords || data.activityImportReceipts) invalid('Lifestyle collections require version 7');
+  const planUpgradeRows = [data.fitnessTests, data.journeys, data.futureLetters];
+  if (envelope.schemaVersion >= 19) {
+    // Exported files always carry the three tables; an absent table restores as empty.
+    (data.fitnessTests ?? []).forEach(row => validDate(row.localDate));
+    distinct((data.journeys ?? []).map(row => String(row.version)), 'journey version');
+    const campIds = new Set((data.journeys ?? []).flatMap(row => row.camps.map(camp => camp.id)));
+    if ((data.futureLetters ?? []).some(row => row.openAtCampId !== undefined && !campIds.has(row.openAtCampId))) invalid('Future letter camp missing');
+  } else if (planUpgradeRows.some(rows => rows !== undefined) || data.v8?.state.homePanelStyle !== undefined || data.v8?.planVersions.some(version => version.weeklyBudget !== undefined)) {
+    invalid('Plan upgrade data requires backup version 19');
+  }
   if (data.v8) {
     const library = data.v8;
     if(envelope.schemaVersion<9&&(library.planReferences!==undefined||library.plans.some(p=>p.deletedAt!==undefined||p.deletedWasCurrent!==undefined||p.deletedNextWorkoutOverride!==undefined)||library.state.planDismissedAt!==undefined||library.state.reviewWeeklyTarget!==undefined))invalid('Plan lifecycle requires backup version 9');
@@ -335,6 +345,7 @@ export function createBackupService(repo: Repository) {
           aiMemoryNotes: await repo.db.aiMemoryNotes.toArray(), timers: await repo.db.timers.toArray(), mediaAssets: await repo.db.mediaAssets.toArray(),
           guidedStates: await repo.db.guidedStates.toArray(),
           nutritionRecords: await repo.db.nutritionRecords.toArray(), activityImportReceipts: await repo.db.activityImportReceipts.toArray(),
+          fitnessTests: await repo.db.fitnessTests.toArray(), journeys: await repo.db.journeys.toArray(), futureLetters: await repo.db.futureLetters.toArray(),
           v8: { state: await repo.db.v8State.get('v8'), plans: await repo.db.v8Plans.toArray(), planVersions: await repo.db.v8PlanVersions.toArray(),
             workouts: await repo.db.v8Workouts.toArray(), activities: await repo.db.v8Activities.toArray(), planReferences: await repo.db.v8PlanReferences.toArray() },
           trainingMemo: {
@@ -402,6 +413,9 @@ export function createBackupService(repo: Repository) {
       await writeV8Library(Dexie.currentTransaction!, restoredV8);
       await repo.db.nutritionRecords.bulkAdd(data.nutritionRecords ?? []);
       await repo.db.activityImportReceipts.bulkAdd(data.activityImportReceipts ?? []);
+      await repo.db.fitnessTests.bulkAdd(data.fitnessTests ?? []);
+      await repo.db.journeys.bulkAdd(data.journeys ?? []);
+      await repo.db.futureLetters.bulkAdd(data.futureLetters ?? []);
       await synchronizeTrainingMemo(repo);
     }, input.expectedRevision);
     // Synchronous observers remove stale forms before this repository adopts the new generation.
