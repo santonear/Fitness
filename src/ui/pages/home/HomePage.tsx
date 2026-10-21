@@ -53,7 +53,7 @@ export function HomePage(){
  const remindersEnabled=useFeature('trainingReminders');
  const location=useLocation(),applied=(location.state as {applied?:boolean}|null)?.applied===true;
  const [preview,setPreview]=useState<{revision:number;versionId:string;templateId:string;value:Awaited<ReturnType<typeof workflow.nextTargetPreview>>}>();
- const {data,facts,t,slots,name,start,startManual,navigate,busy,run,locale,restartPlanning,setHomeTemplateId,setLanguage}=useMainline(); const [choice,setChoice]=useState<string>();
+ const {data,facts,t,slots,name,start,navigate,busy,run,locale,restartPlanning,setHomeTemplateId,setLanguage}=useMainline(); const [choice,setChoice]=useState<string>();
  const legacyDates=remindersEnabled&&!!data?.hasFutureLegacyDates;
  const h=homeCopy[locale],pv=planViewCopy[locale],sd=startDateCopy[locale];
  const tools=useExerciseTools('today',{swapBlocked:data?.active?exerciseToolsCopy[locale].blocked:undefined});
@@ -93,7 +93,8 @@ export function HomePage(){
  const dateText=new Intl.DateTimeFormat(locale==='zh'?'zh-CN':'en',{timeZone,month:'long',day:'numeric',weekday:'short'}).format(now);
  // Finished sessions of today (日视图): real start/end, corrections kept beside the unchanged record.
  const trainedToday=(data?.workouts??[]).filter(w=>w.localDate===todayDate&&(w.status==='complete'||w.status==='partial')).sort((a,b)=>b.startedAt.localeCompare(a.startedAt));
- const startNow=(state:FocusState)=>{if(state.templateId)void start(state.templateId);else void startManual(state.exerciseIds);};
+ // 今天练这里 comes before every start from the panel (V9.14).
+ const startNow=(state:FocusState)=>navigate('/today-focus',{state});
  const correctTimes=async(workout:{id:string},startedAt:string,endedAt:string)=>{let saved=false;await run(async()=>{if(!data)return;await workflow.correctWorkoutTimes({workoutId:workout.id,startedAt,endedAt,expectedRevision:data.metadata.dataRevision});saved=true;});return saved;};
  const strip=weekdays.map((day,index)=>{const pickedId=picked?sessionForDate(version!,weekDates[index]):undefined;const planned=picked?(pickedId?{day,templateId:pickedId}:undefined):beforeStart(index)?undefined:schedule.sessions.find(session=>session.day===day);return {key:day,label:weekdayLabel(day,locale,true),state:doneDays[day]??(planned?'planned':'rest'),today:index===todayIndex,description:`${weekdayLabel(day,locale)} · ${doneDays[day]==='done'?pv.done:doneDays[day]==='partial'?pv.partial:planned?shown(templates.find(item=>item.id===planned.templateId)):pv.rest}`} as const;});
  return <main className="v9-home">
