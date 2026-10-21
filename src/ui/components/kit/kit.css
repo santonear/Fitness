@@ -110,3 +110,118 @@
 .v9-week[data-variant="bars"] .v9-week-day[data-state="rest"] .v9-week-mark > span { display: none; }
 
 @media (prefers-reduced-motion: reduce) { .v9-btn, .v9-chip, .v9-choice, .v9-segment { transition: none; } }
+
+/* Anatomy map (V9.14, docs/design/plan-upgrade/AnatomyMap.dc.html) -------- */
+.v9-anatomy { position: relative; flex: none; max-inline-size: 100%; }
+.v9-anatomy-svg { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; overflow: visible; }
+.v9-am-base { fill: var(--map-base); stroke: var(--map-base); stroke-width: 1.4; }
+.v9-am-muscle { fill: var(--map-base); stroke: var(--map-line); stroke-width: 1; stroke-linejoin: round; }
+.v9-am-muscle[data-role="primary"] { fill: var(--map-hot); }
+.v9-am-muscle[data-role="secondary"] { fill: var(--map-sec); }
+.v9-am-glow { fill: var(--map-hot); animation: v9-am-glow 1.6s ease-in-out infinite; }
+.v9-am-detail { fill: none; stroke: var(--map-line); stroke-width: 1; stroke-linecap: round; }
+.v9-am-hair { fill: var(--map-line); fill-opacity: .28; stroke: var(--map-line); stroke-width: 1; }
+.v9-am-outline { fill: none; stroke: var(--map-line); stroke-width: 1.5; stroke-linejoin: round; }
+.v9-am-ghost { fill: none; stroke: var(--map-text); stroke-opacity: .55; stroke-width: 1.4; stroke-dasharray: 3 4; }
+.v9-am-leader { fill: none; stroke: var(--map-hot); stroke-width: 1.6; stroke-dasharray: 4 4; stroke-linecap: round; animation: v9-am-flow 1s linear infinite; }
+.v9-am-anchor { fill: var(--map-hot); stroke: var(--map-ring); stroke-width: 1.5; }
+.v9-am-badge { fill: var(--map-hot); }
+.v9-am-num { fill: var(--map-hot-ink); font: var(--w-strong) var(--t1) / 1 var(--f-num); }
+.v9-am-name { fill: var(--map-text); font: var(--w-strong) calc(var(--t1) + var(--s1) / 2) / 1 var(--f-body); }
+.v9-am-tag[data-role="secondary"] .v9-am-leader { stroke: var(--map-sec); }
+.v9-am-tag[data-role="secondary"] :is(.v9-am-anchor, .v9-am-badge) { fill: var(--map-sec); }
+.v9-am-tag[data-role="secondary"] .v9-am-num { fill: var(--map-sec-ink); }
+.v9-am-tag[data-role="primary"] .v9-am-badge, .v9-badge[data-role="primary"], .v9-trail-stop[data-state="now"] .v9-trail-dot {
+  animation: v9-am-beat 1.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center;
+}
+.v9-anatomy-scan-clip { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.v9-anatomy-scan { position: absolute; inset: 0; background: linear-gradient(180deg, var(--map-scan) 0, transparent calc(var(--s4) + var(--s1) / 2)); animation: v9-am-scan 2.8s ease-in-out infinite alternate; }
+@keyframes v9-am-glow { 0%, 100% { opacity: .15; } 50% { opacity: .95; } }
+@keyframes v9-am-beat { 0%, 100% { opacity: .35; transform: scale(1); } 50% { opacity: 1; transform: scale(1.12); } }
+@keyframes v9-am-flow { to { stroke-dashoffset: -16; } }
+@keyframes v9-am-scan { 0% { transform: translateY(-10%); } 100% { transform: translateY(110%); } }
+@keyframes v9-am-pulse { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
+
+/* Numbered focus badge shared by panels and exercise cards (same number as on the map). */
+.v9-badge {
+  display: inline-flex; flex: none; align-items: center; justify-content: center;
+  inline-size: calc(var(--s4) + var(--s1) / 2); block-size: calc(var(--s4) + var(--s1) / 2);
+  border-radius: 50%; background: var(--map-hot); color: var(--map-hot-ink); box-shadow: 0 0 var(--s2) var(--map-hot);
+  font: var(--w-strong) var(--t1) / 1 var(--f-num);
+}
+.v9-badge[data-role="secondary"] { background: var(--map-sec); color: var(--map-sec-ink); box-shadow: none; }
+.v9-focus-list { display: flex; flex-direction: column; gap: calc(var(--s1) + var(--s1) / 2); margin: 0; padding: 0; list-style: none; font-size: var(--t2); }
+.v9-focus-list[data-inline="true"] { flex-direction: row; flex-wrap: wrap; gap: var(--s2) var(--s3); }
+.v9-focus-item { display: inline-flex; align-items: center; gap: calc(var(--s1) + var(--s1) / 2); color: var(--map-hot); font-weight: var(--w-strong); }
+
+/* Home panel (V9.14 hero / ring / twin, docs/design/plan-upgrade/Panel.dc.html) */
+.v9-home-panel { position: relative; display: flex; flex-direction: column; gap: var(--s4); color: var(--c-ink); }
+.v9-home-panel-head { display: flex; justify-content: flex-end; }
+.v9-home-week { font: var(--w-body) var(--t3) / var(--lh-tight) var(--f-num); color: var(--c-ink-muted); font-variant-numeric: lining-nums tabular-nums; }
+.v9-home-small { font-size: var(--t1); color: var(--c-ink-muted); }
+.v9-home-label { font-size: var(--t3); font-weight: var(--w-strong); }
+.v9-home-num {
+  font: var(--f-num-style) var(--w-num) var(--t7) / .9 var(--f-num); font-stretch: var(--f-num-stretch);
+  color: var(--c-accent-text); font-variant-numeric: lining-nums tabular-nums; text-shadow: var(--hero-text-shadow);
+}
+.v9-home-num small { font-size: .38em; }
+.v9-home-arc { position: relative; display: flex; align-items: flex-end; justify-content: center; inline-size: 100%; max-inline-size: calc(var(--s8) * 5 + var(--s3)); aspect-ratio: 330 / 200; margin-inline: auto; }
+.v9-home-arc svg { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; overflow: visible; }
+.v9-home-arc-center { position: relative; display: flex; flex-direction: column; align-items: center; gap: calc(var(--s1) + var(--s1) / 2); padding-block-end: var(--s1); }
+.v9-home-arc-center .v9-home-num { font-size: calc(var(--t8) + var(--t7)); }
+.v9-home-track { fill: none; stroke: var(--chart-track); }
+.v9-home-from { stop-color: var(--meter-from); }
+.v9-home-to { stop-color: var(--meter-to); }
+.v9-home-value { fill: none; stroke-linecap: round; filter: drop-shadow(0 0 calc(var(--s1) + var(--s1) / 2) var(--meter-glow)); }
+.v9-home-knob { fill: var(--c-surface); stroke: var(--meter-to); stroke-width: 3; }
+.v9-home-mark { fill: var(--c-ink-muted); font: var(--w-body) var(--t1) / 1 var(--f-num); }
+.v9-home-mark[data-on="true"] { fill: var(--c-accent-text); font-weight: var(--w-strong); }
+.v9-home-body { display: flex; align-items: center; gap: var(--s3); }
+.v9-home-body-text { display: flex; flex: 1; flex-direction: column; gap: var(--s2); min-inline-size: 0; }
+.v9-home-count { font: var(--w-body) var(--t6) / 1 var(--f-num); font-variant-numeric: lining-nums tabular-nums; }
+.v9-home-count small { font-size: var(--t3); opacity: .5; }
+.v9-home-ring { display: flex; flex-direction: column; align-items: center; gap: var(--s3); }
+.v9-home-ring-dial { position: relative; display: flex; align-items: center; justify-content: center; inline-size: calc(var(--s8) * 3 + var(--s6)); max-inline-size: 100%; aspect-ratio: 1; }
+.v9-home-ring-dial > svg { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; overflow: visible; }
+.v9-home-dial-inner {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: calc(var(--s1) + var(--s1) / 2);
+  inline-size: 55%; aspect-ratio: 1; border-radius: 50%; background: var(--card-bg); box-shadow: var(--el-1);
+}
+.v9-home-dial-inner .v9-home-num { font-size: var(--t7); }
+.v9-home-seg { fill: none; stroke-width: 11; stroke-linecap: round; }
+.v9-home-seg[data-level="ok"], .v9-home-seg[data-level="high"] { stroke: var(--meter-to); }
+.v9-home-seg[data-level="low"] { stroke: var(--meter-from); animation: v9-am-pulse 2.4s ease-in-out infinite; }
+.v9-home-seg[data-level="none"] { stroke: var(--map-hot); animation: v9-am-pulse 2.4s ease-in-out infinite; }
+.v9-home-seg-label { fill: var(--c-ink-muted); font: var(--w-body) var(--t1) / 1 var(--f-body); }
+.v9-home-seg-label[data-hot="true"] { fill: var(--c-accent-text); font-weight: var(--w-strong); }
+.v9-home-twin { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s3); }
+.v9-home-twin > .v9-card { display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: var(--s3); }
+.v9-home-twin .v9-ring-time { font-size: var(--t7); }
+.v9-home-twin-map { display: flex; align-items: center; justify-content: center; min-block-size: calc(var(--s8) * 2 + var(--s1)); }
+.v9-home-coach { display: flex; align-items: center; gap: var(--s3); }
+.v9-home-coach p { flex: 1; margin: 0; font-size: var(--t3); line-height: var(--lh-body); color: var(--c-ink); }
+.v9-home-panel .v9-segment { font: var(--w-body) var(--t3) / 1 var(--f-num); }
+
+/* Journey trail (我的山路) ------------------------------------------------ */
+.v9-trail { display: flex; align-items: flex-start; margin: 0; padding: 0 calc(var(--s1) + var(--s1) / 2); list-style: none; }
+.v9-trail-stop { position: relative; display: flex; flex: 1; flex-direction: column; align-items: center; gap: calc(var(--s1) + var(--s1) / 2); min-inline-size: 0; }
+.v9-trail-stop + .v9-trail-stop::before {
+  content: ''; position: absolute; inset-block-start: calc(var(--s2) + var(--s1) / 4); inset-inline: calc(-50% + var(--s3)) calc(50% + var(--s3));
+  border-block-start: 2px solid var(--map-hot);
+}
+.v9-trail-stop[data-state="next"]::before { border-block-start-style: dashed; border-color: var(--c-ink-muted); }
+.v9-trail-dot {
+  box-sizing: border-box; inline-size: var(--s3); block-size: var(--s3); margin-block: calc(var(--s1) / 2 + var(--s1) / 4);
+  border-radius: 50%; background: var(--map-hot); border: 2px solid var(--map-hot);
+}
+.v9-trail-stop[data-state="now"] .v9-trail-dot { inline-size: calc(var(--s4) + var(--s1) / 2); block-size: calc(var(--s4) + var(--s1) / 2); margin-block: 0; box-shadow: 0 0 var(--s3) var(--map-hot); }
+.v9-trail-stop[data-state="next"] .v9-trail-dot { background: transparent; border-color: var(--c-ink-muted); }
+.v9-trail-label { max-inline-size: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--t1); color: var(--c-ink-muted); }
+.v9-trail-stop[data-state="now"] .v9-trail-label { color: var(--c-ink); font-weight: var(--w-strong); }
+
+/* V9.14 information motion stops under reduced motion and keeps the lit end state. */
+@media (prefers-reduced-motion: reduce) {
+  .v9-am-glow, .v9-am-leader, .v9-am-badge, .v9-badge, .v9-trail-dot, .v9-home-seg, .v9-anatomy-scan { animation: none !important; }
+  .v9-am-glow { opacity: .6; }
+  .v9-anatomy-scan { display: none; }
+}
