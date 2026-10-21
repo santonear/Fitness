@@ -346,6 +346,17 @@
         "missedLine": "#66655F",
         "missedInk": "#5E5D58",
         "selectedRing": "#3C3C40"
+      },
+      "anatomy": {
+        "base": "#E8E6E2",
+        "line": "#8C8984",
+        "hot": "#FF7A00",
+        "sec": "#FFD27A",
+        "hotInk": "#FFFFFF",
+        "secInk": "#5B3A00",
+        "ring": "#EDECEA",
+        "text": "#3C3C40",
+        "scan": "rgba(255,138,0,.28)"
       }
     },
     "vivid": {
@@ -519,6 +530,17 @@
         "missedLine": "#765A4E",
         "missedInk": "#654A40",
         "selectedRing": "#36241F"
+      },
+      "anatomy": {
+        "base": "#F1E5D6",
+        "line": "#A0806C",
+        "hot": "#B8442A",
+        "sec": "#E8B98F",
+        "hotInk": "#FFF6EC",
+        "secInk": "#4E2A1C",
+        "ring": "#F9F0E4",
+        "text": "#36241F",
+        "scan": "rgba(184,68,42,.20)"
       }
     },
     "gentle": {
@@ -692,6 +714,17 @@
         "missedLine": "#5F6B5A",
         "missedInk": "#5A6655",
         "selectedRing": "#1F2A1C"
+      },
+      "anatomy": {
+        "base": "#F1F5EA",
+        "line": "#7E8C74",
+        "hot": "#FF8A3D",
+        "sec": "#D6F263",
+        "hotInk": "#FFFFFF",
+        "secInk": "#1E3A14",
+        "ring": "#FFFFFF",
+        "text": "#1F2A1C",
+        "scan": "rgba(255,138,61,.22)"
       }
     },
     "data": {
@@ -865,6 +898,17 @@
         "missedLine": "#A7B0C0",
         "missedInk": "#A7B0C0",
         "selectedRing": "#EEF4FF"
+      },
+      "anatomy": {
+        "base": "#142035",
+        "line": "#3E5E8C",
+        "hot": "#FF5FA2",
+        "sec": "#5CF2E6",
+        "hotInk": "#0A1120",
+        "secInk": "#041018",
+        "ring": "#0A1120",
+        "text": "#EEF4FF",
+        "scan": "rgba(92,242,230,.40)"
       }
     },
     "fire": {
@@ -1038,6 +1082,17 @@
         "missedLine": "#A3A3A0",
         "missedInk": "#A3A3A0",
         "selectedRing": "#F5F5F3"
+      },
+      "anatomy": {
+        "base": "#1B1B1B",
+        "line": "#505050",
+        "hot": "#FFD24A",
+        "sec": "#FF2D2D",
+        "hotInk": "#1A1200",
+        "secInk": "#FFF7F5",
+        "ring": "#0B0B0B",
+        "text": "#F5F5F3",
+        "scan": "rgba(255,210,74,.30)"
       }
     }
   }

@@ -3,7 +3,7 @@ import type { BuiltinThemeId, SceneVariant, ThemeTokenName } from './contract';
 
 /** The JSON is the only value source; this adapter only assigns frozen CSS names. */
 export function themeTokens(id: BuiltinThemeId): Partial<Record<ThemeTokenName, string | number>> {
-  const { color: c, font: f, shape: s, tracking: t, material: m, effects: e, gradient: g, glass, card, meter, chart, mascot: y, texture: x, relief, hero: h, calendar: cal } = source.themes[id];
+  const { color: c, font: f, shape: s, tracking: t, material: m, effects: e, gradient: g, glass, card, meter, chart, mascot: y, texture: x, relief, hero: h, calendar: cal, anatomy: am } = source.themes[id];
   const pressScale = e.pressScale ?? source.shared.motion.pressScale;
   return {
     '--c-bg': c.bg, '--c-bg-grad': c.bgGradient, '--c-surface': c.surface,
@@ -53,6 +53,9 @@ export function themeTokens(id: BuiltinThemeId): Partial<Record<ThemeTokenName, 
     '--cal-done-bg': cal.doneBg, '--cal-done-ink': cal.doneInk, '--cal-done-shadow': cal.doneShadow,
     '--cal-partial-rest': cal.partialRest, '--cal-partial-ink': cal.partialInk,
     '--cal-missed-line': cal.missedLine, '--cal-missed-ink': cal.missedInk, '--cal-selected-ring': cal.selectedRing,
+    // V9.14 AnatomyMap: figure base, outline, primary glow, secondary fill, badge rim, label text, scan line.
+    '--map-base': am.base, '--map-line': am.line, '--map-hot': am.hot, '--map-hot-ink': am.hotInk,
+    '--map-sec': am.sec, '--map-sec-ink': am.secInk, '--map-ring': am.ring, '--map-text': am.text, '--map-scan': am.scan,
   };
 }
 
