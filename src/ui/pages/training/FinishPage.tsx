@@ -1,4 +1,5 @@
 import { workoutSeconds, trainingMinutes } from '../../../application/workout-duration';
+import { fillLine, yayaThemeTone, yayaV5 } from '../../../i18n/features/coach/yaya-v5';
 import { useState } from 'react';
 import type { Feedback } from '../../../domain/v8/contracts';
 import { Button } from '../../components/common';
@@ -13,13 +14,12 @@ import './player.css';
 const feels=['easy','right','tired','very_tired'] as const;
 const reasons=['time','fatigue','discomfort','equipment_busy','not_today','other'] as const;
 export function FinishPage(){
- const {data,facts,t,name,run,navigate,busy,locale}=useMainline();const [feedback,setFeedback]=useState<Feedback>({reasons:[]});const active=data?.active;const [endedAt]=useState(()=>new Date().toISOString());
+ const {data,facts,t,name,run,navigate,busy,locale,appearance}=useMainline();const [feedback,setFeedback]=useState<Feedback>({reasons:[]});const active=data?.active;const [endedAt]=useState(()=>new Date().toISOString());
  if(!active)return <main><p>{t.noTraining}</p><Button onClick={()=>navigate('/')}>{t.next}</Button></main>;
  const done=active.sets.length,complete=done===active.plannedSetCount;
  const copy=locale==='en'?en:zh;
  const seconds=workoutSeconds(active.startedAt,endedAt),elapsed=trainingMinutes(seconds);
  const ordinal=facts?facts.movementCount-Object.values(facts.activityCounts).reduce((sum,count)=>sum+count,0)+1:1;
- const message=done===0?t.zeroMessage:complete?format(t.completeMessage,{count:ordinal}):format(copy.partialMessage,{count:done});
  // This session plus saved ones; facts are read only and nothing here is written.
  const timeZone=data.profile?.timeZone??active.timeZone??'Asia/Shanghai',today=activityDate(timeZone),monday=weekStart(today);
  const current=done>0?[{...active,endedAt,status:complete?'complete':'partial'}]:[];
@@ -28,6 +28,9 @@ export function FinishPage(){
  const target=data.version?.weeklyTarget;
  const progress=weeklyRemaining(target??0,thisWeek.filter(row=>row.status==='complete').length,thisWeek.filter(row=>row.status==='partial').length);
  const streak=weekStreak(rows,today,timeZone);
+ // 芽芽话术 v5 §18 (theme voice) and §2 (partial); unknown themes keep the earlier sentence.
+ const tones=yayaThemeTone[locale].done,tone=tones[appearance.theme as keyof typeof tones],weekDone=thisWeek.filter(row=>row.status==='complete').length;
+ const message=done===0?t.zeroMessage:complete?(tone?fillLine(tone,{count:weekDone,target:target??weekDone}):format(t.completeMessage,{count:ordinal})):fillLine(yayaV5[locale].partialDone,{sets:done});
  const days:WeekStripDay[]=copy.weekdays.map((label,i)=>{const day=shiftDate(monday,i),on=thisWeek.filter(row=>dayOf(row,timeZone)===day),state=on.some(row=>row.status==='complete')?'done':on.length?'partial':'rest';return {key:day,label,state,today:day===today,description:format(state==='done'?copy.dayDone:state==='partial'?copy.dayPartial:copy.dayRest,{day:day===today?copy.today:label})};});
  const volume=volumeKg(active),moves=new Set(active.sets.map(s=>`${s.itemIndex}`)).size;
  const template=active.templateSnapshot??data.versions.find(v=>v.id===active.planVersionId)?.templates.find(s=>s.id===active.templateId);

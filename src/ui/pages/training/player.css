@@ -85,3 +85,4 @@
 @keyframes wk-pop { from { opacity: 0; transform: scale(.86); } to { opacity: 1; transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) { .wk-finish-yaya { animation: none !important; } }
 .wk-finish-message p { margin: 0; line-height: var(--lh-body); }
+.wk-voice { display: inline-flex; align-items: center; gap: var(--s1); min-block-size: var(--touch-min); font-size: var(--t1); color: var(--c-ink-muted); }

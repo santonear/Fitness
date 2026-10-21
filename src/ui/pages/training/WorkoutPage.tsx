@@ -38,6 +38,7 @@ import guideEn from '../../../i18n/features/training/guide.en.json';
 import playerZh from '../../../i18n/features/training/player.zh.json';
 import playerEn from '../../../i18n/features/training/player.en.json';
 import './player.css';
+import {VoiceToggle} from '../plan-upgrade/VoiceToggle';
 const painPromptRules=new Rules();
 type Panel='pause'|'edit'|'swap'|'safety';
 
@@ -146,6 +147,7 @@ export function WorkoutPage(){
  const top=<header className="wk-top">
   <button type="button" className="wk-round v8-press" aria-label={t.pause} onClick={event=>showPanel('pause',event.currentTarget)}><Icon d="M6 6l12 12M18 6L6 18"/></button>
   <div className="wk-progress" role="progressbar" aria-label={progressLabel} aria-valuemin={0} aria-valuemax={items.length} aria-valuenow={items.filter(isDone).length}>{items.map((row,i)=><span key={row.itemIndex} data-state={isDone(row)?'done':i===index&&!restShown?'current':'todo'}/>)}</div>
+  <VoiceToggle locale={locale} cue={restShown?undefined:name(effectiveId)}/>
   <PrimaryButton tone="warn" size="sm" onClick={event=>{if(safetyAttention)safetyInline.current?.scrollIntoView({block:'start'});openSafety(event.currentTarget);}}>{p.unwell}</PrimaryButton>
   <button type="button" className="wk-round wk-coach v8-press" aria-label={t.askCoach} onClick={()=>openCoach('ADJUST_TODAY',active.templateId)}><CoachVisual/></button>
  </header>;

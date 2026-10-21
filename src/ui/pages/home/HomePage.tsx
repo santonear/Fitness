@@ -42,6 +42,8 @@ function ItemPrescription({item,locale}:{item:PlannedItem;locale:'zh'|'en'}){
  return <dl>{p.safetyCue&&<dd>{p.safetyCue[locale]}</dd>}{p.loadDescription&&<><dt>{t.load}</dt><dd>{p.loadDescription[locale]}</dd></>}{strength&&<><dt>{t.rest}</dt><dd>{durationText(p.restSeconds,locale,true)}</dd></>}<PrescriptionTempo prescription={p} locale={locale}/>{strength&&<dd>{effortWords(p.rir,locale)}</dd>}</dl>;
 }
 import {DayActual,DayTimeline} from './DayTimeline';
+import {NowPanel,type FocusState} from './NowPanel';
+import {planPagesCopy} from '../../../i18n/features/plan-upgrade/pages';
 import './home.css';
 
 const localDay=(timeZone:string,date=new Date())=>new Intl.DateTimeFormat('en-CA',{timeZone,year:'numeric',month:'2-digit',day:'2-digit'}).format(date);
@@ -92,6 +94,8 @@ export function HomePage(){
  const dateText=new Intl.DateTimeFormat(locale==='zh'?'zh-CN':'en',{timeZone,month:'long',day:'numeric',weekday:'short'}).format(now);
  // Finished sessions of today (日视图): real start/end, corrections kept beside the unchanged record.
  const trainedToday=(data?.workouts??[]).filter(w=>w.localDate===todayDate&&(w.status==='complete'||w.status==='partial')).sort((a,b)=>b.startedAt.localeCompare(a.startedAt));
+ // 今天练这里 comes before every start from the panel (V9.14).
+ const startNow=(state:FocusState)=>navigate('/today-focus',{state});
  const correctTimes=async(workout:{id:string},startedAt:string,endedAt:string)=>{let saved=false;await run(async()=>{if(!data)return;await workflow.correctWorkoutTimes({workoutId:workout.id,startedAt,endedAt,expectedRevision:data.metadata.dataRevision});saved=true;});return saved;};
  const strip=weekdays.map((day,index)=>{const pickedId=picked?sessionForDate(version!,weekDates[index]):undefined;const planned=picked?(pickedId?{day,templateId:pickedId}:undefined):beforeStart(index)?undefined:schedule.sessions.find(session=>session.day===day);return {key:day,label:weekdayLabel(day,locale,true),state:doneDays[day]??(planned?'planned':'rest'),today:index===todayIndex,description:`${weekdayLabel(day,locale)} · ${doneDays[day]==='done'?pv.done:doneDays[day]==='partial'?pv.partial:planned?shown(templates.find(item=>item.id===planned.templateId)):pv.rest}`} as const;});
  return <main className="v9-home">
@@ -107,19 +111,20 @@ export function HomePage(){
  {data?.active&&<PrimaryButton tone="quiet" onClick={()=>navigate(`/workout/${data.active!.id}`)}>{t.ongoing}</PrimaryButton>}
  {engineEnabled&&currentPreview&&<PlanStops plan={currentPreview} locale={locale}/>}
  <DayActual workouts={trainedToday} templates={templates} locale={locale} name={name} sessionName={id=>id?names.get(id)??'':''} busy={busy} onCorrect={correctTimes}/>
- {selected?<><slots.FeatureCard context="next" motionReduced={false} trainingActive={false}>
-  <slots.StartHero {...selected} name={shown(selected)} templateId={selected.id} templateLabel={shown(selected)} nextLabel={notStarted&&startDate?fill(sd.startsOn,{date:startDateLabel(startDate,todayDate,locale)}):scheduledToday||!nextSession?h.today:picked?pickedNext?fill(h.nextOn,{day:startDateLabel(pickedNext,todayDate,locale)}):h.today:fill(h.nextOn,{day:`${schedule.chosen?'':h.suggested}${weekdayLabel(nextSession.day,locale)}`})} startLabel={t.start} disabled={busy||!!data?.active||previewBlocked||previewPending} onStart={()=>{if(!previewBlocked&&!previewPending)void start(selected.id)}}/>
+ {selected?<><section className="v9-home-now" aria-label={h.today}>
+  <p className="v9-home-reason">{notStarted&&startDate?fill(sd.startsOn,{date:startDateLabel(startDate,todayDate,locale)}):scheduledToday||!nextSession?h.today:picked?pickedNext?fill(h.nextOn,{day:startDateLabel(pickedNext,todayDate,locale)}):h.today:fill(h.nextOn,{day:`${schedule.chosen?'':h.suggested}${weekdayLabel(nextSession.day,locale)}`})} · {shown(selected)}</p>
+  <NowPanel template={selected} weekDates={weekDates} today={todayDate} blocked={busy||!!data?.active||previewBlocked||previewPending} onStart={startNow}/>
   {parts.length>0&&<div className="v9-home-parts" role="group" aria-label={h.parts}>{parts.map(part=><span key={part}>{part}</span>)}</div>}
   {notStarted&&<p className="v9-home-reason">{sd.notStarted}</p>}
   <p className="v9-home-reason">{!last?t.firstWorkoutReason:lastSelected?.status==='partial'?t.partialReason:format(t.reason,{minutes:selected.estimatedMinutes})}</p>
- </slots.FeatureCard>
+ </section>
  {engineEnabled&&currentPreview&&<><TargetChanges suggestions={currentPreview.suggestions} templateId={selected.id} locale={locale} name={name}/><PlanTip plan={{...currentPreview,notices:currentPreview.notices.filter(notice=>!['pregnancy.pelvic_floor.copy','postpartum.pelvic_floor.copy'].includes(notice.code))}} locale={locale} onEditEnvironment={()=>navigate('/settings/engine#environment')}/></>}
  <DayTimeline planStart={version?.startTime} template={selected} locale={locale} timeZone={timeZone} todayDate={todayDate} name={name} active={data?.active} details={(item,index)=><>
    <p>{exercises.find(e=>e.id===item.exerciseId)?.steps[locale].join(' ')}</p>
    {engineEnabled&&<><SourceWarmupSteps template={selected} itemIndex={index}/><ItemPrescription item={item} locale={locale}/></>}
    <div className="v9-item-actions">{tools.buttons(selected.id,index,item.exerciseId)}</div>
   </>}/>
- <div className="v9-home-row"><PrimaryButton tone="quiet" size="sm" disabled={templates.length<2} onClick={()=>setChoice(templates[(templates.findIndex(item=>item.id===selected.id)+1)%templates.length].id)}>{t.switch}</PrimaryButton><PrimaryButton tone="quiet" size="sm" onClick={()=>navigate('/manual')}>{t.manual}</PrimaryButton><PrimaryButton tone="quiet" size="sm" onClick={()=>navigate('/activity')}>{t.recordActivity}</PrimaryButton></div>
+ <div className="v9-home-row"><PrimaryButton tone="quiet" size="sm" disabled={templates.length<2} onClick={()=>setChoice(templates[(templates.findIndex(item=>item.id===selected.id)+1)%templates.length].id)}>{t.switch}</PrimaryButton><PrimaryButton tone="quiet" size="sm" onClick={()=>navigate('/manual')}>{t.manual}</PrimaryButton><PrimaryButton tone="quiet" size="sm" onClick={()=>navigate('/activity')}>{t.recordActivity}</PrimaryButton><PrimaryButton tone="quiet" size="sm" onClick={()=>navigate('/journey')}>{planPagesCopy[locale].journey}</PrimaryButton></div>
  </>:<Card variant="raised" padding="lg" as="section" className="v9-home-empty"><Yaya pose="side" size={120} alt=""/><p>{planLifecycleCopy[locale].empty}</p><PrimaryButton onClick={restartPlanning}>{planLifecycleCopy[locale].create}</PrimaryButton><div className="v9-home-row"><PrimaryButton tone="quiet" size="sm" onClick={()=>navigate('/manual')}>{t.manual}</PrimaryButton><PrimaryButton tone="quiet" size="sm" onClick={()=>navigate('/activity')}>{t.recordActivity}</PrimaryButton></div></Card>}
  <Card variant="raised" padding="md" as="section" className="v9-home-checkin" aria-labelledby="v9-home-checkin-title"><h2 id="v9-home-checkin-title">{h.checkin}</h2><CautionMorningControls/><PreTrainingCheckin/></Card>
  {version&&<Card variant="raised" padding="md" as="section" className="v9-home-week" aria-labelledby="v9-home-week-title">

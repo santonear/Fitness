@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { EvidenceFold } from '../plan-upgrade/Evidence';
 import type { EnginePlan } from '../../../engine/contracts';
 import type { PlanVersion, SessionTemplate } from '../../../domain/v8/contracts';
 import { engineDisplayNotices } from '../../../application/engine-presentation';
@@ -96,6 +97,7 @@ export function PlanReasons({ reasons, locale }: { reasons: readonly string[]; l
   if (!reasons.length) return null;
   return <Card variant="inset" padding="lg" as="section" className="v9-reasons" aria-labelledby="v9-reasons-title">
     <h2 id="v9-reasons-title">{t.why}</h2><ul>{reasons.map(reason => <li key={reason}>{reason}</li>)}</ul>
+    <EvidenceFold locale={locale} items={['strength']}/>
   </Card>;
 }
 

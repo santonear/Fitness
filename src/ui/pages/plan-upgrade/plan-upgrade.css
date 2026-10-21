@@ -1,0 +1,33 @@
+/* V9.14 pages: 今天面板外围、今天练这里、我的山路、现在有点烦. Tokens only. */
+.pu-page { display: flex; flex-direction: column; gap: var(--s4); padding-block-start: var(--s4); }
+.pu-head { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); }
+.pu-head h1 { margin: 0; font-size: var(--t6); line-height: var(--lh-tight); }
+.pu-map { inline-size: 100%; }
+.pu-legend { display: flex; justify-content: center; gap: var(--s4); font-size: var(--t2); color: var(--c-ink-muted); }
+.pu-legend span { display: inline-flex; align-items: center; gap: var(--s1); }
+.pu-dot { inline-size: var(--s2); block-size: var(--s2); border-radius: var(--r-chip); background: var(--c-primary); }
+.pu-dot[data-role="secondary"] { background: var(--c-inset); box-shadow: var(--el-inset); }
+.pu-dot[data-role="ghost"] { background: transparent; border: var(--bw) dashed var(--c-ink-muted); }
+.pu-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s2); margin: 0; padding: 0; list-style: none; }
+.pu-cards button { inline-size: 100%; min-block-size: var(--touch-min); display: flex; align-items: center; gap: var(--s2); padding: var(--s2) var(--s3); border: 0; border-radius: var(--r-panel); background: var(--c-surface); box-shadow: var(--el-inset); color: var(--c-ink); font: inherit; font-size: var(--t2); text-align: start; cursor: pointer; }
+.pu-cards button[aria-pressed="true"] { outline: 2px solid var(--c-primary); }
+.pu-num { flex: none; display: inline-grid; place-items: center; inline-size: var(--s5); block-size: var(--s5); border-radius: var(--r-chip); background: var(--c-primary); color: var(--c-on-primary); font-size: var(--t1); }
+.pu-row { display: flex; flex-wrap: wrap; gap: var(--s2); align-items: center; }
+.pu-note { margin: 0; font-size: var(--t1); color: var(--c-ink-muted); text-align: center; }
+.pu-line { margin: 0; font-size: var(--t2); line-height: var(--lh-body); color: var(--c-ink-muted); }
+.pu-card { display: grid; gap: var(--s3); }
+.pu-card h2 { margin: 0; font-size: var(--t4); font-weight: var(--w-strong); }
+.pu-card p { margin: 0; }
+.pu-weight { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s3); }
+.pu-weight strong { font-size: var(--t7); line-height: 1; }
+.pu-field { display: grid; gap: var(--s1); font-size: var(--t2); color: var(--c-ink-muted); }
+.pu-field input, .pu-field textarea { box-sizing: border-box; inline-size: 100%; min-block-size: var(--touch-min); padding: var(--s2) var(--s3); border: var(--bw) solid var(--card-border); border-radius: var(--r-panel); background: var(--c-surface); color: var(--c-ink); font: inherit; font-size: var(--t3); }
+.pu-age { display: flex; align-items: baseline; gap: var(--s2); }
+.pu-age strong { font-size: var(--t7); line-height: 1; }
+.pu-age small { font-size: var(--t1); color: var(--c-ink-muted); }
+.pu-letter { margin: 0; padding: var(--s3); border-radius: var(--r-panel); background: var(--c-inset); box-shadow: var(--el-inset); font-size: var(--t3); line-height: var(--lh-reading); white-space: pre-wrap; }
+.pu-breath { display: grid; justify-items: center; gap: var(--s4); padding-block: var(--s6); text-align: center; }
+.pu-breath strong { font-size: var(--t7); }
+.pu-why summary { min-block-size: var(--touch-min); display: flex; align-items: center; cursor: pointer; font-size: var(--t2); color: var(--c-ink-muted); }
+.pu-why p { margin: 0 0 var(--s2); font-size: var(--t2); line-height: var(--lh-body); }
+.pu-tag { display: inline-block; margin-inline-start: var(--s2); padding: 0 var(--s2); border-radius: var(--r-chip); background: var(--c-inset); font-size: var(--t1); color: var(--c-ink-muted); }
