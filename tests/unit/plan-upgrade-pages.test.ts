@@ -2,9 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { checkCoachLanguage, checkSafetyLanguage } from '../../src/application/rules/coach-language';
 import { yayaSafetyKeys, yayaThemeTone, yayaV5, fillLine } from '../../src/i18n/features/coach/yaya-v5';
 import { planPagesCopy } from '../../src/i18n/features/plan-upgrade/pages';
+import { EVIDENCE } from '../../src/ui/pages/plan-upgrade/Evidence';
 import {
   bodyChangeLine, breathingCycles, breathingPhase, figureSex, figureShape, ghostWeight, journeyStops, localVoices, nowCoachLine,
-  openableLetters, remindersUnused, returnLine, shownFocus, testItemsFor, usedMinutes, weekSetEntries,
+  openableLetters, remindersUnused, returnLine, shownFocus, testItemsFor, usedMinutes, weekSetEntries, liftHistory, isTestItem, shiftLocalDate,
 } from '../../src/ui/pages/plan-upgrade/logic';
 
 const strings = (value: unknown): string[] => typeof value === 'string' ? [value] : value && typeof value === 'object' ? Object.values(value).flatMap(strings) : [];
@@ -96,5 +97,18 @@ describe('V9.14 page logic', () => {
     expect(bodyChangeLine({ kind: 'stronger', metric: 'squat', delta: 7.5, sinceLocalDate: '2026-09-21' }, 'zh', { metric: '深蹲' })).toBe('我看了下，深蹲比一个月前多了 7.5kg。你是真的变强了 💪');
     const care = bodyChangeLine({ kind: 'care-fast-loss', metric: 'weightKg', delta: -2, sinceLocalDate: '2026-10-14' }, 'zh', { metric: '' })!;
     expect(checkSafetyLanguage(care)).toEqual([]);
+  });
+  it('lift history keeps weighted sets of finished workouts only', () => {
+    const rows = liftHistory([
+      { localDate: '2026-10-01', status: 'complete', startedAt: '', sets: [{ exerciseId: 'squat', reps: 8, loadGrams: 45000 }, { exerciseId: 'plank', reps: 0, loadGrams: null }] },
+      { localDate: '2026-10-02', status: 'abandoned', startedAt: '', sets: [{ exerciseId: 'squat', reps: 8, loadGrams: 50000 }] },
+    ]);
+    expect(rows).toEqual([{ exerciseId: 'squat', localDate: '2026-10-01', weightKg: 45, reps: 8 }]);
+    expect(isTestItem('pushup')).toBe(true);
+    expect(shiftLocalDate('2026-10-21', -28)).toBe('2026-09-23');
+  });
+  it('evidence notes are the fixed v5 §16 lines with their labels', () => {
+    expect(yayaV5.zh[EVIDENCE.strength.key]).toBe('一周练两次力量，是世卫组织的推荐，证据很扎实 📊');
+    expect(planPagesCopy.zh.evidence[EVIDENCE.fragment.level]).toBe('中等把握');
   });
 });

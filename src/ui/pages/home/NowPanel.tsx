@@ -11,6 +11,7 @@ import { figureSex, figureShape, nowCoachLine, remindersUnused, returnLine, used
 import { intention, lastFigureSex, outlineShown, setIntention } from '../plan-upgrade/prefs';
 import { useMainline } from '../../mainline/context';
 import { useFeature } from '../../useFeature';
+import { EvidenceFold } from '../plan-upgrade/Evidence';
 
 const nearest = (minutes: number | undefined): NowMinutes => NOW_MINUTES.reduce((best, value) => Math.abs(value - (minutes ?? 30)) < Math.abs(best - (minutes ?? 30)) ? value : best, NOW_MINUTES[0]);
 type Variant = NonNullable<BudgetRequest['variant']>;
@@ -86,7 +87,9 @@ export function NowPanel({ template, weekDates, blocked, today, onStart }: { tem
     </div>
     <div className="v9-home-row" role="group" aria-label={c.sceneLabel}>
       {SCENES.map(value => <ChoiceChip key={value} size="sm" selected={scene === value} onClick={() => setScene(scene === value ? undefined : value)}>{c.scene[value]}</ChoiceChip>)}
+      <PrimaryButton tone="text" size="sm" onClick={() => navigate('/calm')}>{c.calm}</PrimaryButton>
     </div>
+    {scene && <EvidenceFold locale={locale} items={['fragment', 'strength']}/>}
     {(!plan || editing) && <Card variant="raised" padding="md" as="section" className="v9-home-panel">
       <label className="v9-home-intention"><span>{y.intentionAsk}</span><input value={draft} maxLength={80} placeholder={c.intentionPlaceholder} onChange={event => setDraft(event.target.value)}/></label>
       <PrimaryButton tone="quiet" size="sm" disabled={!draft.trim()} onClick={() => { if (setIntention(draft)) { setPlan(draft.trim().slice(0, 80)); setEditing(false); } }}>{c.intentionSave}</PrimaryButton>

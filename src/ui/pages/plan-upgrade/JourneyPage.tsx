@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AnatomyMap, Card, JourneyTrail, PrimaryButton } from '../../components/kit';
 import type { FitnessTestRecord, FutureLetter, Journey } from '../../../domain/plan-upgrade';
 import { currentJourney, listFitnessTests, listFutureLetters } from '../../../persistence/plan-upgrade-store';
@@ -8,8 +8,10 @@ import type { BodyWeightObservation } from '../../../domain/models';
 import { planPagesCopy } from '../../../i18n/features/plan-upgrade/pages';
 import { fillLine } from '../../../i18n/features/coach/yaya-v5';
 import { useMainline } from '../../mainline/context';
-import { figureSex, figureShape, ghostWeight, journeyStops, latestWeight, monthLabel, openableLetters } from './logic';
-import { lastFigureSex, outlineShown } from './prefs';
+import { bodyChangeLine, figureSex, figureShape, ghostWeight, isTestItem, journeyStops, latestWeight, liftHistory, monthLabel, openableLetters, shiftLocalDate, testValueText } from './logic';
+import { lastFigureSex, lastSpoken, markSpoken, outlineShown } from './prefs';
+import { bodyChangeEvents, personalRecords, personalRecordsAsOf } from '../../../application/rules/plan-upgrade';
+import { exercises } from '../../../catalog/exercises';
 import { FitnessTestCard, LetterCard, MeetFlow } from './JourneyParts';
 import { useWidth } from './useWidth';
 import './plan-upgrade.css';
@@ -50,6 +52,27 @@ export function JourneyPage() {
     });
     if (saved) { setForm(undefined); await reload(); }
   };
+  // v5 §19: lines come only from bodyChangeEvents(); the same kind at most once a week (remembered on this device).
+  const [spoken] = useState(lastSpoken);
+  const change = useMemo(() => {
+    if (!loaded) return undefined;
+    const lifts = liftHistory(data?.workouts ?? []);
+    const event = bodyChangeEvents({
+      ...(journey ? { route: journey.route } : {}), ...(values?.heightCm ? { heightCm: values.heightCm } : {}),
+      weights: weights.map(row => ({ localDate: row.localDate, weightKg: row.weightGrams / 1000 })),
+      records: [...personalRecordsAsOf(lifts, shiftLocalDate(today, -28)), ...personalRecords(lifts)],
+      tests, lastSpokenByKind: spoken, today,
+    })[0];
+    if (!event) return undefined;
+    const sorted = [...tests].sort((a, b) => a.localDate.localeCompare(b.localDate));
+    const base = sorted.filter(test => test.localDate <= event.sinceLocalDate).at(-1), latest = sorted.at(-1);
+    const names = isTestItem(event.metric) && base?.results[event.metric] !== undefined && latest?.results[event.metric] !== undefined
+      ? { metric: c.testItems[event.metric].replace(/（.*）|\s*\(.*\)/, ''), from: testValueText(event.metric, base.results[event.metric]!, locale), to: testValueText(event.metric, latest.results[event.metric]!, locale) }
+      : { metric: exercises.find(item => item.id === event.metric)?.name[locale] ?? '', month: monthLabel(event.sinceLocalDate, locale) };
+    const text = bodyChangeLine(event, locale, names);
+    return text ? { kind: event.kind, text } : undefined;
+  }, [loaded, journey, weights, tests, data?.workouts, values?.heightCm, today, locale, spoken]);
+  useEffect(() => { if (change) markSpoken(change.kind, today); }, [change?.kind, today]);
   const diff = last && ghost ? Math.round((last.weightGrams - ghost.weightGrams) / 100) / 10 : undefined;
   return <main className="pu-page pu-journey">
     <header className="pu-head"><h1 className="v9-display">{c.journeyTitle}</h1></header>
@@ -59,6 +82,7 @@ export function JourneyPage() {
       </div>
       {ghost && <div className="pu-legend" aria-hidden="true"><span><i className="pu-dot"/>{c.now}</span><span><i className="pu-dot" data-role="ghost"/>{fillLine(c.before, { month: monthLabel(ghost.localDate, locale) })}</span></div>}
     </>}
+    {change && <p className="pu-line" role="status">{change.text}</p>}
     {loaded && !journey ? <MeetFlow locale={locale} busy={busy} postpartumChecked={data?.state?.coachProfile?.population?.kind === 'postpartum'} onCheck={() => navigate('/settings/engine')} onSaved={() => void reload()}/>
       : <JourneyTrail locale={locale} stops={journeyStops(journey, locale)}/>}
     <Card variant="raised" padding="md" as="section" className="pu-card" aria-label={c.recordWeight}>

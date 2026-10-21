@@ -1,6 +1,6 @@
 /** Page logic for the training-plan upgrade (UIUX20261008 V9.14). Pure functions; everything stays on this device. */
 import type {
-  BodyChangeEvent, FigureShape, FitnessTestItem, FutureLetter, Journey, JourneyStop, MuscleLoad, NowMinutes, SessionMuscleFocus, SetEntry,
+  BodyChangeEvent, FigureShape, FitnessTestItem, FutureLetter, Journey, JourneyStop, LiftEntry, MuscleLoad, NowMinutes, SessionMuscleFocus, SetEntry,
 } from '../../../domain/plan-upgrade';
 import { FITNESS_TEST_ITEMS, MUSCLE_GROUP_NAMES } from '../../../domain/plan-upgrade';
 import { fillLine, yayaV5 } from '../../../i18n/features/coach/yaya-v5';
@@ -153,3 +153,12 @@ export const testValueText = (item: FitnessTestItem, value: number, locale: Loca
 
 /** First-meeting answer → suggested route (shape only when the person chose it). */
 export const suggestedRoute = (whyIndex: number | undefined) => whyIndex === 3 ? 'shape' as const : 'health' as const;
+
+/** Weighted sets from finished workouts, for personal records (local only). */
+type LiftSet = { exerciseId: string; reps?: number; loadGrams?: number | null };
+export function liftHistory(workouts: readonly (Omit<WorkoutLike, 'sets'> & { sets: readonly LiftSet[] })[]): LiftEntry[] {
+  return workouts.filter(w => counted(w as WorkoutLike)).flatMap(w => w.sets.filter(set => (set.loadGrams ?? 0) > 0 && (set.reps ?? 0) > 0)
+    .map(set => ({ exerciseId: set.exerciseId, localDate: w.localDate, weightKg: set.loadGrams! / 1000, reps: set.reps! })));
+}
+export const shiftLocalDate = (localDate: string, days: number) => new Date(Date.parse(`${localDate}T00:00:00Z`) + days * DAY).toISOString().slice(0, 10);
+export const isTestItem = (metric: string): metric is FitnessTestItem => (FITNESS_TEST_ITEMS as readonly string[]).includes(metric);
