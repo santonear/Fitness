@@ -32,8 +32,16 @@ import type {
   ActivityImportReceipt,
 } from "../domain/lifestyle";
 import type { TrainingCheckinRow } from "../application/training-checkin";
+import type {
+  FitnessTestRecord,
+  FutureLetter,
+  Journey,
+} from "../domain/plan-upgrade";
 
 export class FitnessDatabase extends Dexie {
+  fitnessTests!: Table<FitnessTestRecord, string>;
+  journeys!: Table<Journey, string>;
+  futureLetters!: Table<FutureLetter, string>;
   trainingCheckins!: Table<TrainingCheckinRow, string>;
   assistantConversations!: Table<AssistantConversation, string>;
   exerciseFavorites!: Table<{ id: string }, string>;
@@ -115,6 +123,22 @@ export class FitnessDatabase extends Dexie {
       );
     });
     this.version(DATABASE_VERSION)
+      .stores({
+        fitnessTests: "id,localDate",
+        journeys: "id,version",
+        futureLetters: "id,createdAt",
+      })
+      .upgrade(async (tx) => {
+        // V9.14 training-plan upgrade: new tables plus optional fields only.
+        // weeklyBudget and homePanelStyle stay absent until the user chooses them; no row is rewritten.
+        await tx
+          .table("metadata")
+          .toCollection()
+          .modify((row: Metadata) => {
+            row.schemaVersion = DATABASE_VERSION;
+          });
+      });
+    this.version(20)
       .stores({})
       .upgrade(async (tx) => {
         // No clinical answer is inferred; existing profiles and applied courses stay untouched.
@@ -374,6 +398,13 @@ export class FitnessDatabase extends Dexie {
             row.schemaVersion = 10;
           });
       });
+    // Saved fitness tests are read-only facts (AGENTS.md data rule 1).
+    this.fitnessTests.hook("updating", () => {
+      throw new DomainError(
+        "SESSION_READ_ONLY",
+        "Saved fitness tests are read-only",
+      );
+    });
   }
 }
 export function createDatabase(name: string): FitnessDatabase {

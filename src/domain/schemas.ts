@@ -7,6 +7,7 @@ import { schedulingFields, validateScheduling, setTimingSchema } from './trainin
 import { knownExerciseIds } from '../catalog/registry';
 import { EQUIPMENT } from '../catalog/taxonomy';
 import { guidedStateSchema } from './guided-contracts';
+import { FITNESS_TEST_ITEMS, HOME_PANEL_STYLES, ROUTES } from './plan-upgrade';
 export const localeSchema = z.enum(['zh', 'en']);
 export const uuidSchema = z.uuid();
 export const exerciseIdSchema = z.uuid().refine(id => knownExerciseIds.has(id), 'Unknown exercise ID');
@@ -145,6 +146,12 @@ export function validateTemplateMinutes(template:{estimatedMinutes:number;durati
  if(!v8AdjustmentMinutes.safeParse(template.estimatedMinutes).success)ctx.addIssue({code:'custom',path:['estimatedMinutes'],message:'Invalid estimated duration'});
 }
 const v8PreferredDays = z.array(z.enum(['mon','tue','wed','thu','fri','sat','sun'])).max(7).optional();
+/** Optional weekly-budget layer (V9.14); absent on older versions means "by day" as before. */
+export const weeklyBudgetSchema = z.strictObject({
+  mode: z.enum(['by-day', 'budget']),
+  minutesPerWeek: z.number().int().positive().max(7 * 24 * 60).optional(),
+  setsPerGroupPerWeek: z.number().positive().max(100).optional(),
+});
 export const v8PlanVersionSchema = z.strictObject({
   enginePlan:enginePlanSchema.optional(),
   id: uuidSchema, planId: uuidSchema, versionNumber: positive, goalText: z.string(), weeklyTarget: positive.max(7),
@@ -157,6 +164,7 @@ export const v8PlanVersionSchema = z.strictObject({
   /** Planned start time of day, local HH:MM; absent when not chosen. */
   startTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).optional(),
   scheduleRecovery:z.strictObject({raw:z.string(),recoveredAt:utcTimestampSchema}).optional(),
+  weeklyBudget: weeklyBudgetSchema.optional(),
   templates: z.array(z.strictObject({ weekday:z.enum(['mon','tue','wed','thu','fri','sat','sun']).optional(), id: z.string().min(1), name: z.string().min(1), estimatedMinutes: z.number().int().positive().max(120), estimatedSeconds:z.number().positive().optional(),durationScope:z.literal('untargeted').optional(),targetMinutes:z.number().int().min(10).max(90).optional(),
     items: z.array(z.strictObject({ exerciseId: exerciseIdSchema, equipment: z.string(), sets: positive, target: setMetricsSchema, prescription:prescriptionSchema.optional() })).min(1),
   }).superRefine(validateTemplateMinutes)).min(1), createdAt: utcTimestampSchema, origin: z.enum(['onboard', 'coach_change', 'review_suggestion', 'manual', 'migrated']),
@@ -222,11 +230,37 @@ export const v8StateSchema = z.strictObject({
   notice: z.strictObject({ planCount: nonnegative, currentPlanName: z.string().optional(), acknowledged: z.boolean() }),
   coachProfile: v8CoachProfileSchema.optional(),
   nextWorkoutOverride: v8NextWorkoutOverrideSchema.optional(),
+  /** Home panel style (V9.14); absent means the default big-number panel. */
+  homePanelStyle: z.enum(HOME_PANEL_STYLES).optional(),
 });
 export const v8PlanReferenceSchema = z.strictObject({ id: uuidSchema, planId: uuidSchema, planName: z.string(), versionNumber: positive, templateIds: z.array(z.string()), legacyTemplates: z.array(v8PlanVersionSchema.shape.templates.element).optional() });
 export const v8BackupSchema = z.strictObject({ state: v8StateSchema, plans: z.array(v8PlanSchema), planVersions: z.array(v8PlanVersionSchema),
   workouts: z.array(v8WorkoutSchema), activities: z.array(v8ActivitySchema), planReferences: z.array(v8PlanReferenceSchema).optional() });
+// ---- Training-plan upgrade rows (UIUX20261008 V9.14, DB 21) ----
+const fitnessTestValue = z.number().finite().nonnegative().max(10_000);
+export const fitnessTestRecordSchema = z.strictObject({
+  id: uuidSchema, localDate: localDateSchema, createdAt: utcTimestampSchema,
+  results: z.partialRecord(z.enum(FITNESS_TEST_ITEMS), fitnessTestValue),
+}).refine(record => Object.keys(record.results).length > 0, 'A fitness test needs at least one result');
+export const campSchema = z.strictObject({
+  id: z.string().min(1).max(80), title: z.string().min(1).max(200),
+  metric: z.enum([...FITNESS_TEST_ITEMS, 'weightKg', 'waistCm', 'sessions']),
+  start: z.number().finite(), target: z.number().finite(), reachedAt: utcTimestampSchema.optional(),
+});
+export const journeySchema = z.strictObject({
+  id: uuidSchema, route: z.enum(ROUTES), secondaryRoute: z.enum(ROUTES).optional(), destination: z.string().max(500),
+  camps: z.array(campSchema).max(50), version: positive, createdAt: utcTimestampSchema,
+}).superRefine((journey, ctx) => {
+  if (new Set(journey.camps.map(camp => camp.id)).size !== journey.camps.length) ctx.addIssue({ code: 'custom', path: ['camps'], message: 'Camp IDs must be distinct' });
+});
+export const futureLetterSchema = z.strictObject({
+  id: uuidSchema, text: z.string().min(1).max(5000), createdAt: utcTimestampSchema,
+  openAtCampId: z.string().min(1).max(80).optional(), openedAt: utcTimestampSchema.optional(),
+});
 export const backupDataSchema = z.strictObject({
+  fitnessTests: z.array(fitnessTestRecordSchema).optional(),
+  journeys: z.array(journeySchema).optional(),
+  futureLetters: z.array(futureLetterSchema).optional(),
   assistantConversations:z.array(conversationSchema).max(30).optional(),
   exerciseFavorites: z.array(z.strictObject({id:z.string().min(1)})).optional(),
   metadata: metadataSchema, profiles: z.array(localProfileSchema), plans: z.array(planSchema), planVersions: z.array(planVersionSchema),
