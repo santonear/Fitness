@@ -18,7 +18,7 @@ import {planStartDate,regionLabels,sessionNames,startDateLabel,weekSchedule,week
 import {startDateCopy} from '../../../i18n/features/plan/start-date';
 import {nextTrainingDate,sessionForDate} from '../../../application/training-dates';
 import {addDays} from '../../../application/plan-presentation';
-import {ThemeButton} from '../../components/ThemeSheet';
+import {LanguageButton,ThemeButton} from '../../components/ThemeSheet';
 import {useExerciseTools} from '../../components/ExerciseTools';
 import {exerciseToolsCopy} from '../../../i18n/features/plan/exercise-tools';
 import {useState,useEffect} from 'react';
@@ -99,7 +99,7 @@ export function HomePage(){
  const correctTimes=async(workout:{id:string},startedAt:string,endedAt:string)=>{let saved=false;await run(async()=>{if(!data)return;await workflow.correctWorkoutTimes({workoutId:workout.id,startedAt,endedAt,expectedRevision:data.metadata.dataRevision});saved=true;});return saved;};
  const strip=weekdays.map((day,index)=>{const pickedId=picked?sessionForDate(version!,weekDates[index]):undefined;const planned=picked?(pickedId?{day,templateId:pickedId}:undefined):beforeStart(index)?undefined:schedule.sessions.find(session=>session.day===day);return {key:day,label:weekdayLabel(day,locale,true),state:doneDays[day]??(planned?'planned':'rest'),today:index===todayIndex,description:`${weekdayLabel(day,locale)} · ${doneDays[day]==='done'?pv.done:doneDays[day]==='partial'?pv.partial:planned?shown(templates.find(item=>item.id===planned.templateId)):pv.rest}`} as const;});
  return <main className="v9-home">
- <header className="v9-home-head"><div><span className="v9-home-date">{dateText}</span><h1 className="v9-display">{h.title}</h1></div><div className="v9-home-head-side"><ThemeButton locale={locale} language={{onChange:setLanguage,busy}}/><span className="v9-num v9-home-day" aria-hidden="true">{localDay(timeZone,now).slice(8)}</span></div></header>
+ <header className="v9-home-head"><div><span className="v9-home-date">{dateText}</span><h1 className="v9-display">{h.title}</h1></div><div className="v9-home-head-side"><LanguageButton locale={locale} onChange={setLanguage} busy={busy}/><ThemeButton locale={locale}/><span className="v9-num v9-home-day" aria-hidden="true">{localDay(timeZone,now).slice(8)}</span></div></header>
  {applied&&version&&<Card variant="raised" padding="md" className="v9-home-applied" role="status"><Yaya pose="cheer" size={52} alt=""/><p>{h.applied}</p></Card>}
  <PelvicFloorDailyNotice/><CardiacClearancePanel/><PostpartumSafetyPanel/><PregnancySafetyControls/><PendingPainReview/>
  {data?.state?.trainingPause&&<p role="status">{engineCopy('redflag.copy.paused_banner',locale)}</p>}

@@ -4,7 +4,7 @@ import { isFeatureEnabled, subscribeFeatureFlags } from '../../application/featu
 import { useOptionalTheme } from '../../themes/ThemeProvider';
 import { themeEntryCopy } from '../../i18n/features/home/theme';
 import { MorphPanel } from './common';
-import { PrimaryButton, SegmentedTabs } from './kit';
+import { PrimaryButton } from './kit';
 import { ThemePicker } from './ThemePicker';
 import './theme-sheet.css';
 
@@ -15,10 +15,21 @@ export function useThemeChoices() {
   return getAvailableThemes(discovery).filter(theme => builtin.has(theme.id));
 }
 
-/** Small, always-visible 换风格 button that opens the theme picker with live previews in a sheet. */
 export interface LanguageChoice { onChange: (next: 'zh' | 'en') => void; busy?: boolean }
-/** Language lives here too, so it is reachable from 今天 and the welcome page (Bo 2026-10-19). */
-export function ThemeButton({ locale, label, language }: { locale: 'zh' | 'en'; /** Visible text; defaults to 换风格. */ label?: string; language?: LanguageChoice }) {
+/**
+ * Its own button next to 换风格 on 今天 and the welcome page (Bo 2026-10-21: language and style were hard to find
+ * together). One tap switches to the other language; the visible text is that language's own name.
+ */
+export function LanguageButton({ locale, onChange, busy }: { locale: 'zh' | 'en' } & LanguageChoice) {
+  const t = themeEntryCopy[locale], next = locale === 'zh' ? 'en' : 'zh';
+  return <button type="button" className="v9-theme-button v9-language-button v8-press" lang={next} disabled={busy} aria-label={t.switchTo} onClick={() => onChange(next)}>
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c2.5 2.6 3.7 5.6 3.7 9s-1.2 6.4-3.7 9c-2.5-2.6-3.7-5.6-3.7-9S9.5 5.6 12 3Z" /></svg>
+    <span>{next === 'en' ? 'English' : '中文'}</span>
+  </button>;
+}
+
+/** Small, always-visible 换风格 button that opens the theme picker with live previews in a sheet. */
+export function ThemeButton({ locale, label }: { locale: 'zh' | 'en'; /** Visible text; defaults to 换风格. */ label?: string }) {
   const t = themeEntryCopy[locale], appearance = useOptionalTheme(), themes = useThemeChoices();
   const [open, setOpen] = useState(false), trigger = useRef<HTMLElement | null>(null);
   if (!appearance) return null;
@@ -30,7 +41,6 @@ export function ThemeButton({ locale, label, language }: { locale: 'zh' | 'en'; 
     <MorphPanel open={open} onClose={() => setOpen(false)} triggerRef={trigger} title={t.title} closeLabel={t.done}>
       <p className="v9-theme-sheet-hint">{t.hint}</p>
       <ThemePicker themes={themes} value={appearance.theme} onChange={appearance.change} locale={locale} label={t.title} />
-      {language && <div className="v9-theme-sheet-language"><span>{t.language}</span><SegmentedTabs label={t.language} value={locale} disabled={language.busy} options={[{ value: 'zh', label: '中文' }, { value: 'en', label: 'English' }]} onChange={value => language.onChange(value === 'en' ? 'en' : 'zh')} /></div>}
       <PrimaryButton onClick={() => setOpen(false)}>{t.done}</PrimaryButton>
     </MorphPanel>
   </>;
