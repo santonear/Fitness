@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { answerText, engineSafety, generate, nextButton, startOnboarding } from './helpers/onboarding-v9';
+import { startToday } from './helpers/home-start';
 
 const explore = process.env.EXPLORE === '1';
 const flags = { trainingEngine: true, bodyProfile: true, planLifecycle: true, exercisePanel: true, nutrition: true, activityImport: true, trainingReminders: true };
@@ -162,7 +163,7 @@ async function walkEnglish(page: Page, tag: string) {
 
 async function workout(page: Page, tag: string) {
   await nav(page, 'Today');
-  await page.getByRole('button', { name: 'Start training', exact: true }).click();
+  await startToday(page);
   await expect(page).toHaveURL(/\/workout\//);
   await check(page, `${tag} workout`);
   await page.getByRole('button', { name: 'Complete this set', exact: true }).click();

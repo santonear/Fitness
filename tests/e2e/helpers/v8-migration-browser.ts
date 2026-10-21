@@ -38,14 +38,14 @@ export async function verifyV8Migration(envelope: BackupEnvelope, failUpgrade = 
       return { rejected, unchanged, version };
     }
     await db.open();
-    const omit = ['assistantConversations', 'exerciseFavorites', 'metadata', 'v8Plans', 'v8PlanVersions', 'v8Workouts', 'v8Activities', 'v8State', 'v8PlanReferences', 'nutritionRecords', 'activityImportReceipts'];
+    const omit = ['assistantConversations', 'exerciseFavorites', 'metadata', 'v8Plans', 'v8PlanVersions', 'v8Workouts', 'v8Activities', 'v8State', 'v8PlanReferences', 'nutritionRecords', 'activityImportReceipts', 'fitnessTests', 'journeys', 'futureLetters'];
     const legacyAfter=JSON.parse(await snapshot(db,omit)) as [string,Record<string,unknown>[]][];
     for(const [name,rows] of legacyAfter)if(name==='profiles')for(const row of rows)delete row.bodyDetails;
     // The new optional check-in table must be empty; all historical tables still match exactly.
     const expectedLegacy=JSON.parse(legacyBefore) as [string,Record<string,unknown>[]][];
     if(expectedLegacy.some(([name])=>name==='trainingCheckins'))throw Error('Expected historical DB7 stores without trainingCheckins');
     expectedLegacy.push(['trainingCheckins',[]]);expectedLegacy.sort(([a],[b])=>a.localeCompare(b));
-    const unchanged = await db.exerciseFavorites.count() === 0 && JSON.stringify(legacyAfter) === JSON.stringify(expectedLegacy) && await db.nutritionRecords.count() === 0 && await db.activityImportReceipts.count() === 0 && await db.table('v8PlanReferences').count() === 0;
+    const unchanged = await db.exerciseFavorites.count() === 0 && JSON.stringify(legacyAfter) === JSON.stringify(expectedLegacy) && await db.nutritionRecords.count() === 0 && await db.activityImportReceipts.count() === 0 && await db.table('v8PlanReferences').count() === 0 && await db.table('fitnessTests').count() === 0 && await db.table('journeys').count() === 0 && await db.table('futureLetters').count() === 0;
     const repo = createRepository(db); const access = createV8DataService(repo);
     const notice = await access.getMigrationNotice(); await access.acknowledgeMigrationNotice();
     const versions = await db.v8PlanVersions.toArray(); const state = await db.v8State.get('v8');

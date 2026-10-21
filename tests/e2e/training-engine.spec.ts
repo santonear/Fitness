@@ -6,6 +6,7 @@ import {baseProfile} from '../../tools/eval/training-engine-profiles';
 import {expect,test,type Page} from '@playwright/test';
 import {readFile} from 'node:fs/promises';
 import type {SetFact,SetFeedbackEvent} from '../../src/domain/v8/contracts';
+import {homeStart,startToday} from './helpers/home-start';
 
 // This file is also discovered by the shared suite: retain the dedicated
 // suite's budget for real IndexedDB histories and multi-theme screenshots.
@@ -130,7 +131,7 @@ test('synthetic source30 preferred-squat Next renders fixed tempo and preserves 
 test('synthetic source30 preferred-squat workout renders authenticated fixed tempo after real start',async({page},info)=>{
  const {identity,errors,modelAttempts}=await setupSyntheticMobilityTempo(page),phase=/≈3 \/ ≈1 \/ 0 秒/;
  await page.goto('/');await expect(page.getByRole('heading',{name:'今天',exact:true})).toBeVisible();
- await page.getByRole('button',{name:'开始训练',exact:true}).click();await expect(page).toHaveURL(/workout\//);const activeUrl=page.url();
+ await startToday(page);await expect(page).toHaveURL(/workout\//);const activeUrl=page.url();
  for(const [theme,label]of [['pop','柔光拟物'],['vivid','山野暖阳'],['gentle','温和陪伴'],['data','专业数据'],['fire','燃动挑战']]){
   await page.goto('/settings/appearance');await page.getByRole('radio',{name:label,exact:true}).click();await page.goto(activeUrl);await page.locator('.v8-capsules').getByRole('button',{name:identity.name,exact:true}).click();
   await expect(page.getByRole('heading',{name:identity.name,exact:true})).toBeVisible();await expect(page.getByText(phase).last()).toBeVisible();await expect(page.getByRole('region',{name:'专项热身组',exact:true}).getByText(phase)).toBeVisible();
@@ -144,7 +145,7 @@ async function openSourceWarmup(page:Page){
  const region=page.getByRole('region',{name:'专项热身组',exact:true,includeHidden:true}).filter({hasText:/(?:50|75)%/}).first();
  const details=page.locator('details').filter({has:region}).first();
  const templateCount=await page.evaluate(async()=>{const path='/src/ui/mainline/context.tsx';return(await(await import(/* @vite-ignore */path)).workflow.snapshot()).version.templates.length;});
- for(let attempt=0;attempt<templateCount&&await region.count()===0;attempt++){await page.getByRole('button',{name:'换一份',exact:true}).click();await expect(page.getByRole('button',{name:'开始训练',exact:true})).toBeEnabled();}
+ for(let attempt=0;attempt<templateCount&&await region.count()===0;attempt++){await page.getByRole('button',{name:'换一份',exact:true}).click();await expect(homeStart(page)).toBeEnabled();}
  await expect(details).toHaveCount(1);
  if(await details.getAttribute('open')===null)await details.locator('summary').click();
  await expect(region).toBeVisible();
@@ -202,7 +203,7 @@ test('actual screening UI generates deterministic local drafts and preserves eng
  await expect(adjustment.locator('.assistant-attachment')).toBeVisible();
  await expect(adjustment.getByRole('button',{name:'应用建议',exact:true})).toBeVisible();
  await adjustment.getByRole('button',{name:'关闭',exact:true}).click();
- await page.getByRole('button',{name:'开始训练',exact:true}).click();
+ await startToday(page);
  await expect(page).toHaveURL(/workout\//);
  const activeUrl=page.url();
  const warmupIdentity=await page.evaluate(async()=>{
@@ -259,7 +260,7 @@ test('actual screening UI generates deterministic local drafts and preserves eng
 test('positive pain review blocks further training and survives the downloaded backup',async({page},info)=>{
  await localFeatures(page);const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));
  await screenAndDraft(page);await page.getByRole('button',{name:'就用这份计划',exact:true}).click();
- await page.getByRole('button',{name:'开始训练',exact:true}).click();await expect(page).toHaveURL(/workout\//);
+ await startToday(page);await expect(page).toHaveURL(/workout\//);
  await page.getByRole('button',{name:'完成这一组',exact:true}).click();
  const before=await page.evaluate(async()=>{const path='/src/ui/mainline/context.tsx';return (await(await import(/* @vite-ignore */path)).workflow.snapshot()).active;});
  await page.getByRole('button',{name:'不舒服',exact:true}).click();await page.getByLabel('疼痛评分（0–10）',{exact:true}).fill('6');await page.getByLabel('部位',{exact:true}).selectOption('knee');await page.getByRole('button',{name:'记录',exact:true}).click();
@@ -321,7 +322,7 @@ test('pre-training joint danger persists as a minimal pause until fresh screenin
  const jointSelect=page.getByRole('combobox',{name:'有没有新出现或变得更重的关节疼痛？',exact:true});await expect(jointSelect).toHaveCount(1);await jointSelect.selectOption('true');
  await page.getByLabel('疼痛评分（0–10）',{exact:true}).fill('4');await page.getByRole('combobox',{name:'部位',exact:true}).selectOption('knee');const no=page.getByRole('button',{name:'否',exact:true}),yes=page.getByRole('button',{name:'是',exact:true});await expect(no).toHaveCount(7);await yes.first().click();for(let i=1;i<7;i++)await no.nth(i).click();await checkin.getByRole('button',{name:'确定',exact:true}).click();
  await expect.poll(()=>page.evaluate(async()=>{const p='/src/persistence/repository.ts';return(await(await import(/* @vite-ignore */p)).repository.db.v8State.get('v8'))?.trainingPause;})).toEqual({requiredAt:'2026-10-15T03:01:00.000Z'});
- enabled=false;await page.goto('/');await page.reload();await expect(page.getByRole('button',{name:'开始训练',exact:true})).toBeDisabled();await page.goto('/manual');await page.getByRole('searchbox').fill('自阻力划船');await page.getByRole('button',{name:'自阻力划船',exact:true}).click();await page.getByRole('button',{name:'开始',exact:true}).click();await expect(page).toHaveURL(/manual/);
+ enabled=false;await page.goto('/');await page.reload();await expect(homeStart(page)).toBeDisabled();await page.goto('/manual');await page.getByRole('searchbox').fill('自阻力划船');await page.getByRole('button',{name:'自阻力划船',exact:true}).click();await page.getByRole('button',{name:'开始',exact:true}).click();await expect(page).toHaveURL(/manual/);
  const paused=await page.evaluate(async()=>{const p='/src/persistence/repository.ts',repo=(await import(/* @vite-ignore */p)).repository;return {state:await repo.db.v8State.get('v8'),workouts:await repo.db.v8Workouts.toArray()};});expect(paused.workouts).toEqual(facts);expect(Object.keys(paused.state.trainingPause)).toEqual(['requiredAt']);
  await page.goto('/settings');await page.getByRole('button',{name:'备份恢复',exact:true}).click();const pending=page.waitForEvent('download');await page.getByRole('button',{name:'导出 JSON 备份',exact:true}).click();const backupPath=info.outputPath('pre-training-minimal-pause.json');await(await pending).saveAs(backupPath);const backup=JSON.parse(await readFile(backupPath,'utf8'));expect(backup.data.v8.state.trainingPause).toEqual(paused.state.trainingPause);expect(JSON.stringify(backup)).not.toContain('jointPain');expect(JSON.stringify(backup)).not.toContain('redFlagAnswers');
  for(const width of [375,1280,390,1440]){await page.setViewportSize({width,height:844});await page.screenshot({path:info.outputPath(`pre-training-pause-${width}.png`),fullPage:true});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);}

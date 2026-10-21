@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import {answerTexts,basicSafety,generate,startOnboarding,toFirstQuestion} from './helpers/onboarding-v9';
+import {startToday} from './helpers/home-start';
 
 // Whole journeys perform several IndexedDB transactions and page reloads under CI WebKit.
 test.setTimeout(60000);
@@ -18,7 +19,7 @@ async function draft(page:Page,goal='保持力量'){
 async function createPlan(page:Page){await draft(page);await page.getByRole('button',{name:'就用这份计划',exact:true}).click();await expect(page.getByRole('heading',{name:'今天',exact:true})).toBeVisible();}
 async function records(page:Page){return page.evaluate(async()=>{const path='/src/persistence/repository.ts';const {repository}=await import(/* @vite-ignore */ path);return{plans:await repository.db.v8Plans.toArray(),versions:await repository.db.v8PlanVersions.toArray(),workouts:await repository.db.v8Workouts.toArray(),state:await repository.db.v8State.get('v8'),revision:(await repository.readMetadata()).dataRevision};});}
 async function finishOneSet(page:Page){
- await page.getByRole('button',{name:'开始训练',exact:true}).first().click();
+ await startToday(page);
  await page.getByRole('button',{name:'完成这一组',exact:true}).click();
  await page.getByRole('button',{name:'暂停或结束',exact:true}).click();
  await page.getByRole('dialog').getByRole('button',{name:'结束并记下',exact:true}).click();

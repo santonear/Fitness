@@ -2,8 +2,8 @@ import {test,expect,type Page} from '@playwright/test';
 import {openHomeCoach} from './helpers/home-coach';
 import {mkdirSync,writeFileSync,readFileSync} from 'node:fs';
 import {answerTexts,basicSafety,generate} from './helpers/onboarding-v9';
+import {homeStart} from './helpers/home-start';
 const o=JSON.parse(readFileSync('src/i18n/features/onboarding/zh.json','utf8'));
-const t=JSON.parse(readFileSync('src/i18n/features/training/zh.json','utf8'));
 async function enable(page:Page,flags:Record<string,boolean>){
  // Drain the initial request before replacing its response: refresh intentionally deduplicates in-flight requests.
  await page.evaluate(async()=>{const path='/src/application/feature-flags.ts';await (await import(/* @vite-ignore */path)).refreshFeatureFlags();});
@@ -39,7 +39,7 @@ for(const theme of ['pop', 'vivid', 'gentle', 'data', 'fire'])test(`${theme} coa
  await page.addInitScript(theme=>localStorage.setItem('fitness-theme',theme),theme);
  await page.setViewportSize({width:320,height:844});await page.goto('/');
  await page.getByRole('button',{name:'开始',exact:true}).click();await answerTexts(page,['保持力量','每周3次，每次30分钟','在家，只有瑜伽垫']);await basicSafety(page);await generate(page);await page.getByRole('button',{name:o.accept,exact:true}).click();
- await expect(page.getByRole('button',{name:t.start,exact:true})).toBeVisible();
+ await expect(homeStart(page)).toBeVisible();
  await openHomeCoach(page);await page.getByRole('dialog').getByRole('textbox').fill('保留本地草稿');
  await capture(page,`${info.project.name}-${theme}-320-coach`);
 });

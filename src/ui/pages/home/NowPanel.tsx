@@ -23,7 +23,7 @@ const SCENES: readonly Scene[] = ['commute', 'office', 'bedtime'];
 export interface FocusState { exerciseIds: string[]; minutes: number; templateId?: string }
 
 /** Rules-built session for the chosen minutes, drawn from the plan's (already safety-filtered) exercises; falls back to the suggested plan session. */
-export function useNowSession(request: BudgetRequest, template: SessionTemplate | undefined, workouts: readonly WorkoutRecord[], weekDates: readonly string[], options: { planId?: string; candidateIds?: readonly string[]; avoidJoints?: readonly ('knee' | 'back' | 'shoulder' | 'wrist')[] }) {
+export function useNowSession(request: BudgetRequest, template: SessionTemplate | undefined, workouts: readonly WorkoutRecord[], weekDates: readonly string[], options: { planId?: string; candidateIds?: readonly string[]; avoidJoints?: readonly ('knee' | 'back' | 'shoulder' | 'wrist')[]; preferTemplate?: boolean }) {
   const weekLoads = useMemo(() => weeklyMuscleLoad(weekSetEntries(workouts, weekDates)), [workouts, weekDates.join()]);
   const candidates = options.candidateIds?.join(), joints = options.avoidJoints?.join();
   const built = useMemo(() => buildNowSession(request, {
@@ -31,11 +31,13 @@ export function useNowSession(request: BudgetRequest, template: SessionTemplate 
     ...(options.planId ? { planId: options.planId } : {}), ...(options.candidateIds ? { candidateIds: options.candidateIds } : {}), ...(options.avoidJoints?.length ? { avoidJoints: options.avoidJoints } : {}),
   }), [request.minutes, request.variant, request.scene, weekLoads, workouts, weekDates.join(), options.planId, candidates, joints]);
   const session: (NowSession & { templateId?: string }) | undefined = useMemo(() => {
+    const planned = () => { const ids = [...new Set(template!.items.map(item => item.exerciseId))]; return { exerciseIds: ids, minutes: template!.estimatedMinutes, focus: sessionMuscleFocus(ids), templateId: template!.id }; };
+    // The panel opens on the plan's own session; another time, B plan or scene asks the rules for a rebuilt one.
+    if (options.preferTemplate && template && !request.scene && !request.variant) return planned();
     if (built?.exerciseIds.length) return built;
     if (!template || request.scene) return undefined;
-    const ids = [...new Set(template.items.map(item => item.exerciseId))];
-    return { exerciseIds: ids, minutes: template.estimatedMinutes, focus: sessionMuscleFocus(ids), templateId: template.id };
-  }, [built, template, request.scene]);
+    return planned();
+  }, [built, template, request.scene, request.variant, options.preferTemplate]);
   return { session, weekLoads };
 }
 
@@ -45,7 +47,9 @@ export function NowPanel({ template, weekDates, blocked, today, onStart }: { tem
   const remindersEnabled = useFeature('trainingReminders');
   const c = planPagesCopy[locale], y = yayaV5[locale];
   const [style, setStyle] = useState<HomePanelStyle>(DEFAULT_HOME_PANEL_STYLE);
-  const [minutes, setMinutes] = useState<NowMinutes>(() => nearest(template?.estimatedMinutes));
+  // Untouched, the panel follows the suggested plan session (also after 换一份).
+  const [pickedMinutes, setMinutes] = useState<NowMinutes>();
+  const planMinutes = nearest(template?.estimatedMinutes), minutes = pickedMinutes ?? planMinutes;
   const [variant, setVariant] = useState<Variant>('standard');
   const [scene, setScene] = useState<Scene>();
   const [plan, setPlan] = useState(intention);
@@ -66,7 +70,7 @@ export function NowPanel({ template, weekDates, blocked, today, onStart }: { tem
   const request = useMemo<BudgetRequest>(() => scene ? { minutes: 5, scene } : { minutes, ...(variant !== 'standard' ? { variant } : {}) }, [minutes, variant, scene]);
   const candidateIds = useMemo(() => [...new Set((data?.version?.templates ?? []).flatMap(item => item.items.map(row => row.exerciseId)))], [data?.version?.id]);
   const avoidJoints = (data?.state?.coachProfile?.cautions ?? []).filter((joint): joint is 'knee' | 'back' | 'shoulder' | 'wrist' => joint !== 'other');
-  const { session, weekLoads } = useNowSession(request, template, data?.workouts ?? [], weekDates, { ...(data?.plan?.id ? { planId: data.plan.id } : {}), ...(candidateIds.length ? { candidateIds } : {}), avoidJoints });
+  const { session, weekLoads } = useNowSession(request, template, data?.workouts ?? [], weekDates, { ...(data?.plan?.id ? { planId: data.plan.id } : {}), ...(candidateIds.length ? { candidateIds } : {}), avoidJoints, preferTemplate: minutes === planMinutes });
   const values = data?.profile?.bodyDetails?.values;
   const shape = outlineShown() ? figureShape(values, figureSex(values?.biologicalSex, lastFigureSex())) : undefined;
   const focus = session?.focus ?? { primary: [], secondary: [], byExercise: {} };
@@ -83,7 +87,7 @@ export function NowPanel({ template, weekDates, blocked, today, onStart }: { tem
     </Card>}
     {plan && !editing && <p className="v9-home-reason">{c.intentionLabel} · {plan} <PrimaryButton tone="text" size="sm" onClick={() => { setDraft(plan); setEditing(true); }}>{c.intentionEdit}</PrimaryButton></p>}
     <HomePanel style={style} locale={locale} minutes={scene ? 5 : minutes} onMinutes={value => { setScene(undefined); setMinutes(value); }} focus={focus} weekLoads={weekLoads}
-      weekDone={facts?.complete ?? 0} weekTarget={data?.version?.weeklyTarget ?? 0} {...(shape ? { shape } : {})} coachLine={coachLine} onStart={start}/>
+      weekDone={facts?.complete ?? 0} weekTarget={data?.version?.weeklyTarget ?? 0} {...(shape ? { shape } : {})} coachLine={coachLine} disabled={blocked || !session} onStart={start}/>
     <div className="v9-home-row">
       <PrimaryButton tone="text" size="sm" aria-expanded={more || !!scene || variant !== 'standard'} onClick={() => setMore(value => !value)}>{c.moreWays}</PrimaryButton>
       {!plan && !editing && <PrimaryButton tone="text" size="sm" onClick={() => { setDraft(''); setEditing(true); }}>{c.intentionAdd}</PrimaryButton>}

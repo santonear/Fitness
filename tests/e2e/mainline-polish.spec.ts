@@ -1,6 +1,7 @@
 import {test,expect,type Page} from '@playwright/test';
 import {openHomeCoach} from './helpers/home-coach';
 import {answerTexts,basicSafety,generate,startOnboarding} from './helpers/onboarding-v9';
+import {startToday} from './helpers/home-start';
 async function shot(page:Page,name:string){
  await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.screenshot({path:`outputs/mainline-polish/${process.env.POLISH_BASE_URL?'preview':'local'}-${page.viewportSize()!.width}-${name}.png`,fullPage:!name.startsWith('manual'),animations:'disabled'});
@@ -51,7 +52,7 @@ test('fresh mainline: duration, local coach, exercise guide, bottom pause, finis
  await page.getByRole('dialog').getByRole('textbox').fill('膝盖不适');await page.getByRole('dialog').getByRole('button',{name:'发送',exact:true}).click();
  await expect(page.getByRole('log')).toContainText('如果疼痛明显或持续，先休息，并请专业人士看看');await expect(page.getByRole('dialog')).toContainText('蚌式');await expect(page.getByRole('dialog')).toContainText('现在用的是本地建议');await expect(page.getByRole('dialog')).not.toContainText('芽芽暂时连不上');await shot(page,'coach-local-pain');
  await page.getByRole('dialog').getByRole('button',{name:'关闭',exact:true}).click();
- await page.getByRole('button',{name:'开始训练',exact:true}).click();
+ await startToday(page);
  await expect(page.locator('.exercise-guide-points li')).toHaveCount(2);await expect(page.locator('.exercise-guide-open img')).toBeVisible();
  await expect.poll(()=>page.locator('.exercise-guide-open img').evaluate((e:HTMLImageElement)=>e.complete&&e.naturalWidth>0)).toBe(true);
  await shot(page,'workout');await page.getByRole('button',{name:'查看动作指导',exact:true}).click();await expect(page.getByRole('dialog')).toContainText('注意事项');await shot(page,'workout-guide');await page.getByRole('dialog').getByRole('button',{name:'关闭',exact:true}).click();
@@ -116,7 +117,7 @@ test('manual selection to completed record, appearance previews and reminders',a
  test('plan removal, undo and settings recovery preserve review totals',async({page})=>{
  if(!process.env.POLISH_BASE_URL)await page.route('**/api/v1/features',r=>r.fulfill({json:{version:1,flags:{planLifecycle:true},expiresAt:Date.now()+60000}}));
  await onboard(page);await page.getByRole('button',{name:'就用这份计划',exact:true}).click();await expect(page.getByRole('heading',{name:'今天',exact:true})).toBeVisible();
- await page.getByRole('button',{name:'开始训练',exact:true}).click();await page.getByRole('button',{name:'完成这一组',exact:true}).click();await page.getByRole('button',{name:'暂停或结束',exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:'结束并记下',exact:true}).click();await page.getByRole('button',{name:'记下来',exact:true}).click();
+ await startToday(page);await page.getByRole('button',{name:'完成这一组',exact:true}).click();await page.getByRole('button',{name:'暂停或结束',exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:'结束并记下',exact:true}).click();await page.getByRole('button',{name:'记下来',exact:true}).click();
  await expect(page.locator('.rv-facts dd').nth(1)).toHaveText('1');const before=await page.locator('.rv-facts dd').allTextContents();
  const remove=async()=>{await page.goto('/plans');await page.getByRole('button',{name:'不再使用这份计划',exact:true}).click();const dialog=page.getByRole('dialog');await expect(dialog).toContainText('训练记录、回顾统计和进步记录全部保留');await shot(page,'plan-delete-confirm');await dialog.getByRole('button',{name:'确认删除',exact:true}).click();await expect(page.getByText('已删除计划',{exact:true})).toBeVisible();};
  await remove();await page.getByRole('button',{name:'撤销',exact:true}).click();await expect(page.getByRole('button',{name:'不再使用这份计划',exact:true})).toBeVisible();

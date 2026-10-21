@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import {answerTexts,basicSafety,generate,startOnboarding,toFirstQuestion} from './helpers/onboarding-v9';
+import {startToday} from './helpers/home-start';
 test('production shell reloads offline and preserves actual recorded training', async ({ page, context }) => {
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
   page.on('requestfailed', request => errors.push(`${request.url()} ${request.failure()?.errorText}`));
@@ -21,7 +22,7 @@ test('production shell reloads offline and preserves actual recorded training', 
   await basicSafety(page);await generate(page);
   await page.getByRole('button', { name: '就用这份计划' }).click();
   await expect(page.getByRole('heading', { name: '今天', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: '开始训练', exact: true }).first().click();
+  await startToday(page);
   await page.getByRole('button', { name: '完成这一组', exact: true }).click();
   await expect(page.getByText('第 2 组，共 2 组', { exact: true })).toBeVisible();
   await page.reload(); await expect(page.getByText('第 2 组，共 2 组', { exact: true })).toBeVisible();

@@ -76,7 +76,7 @@ function FocusList({ groups, locale, inline, suffix }: { groups: readonly Muscle
       {MUSCLE_GROUP_NAMES[group][lang]}{suffix?.(group)}</li>)}</ul>;
 }
 
-export function HomePanel({ style, minutes, onMinutes, onStart, focus, weekLoads, weekDone, weekTarget, shape, coachLine, locale: localeProp }: HomePanelProps & { locale?: KitLocale }) {
+export function HomePanel({ style, minutes, onMinutes, onStart, focus, weekLoads, weekDone, weekTarget, shape, coachLine, disabled, locale: localeProp }: HomePanelProps & { locale?: KitLocale }) {
   const locale = useKitLocale(localeProp);
   const lang = locale === 'en' ? 1 : 0;
   const t = homePanelCopy[locale];
@@ -88,7 +88,7 @@ export function HomePanel({ style, minutes, onMinutes, onStart, focus, weekLoads
   const map = (width: number) => <AnatomyMap width={width} primary={focus.primary} secondary={focus.secondary} shape={shape} labels={false} locale={locale} />;
   const actions = <>
     <MinutesGroup minutes={minutes} onMinutes={onMinutes} locale={locale} />
-    <PrimaryButton onClick={onStart}>{t.start}</PrimaryButton>
+    <PrimaryButton disabled={disabled} onClick={onStart}>{t.start}</PrimaryButton>
   </>;
 
   let body;

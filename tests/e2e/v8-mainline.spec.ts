@@ -4,6 +4,7 @@ import type { Page } from '@playwright/test';
 import { mockActiveCoachAccess } from './helpers/coach-access';
 import { answerTexts, basicSafety, confirmReplan, generate, nextButton, pickTrainingDays, shanghaiDate, startOnboarding } from './helpers/onboarding-v9';
 import { openHomeCoach } from './helpers/home-coach';
+import {homeStart,startToday} from './helpers/home-start';
 async function enableAssistant(page:Page){await page.evaluate(async()=>{const path='/src/application/feature-flags.ts';await(await import(/* @vite-ignore */ path)).refreshFeatureFlags(async()=>Response.json({version:1,flags:{aiAssistantV2:true},expiresAt:Date.now()+60000}));});}
 
 test('coach uses explicit send and confirmation before changing a single workout',async({page})=>{
@@ -16,7 +17,7 @@ test('coach uses explicit send and confirmation before changing a single workout
  await page.getByRole('dialog').getByRole('textbox').fill('今天少一组');await page.getByRole('dialog').getByRole('button',{name:'发送',exact:true}).click();await expect(page.getByRole('log')).toContainText('本次每个动作一组');await expect(page.locator('.assistant-attachment')).toContainText('1 组');
  const before=await page.evaluate(async()=>{const p='/src/ui/mainline/context.tsx';return(await(await import(/* @vite-ignore */ p)).workflow.snapshot()).state.nextWorkoutOverride;});expect(before).toBeUndefined();
  await page.getByRole('button',{name:'应用建议',exact:true}).click();await expect(page.getByText('已应用',{exact:true})).toBeVisible();await page.keyboard.press('Escape');
- await page.getByRole('button',{name:'开始训练',exact:true}).first().click();await expect(page.getByText('第 1 组，共 1 组',{exact:true})).toBeVisible();expect(calls).toBe(1);
+ await startToday(page);await expect(page.getByText('第 1 组，共 1 组',{exact:true})).toBeVisible();expect(calls).toBe(1);
 });
 
 test('the home orb opens the coach for today and sends once with optional data excluded',async({page})=>{
@@ -54,12 +55,12 @@ test('a confirmed today adjustment changes only one workout and survives reload'
   const response=adaptCoachResponse(request,{requestId,restoreGeneration:request.restoreGeneration,mutationAllowed:false,type:'today_adjustment',target,template:{...template,items:template.items.map((i:any)=>({...i,sets:1}))},summary:'今天少一组'});
   await workflow.applyCoachCandidate({request,response,expectedRevision:s.metadata.dataRevision});const staged=await workflow.snapshot();return {before,after:JSON.stringify(staged.version),staged:!!staged.state.nextWorkoutOverride};
  });expect(result.before).toBe(result.after);expect(result.staged).toBe(true);
- await page.reload();await page.getByRole('button',{name:'开始训练',exact:true}).first().click();await expect(page.getByText('第 1 组，共 1 组',{exact:true})).toBeVisible();
+ await page.reload();await startToday(page);await expect(page.getByText('第 1 组，共 1 组',{exact:true})).toBeVisible();
  const saved=await page.evaluate(async()=>{const p='/src/ui/mainline/context.tsx';const s=await(await import(/* @vite-ignore */ p)).workflow.snapshot();return {override:s.state.nextWorkoutOverride,sets:s.active.templateSnapshot.items[0].sets,planSets:s.version.templates[0].items[0].sets};});expect(saved.override).toBeUndefined();expect(saved.sets).toBe(1);expect(saved.planSets).toBe(2);
 });
 
 test('backup restoration resets active editors in this tab and another tab',async({page,context})=>{
- await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();await page.getByRole('button',{name:'开始训练',exact:true}).first().click();
+ await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();await startToday(page);
  const exported=await page.evaluate(async()=>{const p='/src/application/backup.ts';return (await(await import(/* @vite-ignore */ p)).backupService.exportBackup()).text();});
  const other=await context.newPage();await other.goto(page.url());await expect(other.getByText('第 1 组，共 2 组',{exact:true})).toBeVisible();
  await page.getByRole('button',{name:'完成这一组',exact:true}).click();await expect(page.getByText('第 2 组，共 2 组',{exact:true})).toBeVisible();
@@ -85,7 +86,7 @@ test('real local mainline persists a confirmed plan, training and review with no
   await page.screenshot({ path: 'tests/fixtures/v8-mainline/qingci-390.png', fullPage: true });
   await page.setViewportSize({ width: 1440, height: 1000 }); await page.screenshot({ path: 'tests/fixtures/v8-mainline/qingci-1440.png', fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.getByRole('button', { name: '开始训练', exact: true }).first().click();
+  await startToday(page);
   await page.getByRole('button', { name: '完成这一组', exact: true }).click();
   await expect(page.getByText('第 2 组，共 2 组', { exact: true })).toBeVisible();
   await page.reload(); await expect(page.getByText('第 2 组，共 2 组', { exact: true })).toBeVisible();
@@ -152,8 +153,8 @@ test('onboarding is resumable and adult confirmation is required for basic gener
 
 test('one focused exercise, edited defaults, replacement and pause retain facts',async({page})=>{
  await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();
- await expect(page.getByRole('button',{name:'开始训练',exact:true})).toHaveCount(1);
- await page.getByRole('button',{name:'换一份',exact:true}).click();await page.getByRole('button',{name:'开始训练',exact:true}).click();
+ await expect(homeStart(page)).toHaveCount(1);
+ await page.getByRole('button',{name:'换一份',exact:true}).click();await startToday(page);
  await page.getByRole('button',{name:'修改数值'}).click();await page.getByLabel('次',{exact:true}).fill('9');await page.getByRole('button',{name:'确定',exact:true}).click();
  await page.getByRole('button',{name:'完成这一组'}).click();await expect(page.getByText('第 2 组，共 2 组',{exact:true})).toBeVisible();
  await page.getByRole('button',{name:'跳过休息',exact:true}).click();await page.getByRole('button',{name:'换动作',exact:true}).click();await page.getByRole('dialog').getByRole('searchbox').fill('自阻力划船');await page.getByRole('dialog').getByRole('button',{name:'自阻力划船',exact:true}).click();await page.getByLabel('换动作的原因').selectOption('discomfort');await page.getByRole('button',{name:'确定',exact:true}).click();
@@ -199,7 +200,7 @@ test('responsive navigation leaves all home actions clickable and activities per
 test('review adjustment is previewed then saved as a new version without rewriting facts',async({page})=>{
  await onboard(page);await page.getByRole('button',{name:'就用这份计划'}).click();
  for(let i=0;i<2;i++){
-  await page.getByRole('button',{name:'开始训练',exact:true}).click();await page.getByRole('button',{name:'完成这一组'}).click();
+  await startToday(page);await page.getByRole('button',{name:'完成这一组'}).click();
   await page.getByRole('button',{name:'暂停或结束'}).click();await page.getByRole('button',{name:'结束并记下',exact:true}).click();
   await page.getByRole('button',{name:'时间不够',exact:true}).click();await page.getByRole('button',{name:'记下来',exact:true}).click();
   await expect(page.getByRole('heading',{name:'本周回顾',exact:true})).toBeVisible();

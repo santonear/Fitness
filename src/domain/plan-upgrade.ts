@@ -174,6 +174,8 @@ export interface HomePanelProps {
   weekTarget: number;
   shape?: FigureShape;
   coachLine?: string;
+  /** Start is unavailable (busy, a workout already running, plan preview pending). */
+  disabled?: boolean;
 }
 
 /** Component line: src/ui/components/kit/JourneyTrail.tsx */

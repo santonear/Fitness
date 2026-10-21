@@ -51,7 +51,7 @@ export async function prepareCapacity(kind: 'small' | '5MiB' | '6MiB' | '8MiB' |
   const start = performance.now();
   const envelope = await db.transaction('r', db.tables, async () => ({
     format: 'fitness-local', schemaVersion: BACKUP_VERSION, catalogVersion: CATALOG_VERSION, exportedAt: stamp,
-    data: { assistantConversations: await db.assistantConversations.toArray(), exerciseFavorites: await db.exerciseFavorites.toArray(), nutritionRecords: await db.nutritionRecords.toArray(), activityImportReceipts: await db.activityImportReceipts.toArray(), v8: { planReferences: [], state: await db.v8State.get('v8'), plans: [], planVersions: [], workouts: [], activities: [] }, metadata: await repo.readMetadata(), profiles: await db.profiles.toArray(), plans: await db.plans.toArray(),
+    data: { assistantConversations: await db.assistantConversations.toArray(), exerciseFavorites: await db.exerciseFavorites.toArray(), nutritionRecords: await db.nutritionRecords.toArray(), activityImportReceipts: await db.activityImportReceipts.toArray(), fitnessTests: await db.fitnessTests.toArray(), journeys: await db.journeys.toArray(), futureLetters: await db.futureLetters.toArray(), v8: { planReferences: [], state: await db.v8State.get('v8'), plans: [], planVersions: [], workouts: [], activities: [] }, metadata: await repo.readMetadata(), profiles: await db.profiles.toArray(), plans: await db.plans.toArray(),
       planVersions: await db.planVersions.toArray(), sessions: await db.sessions.toArray(), sets: await db.sets.toArray(),
       scheduledWorkouts: await db.scheduledWorkouts.toArray(), bodyWeights: await db.bodyWeights.toArray(),
       trainingMemo: (await db.trainingMemo.get(1))!, aiMemoryNotes: await db.aiMemoryNotes.toArray(),

@@ -1,6 +1,7 @@
 import {test,expect,type Page} from '@playwright/test';
 import {mkdirSync,writeFileSync,readFileSync} from 'node:fs';
 import { mockActiveCoachAccess } from './helpers/coach-access';
+import {startToday} from './helpers/home-start';
 const oz=JSON.parse(readFileSync('src/i18n/features/onboarding/zh.json','utf8')),oe=JSON.parse(readFileSync('src/i18n/features/onboarding/en.json','utf8'));
 const tz=JSON.parse(readFileSync('src/i18n/features/training/zh.json','utf8')),te=JSON.parse(readFileSync('src/i18n/features/training/en.json','utf8'));
 const root='outputs/v8-cleanup';
@@ -13,7 +14,7 @@ for(const theme of ['pop', 'vivid', 'gentle', 'data', 'fire'])for(const locale o
  await page.goto('/');await expect(page.locator('.v9-welcome')).toBeVisible();await capture('01-onboarding');
  for(const answer of ['保持力量 / More strength','每周 3 次，每次 30 分钟','在家，只有瑜伽垫']){await page.getByLabel(o.answer,{exact:true}).fill(answer);await page.getByRole('button',{name:o.next,exact:true}).click();}await page.getByLabel(o.adult).check();await page.getByRole('button',{name:o.generate,exact:true}).click();await expect(page.getByRole('heading',{name:o.draft,exact:true})).toBeVisible();await capture('02-draft');await page.getByRole('button',{name:o.accept,exact:true}).click();await expect(page.getByRole('heading',{name:t.next,exact:true})).toBeVisible();await capture('03-next');
  await page.goto('/plans');await page.locator('.v9-session summary').first().click();await page.locator('button.v9-item').first().click();await expect(page.getByRole('dialog')).toBeVisible();await capture('04-capsule');await page.keyboard.press('Escape');await capture('08-plan');
- await page.goto('/');await page.getByRole('button',{name:t.start,exact:true}).first().click();await page.getByRole('button',{name:t.completeSet,exact:true}).click();await capture('05-training');
+ await page.goto('/');await startToday(page);await page.getByRole('button',{name:t.completeSet,exact:true}).click();await capture('05-training');
  if(width===390){await page.setViewportSize({width:320,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:`${root}/screenshots/${theme}-${locale}-320-training.png`,fullPage:true});await page.setViewportSize({width,height:900});}
  await page.getByRole('button',{name:t.pause,exact:true}).click();await page.getByRole('button',{name:t.end,exact:true}).click();await capture('06-finish');await page.getByRole('button',{name:t.save,exact:true}).click();
  await page.goto('/activity');await capture('07-activity');
