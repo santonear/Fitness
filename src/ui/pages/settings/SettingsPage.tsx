@@ -10,6 +10,7 @@ import { restVibrationKey, timerSoundKey } from '../training/useRestVibration';
 import settingsZh from '../../../i18n/features/settings/zh.json';
 import settingsEn from '../../../i18n/features/settings/en.json';
 import { meCopy } from '../../../i18n/features/settings/me';
+import { energyCopy } from '../../../i18n/features/me/energy';
 import { bodyCopy } from '../../../i18n/features/onboarding/body';
 import { useMainline } from '../../mainline/context';
 import { useEffect, useState, type ReactNode } from 'react';
@@ -63,6 +64,10 @@ export function SettingsPage(){const bodyEnabled=useFeature('bodyProfile');const
  {nutritionEntry&&<Group title={me.nutrition}>
   <Row label={me.nutrition} hint={nutritionEnabled||hasNutrition?`${me.nutritionRow} · ${me.nutritionRecords}`:me.nutritionRow} onClick={()=>navigate('/settings/nutrition')}/>
  </Group>}
+ <Group title={energyCopy[locale].group}>
+  <Row label={energyCopy[locale].calTitle} hint={energyCopy[locale].calRow} onClick={()=>navigate('/settings/calories')}/>
+  <Row label={energyCopy[locale].macroTitle} hint={energyCopy[locale].macroRow} onClick={()=>navigate('/settings/macros')}/>
+ </Group>
  <Group title={me.training}>
   {remindersEnabled&&<Row label={copy.settingsPage0} expanded={section==='reminders'} onClick={()=>toggle('reminders')}><ReminderSettings locale={locale}/></Row>}
   {importEnabled&&<Row label={lifestyleCopy[locale].importActivity} onClick={()=>navigate('/settings/import')}/>}
