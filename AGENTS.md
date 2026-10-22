@@ -63,6 +63,26 @@
 
 先提问，不要猜。尤其是规范冲突、数据迁移、未定义的交互状态、需要突破以上任何规则的情况。
 
+## 7. 先复用，后新写（2026-10-22 Bo 决定，依据 ponytail 规范）
+
+先读懂要改的代码和它的调用方，再按下面顺序找，停在第一个能用的一级：
+
+1. 这个功能真的需要吗？没人要的选项、配置和“以后可能用”的代码不写。
+2. 仓库里已经有了吗（函数、组件、模式）？照现有写法复用，不另写一份。
+3. 浏览器或 Cloudflare Workers 自带吗？用它。
+4. 已安装的依赖能做吗？用它。不为几行代码新增依赖；确需新增，在 PR 说明里写理由。
+5. 一行能写清楚吗？写一行，但要一眼看得懂。
+6. 以上都不行，才写能用的最少代码；有分支、循环或解析的逻辑留一个小测试。
+
+本仓库已有的轮子，不得另造：
+
+- 输入校验用 `zod`；JWT 和推送签名用 `jose`；本地数据库用 `dexie`；文案用 `i18next`；路由（含 `/admin`）用 `react-router-dom`。
+- 本地日期运算用 `src/application/plan-presentation.ts` 的 `addDays` 和 `src/application/training-dates.ts` 的 `daysBetween`、`isLocalDate`；不要再写 `toISOString().slice(0,10)` 或 `86400000` 的换算。
+- 规范化 JSON 用 `src/domain/request-fingerprint.ts` 的 `canonical`。
+- 界面组件先用 `src/ui/components/kit`。
+
+不能省的：信任边界上的校验、防止丢数据的错误处理、安全、无障碍、用户明确要求的内容。走捷径且有已知限制时，在代码里留一行 `shortcut: <限制>，<何时升级>`。
+
 ## 保留的安全与协作边界
 
 - AI 候选无写入权限；用户确认、版本与 restoreGeneration 校验通过后才可保存。
