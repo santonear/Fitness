@@ -7,7 +7,7 @@ export async function fillBirthMonth(page: Page, value: string) {
   const manual = group.getByRole('button', { name: '手动输入', exact: true });
   const input = group.getByLabel('出生年份', { exact: true });
   await manual.or(input).first().waitFor();
-  if (await manual.count() && (await manual.getAttribute('aria-pressed')) !== 'true') await manual.click();
+  if ((await manual.count()) && (await manual.getAttribute('aria-pressed')) !== 'true') await manual.click();
   await input.fill(year);
   await group.getByLabel('月份', { exact: true }).selectOption(month);
 }

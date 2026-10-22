@@ -1,7 +1,7 @@
-import type { EngineProfile, RuleTrace } from "../contracts";
-import { Rules, type Exercise } from "../data";
-import { sharedEligibility } from "../candidates/eligibility";
-import type { SafetyState } from "../gates/strength-scoring";
+import type { EngineProfile, RuleTrace } from '../contracts';
+import { Rules, type Exercise } from '../data';
+import { sharedEligibility } from '../candidates/eligibility';
+import type { SafetyState } from '../gates/strength-scoring';
 
 export interface SelectionContext {
   profile: EngineProfile;
@@ -25,23 +25,17 @@ export function hardEligible(e: Exercise, ctx: SelectionContext): boolean {
 }
 
 export function mobilityRegions(e: Exercise | undefined, r: Rules): string[] {
-  if (!e || e.modality !== "mobility") return [];
+  if (!e || e.modality !== 'mobility') return [];
   const regions = new Set<string>();
-  if (e.mobility_type === "static")
+  if (e.mobility_type === 'static')
     for (const group of e.stretch_targets ?? []) {
-      if (["quads", "glutes", "hamstrings"].includes(group))
-        regions.add("lower_body");
-      if (["chest", "back", "shoulders"].includes(group))
-        regions.add("upper_body");
+      if (['quads', 'glutes', 'hamstrings'].includes(group)) regions.add('lower_body');
+      if (['chest', 'back', 'shoulders'].includes(group)) regions.add('upper_body');
     }
   if (
-    e.mobility_type === "dynamic" &&
-    (e.primaryMuscles ?? []).some((m) =>
-      ["core", "lower_back"].includes(
-        r.get("dose.muscle_groups").catalog_map[m],
-      ),
-    )
+    e.mobility_type === 'dynamic' &&
+    (e.primaryMuscles ?? []).some(m => ['core', 'lower_back'].includes(r.get('dose.muscle_groups').catalog_map[m]))
   )
-    regions.add("trunk");
+    regions.add('trunk');
   return [...regions];
 }

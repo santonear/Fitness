@@ -11,12 +11,25 @@ async function startManual(page: Page, names: string[]) {
   await page.getByRole('button', { name: '开始', exact: true }).click();
   await expect(page).toHaveURL(/\/workout\//);
 }
-const sets = (page: Page) => page.evaluate(async () => { const p = '/src/persistence/db.ts'; return (await (await import(/* @vite-ignore */ p)).database.v8Workouts.toArray())[0]?.sets ?? []; });
+const sets = (page: Page) =>
+  page.evaluate(async () => {
+    const p = '/src/persistence/db.ts';
+    return (await (await import(/* @vite-ignore */ p)).database.v8Workouts.toArray())[0]?.sets ?? [];
+  });
 
 test('timed countdown, rest countdown with +15 s and skip, finish summary and review charts', async ({ page }) => {
   test.setTimeout(120_000);
   await page.clock.install();
-  await page.addInitScript(() => { (window as unknown as { vibrations: number[] }).vibrations = []; Object.defineProperty(navigator, 'vibrate', { value: (n: number) => { (window as unknown as { vibrations: number[] }).vibrations.push(n); return true; } }); localStorage.setItem('fitness.rest-vibration', 'on'); });
+  await page.addInitScript(() => {
+    (window as unknown as { vibrations: number[] }).vibrations = [];
+    Object.defineProperty(navigator, 'vibrate', {
+      value: (n: number) => {
+        (window as unknown as { vibrations: number[] }).vibrations.push(n);
+        return true;
+      },
+    });
+    localStorage.setItem('fitness.rest-vibration', 'on');
+  });
   await startManual(page, ['平板支撑', '臀桥']);
   await expect(page.getByRole('heading', { name: '平板支撑', exact: true })).toBeVisible();
   // The first screen is about the exercise: no stop-signal list or red-flag buttons until 身体不适？ is tapped.
@@ -116,7 +129,16 @@ test('390px screenshots of player, rest, finish and review in all five themes @s
     await page.goto('/');
     await page.evaluate(theme => localStorage.setItem('fitness-theme', theme), theme);
     await startManual(page, ['平板支撑', '哑铃深蹲']);
-    const shot = async (name: string) => { await page.evaluate(() => document.fonts.ready); expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true); await page.screenshot({ path: `test-results-review/v9-workout/${theme}-${name}.png` }); if (theme === 'pop' && ['player-timed', 'rest', 'finish', 'review'].includes(name)) { await page.setViewportSize({ width: 1440, height: 900 }); await page.screenshot({ path: `test-results-review/v9-workout/pop-${name}-1440.png` }); await page.setViewportSize({ width: 390, height: 844 }); } };
+    const shot = async (name: string) => {
+      await page.evaluate(() => document.fonts.ready);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      await page.screenshot({ path: `test-results-review/v9-workout/${theme}-${name}.png` });
+      if (theme === 'pop' && ['player-timed', 'rest', 'finish', 'review'].includes(name)) {
+        await page.setViewportSize({ width: 1440, height: 900 });
+        await page.screenshot({ path: `test-results-review/v9-workout/pop-${name}-1440.png` });
+        await page.setViewportSize({ width: 390, height: 844 });
+      }
+    };
     await shot('player-timed');
     await page.getByRole('button', { name: '开始计时', exact: true }).click();
     await page.clock.runFor(3000);
@@ -142,6 +164,10 @@ test('390px screenshots of player, rest, finish and review in all five themes @s
     await page.getByRole('button', { name: '记下来', exact: true }).click();
     await expect(page.getByRole('heading', { name: '本周回顾' })).toBeVisible();
     await shot('review');
-    await page.evaluate(async () => { const p = '/src/persistence/db.ts'; const db = (await import(/* @vite-ignore */ p)).database; await db.v8Workouts.clear(); });
+    await page.evaluate(async () => {
+      const p = '/src/persistence/db.ts';
+      const db = (await import(/* @vite-ignore */ p)).database;
+      await db.v8Workouts.clear();
+    });
   }
 });

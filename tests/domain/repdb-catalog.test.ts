@@ -11,14 +11,18 @@ import { RepDBAttribution } from '../../src/ui/components/RepDBAttribution';
 import { CatalogImage } from '../../src/ui/components/RepDBMedia';
 
 it('loads all 637 source exercises and retains the two distinct legacy squat variants', () => {
-  expect([...catalogMetadata.values()].filter(row=>!row.slug.startsWith('custom-'))).toHaveLength(637);
-  expect([...catalogMetadata.values()].filter(row=>row.slug.startsWith('custom-'))).toHaveLength(41);
-  expect(catalogMetadata.size).toBe(678); expect(exercises).toHaveLength(681);
+  expect([...catalogMetadata.values()].filter(row => !row.slug.startsWith('custom-'))).toHaveLength(637);
+  expect([...catalogMetadata.values()].filter(row => row.slug.startsWith('custom-'))).toHaveLength(41);
+  expect(catalogMetadata.size).toBe(678);
+  expect(exercises).toHaveLength(681);
   expect(knownExerciseIds.size).toBe(681);
-  expect(new Set(exercises.map(row=>row.id)).size).toBe(681);
+  expect(new Set(exercises.map(row => row.id)).size).toBe(681);
   expect(exercises.slice(0, 4).map(x => x.id)).toEqual(Object.values(EXERCISE_IDS).slice(0, 4));
   expect(catalogMetadata.has(EXERCISE_IDS.selfResistedRow)).toBe(false);
-  expect(exercises.find(x => x.id === EXERCISE_IDS.gobletSquat)).toMatchObject({ equipment: 'dumbbell', metricType: 'reps_load' });
+  expect(exercises.find(x => x.id === EXERCISE_IDS.gobletSquat)).toMatchObject({
+    equipment: 'dumbbell',
+    metricType: 'reps_load',
+  });
   const squat = [...catalogMetadata.values()].find(x => x.slug === 'squat')!;
   expect(squat.id).not.toBe(EXERCISE_IDS.bodyweightSquat);
   expect(exercises.find(x => x.id === squat.id)?.equipment).toBe('barbell');
@@ -32,7 +36,9 @@ it('keeps names bilingual, equipment labels complete and all media local', () =>
 });
 it('searches Chinese and original aliases without changing IDs', () => {
   expect(searchExercises('阿诺德', 'zh', { equipment: 'dumbbell' }).length).toBeGreaterThan(0);
-  expect(searchExercises('Arnold', 'en', {}).map(x => x.id)).toEqual(searchExercises('阿诺德', 'zh', {}).map(x => x.id));
+  expect(searchExercises('Arnold', 'en', {}).map(x => x.id)).toEqual(
+    searchExercises('阿诺德', 'zh', {}).map(x => x.id),
+  );
 });
 it('accepts catalog IDs but rejects invented ones and prevents provenance entering snapshots', () => {
   expect(exerciseIdSchema.safeParse(exercises[4].id).success).toBe(true);
@@ -44,12 +50,18 @@ it('bounds the AI catalog and makes every exercise selectable by exact name', ()
   for (const exercise of exercises) {
     const choices = selectAiExercises(exercise.name.en, { equipment: exercise.equipment });
     expect(choices.length).toBeLessThanOrEqual(64);
-    expect(choices.some(x => x.id === exercise.id), exercise.name.en).toBe(true);
+    expect(
+      choices.some(x => x.id === exercise.id),
+      exercise.name.en,
+    ).toBe(true);
   }
 });
 it('renders the exact linked attribution and a missing-image fallback', () => {
   const html = renderToStaticMarkup(createElement(RepDBAttribution));
-  expect(html).toContain('Exercise data by '); expect(html).toContain('href="https://repdb.co/"');
+  expect(html).toContain('Exercise data by ');
+  expect(html).toContain('href="https://repdb.co/"');
   expect(html).toContain('>RepDB</a>');
-  expect(renderToStaticMarkup(createElement(CatalogImage, { alt: 'Test', locale: 'en' }))).toContain('Image unavailable');
+  expect(renderToStaticMarkup(createElement(CatalogImage, { alt: 'Test', locale: 'en' }))).toContain(
+    'Image unavailable',
+  );
 });

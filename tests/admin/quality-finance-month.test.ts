@@ -1,22 +1,75 @@
-import {expect,it} from 'vitest';
-import {ledgerMonth} from '../../src/backend/admin/finance/month';
-import {evaluateFinanceTodos,handleFinance} from '../../src/backend/admin/finance';
-import {initialState} from '../../src/backend/store';
-import type {AdminContext,AdminDatabase,AdminStatement} from '../../src/backend/admin/core/contracts';
-const now=Date.parse('2026-10-31T16:30:00Z');
-it('ledger month follows policy at Shanghai November boundary, with costs using the same administrator time zone',async()=>{
- expect(ledgerMonth(now,JSON.stringify({timeZone:'Asia/Shanghai'}))).toBe('2026-11');
- expect(ledgerMonth(now,JSON.stringify({timeZone:'UTC'}))).toBe('2026-10');
- expect(ledgerMonth(now,JSON.stringify({timeZone:'America/Los_Angeles'}))).toBe('2026-10');
- const state=initialState();state.budgets['2026-11']={spent:3000,reserved:0};state.budgets['2026-10']={spent:0,reserved:0};
- const adminDb:AdminDatabase={prepare(){const statement:AdminStatement={bind(){return statement},async first<T>(){return {state:JSON.stringify({versions:[],announcement:null,receipts:{}})} as T},async all<T>(){return {results:[] as T[]}},async run(){return {success:true,meta:{changes:0}}}};return statement},async batch(){return []}};
- const context:AdminContext={env:{ADMIN_DB:adminDb,CONTROL_POLICY:JSON.stringify({timeZone:'Asia/Shanghai'}),CONTROL_DB:{withSession(){return {prepare(){return {bind(){return this},async first<T>(){return {state:JSON.stringify(state)} as T},async run(){return {success:true,meta:{changes:0}}}}}}}}},now,actor:'admin',fresh:true,requestId:'test',audit:async()=>{}};
- const todos=await evaluateFinanceTodos(context);
- expect(todos.some(t=>t.id==='finance-budget-2026-11-100')).toBe(true);
- expect(todos.some(t=>t.id.includes('2026-10'))).toBe(false);
- const get=async(path:string)=>handleFinance(new Request('https://example.test/api/v1/management/console/finance/'+path),context);
- expect(await (await get('ledger'))!.json()).toMatchObject({month:'2026-11',settledFen:3000});
- expect((await get('export'))!.headers.get('Content-Disposition')).toContain('ledger-2026-11.csv');
- expect(await (await get('costs'))!.json()).toMatchObject({month:'2026-11',timeZone:'Asia/Shanghai'});
- expect(await (await get('ledger?month=2026-10'))!.json()).toMatchObject({month:'2026-10',settledFen:0});
+import { expect, it } from 'vitest';
+import { ledgerMonth } from '../../src/backend/admin/finance/month';
+import { evaluateFinanceTodos, handleFinance } from '../../src/backend/admin/finance';
+import { initialState } from '../../src/backend/store';
+import type { AdminContext, AdminDatabase, AdminStatement } from '../../src/backend/admin/core/contracts';
+const now = Date.parse('2026-10-31T16:30:00Z');
+it('ledger month follows policy at Shanghai November boundary, with costs using the same administrator time zone', async () => {
+  expect(ledgerMonth(now, JSON.stringify({ timeZone: 'Asia/Shanghai' }))).toBe('2026-11');
+  expect(ledgerMonth(now, JSON.stringify({ timeZone: 'UTC' }))).toBe('2026-10');
+  expect(ledgerMonth(now, JSON.stringify({ timeZone: 'America/Los_Angeles' }))).toBe('2026-10');
+  const state = initialState();
+  state.budgets['2026-11'] = { spent: 3000, reserved: 0 };
+  state.budgets['2026-10'] = { spent: 0, reserved: 0 };
+  const adminDb: AdminDatabase = {
+    prepare() {
+      const statement: AdminStatement = {
+        bind() {
+          return statement;
+        },
+        async first<T>() {
+          return { state: JSON.stringify({ versions: [], announcement: null, receipts: {} }) } as T;
+        },
+        async all<T>() {
+          return { results: [] as T[] };
+        },
+        async run() {
+          return { success: true, meta: { changes: 0 } };
+        },
+      };
+      return statement;
+    },
+    async batch() {
+      return [];
+    },
+  };
+  const context: AdminContext = {
+    env: {
+      ADMIN_DB: adminDb,
+      CONTROL_POLICY: JSON.stringify({ timeZone: 'Asia/Shanghai' }),
+      CONTROL_DB: {
+        withSession() {
+          return {
+            prepare() {
+              return {
+                bind() {
+                  return this;
+                },
+                async first<T>() {
+                  return { state: JSON.stringify(state) } as T;
+                },
+                async run() {
+                  return { success: true, meta: { changes: 0 } };
+                },
+              };
+            },
+          };
+        },
+      },
+    },
+    now,
+    actor: 'admin',
+    fresh: true,
+    requestId: 'test',
+    audit: async () => {},
+  };
+  const todos = await evaluateFinanceTodos(context);
+  expect(todos.some(t => t.id === 'finance-budget-2026-11-100')).toBe(true);
+  expect(todos.some(t => t.id.includes('2026-10'))).toBe(false);
+  const get = async (path: string) =>
+    handleFinance(new Request('https://example.test/api/v1/management/console/finance/' + path), context);
+  expect(await (await get('ledger'))!.json()).toMatchObject({ month: '2026-11', settledFen: 3000 });
+  expect((await get('export'))!.headers.get('Content-Disposition')).toContain('ledger-2026-11.csv');
+  expect(await (await get('costs'))!.json()).toMatchObject({ month: '2026-11', timeZone: 'Asia/Shanghai' });
+  expect(await (await get('ledger?month=2026-10'))!.json()).toMatchObject({ month: '2026-10', settledFen: 0 });
 });

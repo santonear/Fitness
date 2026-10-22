@@ -1,8 +1,32 @@
 /* V9 exercise tools (动作怎么做 / 换动作) and the swap sheet. Tokens only. */
-.v9-swap { display: grid; gap: var(--s3); }
-.v9-swap p { margin: 0; }
-.v9-swap-from { font-size: var(--t3); font-weight: var(--w-strong); }
-.v9-swap-hint { font-size: var(--t2); color: var(--c-ink-muted); line-height: var(--lh-body); }
-.v9-swap-list { display: grid; gap: var(--s2); }
-.v9-swap-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--s2); }
-.v9-swap-actions { display: grid; gap: var(--s2); padding-block-start: var(--s2); }
+.v9-swap {
+  display: grid;
+  gap: var(--s3);
+}
+.v9-swap p {
+  margin: 0;
+}
+.v9-swap-from {
+  font-size: var(--t3);
+  font-weight: var(--w-strong);
+}
+.v9-swap-hint {
+  font-size: var(--t2);
+  color: var(--c-ink-muted);
+  line-height: var(--lh-body);
+}
+.v9-swap-list {
+  display: grid;
+  gap: var(--s2);
+}
+.v9-swap-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--s2);
+}
+.v9-swap-actions {
+  display: grid;
+  gap: var(--s2);
+  padding-block-start: var(--s2);
+}

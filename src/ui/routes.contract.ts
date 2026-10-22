@@ -1,8 +1,26 @@
 /** Declarative V8 route inventory. */
 export const v8Routes = [
-  {id:'bodyProfile',path:'/settings/body',page:'settings/BodyProfilePage',namespace:'settings',owner:'integration'},
-  { id: 'nutrition', path: '/settings/nutrition', page: 'settings/NutritionPage', namespace: 'settings', owner: 'followup' },
-  { id: 'activityImport', path: '/settings/import', page: 'settings/ActivityImportPage', namespace: 'settings', owner: 'followup' },
+  {
+    id: 'bodyProfile',
+    path: '/settings/body',
+    page: 'settings/BodyProfilePage',
+    namespace: 'settings',
+    owner: 'integration',
+  },
+  {
+    id: 'nutrition',
+    path: '/settings/nutrition',
+    page: 'settings/NutritionPage',
+    namespace: 'settings',
+    owner: 'followup',
+  },
+  {
+    id: 'activityImport',
+    path: '/settings/import',
+    page: 'settings/ActivityImportPage',
+    namespace: 'settings',
+    owner: 'followup',
+  },
   { id: 'onboarding', path: '/onboarding', page: 'onboarding/OnboardingPage', namespace: 'onboarding', owner: 'E' },
   { id: 'draft', path: '/plan-draft', page: 'onboarding/PlanDraftPage', namespace: 'onboarding', owner: 'E' },
   { id: 'next', path: '/', page: 'home/HomePage', namespace: 'training', owner: 'E' },
@@ -17,8 +35,14 @@ export const v8Routes = [
   { id: 'exercises', path: '/exercises', page: 'plan/ExercisesPage', namespace: 'plan', owner: 'F' },
   { id: 'review', path: '/review', page: 'review/ReviewPage', namespace: 'review', owner: 'F' },
   { id: 'settings', path: '/settings', page: 'settings/SettingsPage', namespace: 'settings', owner: 'F' },
-  { id: 'appearance', path: '/settings/appearance', page: 'settings/AppearancePage', namespace: 'settings', owner: 'F' },
+  {
+    id: 'appearance',
+    path: '/settings/appearance',
+    page: 'settings/AppearancePage',
+    namespace: 'settings',
+    owner: 'F',
+  },
   { id: 'templates', path: '/settings/templates', page: 'settings/TemplatesPage', namespace: 'settings', owner: 'F' },
   { id: 'admin', path: '/admin', page: 'ManagementPage', namespace: 'admin', owner: 'H' },
 ] as const;
-export type V8RouteId = typeof v8Routes[number]['id'];
+export type V8RouteId = (typeof v8Routes)[number]['id'];

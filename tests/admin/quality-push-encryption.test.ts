@@ -5,13 +5,20 @@ it('round trips encrypted Web Push payload using receiver key and contains only 
   const receiver = new Uint8Array(await crypto.subtle.exportKey('raw', pair.publicKey));
   const auth = crypto.getRandomValues(new Uint8Array(16));
   const payload = notificationPayload('applications', 3);
-  const encrypted = await encryptPayload({ p256dh: Buffer.from(receiver).toString('base64url'), auth: Buffer.from(auth).toString('base64url') }, payload);
+  const encrypted = await encryptPayload(
+    { p256dh: Buffer.from(receiver).toString('base64url'), auth: Buffer.from(auth).toString('base64url') },
+    payload,
+  );
   const sender = encrypted.slice(21, 86);
   const publicKey = await crypto.subtle.importKey('raw', sender, { name: 'ECDH', namedCurve: 'P-256' }, false, []);
   const secret = await crypto.subtle.deriveBits({ name: 'ECDH', public: publicKey }, pair.privateKey, 256);
   async function derive(input: ArrayBuffer, salt: Uint8Array, info: Uint8Array, length: number) {
     const key = await crypto.subtle.importKey('raw', input, 'HKDF', false, ['deriveBits']);
-    return crypto.subtle.deriveBits({ name: 'HKDF', hash: 'SHA-256', salt: new Uint8Array(salt), info: new Uint8Array(info) }, key, length);
+    return crypto.subtle.deriveBits(
+      { name: 'HKDF', hash: 'SHA-256', salt: new Uint8Array(salt), info: new Uint8Array(info) },
+      key,
+      length,
+    );
   }
   const info = Buffer.concat([Buffer.from('WebPush: info\0'), receiver, sender]);
   const ikm = await derive(secret, auth, info, 256);

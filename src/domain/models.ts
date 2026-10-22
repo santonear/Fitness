@@ -27,12 +27,25 @@ export type TimerState = z.infer<typeof schemas.timerStateSchema>;
 export type BackupEnvelope = z.infer<typeof schemas.backupEnvelopeSchema>;
 // V9.14 rows: the frozen shapes live in plan-upgrade.ts; the stored rows must stay assignable to them.
 type Assignable<T extends U, U> = T;
-export type StoredFitnessTest = Assignable<z.infer<typeof schemas.fitnessTestRecordSchema>, import('./plan-upgrade').FitnessTestRecord>;
+export type StoredFitnessTest = Assignable<
+  z.infer<typeof schemas.fitnessTestRecordSchema>,
+  import('./plan-upgrade').FitnessTestRecord
+>;
 export type StoredJourney = Assignable<z.infer<typeof schemas.journeySchema>, import('./plan-upgrade').Journey>;
-export type StoredFutureLetter = Assignable<z.infer<typeof schemas.futureLetterSchema>, import('./plan-upgrade').FutureLetter>;
-export type StoredWeeklyBudget = Assignable<z.infer<typeof schemas.weeklyBudgetSchema>, import('./plan-upgrade').WeeklyBudget>;
+export type StoredFutureLetter = Assignable<
+  z.infer<typeof schemas.futureLetterSchema>,
+  import('./plan-upgrade').FutureLetter
+>;
+export type StoredWeeklyBudget = Assignable<
+  z.infer<typeof schemas.weeklyBudgetSchema>,
+  import('./plan-upgrade').WeeklyBudget
+>;
 
-export interface CatalogFilters { category?: Exercise['category']; equipment?: Exercise['equipment']; metricType?: MetricType }
+export interface CatalogFilters {
+  category?: Exercise['category'];
+  equipment?: Exercise['equipment'];
+  metricType?: MetricType;
+}
 type NumericInput = string | number;
 export type MetricInput =
   | { metricType: 'reps_load'; reps: NumericInput; loadKg: NumericInput }
@@ -40,19 +53,46 @@ export type MetricInput =
   | { metricType: 'duration'; durationSeconds: NumericInput }
   | { metricType: 'duration_distance'; durationSeconds: NumericInput; distanceKm?: NumericInput };
 export type ProfileInput = Pick<LocalProfile, 'locale' | 'timeZone' | 'units' | 'trainingPreferences'>;
-export type BodyWeightInput = Pick<BodyWeightObservation, 'localDate' | 'timeZone' | 'weightGrams' | 'bodyFatPercent'> & { id?: string };
+export type BodyWeightInput = Pick<
+  BodyWeightObservation,
+  'localDate' | 'timeZone' | 'weightGrams' | 'bodyFatPercent'
+> & { id?: string };
 export interface PlanInput {
   status?: 'draft' | 'active';
-  id?: string; name: string; source: Plan['source']; startDate: LocalDate; scheduleTimeZone: string;
-  goalSnapshot: PlanVersion['goalSnapshot']; durationWeeks: number; daysPerWeek: number;
-  days: PlanDay[]; generationMetadata?: PlanVersion['generationMetadata'];
+  id?: string;
+  name: string;
+  source: Plan['source'];
+  startDate: LocalDate;
+  scheduleTimeZone: string;
+  goalSnapshot: PlanVersion['goalSnapshot'];
+  durationWeeks: number;
+  daysPerWeek: number;
+  days: PlanDay[];
+  generationMetadata?: PlanVersion['generationMetadata'];
 }
 export interface StartWorkoutInput {
-  sessionId: string; localDate: LocalDate; timeZone: string;
-  planVersionId?: string; plannedDayId?: string; scheduledWorkoutId?: string; exerciseIds?: string[];
+  sessionId: string;
+  localDate: LocalDate;
+  timeZone: string;
+  planVersionId?: string;
+  plannedDayId?: string;
+  scheduledWorkoutId?: string;
+  exerciseIds?: string[];
   legacyConfirmation?: import('./day-plan-contracts').LegacyConfirmation;
 }
-export type SetInput = Pick<SetRecord, 'id' | 'exerciseInstanceId' | 'order' | 'metricType' | 'completed' | 'reps' | 'loadGrams' | 'durationSeconds' | 'distanceMeters' | 'notes'>;
+export type SetInput = Pick<
+  SetRecord,
+  | 'id'
+  | 'exerciseInstanceId'
+  | 'order'
+  | 'metricType'
+  | 'completed'
+  | 'reps'
+  | 'loadGrams'
+  | 'durationSeconds'
+  | 'distanceMeters'
+  | 'notes'
+>;
 export type Adjustment =
   | { type: 'add_exercise'; exerciseId: string; exerciseInstanceId: string }
   | { type: 'replace_exercise'; exerciseInstanceId: string; exerciseId: string; confirmClearMetrics: boolean }
@@ -60,8 +100,18 @@ export type Adjustment =
   | { type: 'add_set'; exerciseInstanceId: string; setId: string }
   | { type: 'remove_set'; setId: string; confirmDeleteRecords: boolean };
 export type TimerEvent = { type: 'start' | 'pause' | 'resume' | 'stop' | 'reset' };
-export interface TimerDisplay { elapsedMs: number; remainingMs?: number; finished: boolean; clockReversed: boolean }
-export interface ProgressQuery { from: LocalDate; to: LocalDate; planVersionId?: string; timeZone: string }
+export interface TimerDisplay {
+  elapsedMs: number;
+  remainingMs?: number;
+  finished: boolean;
+  clockReversed: boolean;
+}
+export interface ProgressQuery {
+  from: LocalDate;
+  to: LocalDate;
+  planVersionId?: string;
+  timeZone: string;
+}
 export interface ProgressFacts extends ProgressQuery {
   nowMs: number;
   planTimeZones: Record<string, string>;
@@ -79,14 +129,33 @@ export interface ProgressMetrics {
   missingDistanceSets: number;
 }
 export interface ProgressReport {
-  dueCount: number; completedCount: number; completionRate: number | null; history: WorkoutSession[];
+  dueCount: number;
+  completedCount: number;
+  completionRate: number | null;
+  history: WorkoutSession[];
   totals: ProgressMetrics;
   categoryTrends: (ProgressMetrics & { category: Exercise['category']; localDate: LocalDate })[];
-  exerciseTrends: (ProgressMetrics & { exerciseId: string; name: Exercise['name']; metricType: MetricType; localDate: LocalDate })[];
+  exerciseTrends: (ProgressMetrics & {
+    exerciseId: string;
+    name: Exercise['name'];
+    metricType: MetricType;
+    localDate: LocalDate;
+  })[];
   historySets: SetRecord[];
   historySchedules: ScheduledWorkout[];
   bodyWeights: BodyWeightObservation[];
 }
-export interface ValidatedBackup { envelope: BackupEnvelope; expectedRevision: number }
-export interface ReplaceConfirmation { backupExported: boolean; replacementConfirmed: boolean; expectedRevision: number }
-export interface ImportReport { importedSessions: number; importedPlans: number; rebuiltMemo: boolean }
+export interface ValidatedBackup {
+  envelope: BackupEnvelope;
+  expectedRevision: number;
+}
+export interface ReplaceConfirmation {
+  backupExported: boolean;
+  replacementConfirmed: boolean;
+  expectedRevision: number;
+}
+export interface ImportReport {
+  importedSessions: number;
+  importedPlans: number;
+  rebuiltMemo: boolean;
+}

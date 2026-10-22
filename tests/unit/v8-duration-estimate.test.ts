@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { estimateTrainingMinutes, type DurationTarget } from '../../src/domain/duration-estimate';
 
-const routine = (actions: number, sets: number, target: DurationTarget) => Array.from({ length: actions }, () => ({ sets: Array.from({ length: sets }, () => ({ ...target })) }));
+const routine = (actions: number, sets: number, target: DurationTarget) =>
+  Array.from({ length: actions }, () => ({ sets: Array.from({ length: sets }, () => ({ ...target })) }));
 
 describe('V8.0.5 shared plan duration estimate', () => {
   it('matches the approved full and short examples', () => {

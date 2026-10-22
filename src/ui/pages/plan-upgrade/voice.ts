@@ -25,5 +25,10 @@ export function useVoiceCue(text: string | undefined, enabled: boolean, voices: 
     speechSynthesis.cancel();
     speechSynthesis.speak(utterance);
   }, [text, enabled, voices]);
-  useEffect(() => () => { if (typeof speechSynthesis !== 'undefined') speechSynthesis.cancel(); }, []);
+  useEffect(
+    () => () => {
+      if (typeof speechSynthesis !== 'undefined') speechSynthesis.cancel();
+    },
+    [],
+  );
 }

@@ -1,6 +1,6 @@
-import type { EngineProfile, GateState } from "../contracts";
-import { Rules } from "../data";
-import { gateState } from "./state";
+import type { EngineProfile, GateState } from '../contracts';
+import { Rules } from '../data';
+import { gateState } from './state';
 
 export type SafetyState = GateState;
 /**

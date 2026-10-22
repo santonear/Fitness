@@ -1,25 +1,12 @@
-import { effectiveCautionLevels } from "./caution-safety";
-import type { PregnancySafetyState } from "./pregnancy-safety";
-import { deriveActivityEvidence } from "./engine-activity-evidence";
-import type {
-  CoachProfile,
-  WorkoutRecord,
-  PostpartumSafetyState,
-  OlderSafetyState,
-} from "../domain/v8/contracts";
-import {
-  engineProfileSchema,
-  type EngineProfile,
-  type Pattern,
-} from "../engine/contracts";
-import { hasHouseholdSupport } from "../engine/equipment";
-import { DATA, calendarDay } from "../engine/data";
-import {
-  pendingPainReviews,
-  painQuestionKeys,
-  historyDangerReview,
-} from "./pain-events";
-import { DEFAULT_TIME_ZONE, addDays, weekStart } from "../domain/local-date";
+import { effectiveCautionLevels } from './caution-safety';
+import type { PregnancySafetyState } from './pregnancy-safety';
+import { deriveActivityEvidence } from './engine-activity-evidence';
+import type { CoachProfile, WorkoutRecord, PostpartumSafetyState, OlderSafetyState } from '../domain/v8/contracts';
+import { engineProfileSchema, type EngineProfile, type Pattern } from '../engine/contracts';
+import { hasHouseholdSupport } from '../engine/equipment';
+import { DATA, calendarDay } from '../engine/data';
+import { pendingPainReviews, painQuestionKeys, historyDangerReview } from './pain-events';
+import { DEFAULT_TIME_ZONE, addDays, weekStart } from '../domain/local-date';
 
 export interface PainFollowupRestriction {
   pattern: Pattern;
@@ -30,47 +17,33 @@ export interface PainFollowupRestriction {
 /** Confirmed exclusions cover this workout and one subsequently completed/partial workout. */
 export function historyPainState(
   history: WorkoutRecord[],
-  stored: EngineProfile["painState"] = [],
+  stored: EngineProfile['painState'] = [],
   followups: readonly PainFollowupRestriction[] = [],
-): EngineProfile["painState"] {
-  const states = new Map(stored.map((row) => [row.pattern, { ...row }]));
+): EngineProfile['painState'] {
+  const states = new Map(stored.map(row => [row.pattern, { ...row }]));
   const duration = DATA.rules
-    .find((rule) => rule.id === "pain.rule")!
-    .value!.bands.find(
-      (band: { action: string }) => band.action === "drop_pattern",
-    ).drop_pattern_sessions;
-  const drops = history.flatMap((record) =>
+    .find(rule => rule.id === 'pain.rule')!
+    .value!.bands.find((band: { action: string }) => band.action === 'drop_pattern').drop_pattern_sessions;
+  const drops = history.flatMap(record =>
     (record.painActions ?? [])
-      .filter((action) => action.kind === "exclude")
-      .map((action) => ({
+      .filter(action => action.kind === 'exclude')
+      .map(action => ({
         record,
         action,
-        event: record.setFeedbackEvents?.find(
-          (event) => event.id === action.eventId,
-        ),
+        event: record.setFeedbackEvents?.find(event => event.id === action.eventId),
       })),
   );
   for (const { record, action, event } of drops) {
     const later = history.filter(
-      (next) =>
+      next =>
         next.id !== record.id &&
-        (next.status === "complete" || next.status === "partial") &&
+        (next.status === 'complete' || next.status === 'partial') &&
         Date.parse(next.startedAt) > Date.parse(action.appliedAt),
     ).length;
-    const related = drops.filter(
-        (row) => row.event?.painArea === event?.painArea,
-      ),
-      repeats = new Set(
-        related.map(
-          (row) =>
-            `${row.record.id}:${row.event?.itemIndex}:${row.event?.setIndex}`,
-        ),
-      ).size;
+    const related = drops.filter(row => row.event?.painArea === event?.painArea),
+      repeats = new Set(related.map(row => `${row.record.id}:${row.event?.itemIndex}:${row.event?.setIndex}`)).size;
     const previous = states.get(action.pattern),
-      remaining = Math.max(
-        previous?.remainingSessions ?? 0,
-        Math.max(0, duration - 1 - later),
-      );
+      remaining = Math.max(previous?.remainingSessions ?? 0, Math.max(0, duration - 1 - later));
     states.set(action.pattern, {
       pattern: action.pattern,
       remainingSessions: remaining,
@@ -82,12 +55,12 @@ export function historyPainState(
     const later = new Set(
       history
         .filter(
-          (row) =>
+          row =>
             row.id !== applied.sourceWorkoutId &&
-            ["complete", "partial"].includes(row.status) &&
+            ['complete', 'partial'].includes(row.status) &&
             Date.parse(row.startedAt) >= Date.parse(applied.appliedAt),
         )
-        .map((row) => row.id),
+        .map(row => row.id),
     ).size;
     const prior = states.get(applied.pattern),
       remaining = Math.max(0, duration - later);
@@ -95,48 +68,43 @@ export function historyPainState(
       ...prior,
       pattern: applied.pattern,
       remainingSessions: Math.max(prior?.remainingSessions ?? 0, remaining),
-      cautionLevelDelta: Math.max(
-        prior?.cautionLevelDelta ?? 0,
-        applied.cautionLevelDelta,
-      ),
+      cautionLevelDelta: Math.max(prior?.cautionLevelDelta ?? 0, applied.cautionLevelDelta),
     });
   }
-  return [...states.values()].sort((a, b) =>
-    a.pattern.localeCompare(b.pattern, "en"),
-  );
+  return [...states.values()].sort((a, b) => a.pattern.localeCompare(b.pattern, 'en'));
 }
 
 /** Read projection of the old age-group selector; the original answers remain intact. */
 export function legacyAgePopulation(
-  population: EngineProfile["population"] | undefined,
+  population: EngineProfile['population'] | undefined,
   birthYearMonth: string | undefined,
   asOfDate: string,
-): EngineProfile["population"] | undefined {
-  if(population?.kind!=="older_adult" || !birthYearMonth)return population;
-  const [year,month]=birthYearMonth.split("-").map(Number);
-  const [nowYear,nowMonth]=asOfDate.split("-").map(Number);
-  const years=nowYear-year-(nowMonth<month?1:0);
-  const threshold=DATA.rules.find(row=>row.id==="older.activation")!.value!.trigger.any[0].gte;
-  return years<threshold?{kind:"general"}:population;
+): EngineProfile['population'] | undefined {
+  if (population?.kind !== 'older_adult' || !birthYearMonth) return population;
+  const [year, month] = birthYearMonth.split('-').map(Number);
+  const [nowYear, nowMonth] = asOfDate.split('-').map(Number);
+  const years = nowYear - year - (nowMonth < month ? 1 : 0);
+  const threshold = DATA.rules.find(row => row.id === 'older.activation')!.value!.trigger.any[0].gte;
+  return years < threshold ? { kind: 'general' } : population;
 }
 
 /** Local-only source. Never spread this object into a coach/network request. */
 export type EngineProfileFields = Partial<
   Pick<
     EngineProfile,
-    | "cautions"
-    | "postpartumRisk"
-    | "powerOneRm"
-    | "goal"
-    | "level"
-    | "constraints"
-    | "population"
-    | "screening"
-    | "preferences"
-    | "birthYearMonth"
-    | "equipmentLoadsKg"
-    | "painState"
-    | "householdSupport"
+    | 'cautions'
+    | 'postpartumRisk'
+    | 'powerOneRm'
+    | 'goal'
+    | 'level'
+    | 'constraints'
+    | 'population'
+    | 'screening'
+    | 'preferences'
+    | 'birthYearMonth'
+    | 'equipmentLoadsKg'
+    | 'painState'
+    | 'householdSupport'
   >
 > & { healthStorageConsent?: { acceptedAt: string } };
 export type EngineCoachProfile = CoachProfile & EngineProfileFields;
@@ -145,26 +113,17 @@ type StoredPreference = { kind?: string; value?: string | string[] };
 export function enginePreferences(
   profile: EngineProfileFields,
   notes: StoredPreference[] = [],
-): EngineProfile["preferences"] {
+): EngineProfile['preferences'] {
   const excluded = new Set(profile.preferences?.excludedExerciseIds ?? []),
     cannotDo = new Set(profile.preferences?.cannotDo ?? []);
   for (const note of notes) {
-    if (note.kind === "dislike_exercise" && typeof note.value === "string")
-      excluded.add(note.value);
+    if (note.kind === 'dislike_exercise' && typeof note.value === 'string') excluded.add(note.value);
     if (
-      note.kind === "cannot_do" &&
-      typeof note.value === "string" &&
-      [
-        "walking_carry",
-        "jumping",
-        "floor_work",
-        "overhead",
-        "kneeling",
-      ].includes(note.value)
+      note.kind === 'cannot_do' &&
+      typeof note.value === 'string' &&
+      ['walking_carry', 'jumping', 'floor_work', 'overhead', 'kneeling'].includes(note.value)
     )
-      cannotDo.add(
-        note.value as EngineProfile["preferences"]["cannotDo"][number],
-      );
+      cannotDo.add(note.value as EngineProfile['preferences']['cannotDo'][number]);
   }
   return {
     excludedExerciseIds: [...excluded].sort(),
@@ -176,12 +135,7 @@ export function enginePreferences(
 export function toEngineProfile(
   profile: EngineCoachProfile,
   options: {
-    cautionLevels?: Partial<
-      Record<
-        "knee" | "back" | "shoulder" | "wrist",
-        { level: 0 | 1 | 2; changedAt: string }
-      >
-    >;
+    cautionLevels?: Partial<Record<'knee' | 'back' | 'shoulder' | 'wrist', { level: 0 | 1 | 2; changedAt: string }>>;
     painFollowupRestrictions?: readonly PainFollowupRestriction[];
     pregnancySafety?: PregnancySafetyState;
     olderSafety?: OlderSafetyState;
@@ -190,7 +144,7 @@ export function toEngineProfile(
       symptoms: boolean;
     }[];
     postpartumSafety?: PostpartumSafetyState;
-    locale?: "zh" | "en";
+    locale?: 'zh' | 'en';
     timeZone?: string;
     asOfDate: string;
     history?: WorkoutRecord[];
@@ -208,7 +162,7 @@ export function toEngineProfile(
     return;
   const screening = {
     ...source.screening,
-    parqAllNo: source.screening.parqAnswers.every((answer) => answer === false),
+    parqAllNo: source.screening.parqAnswers.every(answer => answer === false),
   };
   const safety = options.postpartumSafety,
     instants = [
@@ -217,9 +171,7 @@ export function toEngineProfile(
       safety?.regression?.requiredAt,
       safety?.professionalSeenAt,
     ].filter((at): at is string => !!at),
-    horizon = instants.length
-      ? Math.max(...instants.map(Date.parse))
-      : undefined,
+    horizon = instants.length ? Math.max(...instants.map(Date.parse)) : undefined,
     zone = options.timeZone ?? DEFAULT_TIME_ZONE;
   let cutoff: string | undefined;
   if (horizon !== undefined) {
@@ -228,15 +180,10 @@ export function toEngineProfile(
       cutoff = addDays(weekStart(day), 7);
     }
   }
-  const afterHorizon = (at: string) =>
-    !cutoff || (calendarDay(at, zone) ?? "") >= cutoff;
+  const afterHorizon = (at: string) => !cutoff || (calendarDay(at, zone) ?? '') >= cutoff;
   const evidence = deriveActivityEvidence({
-    records: (options.history ?? []).filter((row) =>
-      afterHorizon(row.endedAt ?? row.startedAt),
-    ),
-    screeningEvents: options.screeningEvidenceEvents?.filter((event) =>
-      afterHorizon(event.answeredAt),
-    ),
+    records: (options.history ?? []).filter(row => afterHorizon(row.endedAt ?? row.startedAt)),
+    screeningEvents: options.screeningEvidenceEvents?.filter(event => afterHorizon(event.answeredAt)),
     asOfDate: options.asOfDate,
     timeZone: zone,
     weeklyTarget: profile.weeklyTarget,
@@ -245,25 +192,17 @@ export function toEngineProfile(
     consecutiveRegularWeeks: evidence.consecutiveRegularWeeks,
     noSymptomReportsWeeks: evidence.noSymptomReportsWeeks,
   };
-  screening.redFlagReview = historyDangerReview(
-    options.history ?? [],
-    screening.redFlagReview,
-  );
+  screening.redFlagReview = historyDangerReview(options.history ?? [], screening.redFlagReview);
   const pending = pendingPainReviews(options.history ?? []);
   if (pending.length) {
     const old = screening.redFlagReview,
       areas = [
         ...new Set([
           ...(old?.areas ?? []),
-          ...pending.flatMap((row) =>
-            row.event.painArea ? [row.event.painArea] : [],
-          ),
+          ...pending.flatMap(row => (row.event.painArea ? [row.event.painArea] : [])),
         ]),
       ];
-    const requiredAt = [
-      ...pending.map((row) => row.event.createdAt),
-      ...(old ? [old.requiredAt] : []),
-    ]
+    const requiredAt = [...pending.map(row => row.event.createdAt), ...(old ? [old.requiredAt] : [])]
       .sort((a, b) => Date.parse(a) - Date.parse(b))
       .at(-1)!;
     screening.redFlagReview = {
@@ -274,21 +213,14 @@ export function toEngineProfile(
     };
   }
   const history = (options.history ?? [])
-    .filter((row) => row.status === "complete" || row.status === "partial")
+    .filter(row => row.status === 'complete' || row.status === 'partial')
     .sort((a, b) => a.startedAt.localeCompare(b.startedAt));
   const first = history[0],
     ageWeeks = first
-      ? Math.max(
-          0,
-          Math.floor(
-            (Date.parse(options.asOfDate) - Date.parse(first.localDate)) /
-              604800000,
-          ),
-        )
+      ? Math.max(0, Math.floor((Date.parse(options.asOfDate) - Date.parse(first.localDate)) / 604800000))
       : 0;
   const pregnancyWeeks =
-    source.population?.kind === "pregnant" &&
-    screening.activityStatus === "inactive"
+    source.population?.kind === 'pregnant' && screening.activityStatus === 'inactive'
       ? source.population.inactiveRampStartedAt
         ? Math.max(
             0,
@@ -306,14 +238,14 @@ export function toEngineProfile(
   const goal =
     source.goal ??
     (/增肌|肌肉|muscle|hypertroph/i.test(profile.goalText)
-      ? "muscle"
+      ? 'muscle'
       : /减脂|减重|fat|weight loss/i.test(profile.goalText)
-        ? "fat_loss"
+        ? 'fat_loss'
         : /力量|strength/i.test(profile.goalText)
-          ? "strength"
+          ? 'strength'
           : /灵活|mobility/i.test(profile.goalText)
-            ? "mobility"
-            : "health");
+            ? 'mobility'
+            : 'health');
   const levels = effectiveCautionLevels(
     options.cautionLevels,
     options.history ?? [],
@@ -322,15 +254,11 @@ export function toEngineProfile(
   );
   const parsed = engineProfileSchema.safeParse({
     cautionLevels: Object.keys(levels).length
-      ? Object.fromEntries(
-          Object.entries(levels).map(([joint, value]) => [joint, value.level]),
-        )
+      ? Object.fromEntries(Object.entries(levels).map(([joint, value]) => [joint, value.level]))
       : undefined,
     postpartumRisk: source.postpartumRisk,
     powerOneRm: source.powerOneRm,
-    pregnancySafety: options.pregnancySafety
-      ? { avoidSupine: !!options.pregnancySafety.supineAvoidSince }
-      : undefined,
+    pregnancySafety: options.pregnancySafety ? { avoidSupine: !!options.pregnancySafety.supineAvoidSince } : undefined,
     olderSafety: options.olderSafety
       ? {
           fallPaused: !!options.olderSafety.reviewRequiredAt,
@@ -344,7 +272,7 @@ export function toEngineProfile(
         }
       : undefined,
     goal,
-    level: source.level ?? "beginner",
+    level: source.level ?? 'beginner',
     trainingAgeWeeks: pregnancyWeeks,
     daysPerWeek: Math.min(6, profile.weeklyTarget),
     preferredDays: profile.preferredDays?.slice(0, 6),
@@ -355,10 +283,10 @@ export function toEngineProfile(
     constraints: source.constraints ?? {
       noJump: false,
       quiet: false,
-      space: "small",
+      space: 'small',
     },
     cautions: profile.cautions,
-    population: legacyAgePopulation(source.population,source.birthYearMonth,options.asOfDate),
+    population: legacyAgePopulation(source.population, source.birthYearMonth, options.asOfDate),
     screening,
     preferences: enginePreferences(profile, options.notes),
     birthYearMonth: source.birthYearMonth,
@@ -366,14 +294,10 @@ export function toEngineProfile(
     bodyWeightKg: options.bodyWeightKg,
     asOfDate: options.asOfDate,
     timeZone: options.timeZone,
-    locale: options.locale ?? "zh",
+    locale: options.locale ?? 'zh',
     equipmentLoadsKg: source.equipmentLoadsKg,
     availableLoadsKg: profile.availableLoadsKg,
-    painState: historyPainState(
-      options.history ?? [],
-      profile.painState,
-      options.painFollowupRestrictions,
-    ),
+    painState: historyPainState(options.history ?? [], profile.painState, options.painFollowupRestrictions),
   });
   return parsed.success ? parsed.data : undefined;
 }

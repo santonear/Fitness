@@ -1,10 +1,26 @@
 // Rules line owns this file (UIUX20261008 V9.14). Signatures are frozen in src/domain/plan-upgrade.ts.
 // Everything here is pure and deterministic: no I/O, no clock, no randomness.
 import {
-  MUSCLE_GROUPS, PRIMARY_SET_WEIGHT, SECONDARY_SET_WEIGHT, muscleGroupOf,
-  type BodyAgeResult, type BodyChangeEvent, type BodyChangeInput, type BodyChangeKind, type BudgetRequest, type Camp,
-  type FitnessTestItem, type LiftEntry, type MuscleGroup, type MuscleLoad, type MuscleLoadLevel, type NowSession,
-  type NowSessionContext, type PersonalRecord, type SessionMuscleFocus, type SetEntry,
+  MUSCLE_GROUPS,
+  PRIMARY_SET_WEIGHT,
+  SECONDARY_SET_WEIGHT,
+  muscleGroupOf,
+  type BodyAgeResult,
+  type BodyChangeEvent,
+  type BodyChangeInput,
+  type BodyChangeKind,
+  type BudgetRequest,
+  type Camp,
+  type FitnessTestItem,
+  type LiftEntry,
+  type MuscleGroup,
+  type MuscleLoad,
+  type MuscleLoadLevel,
+  type NowSession,
+  type NowSessionContext,
+  type PersonalRecord,
+  type SessionMuscleFocus,
+  type SetEntry,
 } from '../../domain/plan-upgrade';
 import { addDays, daysBetween } from '../../domain/local-date';
 import { catalogMetadata } from '../../catalog/registry';
@@ -54,7 +70,8 @@ export function weeklyMuscleLoad(entries: readonly SetEntry[]): MuscleLoad[] {
 }
 
 export function sessionMuscleFocus(exerciseIds: readonly string[]): SessionMuscleFocus {
-  const primary = new Set<MuscleGroup>(), secondary = new Set<MuscleGroup>();
+  const primary = new Set<MuscleGroup>(),
+    secondary = new Set<MuscleGroup>();
   const byExercise: Record<string, MuscleGroup[]> = {};
   for (const id of exerciseIds) {
     const groups = exerciseMuscleGroups(id);
@@ -62,7 +79,11 @@ export function sessionMuscleFocus(exerciseIds: readonly string[]): SessionMuscl
     groups.secondary.forEach(group => secondary.add(group));
     byExercise[id] = [...groups.primary, ...groups.secondary];
   }
-  return { primary: groupOrder(primary), secondary: groupOrder(secondary).filter(group => !primary.has(group)), byExercise };
+  return {
+    primary: groupOrder(primary),
+    secondary: groupOrder(secondary).filter(group => !primary.has(group)),
+    byExercise,
+  };
 }
 
 // ---------------------------------------------------------------- strength records
@@ -71,7 +92,8 @@ export const E1RM_MAX_REPS = 12;
 
 /** Epley estimate, valid only for 1–12 whole reps with a positive load; one rep returns the load itself. */
 export function estimateE1rm(weightKg: number, reps: number): number | undefined {
-  if (!Number.isFinite(weightKg) || weightKg <= 0 || !Number.isInteger(reps) || reps < 1 || reps > E1RM_MAX_REPS) return undefined;
+  if (!Number.isFinite(weightKg) || weightKg <= 0 || !Number.isInteger(reps) || reps < 1 || reps > E1RM_MAX_REPS)
+    return undefined;
   const value = reps === 1 ? weightKg : weightKg * (1 + reps / 30);
   return Math.round(value * 10) / 10;
 }
@@ -111,8 +133,17 @@ export interface NowSessionOptions {
 }
 
 const RISKY_FLAGS = new Set([
-  'jumping', 'high_fall_risk', 'heavy_axial_load', 'valsalva_prone', 'loaded_spinal_rotation', 'loaded_spinal_flexion',
-  'overhead_load', 'running', 'unstable_surface', 'balance_demand', 'deep_knee_flexion',
+  'jumping',
+  'high_fall_risk',
+  'heavy_axial_load',
+  'valsalva_prone',
+  'loaded_spinal_rotation',
+  'loaded_spinal_flexion',
+  'overhead_load',
+  'running',
+  'unstable_surface',
+  'balance_demand',
+  'deep_knee_flexion',
 ]);
 const QUIET_UPRIGHT = new Set(['standing', 'seated']);
 const QUIET_FLOOR = new Set(['standing', 'seated', 'supine', 'side_lying', 'prone', 'quadruped', 'kneeling']);
@@ -121,7 +152,11 @@ export const SCENE_MINUTES = { min: 2, max: 5 } as const;
 
 type Mode = 'standard' | 'tired' | 'no-equipment' | 'scene-commute' | 'scene-upright' | 'scene-bed';
 
-interface Dose { sets: number; reps?: number; seconds?: number }
+interface Dose {
+  sets: number;
+  reps?: number;
+  seconds?: number;
+}
 
 function doseFor(exercise: EngineExercise, sets: number): Dose | undefined {
   const base = exercise.default_dose['beginner'];
@@ -146,24 +181,55 @@ function eligible(exercise: EngineExercise, mode: Mode, options: NowSessionOptio
   // Without plan candidates the user's equipment is unknown, so only bodyweight work is offered.
   if ((!restricted || mode !== 'standard') && !bodyweight) return false;
   switch (mode) {
-    case 'standard': return exercise.difficulty <= 3 && exercise.use.some(use => use === 'main' || use === 'accessory');
-    case 'no-equipment': return exercise.difficulty <= 3 && exercise.use.some(use => use === 'main' || use === 'accessory');
-    case 'tired': return exercise.difficulty <= 2 && (exercise.modality === 'mobility' || exercise.flags.includes('low_intensity')
-      || exercise.use.some(use => use === 'warmup' || use === 'cooldown'));
+    case 'standard':
+      return exercise.difficulty <= 3 && exercise.use.some(use => use === 'main' || use === 'accessory');
+    case 'no-equipment':
+      return exercise.difficulty <= 3 && exercise.use.some(use => use === 'main' || use === 'accessory');
+    case 'tired':
+      return (
+        exercise.difficulty <= 2 &&
+        (exercise.modality === 'mobility' ||
+          exercise.flags.includes('low_intensity') ||
+          exercise.use.some(use => use === 'warmup' || use === 'cooldown'))
+      );
     // Commute: no swinging mobility drills in a moving vehicle or a crowd.
-    case 'scene-commute': return exercise.modality !== 'mobility' && eligible(exercise, 'scene-upright', options, restricted);
-    case 'scene-upright': return exercise.difficulty <= 2 && exercise.noise === 0 && exercise.space === 'small'
-      && exercise.position.length > 0 && exercise.position.every(position => QUIET_UPRIGHT.has(position));
-    case 'scene-bed': return exercise.difficulty <= 2 && exercise.noise === 0 && (exercise.space === 'small' || exercise.space === 'mat')
-      && exercise.position.length > 0 && exercise.position.every(position => QUIET_FLOOR.has(position));
+    case 'scene-commute':
+      return exercise.modality !== 'mobility' && eligible(exercise, 'scene-upright', options, restricted);
+    case 'scene-upright':
+      return (
+        exercise.difficulty <= 2 &&
+        exercise.noise === 0 &&
+        exercise.space === 'small' &&
+        exercise.position.length > 0 &&
+        exercise.position.every(position => QUIET_UPRIGHT.has(position))
+      );
+    case 'scene-bed':
+      return (
+        exercise.difficulty <= 2 &&
+        exercise.noise === 0 &&
+        (exercise.space === 'small' || exercise.space === 'mat') &&
+        exercise.position.length > 0 &&
+        exercise.position.every(position => QUIET_FLOOR.has(position))
+      );
   }
 }
 
 /** Picks exercises for "how much time do you have now", filling the largest weekly gaps first. */
-export function buildNowSession(request: BudgetRequest, context: NowSessionContext & NowSessionOptions): NowSession | undefined {
-  const mode: Mode = request.scene === 'bedtime' ? 'scene-bed' : request.scene === 'commute' ? 'scene-commute'
-    : request.scene === 'office' ? 'scene-upright' : request.variant ?? 'standard';
-  const minutes = request.scene ? Math.min(SCENE_MINUTES.max, Math.max(SCENE_MINUTES.min, request.minutes)) : request.minutes;
+export function buildNowSession(
+  request: BudgetRequest,
+  context: NowSessionContext & NowSessionOptions,
+): NowSession | undefined {
+  const mode: Mode =
+    request.scene === 'bedtime'
+      ? 'scene-bed'
+      : request.scene === 'commute'
+        ? 'scene-commute'
+        : request.scene === 'office'
+          ? 'scene-upright'
+          : (request.variant ?? 'standard');
+  const minutes = request.scene
+    ? Math.min(SCENE_MINUTES.max, Math.max(SCENE_MINUTES.min, request.minutes))
+    : request.minutes;
   const restricted = context.candidateIds !== undefined;
   const allowed = restricted ? new Set(context.candidateIds) : undefined;
   const pool = DATA.exercises
@@ -179,7 +245,8 @@ export function buildNowSession(request: BudgetRequest, context: NowSessionConte
   for (const load of context.weekLoads) gap.set(load.group, target - load.sets);
 
   let remaining = minutes * 60;
-  const chosen: EngineExercise[] = [], ladders = new Set<string>();
+  const chosen: EngineExercise[] = [],
+    ladders = new Set<string>();
   const maxCount = MAX_EXERCISES[request.minutes] ?? 4;
   while (chosen.length < maxCount) {
     const groups = [...MUSCLE_GROUPS].sort((a, b) => (gap.get(b) ?? 0) - (gap.get(a) ?? 0));
@@ -192,13 +259,17 @@ export function buildNowSession(request: BudgetRequest, context: NowSessionConte
         const dose = doseFor(exercise, effectiveSets);
         const seconds = dose && doseSeconds(exercise, dose, rest);
         if (!seconds || seconds > remaining) return [];
-        const value = muscles.primary.reduce((sum, g) => sum + Math.max(0, gap.get(g) ?? 0), 0)
-          + muscles.secondary.reduce((sum, g) => sum + Math.max(0, gap.get(g) ?? 0) * SECONDARY_SET_WEIGHT, 0);
+        const value =
+          muscles.primary.reduce((sum, g) => sum + Math.max(0, gap.get(g) ?? 0), 0) +
+          muscles.secondary.reduce((sum, g) => sum + Math.max(0, gap.get(g) ?? 0) * SECONDARY_SET_WEIGHT, 0);
         return [{ exercise, seconds, value }];
       });
       // Stable sort keeps the pool's difficulty-then-slug order between equal values.
       const best = options.sort((a, b) => b.value - a.value)[0];
-      if (best) { pick = best; break; }
+      if (best) {
+        pick = best;
+        break;
+      }
     }
     if (!pick) break;
     chosen.push(pick.exercise);
@@ -224,19 +295,30 @@ const bandDistance = (band: NormBand, value: number) => Math.max(0, band.mid[0] 
 const bandCentre = (band: NormBand) => (band.mid[0] + band.mid[1]) / 2;
 
 /** Equivalent age for one item: the group whose 60–70 band holds the result (closest band, then centre, then own age). */
-export function itemEquivalentAge(sex: 'male' | 'female', age: number, item: FitnessTestItem, value: number): number | undefined {
+export function itemEquivalentAge(
+  sex: 'male' | 'female',
+  age: number,
+  item: FitnessTestItem,
+  value: number,
+): number | undefined {
   const table = FITNESS_NORMS_2023[sex][item];
   if (!table?.length || !Number.isFinite(value) || value < (item === 'sitAndReachCm' ? -50 : 0)) return undefined;
-  const ranked = [...table].sort((a, b) =>
-    bandDistance(a, value) - bandDistance(b, value)
-    || Math.abs(bandCentre(a) - value) - Math.abs(bandCentre(b) - value)
-    || Math.abs(bandMiddleAge(a) - age) - Math.abs(bandMiddleAge(b) - age)
-    || a.fromAge - b.fromAge);
+  const ranked = [...table].sort(
+    (a, b) =>
+      bandDistance(a, value) - bandDistance(b, value) ||
+      Math.abs(bandCentre(a) - value) - Math.abs(bandCentre(b) - value) ||
+      Math.abs(bandMiddleAge(a) - age) - Math.abs(bandMiddleAge(b) - age) ||
+      a.fromAge - b.fromAge,
+  );
   return bandMiddleAge(ranked[0]!);
 }
 
 /** Body age: the median of item equivalent ages, needing at least two items, clamped to 20–79. */
-export function bodyAge(sex: 'male' | 'female', age: number, results: Partial<Record<FitnessTestItem, number>>): BodyAgeResult | undefined {
+export function bodyAge(
+  sex: 'male' | 'female',
+  age: number,
+  results: Partial<Record<FitnessTestItem, number>>,
+): BodyAgeResult | undefined {
   const ages = (Object.entries(results) as [FitnessTestItem, number | undefined][])
     .flatMap(([item, value]) => (value === undefined ? [] : [itemEquivalentAge(sex, age, item, value)]))
     .filter((value): value is number => value !== undefined)
@@ -277,39 +359,66 @@ function strongerEvent(input: BodyChangeInput): BodyChangeEvent | undefined {
     const current = [...records].sort((a, b) => b.e1rmKg - a.e1rmKg)[0]!;
     if (!baseline || current.e1rmKg <= baseline.e1rmKg) continue;
     const delta = current.e1rmKg - baseline.e1rmKg;
-    candidates.push({ event: { kind: 'stronger', metric: exerciseId, delta: round2(delta), sinceLocalDate: baseline.localDate }, ratio: delta / baseline.e1rmKg });
+    candidates.push({
+      event: { kind: 'stronger', metric: exerciseId, delta: round2(delta), sinceLocalDate: baseline.localDate },
+      ratio: delta / baseline.e1rmKg,
+    });
   }
-  const tests = input.tests.filter(test => test.localDate <= input.today).sort((a, b) => (a.localDate < b.localDate ? -1 : a.localDate > b.localDate ? 1 : 0));
-  const latest = tests.at(-1), base = tests.filter(test => test.localDate <= cutoff).at(-1);
+  const tests = input.tests
+    .filter(test => test.localDate <= input.today)
+    .sort((a, b) => (a.localDate < b.localDate ? -1 : a.localDate > b.localDate ? 1 : 0));
+  const latest = tests.at(-1),
+    base = tests.filter(test => test.localDate <= cutoff).at(-1);
   if (latest && base && latest !== base) {
     for (const item of Object.keys(latest.results) as FitnessTestItem[]) {
-      const now = latest.results[item], then = base.results[item];
+      const now = latest.results[item],
+        then = base.results[item];
       if (now === undefined || then === undefined || !(now > then)) continue;
-      candidates.push({ event: { kind: 'stronger', metric: item, delta: round2(now - then), sinceLocalDate: base.localDate }, ratio: (now - then) / Math.max(Math.abs(then), 1) });
+      candidates.push({
+        event: { kind: 'stronger', metric: item, delta: round2(now - then), sinceLocalDate: base.localDate },
+        ratio: (now - then) / Math.max(Math.abs(then), 1),
+      });
     }
   }
   return candidates.sort((a, b) => b.ratio - a.ratio || (a.event.metric < b.event.metric ? -1 : 1))[0]?.event;
 }
 
 function weekAverage(weights: BodyChangeInput['weights'], today: string, weeksBack: number): number | undefined {
-  const to = addDays(today, -7 * weeksBack), from = addDays(to, -6);
-  const values = weights.filter(w => w.localDate >= from && w.localDate <= to && Number.isFinite(w.weightKg) && w.weightKg > 0).map(w => w.weightKg);
+  const to = addDays(today, -7 * weeksBack),
+    from = addDays(to, -6);
+  const values = weights
+    .filter(w => w.localDate >= from && w.localDate <= to && Number.isFinite(w.weightKg) && w.weightKg > 0)
+    .map(w => w.weightKg);
   return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : undefined;
 }
 
 function weightEvents(input: BodyChangeInput): BodyChangeEvent[] {
-  const w0 = weekAverage(input.weights, input.today, 0), w1 = weekAverage(input.weights, input.today, 1), w2 = weekAverage(input.weights, input.today, 2);
+  const w0 = weekAverage(input.weights, input.today, 0),
+    w1 = weekAverage(input.weights, input.today, 1),
+    w2 = weekAverage(input.weights, input.today, 2);
   // Weight going up, flat, or without a previous week is never commented on.
   if (w0 === undefined || w1 === undefined || !(w0 < w1)) return [];
-  const latest = [...input.weights].filter(w => w.localDate <= input.today && w.weightKg > 0)
-    .sort((a, b) => (a.localDate < b.localDate ? -1 : a.localDate > b.localDate ? 1 : 0)).at(-1);
+  const latest = [...input.weights]
+    .filter(w => w.localDate <= input.today && w.weightKg > 0)
+    .sort((a, b) => (a.localDate < b.localDate ? -1 : a.localDate > b.localDate ? 1 : 0))
+    .at(-1);
   const heightM = input.heightCm && input.heightCm > 0 ? input.heightCm / 100 : undefined;
   const bmi = latest && heightM ? latest.weightKg / (heightM * heightM) : undefined;
   if (bmi !== undefined && bmi < BODY_CHANGE_RULES.minBmi)
-    return [{ kind: 'care-low-bmi', metric: 'bmi', delta: round2(bmi - BODY_CHANGE_RULES.minBmi), sinceLocalDate: addDays(input.today, -13) }];
+    return [
+      {
+        kind: 'care-low-bmi',
+        metric: 'bmi',
+        delta: round2(bmi - BODY_CHANGE_RULES.minBmi),
+        sinceLocalDate: addDays(input.today, -13),
+      },
+    ];
   if (w1 - w0 > w1 * BODY_CHANGE_RULES.maxWeeklyLossShare)
-    return [{ kind: 'care-fast-loss', metric: 'weightKg', delta: round2(w0 - w1), sinceLocalDate: addDays(input.today, -13) }];
-  if (!input.route || !BODY_CHANGE_RULES.weightRoutes.includes(input.route) || bmi === undefined || w2 === undefined) return [];
+    return [
+      { kind: 'care-fast-loss', metric: 'weightKg', delta: round2(w0 - w1), sinceLocalDate: addDays(input.today, -13) },
+    ];
+  if (!input.route || !BODY_CHANGE_RULES.weightRoutes.includes(input.route) || bmi === undefined || w2 === undefined)
+    return [];
   if (!(w1 < w2) || w2 - w1 > w2 * BODY_CHANGE_RULES.maxWeeklyLossShare) return [];
   return [{ kind: 'lighter', metric: 'weightKg', delta: round2(w0 - w2), sinceLocalDate: addDays(input.today, -20) }];
 }
@@ -345,10 +454,14 @@ export function campProgress(camp: Camp, latest: number): number {
 export const isoWeekday = (localDate: string) => ((new Date(`${localDate}T00:00:00Z`).getUTCDay() + 6) % 7) + 1;
 
 /** A weekday skipped in at least 3 of its last 4 planned occurrences (wording v5 §14). */
-export function skipPattern(trainedDates: readonly string[], plannedDates: readonly string[]): { weekday: number } | undefined {
+export function skipPattern(
+  trainedDates: readonly string[],
+  plannedDates: readonly string[],
+): { weekday: number } | undefined {
   const trained = new Set(trainedDates);
   const byWeekday = new Map<number, string[]>();
-  for (const date of [...new Set(plannedDates)].sort()) byWeekday.set(isoWeekday(date), [...(byWeekday.get(isoWeekday(date)) ?? []), date]);
+  for (const date of [...new Set(plannedDates)].sort())
+    byWeekday.set(isoWeekday(date), [...(byWeekday.get(isoWeekday(date)) ?? []), date]);
   let found: { weekday: number; skipped: number } | undefined;
   for (const [weekday, dates] of [...byWeekday].sort((a, b) => a[0] - b[0])) {
     const skipped = dates.slice(-4).filter(date => !trained.has(date)).length;

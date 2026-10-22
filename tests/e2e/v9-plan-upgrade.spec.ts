@@ -3,7 +3,12 @@ import { answerTexts, engineSafety, nextButton, startOnboarding, weeklySchedule 
 
 /** UIUX20261008 V9.14/V9.17: 今天 panel → 今天练这里 → start; 给未来的自己 and 体能自测; 训练设置; 现在有点烦. */
 test.setTimeout(150000);
-const flags = (page: Page) => page.route('**/api/v1/features', route => route.fulfill({ json: { version: 1, flags: { trainingEngine: true, bodyProfile: true }, expiresAt: Date.now() + 3600000 } }));
+const flags = (page: Page) =>
+  page.route('**/api/v1/features', route =>
+    route.fulfill({
+      json: { version: 1, flags: { trainingEngine: true, bodyProfile: true }, expiresAt: Date.now() + 3600000 },
+    }),
+  );
 
 async function toPlan(page: Page, letter?: string) {
   await startOnboarding(page);
@@ -25,7 +30,9 @@ async function toPlan(page: Page, letter?: string) {
   await expect(page.getByRole('heading', { name: '今天', exact: true })).toBeVisible();
 }
 
-test('今天: minutes panel opens 今天练这里, a card highlights its own groups, and start begins training', async ({ page }) => {
+test('今天: minutes panel opens 今天练这里, a card highlights its own groups, and start begins training', async ({
+  page,
+}) => {
   await flags(page);
   await page.setViewportSize({ width: 390, height: 844 });
   await toPlan(page);
@@ -60,7 +67,9 @@ test('今天: B plan, fragment scene with the honest line and its evidence fold;
   await expect(page.getByText('周二下班后，客厅', { exact: false })).toBeVisible();
 });
 
-test('今天: the panel style switches on the panel itself (knob, arrow keys, swipe) and is remembered; 我的 has no style setting', async ({ page }) => {
+test('今天: the panel style switches on the panel itself (knob, arrow keys, swipe) and is remembered; 我的 has no style setting', async ({
+  page,
+}) => {
   await flags(page);
   await toPlan(page);
   const panel = page.locator('section.v9-home-panel[data-style]');
@@ -74,11 +83,28 @@ test('今天: the panel style switches on the panel itself (knob, arrow keys, sw
   await panel.getByRole('button', { name: '下一个样式' }).click();
   await expect(panel).toHaveAttribute('data-style', 'ring');
   // A horizontal touch swipe (right to left) moves to the next style; a vertical move does nothing.
-  const swipe = (dx: number, dy: number) => panel.evaluate((node, [dx, dy]) => {
-    const box = node.getBoundingClientRect(), x = box.left + box.width / 2, y = box.top + 40;
-    const fire = (type: string, cx: number, cy: number) => node.dispatchEvent(new PointerEvent(type, { bubbles: true, pointerId: 7, pointerType: 'touch', isPrimary: true, clientX: cx, clientY: cy }));
-    fire('pointerdown', x, y); fire('pointerup', x + dx, y + dy);
-  }, [dx, dy]);
+  const swipe = (dx: number, dy: number) =>
+    panel.evaluate(
+      (node, [dx, dy]) => {
+        const box = node.getBoundingClientRect(),
+          x = box.left + box.width / 2,
+          y = box.top + 40;
+        const fire = (type: string, cx: number, cy: number) =>
+          node.dispatchEvent(
+            new PointerEvent(type, {
+              bubbles: true,
+              pointerId: 7,
+              pointerType: 'touch',
+              isPrimary: true,
+              clientX: cx,
+              clientY: cy,
+            }),
+          );
+        fire('pointerdown', x, y);
+        fire('pointerup', x + dx, y + dy);
+      },
+      [dx, dy],
+    );
   await swipe(-80, 6);
   await expect(panel).toHaveAttribute('data-style', 'twin');
   await swipe(10, 120);
@@ -89,7 +115,9 @@ test('今天: the panel style switches on the panel itself (knob, arrow keys, sw
   await expect(page.getByText('首页面板样式')).toHaveCount(0);
 });
 
-test('我的 › 训练设置: outline toggle; the outline on 我的 respects the toggle and follows 自记录', async ({ page }) => {
+test('我的 › 训练设置: outline toggle; the outline on 我的 respects the toggle and follows 自记录', async ({
+  page,
+}) => {
   await flags(page);
   await toPlan(page);
   await page.goto('/settings');
@@ -126,7 +154,9 @@ test('给未来的自己 is the last step of making a plan; 体能自测 lives i
 test('现在有点烦: breathing runs locally and the low-mood line has no emoji', async ({ page }) => {
   await flags(page);
   const sent: string[] = [];
-  page.on('request', request => { if (request.url().includes('/api/v1/assistant')) sent.push(request.url()); });
+  page.on('request', request => {
+    if (request.url().includes('/api/v1/assistant')) sent.push(request.url());
+  });
   await toPlan(page);
   await page.getByRole('button', { name: '换个练法', exact: true }).click();
   await page.getByRole('button', { name: '现在有点烦' }).click();

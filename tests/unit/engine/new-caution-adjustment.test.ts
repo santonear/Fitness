@@ -14,7 +14,11 @@ it('rechecks existing exercises after a newly screened caution before filling an
   const result = adjustToday(template, profile, { painArea: 'knee', lockedItemIndexes: [] });
   expect(result.noop).toBe(false);
   expect(result.value.items.some(item => rules.byExercise.get(item.exerciseId)?.slug === 'knee-push-ups')).toBe(false);
-  expect(validatePlan({ ...plan, templates: [result.value] }, { ...profile, cautions: ['knee'] }).filter(issue => issue.severity === 'error')).toEqual([]);
+  expect(
+    validatePlan({ ...plan, templates: [result.value] }, { ...profile, cautions: ['knee'] }).filter(
+      issue => issue.severity === 'error',
+    ),
+  ).toEqual([]);
 });
 
 it('does not remove a completed locked exercise to make a new caution adjustment pass', () => {

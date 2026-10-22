@@ -8,7 +8,9 @@ import { entryCopy } from '../i18n/features/onboarding/entry';
  * Stored data is never rewritten; anything that is not an exact preset stays exactly as typed.
  */
 const pairs: readonly (readonly [string, string])[] = [
-  ...onboardingZh.answers.flatMap((list, group) => list.map((zh, index) => [zh, onboardingEn.answers[group][index]] as const)),
+  ...onboardingZh.answers.flatMap((list, group) =>
+    list.map((zh, index) => [zh, onboardingEn.answers[group][index]] as const),
+  ),
   ...entryCopy.zh.place.options.map((zh, index) => [zh, entryCopy.en.place.options[index]] as const),
 ];
 

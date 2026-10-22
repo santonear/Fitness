@@ -2,7 +2,13 @@ import { expect, test, type Page } from '@playwright/test';
 import { mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { answerTexts, engineSafety, nextButton, startOnboarding, weeklySchedule } from '../../../tests/e2e/helpers/onboarding-v9';
+import {
+  answerTexts,
+  engineSafety,
+  nextButton,
+  startOnboarding,
+  weeklySchedule,
+} from '../../../tests/e2e/helpers/onboarding-v9';
 
 /**
  * 计划 › 月 in all five themes with today, planned, done, partial and missed days, plus 今天 / 回顾 in vivid (暖阳柔木).
@@ -13,17 +19,28 @@ const out = join(root, 'outputs/vivid-d-calendars');
 const themes = ['pop', 'vivid', 'gentle', 'data', 'fire'] as const;
 const at = (iso: string) => new Date(`${iso}+08:00`);
 let engineOn = true;
-const flags = (page: Page) => page.route('**/api/v1/features', route => route.fulfill({ json: { version: 1, flags: { trainingEngine: engineOn, bodyProfile: true, planLifecycle: true }, expiresAt: Date.now() + 30 * 86400000 } }));
-const noAccess = (page: Page) => page.route('**/api/v1/trial/**', route => {
-  const url = route.request().url();
-  if (url.endsWith('/access-status')) return route.fulfill({ json: { qualification: 'none', sessionValid: false, aiEnabled: false } });
-  if (url.endsWith('/application-config')) return route.fulfill({ json: { available: false, siteKey: null } });
-  return route.fulfill({ json: [] });
-});
+const flags = (page: Page) =>
+  page.route('**/api/v1/features', route =>
+    route.fulfill({
+      json: {
+        version: 1,
+        flags: { trainingEngine: engineOn, bodyProfile: true, planLifecycle: true },
+        expiresAt: Date.now() + 30 * 86400000,
+      },
+    }),
+  );
+const noAccess = (page: Page) =>
+  page.route('**/api/v1/trial/**', route => {
+    const url = route.request().url();
+    if (url.endsWith('/access-status'))
+      return route.fulfill({ json: { qualification: 'none', sessionValid: false, aiEnabled: false } });
+    if (url.endsWith('/application-config')) return route.fulfill({ json: { available: false, siteKey: null } });
+    return route.fulfill({ json: [] });
+  });
 
 /** Records every set of the first session (or only two sets when partial) through the real workflow. */
 async function train(page: Page, partial: boolean) {
-  await page.evaluate(async (partial) => {
+  await page.evaluate(async partial => {
     const path = '/src/ui/mainline/context.tsx';
     const { workflow } = await import(/* @vite-ignore */ path);
     const data = await workflow.snapshot();
@@ -31,10 +48,19 @@ async function train(page: Page, partial: boolean) {
     let count = 0;
     for (const [i, item] of record.templateSnapshot.items.entries()) {
       const target = item.target;
-      const values = target.metricType === 'reps_load' ? { reps: target.reps, loadGrams: target.loadGrams } : target.metricType === 'reps' ? { reps: target.reps } : { durationSeconds: target.durationSeconds };
+      const values =
+        target.metricType === 'reps_load'
+          ? { reps: target.reps, loadGrams: target.loadGrams }
+          : target.metricType === 'reps'
+            ? { reps: target.reps }
+            : { durationSeconds: target.durationSeconds };
       for (let s = 0; s < (item.sets ?? 1); s++) {
         if (partial && count >= 2) break;
-        try { await workflow.recordSet(record.id, i, s, values); } catch { await workflow.recordSet(record.id, i, s, { ...values, loadGrams: 4000 }); }
+        try {
+          await workflow.recordSet(record.id, i, s, values);
+        } catch {
+          await workflow.recordSet(record.id, i, s, { ...values, loadGrams: 4000 });
+        }
         count++;
       }
     }
@@ -50,7 +76,10 @@ async function openMonth(page: Page) {
 }
 async function closeTip(page: Page) {
   const tip = page.locator('button.v9-orb-icon').first();
-  if (await tip.isVisible()) { await tip.click(); await page.waitForTimeout(300); }
+  if (await tip.isVisible()) {
+    await tip.click();
+    await page.waitForTimeout(300);
+  }
 }
 async function setTheme(page: Page, id: string) {
   await page.evaluate(id => localStorage.setItem('fitness-theme', id), id);
@@ -62,8 +91,11 @@ async function setTheme(page: Page, id: string) {
 test('vivid-d and calendars', async ({ page }) => {
   mkdirSync(out, { recursive: true });
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await flags(page); await noAccess(page);
-  await page.addInitScript(() => { if (!localStorage.getItem('fitness-theme')) localStorage.setItem('fitness-theme', 'vivid'); });
+  await flags(page);
+  await noAccess(page);
+  await page.addInitScript(() => {
+    if (!localStorage.getItem('fitness-theme')) localStorage.setItem('fitness-theme', 'vivid');
+  });
   await page.clock.install({ time: at('2026-10-12T08:00:00') });
 
   await startOnboarding(page);
@@ -80,11 +112,17 @@ test('vivid-d and calendars', async ({ page }) => {
   await expect(page.getByRole('heading', { name: '今天', exact: true })).toBeVisible();
 
   await openMonth(page);
-  const planned = await page.locator('.v9-month-day[data-state="planned"]').evaluateAll(cells => cells.map(cell => cell.getAttribute('data-date')!));
+  const planned = await page
+    .locator('.v9-month-day[data-state="planned"]')
+    .evaluateAll(cells => cells.map(cell => cell.getAttribute('data-date')!));
   expect(planned.length).toBeGreaterThan(5);
   // done, partial, (missed), done; today is the next planned day.
   engineOn = false;
-  for (const [date, partial] of [[planned[0], false], [planned[1], true], [planned[3], false]] as const) {
+  for (const [date, partial] of [
+    [planned[0], false],
+    [planned[1], true],
+    [planned[3], false],
+  ] as const) {
     await page.clock.setSystemTime(at(`${date}T18:30:00`));
     await page.goto('/');
     await expect(page.getByRole('heading', { name: '今天', exact: true })).toBeVisible();
@@ -105,8 +143,12 @@ test('vivid-d and calendars', async ({ page }) => {
     await closeTip(page);
     const card = page.locator('.v9-month-card');
     await expect(card.locator('[aria-current="date"]')).toHaveCount(1);
-    for (const state of ['done', 'partial', 'missed', 'planned']) expect(await card.locator(`.v9-month-day[data-state="${state}"]`).count(), `${id} ${state}`).toBeGreaterThan(0);
-    await page.evaluate(() => { const el = document.querySelector('.v9-month-card'); if (el) window.scrollBy(0, el.getBoundingClientRect().top - 16); });
+    for (const state of ['done', 'partial', 'missed', 'planned'])
+      expect(await card.locator(`.v9-month-day[data-state="${state}"]`).count(), `${id} ${state}`).toBeGreaterThan(0);
+    await page.evaluate(() => {
+      const el = document.querySelector('.v9-month-card');
+      if (el) window.scrollBy(0, el.getBoundingClientRect().top - 16);
+    });
     await page.waitForTimeout(300);
     await page.screenshot({ path: join(out, `month-${id}-390.png`), animations: 'disabled' });
     if (id === 'vivid') {

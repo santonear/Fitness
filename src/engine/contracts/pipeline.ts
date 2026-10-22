@@ -1,7 +1,7 @@
-import { z } from "zod";
-import type { SessionTemplate } from "../../domain/v8/contracts";
-import type { Rules, Exercise } from "../data";
-import type { EngineProfile, Weekday, Pattern } from "./profile";
+import { z } from 'zod';
+import type { SessionTemplate } from '../../domain/v8/contracts';
+import type { Rules, Exercise } from '../data';
+import type { EngineProfile, Weekday, Pattern } from './profile';
 import type {
   GateResult,
   EngineNotice,
@@ -10,8 +10,8 @@ import type {
   engineItemSchema,
   EnginePlan,
   ValidationIssue,
-} from "./plan";
-import type { AdjustTodayRequest } from "./api";
+} from './plan';
+import type { AdjustTodayRequest } from './api';
 /** V2 P0 shared interfaces. Legacy fields are read-compatible until M3. */
 export interface GateState {
   blocked: boolean;
@@ -22,13 +22,13 @@ export interface GateState {
   maxRpe: number;
   rirMin: number;
   phase: number;
-  population: "general" | "older_adult" | "pregnant" | "postpartum";
+  population: 'general' | 'older_adult' | 'pregnant' | 'postpartum';
   eligibility: Map<string, boolean>;
   cooldownHoldSeconds?: number;
   cooldownPrimaryOnly?: boolean;
 }
 export interface GateOutcome {
-  status: "ok" | "restricted" | "blocked";
+  status: 'ok' | 'restricted' | 'blocked';
   restrictions: GateState & {
     maxIntensity: number;
     allowedBundles: string[];
@@ -42,13 +42,7 @@ export interface GateOutcome {
 export interface DayPlan {
   id: string;
   index: number;
-  kind:
-    | "full"
-    | "upper"
-    | "lower"
-    | "aerobic"
-    | "mobility"
-    | "early_postpartum";
+  kind: 'full' | 'upper' | 'lower' | 'aerobic' | 'mobility' | 'early_postpartum';
   minutes: number;
   weekday?: Weekday;
   balanceRequired: boolean;
@@ -60,15 +54,15 @@ export interface WeekSkeleton {
 }
 export interface Slot {
   id: string;
-  role: EnginePrescription["block"];
+  role: EnginePrescription['block'];
   patterns: Pattern[];
   priority: number;
   optional: boolean;
   sourceRuleId: string;
-  region?: "lower_body" | "upper_body" | "trunk";
+  region?: 'lower_body' | 'upper_body' | 'trunk';
 }
 export type Candidate = Exercise;
-export type SessionDraft = Omit<SessionTemplate, "items"> & {
+export type SessionDraft = Omit<SessionTemplate, 'items'> & {
   items: z.infer<typeof engineItemSchema>[];
   slots: Slot[];
   estimatedSeconds?: number;
@@ -86,7 +80,7 @@ export interface ScoreResult {
   advice: { id: string; satisfied: boolean }[];
 }
 export interface PlanChange {
-  kind: "add" | "replace" | "move-set" | "remove";
+  kind: 'add' | 'replace' | 'move-set' | 'remove';
   templateId: string;
   itemIndex?: number;
   item?: z.infer<typeof engineItemSchema>;
@@ -111,15 +105,10 @@ export interface PipelineContext {
   plan?: Plan;
   volumeBudget?: VolumeBudget;
   lockedItemIndexes?: number[];
-  focus?: AdjustTodayRequest["focus"];
+  focus?: AdjustTodayRequest['focus'];
 }
 export interface Scorer {
   score: (plan: Plan, profile: EngineProfile, rules?: Rules) => ScoreResult;
-  marginal: (
-    plan: Plan,
-    change: PlanChange,
-    profile: EngineProfile,
-    rules?: Rules,
-  ) => number;
+  marginal: (plan: Plan, change: PlanChange, profile: EngineProfile, rules?: Rules) => number;
 }
 export type HardViolation = ValidationIssue;

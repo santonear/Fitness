@@ -42,7 +42,11 @@ interface DietModule {
 
 const modules: DietModule[] = [];
 /** Registers a diet module once (by id). No module is registered in this release. */
-export function registerDietModule(module: DietModule) { if (!modules.some(row => row.id === module.id)) modules.push(module); }
+export function registerDietModule(module: DietModule) {
+  if (!modules.some(row => row.id === module.id)) modules.push(module);
+}
 export const dietModules = (): readonly DietModule[] => modules;
 /** Test helper: start from no registered modules. */
-export function resetDietModules() { modules.length = 0; }
+export function resetDietModules() {
+  modules.length = 0;
+}

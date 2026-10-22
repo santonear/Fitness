@@ -1,17 +1,14 @@
-import { hasHouseholdSupport } from "../engine/equipment";
-import { DATABASE_VERSION } from "../domain/storage-version";
-import type { AssistantConversation } from "../domain/assistant-conversation";
-import {
-  recoverAssistantSchedule,
-  recoverLegacyPlanSchedules,
-} from "./assistant-schedule-migration";
-import { migrateBodyProfile } from "./body-profile-migration";
-import type { CoachLedger } from "../domain/coach-reminders";
-import { legacyExerciseFavorites } from "./exercise-favorites";
-import Dexie, { type Table } from "dexie";
-import type { GuidedState } from "../domain/guided-contracts";
-import { DomainError } from "../domain/errors";
-import { localDateSchema, timeZoneSchema } from "../domain/schemas";
+import { hasHouseholdSupport } from '../engine/equipment';
+import { DATABASE_VERSION } from '../domain/storage-version';
+import type { AssistantConversation } from '../domain/assistant-conversation';
+import { recoverAssistantSchedule, recoverLegacyPlanSchedules } from './assistant-schedule-migration';
+import { migrateBodyProfile } from './body-profile-migration';
+import type { CoachLedger } from '../domain/coach-reminders';
+import { legacyExerciseFavorites } from './exercise-favorites';
+import Dexie, { type Table } from 'dexie';
+import type { GuidedState } from '../domain/guided-contracts';
+import { DomainError } from '../domain/errors';
+import { localDateSchema, timeZoneSchema } from '../domain/schemas';
 import type {
   LocalProfile,
   Metadata,
@@ -25,18 +22,11 @@ import type {
   AiMemoryNote,
   TimerState,
   MediaAsset,
-} from "../domain/models";
-import { upgradeToV8, type V8Library } from "./v8-migration";
-import type {
-  NutritionRecord,
-  ActivityImportReceipt,
-} from "../domain/lifestyle";
-import type { TrainingCheckinRow } from "../domain/training-checkin";
-import type {
-  FitnessTestRecord,
-  FutureLetter,
-  Journey,
-} from "../domain/plan-upgrade";
+} from '../domain/models';
+import { upgradeToV8, type V8Library } from './v8-migration';
+import type { NutritionRecord, ActivityImportReceipt } from '../domain/lifestyle';
+import type { TrainingCheckinRow } from '../domain/training-checkin';
+import type { FitnessTestRecord, FutureLetter, Journey } from '../domain/plan-upgrade';
 
 export class FitnessDatabase extends Dexie {
   fitnessTests!: Table<FitnessTestRecord, string>;
@@ -47,15 +37,12 @@ export class FitnessDatabase extends Dexie {
   exerciseFavorites!: Table<{ id: string }, string>;
   nutritionRecords!: Table<NutritionRecord, string>;
   activityImportReceipts!: Table<ActivityImportReceipt, string>;
-  v8PlanReferences!: Table<
-    NonNullable<V8Library["planReferences"]>[number],
-    string
-  >;
-  v8Plans!: Table<V8Library["plans"][number], string>;
-  v8PlanVersions!: Table<V8Library["planVersions"][number], string>;
-  v8Workouts!: Table<V8Library["workouts"][number], string>;
-  v8Activities!: Table<V8Library["activities"][number], string>;
-  v8State!: Table<V8Library["state"], string>;
+  v8PlanReferences!: Table<NonNullable<V8Library['planReferences']>[number], string>;
+  v8Plans!: Table<V8Library['plans'][number], string>;
+  v8PlanVersions!: Table<V8Library['planVersions'][number], string>;
+  v8Workouts!: Table<V8Library['workouts'][number], string>;
+  v8Activities!: Table<V8Library['activities'][number], string>;
+  v8State!: Table<V8Library['state'], string>;
   coachDevice!: Table<CoachLedger, string>;
   guidedStates!: Table<GuidedState, string>;
   profiles!: Table<LocalProfile, string>;
@@ -72,67 +59,42 @@ export class FitnessDatabase extends Dexie {
   mediaAssets!: Table<MediaAsset, string>;
   constructor(name: string) {
     super(name);
-    this.on("ready", async (vipDb) => {
-      await vipDb
-        .table("trainingCheckins")
-        .where("expiresAt")
-        .belowOrEqual(new Date().toISOString())
-        .delete();
-      const metadata = vipDb.table<Metadata, string>("metadata");
-      const versions = vipDb.table<V8Library["planVersions"][number], string>(
-        "v8PlanVersions",
-      );
-      const plans = vipDb.table<V8Library["plans"][number], string>("v8Plans");
-      const conversations = vipDb.table<AssistantConversation, string>(
-        "assistantConversations",
-      );
-      await vipDb.transaction(
-        "rw",
-        metadata,
-        versions,
-        plans,
-        conversations,
-        async () => {
-          const row = await metadata.toCollection().first();
-          if (!row || row.assistantScheduleRecoveryV2At) return;
-          const recoveredAt = new Date().toISOString();
-          const [allVersions, allPlans, allConversations] = await Promise.all([
-            versions.toArray(),
-            plans.toArray(),
-            conversations.toArray(),
-          ]);
-          const correctedVersions = recoverAssistantSchedule(
-            allVersions,
-            allConversations,
-            recoveredAt,
-          );
-          const correctedPlans = recoverLegacyPlanSchedules(
-            allPlans,
-            allVersions,
-            allConversations,
-            recoveredAt,
-          );
-          if (correctedVersions.length)
-            await versions.bulkPut(correctedVersions);
-          if (correctedPlans.length) await plans.bulkPut(correctedPlans);
-          await metadata.put({
-            ...row,
-            assistantScheduleRecoveryV2At: recoveredAt,
-          });
-        },
-      );
+    this.on('ready', async vipDb => {
+      await vipDb.table('trainingCheckins').where('expiresAt').belowOrEqual(new Date().toISOString()).delete();
+      const metadata = vipDb.table<Metadata, string>('metadata');
+      const versions = vipDb.table<V8Library['planVersions'][number], string>('v8PlanVersions');
+      const plans = vipDb.table<V8Library['plans'][number], string>('v8Plans');
+      const conversations = vipDb.table<AssistantConversation, string>('assistantConversations');
+      await vipDb.transaction('rw', metadata, versions, plans, conversations, async () => {
+        const row = await metadata.toCollection().first();
+        if (!row || row.assistantScheduleRecoveryV2At) return;
+        const recoveredAt = new Date().toISOString();
+        const [allVersions, allPlans, allConversations] = await Promise.all([
+          versions.toArray(),
+          plans.toArray(),
+          conversations.toArray(),
+        ]);
+        const correctedVersions = recoverAssistantSchedule(allVersions, allConversations, recoveredAt);
+        const correctedPlans = recoverLegacyPlanSchedules(allPlans, allVersions, allConversations, recoveredAt);
+        if (correctedVersions.length) await versions.bulkPut(correctedVersions);
+        if (correctedPlans.length) await plans.bulkPut(correctedPlans);
+        await metadata.put({
+          ...row,
+          assistantScheduleRecoveryV2At: recoveredAt,
+        });
+      });
     });
     this.version(DATABASE_VERSION)
       .stores({
-        fitnessTests: "id,localDate",
-        journeys: "id,version",
-        futureLetters: "id,createdAt",
+        fitnessTests: 'id,localDate',
+        journeys: 'id,version',
+        futureLetters: 'id,createdAt',
       })
-      .upgrade(async (tx) => {
+      .upgrade(async tx => {
         // V9.14 training-plan upgrade: new tables plus optional fields only.
         // weeklyBudget and homePanelStyle stay absent until the user chooses them; no row is rewritten.
         await tx
-          .table("metadata")
+          .table('metadata')
           .toCollection()
           .modify((row: Metadata) => {
             row.schemaVersion = DATABASE_VERSION;
@@ -140,10 +102,10 @@ export class FitnessDatabase extends Dexie {
       });
     this.version(20)
       .stores({})
-      .upgrade(async (tx) => {
+      .upgrade(async tx => {
         // No clinical answer is inferred; existing profiles and applied courses stay untouched.
         await tx
-          .table("metadata")
+          .table('metadata')
           .toCollection()
           .modify((row: Metadata) => {
             row.schemaVersion = DATABASE_VERSION;
@@ -151,10 +113,10 @@ export class FitnessDatabase extends Dexie {
       });
     this.version(19)
       .stores({})
-      .upgrade(async (tx) => {
+      .upgrade(async tx => {
         // Additive safety evidence: absent legacy answers remain unknown; no event is inferred.
         await tx
-          .table("metadata")
+          .table('metadata')
           .toCollection()
           .modify((row: Metadata) => {
             row.schemaVersion = DATABASE_VERSION;
@@ -162,31 +124,26 @@ export class FitnessDatabase extends Dexie {
       });
     this.version(18)
       .stores({})
-      .upgrade(async (tx) => {
+      .upgrade(async tx => {
         await tx
-          .table("v8State")
+          .table('v8State')
           .toCollection()
-          .modify((row: V8Library["state"]) => {
-            if (
-              row.coachProfile &&
-              row.coachProfile.householdSupport === undefined
-            )
-              row.coachProfile.householdSupport = hasHouseholdSupport(
-                row.coachProfile,
-              );
+          .modify((row: V8Library['state']) => {
+            if (row.coachProfile && row.coachProfile.householdSupport === undefined)
+              row.coachProfile.householdSupport = hasHouseholdSupport(row.coachProfile);
           });
         await tx
-          .table("metadata")
+          .table('metadata')
           .toCollection()
           .modify((row: Metadata) => {
             row.schemaVersion = DATABASE_VERSION;
           });
       });
     this.version(17)
-      .stores({ trainingCheckins: "id,expiresAt" })
-      .upgrade(async (tx) => {
+      .stores({ trainingCheckins: 'id,expiresAt' })
+      .upgrade(async tx => {
         await tx
-          .table("metadata")
+          .table('metadata')
           .toCollection()
           .modify((row: Metadata) => {
             row.schemaVersion = 17;
@@ -194,10 +151,10 @@ export class FitnessDatabase extends Dexie {
       });
     this.version(16)
       .stores({})
-      .upgrade(async (tx) => {
+      .upgrade(async tx => {
         // Add optional engine metadata and append-only feedback, leaving stored facts untouched.
         await tx
-          .table("metadata")
+          .table('metadata')
           .toCollection()
           .modify((row: Metadata) => {
             row.schemaVersion = 16;
@@ -205,10 +162,10 @@ export class FitnessDatabase extends Dexie {
       });
     this.version(15)
       .stores({})
-      .upgrade(async (tx) => {
+      .upgrade(async tx => {
         // Additive profile metadata only. Existing answers and training facts stay intact.
         await tx
-          .table("metadata")
+          .table('metadata')
           .toCollection()
           .modify((row: Metadata) => {
             row.schemaVersion = 15;
@@ -216,56 +173,51 @@ export class FitnessDatabase extends Dexie {
       });
     this.version(14)
       .stores({})
-      .upgrade(async (tx) => {
-        const versions = await tx.table("v8PlanVersions").toArray(),
-          conversations = await tx.table("assistantConversations").toArray();
-        const recovered = recoverAssistantSchedule(
-          versions,
-          conversations,
-          new Date().toISOString(),
-        );
-        if (recovered.length)
-          await tx.table("v8PlanVersions").bulkPut(recovered);
+      .upgrade(async tx => {
+        const versions = await tx.table('v8PlanVersions').toArray(),
+          conversations = await tx.table('assistantConversations').toArray();
+        const recovered = recoverAssistantSchedule(versions, conversations, new Date().toISOString());
+        if (recovered.length) await tx.table('v8PlanVersions').bulkPut(recovered);
         await tx
-          .table("metadata")
+          .table('metadata')
           .toCollection()
           .modify((row: Metadata) => {
             row.schemaVersion = 14;
           });
       });
     this.version(13)
-      .stores({ assistantConversations: "id,updatedAt" })
-      .upgrade(async (tx) => {
+      .stores({ assistantConversations: 'id,updatedAt' })
+      .upgrade(async tx => {
         await tx
-          .table("metadata")
+          .table('metadata')
           .toCollection()
           .modify((row: Metadata) => {
             row.schemaVersion = 13;
           });
       });
     this.version(1).stores({
-      profiles: "id",
-      bodyWeights: "id,localDate",
-      metadata: "localProfileId",
+      profiles: 'id',
+      bodyWeights: 'id,localDate',
+      metadata: 'localProfileId',
     });
     this.version(2)
       .stores({
-        profiles: "id",
-        metadata: "localProfileId",
-        bodyWeights: "id,localDate",
-        plans: "id,status,currentVersionId",
-        planVersions: "id,planId,[planId+versionNumber]",
-        sessions: "id,status,localDate,planVersionId",
-        sets: "id,sessionId,[sessionId+exerciseInstanceId]",
-        scheduledWorkouts: "id,planVersionId,scheduledDate,completedSessionId",
-        trainingMemo: "schemaVersion",
-        aiMemoryNotes: "id,memoRevision",
-        timers: "id,sessionId",
-        mediaAssets: "id",
+        profiles: 'id',
+        metadata: 'localProfileId',
+        bodyWeights: 'id,localDate',
+        plans: 'id,status,currentVersionId',
+        planVersions: 'id,planId,[planId+versionNumber]',
+        sessions: 'id,status,localDate,planVersionId',
+        sets: 'id,sessionId,[sessionId+exerciseInstanceId]',
+        scheduledWorkouts: 'id,planVersionId,scheduledDate,completedSessionId',
+        trainingMemo: 'schemaVersion',
+        aiMemoryNotes: 'id,memoRevision',
+        timers: 'id,sessionId',
+        mediaAssets: 'id',
       })
-      .upgrade(async (transaction) => {
+      .upgrade(async transaction => {
         await transaction
-          .table("metadata")
+          .table('metadata')
           .toCollection()
           .modify((row: Metadata) => {
             row.schemaVersion = 2;
@@ -275,22 +227,22 @@ export class FitnessDatabase extends Dexie {
       });
     this.version(3)
       .stores({})
-      .upgrade(async (transaction) => {
-        const versions = await transaction.table("planVersions").toArray();
+      .upgrade(async transaction => {
+        const versions = await transaction.table('planVersions').toArray();
         if (
           versions.some(
-            (version) =>
+            version =>
               !localDateSchema.safeParse(version.startDate).success ||
               !timeZoneSchema.safeParse(version.scheduleTimeZone).success,
           )
         ) {
           throw new DomainError(
-            "CALENDAR_PROVENANCE_MISSING",
-            "CALENDAR_PROVENANCE_MISSING: This development database lacks original plan calendar facts. Upgrade stopped; existing data is preserved.",
+            'CALENDAR_PROVENANCE_MISSING',
+            'CALENDAR_PROVENANCE_MISSING: This development database lacks original plan calendar facts. Upgrade stopped; existing data is preserved.',
           );
         }
         await transaction
-          .table("metadata")
+          .table('metadata')
           .toCollection()
           .modify((row: Metadata) => {
             row.schemaVersion = 3;
@@ -299,30 +251,30 @@ export class FitnessDatabase extends Dexie {
       });
     this.version(4)
       .stores({})
-      .upgrade(async (transaction) => {
+      .upgrade(async transaction => {
         await transaction
-          .table("metadata")
+          .table('metadata')
           .toCollection()
           .modify((row: Metadata) => {
             row.schemaVersion = 4;
           });
       });
     this.version(5)
-      .stores({ guidedStates: "id" })
-      .upgrade(async (transaction) => {
+      .stores({ guidedStates: 'id' })
+      .upgrade(async transaction => {
         await transaction
-          .table("metadata")
+          .table('metadata')
           .toCollection()
           .modify((row: Metadata) => {
             row.schemaVersion = 5;
           });
       });
-    this.version(7).stores({ coachDevice: "id" });
+    this.version(7).stores({ coachDevice: 'id' });
     this.version(6)
       .stores({})
-      .upgrade(async (transaction) => {
+      .upgrade(async transaction => {
         await transaction
-          .table("metadata")
+          .table('metadata')
           .toCollection()
           .modify((row: Metadata) => {
             row.schemaVersion = 6;
@@ -330,22 +282,22 @@ export class FitnessDatabase extends Dexie {
       });
     this.version(8)
       .stores({
-        v8Plans: "id,currentVersionId",
-        v8PlanVersions: "id,planId,[planId+versionNumber]",
-        v8Workouts: "id,planVersionId,localDate,status",
-        v8Activities: "id,localDate",
-        v8State: "id",
+        v8Plans: 'id,currentVersionId',
+        v8PlanVersions: 'id,planId,[planId+versionNumber]',
+        v8Workouts: 'id,planVersionId,localDate,status',
+        v8Activities: 'id,localDate',
+        v8State: 'id',
       })
       .upgrade(upgradeToV8);
     this.version(9)
       .stores({
-        nutritionRecords: "id,localDate",
-        activityImportReceipts: "id,&activityId",
+        nutritionRecords: 'id,localDate',
+        activityImportReceipts: 'id,&activityId',
       })
-      .upgrade(async (transaction) => {
+      .upgrade(async transaction => {
         // Additive only: every existing fact remains byte-for-byte unchanged.
         await transaction
-          .table("metadata")
+          .table('metadata')
           .toCollection()
           .modify((row: Metadata) => {
             row.schemaVersion = 9;
@@ -353,35 +305,30 @@ export class FitnessDatabase extends Dexie {
       });
     this.version(11)
       .stores({
-        v8Plans: "id,currentVersionId,deletedAt",
-        v8PlanReferences: "id,planId",
+        v8Plans: 'id,currentVersionId,deletedAt',
+        v8PlanReferences: 'id,planId',
       })
-      .upgrade(async (transaction) => {
+      .upgrade(async transaction => {
         await transaction
-          .table("metadata")
+          .table('metadata')
           .toCollection()
           .modify((row: Metadata) => {
             row.schemaVersion = 11;
           });
       });
     this.version(12)
-      .stores({ exerciseFavorites: "id" })
-      .upgrade(async (transaction) => {
+      .stores({ exerciseFavorites: 'id' })
+      .upgrade(async transaction => {
+        await transaction.table('exerciseFavorites').bulkPut(legacyExerciseFavorites());
+        const guided = await transaction.table('guidedStates').get('guided');
         await transaction
-          .table("exerciseFavorites")
-          .bulkPut(legacyExerciseFavorites());
-        const guided = await transaction.table("guidedStates").get("guided");
-        await transaction
-          .table("profiles")
+          .table('profiles')
           .toCollection()
           .modify((profile: LocalProfile) => {
-            Object.assign(
-              profile,
-              migrateBodyProfile(profile, guided, new Date().toISOString()),
-            );
+            Object.assign(profile, migrateBodyProfile(profile, guided, new Date().toISOString()));
           });
         await transaction
-          .table("metadata")
+          .table('metadata')
           .toCollection()
           .modify((row: Metadata) => {
             row.schemaVersion = 12;
@@ -389,25 +336,22 @@ export class FitnessDatabase extends Dexie {
       });
     this.version(10)
       .stores({})
-      .upgrade(async (transaction) => {
+      .upgrade(async transaction => {
         // New versions may record their source. Never infer or rewrite old plan facts.
         await transaction
-          .table("metadata")
+          .table('metadata')
           .toCollection()
           .modify((row: Metadata) => {
             row.schemaVersion = 10;
           });
       });
     // Saved fitness tests are read-only facts (AGENTS.md data rule 1).
-    this.fitnessTests.hook("updating", () => {
-      throw new DomainError(
-        "SESSION_READ_ONLY",
-        "Saved fitness tests are read-only",
-      );
+    this.fitnessTests.hook('updating', () => {
+      throw new DomainError('SESSION_READ_ONLY', 'Saved fitness tests are read-only');
     });
   }
 }
 export function createDatabase(name: string): FitnessDatabase {
   return new FitnessDatabase(name);
 }
-export const database = createDatabase("fitness-local");
+export const database = createDatabase('fitness-local');

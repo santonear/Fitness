@@ -18,7 +18,11 @@ export function resolveTheme(value: string | null): ThemeId {
 
 /** Read the current selection without mutating storage during render. */
 export function readTheme(storage: ThemeStorage): ThemeId {
-  try { return resolveTheme(storage.getItem(themeKey)); } catch { return defaultThemeId; }
+  try {
+    return resolveTheme(storage.getItem(themeKey));
+  } catch {
+    return defaultThemeId;
+  }
 }
 
 /**
@@ -35,16 +39,24 @@ export function migrateTheme(storage: ThemeStorage): boolean {
     // Keep the explicit V8/V9 choice and the old key; coexistence does not require migration.
     if (isThemeId(previous)) return true;
     storage.setItem(themeKey, defaultThemeId);
-    try { storage.removeItem(legacyThemeKey); }
-    catch {
+    try {
+      storage.removeItem(legacyThemeKey);
+    } catch {
       if (previous === null) storage.removeItem(themeKey);
       else storage.setItem(themeKey, previous);
       return false;
     }
     return true;
-  } catch { return false; }
+  } catch {
+    return false;
+  }
 }
 
 export function saveTheme(storage: ThemeStorage, theme: ThemeId): boolean {
-  try { storage.setItem(themeKey, theme); return true; } catch { return false; }
+  try {
+    storage.setItem(themeKey, theme);
+    return true;
+  } catch {
+    return false;
+  }
 }

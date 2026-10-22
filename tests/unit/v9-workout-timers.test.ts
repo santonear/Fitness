@@ -1,7 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import {
-  holdIdle, holdStart, holdPause, holdRemaining, holdStatus, holdSecondsToRecord,
-  recommendedRestSeconds, restRemaining, restDone, restExtend, restVisible, restTotal, type RestPlan,
+  holdIdle,
+  holdStart,
+  holdPause,
+  holdRemaining,
+  holdStatus,
+  holdSecondsToRecord,
+  recommendedRestSeconds,
+  restRemaining,
+  restDone,
+  restExtend,
+  restVisible,
+  restTotal,
+  type RestPlan,
 } from '../../src/ui/pages/training/timer-logic';
 
 describe('V9 timed-exercise countdown', () => {
@@ -75,8 +86,10 @@ describe('V9 rest countdown', () => {
 
 describe('only one hold countdown runs', () => {
   it('pauses every running timer except the one kept', async () => {
-    const { holdStart, holdIdle, holdStatus, pauseOtherHolds } = await import('../../src/ui/pages/training/timer-logic');
-    const a = holdStart(holdIdle(30), 0), b = holdStart(holdIdle(40), 0);
+    const { holdStart, holdIdle, holdStatus, pauseOtherHolds } =
+      await import('../../src/ui/pages/training/timer-logic');
+    const a = holdStart(holdIdle(30), 0),
+      b = holdStart(holdIdle(40), 0);
     const next = pauseOtherHolds({ a, b }, 5000, 'b');
     expect(holdStatus(next.a, 6000)).toBe('paused');
     expect(holdStatus(next.b, 6000)).toBe('running');

@@ -2,8 +2,21 @@ import { describe, expect, it } from 'vitest';
 import { MUSCLE_GROUPS, type BodyChangeInput, type Camp, type MuscleLoad } from '../../src/domain/plan-upgrade';
 import { DATA } from '../../src/engine/data';
 import {
-  MUSCLE_LOAD_THRESHOLDS, bodyAge, bodyChangeEvents, buildNowSession, campProgress, estimateE1rm, exerciseMuscleGroups,
-  isoWeekday, itemEquivalentAge, muscleLoadLevel, personalRecords, personalRecordsAsOf, sessionMuscleFocus, skipPattern, weeklyMuscleLoad,
+  MUSCLE_LOAD_THRESHOLDS,
+  bodyAge,
+  bodyChangeEvents,
+  buildNowSession,
+  campProgress,
+  estimateE1rm,
+  exerciseMuscleGroups,
+  isoWeekday,
+  itemEquivalentAge,
+  muscleLoadLevel,
+  personalRecords,
+  personalRecordsAsOf,
+  sessionMuscleFocus,
+  skipPattern,
+  weeklyMuscleLoad,
 } from '../../src/application/rules/plan-upgrade';
 import { FITNESS_NORMS_2023 } from '../../src/application/rules/fitness-norms-2023';
 
@@ -24,13 +37,20 @@ describe('weekly muscle load', () => {
   });
   it('counts a group at its strongest role only', () => {
     // Banded clamshell: gluteus medius primary, gluteus maximus secondary; both are "glutes".
-    const glutes = weeklyMuscleLoad([{ exerciseId: bySlug('banded-clamshell').id, completedSets: 2 }]).find(load => load.group === 'glutes')!;
+    const glutes = weeklyMuscleLoad([{ exerciseId: bySlug('banded-clamshell').id, completedSets: 2 }]).find(
+      load => load.group === 'glutes',
+    )!;
     expect(glutes.sets).toBe(2);
     expect(exerciseMuscleGroups(bySlug('banded-clamshell').id)).toEqual({ primary: ['glutes'], secondary: [] });
   });
   it('ignores unknown exercises and non-positive sets', () => {
-    expect(weeklyMuscleLoad([{ exerciseId: 'nope', completedSets: 3 }, { exerciseId: pushUp.id, completedSets: 0 }, { exerciseId: pushUp.id, completedSets: -2 }])
-      .every(load => load.sets === 0)).toBe(true);
+    expect(
+      weeklyMuscleLoad([
+        { exerciseId: 'nope', completedSets: 3 },
+        { exerciseId: pushUp.id, completedSets: 0 },
+        { exerciseId: pushUp.id, completedSets: -2 },
+      ]).every(load => load.sets === 0),
+    ).toBe(true);
   });
   it('levels at the documented thresholds', () => {
     expect(MUSCLE_LOAD_THRESHOLDS).toEqual({ okMin: 10, okMax: 20 });
@@ -40,7 +60,8 @@ describe('weekly muscle load', () => {
 
 describe('session muscle focus', () => {
   it('splits primary and secondary across exercises', () => {
-    const squat = bySlug('bodyweight-squat') ?? DATA.exercises.find(e => (e.primaryMuscles ?? []).includes('quadriceps'))!;
+    const squat =
+      bySlug('bodyweight-squat') ?? DATA.exercises.find(e => (e.primaryMuscles ?? []).includes('quadriceps'))!;
     const focus = sessionMuscleFocus([pushUp.id, squat.id]);
     expect(focus.primary).toEqual(expect.arrayContaining(['chest', 'triceps', 'quads']));
     expect(focus.secondary).not.toContain('chest');
@@ -81,12 +102,18 @@ describe('e1RM and personal records', () => {
       { exerciseId: 'a', e1rmKg: 100, localDate: '2026-09-02' },
       { exerciseId: 'b', e1rmKg: 58.3, localDate: '2026-09-01' },
     ]);
-    expect(personalRecordsAsOf([{ exerciseId: 'a', localDate: '2026-10-01', weightKg: 80, reps: 1 }], '2026-09-30')).toEqual([]);
+    expect(
+      personalRecordsAsOf([{ exerciseId: 'a', localDate: '2026-10-01', weightKg: 80, reps: 1 }], '2026-09-30'),
+    ).toEqual([]);
   });
 });
 
 describe('now session', () => {
-  const lowLegs: MuscleLoad[] = MUSCLE_GROUPS.map(group => ({ group, sets: ['quads', 'glutes'].includes(group) ? 0 : 12, level: 'ok' }));
+  const lowLegs: MuscleLoad[] = MUSCLE_GROUPS.map(group => ({
+    group,
+    sets: ['quads', 'glutes'].includes(group) ? 0 : 12,
+    level: 'ok',
+  }));
   const base = { weekLoads: lowLegs, usedMinutesThisWeek: 0 };
 
   it.each([5, 15, 30, 45] as const)('fits %i minutes and is deterministic', minutes => {
@@ -99,21 +126,26 @@ describe('now session', () => {
   });
   it('starts with the group that has the biggest weekly gap', () => {
     const session = buildNowSession({ minutes: 15 }, base)!;
-    expect(exerciseMuscleGroups(session.exerciseIds[0]!).primary.some(group => group === 'quads' || group === 'glutes')).toBe(true);
+    expect(
+      exerciseMuscleGroups(session.exerciseIds[0]!).primary.some(group => group === 'quads' || group === 'glutes'),
+    ).toBe(true);
   });
   it('offers more work for more time', () => {
-    expect(buildNowSession({ minutes: 45 }, base)!.exerciseIds.length).toBeGreaterThanOrEqual(buildNowSession({ minutes: 5 }, base)!.exerciseIds.length);
+    expect(buildNowSession({ minutes: 45 }, base)!.exerciseIds.length).toBeGreaterThanOrEqual(
+      buildNowSession({ minutes: 5 }, base)!.exerciseIds.length,
+    );
   });
   it('keeps every pick safe: no impact, no risky flags, bodyweight without plan candidates', () => {
-    for (const variant of ['standard', 'tired', 'no-equipment'] as const) for (const minutes of [5, 15, 30, 45] as const) {
-      for (const id of buildNowSession({ minutes, variant }, base)?.exerciseIds ?? []) {
-        const exercise = engine.get(id)!;
-        expect(exercise.impact).toBe(0);
-        expect(exercise.flags).not.toContain('jumping');
-        expect(exercise.flags).not.toContain('high_fall_risk');
-        expect(exercise.equipment_required.every(item => item === 'none')).toBe(true);
+    for (const variant of ['standard', 'tired', 'no-equipment'] as const)
+      for (const minutes of [5, 15, 30, 45] as const) {
+        for (const id of buildNowSession({ minutes, variant }, base)?.exerciseIds ?? []) {
+          const exercise = engine.get(id)!;
+          expect(exercise.impact).toBe(0);
+          expect(exercise.flags).not.toContain('jumping');
+          expect(exercise.flags).not.toContain('high_fall_risk');
+          expect(exercise.equipment_required.every(item => item === 'none')).toBe(true);
+        }
       }
-    }
   });
   it('keeps the tired variant light', () => {
     const session = buildNowSession({ minutes: 30, variant: 'tired' }, base)!;
@@ -129,7 +161,8 @@ describe('now session', () => {
         expect(exercise.noise).toBe(0);
         expect(exercise.difficulty).toBeLessThanOrEqual(2);
         if (scene === 'commute') expect(exercise.modality).not.toBe('mobility');
-        if (scene !== 'bedtime') expect(exercise.position.every(position => position === 'standing' || position === 'seated')).toBe(true);
+        if (scene !== 'bedtime')
+          expect(exercise.position.every(position => position === 'standing' || position === 'seated')).toBe(true);
       }
     }
   });
@@ -138,16 +171,19 @@ describe('now session', () => {
     expect(buildNowSession({ minutes: 15 }, { ...base, candidateIds: [] })).toBeUndefined();
   });
   it('skips exercises that load a cautioned joint', () => {
-    expect(buildNowSession({ minutes: 15 }, { ...base, candidateIds: [pushUp.id], avoidJoints: ['wrist'] })).toBeUndefined();
+    expect(
+      buildNowSession({ minutes: 15 }, { ...base, candidateIds: [pushUp.id], avoidJoints: ['wrist'] }),
+    ).toBeUndefined();
   });
 });
 
 describe('body age (国民体质测定标准 2023)', () => {
   it('stores bands for every home item with low ≤ high', () => {
-    for (const sex of ['male', 'female'] as const) for (const [item, bands] of Object.entries(FITNESS_NORMS_2023[sex])) {
-      expect(bands!.length, `${sex} ${item}`).toBeGreaterThanOrEqual(4);
-      for (const band of bands!) expect(band.mid[0]).toBeLessThanOrEqual(band.mid[1]);
-    }
+    for (const sex of ['male', 'female'] as const)
+      for (const [item, bands] of Object.entries(FITNESS_NORMS_2023[sex])) {
+        expect(bands!.length, `${sex} ${item}`).toBeGreaterThanOrEqual(4);
+        for (const band of bands!) expect(band.mid[0]).toBeLessThanOrEqual(band.mid[1]);
+      }
     expect(FITNESS_NORMS_2023.male.pushup![0]).toEqual({ fromAge: 20, mid: [15, 22] });
     expect(FITNESS_NORMS_2023.female.chairStand30s![3]).toEqual({ fromAge: 75, mid: [7, 9] });
   });
@@ -176,12 +212,20 @@ describe('body age (国民体质测定标准 2023)', () => {
 
 describe('body change events (wording v5 §19)', () => {
   const today = '2026-10-21';
-  const series = (start: number, weeklyDrop: number) => Array.from({ length: 21 }, (_, i) => ({
-    localDate: new Date(Date.parse(`${today}T00:00:00Z`) - (20 - i) * 86_400_000).toISOString().slice(0, 10),
-    weightKg: start - Math.floor(i / 7) * weeklyDrop,
-  }));
+  const series = (start: number, weeklyDrop: number) =>
+    Array.from({ length: 21 }, (_, i) => ({
+      localDate: new Date(Date.parse(`${today}T00:00:00Z`) - (20 - i) * 86_400_000).toISOString().slice(0, 10),
+      weightKg: start - Math.floor(i / 7) * weeklyDrop,
+    }));
   const input = (patch: Partial<BodyChangeInput>): BodyChangeInput => ({
-    route: 'shape', heightCm: 170, weights: [], records: [], tests: [], lastSpokenByKind: {}, today, ...patch,
+    route: 'shape',
+    heightCm: 170,
+    weights: [],
+    records: [],
+    tests: [],
+    lastSpokenByKind: {},
+    today,
+    ...patch,
   });
 
   it('says lighter on the shape route after two weeks of slow, healthy loss', () => {
@@ -197,7 +241,7 @@ describe('body change events (wording v5 §19)', () => {
     const flatThenDown = series(70, 0).map((w, i) => (i >= 14 ? { ...w, weightKg: 69.5 } : w));
     expect(bodyChangeEvents(input({ weights: flatThenDown }))).toEqual([]);
   });
-  it('allows up to 1 % of last week\'s weight and turns to care above it', () => {
+  it("allows up to 1 % of last week's weight and turns to care above it", () => {
     expect(bodyChangeEvents(input({ weights: series(100, 0.99) }))[0]!.kind).toBe('lighter');
     expect(bodyChangeEvents(input({ weights: series(100, 1) }))[0]!.kind).toBe('care-fast-loss');
     const fast = bodyChangeEvents(input({ weights: series(100, 1.5) }));
@@ -218,16 +262,22 @@ describe('body change events (wording v5 §19)', () => {
       { exerciseId: 'squat', e1rmKg: 80, localDate: '2026-09-10' },
       { exerciseId: 'squat', e1rmKg: 87.5, localDate: '2026-10-15' },
     ];
-    expect(bodyChangeEvents(input({ records }))).toEqual([{ kind: 'stronger', metric: 'squat', delta: 7.5, sinceLocalDate: '2026-09-10' }]);
+    expect(bodyChangeEvents(input({ records }))).toEqual([
+      { kind: 'stronger', metric: 'squat', delta: 7.5, sinceLocalDate: '2026-09-10' },
+    ]);
     expect(bodyChangeEvents(input({ records: [records[1]!] }))).toEqual([]);
-    expect(bodyChangeEvents(input({ records: [{ ...records[0]!, localDate: '2026-09-24' }, records[1]!] }))).toEqual([]);
+    expect(bodyChangeEvents(input({ records: [{ ...records[0]!, localDate: '2026-09-24' }, records[1]!] }))).toEqual(
+      [],
+    );
   });
   it('says stronger when a test improves against one from 4 weeks ago', () => {
     const tests = [
       { id: '1', localDate: '2026-09-20', results: { pushup: 8 }, createdAt: '' },
       { id: '2', localDate: '2026-10-20', results: { pushup: 15 }, createdAt: '' },
     ];
-    expect(bodyChangeEvents(input({ tests }))).toEqual([{ kind: 'stronger', metric: 'pushup', delta: 7, sinceLocalDate: '2026-09-20' }]);
+    expect(bodyChangeEvents(input({ tests }))).toEqual([
+      { kind: 'stronger', metric: 'pushup', delta: 7, sinceLocalDate: '2026-09-20' },
+    ]);
     expect(bodyChangeEvents(input({ tests: [tests[0]!, { ...tests[1]!, results: { pushup: 8 } }] }))).toEqual([]);
   });
   it('speaks each kind at most once in 7 days', () => {
@@ -239,7 +289,14 @@ describe('body change events (wording v5 §19)', () => {
 });
 
 describe('camp progress and skip pattern', () => {
-  const camp = (patch: Partial<Camp>): Camp => ({ id: 'c', title: 't', metric: 'pushup', start: 8, target: 16, ...patch });
+  const camp = (patch: Partial<Camp>): Camp => ({
+    id: 'c',
+    title: 't',
+    metric: 'pushup',
+    start: 8,
+    target: 16,
+    ...patch,
+  });
   it('measures progress in both directions and clamps', () => {
     expect(campProgress(camp({}), 12)).toBe(0.5);
     expect(campProgress(camp({}), 30)).toBe(1);

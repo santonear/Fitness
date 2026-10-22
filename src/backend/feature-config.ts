@@ -7,8 +7,17 @@ export interface FeatureConfigEnv extends AdminEnvironment {
 }
 /** Internal security gates keep their conservative unavailable behavior. */
 export async function readFeatureFlags(env: FeatureConfigEnv): Promise<FeatureFlags> {
-  try { return {...parseFeatureFlags(env.FITNESS_FEATURE_CONFIG ? await env.FITNESS_FEATURE_CONFIG.get('features') : env.FITNESS_FEATURE_FLAGS),adminConsole:env.ADMIN_CONSOLE_ENABLED==='true',...await readManagedFeatureFlags(env)}; }
-  catch { return disabledFeatures(); }
+  try {
+    return {
+      ...parseFeatureFlags(
+        env.FITNESS_FEATURE_CONFIG ? await env.FITNESS_FEATURE_CONFIG.get('features') : env.FITNESS_FEATURE_FLAGS,
+      ),
+      adminConsole: env.ADMIN_CONSOLE_ENABLED === 'true',
+      ...(await readManagedFeatureFlags(env)),
+    };
+  } catch {
+    return disabledFeatures();
+  }
 }
 /** Public updates preserve omission: a missing key is not an explicit kill switch. */
 export async function readPublicFeatureFlags(env: FeatureConfigEnv): Promise<Partial<FeatureFlags>> {
@@ -18,9 +27,13 @@ export async function readPublicFeatureFlags(env: FeatureConfigEnv): Promise<Par
   const result: Partial<FeatureFlags> = {};
   for (const name of featureNames) {
     if (!Object.hasOwn(value, name)) continue;
-    const setting = (value as Record<string,unknown>)[name];
+    const setting = (value as Record<string, unknown>)[name];
     if (typeof setting !== 'boolean') throw new Error('FEATURE_CONFIG_UNAVAILABLE');
     result[name] = setting;
   }
-  return {...result,...(env.ADMIN_CONSOLE_ENABLED!==undefined?{adminConsole:env.ADMIN_CONSOLE_ENABLED==='true'}:{}),...await readManagedFeatureFlags(env)};
+  return {
+    ...result,
+    ...(env.ADMIN_CONSOLE_ENABLED !== undefined ? { adminConsole: env.ADMIN_CONSOLE_ENABLED === 'true' } : {}),
+    ...(await readManagedFeatureFlags(env)),
+  };
 }

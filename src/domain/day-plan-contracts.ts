@@ -10,7 +10,16 @@ export interface SlotTask {
   completedSessionId: string | null;
   inProgressSessionId: string | null;
 }
-export interface SlotEvaluation { occupants: string[]; releasedHistory: string[] }
+export interface SlotEvaluation {
+  occupants: string[];
+  releasedHistory: string[];
+}
 /** No global dataRevision: only affected dependencies invalidate confirmation. */
-export interface LegacyConfirmationDependencies { restoreGeneration: number; tasks: SlotTask[] }
-export interface LegacyConfirmation { dependencySnapshot: string; operation: string }
+export interface LegacyConfirmationDependencies {
+  restoreGeneration: number;
+  tasks: SlotTask[];
+}
+export interface LegacyConfirmation {
+  dependencySnapshot: string;
+  operation: string;
+}

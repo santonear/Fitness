@@ -1,32 +1,28 @@
-import type {
-  EngineProfile,
-  Plan,
-  SessionDraft,
-} from "../../../src/engine/contracts";
-import { Rules } from "../../../src/engine/data";
-import { baseProfile } from "../../../tools/eval/training-engine-profiles";
+import type { EngineProfile, Plan, SessionDraft } from '../../../src/engine/contracts';
+import { Rules } from '../../../src/engine/data';
+import { baseProfile } from '../../../tools/eval/training-engine-profiles';
 const rules = new Rules();
 export const fixtureProfile = baseProfile({
-  constraints: { noJump: false, quiet: false, space: "large" },
+  constraints: { noJump: false, quiet: false, space: 'large' },
 });
 export const typicalProfiles: EngineProfile[] = [
   baseProfile(),
   baseProfile({ sessionMinutes: 10, daysPerWeek: 1 }),
   baseProfile({ sessionMinutes: 20, daysPerWeek: 2 }),
   baseProfile({
-    goal: "muscle",
-    equipment: ["none", "dumbbell", "flat-bench"],
+    goal: 'muscle',
+    equipment: ['none', 'dumbbell', 'flat-bench'],
     daysPerWeek: 4,
     sessionMinutes: 45,
   }),
   baseProfile({
-    constraints: { noJump: true, quiet: true, space: "mat" },
-    cautions: ["knee"],
+    constraints: { noJump: true, quiet: true, space: 'mat' },
+    cautions: ['knee'],
   }),
-  baseProfile({ goal: "mobility" }),
+  baseProfile({ goal: 'mobility' }),
   baseProfile({
     population: {
-      kind: "pregnant",
+      kind: 'pregnant',
       week: 20,
       providerCleared: true,
       prenatalCareConfirmed: true,
@@ -36,17 +32,17 @@ export const typicalProfiles: EngineProfile[] = [
   }),
   baseProfile({
     population: {
-      kind: "postpartum",
+      kind: 'postpartum',
       weeksSinceBirth: 6,
-      delivery: "cesarean",
+      delivery: 'cesarean',
       cleared: false,
     },
-    constraints: { noJump: false, quiet: false, space: "large" },
+    constraints: { noJump: false, quiet: false, space: 'large' },
   }),
   baseProfile({
-    birthYearMonth: "1956-06",
+    birthYearMonth: '1956-06',
     population: {
-      kind: "older_adult",
+      kind: 'older_adult',
       fallsAnswers: [false, false, false, false],
     },
     daysPerWeek: 3,
@@ -55,35 +51,35 @@ export const typicalProfiles: EngineProfile[] = [
 ];
 /** Hand-built fixtures deliberately do not call the planner. */
 export function sessionFixture(): SessionDraft {
-  const exercise = rules.data.exercises.find((e) => e.slug === "walking")!;
+  const exercise = rules.data.exercises.find(e => e.slug === 'walking')!;
   return {
-    id: "fixture-session",
-    name: "Training",
+    id: 'fixture-session',
+    name: 'Training',
     estimatedMinutes: 30,
     estimatedSeconds: 1800,
     slots: [
       {
-        id: "fixture-slot",
-        role: "conditioning",
-        patterns: ["cardio_cyclic"],
+        id: 'fixture-slot',
+        role: 'conditioning',
+        patterns: ['cardio_cyclic'],
         priority: 0,
         optional: false,
-        sourceRuleId: "session.conditioning.slot",
+        sourceRuleId: 'session.conditioning.slot',
       },
     ],
     items: [
       {
         exerciseId: exercise.id,
-        equipment: "none",
+        equipment: 'none',
         sets: 1,
-        target: { metricType: "duration", durationSeconds: 1800 },
+        target: { metricType: 'duration', durationSeconds: 1800 },
         prescription: {
           pattern: exercise.primary_pattern,
-          block: "conditioning",
+          block: 'conditioning',
           rir: [4, 4],
           restSeconds: 0,
           targetRpe: [3, 3],
-          structure: "straight",
+          structure: 'straight',
         },
       },
     ],
@@ -99,9 +95,9 @@ export function planFixture(): Plan {
     notices: [],
     trace: [],
     meta: {
-      engineVersion: "2.0.0-p0",
+      engineVersion: '2.0.0-p0',
       rulesVersion: rules.data.rulesVersion,
-      seed: "hand-built",
+      seed: 'hand-built',
     },
   };
 }

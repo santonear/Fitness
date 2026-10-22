@@ -21,32 +21,67 @@ export async function exerciseConcurrency(name: string) {
     const initialized = await Promise.all([profiles.initialize('en'), profiles.initialize('zh')]);
     const initial = initialized[0];
     const input = { locale: 'en' as const, timeZone: 'Asia/Shanghai', units: 'metric' as const };
-    const results = await Promise.allSettled([profiles.saveProfile(input, initial.revision), profiles.saveProfile(input, initial.revision)]);
+    const results = await Promise.allSettled([
+      profiles.saveProfile(input, initial.revision),
+      profiles.saveProfile(input, initial.revision),
+    ]);
     await weights.saveBodyWeight({ localDate: '2026-09-01', timeZone: 'Asia/Shanghai', weightGrams: 70200 });
     const before = await repo.readMetadata();
     const currentProfile = (await profiles.getProfile())!;
-    const illegalIdentity = await profiles.saveProfile({ ...input, id: crypto.randomUUID() } as typeof input, currentProfile.revision)
-      .then(() => 'accepted', error => error.code);
-    await repo.write(async () => { await db.bodyWeights.clear(); throw new Error('abort'); }).catch(() => {});
+    const illegalIdentity = await profiles
+      .saveProfile({ ...input, id: crypto.randomUUID() } as typeof input, currentProfile.revision)
+      .then(
+        () => 'accepted',
+        error => error.code,
+      );
+    await repo
+      .write(async () => {
+        await db.bodyWeights.clear();
+        throw new Error('abort');
+      })
+      .catch(() => {});
     return await db.transaction('r', db.tables, async () => ({
-      profileCount: await db.profiles.count(), fulfilled: results.filter(r => r.status === 'fulfilled').length,
-      codes: results.filter(r => r.status === 'rejected').map(r => (r.reason as {code:string}).code),
-      before: before.dataRevision, after: (await repo.readMetadata()).dataRevision, weights: await db.bodyWeights.count(),
+      profileCount: await db.profiles.count(),
+      fulfilled: results.filter(r => r.status === 'fulfilled').length,
+      codes: results.filter(r => r.status === 'rejected').map(r => (r.reason as { code: string }).code),
+      before: before.dataRevision,
+      after: (await repo.readMetadata()).dataRevision,
+      weights: await db.bodyWeights.count(),
       illegalIdentity,
     }));
-  } finally { db.close(); closeTestConnections(name); await Dexie.delete(name); }
+  } finally {
+    db.close();
+    closeTestConnections(name);
+    await Dexie.delete(name);
+  }
 }
 
 export async function exerciseUpgrade(name: string) {
   const handles: Dexie[] = [];
-  function tracked<T extends Dexie>(db: T): T { handles.push(db); return db; }
+  function tracked<T extends Dexie>(db: T): T {
+    handles.push(db);
+    return db;
+  }
   try {
     const old = tracked(new Dexie(name));
     old.version(1).stores({ profiles: 'id', bodyWeights: 'id,localDate', metadata: 'localProfileId' });
     await old.open();
     await old.transaction('rw', old.tables, async () => {
-      await old.table('metadata').add({ localProfileId: '00000000-0000-4000-8000-000000000001', schemaVersion: 1, catalogVersion: 1, revision: 4 });
-      await old.table('bodyWeights').add({ id: 'legacy-weight', localDate: '2026-08-01', weightGrams: 65000, timeZone: 'Asia/Shanghai', revision: 0, createdAt: '2026-08-01T00:00:00Z', updatedAt: '2026-08-01T00:00:00Z' });
+      await old.table('metadata').add({
+        localProfileId: '00000000-0000-4000-8000-000000000001',
+        schemaVersion: 1,
+        catalogVersion: 1,
+        revision: 4,
+      });
+      await old.table('bodyWeights').add({
+        id: 'legacy-weight',
+        localDate: '2026-08-01',
+        weightGrams: 65000,
+        timeZone: 'Asia/Shanghai',
+        revision: 0,
+        createdAt: '2026-08-01T00:00:00Z',
+        updatedAt: '2026-08-01T00:00:00Z',
+      });
     });
     old.close();
     const upgraded = tracked(createDatabase(name));
@@ -57,10 +92,17 @@ export async function exerciseUpgrade(name: string) {
     }));
     upgraded.close();
     const failed = tracked(createDatabase(name));
-    failed.version(upgraded.verno + 1).stores({ bodyWeights: 'id,localDate' }).upgrade(async tx => {
-      await tx.table('bodyWeights').clear(); throw new Error('migration failed');
-    });
-    const rejected = await failed.open().then(() => false, () => true);
+    failed
+      .version(upgraded.verno + 1)
+      .stores({ bodyWeights: 'id,localDate' })
+      .upgrade(async tx => {
+        await tx.table('bodyWeights').clear();
+        throw new Error('migration failed');
+      });
+    const rejected = await failed.open().then(
+      () => false,
+      () => true,
+    );
     failed.close();
     const reopened = tracked(createDatabase(name));
     await reopened.open();
@@ -76,6 +118,10 @@ export async function exerciseUpgrade(name: string) {
 }
 
 export function rejectWeightWriteForQuota() {
-  database.bodyWeights.hook('creating', () => { throw new DOMException('Test disk quota exhausted', 'QuotaExceededError'); });
+  database.bodyWeights.hook('creating', () => {
+    throw new DOMException('Test disk quota exhausted', 'QuotaExceededError');
+  });
 }
-export async function persistedLocale() { return (await database.profiles.toCollection().first())?.locale; }
+export async function persistedLocale() {
+  return (await database.profiles.toCollection().first())?.locale;
+}

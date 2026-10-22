@@ -1,27 +1,27 @@
-import {pendingPainReviews,historyDangerReview} from '../../application/pain-events';
-import {unresolvedReview} from '../../application/training-pain';
-import {EngineResultNotice} from '../components/EngineResultNotice';
-import {EnginePlanUnavailableError} from '../../application/engine-error';
-import type {EnginePlan} from '../../engine/contracts';
-import {EngineProfilePage} from '../pages/settings/EngineProfilePage';
-import {useState,useRef,useEffect} from 'react';
-import {useAccessStatus} from '../useAccessStatus';
-import {sendAssistant} from '../../assistant/client';
-import {assistantPlanIntentDuringWorkout,buildCoachRequest} from '../../coach/request-builder';
-import {approveCoachScope} from '../../coach/consent';
-import type {LocalCandidate} from '../../application/v8-workflow';
-import {bodyProfileService} from '../../application/body-profile';
-import {assistantPreferences,type AssistantPreference} from '../../persistence/assistant-preferences';
-import {useFeature} from '../useFeature';
-import {BodyProfilePage} from '../pages/settings/BodyProfilePanel';
-import {bodyCopy} from '../../i18n/features/onboarding/body';
-import {MaintenanceBanner} from '../admin/finance/MaintenanceBanner';
+import { pendingPainReviews, historyDangerReview } from '../../application/pain-events';
+import { unresolvedReview } from '../../application/training-pain';
+import { EngineResultNotice } from '../components/EngineResultNotice';
+import { EnginePlanUnavailableError } from '../../application/engine-error';
+import type { EnginePlan } from '../../engine/contracts';
+import { EngineProfilePage } from '../pages/settings/EngineProfilePage';
+import { useState, useRef, useEffect } from 'react';
+import { useAccessStatus } from '../useAccessStatus';
+import { sendAssistant } from '../../assistant/client';
+import { assistantPlanIntentDuringWorkout, buildCoachRequest } from '../../coach/request-builder';
+import { approveCoachScope } from '../../coach/consent';
+import type { LocalCandidate } from '../../application/v8-workflow';
+import { bodyProfileService } from '../../application/body-profile';
+import { assistantPreferences, type AssistantPreference } from '../../persistence/assistant-preferences';
+import { useFeature } from '../useFeature';
+import { BodyProfilePage } from '../pages/settings/BodyProfilePanel';
+import { bodyCopy } from '../../i18n/features/onboarding/body';
+import { MaintenanceBanner } from '../admin/finance/MaintenanceBanner';
 import { planLifecycleCopy } from '../../i18n/features/plan/lifecycle';
 import { Toast } from '../components/common/Toast';
 import { RestoreBoundary } from './RestoreBoundary';
-import { Routes,Route,useLocation,Navigate } from 'react-router-dom';
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '../../themes/ThemeProvider';
-import { MainlineProvider,useMainline,workflow } from './context';
+import { MainlineProvider, useMainline, workflow } from './context';
 import { localProfile } from '../../application/rules/local-profile';
 import { exercises } from '../../catalog/exercises';
 import { Button, MorphPanel } from '../components/common';
@@ -59,42 +59,606 @@ import { MyChangesPage } from '../pages/settings/MyChangesPage';
 import { CaloriePage, MacroPage } from '../pages/settings/EnergyPages';
 import { orbContextCopy, orbCopy } from '../../i18n/features/coach/orb';
 import { ActivityImportPage } from '../pages/settings/ActivityImportPage';
-import { v8Routes,type V8RouteId } from '../routes.contract';
+import { v8Routes, type V8RouteId } from '../routes.contract';
 import '../theme.css';
 import './mainline.css';
 import { DEFAULT_TIME_ZONE } from '../../domain/local-date';
-const path=(id:V8RouteId)=>v8Routes.find(r=>r.id===id)!.path;
-const orbContext=(pathname:string):OrbContext=>pathname==='/'?'home':pathname.startsWith('/plans')?'plan':pathname==='/review'?'review':pathname.startsWith('/settings')?'settings':pathname.endsWith('/finish')?'finish':'other';
-function OnboardingRoute(){const location=useLocation();const engineEnabled=useFeature('trainingEngine' as Parameters<typeof useFeature>[0]);const c=useMainline(),bodyEnabled=useFeature('bodyProfile'),assistant=useFeature('aiAssistantV2'),access=useAccessStatus(assistant);const [reply,setReply]=useState(''),[notice,setNotice]=useState('');const [engineResult,setEngineResult]=useState<EnginePlan>();const abort=useRef<AbortController>(null);// Once the questions have started (开始 tapped or any answer seen), clearing the goal (自己写一句) must not fall back to the welcome screen (Bo 2026-10-19).
-const [started,setStarted]=useState(false);const answeredSomething=c.step>0||!!c.answers.goalText.trim();useEffect(()=>{if(answeredSomething)setStarted(true);},[answeredSomething]);useEffect(()=>()=>abort.current?.abort(),[]);const timeZone=c.data?.profile?.timeZone??DEFAULT_TIME_ZONE,today=localDateIn(timeZone);const eligible=assistant&&access.status?.qualification==='active'&&access.status.sessionValid&&access.status.aiEnabled===true,useAi=eligible&&c.answers.planMode!=='local';if(!started&&c.step===0&&!c.answers.goalText.trim()&&!c.data?.version)return <WelcomePage locale={c.locale} onStart={()=>setStarted(true)} onRestore={()=>c.navigate('/settings#backup')}/>;return <><OnboardingPage onExit={()=>setStarted(false)} today={today} onHome={()=>{abort.current?.abort();c.resetOnboarding();c.navigate('/');}} initialSafetyScreen={(location.state as {safetyScreen?:string}|null)?.safetyScreen} engineEnabled={engineEnabled} bodyEnabled={bodyEnabled} locale={c.locale} answers={c.answers} step={c.step} slots={c.slots} aiAvailable={assistant} mode={useAi?'ai':'basic'} busy={c.busy} error={c.error} onChange={a=>{setEngineResult(undefined);c.setAnswers(a.body?.age!==undefined&&a.body.age<18?{...a,adultConfirmed:false}:a);c.setCandidate(undefined);}} onStep={step=>{if(bodyEnabled&&c.step===1&&step===2)void c.run(async()=>{await bodyProfileService.save(c.answers.body??{},c.data!.metadata.dataRevision);c.setStep(step)});else c.setStep(step)}} onManual={()=>c.navigate('/manual')} onGenerate={()=>void c.run(async()=>{
- // Chosen days are cleaned again at generation time (a restored draft may hold days already past).
- const days=normalizeTrainingDates(c.answers.trainingDates??[],today).dates,schedule={...(days.length?{trainingDates:days,startDate:days[0]}:{}),...(days.length&&c.answers.startTime?{startTime:c.answers.startTime}:{})};
- const profile=localProfile({...c.answers,trainingDates:days});setReply('');setNotice('');setEngineResult(undefined);let candidate:LocalCandidate|undefined;
- if(useAi&&!engineEnabled&&c.data){const raw=buildCoachRequest({task:'ONBOARD_PLAN',data:c.data,profile,schedule:pickedSchedule(schedule)});if(raw){const context=await approveCoachScope(raw),controller=new AbortController();abort.current=controller;
- try{await sendAssistant({version:'fitness-assistant-v2',requestId:context.requestId,conversationId:context.conversationId,locale:c.locale,timeZone:context.timeZone,adultConfirmed:context.adultConfirmed,context,consent:{body:false,history:false},messages:[{role:'user',content:c.locale==='zh'?'请根据我的目标和可用时间，拟一份训练计划。':'Please draft a training plan for my goals and available time.'}]},controller.signal,event=>{if(event.type==='text_delta')setReply(value=>value+event.delta);if(event.type==='attachment'&&event.attachment.type==='plan_proposal'&&event.attachment.requestId===context.requestId&&event.attachment.restoreGeneration===context.restoreGeneration)candidate={...event.attachment,profile,expectedRevision:c.data!.metadata.dataRevision,source:'ai',...schedule};});}catch{if(controller.signal.aborted)return;setNotice(c.locale==='zh'?'AI 暂时无法生成，已提供基础方案。':'AI is unavailable. A basic plan is ready.');}}
- }
- try{const proposed=candidate??{...await workflow.propose(profile,c.locale,{trainingEngine:engineEnabled}),...schedule};c.setCandidate(proposed);c.navigate(path('draft'));
- // Engine plans stay local and safety-checked; with AI chosen, the chat opens with a ready-to-send request (nothing is sent until the user taps 发送).
- if(engineEnabled&&eligible&&c.answers.planMode==='ai')c.openCoachWithDraft(planModeCopy[c.locale].engineDraft,'ONBOARD_PLAN',proposed.profile,undefined,pickedSchedule(schedule));}catch(error){if(error instanceof EnginePlanUnavailableError){setEngineResult(error.plan);return;}throw error;}
- })}/>{engineResult&&<EngineResultNotice plan={engineResult} locale={c.locale}/>}{reply&&<p role="status">{reply}</p>}{notice&&<p role="status">{notice}</p>}{c.busy&&eligible&&<Button onClick={()=>abort.current?.abort()}>{c.locale==='zh'?'停止':'Stop'}</Button>}</>;}
-function DraftRoute(){const c=useMainline(),bodyEnabled=useFeature('bodyProfile');if(!c.candidate)return <Navigate to={c.draftDiscarded?'/':path('onboarding')} replace/>;return <PlanDraftPage locale={c.locale} timeZone={c.data?.profile?.timeZone} candidate={c.candidate} onStartDate={date=>c.setCandidate({...c.candidate!,startDate:date})} onEditDays={()=>{c.setCandidate(undefined);c.setStep(bodyEnabled?2:1);c.navigate(path('onboarding'));}} onHome={()=>{c.resetOnboarding();c.navigate('/');}} basic={c.candidate.source!=='ai'} onEditCautions={c.candidate.profile.cautions.length?()=>{c.setStep(bodyEnabled?4:3);c.navigate(path('onboarding'),{state:{safetyScreen:'cautions'}});}:undefined} slots={c.slots} busy={c.busy} error={c.error} exerciseText={id=>({name:c.name(id),instructions:exercises.find(e=>e.id===id)?.steps[c.locale].join(' ')??''})} onDiscard={()=>{c.setDraftDiscarded(true);c.setCandidate(undefined);c.navigate('/');}} onDiscuss={()=>c.openCoach('ONBOARD_PLAN',undefined,c.candidate!.profile,pickedSchedule(c.candidate!))} onConfirm={confirmed=>void c.run(async()=>{const chosen=(confirmed as {startDate?:string}).startDate;const candidate={...c.candidate!,...(chosen&&!c.candidate!.trainingDates?.length?{startDate:chosen}:{})};await workflow.adopt(candidate);const items:AssistantPreference[]=[...(candidate.proposal.preferredDays?.length?[{kind:'preferred_days' as const,value:candidate.proposal.preferredDays}]:[]),...candidate.profile.cautions.map(value=>({kind:'caution_area' as const,value})),...(candidate.profile.equipment.length?[{kind:'equipment' as const,value:candidate.profile.equipment}]:[])];try{await assistantPreferences.save(items,c.locale)}catch{/* Plan confirmation is already complete; preferences can be edited in Settings. */}c.navigate('/letter',{state:{applied:true}});})}/>;}
-function Shell(){const c=useMainline();const{data,t,slots,navigate,error}=c,location=useLocation();const [versionUndo,setVersionUndo]=useState<{planId:string;appliedVersionId:string;priorVersionId:string;expectedRevision:number;versionNumber:number;expiresAt:number}>();const immersive=['/onboarding','/plan-draft','/letter'].includes(location.pathname)||location.pathname.startsWith('/workout/');const engineEnabled=useFeature('trainingEngine' as Parameters<typeof useFeature>[0]);const reviewing=location.pathname===path('review'),bodyEnabled=useFeature('bodyProfile');const replanTrigger=useRef<HTMLElement|null>(null);
- const optionalOnboardingProfile=()=>{try{return localProfile(c.answers)}catch{return undefined}};
- /** 芽芽 orb: same task routing as the former floating launcher; quick actions prefill the composer. */
- const openFromOrb=(prompt?:string)=>{if(!data)return;const home=location.pathname===path('next')&&!!data.version;const [task,profile]=location.pathname===path('draft')&&c.candidate?['ONBOARD_PLAN' as const,c.candidate.profile]:location.pathname===path('onboarding')?['ONBOARD_PLAN' as const,optionalOnboardingProfile()]:location.pathname===path('review')?['PERIOD_REVIEW' as const,undefined]:home?['ADJUST_TODAY' as const,undefined]:[data.version?'MODIFY_PLAN' as const:'ONBOARD_PLAN' as const,optionalOnboardingProfile()];const templateId=task==='ADJUST_TODAY'?c.homeTemplateId:undefined;if(prompt)c.openCoachWithDraft(prompt,task,profile,templateId);else c.openCoach(task,templateId,profile);};
- if(!data)return <main className="v8-shell"><p role="status">{error||t.loading}</p></main>;
- const healthEntry=engineEnabled||!!data.state?.pregnancySafety?.providerPause||!!data.state?.pregnancySafety?.supineAvoidSince||!!data.state?.olderSafety?.reviewRequiredAt||!!data.state?.cardiacPause||!!data.state?.postpartumSafety?.urgentAt||!!data.state?.postpartumSafety?.regression||!!data.state?.trainingPause||pendingPainReviews(data.workouts).length>0||unresolvedReview(historyDangerReview(data.workouts,data.state?.coachProfile?.screening?.redFlagReview));
- return <div className="v8-shell" data-immersive={immersive} data-training-active={location.pathname.startsWith('/workout/')&&!location.pathname.endsWith('/finish')}>
- {bodyEnabled&&data.profile?.bodyDetails?.source==='migrated'&&!data.profile.bodyDetails.confirmedAt&&location.pathname!=='/settings/body'&&<aside><p>{bodyCopy[c.locale].migrated}</p><Button onClick={()=>navigate('/settings/body')}>{bodyCopy[c.locale].settingsTitle}</Button></aside>}<MaintenanceBanner training={location.pathname.startsWith('/workout/')} language={c.locale}/>{reviewing&&<header className={`v8-shell-header${reviewing?' v8-review-header':''}`}><slots.BrandMark label={t.brand}/>{reviewing&&<Button className="v8-review-coach" aria-label={t.askCoach} onClick={()=>c.openCoach('PERIOD_REVIEW')}><CoachVisual/></Button>}</header>}
- {error&&!['/onboarding','/plan-draft'].includes(location.pathname)&&<p role="alert">{error}</p>}
- <Routes><Route path="/settings/engine" element={healthEntry?<EngineProfilePage/>:<Navigate to="/settings" replace/>}/><Route path="/settings/body" element={bodyEnabled||data.profile?.bodyDetails?<BodyProfilePage/>:<Navigate to="/settings" replace/>}/><Route path="/settings/nutrition" element={<NutritionAdvicePage/>}/><Route path="/nutrition" element={<NutritionAdvicePage/>}/><Route path="/settings/changes" element={<MyChangesPage/>}/><Route path="/settings/calories" element={<CaloriePage/>}/><Route path="/settings/macros" element={<MacroPage/>}/><Route path="/settings/import" element={<ActivityImportPage/>}/><Route path="/trial" element={<main><TrialAccess onStartPlanning={c.restartPlanning}/><Button onClick={()=>navigate('/settings')}>{t.back}</Button></main>}/><Route path="/ai" element={<Navigate to="/onboarding" replace/>}/><Route path={path('exercises')} element={<ExercisesPage/>}/><Route path={path('plan')} element={<PlanRoute/>}/><Route path={path('versions')} element={<PlanRoute versions/>}/><Route path={path('activity')} element={<ActivityPage/>}/><Route path={path('onboarding')} element={<OnboardingRoute/>}/><Route path={path('draft')} element={<DraftRoute/>}/><Route path={path('next')} element={<HomePage/>}/><Route path={path('focus')} element={<FocusPage/>}/><Route path={path('journey')} element={<Navigate to="/settings" replace/>}/><Route path="/letter" element={<LetterStep locale={c.locale} onDone={()=>navigate('/',{state:{applied:true}})}/>}/><Route path="/settings/fitness-test" element={<FitnessTestPage/>}/><Route path={path('calm')} element={<CalmPage/>}/><Route path={path('workout')} element={<WorkoutPage/>}/><Route path={path('finish')} element={<FinishPage/>}/><Route path="/manual" element={<ManualPage/>}/><Route path={path('review')} element={<ReviewPage/>}/><Route path={path('settings')} element={<SettingsPage/>}/><Route path={path('appearance')} element={<AppearancePage/>}/><Route path="*" element={<HomePage/>}/></Routes>
-  {!immersive&&location.pathname!=='/activity'&&location.pathname!=='/manual'&&<V8Reminder chatOpen={c.coachOpen} locale={c.locale} onStart={()=>navigate('/')} />}
- {(!location.pathname.startsWith('/workout/')||location.pathname.endsWith('/finish'))&&location.pathname!=='/activity'&&location.pathname!=='/manual'&&<Orb locale={c.locale} context={orbContext(location.pathname)} actions={orbContext(location.pathname)==='home'?[...orbContextCopy[c.locale].home.actions.map(label=>({label})),{label:orbCopy[c.locale].nutrition,onSelect:()=>navigate('/settings/nutrition')}]:undefined} autoTuck={immersive} onOpenChat={()=>openFromOrb()} onAction={prompt=>openFromOrb(prompt)}/>}
- <Toast key={c.deletedNotice?.expiresAt} message={c.deletedNotice?planLifecycleCopy[c.locale].deleted:null} duration={c.deletedNotice?Math.max(0,c.deletedNotice.expiresAt-Date.now()):10000} onDismiss={()=>c.setDeletedNotice(undefined)} action={c.deletedNotice?{label:planLifecycleCopy[c.locale].undo,onClick:()=>void c.undoPlan(),disabled:c.busy}:undefined}/>
- <Toast key={versionUndo?.expiresAt} message={versionUndo?(c.locale==='zh'?`已更新到第 ${versionUndo.versionNumber} 版`:`Updated to version ${versionUndo.versionNumber}`):null} duration={versionUndo?Math.max(0,versionUndo.expiresAt-Date.now()):10000} onDismiss={()=>setVersionUndo(undefined)} action={versionUndo?{label:c.locale==='zh'?'撤销':'Undo',onClick:()=>{if(!versionUndo||Date.now()>=versionUndo.expiresAt)return;void workflow.undoAppliedCoachVersion({planId:versionUndo.planId,appliedVersionId:versionUndo.appliedVersionId,priorVersionId:versionUndo.priorVersionId,expectedRevision:versionUndo.expectedRevision}).then(async()=>{setVersionUndo(undefined);await c.reload();}).catch(()=>setVersionUndo(undefined));},disabled:c.busy}:undefined}/>
- <MorphPanel open={c.replanAsk} onClose={()=>c.setReplanAsk(false)} triggerRef={replanTrigger} title={replanCopy[c.locale].title} closeLabel={replanCopy[c.locale].cancel}><p>{replanCopy[c.locale].hint}</p><PrimaryButton onClick={c.startFresh}>{replanCopy[c.locale].confirm}</PrimaryButton></MorphPanel>
- <CoachPanel draft={c.coachDraft} beforeSend={async request=>{if(request.body)await bodyProfileService.validateSending(request.body)}} resolveRequest={(message,current)=>{if(current.task!=='ADJUST_TODAY'||!assistantPlanIntentDuringWorkout(message))return current;return buildCoachRequest({task:'MODIFY_PLAN',data,conversationId:current.conversationId,instruction:message})??current;}} rememberOnApply={location.pathname!==path('draft')} onPreferencesChanged={async()=>{const updated=await c.reload();c.refreshCoachContext(updated);setVersionUndo(previous=>previous?{...previous,expectedRevision:updated.metadata.dataRevision}:previous)}} initialSend={c.coachInitialSend} locale={c.locale} unavailableReason={data.active&&data.active.planVersionId!==data.version?.id?t.oldWorkout:undefined} onActivate={()=>{c.setCoachOpen(false);navigate('/trial');}} onLocalPlan={()=>{c.setCoachOpen(false);navigate('/onboarding');}} onLocalReview={()=>{c.setReviewKind('week');c.setCoachOpen(false);navigate('/review');}} open={c.coachOpen} onClose={()=>c.setCoachOpen(false)} request={c.coachRequest} expectedRevision={c.coachRevision} triggerRef={c.coachTrigger} onApply={async candidate=>{if(location.pathname===path('draft')&&candidate.request.task==='ONBOARD_PLAN'&&candidate.response.type==='plan_proposal'&&c.candidate){c.setCandidate({...candidate.response,profile:c.candidate.profile,expectedRevision:c.candidate.expectedRevision,source:'ai',enginePlan:candidate.enginePlan,...scheduleAfterProposal(c.candidate,candidate.request,c.candidate.proposal,candidate.response.proposal)});c.setCoachOpen(false);navigate(path('draft'));return;}const previous=data.version;await workflow.applyCoachCandidate(candidate);const updated=await c.reload();c.refreshCoachContext(updated);if(previous&&updated.version&&updated.version.id!==previous.id&&updated.plan)setVersionUndo({planId:updated.plan.id,appliedVersionId:updated.version.id,priorVersionId:previous.id,expectedRevision:updated.metadata.dataRevision,versionNumber:updated.version.versionNumber,expiresAt:Date.now()+10000});if(candidate.request.task==='ONBOARD_PLAN')navigate('/');}}/>
- {!immersive&&<nav aria-label={navCopy[c.locale].label} className="v9-tabbar">{([['next','training'],['plan','plan'],['review','review'],['settings','me']] as const).map(([id,kind])=>{const current=id==='next'?location.pathname===path(id):location.pathname.startsWith(path(id));const label=navCopy[c.locale][kind];return <button type="button" key={id} className="v9-tab v8-press" aria-current={current?'page':undefined} onClick={()=>navigate(path(id))}><span className="v9-tab-icon" aria-hidden="true"><slots.NavIcon kind={kind} selected={current} label={label}/></span><span>{label}</span></button>;})}</nav>}
- </div>;
+const path = (id: V8RouteId) => v8Routes.find(r => r.id === id)!.path;
+const orbContext = (pathname: string): OrbContext =>
+  pathname === '/'
+    ? 'home'
+    : pathname.startsWith('/plans')
+      ? 'plan'
+      : pathname === '/review'
+        ? 'review'
+        : pathname.startsWith('/settings')
+          ? 'settings'
+          : pathname.endsWith('/finish')
+            ? 'finish'
+            : 'other';
+function OnboardingRoute() {
+  const location = useLocation();
+  const engineEnabled = useFeature('trainingEngine' as Parameters<typeof useFeature>[0]);
+  const c = useMainline(),
+    bodyEnabled = useFeature('bodyProfile'),
+    assistant = useFeature('aiAssistantV2'),
+    access = useAccessStatus(assistant);
+  const [reply, setReply] = useState(''),
+    [notice, setNotice] = useState('');
+  const [engineResult, setEngineResult] = useState<EnginePlan>();
+  const abort = useRef<AbortController>(null); // Once the questions have started (开始 tapped or any answer seen), clearing the goal (自己写一句) must not fall back to the welcome screen (Bo 2026-10-19).
+  const [started, setStarted] = useState(false);
+  const answeredSomething = c.step > 0 || !!c.answers.goalText.trim();
+  useEffect(() => {
+    if (answeredSomething) setStarted(true);
+  }, [answeredSomething]);
+  useEffect(() => () => abort.current?.abort(), []);
+  const timeZone = c.data?.profile?.timeZone ?? DEFAULT_TIME_ZONE,
+    today = localDateIn(timeZone);
+  const eligible =
+      assistant &&
+      access.status?.qualification === 'active' &&
+      access.status.sessionValid &&
+      access.status.aiEnabled === true,
+    useAi = eligible && c.answers.planMode !== 'local';
+  if (!started && c.step === 0 && !c.answers.goalText.trim() && !c.data?.version)
+    return (
+      <WelcomePage
+        locale={c.locale}
+        onStart={() => setStarted(true)}
+        onRestore={() => c.navigate('/settings#backup')}
+      />
+    );
+  return (
+    <>
+      <OnboardingPage
+        onExit={() => setStarted(false)}
+        today={today}
+        onHome={() => {
+          abort.current?.abort();
+          c.resetOnboarding();
+          c.navigate('/');
+        }}
+        initialSafetyScreen={(location.state as { safetyScreen?: string } | null)?.safetyScreen}
+        engineEnabled={engineEnabled}
+        bodyEnabled={bodyEnabled}
+        locale={c.locale}
+        answers={c.answers}
+        step={c.step}
+        slots={c.slots}
+        aiAvailable={assistant}
+        mode={useAi ? 'ai' : 'basic'}
+        busy={c.busy}
+        error={c.error}
+        onChange={a => {
+          setEngineResult(undefined);
+          c.setAnswers(a.body?.age !== undefined && a.body.age < 18 ? { ...a, adultConfirmed: false } : a);
+          c.setCandidate(undefined);
+        }}
+        onStep={step => {
+          if (bodyEnabled && c.step === 1 && step === 2)
+            void c.run(async () => {
+              await bodyProfileService.save(c.answers.body ?? {}, c.data!.metadata.dataRevision);
+              c.setStep(step);
+            });
+          else c.setStep(step);
+        }}
+        onManual={() => c.navigate('/manual')}
+        onGenerate={() =>
+          void c.run(async () => {
+            // Chosen days are cleaned again at generation time (a restored draft may hold days already past).
+            const days = normalizeTrainingDates(c.answers.trainingDates ?? [], today).dates,
+              schedule = {
+                ...(days.length ? { trainingDates: days, startDate: days[0] } : {}),
+                ...(days.length && c.answers.startTime ? { startTime: c.answers.startTime } : {}),
+              };
+            const profile = localProfile({ ...c.answers, trainingDates: days });
+            setReply('');
+            setNotice('');
+            setEngineResult(undefined);
+            let candidate: LocalCandidate | undefined;
+            if (useAi && !engineEnabled && c.data) {
+              const raw = buildCoachRequest({
+                task: 'ONBOARD_PLAN',
+                data: c.data,
+                profile,
+                schedule: pickedSchedule(schedule),
+              });
+              if (raw) {
+                const context = await approveCoachScope(raw),
+                  controller = new AbortController();
+                abort.current = controller;
+                try {
+                  await sendAssistant(
+                    {
+                      version: 'fitness-assistant-v2',
+                      requestId: context.requestId,
+                      conversationId: context.conversationId,
+                      locale: c.locale,
+                      timeZone: context.timeZone,
+                      adultConfirmed: context.adultConfirmed,
+                      context,
+                      consent: { body: false, history: false },
+                      messages: [
+                        {
+                          role: 'user',
+                          content:
+                            c.locale === 'zh'
+                              ? '请根据我的目标和可用时间，拟一份训练计划。'
+                              : 'Please draft a training plan for my goals and available time.',
+                        },
+                      ],
+                    },
+                    controller.signal,
+                    event => {
+                      if (event.type === 'text_delta') setReply(value => value + event.delta);
+                      if (
+                        event.type === 'attachment' &&
+                        event.attachment.type === 'plan_proposal' &&
+                        event.attachment.requestId === context.requestId &&
+                        event.attachment.restoreGeneration === context.restoreGeneration
+                      )
+                        candidate = {
+                          ...event.attachment,
+                          profile,
+                          expectedRevision: c.data!.metadata.dataRevision,
+                          source: 'ai',
+                          ...schedule,
+                        };
+                    },
+                  );
+                } catch {
+                  if (controller.signal.aborted) return;
+                  setNotice(
+                    c.locale === 'zh'
+                      ? 'AI 暂时无法生成，已提供基础方案。'
+                      : 'AI is unavailable. A basic plan is ready.',
+                  );
+                }
+              }
+            }
+            try {
+              const proposed = candidate ?? {
+                ...(await workflow.propose(profile, c.locale, { trainingEngine: engineEnabled })),
+                ...schedule,
+              };
+              c.setCandidate(proposed);
+              c.navigate(path('draft'));
+              // Engine plans stay local and safety-checked; with AI chosen, the chat opens with a ready-to-send request (nothing is sent until the user taps 发送).
+              if (engineEnabled && eligible && c.answers.planMode === 'ai')
+                c.openCoachWithDraft(
+                  planModeCopy[c.locale].engineDraft,
+                  'ONBOARD_PLAN',
+                  proposed.profile,
+                  undefined,
+                  pickedSchedule(schedule),
+                );
+            } catch (error) {
+              if (error instanceof EnginePlanUnavailableError) {
+                setEngineResult(error.plan);
+                return;
+              }
+              throw error;
+            }
+          })
+        }
+      />
+      {engineResult && <EngineResultNotice plan={engineResult} locale={c.locale} />}
+      {reply && <p role="status">{reply}</p>}
+      {notice && <p role="status">{notice}</p>}
+      {c.busy && eligible && (
+        <Button onClick={() => abort.current?.abort()}>{c.locale === 'zh' ? '停止' : 'Stop'}</Button>
+      )}
+    </>
+  );
 }
-export default function MainlineApp(){return <ThemeProvider><RestoreBoundary><MainlineProvider><Shell/></MainlineProvider></RestoreBoundary></ThemeProvider>;}
+function DraftRoute() {
+  const c = useMainline(),
+    bodyEnabled = useFeature('bodyProfile');
+  if (!c.candidate) return <Navigate to={c.draftDiscarded ? '/' : path('onboarding')} replace />;
+  return (
+    <PlanDraftPage
+      locale={c.locale}
+      timeZone={c.data?.profile?.timeZone}
+      candidate={c.candidate}
+      onStartDate={date => c.setCandidate({ ...c.candidate!, startDate: date })}
+      onEditDays={() => {
+        c.setCandidate(undefined);
+        c.setStep(bodyEnabled ? 2 : 1);
+        c.navigate(path('onboarding'));
+      }}
+      onHome={() => {
+        c.resetOnboarding();
+        c.navigate('/');
+      }}
+      basic={c.candidate.source !== 'ai'}
+      onEditCautions={
+        c.candidate.profile.cautions.length
+          ? () => {
+              c.setStep(bodyEnabled ? 4 : 3);
+              c.navigate(path('onboarding'), { state: { safetyScreen: 'cautions' } });
+            }
+          : undefined
+      }
+      slots={c.slots}
+      busy={c.busy}
+      error={c.error}
+      exerciseText={id => ({
+        name: c.name(id),
+        instructions: exercises.find(e => e.id === id)?.steps[c.locale].join(' ') ?? '',
+      })}
+      onDiscard={() => {
+        c.setDraftDiscarded(true);
+        c.setCandidate(undefined);
+        c.navigate('/');
+      }}
+      onDiscuss={() => c.openCoach('ONBOARD_PLAN', undefined, c.candidate!.profile, pickedSchedule(c.candidate!))}
+      onConfirm={confirmed =>
+        void c.run(async () => {
+          const chosen = (confirmed as { startDate?: string }).startDate;
+          const candidate = {
+            ...c.candidate!,
+            ...(chosen && !c.candidate!.trainingDates?.length ? { startDate: chosen } : {}),
+          };
+          await workflow.adopt(candidate);
+          const items: AssistantPreference[] = [
+            ...(candidate.proposal.preferredDays?.length
+              ? [{ kind: 'preferred_days' as const, value: candidate.proposal.preferredDays }]
+              : []),
+            ...candidate.profile.cautions.map(value => ({ kind: 'caution_area' as const, value })),
+            ...(candidate.profile.equipment.length
+              ? [{ kind: 'equipment' as const, value: candidate.profile.equipment }]
+              : []),
+          ];
+          try {
+            await assistantPreferences.save(items, c.locale);
+          } catch {
+            /* Plan confirmation is already complete; preferences can be edited in Settings. */
+          }
+          c.navigate('/letter', { state: { applied: true } });
+        })
+      }
+    />
+  );
+}
+function Shell() {
+  const c = useMainline();
+  const { data, t, slots, navigate, error } = c,
+    location = useLocation();
+  const [versionUndo, setVersionUndo] = useState<{
+    planId: string;
+    appliedVersionId: string;
+    priorVersionId: string;
+    expectedRevision: number;
+    versionNumber: number;
+    expiresAt: number;
+  }>();
+  const immersive =
+    ['/onboarding', '/plan-draft', '/letter'].includes(location.pathname) || location.pathname.startsWith('/workout/');
+  const engineEnabled = useFeature('trainingEngine' as Parameters<typeof useFeature>[0]);
+  const reviewing = location.pathname === path('review'),
+    bodyEnabled = useFeature('bodyProfile');
+  const replanTrigger = useRef<HTMLElement | null>(null);
+  const optionalOnboardingProfile = () => {
+    try {
+      return localProfile(c.answers);
+    } catch {
+      return undefined;
+    }
+  };
+  /** 芽芽 orb: same task routing as the former floating launcher; quick actions prefill the composer. */
+  const openFromOrb = (prompt?: string) => {
+    if (!data) return;
+    const home = location.pathname === path('next') && !!data.version;
+    const [task, profile] =
+      location.pathname === path('draft') && c.candidate
+        ? ['ONBOARD_PLAN' as const, c.candidate.profile]
+        : location.pathname === path('onboarding')
+          ? ['ONBOARD_PLAN' as const, optionalOnboardingProfile()]
+          : location.pathname === path('review')
+            ? ['PERIOD_REVIEW' as const, undefined]
+            : home
+              ? ['ADJUST_TODAY' as const, undefined]
+              : [data.version ? ('MODIFY_PLAN' as const) : ('ONBOARD_PLAN' as const), optionalOnboardingProfile()];
+    const templateId = task === 'ADJUST_TODAY' ? c.homeTemplateId : undefined;
+    if (prompt) c.openCoachWithDraft(prompt, task, profile, templateId);
+    else c.openCoach(task, templateId, profile);
+  };
+  if (!data)
+    return (
+      <main className="v8-shell">
+        <p role="status">{error || t.loading}</p>
+      </main>
+    );
+  const healthEntry =
+    engineEnabled ||
+    !!data.state?.pregnancySafety?.providerPause ||
+    !!data.state?.pregnancySafety?.supineAvoidSince ||
+    !!data.state?.olderSafety?.reviewRequiredAt ||
+    !!data.state?.cardiacPause ||
+    !!data.state?.postpartumSafety?.urgentAt ||
+    !!data.state?.postpartumSafety?.regression ||
+    !!data.state?.trainingPause ||
+    pendingPainReviews(data.workouts).length > 0 ||
+    unresolvedReview(historyDangerReview(data.workouts, data.state?.coachProfile?.screening?.redFlagReview));
+  return (
+    <div
+      className="v8-shell"
+      data-immersive={immersive}
+      data-training-active={location.pathname.startsWith('/workout/') && !location.pathname.endsWith('/finish')}
+    >
+      {bodyEnabled &&
+        data.profile?.bodyDetails?.source === 'migrated' &&
+        !data.profile.bodyDetails.confirmedAt &&
+        location.pathname !== '/settings/body' && (
+          <aside>
+            <p>{bodyCopy[c.locale].migrated}</p>
+            <Button onClick={() => navigate('/settings/body')}>{bodyCopy[c.locale].settingsTitle}</Button>
+          </aside>
+        )}
+      <MaintenanceBanner training={location.pathname.startsWith('/workout/')} language={c.locale} />
+      {reviewing && (
+        <header className={`v8-shell-header${reviewing ? ' v8-review-header' : ''}`}>
+          <slots.BrandMark label={t.brand} />
+          {reviewing && (
+            <Button className="v8-review-coach" aria-label={t.askCoach} onClick={() => c.openCoach('PERIOD_REVIEW')}>
+              <CoachVisual />
+            </Button>
+          )}
+        </header>
+      )}
+      {error && !['/onboarding', '/plan-draft'].includes(location.pathname) && <p role="alert">{error}</p>}
+      <Routes>
+        <Route
+          path="/settings/engine"
+          element={healthEntry ? <EngineProfilePage /> : <Navigate to="/settings" replace />}
+        />
+        <Route
+          path="/settings/body"
+          element={bodyEnabled || data.profile?.bodyDetails ? <BodyProfilePage /> : <Navigate to="/settings" replace />}
+        />
+        <Route path="/settings/nutrition" element={<NutritionAdvicePage />} />
+        <Route path="/nutrition" element={<NutritionAdvicePage />} />
+        <Route path="/settings/changes" element={<MyChangesPage />} />
+        <Route path="/settings/calories" element={<CaloriePage />} />
+        <Route path="/settings/macros" element={<MacroPage />} />
+        <Route path="/settings/import" element={<ActivityImportPage />} />
+        <Route
+          path="/trial"
+          element={
+            <main>
+              <TrialAccess onStartPlanning={c.restartPlanning} />
+              <Button onClick={() => navigate('/settings')}>{t.back}</Button>
+            </main>
+          }
+        />
+        <Route path="/ai" element={<Navigate to="/onboarding" replace />} />
+        <Route path={path('exercises')} element={<ExercisesPage />} />
+        <Route path={path('plan')} element={<PlanRoute />} />
+        <Route path={path('versions')} element={<PlanRoute versions />} />
+        <Route path={path('activity')} element={<ActivityPage />} />
+        <Route path={path('onboarding')} element={<OnboardingRoute />} />
+        <Route path={path('draft')} element={<DraftRoute />} />
+        <Route path={path('next')} element={<HomePage />} />
+        <Route path={path('focus')} element={<FocusPage />} />
+        <Route path={path('journey')} element={<Navigate to="/settings" replace />} />
+        <Route
+          path="/letter"
+          element={<LetterStep locale={c.locale} onDone={() => navigate('/', { state: { applied: true } })} />}
+        />
+        <Route path="/settings/fitness-test" element={<FitnessTestPage />} />
+        <Route path={path('calm')} element={<CalmPage />} />
+        <Route path={path('workout')} element={<WorkoutPage />} />
+        <Route path={path('finish')} element={<FinishPage />} />
+        <Route path="/manual" element={<ManualPage />} />
+        <Route path={path('review')} element={<ReviewPage />} />
+        <Route path={path('settings')} element={<SettingsPage />} />
+        <Route path={path('appearance')} element={<AppearancePage />} />
+        <Route path="*" element={<HomePage />} />
+      </Routes>
+      {!immersive && location.pathname !== '/activity' && location.pathname !== '/manual' && (
+        <V8Reminder chatOpen={c.coachOpen} locale={c.locale} onStart={() => navigate('/')} />
+      )}
+      {(!location.pathname.startsWith('/workout/') || location.pathname.endsWith('/finish')) &&
+        location.pathname !== '/activity' &&
+        location.pathname !== '/manual' && (
+          <Orb
+            locale={c.locale}
+            context={orbContext(location.pathname)}
+            actions={
+              orbContext(location.pathname) === 'home'
+                ? [
+                    ...orbContextCopy[c.locale].home.actions.map(label => ({ label })),
+                    { label: orbCopy[c.locale].nutrition, onSelect: () => navigate('/settings/nutrition') },
+                  ]
+                : undefined
+            }
+            autoTuck={immersive}
+            onOpenChat={() => openFromOrb()}
+            onAction={prompt => openFromOrb(prompt)}
+          />
+        )}
+      <Toast
+        key={c.deletedNotice?.expiresAt}
+        message={c.deletedNotice ? planLifecycleCopy[c.locale].deleted : null}
+        duration={c.deletedNotice ? Math.max(0, c.deletedNotice.expiresAt - Date.now()) : 10000}
+        onDismiss={() => c.setDeletedNotice(undefined)}
+        action={
+          c.deletedNotice
+            ? { label: planLifecycleCopy[c.locale].undo, onClick: () => void c.undoPlan(), disabled: c.busy }
+            : undefined
+        }
+      />
+      <Toast
+        key={versionUndo?.expiresAt}
+        message={
+          versionUndo
+            ? c.locale === 'zh'
+              ? `已更新到第 ${versionUndo.versionNumber} 版`
+              : `Updated to version ${versionUndo.versionNumber}`
+            : null
+        }
+        duration={versionUndo ? Math.max(0, versionUndo.expiresAt - Date.now()) : 10000}
+        onDismiss={() => setVersionUndo(undefined)}
+        action={
+          versionUndo
+            ? {
+                label: c.locale === 'zh' ? '撤销' : 'Undo',
+                onClick: () => {
+                  if (!versionUndo || Date.now() >= versionUndo.expiresAt) return;
+                  void workflow
+                    .undoAppliedCoachVersion({
+                      planId: versionUndo.planId,
+                      appliedVersionId: versionUndo.appliedVersionId,
+                      priorVersionId: versionUndo.priorVersionId,
+                      expectedRevision: versionUndo.expectedRevision,
+                    })
+                    .then(async () => {
+                      setVersionUndo(undefined);
+                      await c.reload();
+                    })
+                    .catch(() => setVersionUndo(undefined));
+                },
+                disabled: c.busy,
+              }
+            : undefined
+        }
+      />
+      <MorphPanel
+        open={c.replanAsk}
+        onClose={() => c.setReplanAsk(false)}
+        triggerRef={replanTrigger}
+        title={replanCopy[c.locale].title}
+        closeLabel={replanCopy[c.locale].cancel}
+      >
+        <p>{replanCopy[c.locale].hint}</p>
+        <PrimaryButton onClick={c.startFresh}>{replanCopy[c.locale].confirm}</PrimaryButton>
+      </MorphPanel>
+      <CoachPanel
+        draft={c.coachDraft}
+        beforeSend={async request => {
+          if (request.body) await bodyProfileService.validateSending(request.body);
+        }}
+        resolveRequest={(message, current) => {
+          if (current.task !== 'ADJUST_TODAY' || !assistantPlanIntentDuringWorkout(message)) return current;
+          return (
+            buildCoachRequest({
+              task: 'MODIFY_PLAN',
+              data,
+              conversationId: current.conversationId,
+              instruction: message,
+            }) ?? current
+          );
+        }}
+        rememberOnApply={location.pathname !== path('draft')}
+        onPreferencesChanged={async () => {
+          const updated = await c.reload();
+          c.refreshCoachContext(updated);
+          setVersionUndo(previous =>
+            previous ? { ...previous, expectedRevision: updated.metadata.dataRevision } : previous,
+          );
+        }}
+        initialSend={c.coachInitialSend}
+        locale={c.locale}
+        unavailableReason={data.active && data.active.planVersionId !== data.version?.id ? t.oldWorkout : undefined}
+        onActivate={() => {
+          c.setCoachOpen(false);
+          navigate('/trial');
+        }}
+        onLocalPlan={() => {
+          c.setCoachOpen(false);
+          navigate('/onboarding');
+        }}
+        onLocalReview={() => {
+          c.setReviewKind('week');
+          c.setCoachOpen(false);
+          navigate('/review');
+        }}
+        open={c.coachOpen}
+        onClose={() => c.setCoachOpen(false)}
+        request={c.coachRequest}
+        expectedRevision={c.coachRevision}
+        triggerRef={c.coachTrigger}
+        onApply={async candidate => {
+          if (
+            location.pathname === path('draft') &&
+            candidate.request.task === 'ONBOARD_PLAN' &&
+            candidate.response.type === 'plan_proposal' &&
+            c.candidate
+          ) {
+            c.setCandidate({
+              ...candidate.response,
+              profile: c.candidate.profile,
+              expectedRevision: c.candidate.expectedRevision,
+              source: 'ai',
+              enginePlan: candidate.enginePlan,
+              ...scheduleAfterProposal(
+                c.candidate,
+                candidate.request,
+                c.candidate.proposal,
+                candidate.response.proposal,
+              ),
+            });
+            c.setCoachOpen(false);
+            navigate(path('draft'));
+            return;
+          }
+          const previous = data.version;
+          await workflow.applyCoachCandidate(candidate);
+          const updated = await c.reload();
+          c.refreshCoachContext(updated);
+          if (previous && updated.version && updated.version.id !== previous.id && updated.plan)
+            setVersionUndo({
+              planId: updated.plan.id,
+              appliedVersionId: updated.version.id,
+              priorVersionId: previous.id,
+              expectedRevision: updated.metadata.dataRevision,
+              versionNumber: updated.version.versionNumber,
+              expiresAt: Date.now() + 10000,
+            });
+          if (candidate.request.task === 'ONBOARD_PLAN') navigate('/');
+        }}
+      />
+      {!immersive && (
+        <nav aria-label={navCopy[c.locale].label} className="v9-tabbar">
+          {(
+            [
+              ['next', 'training'],
+              ['plan', 'plan'],
+              ['review', 'review'],
+              ['settings', 'me'],
+            ] as const
+          ).map(([id, kind]) => {
+            const current = id === 'next' ? location.pathname === path(id) : location.pathname.startsWith(path(id));
+            const label = navCopy[c.locale][kind];
+            return (
+              <button
+                type="button"
+                key={id}
+                className="v9-tab v8-press"
+                aria-current={current ? 'page' : undefined}
+                onClick={() => navigate(path(id))}
+              >
+                <span className="v9-tab-icon" aria-hidden="true">
+                  <slots.NavIcon kind={kind} selected={current} label={label} />
+                </span>
+                <span>{label}</span>
+              </button>
+            );
+          })}
+        </nav>
+      )}
+    </div>
+  );
+}
+export default function MainlineApp() {
+  return (
+    <ThemeProvider>
+      <RestoreBoundary>
+        <MainlineProvider>
+          <Shell />
+        </MainlineProvider>
+      </RestoreBoundary>
+    </ThemeProvider>
+  );
+}

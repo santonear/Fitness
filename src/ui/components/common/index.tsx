@@ -8,10 +8,26 @@ export function Pressable({ className, type = 'button', ...props }: ButtonProps)
   return <button {...props} type={type} className={classes('v8-press', className)} />;
 }
 
-export function Button({ variant = 'secondary', workout = false, className, ...props }: ButtonProps & {
-  variant?: 'primary' | 'secondary'; workout?: boolean;
+export function Button({
+  variant = 'secondary',
+  workout = false,
+  className,
+  ...props
+}: ButtonProps & {
+  variant?: 'primary' | 'secondary';
+  workout?: boolean;
 }) {
-  return <Pressable {...props} className={classes('v8-control', `v8-button-${variant}`, workout && variant === 'primary' ? 'v8-button-workout' : undefined, className)} />;
+  return (
+    <Pressable
+      {...props}
+      className={classes(
+        'v8-control',
+        `v8-button-${variant}`,
+        workout && variant === 'primary' ? 'v8-button-workout' : undefined,
+        className,
+      )}
+    />
+  );
 }
 
 export function IconButton({ className, ...props }: ButtonProps & { 'aria-label': string }) {
@@ -35,26 +51,75 @@ export function Row({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
 }
 
 export function Stat({ label, value, description }: { label: string; value: ReactNode; description?: string }) {
-  return <dl className="v8-stat"><dt>{label}</dt><dd>{value}</dd>{description && <dd className="v8-stat-description">{description}</dd>}</dl>;
+  return (
+    <dl className="v8-stat">
+      <dt>{label}</dt>
+      <dd>{value}</dd>
+      {description && <dd className="v8-stat-description">{description}</dd>}
+    </dl>
+  );
 }
 
-export function Toggle({ checked, onCheckedChange, children, className, onClick, ...props }: Omit<ButtonProps, 'role' | 'aria-checked'> & {
-  checked: boolean; onCheckedChange: (checked: boolean) => void;
+export function Toggle({
+  checked,
+  onCheckedChange,
+  children,
+  className,
+  onClick,
+  ...props
+}: Omit<ButtonProps, 'role' | 'aria-checked'> & {
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
 }) {
-  return <Pressable {...props} role="switch" aria-checked={checked} className={classes('v8-control', 'v8-toggle', className)}
-    onClick={event => { onClick?.(event); if (!event.defaultPrevented) onCheckedChange(!checked); }}>
-    <span>{children}</span><span className="v8-toggle-track" aria-hidden="true"><span className="v8-toggle-thumb" /></span>
-  </Pressable>;
+  return (
+    <Pressable
+      {...props}
+      role="switch"
+      aria-checked={checked}
+      className={classes('v8-control', 'v8-toggle', className)}
+      onClick={event => {
+        onClick?.(event);
+        if (!event.defaultPrevented) onCheckedChange(!checked);
+      }}
+    >
+      <span>{children}</span>
+      <span className="v8-toggle-track" aria-hidden="true">
+        <span className="v8-toggle-thumb" />
+      </span>
+    </Pressable>
+  );
 }
 
-export function Segmented({ label, options, value, onChange, disabled = false }: {
-  label: string; options: readonly { value: string; label: string }[];
-  value: string; onChange: (value: string) => void; disabled?: boolean;
+export function Segmented({
+  label,
+  options,
+  value,
+  onChange,
+  disabled = false,
+}: {
+  label: string;
+  options: readonly { value: string; label: string }[];
+  value: string;
+  onChange: (value: string) => void;
+  disabled?: boolean;
 }) {
-  return <fieldset className="v8-segmented" disabled={disabled}><legend>{label}</legend>
-    <div>{options.map(option => <Chip key={option.value} selected={value === option.value}
-      disabled={disabled} onClick={() => onChange(option.value)}>{option.label}</Chip>)}</div>
-  </fieldset>;
+  return (
+    <fieldset className="v8-segmented" disabled={disabled}>
+      <legend>{label}</legend>
+      <div>
+        {options.map(option => (
+          <Chip
+            key={option.value}
+            selected={value === option.value}
+            disabled={disabled}
+            onClick={() => onChange(option.value)}
+          >
+            {option.label}
+          </Chip>
+        ))}
+      </div>
+    </fieldset>
+  );
 }
 
 export { MorphPanel, type MorphPanelProps } from './MorphPanel';

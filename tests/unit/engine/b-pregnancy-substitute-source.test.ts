@@ -1,13 +1,13 @@
-import { it, expect } from "vitest";
-import { substituteItem } from "../../../src/engine/operations";
-import { Rules } from "../../../src/engine/data";
-import { runGates } from "../../../src/engine/gates";
-import { prescribe } from "../../../src/engine/dose";
-import { isHardEligible } from "../../../src/engine/candidates";
-import { equipmentItemSchema } from "../../../src/engine/contracts";
-import { baseProfile } from "../../../tools/eval/training-engine-profiles";
+import { it, expect } from 'vitest';
+import { substituteItem } from '../../../src/engine/operations';
+import { Rules } from '../../../src/engine/data';
+import { runGates } from '../../../src/engine/gates';
+import { prescribe } from '../../../src/engine/dose';
+import { isHardEligible } from '../../../src/engine/candidates';
+import { equipmentItemSchema } from '../../../src/engine/contracts';
+import { baseProfile } from '../../../tools/eval/training-engine-profiles';
 const r = new Rules(),
-  rows = r.get("pregnancy.substitute").map as {
+  rows = r.get('pregnancy.substitute').map as {
     from_pattern: string;
     from_position?: string | string[];
     to_slugs: string[];
@@ -15,12 +15,12 @@ const r = new Rules(),
 function fixture(index: number) {
   const row = rows[index],
     p = baseProfile({
-      level: "intermediate",
+      level: 'intermediate',
       trainingAgeWeeks: 52,
       equipment: [...equipmentItemSchema.options],
-      constraints: { noJump: false, quiet: false, space: "large" },
+      constraints: { noJump: false, quiet: false, space: 'large' },
       population: {
-        kind: "pregnant",
+        kind: 'pregnant',
         week: 20,
         providerCleared: true,
         prenatalCareConfirmed: true,
@@ -34,111 +34,83 @@ function fixture(index: number) {
         : [row.from_position]
       : undefined,
     e = r.data.exercises.find(
-      (e) =>
+      e =>
         e.primary_pattern === row.from_pattern &&
-        (!positions ||
-          positions.some((position) => e.position.includes(position))),
+        (!positions || positions.some(position => e.position.includes(position))),
     )!;
   expect(e).toBeDefined();
-  const item = prescribe(
-    e,
-    p,
-    r,
-    runGates(p, r).restrictions,
-    index === 6 ? "mobility" : "main",
-    2,
-  );
-  item.prescription!.sourcePosition = "source-slot";
+  const item = prescribe(e, p, r, runGates(p, r).restrictions, index === 6 ? 'mobility' : 'main', 2);
+  item.prescription!.sourcePosition = 'source-slot';
   return { p, item, row };
 }
 it.each([0, 1, 2, 3, 4, 5, 6])(
-  "source pregnancy map row %i picks its first hard-eligible dose-legal declared slug",
-  (index) => {
+  'source pregnancy map row %i picks its first hard-eligible dose-legal declared slug',
+  index => {
     const { p, item, row } = fixture(index),
       before = structuredClone(item),
-      out = substituteItem(item, p, "dislike", r),
+      out = substituteItem(item, p, 'dislike', r),
       e = r.byExercise.get(out.value.exerciseId)!;
     expect(out.noop).toBe(false);
     expect(e.slug).toBe(row.to_slugs[0]);
     expect(isHardEligible(e, p, runGates(p, r), { rules: r })).toBe(true);
-    expect(out.trace.some((t) => t.ruleId === "pregnancy.substitute")).toBe(
-      true,
-    );
-    expect(out.value.prescription?.sourcePosition).toBe("source-slot");
+    expect(out.trace.some(t => t.ruleId === 'pregnancy.substitute')).toBe(true);
+    expect(out.value.prescription?.sourcePosition).toBe('source-slot');
     expect(item).toEqual(before);
   },
 );
-it("skips unavailable or previously excluded source alternatives in source order without inventing equipment", () => {
+it('skips unavailable or previously excluded source alternatives in source order without inventing equipment', () => {
   const { p, item } = fixture(0);
-  p.equipment = ["none", "chest-press-machine"];
-  const out = substituteItem(item, p, "equipment", r);
-  expect(r.byExercise.get(out.value.exerciseId)?.slug).toBe(
-    "chest-press-machine",
-  );
-  p.equipment = ["none"];
-  expect(substituteItem(item, p, "equipment", r).noop).toBe(true);
+  p.equipment = ['none', 'chest-press-machine'];
+  const out = substituteItem(item, p, 'equipment', r);
+  expect(r.byExercise.get(out.value.exerciseId)?.slug).toBe('chest-press-machine');
+  p.equipment = ['none'];
+  expect(substituteItem(item, p, 'equipment', r).noop).toBe(true);
   const full = fixture(0),
-    first = r.data.exercises.find((e) => e.slug === full.row.to_slugs[0])!;
+    first = r.data.exercises.find(e => e.slug === full.row.to_slugs[0])!;
   full.item.prescription!.excludedPreviousIds = [first.id];
-  expect(
-    r.byExercise.get(
-      substituteItem(full.item, full.p, "dislike", r).value.exerciseId,
-    )?.slug,
-  ).toBe(full.row.to_slugs[1]);
+  expect(r.byExercise.get(substituteItem(full.item, full.p, 'dislike', r).value.exerciseId)?.slug).toBe(
+    full.row.to_slugs[1],
+  );
 });
-it("does not replace a from_position mismatch using the pregnancy table and keeps nonpregnant caution behavior", () => {
+it('does not replace a from_position mismatch using the pregnancy table and keeps nonpregnant caution behavior', () => {
   const { p, item } = fixture(0),
-    standing = r.data.exercises.find(
-      (e) =>
-        e.primary_pattern === "push_horizontal" &&
-        e.position.includes("standing"),
-    )!;
+    standing = r.data.exercises.find(e => e.primary_pattern === 'push_horizontal' && e.position.includes('standing'))!;
   item.exerciseId = standing.id;
-  expect(
-    substituteItem(item, p, "dislike", r).trace.some(
-      (t) => t.ruleId === "pregnancy.substitute",
-    ),
-  ).toBe(false);
+  expect(substituteItem(item, p, 'dislike', r).trace.some(t => t.ruleId === 'pregnancy.substitute')).toBe(false);
   const general = fixture(0);
-  general.p.population = { kind: "general" };
+  general.p.population = { kind: 'general' };
   expect(
-    substituteItem(general.item, general.p, "dislike", r).trace.some(
-      (t) => t.ruleId === "pregnancy.substitute",
-    ),
+    substituteItem(general.item, general.p, 'dislike', r).trace.some(t => t.ruleId === 'pregnancy.substitute'),
   ).toBe(false);
 });
-it("all table alternatives still obey pregnancy, joint, user exclusion and blocked screening filters", () => {
+it('all table alternatives still obey pregnancy, joint, user exclusion and blocked screening filters', () => {
   const { p, item, row } = fixture(3);
-  p.preferences.excludedExerciseIds = row.to_slugs.flatMap((slug) => {
-    const e = r.data.exercises.find((e) => e.slug === slug);
+  p.preferences.excludedExerciseIds = row.to_slugs.flatMap(slug => {
+    const e = r.data.exercises.find(e => e.slug === slug);
     return e ? [e.id] : [];
   });
-  expect(substituteItem(item, p, "pain", r).noop).toBe(true);
+  expect(substituteItem(item, p, 'pain', r).noop).toBe(true);
   delete p.screening.cmrSymptoms;
-  expect(substituteItem(item, p, "dislike", r).noop).toBe(true);
+  expect(substituteItem(item, p, 'dislike', r).noop).toBe(true);
 });
-it("hard personal constraints can exhaust the source row and replacement doses stay within source bounds", () => {
+it('hard personal constraints can exhaust the source row and replacement doses stay within source bounds', () => {
   const { p, item } = fixture(3);
-  p.cautions = ["knee"];
-  p.preferences.cannotDo = ["kneeling"];
-  p.preferences.excludedExerciseIds = [
-    r.data.exercises.find((e) => e.slug === "cable-pallof-press")!.id,
-  ];
-  const out = substituteItem(item, p, "pain", r);
+  p.cautions = ['knee'];
+  p.preferences.cannotDo = ['kneeling'];
+  p.preferences.excludedExerciseIds = [r.data.exercises.find(e => e.slug === 'cable-pallof-press')!.id];
+  const out = substituteItem(item, p, 'pain', r);
   expect(out.noop).toBe(true);
   expect(out.value).toEqual(item);
   const bad = fixture(0);
   bad.item.sets = 100;
-  const bounded = substituteItem(bad.item, bad.p, "dislike", r);
+  const bounded = substituteItem(bad.item, bad.p, 'dislike', r);
   expect(bounded.noop).toBe(false);
-  expect(bounded.value.sets).toBeLessThanOrEqual(
-    r.get("dose.sets_exercise").max[bad.p.level],
-  );
+  expect(bounded.value.sets).toBeLessThanOrEqual(r.get('dose.sets_exercise').max[bad.p.level]);
 });
-it("pregnancy table never restores a legacy HIIT prescription flag", () => {
+it('pregnancy table never restores a legacy HIIT prescription flag', () => {
   const { p, item } = fixture(0);
-  item.prescription!.trainingStyle = "hiit";
-  const out = substituteItem(item, p, "dislike", r);
+  item.prescription!.trainingStyle = 'hiit';
+  const out = substituteItem(item, p, 'dislike', r);
   expect(out.noop).toBe(false);
   expect(out.value.prescription?.trainingStyle).toBeUndefined();
   expect(runGates(p, r).restrictions.user.hiit_unlocked).toBe(false);

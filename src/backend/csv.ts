@@ -4,9 +4,13 @@
  * prefixed with ' so it stays text.
  */
 export function csvRow(row: readonly unknown[]): string {
-  return row.map(value => {
-    const text = String(value ?? '');
-    const safe = /^[\s\u0000-\u001f]*[=+@-]|^[\t\r\n]/.test(text) ? "'" + text : text;
-    return '"' + safe.replaceAll('"', '""') + '"';
-  }).join(',') + '\r\n';
+  return (
+    row
+      .map(value => {
+        const text = String(value ?? '');
+        const safe = /^[\s\u0000-\u001f]*[=+@-]|^[\t\r\n]/.test(text) ? "'" + text : text;
+        return '"' + safe.replaceAll('"', '""') + '"';
+      })
+      .join(',') + '\r\n'
+  );
 }

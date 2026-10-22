@@ -1,5 +1,12 @@
 import { expect, test, type Page } from '@playwright/test';
-import { answerTexts, engineSafety, nextButton, pickTrainingDays, shanghaiDate, startOnboarding } from './helpers/onboarding-v9';
+import {
+  answerTexts,
+  engineSafety,
+  nextButton,
+  pickTrainingDays,
+  shanghaiDate,
+  startOnboarding,
+} from './helpers/onboarding-v9';
 
 /**
  * Bo 2026-10-19: training days on a month calendar (tap or drag, 1–30 days) then a start time; the draft is a
@@ -7,14 +14,35 @@ import { answerTexts, engineSafety, nextButton, pickTrainingDays, shanghaiDate, 
  * goal stays on the goal; 重新制定计划 starts fresh but keeps records.
  */
 test.setTimeout(150000);
-const flags = (page: Page) => page.route('**/api/v1/features', route => route.fulfill({ json: { version: 1, flags: { trainingEngine: true, bodyProfile: true, planLifecycle: true }, expiresAt: Date.now() + 3600000 } }));
-const noAccess = (page: Page) => page.route('**/api/v1/trial/**', route => {
-  const url = route.request().url();
-  if (url.endsWith('/access-status')) return route.fulfill({ json: { qualification: 'none', sessionValid: false, aiEnabled: false } });
-  if (url.endsWith('/application-config')) return route.fulfill({ json: { available: false, siteKey: null } });
-  return route.fulfill({ json: [] });
-});
-const snapshot = (page: Page) => page.evaluate(async () => { const path = '/src/ui/mainline/context.tsx'; const data = await (await import(/* @vite-ignore */ path)).workflow.snapshot(); return { version: data.version, versions: data.versions.length, plans: data.plans.length, workouts: data.workouts.length }; });
+const flags = (page: Page) =>
+  page.route('**/api/v1/features', route =>
+    route.fulfill({
+      json: {
+        version: 1,
+        flags: { trainingEngine: true, bodyProfile: true, planLifecycle: true },
+        expiresAt: Date.now() + 3600000,
+      },
+    }),
+  );
+const noAccess = (page: Page) =>
+  page.route('**/api/v1/trial/**', route => {
+    const url = route.request().url();
+    if (url.endsWith('/access-status'))
+      return route.fulfill({ json: { qualification: 'none', sessionValid: false, aiEnabled: false } });
+    if (url.endsWith('/application-config')) return route.fulfill({ json: { available: false, siteKey: null } });
+    return route.fulfill({ json: [] });
+  });
+const snapshot = (page: Page) =>
+  page.evaluate(async () => {
+    const path = '/src/ui/mainline/context.tsx';
+    const data = await (await import(/* @vite-ignore */ path)).workflow.snapshot();
+    return {
+      version: data.version,
+      versions: data.versions.length,
+      plans: data.plans.length,
+      workouts: data.workouts.length,
+    };
+  });
 
 async function toSchedule(page: Page) {
   await startOnboarding(page);
@@ -35,7 +63,8 @@ const calendarOf = (page: Page) => page.getByRole('region', { name: /训练日$/
 /** Presses on one day and releases on another, through the days in between (mouse drag). */
 async function drag(page: Page, from: string, to: string) {
   const calendar = calendarOf(page);
-  const a = await calendar.locator(`[data-date="${from}"]`).boundingBox(), b = await calendar.locator(`[data-date="${to}"]`).boundingBox();
+  const a = await calendar.locator(`[data-date="${from}"]`).boundingBox(),
+    b = await calendar.locator(`[data-date="${to}"]`).boundingBox();
   await page.mouse.move(a!.x + a!.width / 2, a!.y + a!.height / 2);
   await page.mouse.down();
   await page.mouse.move((a!.x + b!.x) / 2 + a!.width / 2, (a!.y + b!.y) / 2 + a!.height / 2, { steps: 4 });
@@ -44,7 +73,8 @@ async function drag(page: Page, from: string, to: string) {
 }
 
 test('one tapped day makes a one-day plan with a start time; the draft is a month calendar', async ({ page }) => {
-  await flags(page); await noAccess(page);
+  await flags(page);
+  await noAccess(page);
   await page.setViewportSize({ width: 390, height: 844 });
   await toSchedule(page);
   // No fixed weekly count any more: the calendar is the schedule.
@@ -57,7 +87,8 @@ test('one tapped day makes a one-day plan with a start time; the draft is a mont
   await cell.click();
   await expect(cell).toHaveAttribute('aria-pressed', 'false');
   // Keyboard: Enter toggles the focused day.
-  await cell.focus(); await page.keyboard.press('Enter');
+  await cell.focus();
+  await page.keyboard.press('Enter');
   await expect(cell).toHaveAttribute('aria-pressed', 'true');
   // Earlier days cannot be picked.
   const yesterday = calendarOf(page).locator(`[data-date="${shanghaiDate(-1)}"]`);
@@ -71,7 +102,9 @@ test('one tapped day makes a one-day plan with a start time; the draft is a mont
   await fromScheduleToDraft(page);
   await expect(page.getByTestId('draft-days')).toContainText('共 1 天 ·');
   await expect(page.getByTestId('draft-days')).toContainText('每次 19:00 开始');
-  await expect(page.getByRole('radiogroup', { name: '计划视图' }).getByRole('radio', { name: '月', exact: true })).toHaveAttribute('aria-checked', 'true');
+  await expect(
+    page.getByRole('radiogroup', { name: '计划视图' }).getByRole('radio', { name: '月', exact: true }),
+  ).toHaveAttribute('aria-checked', 'true');
   const month = page.locator('section.v9-month-plan');
   await expect(month.locator('.v9-month-day[data-state="planned"]')).toHaveCount(1);
   await expect(month.locator(`.v9-month-day[data-date="${day}"]`)).toHaveAttribute('data-state', 'planned');
@@ -80,7 +113,8 @@ test('one tapped day makes a one-day plan with a start time; the draft is a mont
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.screenshot({ path: test.info().outputPath('draft-month-pop-1440.png'), fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.getByRole('button', { name: '就用这份计划', exact: true }).click(); await page.getByRole('button', { name: '先不写', exact: true }).click();
+  await page.getByRole('button', { name: '就用这份计划', exact: true }).click();
+  await page.getByRole('button', { name: '先不写', exact: true }).click();
   await expect(page.getByRole('heading', { name: '今天', exact: true })).toBeVisible();
   const saved = await snapshot(page);
   expect(saved.version.trainingDates).toEqual([day]);
@@ -93,15 +127,18 @@ test('one tapped day makes a one-day plan with a start time; the draft is a mont
 });
 
 test('dragging across 30 days keeps a rest day in every 7, says so, and plans the rest', async ({ page }) => {
-  await flags(page); await noAccess(page);
+  await flags(page);
+  await noAccess(page);
   await page.setViewportSize({ width: 390, height: 844 });
   await toSchedule(page);
   const calendar = calendarOf(page);
   // Drag within this month first: a run of 3 days.
-  const first = shanghaiDate(0), third = shanghaiDate(2);
+  const first = shanghaiDate(0),
+    third = shanghaiDate(2);
   if (first.slice(0, 7) === third.slice(0, 7)) {
     await drag(page, first, third);
-    for (const date of [first, shanghaiDate(1), third]) await expect(calendar.locator(`[data-date="${date}"]`)).toHaveAttribute('aria-pressed', 'true');
+    for (const date of [first, shanghaiDate(1), third])
+      await expect(calendar.locator(`[data-date="${date}"]`)).toHaveAttribute('aria-pressed', 'true');
     await expect(page.getByText(/已选 3 天/)).toBeVisible();
     // Dragging over picked days unpicks them.
     await drag(page, first, shanghaiDate(1));
@@ -110,7 +147,11 @@ test('dragging across 30 days keeps a rest day in every 7, says so, and plans th
     await page.getByRole('button', { name: '清空重选', exact: true }).click();
   }
   // 30 days in a row: drag to the end of this month, then on through the next month.
-  const last = shanghaiDate(29), monthEnd = (() => { for (let i = 29; i >= 0; i--) if (shanghaiDate(i).slice(0, 7) === first.slice(0, 7)) return shanghaiDate(i); return first; })();
+  const last = shanghaiDate(29),
+    monthEnd = (() => {
+      for (let i = 29; i >= 0; i--) if (shanghaiDate(i).slice(0, 7) === first.slice(0, 7)) return shanghaiDate(i);
+      return first;
+    })();
   await drag(page, first, monthEnd);
   if (monthEnd !== last) {
     await calendar.getByRole('button', { name: '下个月' }).click();
@@ -121,7 +162,8 @@ test('dragging across 30 days keeps a rest day in every 7, says so, and plans th
   await page.getByRole('button', { name: '45 分钟', exact: true }).click();
   await fromScheduleToDraft(page);
   await expect(page.getByTestId('draft-days')).toContainText('共 26 天');
-  await page.getByRole('button', { name: '就用这份计划', exact: true }).click(); await page.getByRole('button', { name: '先不写', exact: true }).click();
+  await page.getByRole('button', { name: '就用这份计划', exact: true }).click();
+  await page.getByRole('button', { name: '先不写', exact: true }).click();
   await expect(page.getByRole('heading', { name: '今天', exact: true })).toBeVisible();
   const saved = await snapshot(page);
   expect(saved.version.trainingDates).toHaveLength(26);
@@ -129,8 +171,11 @@ test('dragging across 30 days keeps a rest day in every 7, says so, and plans th
   expect(saved.version.trainingDates).not.toContain(shanghaiDate(6));
 });
 
-test('labelled 上一步 on every step; 回到今天 asks, clears the answers and opens 今天; 自己写一句 stays on the goal', async ({ page }) => {
-  await flags(page); await noAccess(page);
+test('labelled 上一步 on every step; 回到今天 asks, clears the answers and opens 今天; 自己写一句 stays on the goal', async ({
+  page,
+}) => {
+  await flags(page);
+  await noAccess(page);
   await page.setViewportSize({ width: 390, height: 844 });
   await startOnboarding(page);
   const goal = page.getByRole('heading', { name: '你想练成什么样？' });
@@ -169,7 +214,8 @@ test('labelled 上一步 on every step; 回到今天 asks, clears the answers an
 });
 
 test('birth month: tap a month on a year page (‹ › and a year grid), or type it', async ({ page }) => {
-  await flags(page); await noAccess(page);
+  await flags(page);
+  await noAccess(page);
   await page.setViewportSize({ width: 390, height: 844 });
   await toSchedule(page);
   await pickTrainingDays(page, [shanghaiDate(0)], 30);
@@ -205,13 +251,17 @@ test('birth month: tap a month on a year page (‹ › and a year grid), or type
   await expect(nextButton(page)).toBeEnabled();
 });
 
-test('重新制定计划 asks, then starts every question fresh; finished records and earlier plans stay', async ({ page }) => {
-  await flags(page); await noAccess(page);
+test('重新制定计划 asks, then starts every question fresh; finished records and earlier plans stay', async ({
+  page,
+}) => {
+  await flags(page);
+  await noAccess(page);
   await page.setViewportSize({ width: 390, height: 844 });
   await toSchedule(page);
   await pickTrainingDays(page, [shanghaiDate(0)], 30);
   await fromScheduleToDraft(page);
-  await page.getByRole('button', { name: '就用这份计划', exact: true }).click(); await page.getByRole('button', { name: '先不写', exact: true }).click();
+  await page.getByRole('button', { name: '就用这份计划', exact: true }).click();
+  await page.getByRole('button', { name: '先不写', exact: true }).click();
   await expect(page.getByRole('heading', { name: '今天', exact: true })).toBeVisible();
   const before = await snapshot(page);
   await page.getByRole('navigation', { name: '主导航' }).getByRole('button', { name: '计划' }).click();
@@ -221,7 +271,8 @@ test('重新制定计划 asks, then starts every question fresh; finished record
   await expect(ask).toContainText('已经完成的训练记录和以前的计划都会保留');
   await ask.getByRole('button', { name: '清空并重新开始', exact: true }).click();
   await expect(page).toHaveURL(/onboarding/);
-  const goal = page.getByRole('heading', { name: '你想练成什么样？' }), start = page.getByRole('button', { name: '开始', exact: true });
+  const goal = page.getByRole('heading', { name: '你想练成什么样？' }),
+    start = page.getByRole('button', { name: '开始', exact: true });
   await expect(goal.or(start)).toBeVisible();
   if (await start.isVisible()) await start.click();
   await expect(goal).toBeVisible();

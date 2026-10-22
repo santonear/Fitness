@@ -3,19 +3,33 @@ import type { WorkoutRecord } from '../../src/domain/v8/contracts';
 import { computeIncompleteTiming, computeExerciseEvidence } from '../../src/application/review/evidence';
 
 const workout = (patch: Partial<WorkoutRecord> = {}): WorkoutRecord => ({
-  id: 'w', planVersionId: 'v', startedAt: '2026-10-09T06:00:00Z',
-  localDate: '2026-10-09', timeZone: 'UTC', status: 'partial', plannedSetCount: 2,
-  sets: [], ...patch,
+  id: 'w',
+  planVersionId: 'v',
+  startedAt: '2026-10-09T06:00:00Z',
+  localDate: '2026-10-09',
+  timeZone: 'UTC',
+  status: 'partial',
+  plannedSetCount: 2,
+  sets: [],
+  ...patch,
 });
 const set = (exerciseId: string, itemIndex = 0, setIndex = 0) => ({
-  exerciseId, itemIndex, setIndex, completedAt: '2026-10-09T06:10:00Z',
+  exerciseId,
+  itemIndex,
+  setIndex,
+  completedAt: '2026-10-09T06:10:00Z',
 });
 
 describe('incomplete timing facts (caller supplies the review period)', () => {
   it.each([
-    ['04:59:59', 'overnight'], ['05:00:00', 'morning'], ['11:59:59', 'morning'],
-    ['12:00:00', 'daytime'], ['16:59:59', 'daytime'], ['17:00:00', 'evening'],
-    ['00:00:00', 'overnight'], ['23:59:59', 'evening'],
+    ['04:59:59', 'overnight'],
+    ['05:00:00', 'morning'],
+    ['11:59:59', 'morning'],
+    ['12:00:00', 'daytime'],
+    ['16:59:59', 'daytime'],
+    ['17:00:00', 'evening'],
+    ['00:00:00', 'overnight'],
+    ['23:59:59', 'evening'],
   ] as const)('classifies %s as %s', (time, band) => {
     const result = computeIncompleteTiming([workout({ startedAt: `2026-10-09T${time}Z` })]);
     expect(result.weekday[band]!.partial).toBe(1);
@@ -39,7 +53,9 @@ describe('incomplete timing facts (caller supplies the review period)', () => {
     expect(result.weekend.morning.partial).toBe(1);
   });
   it('only counts partial and not_started and returns independent empty buckets', () => {
-    const result = computeIncompleteTiming(['complete', 'in_progress', 'abandoned'].map(status => workout({ status: status as WorkoutRecord['status'] })));
+    const result = computeIncompleteTiming(
+      ['complete', 'in_progress', 'abandoned'].map(status => workout({ status: status as WorkoutRecord['status'] })),
+    );
     expect(JSON.stringify(result)).not.toMatch(/:1/);
     expect(computeIncompleteTiming([])).toEqual(result);
   });
@@ -49,33 +65,86 @@ describe('exercise evidence from one workout', () => {
   const plannedExercises = [{ exerciseId: 'squat', itemIndex: 0, plannedSetCount: 2 }];
   const sets = [set('squat', 0, 0), set('squat', 0, 1)];
   it.each(['in_progress', 'abandoned'] as const)('excludes %s records from both kinds of review evidence', status => {
-    expect(computeExerciseEvidence(workout({ status, plannedExercises, sets,
-      feedback: { feel: 'easy', reasons: ['discomfort'], discomfortExerciseIds: ['squat'] },
-      substitutions: [{ fromExerciseId: 'squat', toExerciseId: 'bridge', itemIndex: 0, reason: 'discomfort', createdAt: '2026-10-09T06:05:00Z' }],
-    }))).toEqual({ easyCompletedExerciseIds: [], discomfortExerciseIds: [] });
+    expect(
+      computeExerciseEvidence(
+        workout({
+          status,
+          plannedExercises,
+          sets,
+          feedback: { feel: 'easy', reasons: ['discomfort'], discomfortExerciseIds: ['squat'] },
+          substitutions: [
+            {
+              fromExerciseId: 'squat',
+              toExerciseId: 'bridge',
+              itemIndex: 0,
+              reason: 'discomfort',
+              createdAt: '2026-10-09T06:05:00Z',
+            },
+          ],
+        }),
+      ),
+    ).toEqual({ easyCompletedExerciseIds: [], discomfortExerciseIds: [] });
   });
   it('retains not_started discomfort substitution evidence without easy-completion evidence', () => {
-    expect(computeExerciseEvidence(workout({ status: 'not_started', plannedExercises, sets,
-      feedback: { feel: 'easy', reasons: [] },
-      substitutions: [{ fromExerciseId: 'squat', toExerciseId: 'bridge', itemIndex: 0, reason: 'discomfort', createdAt: '2026-10-09T06:05:00Z' }],
-    }))).toEqual({ easyCompletedExerciseIds: [], discomfortExerciseIds: ['squat'] });
+    expect(
+      computeExerciseEvidence(
+        workout({
+          status: 'not_started',
+          plannedExercises,
+          sets,
+          feedback: { feel: 'easy', reasons: [] },
+          substitutions: [
+            {
+              fromExerciseId: 'squat',
+              toExerciseId: 'bridge',
+              itemIndex: 0,
+              reason: 'discomfort',
+              createdAt: '2026-10-09T06:05:00Z',
+            },
+          ],
+        }),
+      ),
+    ).toEqual({ easyCompletedExerciseIds: [], discomfortExerciseIds: ['squat'] });
   });
-  it.each([[0, 99], [1, 2], [-1, 0]])('requires every planned zero-based set index: %j', (...indices) => {
-    expect(computeExerciseEvidence(workout({ plannedExercises,
-      sets: indices.map(index => set('squat', 0, index)), feedback: { feel: 'easy', reasons: [] },
-    })).easyCompletedExerciseIds).toEqual([]);
+  it.each([
+    [0, 99],
+    [1, 2],
+    [-1, 0],
+  ])('requires every planned zero-based set index: %j', (...indices) => {
+    expect(
+      computeExerciseEvidence(
+        workout({
+          plannedExercises,
+          sets: indices.map(index => set('squat', 0, index)),
+          feedback: { feel: 'easy', reasons: [] },
+        }),
+      ).easyCompletedExerciseIds,
+    ).toEqual([]);
   });
-  it.each(['easy', 'right'] as const)('requires all snapshot sets, including in a partial workout with %s feel', feel => {
-    expect(computeExerciseEvidence(workout({ plannedExercises, sets, feedback: { feel, reasons: [] } })).easyCompletedExerciseIds).toEqual(['squat']);
-    expect(computeExerciseEvidence(workout({ plannedExercises, sets: sets.slice(0, 1), feedback: { feel, reasons: [] } })).easyCompletedExerciseIds).toEqual([]);
-  });
+  it.each(['easy', 'right'] as const)(
+    'requires all snapshot sets, including in a partial workout with %s feel',
+    feel => {
+      expect(
+        computeExerciseEvidence(workout({ plannedExercises, sets, feedback: { feel, reasons: [] } }))
+          .easyCompletedExerciseIds,
+      ).toEqual(['squat']);
+      expect(
+        computeExerciseEvidence(workout({ plannedExercises, sets: sets.slice(0, 1), feedback: { feel, reasons: [] } }))
+          .easyCompletedExerciseIds,
+      ).toEqual([]);
+    },
+  );
   it('does not infer completion from legacy total count or complete status', () => {
-    expect(computeExerciseEvidence(workout({ status: 'complete', sets, feedback: { feel: 'easy', reasons: [] } })).easyCompletedExerciseIds).toEqual([]);
+    expect(
+      computeExerciseEvidence(workout({ status: 'complete', sets, feedback: { feel: 'easy', reasons: [] } }))
+        .easyCompletedExerciseIds,
+    ).toEqual([]);
   });
   it('evaluates each exercise independently and does not mutate recorded facts', () => {
     const record = workout({
       plannedExercises: [...plannedExercises, { exerciseId: 'row', itemIndex: 1, plannedSetCount: 2 }],
-      sets: [...sets, set('row', 1)], feedback: { feel: 'easy', reasons: [] },
+      sets: [...sets, set('row', 1)],
+      feedback: { feel: 'easy', reasons: [] },
     });
     const original = structuredClone(record);
     expect(computeExerciseEvidence(record).easyCompletedExerciseIds).toEqual(['squat']);
@@ -83,32 +152,95 @@ describe('exercise evidence from one workout', () => {
     expect(record).toEqual(original);
   });
   it('does not treat zero planned sets as completed exercise evidence', () => {
-    expect(computeExerciseEvidence(workout({ plannedExercises: [{ ...plannedExercises[0], plannedSetCount: 0 }], feedback: { feel: 'easy', reasons: [] } })).easyCompletedExerciseIds).toEqual([]);
+    expect(
+      computeExerciseEvidence(
+        workout({
+          plannedExercises: [{ ...plannedExercises[0], plannedSetCount: 0 }],
+          feedback: { feel: 'easy', reasons: [] },
+        }),
+      ).easyCompletedExerciseIds,
+    ).toEqual([]);
   });
   it('does not combine different item occurrences or duplicate set facts', () => {
     const repeated = [...plannedExercises, { exerciseId: 'squat', itemIndex: 1, plannedSetCount: 1 }];
-    expect(computeExerciseEvidence(workout({ plannedExercises: repeated, sets, feedback: { feel: 'easy', reasons: [] } })).easyCompletedExerciseIds).toEqual([]);
-    expect(computeExerciseEvidence(workout({ plannedExercises, sets: [sets[0], sets[0]], feedback: { feel: 'right', reasons: [] } })).easyCompletedExerciseIds).toEqual([]);
-    expect(computeExerciseEvidence(workout({ plannedExercises: repeated, sets: [...sets, set('squat', 1)], feedback: { feel: 'easy', reasons: [] } })).easyCompletedExerciseIds).toEqual(['squat']);
+    expect(
+      computeExerciseEvidence(workout({ plannedExercises: repeated, sets, feedback: { feel: 'easy', reasons: [] } }))
+        .easyCompletedExerciseIds,
+    ).toEqual([]);
+    expect(
+      computeExerciseEvidence(
+        workout({ plannedExercises, sets: [sets[0], sets[0]], feedback: { feel: 'right', reasons: [] } }),
+      ).easyCompletedExerciseIds,
+    ).toEqual([]);
+    expect(
+      computeExerciseEvidence(
+        workout({
+          plannedExercises: repeated,
+          sets: [...sets, set('squat', 1)],
+          feedback: { feel: 'easy', reasons: [] },
+        }),
+      ).easyCompletedExerciseIds,
+    ).toEqual(['squat']);
   });
   it.each(['tired', 'very_tired', undefined] as const)('does not label %s feeling as easy completion', feel => {
-    expect(computeExerciseEvidence(workout({ plannedExercises, sets, feedback: { feel, reasons: [] } })).easyCompletedExerciseIds).toEqual([]);
+    expect(
+      computeExerciseEvidence(workout({ plannedExercises, sets, feedback: { feel, reasons: [] } }))
+        .easyCompletedExerciseIds,
+    ).toEqual([]);
   });
   it('does not count a replacement as completion of the original exercise', () => {
-    expect(computeExerciseEvidence(workout({ plannedExercises, sets: [set('bridge'), set('bridge', 0, 1)], feedback: { feel: 'easy', reasons: [] } })).easyCompletedExerciseIds).toEqual([]);
+    expect(
+      computeExerciseEvidence(
+        workout({
+          plannedExercises,
+          sets: [set('bridge'), set('bridge', 0, 1)],
+          feedback: { feel: 'easy', reasons: [] },
+        }),
+      ).easyCompletedExerciseIds,
+    ).toEqual([]);
   });
   it('only attributes feedback discomfort to selected exercises actually performed', () => {
-    expect(computeExerciseEvidence(workout({ sets, feedback: { reasons: ['discomfort'], discomfortExerciseIds: ['squat', 'squat', 'bridge'] } })).discomfortExerciseIds).toEqual(['squat']);
-    expect(computeExerciseEvidence(workout({ sets, feedback: { reasons: ['discomfort'] } })).discomfortExerciseIds).toEqual([]);
-    expect(computeExerciseEvidence(workout({ sets, feedback: { reasons: [], discomfortExerciseIds: ['squat'] } })).discomfortExerciseIds).toEqual([]);
+    expect(
+      computeExerciseEvidence(
+        workout({ sets, feedback: { reasons: ['discomfort'], discomfortExerciseIds: ['squat', 'squat', 'bridge'] } }),
+      ).discomfortExerciseIds,
+    ).toEqual(['squat']);
+    expect(
+      computeExerciseEvidence(workout({ sets, feedback: { reasons: ['discomfort'] } })).discomfortExerciseIds,
+    ).toEqual([]);
+    expect(
+      computeExerciseEvidence(workout({ sets, feedback: { reasons: [], discomfortExerciseIds: ['squat'] } }))
+        .discomfortExerciseIds,
+    ).toEqual([]);
   });
   it('counts discomfort substitutions without completed replacement sets and deduplicates selections', () => {
-    const substitution = { fromExerciseId: 'squat', toExerciseId: 'bridge', itemIndex: 0, reason: 'discomfort' as const, createdAt: '2026-10-09T06:05:00Z' };
-    expect(computeExerciseEvidence(workout({ substitutions: [substitution, substitution] })).discomfortExerciseIds).toEqual(['squat']);
-    expect(computeExerciseEvidence(workout({ sets, substitutions: [substitution], feedback: { reasons: ['discomfort'], discomfortExerciseIds: ['squat'] } })).discomfortExerciseIds).toEqual(['squat']);
-    expect(computeExerciseEvidence(workout({ substitutions: [{ ...substitution, reason: 'other' }] })).discomfortExerciseIds).toEqual([]);
+    const substitution = {
+      fromExerciseId: 'squat',
+      toExerciseId: 'bridge',
+      itemIndex: 0,
+      reason: 'discomfort' as const,
+      createdAt: '2026-10-09T06:05:00Z',
+    };
+    expect(
+      computeExerciseEvidence(workout({ substitutions: [substitution, substitution] })).discomfortExerciseIds,
+    ).toEqual(['squat']);
+    expect(
+      computeExerciseEvidence(
+        workout({
+          sets,
+          substitutions: [substitution],
+          feedback: { reasons: ['discomfort'], discomfortExerciseIds: ['squat'] },
+        }),
+      ).discomfortExerciseIds,
+    ).toEqual(['squat']);
+    expect(
+      computeExerciseEvidence(workout({ substitutions: [{ ...substitution, reason: 'other' }] })).discomfortExerciseIds,
+    ).toEqual([]);
   });
   it('keeps legacy substitutedFrom alone insufficient for discomfort attribution', () => {
-    expect(computeExerciseEvidence(workout({ sets: [{ ...set('bridge'), substitutedFrom: 'squat' }] }))).toEqual({ easyCompletedExerciseIds: [], discomfortExerciseIds: [] });
+    expect(computeExerciseEvidence(workout({ sets: [{ ...set('bridge'), substitutedFrom: 'squat' }] }))).toEqual({
+      easyCompletedExerciseIds: [],
+      discomfortExerciseIds: [],
+    });
   });
 });

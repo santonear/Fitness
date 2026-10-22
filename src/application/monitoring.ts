@@ -17,8 +17,12 @@ export function monitoringError(raw: unknown, enabled = false): SafeErrorEvent |
   const result = safeErrorEventSchema.safeParse(raw);
   return result.success ? result.data : undefined;
 }
-export function incrementAnonymousCount(counts: Partial<Record<AnonymousEvent, number>>, raw: unknown,
-  optedIn = false, enabled = false): Partial<Record<AnonymousEvent, number>> {
+export function incrementAnonymousCount(
+  counts: Partial<Record<AnonymousEvent, number>>,
+  raw: unknown,
+  optedIn = false,
+  enabled = false,
+): Partial<Record<AnonymousEvent, number>> {
   const event = anonymousEventSchema.safeParse(raw);
   if (!enabled || !optedIn || !event.success) return { ...counts };
   const previous = counts[event.data] ?? 0;

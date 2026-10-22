@@ -1,11 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { DAY_MS, DEFAULT_TIME_ZONE, addDays, daysBetween, isLocalDate, todayIn, weekStart } from '../../src/domain/local-date';
+import {
+  DAY_MS,
+  DEFAULT_TIME_ZONE,
+  addDays,
+  daysBetween,
+  isLocalDate,
+  todayIn,
+  weekStart,
+} from '../../src/domain/local-date';
 
 describe('local dates', () => {
   it('checks real calendar dates only', () => {
     expect(isLocalDate('2026-10-22')).toBe(true);
     expect(isLocalDate('2028-02-29')).toBe(true);
-    for (const bad of ['2026-02-29', '2026-13-01', '2026-04-31', '2026-1-01', '2026-10-22T00:00:00Z', '']) expect(isLocalDate(bad)).toBe(false);
+    for (const bad of ['2026-02-29', '2026-13-01', '2026-04-31', '2026-1-01', '2026-10-22T00:00:00Z', ''])
+      expect(isLocalDate(bad)).toBe(false);
   });
 
   it('adds days across month and year boundaries', () => {

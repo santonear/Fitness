@@ -1,11 +1,54 @@
-.exercise-guide-image { margin: 0; display: grid; place-items: center; min-height: var(--s8); overflow: hidden; background: var(--c-surface); border-radius: var(--r-panel); }
-.exercise-guide-image img { display: block; width: 100%; height: min(32dvh, 300px); object-fit: contain; }
-.exercise-guide-image figcaption { padding: var(--s4); color: var(--c-ink-muted); }
-.exercise-guide-detail h3 { margin-block: var(--s5) var(--s2); }
-.exercise-guide-detail li { margin-block-end: var(--s2); }
-.exercise-guide-open { display: block; width: 100%; padding: 0; color: inherit; border: var(--bw) solid var(--c-line); border-radius: var(--r-panel); background: var(--c-surface); cursor: pointer; }
-.exercise-guide-open:focus-visible { outline: var(--s1) solid var(--c-focus); outline-offset: var(--s1); }
-.exercise-guide-points { text-align: start; padding-inline-start: var(--s5); }
-.v8-focus .exercise-guide-open + small { display: block; }
-.v8-focus { gap: var(--s2); padding-block: var(--s2); }
-.v8-focus > p, .v8-focus > ul { margin-block: var(--s2); }
+.exercise-guide-image {
+  margin: 0;
+  display: grid;
+  place-items: center;
+  min-height: var(--s8);
+  overflow: hidden;
+  background: var(--c-surface);
+  border-radius: var(--r-panel);
+}
+.exercise-guide-image img {
+  display: block;
+  width: 100%;
+  height: min(32dvh, 300px);
+  object-fit: contain;
+}
+.exercise-guide-image figcaption {
+  padding: var(--s4);
+  color: var(--c-ink-muted);
+}
+.exercise-guide-detail h3 {
+  margin-block: var(--s5) var(--s2);
+}
+.exercise-guide-detail li {
+  margin-block-end: var(--s2);
+}
+.exercise-guide-open {
+  display: block;
+  width: 100%;
+  padding: 0;
+  color: inherit;
+  border: var(--bw) solid var(--c-line);
+  border-radius: var(--r-panel);
+  background: var(--c-surface);
+  cursor: pointer;
+}
+.exercise-guide-open:focus-visible {
+  outline: var(--s1) solid var(--c-focus);
+  outline-offset: var(--s1);
+}
+.exercise-guide-points {
+  text-align: start;
+  padding-inline-start: var(--s5);
+}
+.v8-focus .exercise-guide-open + small {
+  display: block;
+}
+.v8-focus {
+  gap: var(--s2);
+  padding-block: var(--s2);
+}
+.v8-focus > p,
+.v8-focus > ul {
+  margin-block: var(--s2);
+}

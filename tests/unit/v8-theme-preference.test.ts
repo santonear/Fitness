@@ -1,13 +1,28 @@
 import { describe, expect, it } from 'vitest';
 import tokens from '../../docs/handoff-v8/02-design-tokens.json';
 import { defaultThemeId, getAvailableThemes, getTheme, isThemeId, themes } from '../../src/themes/registry';
-import { legacyThemeKey, migrateTheme, readTheme, resolveTheme, saveTheme, themeKey, type ThemeStorage } from '../../src/themes/preference';
+import {
+  legacyThemeKey,
+  migrateTheme,
+  readTheme,
+  resolveTheme,
+  saveTheme,
+  themeKey,
+  type ThemeStorage,
+} from '../../src/themes/preference';
 
 function storage(initial: Record<string, string> = {}) {
   const values = new Map(Object.entries(initial));
-  return { values, getItem: (key: string) => values.get(key) ?? null,
-    setItem: (key: string, value: string) => { values.set(key, value); },
-    removeItem: (key: string) => { values.delete(key); } } satisfies ThemeStorage & { values: Map<string, string> };
+  return {
+    values,
+    getItem: (key: string) => values.get(key) ?? null,
+    setItem: (key: string, value: string) => {
+      values.set(key, value);
+    },
+    removeItem: (key: string) => {
+      values.delete(key);
+    },
+  } satisfies ThemeStorage & { values: Map<string, string> };
 }
 describe('V9 theme registry', () => {
   it('registers exactly the five V9 themes in picker order with matching bilingual metadata and scheme', () => {
@@ -35,7 +50,15 @@ describe('V9 theme registry', () => {
   });
 });
 describe('V9 browser preference', () => {
-  it.each([['qingci', 'pop'], ['liubai', 'gentle'], ['jingshe', 'data'], ['zhuangse', 'fire'], ['unknown', 'pop'], ['', 'pop'], ['toString', 'pop']])('migrates stored %s to %s idempotently', (stored, expected) => {
+  it.each([
+    ['qingci', 'pop'],
+    ['liubai', 'gentle'],
+    ['jingshe', 'data'],
+    ['zhuangse', 'fire'],
+    ['unknown', 'pop'],
+    ['', 'pop'],
+    ['toString', 'pop'],
+  ])('migrates stored %s to %s idempotently', (stored, expected) => {
     const store = storage({ [themeKey]: stored });
     expect(readTheme(store)).toBe(expected);
     expect(migrateTheme(store)).toBe(true);
@@ -69,17 +92,26 @@ describe('V9 browser preference', () => {
     const store = storage({ [themeKey]: 'jingshe', [legacyThemeKey]: 'atlas' });
     expect(migrateTheme(store)).toBe(true);
     expect(readTheme(store)).toBe('data');
-    expect(store.values).toEqual(new Map([[themeKey, 'data'], [legacyThemeKey, 'atlas']]));
+    expect(store.values).toEqual(
+      new Map([
+        [themeKey, 'data'],
+        [legacyThemeKey, 'atlas'],
+      ]),
+    );
   });
   it('falls back on inaccessible storage', () => {
     const store = storage();
-    store.getItem = () => { throw new Error('denied'); };
+    store.getItem = () => {
+      throw new Error('denied');
+    };
     expect(readTheme(store)).toBe('pop');
     expect(migrateTheme(store)).toBe(false);
   });
   it('keeps the old value when writing fails, while reads still resolve it', () => {
     const store = storage({ [themeKey]: 'zhuangse' });
-    store.setItem = () => { throw new Error('quota'); };
+    store.setItem = () => {
+      throw new Error('quota');
+    };
     expect(migrateTheme(store)).toBe(false);
     expect(store.values).toEqual(new Map([[themeKey, 'zhuangse']]));
     expect(readTheme(store)).toBe('fire');
@@ -87,21 +119,31 @@ describe('V9 browser preference', () => {
   });
   it('keeps the V3.1 preference when writing fails', () => {
     const store = storage({ [legacyThemeKey]: 'orbit' });
-    store.setItem = () => { throw new Error('quota'); };
+    store.setItem = () => {
+      throw new Error('quota');
+    };
     expect(migrateTheme(store)).toBe(false);
     expect(store.values).toEqual(new Map([[legacyThemeKey, 'orbit']]));
   });
   it('rolls back when deleting the V3.1 key fails', () => {
     const store = storage({ [legacyThemeKey]: 'atlas' });
     const remove = store.removeItem;
-    store.removeItem = key => { if (key === legacyThemeKey) throw new Error('denied'); remove(key); };
+    store.removeItem = key => {
+      if (key === legacyThemeKey) throw new Error('denied');
+      remove(key);
+    };
     expect(migrateTheme(store)).toBe(false);
     expect(store.values).toEqual(new Map([[legacyThemeKey, 'atlas']]));
   });
   it('normalizes an unknown value before considering the V3.1 key, then keeps both', () => {
     const store = storage({ [legacyThemeKey]: 'atlas', [themeKey]: 'invalid' });
     expect(migrateTheme(store)).toBe(true);
-    expect(store.values).toEqual(new Map([[legacyThemeKey, 'atlas'], [themeKey, 'pop']]));
+    expect(store.values).toEqual(
+      new Map([
+        [legacyThemeKey, 'atlas'],
+        [themeKey, 'pop'],
+      ]),
+    );
   });
   it('saves and reads all registered choices', () => {
     const store = storage();

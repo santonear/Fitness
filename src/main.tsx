@@ -11,6 +11,14 @@ startFeatureFlags();
 import { startMonitoring } from './application/monitoring-client';
 startMonitoring();
 const MainlineApp = lazy(() => import('./ui/mainline/MainlineApp'));
-const ManagementPage = lazy(() => import('./ui/pages/ManagementPage').then(module => ({ default: module.ManagementPage })));
+const ManagementPage = lazy(() =>
+  import('./ui/pages/ManagementPage').then(module => ({ default: module.ManagementPage })),
+);
 const admin = location.pathname === '/admin' || location.pathname.startsWith('/admin/');
-createRoot(document.getElementById('root')!).render(<StrictMode><BrowserRouter><Suspense fallback={null}>{admin ? <ManagementPage /> : <MainlineApp />}</Suspense></BrowserRouter></StrictMode>);
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <BrowserRouter>
+      <Suspense fallback={null}>{admin ? <ManagementPage /> : <MainlineApp />}</Suspense>
+    </BrowserRouter>
+  </StrictMode>,
+);

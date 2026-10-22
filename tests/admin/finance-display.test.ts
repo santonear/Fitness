@@ -1,7 +1,40 @@
-import {expect,it} from 'vitest';
-import {yuanToFen,configDisplay,localDateInput,parseLocalDateInput,filterTaskCosts} from '../../src/ui/admin/finance/display-values';
-it('converts exact decimal yuan to integer fen without binary rounding or silent precision loss',()=>{expect(yuanToFen('0.29')).toBe(29);expect(yuanToFen('30.05')).toBe(3005);expect(yuanToFen('30')).toBe(3000);expect(yuanToFen('3.')).toBe(300);expect(yuanToFen('0.001')).toBeUndefined();expect(yuanToFen('-1')).toBeUndefined();expect(yuanToFen('')).toBeUndefined();expect(configDisplay('monthlyBudgetFen',3005)).toBe('¥ 30.05');expect(configDisplay('maxConcurrent',3)).toBe('3');expect(configDisplay('quotaSummary',undefined)).toBe('—')});
-it('uses local calendar fields and round-trips local input rather than treating it as UTC',()=>{
- const n=Date.UTC(2026,9,11,7,25),d=new Date(n),value=localDateInput(n);expect(parseLocalDateInput(value)).toBe(n);expect(Number(value.slice(11,13))).toBe(d.getHours());expect(Number(value.slice(8,10))).toBe(d.getDate());expect(parseLocalDateInput('2026-02-30T12:00')).toBeUndefined();expect(parseLocalDateInput('')).toBeUndefined();
+import { expect, it } from 'vitest';
+import {
+  yuanToFen,
+  configDisplay,
+  localDateInput,
+  parseLocalDateInput,
+  filterTaskCosts,
+} from '../../src/ui/admin/finance/display-values';
+it('converts exact decimal yuan to integer fen without binary rounding or silent precision loss', () => {
+  expect(yuanToFen('0.29')).toBe(29);
+  expect(yuanToFen('30.05')).toBe(3005);
+  expect(yuanToFen('30')).toBe(3000);
+  expect(yuanToFen('3.')).toBe(300);
+  expect(yuanToFen('0.001')).toBeUndefined();
+  expect(yuanToFen('-1')).toBeUndefined();
+  expect(yuanToFen('')).toBeUndefined();
+  expect(configDisplay('monthlyBudgetFen', 3005)).toBe('¥ 30.05');
+  expect(configDisplay('maxConcurrent', 3)).toBe('3');
+  expect(configDisplay('quotaSummary', undefined)).toBe('—');
 });
-it('task filtering keeps each selected task daily totals and all-tasks view intact',()=>{const rows=[{task:'generate',day:'2026-10-10',settledFen:1},{task:'review',day:'2026-10-10',settledFen:2},{task:'generate',day:'2026-10-11',settledFen:3}];expect(filterTaskCosts(rows,'generate').map(r=>r.settledFen)).toEqual([1,3]);expect(filterTaskCosts(rows,'')).toEqual(rows);expect(filterTaskCosts(rows,'adjust')).toEqual([])});
+it('uses local calendar fields and round-trips local input rather than treating it as UTC', () => {
+  const n = Date.UTC(2026, 9, 11, 7, 25),
+    d = new Date(n),
+    value = localDateInput(n);
+  expect(parseLocalDateInput(value)).toBe(n);
+  expect(Number(value.slice(11, 13))).toBe(d.getHours());
+  expect(Number(value.slice(8, 10))).toBe(d.getDate());
+  expect(parseLocalDateInput('2026-02-30T12:00')).toBeUndefined();
+  expect(parseLocalDateInput('')).toBeUndefined();
+});
+it('task filtering keeps each selected task daily totals and all-tasks view intact', () => {
+  const rows = [
+    { task: 'generate', day: '2026-10-10', settledFen: 1 },
+    { task: 'review', day: '2026-10-10', settledFen: 2 },
+    { task: 'generate', day: '2026-10-11', settledFen: 3 },
+  ];
+  expect(filterTaskCosts(rows, 'generate').map(r => r.settledFen)).toEqual([1, 3]);
+  expect(filterTaskCosts(rows, '')).toEqual(rows);
+  expect(filterTaskCosts(rows, 'adjust')).toEqual([]);
+});

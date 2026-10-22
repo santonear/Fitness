@@ -1,23 +1,125 @@
 /* 燃动挑战 signatures (docs/design/v9/Fire.dc.html). */
-.v8-brand.v9-fire-brand { font-size: var(--t2); font-weight: 700; letter-spacing: .2em; color: var(--c-accent-text); }
-.v8-week.v9-fire-week { flex-direction: column; align-items: stretch; gap: var(--s3); }
-.v9-fire-row { display: flex; justify-content: space-between; align-items: baseline; font-size: var(--t2); letter-spacing: .2em; font-weight: 700; color: var(--c-ink-muted); }
-.v9-fire-row b, .v9-fire-meta, .v9-fire-set .v8-set-value, .v9-fire-rest time { font-family: var(--f-num); font-stretch: var(--f-num-stretch); font-weight: var(--w-num); letter-spacing: .01em; }
-.v9-fire-row b { font-size: calc(var(--t4) + 1px); color: var(--c-ink); }
-.v9-fire-pills { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: calc(var(--s1) + 2px); }
-.v9-fire-pills i { block-size: calc(var(--s6) + var(--s2)); border-radius: var(--r-control); border: 1px solid rgba(255,255,255,.3); background: linear-gradient(160deg, rgba(255,255,255,.2), rgba(255,255,255,.05)); -webkit-backdrop-filter: blur(16px) saturate(170%); backdrop-filter: blur(16px) saturate(170%); }
-.v9-fire-pills i[data-state="complete"] { background: var(--mat-primary); box-shadow: var(--el-primary); }
-.v9-fire-pills i[data-state="partial"] { background: linear-gradient(0deg, var(--c-signature) 50%, rgba(255,255,255,.05) 50%); }
-.v8-start.v9-fire-start { justify-items: start; text-align: start; gap: var(--s2); }
-.v9-fire-kicker { font-size: var(--t2); letter-spacing: .2em; font-weight: 700; color: var(--c-accent-text); }
-.v8-start.v9-fire-start h2 { font-size: calc(var(--t7) + 4px); line-height: 1.08; font-weight: 900; letter-spacing: -0.02em; white-space: pre-line; }
-.v9-fire-meta { font-size: var(--t6); color: var(--c-ink); }
-.v9-btn.v9-fire-go { margin-block-start: var(--s5); min-block-size: var(--s8); font-weight: 900; font-size: calc(var(--t4) + 2px); }
-.v8-ai-line.v9-fire-ai { padding: var(--s3) var(--s4); border-inline-start: 3px solid var(--c-signature); background: var(--card-bg); border-radius: 0 var(--r-panel) var(--r-panel) 0; font-size: var(--t3); font-weight: 700; }
-.v9-fire-set .v8-set-value { font-size: var(--t7); color: var(--c-ink); }
-.v9-fire-rest time { font-size: calc(var(--t8) * 1.5); color: var(--c-signature); }
-.v8-feature.v9-fire-feature { border: 1px solid var(--card-border); border-radius: var(--r-panel); background: var(--card-bg); box-shadow: var(--card-shadow); -webkit-backdrop-filter: blur(var(--card-blur)) saturate(170%); backdrop-filter: blur(var(--card-blur)) saturate(170%); }
-.v9-fire-nav { display: grid; place-items: center; inline-size: calc(var(--s8) + var(--s2)); block-size: calc(var(--touch-secondary) - 2px); border-radius: var(--r-control); }
-.v9-fire-nav[data-selected="true"] { background: var(--mat-primary); box-shadow: inset 0 1.5px 0 rgba(255,255,255,.7), 0 10px 20px -8px rgba(255,45,45,.85); }
-.v9-fire-nav .v8-nav-icon { color: var(--c-faint); }
-.v9-fire-nav[data-selected="true"] .v8-nav-icon { color: var(--c-on-primary); }
+.v8-brand.v9-fire-brand {
+  font-size: var(--t2);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--c-accent-text);
+}
+.v8-week.v9-fire-week {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--s3);
+}
+.v9-fire-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: var(--t2);
+  letter-spacing: 0.2em;
+  font-weight: 700;
+  color: var(--c-ink-muted);
+}
+.v9-fire-row b,
+.v9-fire-meta,
+.v9-fire-set .v8-set-value,
+.v9-fire-rest time {
+  font-family: var(--f-num);
+  font-stretch: var(--f-num-stretch);
+  font-weight: var(--w-num);
+  letter-spacing: 0.01em;
+}
+.v9-fire-row b {
+  font-size: calc(var(--t4) + 1px);
+  color: var(--c-ink);
+}
+.v9-fire-pills {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: calc(var(--s1) + 2px);
+}
+.v9-fire-pills i {
+  block-size: calc(var(--s6) + var(--s2));
+  border-radius: var(--r-control);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05));
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  backdrop-filter: blur(16px) saturate(170%);
+}
+.v9-fire-pills i[data-state='complete'] {
+  background: var(--mat-primary);
+  box-shadow: var(--el-primary);
+}
+.v9-fire-pills i[data-state='partial'] {
+  background: linear-gradient(0deg, var(--c-signature) 50%, rgba(255, 255, 255, 0.05) 50%);
+}
+.v8-start.v9-fire-start {
+  justify-items: start;
+  text-align: start;
+  gap: var(--s2);
+}
+.v9-fire-kicker {
+  font-size: var(--t2);
+  letter-spacing: 0.2em;
+  font-weight: 700;
+  color: var(--c-accent-text);
+}
+.v8-start.v9-fire-start h2 {
+  font-size: calc(var(--t7) + 4px);
+  line-height: 1.08;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  white-space: pre-line;
+}
+.v9-fire-meta {
+  font-size: var(--t6);
+  color: var(--c-ink);
+}
+.v9-btn.v9-fire-go {
+  margin-block-start: var(--s5);
+  min-block-size: var(--s8);
+  font-weight: 900;
+  font-size: calc(var(--t4) + 2px);
+}
+.v8-ai-line.v9-fire-ai {
+  padding: var(--s3) var(--s4);
+  border-inline-start: 3px solid var(--c-signature);
+  background: var(--card-bg);
+  border-radius: 0 var(--r-panel) var(--r-panel) 0;
+  font-size: var(--t3);
+  font-weight: 700;
+}
+.v9-fire-set .v8-set-value {
+  font-size: var(--t7);
+  color: var(--c-ink);
+}
+.v9-fire-rest time {
+  font-size: calc(var(--t8) * 1.5);
+  color: var(--c-signature);
+}
+.v8-feature.v9-fire-feature {
+  border: 1px solid var(--card-border);
+  border-radius: var(--r-panel);
+  background: var(--card-bg);
+  box-shadow: var(--card-shadow);
+  -webkit-backdrop-filter: blur(var(--card-blur)) saturate(170%);
+  backdrop-filter: blur(var(--card-blur)) saturate(170%);
+}
+.v9-fire-nav {
+  display: grid;
+  place-items: center;
+  inline-size: calc(var(--s8) + var(--s2));
+  block-size: calc(var(--touch-secondary) - 2px);
+  border-radius: var(--r-control);
+}
+.v9-fire-nav[data-selected='true'] {
+  background: var(--mat-primary);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.7),
+    0 10px 20px -8px rgba(255, 45, 45, 0.85);
+}
+.v9-fire-nav .v8-nav-icon {
+  color: var(--c-faint);
+}
+.v9-fire-nav[data-selected='true'] .v8-nav-icon {
+  color: var(--c-on-primary);
+}

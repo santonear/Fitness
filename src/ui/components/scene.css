@@ -1,23 +1,90 @@
 /* Scene palettes are generated --scene-* tokens on .v9-scene[data-scene] (src/themes/base/tokens.css). */
-.v9-scene { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
-.v9-scene svg { display: block; inline-size: 100%; block-size: 100%; }
-.v9-scene-sky { fill: var(--scene-sky); }
-.v9-scene-haze { fill: var(--scene-haze); }
-.v9-scene-sun { fill: var(--scene-sun); }
-.v9-scene-bird { fill: none; stroke: var(--scene-bird); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
-.v9-scene-far { fill: var(--scene-far); }
-.v9-scene-mid { fill: var(--scene-mid); }
-.v9-scene-lake { fill: var(--scene-lake); }
-.v9-scene-glint { fill: none; stroke: var(--scene-sun); stroke-width: 2; stroke-linecap: round; opacity: .7; }
-.v9-scene-pine { fill: var(--scene-pine); }
-.v9-scene-hill1 { fill: var(--scene-hill1); }
-.v9-scene-hill2 { fill: var(--scene-hill2); }
-.v9-scene-soft { opacity: .55; }
-.v9-scene-trunk { fill: var(--scene-trunk); }
-.v9-scene-tree-a { fill: var(--scene-treeA); }
-.v9-scene-tree-b { fill: var(--scene-treeB); }
-.v9-scene-grass { fill: none; stroke: var(--scene-hill1); stroke-width: 2; stroke-linecap: round; }
-.v9-scene-flower { fill: var(--scene-flower); }
+.v9-scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.v9-scene svg {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+}
+.v9-scene-sky {
+  fill: var(--scene-sky);
+}
+.v9-scene-haze {
+  fill: var(--scene-haze);
+}
+.v9-scene-sun {
+  fill: var(--scene-sun);
+}
+.v9-scene-bird {
+  fill: none;
+  stroke: var(--scene-bird);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.v9-scene-far {
+  fill: var(--scene-far);
+}
+.v9-scene-mid {
+  fill: var(--scene-mid);
+}
+.v9-scene-lake {
+  fill: var(--scene-lake);
+}
+.v9-scene-glint {
+  fill: none;
+  stroke: var(--scene-sun);
+  stroke-width: 2;
+  stroke-linecap: round;
+  opacity: 0.7;
+}
+.v9-scene-pine {
+  fill: var(--scene-pine);
+}
+.v9-scene-hill1 {
+  fill: var(--scene-hill1);
+}
+.v9-scene-hill2 {
+  fill: var(--scene-hill2);
+}
+.v9-scene-soft {
+  opacity: 0.55;
+}
+.v9-scene-trunk {
+  fill: var(--scene-trunk);
+}
+.v9-scene-tree-a {
+  fill: var(--scene-treeA);
+}
+.v9-scene-tree-b {
+  fill: var(--scene-treeB);
+}
+.v9-scene-grass {
+  fill: none;
+  stroke: var(--scene-hill1);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.v9-scene-flower {
+  fill: var(--scene-flower);
+}
 /* 暖阳柔木 block-print relief: ink outlines and a light gouge hatch from --hero-* tokens (none outside vivid). */
-.v9-scene :is(path, circle, rect, ellipse):not(.v9-scene-bird):not(.v9-scene-glint):not(.v9-scene-grass):not(.v9-scene-sky) { stroke: var(--hero-line); stroke-width: var(--hero-line-w); stroke-linejoin: round; paint-order: stroke; }
-.v9-scene::after { content: ""; position: absolute; inset: 0; background: var(--hero-hatch); mix-blend-mode: var(--hero-blend); pointer-events: none; }
+.v9-scene
+  :is(path, circle, rect, ellipse):not(.v9-scene-bird):not(.v9-scene-glint):not(.v9-scene-grass):not(.v9-scene-sky) {
+  stroke: var(--hero-line);
+  stroke-width: var(--hero-line-w);
+  stroke-linejoin: round;
+  paint-order: stroke;
+}
+.v9-scene::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--hero-hatch);
+  mix-blend-mode: var(--hero-blend);
+  pointer-events: none;
+}

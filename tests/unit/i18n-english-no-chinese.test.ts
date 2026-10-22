@@ -11,9 +11,15 @@ function strings(value: unknown, path: string, out: [string, string][], depth = 
   if (typeof value === 'string') out.push([path, value]);
   else if (typeof value === 'function') {
     // Copy helpers such as minutes(n) are called with a sample number.
-    try { const result = (value as (...args: unknown[]) => unknown)(2, 2, 2); strings(result, `${path}()`, out, depth + 1); } catch { /* Helpers needing richer input are covered by the browser walk. */ }
+    try {
+      const result = (value as (...args: unknown[]) => unknown)(2, 2, 2);
+      strings(result, `${path}()`, out, depth + 1);
+    } catch {
+      /* Helpers needing richer input are covered by the browser walk. */
+    }
   } else if (Array.isArray(value)) value.forEach((item, index) => strings(item, `${path}[${index}]`, out, depth + 1));
-  else if (value && typeof value === 'object') for (const [key, item] of Object.entries(value)) strings(item, `${path}.${key}`, out, depth + 1);
+  else if (value && typeof value === 'object')
+    for (const [key, item] of Object.entries(value)) strings(item, `${path}.${key}`, out, depth + 1);
 }
 
 const jsonModules = import.meta.glob('../../src/i18n/**/*.json', { eager: true, import: 'default' });
@@ -25,9 +31,13 @@ function englishStrings(): [string, string][] {
     if (/(?:^|\/)(?:en|[\w-]+\.en)\.json$/.test(file)) strings(value, file, out);
   }
   for (const [file, module] of Object.entries(tsModules)) {
-    if (/\/en\.ts$/.test(file)) { strings((module as { default?: unknown }).default, file, out); continue; }
+    if (/\/en\.ts$/.test(file)) {
+      strings((module as { default?: unknown }).default, file, out);
+      continue;
+    }
     for (const [name, value] of Object.entries(module as Record<string, unknown>)) {
-      if (value && typeof value === 'object' && 'en' in value && 'zh' in value) strings((value as { en: unknown }).en, `${file}#${name}.en`, out);
+      if (value && typeof value === 'object' && 'en' in value && 'zh' in value)
+        strings((value as { en: unknown }).en, `${file}#${name}.en`, out);
     }
   }
   return out;
@@ -39,15 +49,20 @@ describe('English copy', () => {
   });
   it('has English exercise names, steps and engine copy without Chinese', () => {
     const out: [string, string][] = [];
-    for (const exercise of exercises) for (const [key, value] of Object.entries(exercise)) {
-      if (value && typeof value === 'object' && !Array.isArray(value) && 'en' in value) strings((value as { en: unknown }).en, `${exercise.id}.${key}.en`, out);
-    }
-    for (const [key, value] of Object.entries(rules.copy as Record<string, { en: string }>)) strings(value.en, `rules.${key}.en`, out);
+    for (const exercise of exercises)
+      for (const [key, value] of Object.entries(exercise)) {
+        if (value && typeof value === 'object' && !Array.isArray(value) && 'en' in value)
+          strings((value as { en: unknown }).en, `${exercise.id}.${key}.en`, out);
+      }
+    for (const [key, value] of Object.entries(rules.copy as Record<string, { en: string }>))
+      strings(value.en, `rules.${key}.en`, out);
     expect(out.length).toBeGreaterThan(500);
     expect(out.filter(([, text]) => !text || cjk.test(text)).map(([path, text]) => `${path}: ${text}`)).toEqual([]);
   });
   it('contains no Chinese characters', () => {
-    const leaks = englishStrings().filter(([, text]) => !allowed.has(text) && cjk.test(text)).map(([path, text]) => `${path}: ${text}`);
+    const leaks = englishStrings()
+      .filter(([, text]) => !allowed.has(text) && cjk.test(text))
+      .map(([path, text]) => `${path}: ${text}`);
     expect(leaks).toEqual([]);
   });
 });

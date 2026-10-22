@@ -2,11 +2,18 @@ import { sha256Hex } from './hex';
 /** Pure wire fingerprints shared by browser and server; no backend runtime dependencies. */
 export function canonical(value: unknown): string {
   if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
-  if (value && typeof value === 'object') return `{${Object.entries(value).filter(([, item]) => item !== undefined).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0).map(([key, item]) => `${JSON.stringify(key)}:${canonical(item)}`).join(',')}}`;
+  if (value && typeof value === 'object')
+    return `{${Object.entries(value)
+      .filter(([, item]) => item !== undefined)
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+      .map(([key, item]) => `${JSON.stringify(key)}:${canonical(item)}`)
+      .join(',')}}`;
   return JSON.stringify(value);
 }
 function confirmedPayload(value: unknown) {
-  const entries = Object.entries(value as Record<string, unknown>).filter(([key]) => !['requestId', 'sendConfirmation', 'goalConfirmation'].includes(key));
+  const entries = Object.entries(value as Record<string, unknown>).filter(
+    ([key]) => !['requestId', 'sendConfirmation', 'goalConfirmation'].includes(key),
+  );
   return Object.fromEntries(entries);
 }
 /** Public content fingerprint, binds confirmation to actual fields; it is not an identity credential. */

@@ -1,3 +1,3 @@
-import { type SessionDraft } from "../contracts";
+import { type SessionDraft } from '../contracts';
 
-export type Item = SessionDraft["items"][number];
+export type Item = SessionDraft['items'][number];

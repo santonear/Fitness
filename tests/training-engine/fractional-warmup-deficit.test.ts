@@ -1,25 +1,24 @@
-import { baseProfile } from "../../tools/eval/training-engine-profiles";
-import { scorePlan } from "../../src/engine/score";
-import { legacySampledProfile } from "./v1-inputs";
-import { expect, it } from "vitest";
-import { generatePlan, validatePlan } from "../../src/engine";
-import { enginePlanSchema } from "../../src/engine/contracts";
-import { Rules } from "../../src/engine/data";
-import { prescribe } from "../../src/engine/dose";
-import { runGates } from "../../src/engine/gates";
-import { safetyBlockMinimums } from "../../src/engine/progression/legacy-blocks";
+import { baseProfile } from '../../tools/eval/training-engine-profiles';
+import { scorePlan } from '../../src/engine/score';
+import { legacySampledProfile } from './v1-inputs';
+import { expect, it } from 'vitest';
+import { generatePlan, validatePlan } from '../../src/engine';
+import { enginePlanSchema } from '../../src/engine/contracts';
+import { Rules } from '../../src/engine/data';
+import { prescribe } from '../../src/engine/dose';
+import { runGates } from '../../src/engine/gates';
+import { safetyBlockMinimums } from '../../src/engine/progression/legacy-blocks';
 
 import {
   independentWarmupAudit,
   independentSessionTimeIssues,
-} from "../unit/engine/reference/training-engine-session-time";
+} from '../unit/engine/reference/training-engine-session-time';
 const profile = legacySampledProfile(22);
 profile.screening.cmrSymptoms = baseProfile().screening.cmrSymptoms;
 completeJointReview(profile);
-if (profile.population.kind === "pregnant")
-  profile.population = { ...profile.population, prenatalCareConfirmed: true };
+if (profile.population.kind === 'pregnant') profile.population = { ...profile.population, prenatalCareConfirmed: true };
 const r = new Rules();
-it("retains the original short pregnancy fixture with real whole-second prescriptions and a measured safety target", () => {
+it('retains the original short pregnancy fixture with real whole-second prescriptions and a measured safety target', () => {
   const plan = generatePlan(profile);
   expect(plan.templates.length).toBeGreaterThan(0);
   expect(profile.sessionMinutes).toBe(15);
@@ -28,86 +27,54 @@ it("retains the original short pregnancy fixture with real whole-second prescrip
     if (!safetyBlockMinimums(t, profile, r).applies) continue;
     const actual = independentWarmupAudit(t, profile).seconds;
     expect(actual).toBeGreaterThanOrEqual(0);
-    if (
-      actual <
-      r.get("safety.session.warmup_cooldown").warmup_min_minutes * 60
-    )
+    if (actual < r.get('safety.session.warmup_cooldown').warmup_min_minutes * 60)
       expect(
-        scorePlan(plan, profile, r).perRule.find(
-          (row) => row.id === "safety.session.warmup_cooldown",
-        )!.satisfaction,
+        scorePlan(plan, profile, r).perRule.find(row => row.id === 'safety.session.warmup_cooldown')!.satisfaction,
       ).toBeLessThan(1);
     for (const i of t.items)
-      if ("durationSeconds" in i.target) {
+      if ('durationSeconds' in i.target) {
         expect(i.target.durationSeconds).toBeGreaterThan(0);
         expect(Number.isInteger(i.target.durationSeconds)).toBe(true);
       }
   }
-  expect(
-    validatePlan(plan, profile).filter((i) => i.severity === "error"),
-  ).toEqual([]);
+  expect(validatePlan(plan, profile).filter(i => i.severity === 'error')).toEqual([]);
 });
-it("counts additional actual general-warmup seconds without trusting a V1 minimum-fill proof or displayed time", () => {
+it('counts additional actual general-warmup seconds without trusting a V1 minimum-fill proof or displayed time', () => {
   // This arithmetic test uses an explicit general-warmup item, independent of
   // whichever warmup the current legal candidate ranking chooses.
   const plan = generatePlan(profile),
     t = plan.templates[0];
   expect(t).toBeDefined();
-  const general = r.data.exercises.find((e) => e.slug === "walking")!;
-  const item = prescribe(
-    general,
-    profile,
-    r,
-    runGates(profile, r).restrictions,
-    "warmup",
-    1,
-  );
-  item.target = { metricType: "duration", durationSeconds: 60 };
-  t.items = [item, ...t.items.filter((i) => i.exerciseId !== general.id)];
+  const general = r.data.exercises.find(e => e.slug === 'walking')!;
+  const item = prescribe(general, profile, r, runGates(profile, r).restrictions, 'warmup', 1);
+  item.target = { metricType: 'duration', durationSeconds: 60 };
+  t.items = [item, ...t.items.filter(i => i.exerciseId !== general.id)];
   const before = independentWarmupAudit(t, profile).seconds,
     exercise = r.byExercise.get(item.exerciseId)!,
-    side =
-      item.prescription?.perSide || exercise.time.per_side
-        ? r.get("session.time.model").per_side_multiplier
-        : 1;
-  if (!("durationSeconds" in item.target))
-    throw Error("Expected a real timed general warmup");
+    side = item.prescription?.perSide || exercise.time.per_side ? r.get('session.time.model').per_side_multiplier : 1;
+  if (!('durationSeconds' in item.target)) throw Error('Expected a real timed general warmup');
   item.target.durationSeconds += 2;
-  expect(independentWarmupAudit(t, profile).seconds - before).toBe(
-    item.sets * 2 * side,
-  );
+  expect(independentWarmupAudit(t, profile).seconds - before).toBe(item.sets * 2 * side);
   t.estimatedSeconds = 1;
   t.estimatedMinutes = 1;
-  expect(independentWarmupAudit(t, profile).seconds - before).toBe(
-    item.sets * 2 * side,
-  );
+  expect(independentWarmupAudit(t, profile).seconds - before).toBe(item.sets * 2 * side);
   item.target.durationSeconds = profile.sessionMinutes * 60 * 2;
-  expect(
-    validatePlan(plan, profile).some(
-      (i) => i.code === "duration_tolerance" && i.severity === "error",
-    ),
-  ).toBe(true);
+  expect(validatePlan(plan, profile).some(i => i.code === 'duration_tolerance' && i.severity === 'error')).toBe(true);
 });
 
 // Explicit synthetic negative answers for this positive-control fixture; raw legacy JSON stays untouched.
-function completeJointReview<
-  T extends { cautions: string[]; screening: any; asOfDate?: string },
->(p: T): T {
-  if (!p.cautions.filter((j) => j !== "other").length) return p;
+function completeJointReview<T extends { cautions: string[]; screening: any; asOfDate?: string }>(p: T): T {
+  if (!p.cautions.filter(j => j !== 'other').length) return p;
   const rules = new Rules(),
-    joint = rules.get("redflag.joint_any"),
-    back = rules.get("redflag.back"),
-    shoulder = rules.get("redflag.shoulder"),
+    joint = rules.get('redflag.joint_any'),
+    back = rules.get('redflag.back'),
+    shoulder = rules.get('redflag.shoulder'),
     keys = [
       ...joint.items,
-      ...(p.cautions.includes("back")
-        ? [...back.emergency_items, ...back.urgent_items]
-        : []),
-      ...(p.cautions.includes("shoulder")
-        ? [...shoulder.cardiac_route_items, ...shoulder.prompt_medical_items]
-        : []),
+      ...(p.cautions.includes('back') ? [...back.emergency_items, ...back.urgent_items] : []),
+      ...(p.cautions.includes('shoulder') ? [...shoulder.cardiac_route_items, ...shoulder.prompt_medical_items] : []),
     ],
-    at = p.asOfDate + "T00:00:00.000Z";
+    at = p.asOfDate + 'T00:00:00.000Z';
   p.screening.redFlagReview = {
     requiredAt: at,
     answeredAt: at,

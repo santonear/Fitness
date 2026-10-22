@@ -6,5 +6,19 @@ import { outlineShown, setOutlineShown } from '../plan-upgrade/prefs';
 export function PlanDisplaySettings({ locale }: { locale: 'zh' | 'en' }) {
   const c = planPagesCopy[locale];
   const [outline, setOutline] = useState(outlineShown);
-  return <li><label className="v9-row v9-row-check"><span>{c.showOutline}</span><input type="checkbox" checked={outline} onChange={event => { const value = event.target.checked; if (setOutlineShown(value)) setOutline(value); }}/></label></li>;
+  return (
+    <li>
+      <label className="v9-row v9-row-check">
+        <span>{c.showOutline}</span>
+        <input
+          type="checkbox"
+          checked={outline}
+          onChange={event => {
+            const value = event.target.checked;
+            if (setOutlineShown(value)) setOutline(value);
+          }}
+        />
+      </label>
+    </li>
+  );
 }

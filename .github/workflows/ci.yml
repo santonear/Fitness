@@ -61,6 +61,7 @@ jobs:
       - run: node --test tools/v8/check.test.mjs
       - run: node tools/v8/check.mjs
       - run: node tools/check-layers.mjs
+      - run: npm run format:check
       # The functional group (npm run test:unit). The complete diagnostic
       # group runs in engine-audit, and verify requires both jobs.
       - run: npm run typecheck

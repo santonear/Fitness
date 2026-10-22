@@ -2,10 +2,14 @@ import { DomainError } from '../errors';
 import type { OnboardingMinutes } from './contracts';
 
 const onboardingMinutes: readonly OnboardingMinutes[] = [30, 40, 50, 60, 70, 80, 90, 100, 110, 120];
-const legalTemplateMinutes = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value) && value >= 15 && value <= 120;
+const legalTemplateMinutes = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value) && value >= 15 && value <= 120;
 
 /** The migration caller supplies the same estimator used by base-plan generation. */
-export function legacyTemplateMinutes(rawMinutes: unknown, estimate: () => number): { minutes: number; estimated: boolean } {
+export function legacyTemplateMinutes(
+  rawMinutes: unknown,
+  estimate: () => number,
+): { minutes: number; estimated: boolean } {
   const rounded = typeof rawMinutes === 'number' ? Math.round(rawMinutes) : rawMinutes;
   if (legalTemplateMinutes(rounded)) return { minutes: rounded, estimated: false };
   const estimateMinutes = estimate();
@@ -15,7 +19,8 @@ export function legacyTemplateMinutes(rawMinutes: unknown, estimate: () => numbe
 
 /** Preserve the legal onboarding slot; otherwise use the median of actual template durations. */
 export function legacyPlanMinutes(onboardingSlot: unknown, templateMinutes: readonly number[]): number {
-  if (typeof onboardingSlot === 'number' && onboardingMinutes.some(value => value === onboardingSlot)) return onboardingSlot;
+  if (typeof onboardingSlot === 'number' && onboardingMinutes.some(value => value === onboardingSlot))
+    return onboardingSlot;
   if (!templateMinutes.length || templateMinutes.some(value => !legalTemplateMinutes(value))) {
     throw new DomainError('INVALID', 'Migration requires valid template durations');
   }

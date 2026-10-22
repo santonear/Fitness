@@ -23,7 +23,9 @@ export async function answerText(page: Page, text: string) {
   }
   await nextButton(page).click();
 }
-export async function answerTexts(page: Page, texts: readonly string[]) { for (const text of texts) await answerText(page, text); }
+export async function answerTexts(page: Page, texts: readonly string[]) {
+  for (const text of texts) await answerText(page, text);
+}
 
 /** Basic (no training engine) safety: adult, cautions, then the ready screen. */
 /** Presses a check-style choice only when it is not already on (answers may be restored). */
@@ -41,7 +43,8 @@ export async function basicSafety(page: Page, caution?: string, planMode: PlanMo
 /** V9.0.2: when AI exists in the deployment, 芽芽 asks AI-or-local before the ready screen. */
 export type PlanModeChoice = 'local' | 'stop';
 export async function choosePlanMode(page: Page, planMode: PlanModeChoice = 'local') {
-  const ready = page.getByRole('heading', { name: '都准备好了', exact: true }), ask = page.getByRole('heading', { name: '想让我怎么帮你排计划？', exact: true });
+  const ready = page.getByRole('heading', { name: '都准备好了', exact: true }),
+    ask = page.getByRole('heading', { name: '想让我怎么帮你排计划？', exact: true });
   await expect(ready.or(ask)).toBeVisible();
   if (planMode === 'stop' || !(await ask.isVisible())) return;
   await page.getByRole('radio', { name: /先用本地计划/ }).click();
@@ -49,37 +52,56 @@ export async function choosePlanMode(page: Page, planMode: PlanModeChoice = 'loc
   await expect(ready).toBeVisible();
 }
 export async function cautions(page: Page, caution?: string) {
-  if (caution) { await page.getByRole('radio', { name: '有，选一下部位' }).click(); await page.getByRole('button', { name: caution, exact: true }).click(); }
-  else await page.getByRole('radio', { name: '没有', exact: true }).click();
+  if (caution) {
+    await page.getByRole('radio', { name: '有，选一下部位' }).click();
+    await page.getByRole('button', { name: caution, exact: true }).click();
+  } else await page.getByRole('radio', { name: '没有', exact: true }).click();
   await nextButton(page).click();
 }
-export async function generate(page: Page) { await page.getByRole('button', { name: '生成计划', exact: true }).click(); }
+export async function generate(page: Page) {
+  await page.getByRole('button', { name: '生成计划', exact: true }).click();
+}
 
-export interface EngineSafetyOptions { planMode?: PlanModeChoice; birth?: string; population?: '都不是' | '在孕期' | '在产后'; activity?: '是' | '没有或不确定'; bp?: '低于 160/90' | '160/90 或更高' | '不知道'; falls?: boolean[]; caution?: string; skipPopulation?: boolean; prefs?: (page: Page) => Promise<void> }
+export interface EngineSafetyOptions {
+  planMode?: PlanModeChoice;
+  birth?: string;
+  population?: '都不是' | '在孕期' | '在产后';
+  activity?: '是' | '没有或不确定';
+  bp?: '低于 160/90' | '160/90 或更高' | '不知道';
+  falls?: boolean[];
+  caution?: string;
+  skipPopulation?: boolean;
+  prefs?: (page: Page) => Promise<void>;
+}
 /** Training-engine safety, every screening answer explicit; stops on the ready screen. */
 export async function engineSafety(page: Page, options: EngineSafetyOptions = {}) {
   await ensurePressed(page, '我已年满 18 岁');
   await ensurePressed(page, /同意将运动前自查/);
   await nextButton(page).click();
-  await fillBirthMonth(page,options.birth ?? '1991-06');
+  await fillBirthMonth(page, options.birth ?? '1991-06');
   await nextButton(page).click();
   for (let group = 0; group < 3; group++) await page.getByRole('button', { name: '以上都没有', exact: true }).click();
   await page.getByRole('radio', { name: options.activity ?? '是', exact: true }).click();
   await page.getByRole('radio', { name: options.bp ?? '低于 160/90', exact: true }).click();
-  if (!options.skipPopulation) await page.getByRole('radio', { name: options.population ?? '都不是', exact: true }).click();
+  if (!options.skipPopulation)
+    await page.getByRole('radio', { name: options.population ?? '都不是', exact: true }).click();
   if (options.falls) {
-    if (options.falls.every(answer => !answer)) await page.getByRole('button', { name: '以上都没有', exact: true }).click();
+    if (options.falls.every(answer => !answer))
+      await page.getByRole('button', { name: '以上都没有', exact: true }).click();
     else {
       await page.getByRole('button', { name: '有其中一项，逐个确认' }).click();
-      for (const answer of options.falls) await page.getByRole('radio', { name: answer ? '是' : '否', exact: true }).click();
+      for (const answer of options.falls)
+        await page.getByRole('radio', { name: answer ? '是' : '否', exact: true }).click();
     }
   }
-  const intensity = page.getByRole('heading', { name: '关于强度' }), care = page.getByRole('heading', { name: '身体有需要照顾的部位吗？' });
+  const intensity = page.getByRole('heading', { name: '关于强度' }),
+    care = page.getByRole('heading', { name: '身体有需要照顾的部位吗？' });
   await expect(intensity.or(care)).toBeVisible();
   if (await intensity.isVisible()) await nextButton(page).click();
   await expect(care).toBeVisible();
   await cautions(page, options.caution);
-  if (options.caution && options.caution !== '其他') await page.getByRole('button', { name: '以上都没有', exact: true }).click();
+  if (options.caution && options.caution !== '其他')
+    await page.getByRole('button', { name: '以上都没有', exact: true }).click();
   await expect(page.getByRole('heading', { name: '最后，说说训练条件' })).toBeVisible();
   await options.prefs?.(page);
   await nextButton(page).click();
@@ -96,11 +118,14 @@ export async function onboardBasic(page: Page, texts: readonly string[], caution
 
 /** From welcome or any onboarding screen (answers may be restored), go back to the first question. */
 export async function toFirstQuestion(page: Page) {
-  const start = page.getByRole('button', { name: '开始', exact: true }), goal = page.getByRole('heading', { name: '你想练成什么样？' }), back = page.getByRole('button', { name: '上一步', exact: true });
+  const start = page.getByRole('button', { name: '开始', exact: true }),
+    goal = page.getByRole('heading', { name: '你想练成什么样？' }),
+    back = page.getByRole('button', { name: '上一步', exact: true });
   await expect(start.or(back).first()).toBeVisible();
   for (let i = 0; i < 30; i++) {
     if (await goal.isVisible()) return;
-    if (await start.isVisible()) await start.click(); else await back.click();
+    if (await start.isVisible()) await start.click();
+    else await back.click();
     await page.waitForTimeout(60);
   }
   await expect(goal).toBeVisible();
@@ -113,12 +138,19 @@ export async function weeklySchedule(page: Page, weekly: number, minutes: number
   await page.getByLabel('你的回答', { exact: true }).fill(`每周 ${weekly} 次，每次 ${minutes} 分钟`);
 }
 /** Local date in Asia/Shanghai, `offset` days from today. */
-export const shanghaiDate = (offset = 0) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(Date.now() + offset * 86400000));
+export const shanghaiDate = (offset = 0) =>
+  new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Shanghai',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date(Date.now() + offset * 86400000));
 /** Schedule step on the calendar: taps each date (moving months as needed) and picks minutes. */
 export async function pickTrainingDays(page: Page, dates: readonly string[], minutes = 30) {
   const calendar = page.getByRole('region', { name: /训练日$/ });
   for (const date of dates) {
-    for (let i = 0; i < 3 && !(await calendar.locator(`[data-date="${date}"]`).count()); i++) await calendar.getByRole('button', { name: '下个月' }).click();
+    for (let i = 0; i < 3 && !(await calendar.locator(`[data-date="${date}"]`).count()); i++)
+      await calendar.getByRole('button', { name: '下个月' }).click();
     const day = calendar.locator(`[data-date="${date}"]`);
     if ((await day.getAttribute('aria-pressed')) !== 'true') await day.click();
   }

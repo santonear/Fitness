@@ -1,0 +1,20 @@
+# Only code is formatted; data, generated files and docs keep their own layout.
+*
+!src/
+!src/**/
+!src/**/*.ts
+!src/**/*.tsx
+!src/**/*.css
+!tests/
+!tests/**/
+!tests/**/*.ts
+!tests/**/*.tsx
+!tests/**/*.mjs
+!tools/
+!tools/**/
+!tools/**/*.mjs
+!tools/**/*.ts
+src/engine/generated/
+src/backend/assistant/prompts/generated.ts
+src/themes/*/tokens.css
+tests/fixtures/

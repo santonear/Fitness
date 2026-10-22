@@ -17,7 +17,8 @@ const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export const PENDING_DEPLOYMENT_ID = '00000000-0000-4000-8000-000000000000';
 
 export function pullRequestNumber(subject = '', explicit = '') {
-  const value = String(explicit).trim() || subject.match(/\(#(\d+)\)\s*$/)?.[1] || subject.match(/^Merge pull request #(\d+)/)?.[1];
+  const value =
+    String(explicit).trim() || subject.match(/\(#(\d+)\)\s*$/)?.[1] || subject.match(/^Merge pull request #(\d+)/)?.[1];
   const number = Number(value);
   return Number.isSafeInteger(number) && number > 0 ? number : undefined;
 }
@@ -43,7 +44,8 @@ export function previousRegistration(deployment, version, smokeOrigin) {
   const annotations = version?.annotations ?? version?.metadata?.annotations ?? {};
   const message = String(annotations['workers/message'] ?? '');
   const created = version?.metadata?.created_on ?? version?.created_on ?? deployment?.created_on;
-  const publishedAt = typeof created === 'string' && !Number.isNaN(Date.parse(created)) ? new Date(created).toISOString() : undefined;
+  const publishedAt =
+    typeof created === 'string' && !Number.isNaN(Date.parse(created)) ? new Date(created).toISOString() : undefined;
   if (!publishedAt) return undefined;
   const registered = message.match(/(?:^|\s)release=([\w.-]{1,80})(?:\s|$)/)?.[1];
   const legacy = message.match(/^release ([a-f0-9]{7,40}) run \d+/)?.[1];
@@ -61,24 +63,59 @@ export function previousRegistration(deployment, version, smokeOrigin) {
     ...(Number.isSafeInteger(pr) && pr > 0 ? { pr } : {}),
   };
 }
-export function buildRegistry({ environment, sha, subject, pr: explicitPr, smokeOrigin, deployment, version, now = new Date() }) {
-  if (!['preview', 'production'].includes(environment)) throw Error('RELEASE_ENVIRONMENT must be preview or production');
+export function buildRegistry({
+  environment,
+  sha,
+  subject,
+  pr: explicitPr,
+  smokeOrigin,
+  deployment,
+  version,
+  now = new Date(),
+}) {
+  if (!['preview', 'production'].includes(environment))
+    throw Error('RELEASE_ENVIRONMENT must be preview or production');
   const origin = new URL(smokeOrigin);
-  if (origin.protocol !== 'https:' || origin.origin !== smokeOrigin) throw Error('SMOKE_ORIGIN must be an https origin');
+  if (origin.protocol !== 'https:' || origin.origin !== smokeOrigin)
+    throw Error('SMOKE_ORIGIN must be an https origin');
   const pr = pullRequestNumber(subject, explicitPr);
   const id = releaseId(sha, pr);
   const previous = previousRegistration(deployment, version, smokeOrigin);
-  const current = { id, deploymentId: PENDING_DEPLOYMENT_ID, publishedAt: now.toISOString(), compatibleDataVersion: RELEASE_DATA_VERSION, smokeOrigin, commit: sha, ...(pr ? { pr } : {}) };
+  const current = {
+    id,
+    deploymentId: PENDING_DEPLOYMENT_ID,
+    publishedAt: now.toISOString(),
+    compatibleDataVersion: RELEASE_DATA_VERSION,
+    smokeOrigin,
+    commit: sha,
+    ...(pr ? { pr } : {}),
+  };
   return {
-    registry: [{ environment, dataVersion: RELEASE_DATA_VERSION, current, ...(previous && previous.id !== id ? { previous } : {}) }],
+    registry: [
+      {
+        environment,
+        dataVersion: RELEASE_DATA_VERSION,
+        current,
+        ...(previous && previous.id !== id ? { previous } : {}),
+      },
+    ],
     message: releaseMessage({ id, sha, pr }),
     tag: id.slice(0, 25),
   };
 }
 
-function readJson(path) { try { return JSON.parse(readFileSync(path, 'utf8')); } catch { return undefined; } }
+function readJson(path) {
+  try {
+    return JSON.parse(readFileSync(path, 'utf8'));
+  } catch {
+    return undefined;
+  }
+}
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
-  const arg = name => { const index = process.argv.indexOf(`--${name}`); return index > 0 ? process.argv[index + 1] : undefined; };
+  const arg = name => {
+    const index = process.argv.indexOf(`--${name}`);
+    return index > 0 ? process.argv[index + 1] : undefined;
+  };
   const result = buildRegistry({
     environment: process.env.RELEASE_ENVIRONMENT ?? 'production',
     sha: process.env.RELEASE_SHA ?? '',
@@ -92,5 +129,7 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   writeFileSync(arg('out-message') ?? 'message.txt', result.message);
   writeFileSync(arg('out-tag') ?? 'tag.txt', result.tag);
   const entry = result.registry[0];
-  console.log(`current ${entry.current.id}; previous ${entry.previous ? `${entry.previous.id} (${entry.previous.deploymentId})` : 'not registered'}`);
+  console.log(
+    `current ${entry.current.id}; previous ${entry.previous ? `${entry.previous.id} (${entry.previous.deploymentId})` : 'not registered'}`,
+  );
 }

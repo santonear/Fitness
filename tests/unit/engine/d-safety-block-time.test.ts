@@ -1,16 +1,108 @@
-import {expect,it} from 'vitest';
-import {Rules} from '../../../src/engine/data';
-import {scorePlan} from '../../../src/engine/score';
-import type {PlannedItem} from '../../../src/domain/v8/contracts';
-import {fixtureProfile,planFixture} from './fixtures';
-const rules=new Rules(),id='safety.session.warmup_cooldown';
-function fixture(){const plan=planFixture(),base=plan.templates[0].items[0];base.prescription!.targetRpe=[rules.get('aerobic.intensity.rpe_scale').moderate[0],rules.get('aerobic.intensity.rpe_scale').moderate[0]];plan.templates[0].items.push({...structuredClone(base),target:{metricType:'duration',durationSeconds:290},prescription:{...base.prescription!,block:'cooldown'}});return plan;}
-function value(plan:ReturnType<typeof fixture>){const row=scorePlan(plan,fixtureProfile,rules).perRule.find(row=>row.id===id);expect(row).toBeDefined();return row!.satisfaction;}
-function warmup(plan:ReturnType<typeof fixture>,target:PlannedItem['target'],sets=1,perSide=false){const walking=plan.templates[0].items[0];const exercise='reps'in target?rules.data.exercises.find(e=>e.slug==='bodyweight-squat')!:rules.byExercise.get(walking.exerciseId)!;plan.templates[0].items.unshift({...structuredClone(walking),exerciseId:exercise.id,sets,target,prescription:{...walking.prescription!,pattern:exercise.primary_pattern,block:'warmup',secondsPerRep:3,perSide}});}
-it('counts actual repetitions, sets, cadence and both sides toward the source warmup target',()=>{const plan=fixture();warmup(plan,{metricType:'reps',reps:15},3,true);expect(value(plan)).toBe(1);});
-it('counts duration on both sides rather than only the stored per-side duration',()=>{const plan=fixture();warmup(plan,{metricType:'duration',durationSeconds:145},1,true);expect(value(plan)).toBe(1);});
-it('counts per-side cooldown work with the same source block clock',()=>{const plan=fixture();warmup(plan,{metricType:'duration',durationSeconds:290});const cool=plan.templates[0].items.at(-1)!;cool.target={metricType:'duration',durationSeconds:145};cool.prescription!.perSide=true;expect(value(plan)).toBe(1);});
-function rampFixture(seconds?:number){const plan=fixture();warmup(plan,{metricType:'duration',durationSeconds:110});const e=rules.data.exercises.find(e=>e.modality==='strength'&&e.nsca_class==='compound'&&e.metricType==='reps_load'&&e.time.setup_s>=15)!;expect(e).toBeDefined();plan.templates[0].items.push({exerciseId:e.id,equipment:e.equipment_required[0],sets:2,target:{metricType:'reps_load',reps:10,loadGrams:10000},prescription:{pattern:e.primary_pattern,block:'main',rir:[3,3],restSeconds:90,structure:'straight',...(seconds===undefined?{}:{warmupSeconds:seconds})}});return plan;}
-it('counts only a registered source-matching actual ramp and never the recommendation alone',()=>{const seconds=rules.get('duration.ramp.sets').first_loaded_compound.ramp_s;expect(seconds).toBe(180);expect(value(rampFixture(seconds))).toBe(1);expect(value(rampFixture())).toBeCloseTo(.7,12);});
-it('does not count forged ramp time, rests or setup toward warmup activity',()=>{const plan=rampFixture(999);for(const item of plan.templates[0].items){item.prescription!.restSeconds=999;item.prescription!.setupSeconds=999;}expect(value(plan)).toBeCloseTo(.7,12);});
-it('does not change source target severity or applicability to a pure light session',()=>{const plan=fixture();plan.templates[0].items[0].prescription!.targetRpe=[1,2];expect(scorePlan(plan,fixtureProfile,rules).perRule.some(row=>row.id===id)).toBe(false);expect(rules.byId.get(id)?.severity).toBe('target');});
+import { expect, it } from 'vitest';
+import { Rules } from '../../../src/engine/data';
+import { scorePlan } from '../../../src/engine/score';
+import type { PlannedItem } from '../../../src/domain/v8/contracts';
+import { fixtureProfile, planFixture } from './fixtures';
+const rules = new Rules(),
+  id = 'safety.session.warmup_cooldown';
+function fixture() {
+  const plan = planFixture(),
+    base = plan.templates[0].items[0];
+  base.prescription!.targetRpe = [
+    rules.get('aerobic.intensity.rpe_scale').moderate[0],
+    rules.get('aerobic.intensity.rpe_scale').moderate[0],
+  ];
+  plan.templates[0].items.push({
+    ...structuredClone(base),
+    target: { metricType: 'duration', durationSeconds: 290 },
+    prescription: { ...base.prescription!, block: 'cooldown' },
+  });
+  return plan;
+}
+function value(plan: ReturnType<typeof fixture>) {
+  const row = scorePlan(plan, fixtureProfile, rules).perRule.find(row => row.id === id);
+  expect(row).toBeDefined();
+  return row!.satisfaction;
+}
+function warmup(plan: ReturnType<typeof fixture>, target: PlannedItem['target'], sets = 1, perSide = false) {
+  const walking = plan.templates[0].items[0];
+  const exercise =
+    'reps' in target
+      ? rules.data.exercises.find(e => e.slug === 'bodyweight-squat')!
+      : rules.byExercise.get(walking.exerciseId)!;
+  plan.templates[0].items.unshift({
+    ...structuredClone(walking),
+    exerciseId: exercise.id,
+    sets,
+    target,
+    prescription: {
+      ...walking.prescription!,
+      pattern: exercise.primary_pattern,
+      block: 'warmup',
+      secondsPerRep: 3,
+      perSide,
+    },
+  });
+}
+it('counts actual repetitions, sets, cadence and both sides toward the source warmup target', () => {
+  const plan = fixture();
+  warmup(plan, { metricType: 'reps', reps: 15 }, 3, true);
+  expect(value(plan)).toBe(1);
+});
+it('counts duration on both sides rather than only the stored per-side duration', () => {
+  const plan = fixture();
+  warmup(plan, { metricType: 'duration', durationSeconds: 145 }, 1, true);
+  expect(value(plan)).toBe(1);
+});
+it('counts per-side cooldown work with the same source block clock', () => {
+  const plan = fixture();
+  warmup(plan, { metricType: 'duration', durationSeconds: 290 });
+  const cool = plan.templates[0].items.at(-1)!;
+  cool.target = { metricType: 'duration', durationSeconds: 145 };
+  cool.prescription!.perSide = true;
+  expect(value(plan)).toBe(1);
+});
+function rampFixture(seconds?: number) {
+  const plan = fixture();
+  warmup(plan, { metricType: 'duration', durationSeconds: 110 });
+  const e = rules.data.exercises.find(
+    e =>
+      e.modality === 'strength' && e.nsca_class === 'compound' && e.metricType === 'reps_load' && e.time.setup_s >= 15,
+  )!;
+  expect(e).toBeDefined();
+  plan.templates[0].items.push({
+    exerciseId: e.id,
+    equipment: e.equipment_required[0],
+    sets: 2,
+    target: { metricType: 'reps_load', reps: 10, loadGrams: 10000 },
+    prescription: {
+      pattern: e.primary_pattern,
+      block: 'main',
+      rir: [3, 3],
+      restSeconds: 90,
+      structure: 'straight',
+      ...(seconds === undefined ? {} : { warmupSeconds: seconds }),
+    },
+  });
+  return plan;
+}
+it('counts only a registered source-matching actual ramp and never the recommendation alone', () => {
+  const seconds = rules.get('duration.ramp.sets').first_loaded_compound.ramp_s;
+  expect(seconds).toBe(180);
+  expect(value(rampFixture(seconds))).toBe(1);
+  expect(value(rampFixture())).toBeCloseTo(0.7, 12);
+});
+it('does not count forged ramp time, rests or setup toward warmup activity', () => {
+  const plan = rampFixture(999);
+  for (const item of plan.templates[0].items) {
+    item.prescription!.restSeconds = 999;
+    item.prescription!.setupSeconds = 999;
+  }
+  expect(value(plan)).toBeCloseTo(0.7, 12);
+});
+it('does not change source target severity or applicability to a pure light session', () => {
+  const plan = fixture();
+  plan.templates[0].items[0].prescription!.targetRpe = [1, 2];
+  expect(scorePlan(plan, fixtureProfile, rules).perRule.some(row => row.id === id)).toBe(false);
+  expect(rules.byId.get(id)?.severity).toBe('target');
+});

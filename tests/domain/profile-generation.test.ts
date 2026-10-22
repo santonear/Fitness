@@ -4,15 +4,30 @@ import { createRepository } from '../../src/persistence/repository';
 import type { FitnessDatabase } from '../../src/persistence/db';
 
 it('rejects a queued old-language update after restored generation adoption', async () => {
-  let metadata = { localProfileId: 'profile', schemaVersion: 3, catalogVersion: 1, revision: 1, dataRevision: 1, restoreGeneration: 0 };
+  let metadata = {
+    localProfileId: 'profile',
+    schemaVersion: 3,
+    catalogVersion: 1,
+    revision: 1,
+    dataRevision: 1,
+    restoreGeneration: 0,
+  };
   const profile = { locale: 'en', revision: 0 };
   const queue: (() => Promise<void>)[] = [];
   const db = {
-    tables: [], profiles: { toCollection: () => ({ first: async () => profile }) },
+    tables: [],
+    profiles: { toCollection: () => ({ first: async () => profile }) },
     metadata: { toCollection: () => ({ first: async () => metadata }) },
-    transaction: (_mode: string, _tables: unknown, callback: () => Promise<unknown>) => new Promise((resolve, reject) => {
-      queue.push(async () => { try { resolve(await callback()); } catch (error) { reject(error); } });
-    }),
+    transaction: (_mode: string, _tables: unknown, callback: () => Promise<unknown>) =>
+      new Promise((resolve, reject) => {
+        queue.push(async () => {
+          try {
+            resolve(await callback());
+          } catch (error) {
+            reject(error);
+          }
+        });
+      }),
   } as unknown as FitnessDatabase;
   const repo = createRepository(db);
   await repo.readMetadata();

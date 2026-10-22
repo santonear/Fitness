@@ -1,86 +1,634 @@
-import {BACKUP_VERSION,DATABASE_VERSION} from '../../src/domain/storage-version';
-import {test,expect} from '@playwright/test';
-import {openHomeCoach,showShared} from './helpers/home-coach';
-async function open(page:import('@playwright/test').Page){await page.goto('/tests/fixtures/v8-coach/index.html');await page.evaluate(async()=>{const p='/src/application/feature-flags.ts';await(await import(/* @vite-ignore */ p)).refreshFeatureFlags(async()=>Response.json({version:1,flags:{aiAssistantV2:true},expiresAt:Date.now()+60000}));});await page.getByRole('button',{name:'跟芽芽说',exact:true}).click();await showShared(page);}
-test('chat sends minimal context, persists history and never auto-applies',async({page})=>{
- const sent:any[]=[];await page.route('**/api/v1/assistant/chat',async route=>{sent.push(route.request().postDataJSON());await route.fulfill({contentType:'text/event-stream',body:'data: {"type":"text_delta","delta":"今天可以从短一点的训练开始。"}\n\ndata: {"type":"done","success":true,"usage":{"inputTokens":1,"outputTokens":1},"promptVersion":"test"}\n\n'});});
- await open(page);await page.getByRole('textbox').fill('只有十五分钟');await page.getByRole('button',{name:'发送',exact:true}).click();await expect(page.getByRole('log').getByText('今天可以从短一点的训练开始。')).toBeVisible();expect(sent[0].context.body).toBeUndefined();expect(sent[0].context.history).toBeUndefined();await expect(page.getByRole('button',{name:'应用建议'})).toHaveCount(0);
- await page.getByRole('button',{name:'新对话',exact:true}).click();await expect(page.getByRole('log').getByText('只有十五分钟')).toHaveCount(0);await page.getByRole('button',{name:'历史对话',exact:true}).click();await page.getByRole('button',{name:/^只有十五分钟/}).click();await expect(page.getByRole('log').getByText('只有十五分钟')).toBeVisible();
- await page.reload();await page.evaluate(async()=>{const p='/src/application/feature-flags.ts';await(await import(/* @vite-ignore */ p)).refreshFeatureFlags(async()=>Response.json({version:1,flags:{aiAssistantV2:true},expiresAt:Date.now()+60000}));});await page.getByRole('button',{name:'跟芽芽说',exact:true}).click();await expect(page.getByRole('log').getByText('只有十五分钟')).toBeVisible();
-});
-for(const theme of ['pop', 'vivid', 'gentle', 'data', 'fire'])for(const width of [375,1280])test(`assistant ${theme} ${width}`,async({page})=>{await page.setViewportSize({width,height:844});await open(page);await page.evaluate(async(theme)=>{const p='/src/themes/registry.ts';await import(/* @vite-ignore */ p);document.documentElement.dataset.theme=theme;},theme);await page.waitForTimeout(650);await page.screenshot({path:`test-results-review/assistant-v2/${theme}-${width}.png`});});
-test('conversation store caps at 30 and deletes explicitly',async({page})=>{await open(page);const result=await page.evaluate(async()=>{const cp='/src/persistence/assistant-conversations.ts',dp='/src/persistence/repository.ts';const db=(await import(/* @vite-ignore */ dp)).repository.db,store=(await import(/* @vite-ignore */ cp)).conversationStore(db);for(let n=0;n<31;n++)await store.save({id:crypto.randomUUID(),title:String(n),updatedAt:new Date(1791750000000+n).toISOString(),messages:[]});const rows=await store.list();await store.remove(rows[0].id);return {before:rows.length,oldest:rows.at(-1).title,after:(await store.list()).length};});expect(result).toEqual({before:30,oldest:'1',after:29});});
-
-test('daily limit gives reset time without an invalid-access badge and stop releases the composer',async({page})=>{
- await page.route('**/api/v1/assistant/chat',route=>route.fulfill({status:429,json:{error:'DAILY_MESSAGE_LIMIT',resetAt:'2026-10-13T00:00:00Z'}}));await open(page);await page.getByRole('textbox').fill('今天练什么');await page.getByRole('button',{name:'发送',exact:true}).click();await expect(page.getByRole('alert')).toContainText('今天的消息次数已用完');await expect(page.getByRole('alert')).not.toContainText('资格');
- await page.unroute('**/api/v1/assistant/chat');await page.route('**/api/v1/assistant/chat',async()=>{});await page.getByRole('textbox').fill('再次提问');await page.getByRole('button',{name:'发送',exact:true}).click();await page.getByRole('button',{name:'停止',exact:true}).click();await expect(page.getByRole('textbox')).toBeEnabled();
-});
-
-test('five conversation rounds retain changed intent, language and per-conversation opt-ins',async({page})=>{
- const sent:any[]=[];await page.route('**/api/v1/assistant/chat',route=>{sent.push(route.request().postDataJSON());const reply=`Reply ${sent.length}`;return route.fulfill({contentType:'text/event-stream',body:`data: ${JSON.stringify({type:'text_delta',delta:reply})}\n\ndata: ${JSON.stringify({type:'done',success:true,usage:{inputTokens:1,outputTokens:1},promptVersion:'test'})}\n\n`});});await open(page);await page.getByLabel('包含身体资料',{exact:true}).check();await page.getByLabel('包含训练历史',{exact:true}).check();
- const messages=['我想每周三次','改成两次吧','只有十五分钟','Please switch to English','今天先做轻一点'];for(let i=0;i<messages.length;i++){await page.getByRole('textbox').fill(messages[i]);await page.getByRole('button',{name:'发送',exact:true}).click();await expect(page.getByRole('log').getByText(`Reply ${i+1}`,{exact:true})).toBeVisible();}
- expect(sent.map(s=>s.messages.at(-1).content)).toEqual(messages);expect(sent[4].messages.filter((m:any)=>m.role==='user').map((m:any)=>m.content)).toEqual(messages);expect(sent[3].locale).toBe('en');expect(sent[4].locale).toBe('zh');expect(sent.every(s=>s.context.body&&s.context.history)).toBe(true);
- await page.getByText('查看发送内容',{exact:true}).click();await expect(page.locator('.assistant-panel')).not.toContainText(sent[4].requestId);await expect(page.locator('.assistant-panel')).not.toContainText('revision:');
- await page.getByRole('button',{name:'新对话',exact:true}).click();await expect(page.getByLabel('包含身体资料',{exact:true})).toBeChecked();await expect(page.getByLabel('包含训练历史',{exact:true})).not.toBeChecked();await page.getByRole('button',{name:'历史对话',exact:true}).click();await page.getByRole('button',{name:new RegExp(`^${messages[0]}`)}).click();await expect(page.getByLabel('包含身体资料',{exact:true})).toBeChecked();await expect(page.getByLabel('包含训练历史',{exact:true})).toBeChecked();
-});
-for(const error of ['MODEL_UNAVAILABLE','GENERATION_FAILED','SERVICE_UNAVAILABLE','USAGE_UNAVAILABLE','NETWORK_ERROR'])test(`distinguishes ${error}`,async({page})=>{await page.route('**/api/v1/assistant/chat',route=>route.fulfill({status:503,json:{error}}));await open(page);await page.getByRole('textbox').fill('今天练什么');await page.getByRole('button',{name:'发送',exact:true}).click();await expect(page.getByRole('alert')).toContainText(error==='NETWORK_ERROR'?'连接中断':'模型暂时没给出可用结果');});
-
-async function seedMainline(page:import('@playwright/test').Page){
- await page.addInitScript(()=>localStorage.setItem('fitness.language','zh'));await page.route('**/api/v1/features',route=>route.fulfill({json:{version:1,flags:{aiAssistantV2:true},expiresAt:Date.now()+60000}}));await page.route('**/api/v1/trial/access-status',route=>route.fulfill({json:{qualification:'active',sessionValid:true,aiEnabled:true,summaryAvailable:true}}));await page.goto('/settings');await expect(page.getByRole('heading',{name:'我的',exact:true})).toBeVisible();await page.evaluate(async()=>{const p='/src/ui/mainline/context.tsx';const {workflow}=await import(/* @vite-ignore */ p);await workflow.adopt(await workflow.propose({goalText:'规律训练',scheduleOriginalText:'每周两次，每次30分钟',weeklyTarget:2,sessionMinutes:30,place:'home',equipment:['none'],adultConfirmed:true,cautions:[],confirmedAt:new Date().toISOString()},'zh'));});
+import { BACKUP_VERSION, DATABASE_VERSION } from '../../src/domain/storage-version';
+import { test, expect } from '@playwright/test';
+import { openHomeCoach, showShared } from './helpers/home-coach';
+async function open(page: import('@playwright/test').Page) {
+  await page.goto('/tests/fixtures/v8-coach/index.html');
+  await page.evaluate(async () => {
+    const p = '/src/application/feature-flags.ts';
+    await (
+      await import(/* @vite-ignore */ p)
+    ).refreshFeatureFlags(async () =>
+      Response.json({ version: 1, flags: { aiAssistantV2: true }, expiresAt: Date.now() + 60000 }),
+    );
+  });
+  await page.getByRole('button', { name: '跟芽芽说', exact: true }).click();
+  await showShared(page);
 }
-async function snapshot(page:import('@playwright/test').Page){return page.evaluate(async()=>{const p='/src/ui/mainline/context.tsx';return(await(await import(/* @vite-ignore */ p)).workflow.snapshot());});}
-function stream(attachment:unknown,text='可以按这个安排试试。'){return [{type:'text_delta',delta:text},{type:'attachment_pending'},{type:'attachment',attachment},{type:'done',success:true,usage:{inputTokens:1,outputTokens:1},promptVersion:'test'}].map(e=>`data: ${JSON.stringify(e)}\n\n`).join('');}
-test('two explicit plan applications create versions and refresh the next request snapshot',async({page})=>{
- await seedMainline(page);const requests:any[]=[];await page.route('**/api/v1/assistant/chat',route=>{const q=route.request().postDataJSON().context;requests.push(q);return route.fulfill({contentType:'text/event-stream',body:stream({requestId:q.requestId,restoreGeneration:q.restoreGeneration,mutationAllowed:false,type:'change_proposal',target:q.target,proposal:{...q.plan,goalText:'调整后的目标'},changes:['按这次要求调整安排。']})});});await page.goto('/plans');await page.getByRole('button',{name:'芽芽助手，按住可上下拖动'}).click();await page.getByRole('button',{name:'打开对话',exact:true}).click();const initial=await snapshot(page);await expect(page.locator('.assistant-summary')).toContainText(`${initial.version.templates.length} 份训练单`);
- for(let n=0;n<2;n++){await page.getByRole('dialog').getByRole('textbox').fill(`调整计划 ${n}`);await page.getByRole('dialog').getByRole('button',{name:'发送',exact:true}).click();await expect(page.getByRole('button',{name:'应用建议',exact:true})).toBeEnabled();expect((await snapshot(page)).version.versionNumber).toBe(initial.version.versionNumber+n);await page.getByRole('button',{name:'应用建议',exact:true}).click();await expect(page.getByRole('button',{name:'已应用',exact:true})).toBeVisible();}
- const after=await snapshot(page);expect(after.version.versionNumber).toBe(initial.version.versionNumber+2);expect(requests[1].target.versionId).not.toBe(requests[0].target.versionId);expect(after.state.coachProfile.goalText).toBe(initial.state.coachProfile.goalText);
+test('chat sends minimal context, persists history and never auto-applies', async ({ page }) => {
+  const sent: any[] = [];
+  await page.route('**/api/v1/assistant/chat', async route => {
+    sent.push(route.request().postDataJSON());
+    await route.fulfill({
+      contentType: 'text/event-stream',
+      body: 'data: {"type":"text_delta","delta":"今天可以从短一点的训练开始。"}\n\ndata: {"type":"done","success":true,"usage":{"inputTokens":1,"outputTokens":1},"promptVersion":"test"}\n\n',
+    });
+  });
+  await open(page);
+  await page.getByRole('textbox').fill('只有十五分钟');
+  await page.getByRole('button', { name: '发送', exact: true }).click();
+  await expect(page.getByRole('log').getByText('今天可以从短一点的训练开始。')).toBeVisible();
+  expect(sent[0].context.body).toBeUndefined();
+  expect(sent[0].context.history).toBeUndefined();
+  await expect(page.getByRole('button', { name: '应用建议' })).toHaveCount(0);
+  await page.getByRole('button', { name: '新对话', exact: true }).click();
+  await expect(page.getByRole('log').getByText('只有十五分钟')).toHaveCount(0);
+  await page.getByRole('button', { name: '历史对话', exact: true }).click();
+  await page.getByRole('button', { name: /^只有十五分钟/ }).click();
+  await expect(page.getByRole('log').getByText('只有十五分钟')).toBeVisible();
+  await page.reload();
+  await page.evaluate(async () => {
+    const p = '/src/application/feature-flags.ts';
+    await (
+      await import(/* @vite-ignore */ p)
+    ).refreshFeatureFlags(async () =>
+      Response.json({ version: 1, flags: { aiAssistantV2: true }, expiresAt: Date.now() + 60000 }),
+    );
+  });
+  await page.getByRole('button', { name: '跟芽芽说', exact: true }).click();
+  await expect(page.getByRole('log').getByText('只有十五分钟')).toBeVisible();
 });
-test('today suggestion changes only the next workout after apply; review remains read-only',async({page})=>{
- await seedMainline(page);let request:any;await page.route('**/api/v1/assistant/chat',route=>{request=route.request().postDataJSON().context;const q=request;const attachment=q.task==='PERIOD_REVIEW'?{requestId:q.requestId,restoreGeneration:q.restoreGeneration,mutationAllowed:false,type:'review_summary',target:q.target,opening:'可以看看这一段的记录。',encouragement:'按自己的节奏继续。',gap:'还可以继续积累记录。',dataBoundary:['只根据已有记录。']}:{requestId:q.requestId,restoreGeneration:q.restoreGeneration,mutationAllowed:false,type:'today_adjustment',target:q.target,template:{...q.template,items:q.template.items.map((i:any)=>({...i,sets:1}))},summary:'今天每个动作先做一组。'};return route.fulfill({contentType:'text/event-stream',body:stream(attachment,q.task==='PERIOD_REVIEW'?'这次回顾已读取完成。':'可以按这个安排试试。')});});await page.goto('/');await openHomeCoach(page);const before=await snapshot(page);await page.getByRole('dialog').getByRole('textbox').fill('今天短一点');await page.getByRole('dialog').getByRole('button',{name:'发送',exact:true}).click();await expect(page.getByRole('button',{name:'应用建议',exact:true})).toBeEnabled();await expect(page.locator('.assistant-diff')).toContainText('1 组');await expect(page.getByRole('region',{name:'调整前',exact:true})).toHaveCount(0);expect((await snapshot(page)).state.nextWorkoutOverride).toBeUndefined();await page.getByRole('button',{name:'应用建议',exact:true}).click();await expect(page.getByRole('button',{name:'已应用',exact:true})).toBeVisible();const after=await snapshot(page);expect(after.version).toEqual(before.version);expect(after.state.nextWorkoutOverride.template.items.every((i:any)=>i.sets===1)).toBe(true);
- await page.keyboard.press('Escape');await page.goto('/review');await page.getByRole('button',{name:'和芽芽聊聊',exact:true}).click();await page.getByRole('dialog').getByRole('textbox').fill('看看本周记录');await page.getByRole('dialog').getByRole('button',{name:'发送',exact:true}).click();await expect(page.getByRole('log').getByText('这次回顾已读取完成。')).toBeVisible();expect(request.task).toBe('PERIOD_REVIEW');expect(request.facts).toBeDefined();await expect(page.getByRole('button',{name:'应用建议',exact:true})).toHaveCount(0);expect((await snapshot(page)).version).toEqual(before.version);
+for (const theme of ['pop', 'vivid', 'gentle', 'data', 'fire'])
+  for (const width of [375, 1280])
+    test(`assistant ${theme} ${width}`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 844 });
+      await open(page);
+      await page.evaluate(async theme => {
+        const p = '/src/themes/registry.ts';
+        await import(/* @vite-ignore */ p);
+        document.documentElement.dataset.theme = theme;
+      }, theme);
+      await page.waitForTimeout(650);
+      await page.screenshot({ path: `test-results-review/assistant-v2/${theme}-${width}.png` });
+    });
+test('conversation store caps at 30 and deletes explicitly', async ({ page }) => {
+  await open(page);
+  const result = await page.evaluate(async () => {
+    const cp = '/src/persistence/assistant-conversations.ts',
+      dp = '/src/persistence/repository.ts';
+    const db = (await import(/* @vite-ignore */ dp)).repository.db,
+      store = (await import(/* @vite-ignore */ cp)).conversationStore(db);
+    for (let n = 0; n < 31; n++)
+      await store.save({
+        id: crypto.randomUUID(),
+        title: String(n),
+        updatedAt: new Date(1791750000000 + n).toISOString(),
+        messages: [],
+      });
+    const rows = await store.list();
+    await store.remove(rows[0].id);
+    return { before: rows.length, oldest: rows.at(-1).title, after: (await store.list()).length };
+  });
+  expect(result).toEqual({ before: 30, oldest: '1', after: 29 });
 });
 
-test('conversation backup defaults to included and excluded backups restore without stale chat',async({page})=>{
- await seedMainline(page);const result=await page.evaluate(async()=>{const cp='/src/persistence/assistant-conversations.ts',rp='/src/persistence/repository.ts',bp='/src/application/backup.ts';const db=(await import(/* @vite-ignore */ rp)).repository.db,mod=await import(/* @vite-ignore */ cp),store=mod.conversationStore(db),backup=(await import(/* @vite-ignore */ bp)).backupService;await store.save({id:crypto.randomUUID(),title:'Local conversation',updatedAt:new Date().toISOString(),messages:[{role:'user',content:'Synthetic backup message'}]});const included=JSON.parse(await(await backup.exportBackup()).text());localStorage.setItem(mod.assistantBackupPreference,'exclude');const excluded=await backup.exportBackup(),parsed=JSON.parse(await excluded.text());const input=await backup.validateBackup(new File([excluded],'backup.json',{type:'application/json'}));await backup.importBackup(input,{backupExported:true,replacementConfirmed:true,expectedRevision:input.expectedRevision});return {version:included.schemaVersion,included:included.data.assistantConversations.length,excluded:parsed.data.assistantConversations.length,restored:await db.assistantConversations.count()};});expect(result).toEqual({version:BACKUP_VERSION,included:1,excluded:0,restored:0});
-});
-test('an unsuccessful stream cannot leave an actionable attachment',async({page})=>{await seedMainline(page);await page.route('**/api/v1/assistant/chat',route=>{const q=route.request().postDataJSON().context;return route.fulfill({contentType:'text/event-stream',body:stream({requestId:q.requestId,restoreGeneration:q.restoreGeneration,mutationAllowed:false,type:'change_proposal',target:q.target,proposal:q.plan,changes:['按这次要求调整安排。']}).replace('"success":true','"success":false')});});await page.goto('/plans');await page.getByRole('button',{name:'芽芽助手，按住可上下拖动'}).click();await page.getByRole('button',{name:'打开对话',exact:true}).click();await page.getByRole('dialog').getByRole('textbox').fill('调整计划');await page.getByRole('dialog').getByRole('button',{name:'发送',exact:true}).click();await expect(page.getByRole('alert')).toContainText('模型暂时没给出可用结果');await expect(page.getByRole('button',{name:'应用建议',exact:true})).toHaveCount(0);});
-
-test('unqualified access has no premature badge and returns a clearly explained local reply',async({page})=>{let requests=0;await page.route('**/api/v1/assistant/chat',route=>{requests++;return route.fulfill({status:403,json:{error:'QUALIFICATION_REQUIRED'}});});await open(page);await expect(page.getByRole('alert')).toHaveCount(0);expect(requests).toBe(0);await page.getByRole('textbox').fill('只有15分钟');await page.getByRole('button',{name:'发送',exact:true}).click();await expect(page.getByRole('alert')).toContainText('训练资格不可用');await expect(page.getByRole('status')).toContainText('现在用的是本地建议');await expect(page.getByRole('log').getByText('你',{exact:true})).toBeVisible();await expect.poll(async()=>await page.getByRole('log').locator('.assistant-bubble--assistant').innerText()).not.toBe('芽芽');expect(requests).toBe(1);});
-test('disclosure names selected body fields and the exact number of plan templates',async({page})=>{await open(page);await page.getByLabel('包含身体资料',{exact:true}).check();await page.getByText('查看发送内容',{exact:true}).click();await expect(page.locator('.assistant-details')).toContainText('身体资料');await expect(page.locator('.assistant-details')).toContainText('项');});
-
-test('DB12 to DB13 is additive and preserves confirmed body details and favorites',async({page})=>{
- await seedMainline(page);const result=await page.evaluate(async()=>{const dp='/src/persistence/db.ts',rp='/src/persistence/repository.ts';const {FitnessDatabase}=await import(/* @vite-ignore */ dp),repo=(await import(/* @vite-ignore */ rp)).repository,Dexie=Object.getPrototypeOf(FitnessDatabase),name=`assistant-migration-${crypto.randomUUID()}`,blueprint=new FitnessDatabase(name);const schema=Object.fromEntries(blueprint.tables.filter((t:any)=>t.name!=='assistantConversations').map((t:any)=>[t.name,[t.schema.primKey.src,...t.schema.indexes.map((i:any)=>i.src)].join(',')]));blueprint.close();const old=new Dexie(name);old.version(12).stores(schema);const profile=await repo.db.profiles.toCollection().first(),metadata={...await repo.readMetadata(),schemaVersion:12},favorites=await repo.db.exerciseFavorites.toArray();profile.bodyDetails={values:{age:35,heightCm:175,weightKg:70},source:'entered',updatedAt:new Date().toISOString(),confirmedAt:new Date().toISOString()};await old.open();await old.table('profiles').put(profile);await old.table('metadata').put(metadata);await old.table('exerciseFavorites').bulkPut(favorites);old.close();const upgraded=new FitnessDatabase(name);await upgraded.open();const result={version:upgraded.verno,metadata:(await upgraded.metadata.toCollection().first()).schemaVersion,bodyUnchanged:JSON.stringify(await upgraded.profiles.get(profile.id))===JSON.stringify(profile),favoritesUnchanged:JSON.stringify(await upgraded.exerciseFavorites.toArray())===JSON.stringify(favorites),conversations:await upgraded.assistantConversations.count()};upgraded.close();await Dexie.delete(name);return result;});expect(result).toEqual({version:DATABASE_VERSION,metadata:DATABASE_VERSION,bodyUnchanged:true,favoritesUnchanged:true,conversations:0});
-});
-
-test('active training shares completed sets and remaining count without opting into past history',async({page})=>{
- await seedMainline(page);const active=await page.evaluate(async()=>{const p='/src/ui/mainline/context.tsx';const {workflow}=await import(/* @vite-ignore */ p);const record=await workflow.start((await workflow.snapshot()).version.templates[0].id);await workflow.recordSet(record.id,0,0,{reps:8});return(await workflow.snapshot()).active;});let sent:any;await page.route('**/api/v1/assistant/chat',route=>{sent=route.request().postDataJSON();return route.fulfill({contentType:'text/event-stream',body:'data: {"type":"text_delta","delta":"已完成的组保持原样。"}\n\ndata: {"type":"done","success":true,"usage":{"inputTokens":1,"outputTokens":1},"promptVersion":"test"}\n\n'});});await page.goto(`/workout/${active.id}`);await page.getByRole('button',{name:'和芽芽聊聊',exact:true}).click();await expect(page.locator('.assistant-summary')).toContainText('本次已完成 1 组');await page.getByRole('dialog').getByRole('textbox').fill('剩下的练轻一点');await page.getByRole('dialog').getByRole('button',{name:'发送',exact:true}).click();await expect(page.getByRole('log').getByText('已完成的组保持原样。')).toBeVisible();expect(sent.currentWorkout).toEqual({completedSets:[{exerciseId:active.sets[0].exerciseId,itemIndex:0,setIndex:0,reps:8}],remainingSets:active.plannedSetCount-1});expect(sent.context.history).toBeUndefined();expect(JSON.stringify(sent.currentWorkout)).not.toContain('completedAt');expect(JSON.stringify(sent.currentWorkout)).not.toContain('note');await showShared(page);await page.getByText('查看发送内容',{exact:true}).click();await expect(page.locator('.assistant-panel')).not.toContainText(active.id);expect((await snapshot(page)).active.sets).toEqual(active.sets);
-});
-
-for(const ending of ['error','truncated'] as const)test(`an attachment followed by ${ending} cannot be applied`,async({page})=>{
- await seedMainline(page);await page.route('**/api/v1/assistant/chat',route=>{const q=route.request().postDataJSON().context;const body=stream({requestId:q.requestId,restoreGeneration:q.restoreGeneration,mutationAllowed:false,type:'change_proposal',target:q.target,proposal:q.plan,changes:['调整安排。']}).replace(/data: \{"type":"done"[^\n]+\n\n$/,'');return route.fulfill({contentType:'text/event-stream',body:body+(ending==='error'?'data: {"type":"error","code":"USAGE_UNAVAILABLE"}\n\n':'')});});
- await page.goto('/plans');await page.getByRole('button',{name:'芽芽助手，按住可上下拖动'}).click();await page.getByRole('button',{name:'打开对话',exact:true}).click();const before=await snapshot(page);await page.getByRole('dialog').getByRole('textbox').fill('调整计划');await page.getByRole('dialog').getByRole('button',{name:'发送',exact:true}).click();await expect(page.getByRole('alert')).toContainText(ending==='error'?'模型暂时没给出可用结果':'连接中断');await expect(page.getByRole('button',{name:'应用建议',exact:true})).toHaveCount(0);expect((await snapshot(page)).version).toEqual(before.version);
+test('daily limit gives reset time without an invalid-access badge and stop releases the composer', async ({
+  page,
+}) => {
+  await page.route('**/api/v1/assistant/chat', route =>
+    route.fulfill({ status: 429, json: { error: 'DAILY_MESSAGE_LIMIT', resetAt: '2026-10-13T00:00:00Z' } }),
+  );
+  await open(page);
+  await page.getByRole('textbox').fill('今天练什么');
+  await page.getByRole('button', { name: '发送', exact: true }).click();
+  await expect(page.getByRole('alert')).toContainText('今天的消息次数已用完');
+  await expect(page.getByRole('alert')).not.toContainText('资格');
+  await page.unroute('**/api/v1/assistant/chat');
+  await page.route('**/api/v1/assistant/chat', async () => {});
+  await page.getByRole('textbox').fill('再次提问');
+  await page.getByRole('button', { name: '发送', exact: true }).click();
+  await page.getByRole('button', { name: '停止', exact: true }).click();
+  await expect(page.getByRole('textbox')).toBeEnabled();
 });
 
-test('review assistant waits for its initial facts before becoming available',async({page})=>{
- await seedMainline(page);
- await page.addInitScript(()=>{const state=window as any;state.reviewGate=new Promise<void>(resolve=>{state.releaseReview=resolve;});});
- await page.route('**/src/persistence/v8-access.ts',async route=>{const response=await route.fetch();const source=await response.text();const needle='async function getReviewWorkouts() {';expect(source).toContain(needle);await route.fulfill({response,body:source.replace(needle,needle+' window.reviewReadStarted=true; await window.reviewGate;')});});
- let sent:any;await page.route('**/api/v1/assistant/chat',route=>{sent=route.request().postDataJSON();return route.fulfill({contentType:'text/event-stream',body:'data: {"type":"text_delta","delta":"这次回顾已读取完成。"}\n\ndata: {"type":"done","success":true,"usage":{"inputTokens":1,"outputTokens":1},"promptVersion":"test"}\n\n'});});
- await page.goto('/review');await page.waitForFunction(()=>(window as any).reviewReadStarted===true);
- await expect(page.getByRole('button',{name:'和芽芽聊聊',exact:true})).toHaveCount(0);
- await page.evaluate(()=>(window as any).releaseReview());
- await page.getByRole('button',{name:'和芽芽聊聊',exact:true}).click();await page.getByRole('dialog').getByRole('textbox').fill('看看本周记录');await page.getByRole('dialog').getByRole('button',{name:'发送',exact:true}).click();await expect(page.getByRole('log').getByText('这次回顾已读取完成。')).toBeVisible();expect(sent.context.task).toBe('PERIOD_REVIEW');expect(sent.context.facts).toBeDefined();
+test('five conversation rounds retain changed intent, language and per-conversation opt-ins', async ({ page }) => {
+  const sent: any[] = [];
+  await page.route('**/api/v1/assistant/chat', route => {
+    sent.push(route.request().postDataJSON());
+    const reply = `Reply ${sent.length}`;
+    return route.fulfill({
+      contentType: 'text/event-stream',
+      body: `data: ${JSON.stringify({ type: 'text_delta', delta: reply })}\n\ndata: ${JSON.stringify({ type: 'done', success: true, usage: { inputTokens: 1, outputTokens: 1 }, promptVersion: 'test' })}\n\n`,
+    });
+  });
+  await open(page);
+  await page.getByLabel('包含身体资料', { exact: true }).check();
+  await page.getByLabel('包含训练历史', { exact: true }).check();
+  const messages = ['我想每周三次', '改成两次吧', '只有十五分钟', 'Please switch to English', '今天先做轻一点'];
+  for (let i = 0; i < messages.length; i++) {
+    await page.getByRole('textbox').fill(messages[i]);
+    await page.getByRole('button', { name: '发送', exact: true }).click();
+    await expect(page.getByRole('log').getByText(`Reply ${i + 1}`, { exact: true })).toBeVisible();
+  }
+  expect(sent.map(s => s.messages.at(-1).content)).toEqual(messages);
+  expect(sent[4].messages.filter((m: any) => m.role === 'user').map((m: any) => m.content)).toEqual(messages);
+  expect(sent[3].locale).toBe('en');
+  expect(sent[4].locale).toBe('zh');
+  expect(sent.every(s => s.context.body && s.context.history)).toBe(true);
+  await page.getByText('查看发送内容', { exact: true }).click();
+  await expect(page.locator('.assistant-panel')).not.toContainText(sent[4].requestId);
+  await expect(page.locator('.assistant-panel')).not.toContainText('revision:');
+  await page.getByRole('button', { name: '新对话', exact: true }).click();
+  await expect(page.getByLabel('包含身体资料', { exact: true })).toBeChecked();
+  await expect(page.getByLabel('包含训练历史', { exact: true })).not.toBeChecked();
+  await page.getByRole('button', { name: '历史对话', exact: true }).click();
+  await page.getByRole('button', { name: new RegExp(`^${messages[0]}`) }).click();
+  await expect(page.getByLabel('包含身体资料', { exact: true })).toBeChecked();
+  await expect(page.getByLabel('包含训练历史', { exact: true })).toBeChecked();
+});
+for (const error of [
+  'MODEL_UNAVAILABLE',
+  'GENERATION_FAILED',
+  'SERVICE_UNAVAILABLE',
+  'USAGE_UNAVAILABLE',
+  'NETWORK_ERROR',
+])
+  test(`distinguishes ${error}`, async ({ page }) => {
+    await page.route('**/api/v1/assistant/chat', route => route.fulfill({ status: 503, json: { error } }));
+    await open(page);
+    await page.getByRole('textbox').fill('今天练什么');
+    await page.getByRole('button', { name: '发送', exact: true }).click();
+    await expect(page.getByRole('alert')).toContainText(
+      error === 'NETWORK_ERROR' ? '连接中断' : '模型暂时没给出可用结果',
+    );
+  });
+
+async function seedMainline(page: import('@playwright/test').Page) {
+  await page.addInitScript(() => localStorage.setItem('fitness.language', 'zh'));
+  await page.route('**/api/v1/features', route =>
+    route.fulfill({ json: { version: 1, flags: { aiAssistantV2: true }, expiresAt: Date.now() + 60000 } }),
+  );
+  await page.route('**/api/v1/trial/access-status', route =>
+    route.fulfill({ json: { qualification: 'active', sessionValid: true, aiEnabled: true, summaryAvailable: true } }),
+  );
+  await page.goto('/settings');
+  await expect(page.getByRole('heading', { name: '我的', exact: true })).toBeVisible();
+  await page.evaluate(async () => {
+    const p = '/src/ui/mainline/context.tsx';
+    const { workflow } = await import(/* @vite-ignore */ p);
+    await workflow.adopt(
+      await workflow.propose(
+        {
+          goalText: '规律训练',
+          scheduleOriginalText: '每周两次，每次30分钟',
+          weeklyTarget: 2,
+          sessionMinutes: 30,
+          place: 'home',
+          equipment: ['none'],
+          adultConfirmed: true,
+          cautions: [],
+          confirmedAt: new Date().toISOString(),
+        },
+        'zh',
+      ),
+    );
+  });
+}
+async function snapshot(page: import('@playwright/test').Page) {
+  return page.evaluate(async () => {
+    const p = '/src/ui/mainline/context.tsx';
+    return await (await import(/* @vite-ignore */ p)).workflow.snapshot();
+  });
+}
+function stream(attachment: unknown, text = '可以按这个安排试试。') {
+  return [
+    { type: 'text_delta', delta: text },
+    { type: 'attachment_pending' },
+    { type: 'attachment', attachment },
+    { type: 'done', success: true, usage: { inputTokens: 1, outputTokens: 1 }, promptVersion: 'test' },
+  ]
+    .map(e => `data: ${JSON.stringify(e)}\n\n`)
+    .join('');
+}
+test('two explicit plan applications create versions and refresh the next request snapshot', async ({ page }) => {
+  await seedMainline(page);
+  const requests: any[] = [];
+  await page.route('**/api/v1/assistant/chat', route => {
+    const q = route.request().postDataJSON().context;
+    requests.push(q);
+    return route.fulfill({
+      contentType: 'text/event-stream',
+      body: stream({
+        requestId: q.requestId,
+        restoreGeneration: q.restoreGeneration,
+        mutationAllowed: false,
+        type: 'change_proposal',
+        target: q.target,
+        proposal: { ...q.plan, goalText: '调整后的目标' },
+        changes: ['按这次要求调整安排。'],
+      }),
+    });
+  });
+  await page.goto('/plans');
+  await page.getByRole('button', { name: '芽芽助手，按住可上下拖动' }).click();
+  await page.getByRole('button', { name: '打开对话', exact: true }).click();
+  const initial = await snapshot(page);
+  await expect(page.locator('.assistant-summary')).toContainText(`${initial.version.templates.length} 份训练单`);
+  for (let n = 0; n < 2; n++) {
+    await page.getByRole('dialog').getByRole('textbox').fill(`调整计划 ${n}`);
+    await page.getByRole('dialog').getByRole('button', { name: '发送', exact: true }).click();
+    await expect(page.getByRole('button', { name: '应用建议', exact: true })).toBeEnabled();
+    expect((await snapshot(page)).version.versionNumber).toBe(initial.version.versionNumber + n);
+    await page.getByRole('button', { name: '应用建议', exact: true }).click();
+    await expect(page.getByRole('button', { name: '已应用', exact: true })).toBeVisible();
+  }
+  const after = await snapshot(page);
+  expect(after.version.versionNumber).toBe(initial.version.versionNumber + 2);
+  expect(requests[1].target.versionId).not.toBe(requests[0].target.versionId);
+  expect(after.state.coachProfile.goalText).toBe(initial.state.coachProfile.goalText);
+});
+test('today suggestion changes only the next workout after apply; review remains read-only', async ({ page }) => {
+  await seedMainline(page);
+  let request: any;
+  await page.route('**/api/v1/assistant/chat', route => {
+    request = route.request().postDataJSON().context;
+    const q = request;
+    const attachment =
+      q.task === 'PERIOD_REVIEW'
+        ? {
+            requestId: q.requestId,
+            restoreGeneration: q.restoreGeneration,
+            mutationAllowed: false,
+            type: 'review_summary',
+            target: q.target,
+            opening: '可以看看这一段的记录。',
+            encouragement: '按自己的节奏继续。',
+            gap: '还可以继续积累记录。',
+            dataBoundary: ['只根据已有记录。'],
+          }
+        : {
+            requestId: q.requestId,
+            restoreGeneration: q.restoreGeneration,
+            mutationAllowed: false,
+            type: 'today_adjustment',
+            target: q.target,
+            template: { ...q.template, items: q.template.items.map((i: any) => ({ ...i, sets: 1 })) },
+            summary: '今天每个动作先做一组。',
+          };
+    return route.fulfill({
+      contentType: 'text/event-stream',
+      body: stream(attachment, q.task === 'PERIOD_REVIEW' ? '这次回顾已读取完成。' : '可以按这个安排试试。'),
+    });
+  });
+  await page.goto('/');
+  await openHomeCoach(page);
+  const before = await snapshot(page);
+  await page.getByRole('dialog').getByRole('textbox').fill('今天短一点');
+  await page.getByRole('dialog').getByRole('button', { name: '发送', exact: true }).click();
+  await expect(page.getByRole('button', { name: '应用建议', exact: true })).toBeEnabled();
+  await expect(page.locator('.assistant-diff')).toContainText('1 组');
+  await expect(page.getByRole('region', { name: '调整前', exact: true })).toHaveCount(0);
+  expect((await snapshot(page)).state.nextWorkoutOverride).toBeUndefined();
+  await page.getByRole('button', { name: '应用建议', exact: true }).click();
+  await expect(page.getByRole('button', { name: '已应用', exact: true })).toBeVisible();
+  const after = await snapshot(page);
+  expect(after.version).toEqual(before.version);
+  expect(after.state.nextWorkoutOverride.template.items.every((i: any) => i.sets === 1)).toBe(true);
+  await page.keyboard.press('Escape');
+  await page.goto('/review');
+  await page.getByRole('button', { name: '和芽芽聊聊', exact: true }).click();
+  await page.getByRole('dialog').getByRole('textbox').fill('看看本周记录');
+  await page.getByRole('dialog').getByRole('button', { name: '发送', exact: true }).click();
+  await expect(page.getByRole('log').getByText('这次回顾已读取完成。')).toBeVisible();
+  expect(request.task).toBe('PERIOD_REVIEW');
+  expect(request.facts).toBeDefined();
+  await expect(page.getByRole('button', { name: '应用建议', exact: true })).toHaveCount(0);
+  expect((await snapshot(page)).version).toEqual(before.version);
 });
 
-for(const failure of ['STALE_CANDIDATE','TRAINING_CHANGED','Invalid coach response: exercise outside supplied catalog'])test('application error copy '+failure,async({page})=>{
- await page.route('**/api/v1/assistant/chat',route=>{const q=route.request().postDataJSON().context;return route.fulfill({contentType:'text/event-stream',body:stream({type:'today_adjustment',requestId:q.requestId,restoreGeneration:q.restoreGeneration,mutationAllowed:false,target:q.target,template:{...q.template,items:q.template.items.map((item:any)=>({...item,sets:1}))},summary:'今天每个动作先做一组。'})});});
- await page.goto('/tests/fixtures/v8-coach/index.html?local-adjust&apply-error='+encodeURIComponent(failure));
- await page.evaluate(async()=>{const p='/src/application/feature-flags.ts';await(await import(/* @vite-ignore */ p)).refreshFeatureFlags(async()=>Response.json({version:1,flags:{aiAssistantV2:true},expiresAt:Date.now()+60000}));});
- await page.getByRole('button',{name:'跟芽芽说',exact:true}).click();await page.getByRole('textbox').fill('今天少一点');await page.getByRole('button',{name:'发送',exact:true}).click();await page.getByRole('button',{name:'应用建议',exact:true}).click();
- await expect(page.getByRole('alert')).toContainText(failure.startsWith('Invalid')?'模型暂时没给出可用结果':failure==='TRAINING_CHANGED'?'这次训练已变化':'资料或计划已变化');
+test('conversation backup defaults to included and excluded backups restore without stale chat', async ({ page }) => {
+  await seedMainline(page);
+  const result = await page.evaluate(async () => {
+    const cp = '/src/persistence/assistant-conversations.ts',
+      rp = '/src/persistence/repository.ts',
+      bp = '/src/application/backup.ts';
+    const db = (await import(/* @vite-ignore */ rp)).repository.db,
+      mod = await import(/* @vite-ignore */ cp),
+      store = mod.conversationStore(db),
+      backup = (await import(/* @vite-ignore */ bp)).backupService;
+    await store.save({
+      id: crypto.randomUUID(),
+      title: 'Local conversation',
+      updatedAt: new Date().toISOString(),
+      messages: [{ role: 'user', content: 'Synthetic backup message' }],
+    });
+    const included = JSON.parse(await (await backup.exportBackup()).text());
+    localStorage.setItem(mod.assistantBackupPreference, 'exclude');
+    const excluded = await backup.exportBackup(),
+      parsed = JSON.parse(await excluded.text());
+    const input = await backup.validateBackup(new File([excluded], 'backup.json', { type: 'application/json' }));
+    await backup.importBackup(input, {
+      backupExported: true,
+      replacementConfirmed: true,
+      expectedRevision: input.expectedRevision,
+    });
+    return {
+      version: included.schemaVersion,
+      included: included.data.assistantConversations.length,
+      excluded: parsed.data.assistantConversations.length,
+      restored: await db.assistantConversations.count(),
+    };
+  });
+  expect(result).toEqual({ version: BACKUP_VERSION, included: 1, excluded: 0, restored: 0 });
 });
-for(const width of [390,1440])for(const kind of ['change','today'])test('round3 card '+kind+' '+width,async({page})=>{
- await page.setViewportSize({width,height:900});await seedMainline(page);
- await page.route('**/api/v1/assistant/chat',route=>{const q=route.request().postDataJSON().context;const attachment=q.task==='MODIFY_PLAN'?{type:'change_proposal',requestId:q.requestId,restoreGeneration:q.restoreGeneration,mutationAllowed:false,target:q.target,proposal:{...q.plan,templates:q.plan.templates.map((t:any,index:number)=>index?t:{...t,items:t.items.map((item:any,i:number)=>i?item:{...item,sets:1})})},changes:['调整训练量','预计30分钟']}:{type:'today_adjustment',requestId:q.requestId,restoreGeneration:q.restoreGeneration,mutationAllowed:false,target:q.target,template:{...q.template,items:q.template.items.slice(1)},summary:'调整1项 · 预计30分钟'};return route.fulfill({contentType:'text/event-stream',body:stream(attachment)});});
- await page.goto(kind==='change'?'/plans':'/');if(kind==='change'){await page.getByRole('button',{name:'芽芽助手，按住可上下拖动'}).click();await page.getByRole('button',{name:'打开对话',exact:true}).click();}else await openHomeCoach(page);await page.getByRole('dialog').getByRole('textbox').fill(kind==='change'?'把计划调整一点':'今天少一个动作');await page.getByRole('dialog').getByRole('button',{name:'发送',exact:true}).click();await expect(page.locator('.assistant-diff')).toBeVisible();await page.screenshot({path:'test-results-review/assistant-round3/qingci-'+kind+'-'+width+'.png'});
+test('an unsuccessful stream cannot leave an actionable attachment', async ({ page }) => {
+  await seedMainline(page);
+  await page.route('**/api/v1/assistant/chat', route => {
+    const q = route.request().postDataJSON().context;
+    return route.fulfill({
+      contentType: 'text/event-stream',
+      body: stream({
+        requestId: q.requestId,
+        restoreGeneration: q.restoreGeneration,
+        mutationAllowed: false,
+        type: 'change_proposal',
+        target: q.target,
+        proposal: q.plan,
+        changes: ['按这次要求调整安排。'],
+      }).replace('"success":true', '"success":false'),
+    });
+  });
+  await page.goto('/plans');
+  await page.getByRole('button', { name: '芽芽助手，按住可上下拖动' }).click();
+  await page.getByRole('button', { name: '打开对话', exact: true }).click();
+  await page.getByRole('dialog').getByRole('textbox').fill('调整计划');
+  await page.getByRole('dialog').getByRole('button', { name: '发送', exact: true }).click();
+  await expect(page.getByRole('alert')).toContainText('模型暂时没给出可用结果');
+  await expect(page.getByRole('button', { name: '应用建议', exact: true })).toHaveCount(0);
 });
+
+test('unqualified access has no premature badge and returns a clearly explained local reply', async ({ page }) => {
+  let requests = 0;
+  await page.route('**/api/v1/assistant/chat', route => {
+    requests++;
+    return route.fulfill({ status: 403, json: { error: 'QUALIFICATION_REQUIRED' } });
+  });
+  await open(page);
+  await expect(page.getByRole('alert')).toHaveCount(0);
+  expect(requests).toBe(0);
+  await page.getByRole('textbox').fill('只有15分钟');
+  await page.getByRole('button', { name: '发送', exact: true }).click();
+  await expect(page.getByRole('alert')).toContainText('训练资格不可用');
+  await expect(page.getByRole('status')).toContainText('现在用的是本地建议');
+  await expect(page.getByRole('log').getByText('你', { exact: true })).toBeVisible();
+  await expect
+    .poll(async () => await page.getByRole('log').locator('.assistant-bubble--assistant').innerText())
+    .not.toBe('芽芽');
+  expect(requests).toBe(1);
+});
+test('disclosure names selected body fields and the exact number of plan templates', async ({ page }) => {
+  await open(page);
+  await page.getByLabel('包含身体资料', { exact: true }).check();
+  await page.getByText('查看发送内容', { exact: true }).click();
+  await expect(page.locator('.assistant-details')).toContainText('身体资料');
+  await expect(page.locator('.assistant-details')).toContainText('项');
+});
+
+test('DB12 to DB13 is additive and preserves confirmed body details and favorites', async ({ page }) => {
+  await seedMainline(page);
+  const result = await page.evaluate(async () => {
+    const dp = '/src/persistence/db.ts',
+      rp = '/src/persistence/repository.ts';
+    const { FitnessDatabase } = await import(/* @vite-ignore */ dp),
+      repo = (await import(/* @vite-ignore */ rp)).repository,
+      Dexie = Object.getPrototypeOf(FitnessDatabase),
+      name = `assistant-migration-${crypto.randomUUID()}`,
+      blueprint = new FitnessDatabase(name);
+    const schema = Object.fromEntries(
+      blueprint.tables
+        .filter((t: any) => t.name !== 'assistantConversations')
+        .map((t: any) => [t.name, [t.schema.primKey.src, ...t.schema.indexes.map((i: any) => i.src)].join(',')]),
+    );
+    blueprint.close();
+    const old = new Dexie(name);
+    old.version(12).stores(schema);
+    const profile = await repo.db.profiles.toCollection().first(),
+      metadata = { ...(await repo.readMetadata()), schemaVersion: 12 },
+      favorites = await repo.db.exerciseFavorites.toArray();
+    profile.bodyDetails = {
+      values: { age: 35, heightCm: 175, weightKg: 70 },
+      source: 'entered',
+      updatedAt: new Date().toISOString(),
+      confirmedAt: new Date().toISOString(),
+    };
+    await old.open();
+    await old.table('profiles').put(profile);
+    await old.table('metadata').put(metadata);
+    await old.table('exerciseFavorites').bulkPut(favorites);
+    old.close();
+    const upgraded = new FitnessDatabase(name);
+    await upgraded.open();
+    const result = {
+      version: upgraded.verno,
+      metadata: (await upgraded.metadata.toCollection().first()).schemaVersion,
+      bodyUnchanged: JSON.stringify(await upgraded.profiles.get(profile.id)) === JSON.stringify(profile),
+      favoritesUnchanged: JSON.stringify(await upgraded.exerciseFavorites.toArray()) === JSON.stringify(favorites),
+      conversations: await upgraded.assistantConversations.count(),
+    };
+    upgraded.close();
+    await Dexie.delete(name);
+    return result;
+  });
+  expect(result).toEqual({
+    version: DATABASE_VERSION,
+    metadata: DATABASE_VERSION,
+    bodyUnchanged: true,
+    favoritesUnchanged: true,
+    conversations: 0,
+  });
+});
+
+test('active training shares completed sets and remaining count without opting into past history', async ({ page }) => {
+  await seedMainline(page);
+  const active = await page.evaluate(async () => {
+    const p = '/src/ui/mainline/context.tsx';
+    const { workflow } = await import(/* @vite-ignore */ p);
+    const record = await workflow.start((await workflow.snapshot()).version.templates[0].id);
+    await workflow.recordSet(record.id, 0, 0, { reps: 8 });
+    return (await workflow.snapshot()).active;
+  });
+  let sent: any;
+  await page.route('**/api/v1/assistant/chat', route => {
+    sent = route.request().postDataJSON();
+    return route.fulfill({
+      contentType: 'text/event-stream',
+      body: 'data: {"type":"text_delta","delta":"已完成的组保持原样。"}\n\ndata: {"type":"done","success":true,"usage":{"inputTokens":1,"outputTokens":1},"promptVersion":"test"}\n\n',
+    });
+  });
+  await page.goto(`/workout/${active.id}`);
+  await page.getByRole('button', { name: '和芽芽聊聊', exact: true }).click();
+  await expect(page.locator('.assistant-summary')).toContainText('本次已完成 1 组');
+  await page.getByRole('dialog').getByRole('textbox').fill('剩下的练轻一点');
+  await page.getByRole('dialog').getByRole('button', { name: '发送', exact: true }).click();
+  await expect(page.getByRole('log').getByText('已完成的组保持原样。')).toBeVisible();
+  expect(sent.currentWorkout).toEqual({
+    completedSets: [{ exerciseId: active.sets[0].exerciseId, itemIndex: 0, setIndex: 0, reps: 8 }],
+    remainingSets: active.plannedSetCount - 1,
+  });
+  expect(sent.context.history).toBeUndefined();
+  expect(JSON.stringify(sent.currentWorkout)).not.toContain('completedAt');
+  expect(JSON.stringify(sent.currentWorkout)).not.toContain('note');
+  await showShared(page);
+  await page.getByText('查看发送内容', { exact: true }).click();
+  await expect(page.locator('.assistant-panel')).not.toContainText(active.id);
+  expect((await snapshot(page)).active.sets).toEqual(active.sets);
+});
+
+for (const ending of ['error', 'truncated'] as const)
+  test(`an attachment followed by ${ending} cannot be applied`, async ({ page }) => {
+    await seedMainline(page);
+    await page.route('**/api/v1/assistant/chat', route => {
+      const q = route.request().postDataJSON().context;
+      const body = stream({
+        requestId: q.requestId,
+        restoreGeneration: q.restoreGeneration,
+        mutationAllowed: false,
+        type: 'change_proposal',
+        target: q.target,
+        proposal: q.plan,
+        changes: ['调整安排。'],
+      }).replace(/data: \{"type":"done"[^\n]+\n\n$/, '');
+      return route.fulfill({
+        contentType: 'text/event-stream',
+        body: body + (ending === 'error' ? 'data: {"type":"error","code":"USAGE_UNAVAILABLE"}\n\n' : ''),
+      });
+    });
+    await page.goto('/plans');
+    await page.getByRole('button', { name: '芽芽助手，按住可上下拖动' }).click();
+    await page.getByRole('button', { name: '打开对话', exact: true }).click();
+    const before = await snapshot(page);
+    await page.getByRole('dialog').getByRole('textbox').fill('调整计划');
+    await page.getByRole('dialog').getByRole('button', { name: '发送', exact: true }).click();
+    await expect(page.getByRole('alert')).toContainText(ending === 'error' ? '模型暂时没给出可用结果' : '连接中断');
+    await expect(page.getByRole('button', { name: '应用建议', exact: true })).toHaveCount(0);
+    expect((await snapshot(page)).version).toEqual(before.version);
+  });
+
+test('review assistant waits for its initial facts before becoming available', async ({ page }) => {
+  await seedMainline(page);
+  await page.addInitScript(() => {
+    const state = window as any;
+    state.reviewGate = new Promise<void>(resolve => {
+      state.releaseReview = resolve;
+    });
+  });
+  await page.route('**/src/persistence/v8-access.ts', async route => {
+    const response = await route.fetch();
+    const source = await response.text();
+    const needle = 'async function getReviewWorkouts() {';
+    expect(source).toContain(needle);
+    await route.fulfill({
+      response,
+      body: source.replace(needle, needle + ' window.reviewReadStarted=true; await window.reviewGate;'),
+    });
+  });
+  let sent: any;
+  await page.route('**/api/v1/assistant/chat', route => {
+    sent = route.request().postDataJSON();
+    return route.fulfill({
+      contentType: 'text/event-stream',
+      body: 'data: {"type":"text_delta","delta":"这次回顾已读取完成。"}\n\ndata: {"type":"done","success":true,"usage":{"inputTokens":1,"outputTokens":1},"promptVersion":"test"}\n\n',
+    });
+  });
+  await page.goto('/review');
+  await page.waitForFunction(() => (window as any).reviewReadStarted === true);
+  await expect(page.getByRole('button', { name: '和芽芽聊聊', exact: true })).toHaveCount(0);
+  await page.evaluate(() => (window as any).releaseReview());
+  await page.getByRole('button', { name: '和芽芽聊聊', exact: true }).click();
+  await page.getByRole('dialog').getByRole('textbox').fill('看看本周记录');
+  await page.getByRole('dialog').getByRole('button', { name: '发送', exact: true }).click();
+  await expect(page.getByRole('log').getByText('这次回顾已读取完成。')).toBeVisible();
+  expect(sent.context.task).toBe('PERIOD_REVIEW');
+  expect(sent.context.facts).toBeDefined();
+});
+
+for (const failure of [
+  'STALE_CANDIDATE',
+  'TRAINING_CHANGED',
+  'Invalid coach response: exercise outside supplied catalog',
+])
+  test('application error copy ' + failure, async ({ page }) => {
+    await page.route('**/api/v1/assistant/chat', route => {
+      const q = route.request().postDataJSON().context;
+      return route.fulfill({
+        contentType: 'text/event-stream',
+        body: stream({
+          type: 'today_adjustment',
+          requestId: q.requestId,
+          restoreGeneration: q.restoreGeneration,
+          mutationAllowed: false,
+          target: q.target,
+          template: { ...q.template, items: q.template.items.map((item: any) => ({ ...item, sets: 1 })) },
+          summary: '今天每个动作先做一组。',
+        }),
+      });
+    });
+    await page.goto('/tests/fixtures/v8-coach/index.html?local-adjust&apply-error=' + encodeURIComponent(failure));
+    await page.evaluate(async () => {
+      const p = '/src/application/feature-flags.ts';
+      await (
+        await import(/* @vite-ignore */ p)
+      ).refreshFeatureFlags(async () =>
+        Response.json({ version: 1, flags: { aiAssistantV2: true }, expiresAt: Date.now() + 60000 }),
+      );
+    });
+    await page.getByRole('button', { name: '跟芽芽说', exact: true }).click();
+    await page.getByRole('textbox').fill('今天少一点');
+    await page.getByRole('button', { name: '发送', exact: true }).click();
+    await page.getByRole('button', { name: '应用建议', exact: true }).click();
+    await expect(page.getByRole('alert')).toContainText(
+      failure.startsWith('Invalid')
+        ? '模型暂时没给出可用结果'
+        : failure === 'TRAINING_CHANGED'
+          ? '这次训练已变化'
+          : '资料或计划已变化',
+    );
+  });
+for (const width of [390, 1440])
+  for (const kind of ['change', 'today'])
+    test('round3 card ' + kind + ' ' + width, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await seedMainline(page);
+      await page.route('**/api/v1/assistant/chat', route => {
+        const q = route.request().postDataJSON().context;
+        const attachment =
+          q.task === 'MODIFY_PLAN'
+            ? {
+                type: 'change_proposal',
+                requestId: q.requestId,
+                restoreGeneration: q.restoreGeneration,
+                mutationAllowed: false,
+                target: q.target,
+                proposal: {
+                  ...q.plan,
+                  templates: q.plan.templates.map((t: any, index: number) =>
+                    index
+                      ? t
+                      : { ...t, items: t.items.map((item: any, i: number) => (i ? item : { ...item, sets: 1 })) },
+                  ),
+                },
+                changes: ['调整训练量', '预计30分钟'],
+              }
+            : {
+                type: 'today_adjustment',
+                requestId: q.requestId,
+                restoreGeneration: q.restoreGeneration,
+                mutationAllowed: false,
+                target: q.target,
+                template: { ...q.template, items: q.template.items.slice(1) },
+                summary: '调整1项 · 预计30分钟',
+              };
+        return route.fulfill({ contentType: 'text/event-stream', body: stream(attachment) });
+      });
+      await page.goto(kind === 'change' ? '/plans' : '/');
+      if (kind === 'change') {
+        await page.getByRole('button', { name: '芽芽助手，按住可上下拖动' }).click();
+        await page.getByRole('button', { name: '打开对话', exact: true }).click();
+      } else await openHomeCoach(page);
+      await page
+        .getByRole('dialog')
+        .getByRole('textbox')
+        .fill(kind === 'change' ? '把计划调整一点' : '今天少一个动作');
+      await page.getByRole('dialog').getByRole('button', { name: '发送', exact: true }).click();
+      await expect(page.locator('.assistant-diff')).toBeVisible();
+      await page.screenshot({ path: 'test-results-review/assistant-round3/qingci-' + kind + '-' + width + '.png' });
+    });

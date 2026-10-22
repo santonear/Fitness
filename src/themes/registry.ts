@@ -11,10 +11,16 @@ const builtins: readonly ThemeManifest[] = [pop, vivid, gentle, data, fire];
 const discovered = import.meta.glob<{ default: ThemeManifest }>('./*/manifest.ts', { eager: true });
 // Theme folders own their tokens and signature styles; pages need no imports.
 import.meta.glob('./*/tokens.css', { eager: true });
-export const themes: readonly ThemeManifest[] = [...builtins, ...Object.entries(discovered)
-  .sort(([a], [b]) => a.localeCompare(b))
-  .filter(([path, { default: theme }]) => path === `./${theme.id}/manifest.ts` && !builtins.some(item => item.id === theme.id))
-  .map(([, module]) => module.default)];
+export const themes: readonly ThemeManifest[] = [
+  ...builtins,
+  ...Object.entries(discovered)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .filter(
+      ([path, { default: theme }]) =>
+        path === `./${theme.id}/manifest.ts` && !builtins.some(item => item.id === theme.id),
+    )
+    .map(([, module]) => module.default),
+];
 export const fullthemes = themes;
 export function getAvailableThemes(discoveryEnabled: boolean): readonly ThemeManifest[] {
   return discoveryEnabled ? themes : builtins;

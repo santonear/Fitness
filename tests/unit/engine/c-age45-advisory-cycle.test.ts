@@ -1,16 +1,116 @@
-import {expect,it} from 'vitest';
-import {runGates} from '../../../src/engine/gates';
-import {isHardEligible} from '../../../src/engine/candidates';
-import {Rules} from '../../../src/engine/data';
-import {baseProfile} from '../../../tools/eval/training-engine-profiles';
-const r=new Rules(),first='2026-10-01T00:00:00.000Z',renewed='2026-10-15T01:00:00.000Z';
-function profile(){const p=baseProfile({birthYearMonth:'1976-01',level:'intermediate'});p.screening.rarelyVigorous=true;p.screening.activityEvidence={consecutiveRegularWeeks:8,noSymptomReportsWeeks:8};return p;}
-function acknowledge(p:ReturnType<typeof profile>,at='2026-10-15T02:00:00.000Z'){p.screening.age45AdvisoryAck={screenedAt:p.screening.completedAt!,acknowledgedAt:at};}
-it('uses the exact45-year birthday month boundary without treating missing habitual-vigorous answers as a negative',()=>{const p=profile();p.birthYearMonth='1981-11';expect(runGates(p,r).restrictions.user.age45_advisory_required).toBe(false);p.birthYearMonth='1981-10';expect(runGates(p,r).restrictions.user.age45_advisory_required).toBe(true);delete p.screening.rarelyVigorous;expect(runGates(p,r).restrictions.user.age45_advisory_required).toBe(true);});
-it('one acknowledgement remains valid within the same completed screening and cannot change stored profile facts',()=>{const p=profile();acknowledge(p);for(const day of ['2026-10-15','2026-10-22','2027-09-30']){p.asOfDate=day;const before=structuredClone(p),g=runGates(p,r);expect(g.status).not.toBe('blocked');expect(g.restrictions.user.age45_advisory_acked).toBe(true);expect(g.restrictions.user.hiit_unlocked).toBe(true);expect(p).toEqual(before);}});
-it('a newly completed screening requires a new explicit acknowledgement even when the new answers are unchanged',()=>{const p=profile();acknowledge(p);expect(p.screening.age45AdvisoryAck?.screenedAt).toBe(first);p.screening.completedAt=renewed;p.screening.lastScreenedAt=renewed;let g=runGates(p,r);expect(g.restrictions.user.age45_advisory_acked).toBe(false);expect(g.restrictions.user.hiit_unlocked).toBe(false);expect(g.restrictions.maxIntensity).toBeLessThanOrEqual(r.get('aerobic.intensity.rpe_scale').moderate[1]);acknowledge(p);g=runGates(p,r);expect(g.restrictions.user.age45_advisory_acked).toBe(true);expect(g.restrictions.user.hiit_unlocked).toBe(true);});
-it('ties acknowledgement to the exact screening instant rather than merely the calendar date',()=>{const p=profile();p.screening.completedAt=renewed;p.screening.lastScreenedAt=renewed;p.screening.age45AdvisoryAck={screenedAt:'2026-10-15T00:00:00.000Z',acknowledgedAt:'2026-10-15T02:00:00.000Z'};expect(runGates(p,r).restrictions.user.age45_advisory_acked).toBe(false);});
-it('pending rescreening blocks the old acknowledgement until real completion and a new acknowledgement',()=>{const p=profile();acknowledge(p);p.screening.rescreenRequired=true;let g=runGates(p,r);expect(g.status).toBe('blocked');expect(g.restrictions.user.age45_advisory_acked).toBe(false);expect(g.restrictions.user.hiit_unlocked).toBe(false);p.screening.rescreenRequired=false;p.screening.completedAt=renewed;p.screening.lastScreenedAt=renewed;expect(runGates(p,r).restrictions.user.age45_advisory_acked).toBe(false);acknowledge(p);expect(runGates(p,r).restrictions.user.age45_advisory_acked).toBe(true);});
-it('blocks training on the exact annual expiry, and the subsequent rescreen still needs its own advisory acknowledgement',()=>{const p=profile();acknowledge(p);p.asOfDate='2027-10-01';const g=runGates(p,r);expect(g.status).toBe('blocked');expect(g.reasons.some(reason=>reason.ruleId==='safety.rescreen.interval'&&reason.status==='blocked')).toBe(true);expect(g.restrictions.user.hiit_unlocked).toBe(false);p.screening.completedAt='2027-10-01T00:00:00.000Z';p.screening.lastScreenedAt=p.screening.completedAt;expect(runGates(p,r).restrictions.user.age45_advisory_acked).toBe(false);acknowledge(p,'2027-10-01T02:00:00.000Z');expect(runGates(p,r).restrictions.user.age45_advisory_acked).toBe(true);});
-it('inactivity independently requires acknowledgement even with an explicit frequent-vigorous answer',()=>{const p=profile();p.screening.activityStatus='inactive';p.screening.rarelyVigorous=false;let g=runGates(p,r);expect(g.restrictions.user.age45_advisory_required).toBe(true);expect(g.restrictions.user.age45_advisory_acked).toBe(false);acknowledge(p);g=runGates(p,r);expect(g.restrictions.user.age45_advisory_acked).toBe(true);});
-it('neither a matching acknowledgement nor a new screening date overrides current positive source symptoms',()=>{const p=profile();p.screening.completedAt=renewed;p.screening.lastScreenedAt=renewed;acknowledge(p);p.screening.cmrSymptoms![r.get('safety.screen.cmr_symptoms').symptoms[0]]=true;const g=runGates(p,r),exercise=r.data.exercises.find(exercise=>exercise.slug==='walking')!;expect(g.restrictions.user.age45_advisory_acked).toBe(true);expect(g.status).toBe('blocked');expect(g.restrictions.user.hiit_unlocked).toBe(false);expect(isHardEligible(exercise,p,g,{rules:r})).toBe(false);});
+import { expect, it } from 'vitest';
+import { runGates } from '../../../src/engine/gates';
+import { isHardEligible } from '../../../src/engine/candidates';
+import { Rules } from '../../../src/engine/data';
+import { baseProfile } from '../../../tools/eval/training-engine-profiles';
+const r = new Rules(),
+  first = '2026-10-01T00:00:00.000Z',
+  renewed = '2026-10-15T01:00:00.000Z';
+function profile() {
+  const p = baseProfile({ birthYearMonth: '1976-01', level: 'intermediate' });
+  p.screening.rarelyVigorous = true;
+  p.screening.activityEvidence = { consecutiveRegularWeeks: 8, noSymptomReportsWeeks: 8 };
+  return p;
+}
+function acknowledge(p: ReturnType<typeof profile>, at = '2026-10-15T02:00:00.000Z') {
+  p.screening.age45AdvisoryAck = { screenedAt: p.screening.completedAt!, acknowledgedAt: at };
+}
+it('uses the exact45-year birthday month boundary without treating missing habitual-vigorous answers as a negative', () => {
+  const p = profile();
+  p.birthYearMonth = '1981-11';
+  expect(runGates(p, r).restrictions.user.age45_advisory_required).toBe(false);
+  p.birthYearMonth = '1981-10';
+  expect(runGates(p, r).restrictions.user.age45_advisory_required).toBe(true);
+  delete p.screening.rarelyVigorous;
+  expect(runGates(p, r).restrictions.user.age45_advisory_required).toBe(true);
+});
+it('one acknowledgement remains valid within the same completed screening and cannot change stored profile facts', () => {
+  const p = profile();
+  acknowledge(p);
+  for (const day of ['2026-10-15', '2026-10-22', '2027-09-30']) {
+    p.asOfDate = day;
+    const before = structuredClone(p),
+      g = runGates(p, r);
+    expect(g.status).not.toBe('blocked');
+    expect(g.restrictions.user.age45_advisory_acked).toBe(true);
+    expect(g.restrictions.user.hiit_unlocked).toBe(true);
+    expect(p).toEqual(before);
+  }
+});
+it('a newly completed screening requires a new explicit acknowledgement even when the new answers are unchanged', () => {
+  const p = profile();
+  acknowledge(p);
+  expect(p.screening.age45AdvisoryAck?.screenedAt).toBe(first);
+  p.screening.completedAt = renewed;
+  p.screening.lastScreenedAt = renewed;
+  let g = runGates(p, r);
+  expect(g.restrictions.user.age45_advisory_acked).toBe(false);
+  expect(g.restrictions.user.hiit_unlocked).toBe(false);
+  expect(g.restrictions.maxIntensity).toBeLessThanOrEqual(r.get('aerobic.intensity.rpe_scale').moderate[1]);
+  acknowledge(p);
+  g = runGates(p, r);
+  expect(g.restrictions.user.age45_advisory_acked).toBe(true);
+  expect(g.restrictions.user.hiit_unlocked).toBe(true);
+});
+it('ties acknowledgement to the exact screening instant rather than merely the calendar date', () => {
+  const p = profile();
+  p.screening.completedAt = renewed;
+  p.screening.lastScreenedAt = renewed;
+  p.screening.age45AdvisoryAck = { screenedAt: '2026-10-15T00:00:00.000Z', acknowledgedAt: '2026-10-15T02:00:00.000Z' };
+  expect(runGates(p, r).restrictions.user.age45_advisory_acked).toBe(false);
+});
+it('pending rescreening blocks the old acknowledgement until real completion and a new acknowledgement', () => {
+  const p = profile();
+  acknowledge(p);
+  p.screening.rescreenRequired = true;
+  let g = runGates(p, r);
+  expect(g.status).toBe('blocked');
+  expect(g.restrictions.user.age45_advisory_acked).toBe(false);
+  expect(g.restrictions.user.hiit_unlocked).toBe(false);
+  p.screening.rescreenRequired = false;
+  p.screening.completedAt = renewed;
+  p.screening.lastScreenedAt = renewed;
+  expect(runGates(p, r).restrictions.user.age45_advisory_acked).toBe(false);
+  acknowledge(p);
+  expect(runGates(p, r).restrictions.user.age45_advisory_acked).toBe(true);
+});
+it('blocks training on the exact annual expiry, and the subsequent rescreen still needs its own advisory acknowledgement', () => {
+  const p = profile();
+  acknowledge(p);
+  p.asOfDate = '2027-10-01';
+  const g = runGates(p, r);
+  expect(g.status).toBe('blocked');
+  expect(g.reasons.some(reason => reason.ruleId === 'safety.rescreen.interval' && reason.status === 'blocked')).toBe(
+    true,
+  );
+  expect(g.restrictions.user.hiit_unlocked).toBe(false);
+  p.screening.completedAt = '2027-10-01T00:00:00.000Z';
+  p.screening.lastScreenedAt = p.screening.completedAt;
+  expect(runGates(p, r).restrictions.user.age45_advisory_acked).toBe(false);
+  acknowledge(p, '2027-10-01T02:00:00.000Z');
+  expect(runGates(p, r).restrictions.user.age45_advisory_acked).toBe(true);
+});
+it('inactivity independently requires acknowledgement even with an explicit frequent-vigorous answer', () => {
+  const p = profile();
+  p.screening.activityStatus = 'inactive';
+  p.screening.rarelyVigorous = false;
+  let g = runGates(p, r);
+  expect(g.restrictions.user.age45_advisory_required).toBe(true);
+  expect(g.restrictions.user.age45_advisory_acked).toBe(false);
+  acknowledge(p);
+  g = runGates(p, r);
+  expect(g.restrictions.user.age45_advisory_acked).toBe(true);
+});
+it('neither a matching acknowledgement nor a new screening date overrides current positive source symptoms', () => {
+  const p = profile();
+  p.screening.completedAt = renewed;
+  p.screening.lastScreenedAt = renewed;
+  acknowledge(p);
+  p.screening.cmrSymptoms![r.get('safety.screen.cmr_symptoms').symptoms[0]] = true;
+  const g = runGates(p, r),
+    exercise = r.data.exercises.find(exercise => exercise.slug === 'walking')!;
+  expect(g.restrictions.user.age45_advisory_acked).toBe(true);
+  expect(g.status).toBe('blocked');
+  expect(g.restrictions.user.hiit_unlocked).toBe(false);
+  expect(isHardEligible(exercise, p, g, { rules: r })).toBe(false);
+});

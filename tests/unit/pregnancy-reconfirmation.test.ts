@@ -1,6 +1,6 @@
-import { afterEach, expect, it, vi } from "vitest";
-import { createElement } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
+import { afterEach, expect, it, vi } from 'vitest';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import {
   createPregnancySafety,
   createPregnancyReconfirmationDraft,
@@ -9,94 +9,86 @@ import {
   pregnancyAbsoluteKeys,
   pregnancyRelativeKeys,
   type PregnancyReconfirmationDraft,
-} from "../../src/application/pregnancy-safety";
-import { EngineProfileEditor } from "../../src/ui/pages/settings/EngineProfileEditor";
-import { Rules } from "../../src/engine/data";
-import { runGates } from "../../src/engine/gates";
-import { isHardEligible } from "../../src/engine/candidates";
-import { prescribe } from "../../src/engine/dose";
-import { baseProfile } from "../../tools/eval/training-engine-profiles";
-import { v8StateSchema, v8WorkoutSchema } from "../../src/domain/schemas";
-import type { EngineProfile } from "../../src/engine/contracts";
-import type { Repository } from "../../src/persistence/repository";
-import type { WorkoutRecord } from "../../src/domain/v8/contracts";
-const at = "2026-10-17T02:00:00.000Z",
-  id = "a1111111-1111-4111-8111-111111111111",
+} from '../../src/application/pregnancy-safety';
+import { EngineProfileEditor } from '../../src/ui/pages/settings/EngineProfileEditor';
+import { Rules } from '../../src/engine/data';
+import { runGates } from '../../src/engine/gates';
+import { isHardEligible } from '../../src/engine/candidates';
+import { prescribe } from '../../src/engine/dose';
+import { baseProfile } from '../../tools/eval/training-engine-profiles';
+import { v8StateSchema, v8WorkoutSchema } from '../../src/domain/schemas';
+import type { EngineProfile } from '../../src/engine/contracts';
+import type { Repository } from '../../src/persistence/repository';
+import type { WorkoutRecord } from '../../src/domain/v8/contracts';
+const at = '2026-10-17T02:00:00.000Z',
+  id = 'a1111111-1111-4111-8111-111111111111',
   r = new Rules();
 function fixture(consent = true) {
   vi.useFakeTimers();
   vi.setSystemTime(new Date(at));
   const p = baseProfile({
-      birthYearMonth: "1996-01",
+      birthYearMonth: '1996-01',
       population: {
-        kind: "pregnant",
+        kind: 'pregnant',
         week: 8,
         providerCleared: true,
         prenatalCareConfirmed: true,
         contraindicationsConfirmedNone: true,
         lastScreenedWeek: 8,
       },
-      constraints: { noJump: false, quiet: false, space: "large" },
+      constraints: { noJump: false, quiet: false, space: 'large' },
     }),
     g = runGates(p, r);
   const supine = r.data.exercises.find(
-    (e) =>
-      e.metricType === "reps" &&
-      e.position.includes("supine") &&
-      isHardEligible(e, p, g, { rules: r }),
+    e => e.metricType === 'reps' && e.position.includes('supine') && isHardEligible(e, p, g, { rules: r }),
   )!;
-  if (!supine)
-    throw Error("Missing legal early-pregnancy supine positive control");
-  const upright = r.data.exercises.find((e) => e.slug === "walking")!,
+  if (!supine) throw Error('Missing legal early-pregnancy supine positive control');
+  const upright = r.data.exercises.find(e => e.slug === 'walking')!,
     item = prescribe(supine, p, r, g.restrictions);
   let state = v8StateSchema.parse({
-    id: "v8",
+    id: 'v8',
     migratedAt: at,
     legacyPlanIds: [],
     notice: { planCount: 0, acknowledged: true },
     trainingPause: { requiredAt: at },
     postpartumSafety: { urgentAt: at },
     coachProfile: {
-      goalText: "活动",
-      goal: "health",
+      goalText: '活动',
+      goal: 'health',
       population: p.population,
       birthYearMonth: p.birthYearMonth,
       weeklyTarget: 3,
       sessionMinutes: 30,
-      scheduleOriginalText: "",
-      place: "home",
-      equipment: ["none"],
+      scheduleOriginalText: '',
+      place: 'home',
+      equipment: ['none'],
       adultConfirmed: true,
       cautions: [],
       confirmedAt: at,
-      ...(consent
-        ? { healthStorageConsent: { acceptedAt: at }, screening: p.screening }
-        : {}),
+      ...(consent ? { healthStorageConsent: { acceptedAt: at }, screening: p.screening } : {}),
     },
   });
   let rows: WorkoutRecord[] = [
       {
         id,
         startedAt: at,
-        localDate: "2026-10-17",
-        timeZone: "Asia/Shanghai",
-        status: "in_progress",
+        localDate: '2026-10-17',
+        timeZone: 'Asia/Shanghai',
+        status: 'in_progress',
         plannedSetCount: item.sets,
         templateSnapshot: {
-          id: "early",
-          name: "early",
+          id: 'early',
+          name: 'early',
           estimatedMinutes: 30,
           items: [item],
         },
-        plannedExercises: [
-          { exerciseId: supine.id, itemIndex: 0, plannedSetCount: item.sets },
-        ],
+        plannedExercises: [{ exerciseId: supine.id, itemIndex: 0, plannedSetCount: item.sets }],
         sets: [
           {
             exerciseId: supine.id,
             itemIndex: 0,
             setIndex: 0,
-            reps: "reps" in item.target ? item.target.reps : 8,
+            reps: 'reps' in item.target ? item.target.reps : 8,
             completedAt: at,
           },
         ],
@@ -106,8 +98,7 @@ function fixture(consent = true) {
     fail = false;
   const repo = {
     write: async <T>(fn: () => Promise<T>, expected?: number) => {
-      if (expected !== undefined && expected !== revision)
-        throw Error("CONFLICT");
+      if (expected !== undefined && expected !== revision) throw Error('CONFLICT');
       const before = structuredClone({ state, rows, revision });
       try {
         const result = await fn();
@@ -121,24 +112,21 @@ function fixture(consent = true) {
     db: {
       profiles: {
         toCollection: () => ({
-          first: async () => ({ timeZone: "Asia/Shanghai" }),
+          first: async () => ({ timeZone: 'Asia/Shanghai' }),
         }),
       },
       v8State: {
         get: async () => structuredClone(state),
         put: async (value: typeof state) => {
-          if (fail) throw Error("WRITE_FAILED");
+          if (fail) throw Error('WRITE_FAILED');
           state = v8StateSchema.parse(value);
         },
       },
       v8Workouts: {
-        get: async (key: string) =>
-          structuredClone(rows.find((row) => row.id === key)),
+        get: async (key: string) => structuredClone(rows.find(row => row.id === key)),
         toArray: async () => structuredClone(rows),
         put: async (value: WorkoutRecord) => {
-          rows = rows.map((row) =>
-            row.id === value.id ? structuredClone(value) : row,
-          );
+          rows = rows.map(row => (row.id === value.id ? structuredClone(value) : row));
         },
       },
     },
@@ -160,10 +148,10 @@ function fixture(consent = true) {
     fresh: () => {
       state.coachProfile!.screening = {
         ...p.screening,
-        completedAt: "2026-10-17T02:01:00.000Z",
+        completedAt: '2026-10-17T02:01:00.000Z',
         rescreenRequired: false,
       };
-      vi.setSystemTime(new Date("2026-10-17T02:02:00.000Z"));
+      vi.setSystemTime(new Date('2026-10-17T02:02:00.000Z'));
     },
     fail: () => {
       fail = true;
@@ -172,11 +160,8 @@ function fixture(consent = true) {
 }
 afterEach(() => vi.useRealTimers());
 
-const pop = (
-  week: number,
-  lastScreenedWeek = week,
-): Extract<EngineProfile["population"], { kind: "pregnant" }> => ({
-  kind: "pregnant",
+const pop = (week: number, lastScreenedWeek = week): Extract<EngineProfile['population'], { kind: 'pregnant' }> => ({
+  kind: 'pregnant',
   week,
   lastScreenedWeek,
   providerCleared: true,
@@ -187,16 +172,16 @@ const pop = (
 });
 function complete(draft: PregnancyReconfirmationDraft) {
   let next = updatePregnancyReconfirmationDraft(draft, {
-    type: "prenatal",
+    type: 'prenatal',
     answer: true,
   });
   next = updatePregnancyReconfirmationDraft(next, {
-    type: "provider",
+    type: 'provider',
     answer: true,
   });
   for (const key of [...pregnancyAbsoluteKeys, ...pregnancyRelativeKeys])
     next = updatePregnancyReconfirmationDraft(next, {
-      type: "contraindication",
+      type: 'contraindication',
       key,
       answer: false,
     });
@@ -205,43 +190,35 @@ function complete(draft: PregnancyReconfirmationDraft) {
 it.each([
   [12, 13],
   [27, 28],
-])(
-  "changing week %s to %s never marks old provider or contraindication answers as newly screened",
-  (before, after) => {
-    const original = pop(before),
-      draft = updatePregnancyReconfirmationDraft(
-        createPregnancyReconfirmationDraft(original),
-        { type: "week", week: after },
-      );
-    expect(draft.provider).toBeUndefined();
-    expect(draft.answers).toEqual({});
-    expect(pregnancyPopulationFromDraft(draft)).toMatchObject({
+])('changing week %s to %s never marks old provider or contraindication answers as newly screened', (before, after) => {
+  const original = pop(before),
+    draft = updatePregnancyReconfirmationDraft(createPregnancyReconfirmationDraft(original), {
+      type: 'week',
       week: after,
-      lastScreenedWeek: before,
-      providerCleared: false,
-      contraindicationsConfirmedNone: false,
     });
-    expect(
-      runGates(
-        baseProfile({ population: pregnancyPopulationFromDraft(draft)! }),
-        r,
-      ).status,
-    ).toBe("blocked");
-    expect(original).toEqual(pop(before));
-  },
-);
-it("at week26 re-asks the specific placenta item and cannot treat its old negative as a new answer", () => {
-  const draft = updatePregnancyReconfirmationDraft(
-    createPregnancyReconfirmationDraft(pop(25)),
-    { type: "week", week: 26 },
-  );
+  expect(draft.provider).toBeUndefined();
+  expect(draft.answers).toEqual({});
+  expect(pregnancyPopulationFromDraft(draft)).toMatchObject({
+    week: after,
+    lastScreenedWeek: before,
+    providerCleared: false,
+    contraindicationsConfirmedNone: false,
+  });
+  expect(runGates(baseProfile({ population: pregnancyPopulationFromDraft(draft)! }), r).status).toBe('blocked');
+  expect(original).toEqual(pop(before));
+});
+it('at week26 re-asks the specific placenta item and cannot treat its old negative as a new answer', () => {
+  const draft = updatePregnancyReconfirmationDraft(createPregnancyReconfirmationDraft(pop(25)), {
+    type: 'week',
+    week: 26,
+  });
   expect(draft.provider).toBe(true);
-  expect(draft.requiredKeys).toEqual(["placenta_praevia_after_26_weeks"]);
+  expect(draft.requiredKeys).toEqual(['placenta_praevia_after_26_weeks']);
   expect(draft.answers.placenta_praevia_after_26_weeks).toBeUndefined();
   expect(pregnancyPopulationFromDraft(draft)?.lastScreenedWeek).toBe(25);
   const next = updatePregnancyReconfirmationDraft(draft, {
-    type: "contraindication",
-    key: "placenta_praevia_after_26_weeks",
+    type: 'contraindication',
+    key: 'placenta_praevia_after_26_weeks',
     answer: false,
   });
   expect(pregnancyPopulationFromDraft(next)).toMatchObject({
@@ -251,49 +228,46 @@ it("at week26 re-asks the specific placenta item and cannot treat its old negati
     contraindicationsConfirmedNone: true,
   });
 });
-it("a positive week26 placenta answer stays a real absolute contraindication despite completing the check", () => {
-  const draft = updatePregnancyReconfirmationDraft(
-      createPregnancyReconfirmationDraft(pop(25)),
-      { type: "week", week: 26 },
-    ),
+it('a positive week26 placenta answer stays a real absolute contraindication despite completing the check', () => {
+  const draft = updatePregnancyReconfirmationDraft(createPregnancyReconfirmationDraft(pop(25)), {
+      type: 'week',
+      week: 26,
+    }),
     next = updatePregnancyReconfirmationDraft(draft, {
-      type: "contraindication",
-      key: "placenta_praevia_after_26_weeks",
+      type: 'contraindication',
+      key: 'placenta_praevia_after_26_weeks',
       answer: true,
     }),
     population = pregnancyPopulationFromDraft(next)!;
   expect(population).toMatchObject({
     lastScreenedWeek: 26,
     contraindicationsConfirmedNone: false,
-    absoluteContraindications: ["placenta_praevia_after_26_weeks"],
+    absoluteContraindications: ['placenta_praevia_after_26_weeks'],
   });
-  expect(runGates(baseProfile({ population }), r).status).toBe("blocked");
+  expect(runGates(baseProfile({ population }), r).status).toBe('blocked');
 });
-it("only a fully explicit new provider and every source condition answer can complete a full-stage check", () => {
-  let draft = updatePregnancyReconfirmationDraft(
-    createPregnancyReconfirmationDraft(pop(12)),
-    { type: "week", week: 13 },
-  );
+it('only a fully explicit new provider and every source condition answer can complete a full-stage check', () => {
+  let draft = updatePregnancyReconfirmationDraft(createPregnancyReconfirmationDraft(pop(12)), {
+    type: 'week',
+    week: 13,
+  });
   draft = updatePregnancyReconfirmationDraft(draft, {
-    type: "prenatal",
+    type: 'prenatal',
     answer: true,
   });
   draft = updatePregnancyReconfirmationDraft(draft, {
-    type: "provider",
+    type: 'provider',
     answer: true,
   });
-  for (const key of [...pregnancyAbsoluteKeys, ...pregnancyRelativeKeys].slice(
-    0,
-    -1,
-  ))
+  for (const key of [...pregnancyAbsoluteKeys, ...pregnancyRelativeKeys].slice(0, -1))
     draft = updatePregnancyReconfirmationDraft(draft, {
-      type: "contraindication",
+      type: 'contraindication',
       key,
       answer: false,
     });
   expect(pregnancyPopulationFromDraft(draft)?.lastScreenedWeek).toBe(12);
   draft = updatePregnancyReconfirmationDraft(draft, {
-    type: "contraindication",
+    type: 'contraindication',
     key: pregnancyRelativeKeys.at(-1)!,
     answer: false,
   });
@@ -303,35 +277,24 @@ it("only a fully explicit new provider and every source condition answer can com
     prenatalCareConfirmed: true,
     contraindicationsConfirmedNone: true,
   });
-  expect(
-    runGates(
-      baseProfile({ population: pregnancyPopulationFromDraft(draft)! }),
-      r,
-    ).status,
-  ).toBe("restricted");
+  expect(runGates(baseProfile({ population: pregnancyPopulationFromDraft(draft)! }), r).status).toBe('restricted');
 });
-it("ordinary week edits do not advance a completed screening marker and jumping across stages still clears required answers", () => {
+it('ordinary week edits do not advance a completed screening marker and jumping across stages still clears required answers', () => {
   expect(
     pregnancyPopulationFromDraft(
-      updatePregnancyReconfirmationDraft(
-        createPregnancyReconfirmationDraft(pop(13)),
-        { type: "week", week: 14 },
-      ),
+      updatePregnancyReconfirmationDraft(createPregnancyReconfirmationDraft(pop(13)), { type: 'week', week: 14 }),
     )?.lastScreenedWeek,
   ).toBe(13);
-  const draft = updatePregnancyReconfirmationDraft(
-    createPregnancyReconfirmationDraft(pop(12)),
-    { type: "week", week: 28 },
-  );
+  const draft = updatePregnancyReconfirmationDraft(createPregnancyReconfirmationDraft(pop(12)), {
+    type: 'week',
+    week: 28,
+  });
   expect(draft.answers).toEqual({});
   expect(draft.provider).toBeUndefined();
   expect(complete(draft).lastScreenedWeek).toBe(28);
 });
-it("unknown week uses the source stricter13 assumption and unknown legacy contraindications never become negatives", () => {
-  const draft = updatePregnancyReconfirmationDraft(
-    createPregnancyReconfirmationDraft(pop(12)),
-    { type: "week" },
-  );
+it('unknown week uses the source stricter13 assumption and unknown legacy contraindications never become negatives', () => {
+  const draft = updatePregnancyReconfirmationDraft(createPregnancyReconfirmationDraft(pop(12)), { type: 'week' });
   expect(pregnancyPopulationFromDraft(draft)).toMatchObject({
     week: 13,
     lastScreenedWeek: 12,
@@ -345,92 +308,72 @@ it("unknown week uses the source stricter13 assumption and unknown legacy contra
   });
   expect(unknown.answers).toEqual({});
 });
-it("reconfirmation preserves old real positive contraindications, including legacy indexed copy identities", () => {
+it('reconfirmation preserves old real positive contraindications, including legacy indexed copy identities', () => {
   const draft = createPregnancyReconfirmationDraft({
     ...pop(13, 12),
     contraindicationsConfirmedNone: false,
-    absoluteContraindications: ["pregnancy.gate.copy.absolute_list.3"],
-    relativeContraindications: ["symptomatic_anaemia"],
+    absoluteContraindications: ['pregnancy.gate.copy.absolute_list.3'],
+    relativeContraindications: ['symptomatic_anaemia'],
   });
   const after = pregnancyPopulationFromDraft(complete(draft))!;
-  expect(after.absoluteContraindications).toContain(
-    "placenta_praevia_after_26_weeks",
-  );
-  expect(after.relativeContraindications).toContain("symptomatic_anaemia");
+  expect(after.absoluteContraindications).toContain('placenta_praevia_after_26_weeks');
+  expect(after.relativeContraindications).toContain('symptomatic_anaemia');
   expect(after.contraindicationsConfirmedNone).toBe(false);
-  expect(runGates(baseProfile({ population: after }), r).status).toBe(
-    "blocked",
-  );
+  expect(runGates(baseProfile({ population: after }), r).status).toBe('blocked');
 });
-it("a health-answer update during a placenta-only check triggers full fresh confirmation", () => {
-  const draft = updatePregnancyReconfirmationDraft(
-      createPregnancyReconfirmationDraft(pop(25)),
-      { type: "week", week: 26 },
-    ),
+it('a health-answer update during a placenta-only check triggers full fresh confirmation', () => {
+  const draft = updatePregnancyReconfirmationDraft(createPregnancyReconfirmationDraft(pop(25)), {
+      type: 'week',
+      week: 26,
+    }),
     changed = updatePregnancyReconfirmationDraft(draft, {
-      type: "provider",
+      type: 'provider',
       answer: true,
     });
-  expect(changed.requiredKeys).toEqual([
-    ...pregnancyAbsoluteKeys,
-    ...pregnancyRelativeKeys,
-  ]);
+  expect(changed.requiredKeys).toEqual([...pregnancyAbsoluteKeys, ...pregnancyRelativeKeys]);
   expect(changed.answers).toEqual({});
-  expect(
-    pregnancyPopulationFromDraft(changed)?.lastScreenedWeek,
-  ).toBeUndefined();
+  expect(pregnancyPopulationFromDraft(changed)?.lastScreenedWeek).toBeUndefined();
 });
 it.each([
   [13, 12, 25],
   [26, 25, 1],
   [28, 27, 25],
-])(
-  "the real editor renders required pregnancy questions unknown at week%s after screening%s",
-  (week, last, count) => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date(at));
-    const p = baseProfile(),
-      html = renderToStaticMarkup(
-        createElement(EngineProfileEditor, {
-          locale: "en",
-          value: {
-            population: pop(week, last),
-            screening: p.screening,
-            healthStorageConsent: { acceptedAt: at },
-          },
-          onChange: () => {},
-        }),
-      ),
-      section = html.slice(
-        html.indexOf("Gestation week"),
-        html.indexOf("</fieldset>", html.indexOf("Gestation week")),
-      );
-    expect(section.match(/<option value="" selected="">/g) ?? []).toHaveLength(
-      count,
-    );
-  },
-);
-it("a resolved stop signal cannot reuse pre-signal pregnancy answers after only general CMR rescreening", async () => {
+])('the real editor renders required pregnancy questions unknown at week%s after screening%s', (week, last, count) => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date(at));
+  const p = baseProfile(),
+    html = renderToStaticMarkup(
+      createElement(EngineProfileEditor, {
+        locale: 'en',
+        value: {
+          population: pop(week, last),
+          screening: p.screening,
+          healthStorageConsent: { acceptedAt: at },
+        },
+        onChange: () => {},
+      }),
+    ),
+    section = html.slice(html.indexOf('Gestation week'), html.indexOf('</fieldset>', html.indexOf('Gestation week')));
+  expect(section.match(/<option value="" selected="">/g) ?? []).toHaveLength(count);
+});
+it('a resolved stop signal cannot reuse pre-signal pregnancy answers after only general CMR rescreening', async () => {
   const f = fixture(),
     facts = structuredClone(f.rows[0].sets);
-  await f.service.reportStop(id, ["headache"], 0);
+  await f.service.reportStop(id, ['headache'], 0);
   expect(f.state.coachProfile?.population).toMatchObject({
-    kind: "pregnant",
+    kind: 'pregnant',
     providerCleared: false,
     contraindicationsConfirmedNone: false,
   });
   expect(
-    f.state.coachProfile?.population?.kind === "pregnant" &&
-      f.state.coachProfile.population.lastScreenedWeek,
+    f.state.coachProfile?.population?.kind === 'pregnant' && f.state.coachProfile.population.lastScreenedWeek,
   ).toBeUndefined();
   f.fresh();
-  await expect(f.service.confirmProviderContacted(1)).rejects.toThrow(
-    "PREGNANCY_SCREENING_GATE_BLOCKED",
-  );
+  await expect(f.service.confirmProviderContacted(1)).rejects.toThrow('PREGNANCY_SCREENING_GATE_BLOCKED');
   expect(f.state.pregnancySafety?.providerPause).toBeDefined();
   const p = f.state.coachProfile!.population;
-  expect(p?.kind).toBe("pregnant");
-  if (!p || p.kind !== "pregnant") throw Error("Wrong test population");
+  expect(p?.kind).toBe('pregnant');
+  if (!p || p.kind !== 'pregnant') throw Error('Wrong test population');
   f.state.coachProfile!.population = pregnancyPopulationFromDraft(
     complete(createPregnancyReconfirmationDraft(p, true)),
   );
@@ -441,43 +384,37 @@ it("a resolved stop signal cannot reuse pre-signal pregnancy answers after only 
   expect(f.rows[0].sets).toEqual(facts);
 });
 
-it("a new pregnancy with unknown answers remains a blocked pregnancy context rather than disappearing into general training", () => {
-  const population = pregnancyPopulationFromDraft(
-    createPregnancyReconfirmationDraft(),
-  );
+it('a new pregnancy with unknown answers remains a blocked pregnancy context rather than disappearing into general training', () => {
+  const population = pregnancyPopulationFromDraft(createPregnancyReconfirmationDraft());
   expect(population).toMatchObject({
-    kind: "pregnant",
+    kind: 'pregnant',
     week: 13,
     providerCleared: false,
     contraindicationsConfirmedNone: false,
   });
-  expect(runGates(baseProfile({ population }), r).status).toBe("blocked");
+  expect(runGates(baseProfile({ population }), r).status).toBe('blocked');
 });
-it("a newly reported positive survives changing to another required pregnancy stage before the survey is complete", () => {
-  let draft = updatePregnancyReconfirmationDraft(
-    createPregnancyReconfirmationDraft(pop(12)),
-    { type: "week", week: 13 },
-  );
+it('a newly reported positive survives changing to another required pregnancy stage before the survey is complete', () => {
+  let draft = updatePregnancyReconfirmationDraft(createPregnancyReconfirmationDraft(pop(12)), {
+    type: 'week',
+    week: 13,
+  });
   draft = updatePregnancyReconfirmationDraft(draft, {
-    type: "contraindication",
-    key: "pre_eclampsia",
+    type: 'contraindication',
+    key: 'pre_eclampsia',
     answer: true,
   });
-  draft = updatePregnancyReconfirmationDraft(draft, { type: "week", week: 28 });
+  draft = updatePregnancyReconfirmationDraft(draft, { type: 'week', week: 28 });
   expect(draft.answers.pre_eclampsia).toBeUndefined();
-  expect(
-    pregnancyPopulationFromDraft(draft).absoluteContraindications,
-  ).toContain("pre_eclampsia");
-  expect(
-    pregnancyPopulationFromDraft(complete(draft)).absoluteContraindications,
-  ).toContain("pre_eclampsia");
+  expect(pregnancyPopulationFromDraft(draft).absoluteContraindications).toContain('pre_eclampsia');
+  expect(pregnancyPopulationFromDraft(complete(draft)).absoluteContraindications).toContain('pre_eclampsia');
 });
 
-it("reopening a partial below-threshold health update does not turn an unknown provider answer into a fabricated yes or no", () => {
+it('reopening a partial below-threshold health update does not turn an unknown provider answer into a fabricated yes or no', () => {
   let draft = createPregnancyReconfirmationDraft(pop(8));
   draft = updatePregnancyReconfirmationDraft(draft, {
-    type: "contraindication",
-    key: "pre_eclampsia",
+    type: 'contraindication',
+    key: 'pre_eclampsia',
     answer: true,
   });
   const saved = pregnancyPopulationFromDraft(draft);
@@ -485,7 +422,5 @@ it("reopening a partial below-threshold health update does not turn an unknown p
   const reopened = createPregnancyReconfirmationDraft(saved);
   expect(reopened.provider).toBeUndefined();
   expect(reopened.answers).toEqual({});
-  expect(
-    pregnancyPopulationFromDraft(reopened).absoluteContraindications,
-  ).toContain("pre_eclampsia");
+  expect(pregnancyPopulationFromDraft(reopened).absoluteContraindications).toContain('pre_eclampsia');
 });

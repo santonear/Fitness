@@ -1,16 +1,79 @@
-import {it,expect} from 'vitest';
-import {Rules,balanceStageEligible} from '../../../src/engine/data';
-import {runGates} from '../../../src/engine/gates';
-import {isHardEligible} from '../../../src/engine/candidates';
-import {generatePlan} from '../../../src/engine';
-import {baseProfile} from '../../../tools/eval/training-engine-profiles';
+import { it, expect } from 'vitest';
+import { Rules, balanceStageEligible } from '../../../src/engine/data';
+import { runGates } from '../../../src/engine/gates';
+import { isHardEligible } from '../../../src/engine/candidates';
+import { generatePlan } from '../../../src/engine';
+import { baseProfile } from '../../../tools/eval/training-engine-profiles';
 import balance from '../../../data/training-engine/balance-annotations.json';
 import annotations from '../../../data/training-engine/custom-annotations.json';
 import custom from '../../../src/catalog/custom-exercises.json';
-const r=new Rules(),wide=()=>r.data.exercises.find(e=>e.slug==='custom-supported-wide-static-stand')!;
-const profile=()=>baseProfile({birthYearMonth:'1956-01',population:{kind:'older_adult',fallsAnswers:[false,false,false,false]},daysPerWeek:3});
-it('source stage one has an actual wide static continuously supported catalog exercise',()=>{const e=wide();expect(e.balance).toEqual({base:'wide',mode:'static',hand_support:true});expect(balanceStageEligible(e,1,r)).toBe(true);const catalog=custom.find(v=>v.id===e.id)!;expect(catalog.steps.en[0]).toContain('throughout');expect(catalog.steps.en[1]).toContain('both feet grounded');});
-it('stage cap never guesses missing facts and matches complete source tuples',()=>{const e=wide();expect(balanceStageEligible({...e,balance:undefined},1,r)).toBe(false);for(const fact of [{base:'single_leg',mode:'static',hand_support:true},{base:'wide',mode:'dynamic',hand_support:true},{base:'wide',mode:'static',hand_support:false}] as const)expect(balanceStageEligible({...e,balance:fact},1,r)).toBe(false);const tandem=r.data.exercises.find(e=>e.slug==='custom-supported-tandem-stand')!;expect(balanceStageEligible(tandem,1,r)).toBe(false);expect(balanceStageEligible(tandem,2,r)).toBe(true);expect(balanceStageEligible(wide(),3,r)).toBe(true);const tree=r.data.exercises.find(e=>e.slug==='tree-pose')!;expect(balanceStageEligible(tree,2,r)).toBe(false);expect(balanceStageEligible(tree,3,r)).toBe(true);const supportedSingle=r.data.exercises.find(e=>e.slug==='custom-wall-supported-single-leg-stand')!;expect(balanceStageEligible(supportedSingle,3,r)).toBe(false);});
-it('older initial and cautious stage caps keep the new source stage while preserving all equipment hard constraints',()=>{const p=profile(),g=runGates(p,r);expect(isHardEligible(wide(),p,g,{rules:r})).toBe(true);const noSupport={...p,place:'outdoor' as const,equipment:['none'] as typeof p.equipment,householdSupport:false};expect(isHardEligible(wide(),noSupport,runGates(noSupport,r),{rules:r})).toBe(false);p.olderSafety={balanceStage:3};p.population={kind:'older_adult',fallsAnswers:[true,false,false,false]};expect(runGates(p,r).restrictions.user.balance_stage).toBe(2);});
-it('step evidence drift requires re-review rather than silently accepting old balance metadata',async()=>{const toolPath='../../../tools/training-engine/compile-annotations.ts';const {validateBalanceAnnotations,validateAnnotations}=await import(toolPath);const row=balance.find(v=>v.slug===wide().slug)!;const changed=structuredClone(custom);changed.find(v=>v.slug===wide().slug)!.steps.en[0]='Changed';expect(()=>validateBalanceAnnotations([row],[],validateAnnotations(annotations),changed)).toThrow('Balance source changed');});
-it('real three-day older generation fills verified stage-one balance without extra actions',()=>{const p=profile(),plan=generatePlan(p);for(const t of plan.templates){const items=t.items.filter(i=>r.byExercise.get(i.exerciseId)?.primary_pattern==='balance');expect(items.length).toBeGreaterThan(0);expect(items.every(i=>balanceStageEligible(r.byExercise.get(i.exerciseId)!,1,r))).toBe(true);}expect(plan.templates.length).toBe(3);});
+const r = new Rules(),
+  wide = () => r.data.exercises.find(e => e.slug === 'custom-supported-wide-static-stand')!;
+const profile = () =>
+  baseProfile({
+    birthYearMonth: '1956-01',
+    population: { kind: 'older_adult', fallsAnswers: [false, false, false, false] },
+    daysPerWeek: 3,
+  });
+it('source stage one has an actual wide static continuously supported catalog exercise', () => {
+  const e = wide();
+  expect(e.balance).toEqual({ base: 'wide', mode: 'static', hand_support: true });
+  expect(balanceStageEligible(e, 1, r)).toBe(true);
+  const catalog = custom.find(v => v.id === e.id)!;
+  expect(catalog.steps.en[0]).toContain('throughout');
+  expect(catalog.steps.en[1]).toContain('both feet grounded');
+});
+it('stage cap never guesses missing facts and matches complete source tuples', () => {
+  const e = wide();
+  expect(balanceStageEligible({ ...e, balance: undefined }, 1, r)).toBe(false);
+  for (const fact of [
+    { base: 'single_leg', mode: 'static', hand_support: true },
+    { base: 'wide', mode: 'dynamic', hand_support: true },
+    { base: 'wide', mode: 'static', hand_support: false },
+  ] as const)
+    expect(balanceStageEligible({ ...e, balance: fact }, 1, r)).toBe(false);
+  const tandem = r.data.exercises.find(e => e.slug === 'custom-supported-tandem-stand')!;
+  expect(balanceStageEligible(tandem, 1, r)).toBe(false);
+  expect(balanceStageEligible(tandem, 2, r)).toBe(true);
+  expect(balanceStageEligible(wide(), 3, r)).toBe(true);
+  const tree = r.data.exercises.find(e => e.slug === 'tree-pose')!;
+  expect(balanceStageEligible(tree, 2, r)).toBe(false);
+  expect(balanceStageEligible(tree, 3, r)).toBe(true);
+  const supportedSingle = r.data.exercises.find(e => e.slug === 'custom-wall-supported-single-leg-stand')!;
+  expect(balanceStageEligible(supportedSingle, 3, r)).toBe(false);
+});
+it('older initial and cautious stage caps keep the new source stage while preserving all equipment hard constraints', () => {
+  const p = profile(),
+    g = runGates(p, r);
+  expect(isHardEligible(wide(), p, g, { rules: r })).toBe(true);
+  const noSupport = {
+    ...p,
+    place: 'outdoor' as const,
+    equipment: ['none'] as typeof p.equipment,
+    householdSupport: false,
+  };
+  expect(isHardEligible(wide(), noSupport, runGates(noSupport, r), { rules: r })).toBe(false);
+  p.olderSafety = { balanceStage: 3 };
+  p.population = { kind: 'older_adult', fallsAnswers: [true, false, false, false] };
+  expect(runGates(p, r).restrictions.user.balance_stage).toBe(2);
+});
+it('step evidence drift requires re-review rather than silently accepting old balance metadata', async () => {
+  const toolPath = '../../../tools/training-engine/compile-annotations.ts';
+  const { validateBalanceAnnotations, validateAnnotations } = await import(toolPath);
+  const row = balance.find(v => v.slug === wide().slug)!;
+  const changed = structuredClone(custom);
+  changed.find(v => v.slug === wide().slug)!.steps.en[0] = 'Changed';
+  expect(() => validateBalanceAnnotations([row], [], validateAnnotations(annotations), changed)).toThrow(
+    'Balance source changed',
+  );
+});
+it('real three-day older generation fills verified stage-one balance without extra actions', () => {
+  const p = profile(),
+    plan = generatePlan(p);
+  for (const t of plan.templates) {
+    const items = t.items.filter(i => r.byExercise.get(i.exerciseId)?.primary_pattern === 'balance');
+    expect(items.length).toBeGreaterThan(0);
+    expect(items.every(i => balanceStageEligible(r.byExercise.get(i.exerciseId)!, 1, r))).toBe(true);
+  }
+  expect(plan.templates.length).toBe(3);
+});

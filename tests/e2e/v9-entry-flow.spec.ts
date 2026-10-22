@@ -1,12 +1,26 @@
 import { expect, test } from '@playwright/test';
 import { answerTexts, engineSafety, nextButton, startOnboarding, weeklySchedule } from './helpers/onboarding-v9';
-import {homeStart} from './helpers/home-start';
+import { homeStart } from './helpers/home-start';
 
 test.setTimeout(90000);
 test('fresh user: welcome → tap onboarding → one-question health check → plan applied → home', async ({ page }) => {
-  await page.route('**/api/v1/features', route => route.fulfill({ json: { version: 1, flags: { trainingEngine: true, bodyProfile: true, planLifecycle: true }, expiresAt: Date.now() + 3600000 } }));
-  await page.route('**/api/v1/trial/access-status', route => route.fulfill({ json: { qualification: 'none', sessionValid: false, aiEnabled: false } }));
-  let modelCalls = 0; await page.route('**/api/v1/assistant/**', route => { modelCalls++; return route.abort(); });
+  await page.route('**/api/v1/features', route =>
+    route.fulfill({
+      json: {
+        version: 1,
+        flags: { trainingEngine: true, bodyProfile: true, planLifecycle: true },
+        expiresAt: Date.now() + 3600000,
+      },
+    }),
+  );
+  await page.route('**/api/v1/trial/access-status', route =>
+    route.fulfill({ json: { qualification: 'none', sessionValid: false, aiEnabled: false } }),
+  );
+  let modelCalls = 0;
+  await page.route('**/api/v1/assistant/**', route => {
+    modelCalls++;
+    return route.abort();
+  });
   await page.setViewportSize({ width: 390, height: 844 });
   const started = Date.now();
   await page.goto('/');
@@ -16,7 +30,10 @@ test('fresh user: welcome → tap onboarding → one-question health check → p
   await page.getByRole('button', { name: '开始', exact: true }).click();
   // Tap choices: the selected suggestion is marked selected, not left as a placeholder.
   await page.getByRole('radio', { name: '想有些力量，不再容易累', exact: true }).click();
-  await expect(page.getByRole('radio', { name: '想有些力量，不再容易累', exact: true })).toHaveAttribute('aria-checked', 'true');
+  await expect(page.getByRole('radio', { name: '想有些力量，不再容易累', exact: true })).toHaveAttribute(
+    'aria-checked',
+    'true',
+  );
   await expect(page.locator('textarea')).toHaveCount(0);
   await nextButton(page).click();
   await page.getByLabel('说说你的身体情况').fill('女，34岁，165厘米，60公斤');
@@ -40,7 +57,8 @@ test('fresh user: welcome → tap onboarding → one-question health check → p
   expect(await page.locator('.v9-plan-tip').count()).toBeLessThanOrEqual(1);
   await expect(page.getByText('基础计划', { exact: true })).toHaveCount(0);
   await expect(page.getByText('开启 AI 后可以得到更贴合的计划')).toHaveCount(0);
-  await page.getByRole('button', { name: '就用这份计划', exact: true }).click(); await page.getByRole('button', { name: '先不写', exact: true }).click();
+  await page.getByRole('button', { name: '就用这份计划', exact: true }).click();
+  await page.getByRole('button', { name: '先不写', exact: true }).click();
   // Home: applied feedback, today's session first, start before the status check.
   await expect(page.getByRole('heading', { name: '今天', exact: true })).toBeVisible();
   await expect(page.getByRole('status').filter({ hasText: '计划已经用上了' })).toBeVisible();

@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import registry from '../../src/catalog/generated/registry.json' with { type: 'json' };
 import customCatalog from '../../src/catalog/custom-exercises.json' with { type: 'json' };
-import { MUSCLE_GROUPS, MUSCLE_GROUP_NAMES, muscleGroupOf, DEFAULT_HOME_PANEL_STYLE } from '../../src/domain/plan-upgrade';
+import {
+  MUSCLE_GROUPS,
+  MUSCLE_GROUP_NAMES,
+  muscleGroupOf,
+  DEFAULT_HOME_PANEL_STYLE,
+} from '../../src/domain/plan-upgrade';
 
 type Row = { primaryMuscles?: string[]; secondaryMuscles?: string[] };
 

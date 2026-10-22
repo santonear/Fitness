@@ -2,7 +2,9 @@ import type { Plan, PlanVersion, WorkoutSession } from '../models';
 
 /** Keep plan identities separate. Ranking never rewrites the legacy plan or session. */
 export function selectLegacyCurrentPlan(
-  plans: readonly Plan[], versions: readonly PlanVersion[], sessions: readonly WorkoutSession[],
+  plans: readonly Plan[],
+  versions: readonly PlanVersion[],
+  sessions: readonly WorkoutSession[],
 ): Plan | undefined {
   const planByVersion = new Map(versions.map(version => [version.id, version.planId]));
   const latest = new Map<string, number>();
@@ -15,13 +17,16 @@ export function selectLegacyCurrentPlan(
     if (!latest.has(planId) || started > latest.get(planId)!) latest.set(planId, started);
   }
   const priority = (plan: Plan) => Number(plan.status === 'active' || inProgress.has(plan.id));
-  const compareText = (left: string, right: string) => left < right ? -1 : left > right ? 1 : 0;
-  return [...plans].filter(plan => !plan.deletedAt).sort((left, right) =>
-    priority(right) - priority(left)
-    || (latest.get(right.id) ?? -Infinity) - (latest.get(left.id) ?? -Infinity)
-    || Date.parse(right.createdAt) - Date.parse(left.createdAt)
-    || compareText(left.id, right.id),
-  )[0];
+  const compareText = (left: string, right: string) => (left < right ? -1 : left > right ? 1 : 0);
+  return [...plans]
+    .filter(plan => !plan.deletedAt)
+    .sort(
+      (left, right) =>
+        priority(right) - priority(left) ||
+        (latest.get(right.id) ?? -Infinity) - (latest.get(left.id) ?? -Infinity) ||
+        Date.parse(right.createdAt) - Date.parse(left.createdAt) ||
+        compareText(left.id, right.id),
+    )[0];
 }
 
 /** Undefined means excluded from duration statistics; the original timestamps stay untouched. */

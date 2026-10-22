@@ -1,15 +1,6 @@
-import { z } from "zod";
-import type {
-  PlannedItem,
-  SessionTemplate,
-  WorkoutRecord,
-} from "../../domain/v8/contracts";
-import {
-  nonnegative,
-  type Pattern,
-  type Caution,
-  type EngineProfile,
-} from "./profile";
+import { z } from 'zod';
+import type { PlannedItem, SessionTemplate, WorkoutRecord } from '../../domain/v8/contracts';
+import { nonnegative, type Pattern, type Caution, type EngineProfile } from './profile';
 import {
   bilingualSchema,
   type RuleTrace,
@@ -17,9 +8,9 @@ import {
   type GateResult,
   type EnginePlan,
   type ValidationIssue,
-} from "./plan";
+} from './plan';
 export const changeSchema = z.strictObject({
-  kind: z.enum(["add", "remove", "replace", "volume", "duration", "frequency"]),
+  kind: z.enum(['add', 'remove', 'replace', 'volume', 'duration', 'frequency']),
   templateId: z.string().optional(),
   itemIndex: nonnegative.optional(),
   before: z.unknown().optional(),
@@ -36,14 +27,7 @@ export interface EngineResult<T> {
   gates: GateResult[];
 }
 export const engineChangeSchema = z.strictObject({
-  op: z.enum([
-    "replace",
-    "add",
-    "remove",
-    "set_volume",
-    "shorten",
-    "frequency",
-  ]),
+  op: z.enum(['replace', 'add', 'remove', 'set_volume', 'shorten', 'frequency']),
   templateId: z.string().optional(),
   itemIndex: z.number().int().nonnegative().optional(),
   exerciseId: z.string().optional(),
@@ -58,17 +42,12 @@ export const engineChangeSchema = z.strictObject({
 export type EngineChange = z.infer<typeof engineChangeSchema>;
 export interface AdjustTodayRequest {
   minutes?: number;
-  focus?: "upper" | "lower" | "full" | "core" | "mobility";
+  focus?: 'upper' | 'lower' | 'full' | 'core' | 'mobility';
   avoidPatterns?: Pattern[];
   painArea?: Caution;
   lockedItemIndexes?: number[];
 }
-export type SubstituteReason =
-  | "equipment"
-  | "pain"
-  | "dislike"
-  | "too_hard"
-  | "too_easy";
+export type SubstituteReason = 'equipment' | 'pain' | 'dislike' | 'too_hard' | 'too_easy';
 export interface ProgressionResult extends EngineResult<EnginePlan> {
   suggestions: {
     templateId: string;
@@ -103,25 +82,13 @@ export interface EngineApi {
     profile: EngineProfile,
     req: AdjustTodayRequest,
   ): EngineResult<SessionTemplate>;
-  modifyPlan(
-    plan: EnginePlan,
-    profile: EngineProfile,
-    changes: EngineChange[],
-  ): EngineResult<EnginePlan>;
-  substitute(
-    item: PlannedItem,
-    profile: EngineProfile,
-    reason: SubstituteReason,
-  ): EngineResult<PlannedItem>;
+  modifyPlan(plan: EnginePlan, profile: EngineProfile, changes: EngineChange[]): EngineResult<EnginePlan>;
+  substitute(item: PlannedItem, profile: EngineProfile, reason: SubstituteReason): EngineResult<PlannedItem>;
   nextTargets(
     history: WorkoutRecord[],
     plan: EnginePlan,
     profile: EngineProfile,
     options?: { checkin?: EngineCheckin; templateId?: string },
   ): ProgressionResult;
-  validatePlan(
-    plan: EnginePlan,
-    profile: EngineProfile,
-    context?: EngineValidationContext,
-  ): ValidationIssue[];
+  validatePlan(plan: EnginePlan, profile: EngineProfile, context?: EngineValidationContext): ValidationIssue[];
 }

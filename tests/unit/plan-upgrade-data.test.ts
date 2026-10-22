@@ -15,44 +15,87 @@ const fixture = (name: string) => JSON.parse(readFileSync(new URL(name, director
 const newTables = ['fitnessTests', 'journeys', 'futureLetters'];
 
 async function freshService() {
-  const db = createDatabase(`plan-upgrade-${crypto.randomUUID()}`), repo = createRepository(db);
+  const db = createDatabase(`plan-upgrade-${crypto.randomUUID()}`),
+    repo = createRepository(db);
   await createProfileService(repo).initialize('zh');
   return { db, repo, store: createPlanUpgradeStore(repo), backup: createBackupService(repo) };
 }
 async function restore(service: Awaited<ReturnType<typeof freshService>>, envelope: unknown) {
   const file = new File([JSON.stringify(envelope)], 'backup.json', { type: 'application/json' });
   const validated = await service.backup.validateBackup(file);
-  await service.backup.importBackup(validated, { backupExported: true, replacementConfirmed: true, expectedRevision: validated.expectedRevision });
+  await service.backup.importBackup(validated, {
+    backupExported: true,
+    replacementConfirmed: true,
+    expectedRevision: validated.expectedRevision,
+  });
 }
 async function dump(db: Dexie, skip: string[] = []) {
-  return Object.fromEntries(await Promise.all(db.tables.filter(table => !skip.includes(table.name)).map(async table => [table.name, await table.toArray()] as const)));
+  return Object.fromEntries(
+    await Promise.all(
+      db.tables
+        .filter(table => !skip.includes(table.name))
+        .map(async table => [table.name, await table.toArray()] as const),
+    ),
+  );
 }
 
 /** Seeds a real export into a DB 20 store layout, then opens it with the current model. */
 async function upgradeFromV20(rows: Record<string, unknown[]>, fail = false) {
-  const name = `plan-upgrade-${crypto.randomUUID()}`, model = createDatabase(name);
-  const stores = Object.fromEntries(model.tables.filter(table => !newTables.includes(table.name))
-    .map(table => [table.name, [table.schema.primKey.src, ...table.schema.indexes.map(index => index.src)].join(',')]));
-  const old = new Dexie(name); old.version(20).stores(stores); await old.open();
+  const name = `plan-upgrade-${crypto.randomUUID()}`,
+    model = createDatabase(name);
+  const stores = Object.fromEntries(
+    model.tables
+      .filter(table => !newTables.includes(table.name))
+      .map(table => [
+        table.name,
+        [table.schema.primKey.src, ...table.schema.indexes.map(index => index.src)].join(','),
+      ]),
+  );
+  const old = new Dexie(name);
+  old.version(20).stores(stores);
+  await old.open();
   for (const table of old.tables) if (rows[table.name]?.length) await table.bulkAdd(rows[table.name]);
-  const before = await dump(old); old.close();
-  if (fail) model.metadata.hook('updating', () => { throw Error('injected upgrade failure'); });
+  const before = await dump(old);
+  old.close();
+  if (fail)
+    model.metadata.hook('updating', () => {
+      throw Error('injected upgrade failure');
+    });
   let rejected = false;
-  try { await model.open(); } catch { rejected = true; }
+  try {
+    await model.open();
+  } catch {
+    rejected = true;
+  }
   model.close();
-  if (fail) { await old.open(); const after = await dump(old); const version = old.verno; old.close(); await Dexie.delete(name); return { rejected, before, after, version }; }
+  if (fail) {
+    await old.open();
+    const after = await dump(old);
+    const version = old.verno;
+    old.close();
+    await Dexie.delete(name);
+    return { rejected, before, after, version };
+  }
   await model.open();
   const after = await dump(model);
-  const version = model.verno; model.close(); await Dexie.delete(name);
+  const version = model.verno;
+  model.close();
+  await Dexie.delete(name);
   return { rejected, before, after, version };
 }
 function v20Rows() {
-  const source = fixture('v8-main-pre-engine.json'), data = source.data;
+  const source = fixture('v8-main-pre-engine.json'),
+    data = source.data;
   return {
     ...data,
     metadata: [{ ...data.metadata, schemaVersion: 20, assistantScheduleRecoveryV2At: '2026-10-20T00:00:00.000Z' }],
-    trainingMemo: [data.trainingMemo], v8State: [data.v8.state], v8Plans: data.v8.plans, v8PlanVersions: data.v8.planVersions,
-    v8Workouts: data.v8.workouts, v8Activities: data.v8.activities, v8PlanReferences: data.v8.planReferences ?? [],
+    trainingMemo: [data.trainingMemo],
+    v8State: [data.v8.state],
+    v8Plans: data.v8.plans,
+    v8PlanVersions: data.v8.planVersions,
+    v8Workouts: data.v8.workouts,
+    v8Activities: data.v8.activities,
+    v8PlanReferences: data.v8.planReferences ?? [],
   } as Record<string, unknown[]>;
 }
 
@@ -70,11 +113,14 @@ describe('DB 21 plan upgrade (V9.14)', () => {
     expect(first.before.v8PlanVersions.length).toBeGreaterThan(0);
     expect(first.before.bodyWeights.length).toBeGreaterThan(0);
     for (const table of newTables) expect(first.after[table]).toEqual([]);
-    const { metadata: beforeMeta, ...beforeRest } = first.before, { metadata: afterMeta, ...afterRest } = first.after;
+    const { metadata: beforeMeta, ...beforeRest } = first.before,
+      { metadata: afterMeta, ...afterRest } = first.after;
     for (const [table, rows] of Object.entries(beforeRest)) expect(afterRest[table], table).toEqual(rows);
     expect(afterMeta).toEqual([{ ...(beforeMeta[0] as object), schemaVersion: 21 }]);
     // Running the upgrade again over its own result changes nothing.
-    const rerun = Object.fromEntries(Object.entries(first.after).filter(([table]) => !newTables.includes(table))) as Record<string, unknown[]>;
+    const rerun = Object.fromEntries(
+      Object.entries(first.after).filter(([table]) => !newTables.includes(table)),
+    ) as Record<string, unknown[]>;
     const second = await upgradeFromV20(rerun);
     expect(second.after).toEqual(first.after);
   });
@@ -90,7 +136,9 @@ describe('DB 21 plan upgrade (V9.14)', () => {
     const files = readdirSync(directory).filter(name => name.endsWith('.json') && !name.includes('manifest'));
     expect(files.length).toBeGreaterThan(10);
     for (const name of files) {
-      const service = await freshService(), source = fixture(name), before = JSON.stringify(source);
+      const service = await freshService(),
+        source = fixture(name),
+        before = JSON.stringify(source);
       await restore(service, source);
       expect(JSON.stringify(source), name).toBe(before);
       expect((await service.repo.readMetadata()).schemaVersion).toBe(DATABASE_VERSION);
@@ -99,7 +147,8 @@ describe('DB 21 plan upgrade (V9.14)', () => {
       const again = JSON.parse(await (await service.backup.exportBackup()).text());
       expect(again.schemaVersion).toBe(BACKUP_VERSION);
       expect(validateBackupEnvelope(again).data.sessions, name).toEqual(validateBackupEnvelope(source).data.sessions);
-      service.db.close(); await Dexie.delete(service.db.name);
+      service.db.close();
+      await Dexie.delete(service.db.name);
     }
   }, 120_000);
 
@@ -113,17 +162,25 @@ describe('DB 21 plan upgrade (V9.14)', () => {
   });
 
   it('setWeeklyBudget creates a new plan version and never edits the previous one', async () => {
-    const service = await freshService(), { store, db } = service;
+    const service = await freshService(),
+      { store, db } = service;
     await restore(service, fixture('v8-main-pre-engine.json'));
     const planId = (await db.v8State.get('v8'))!.currentPlanId!;
-    const plan = (await db.v8Plans.get(planId))!, previous = (await db.v8PlanVersions.get(plan.currentVersionId))!;
+    const plan = (await db.v8Plans.get(planId))!,
+      previous = (await db.v8PlanVersions.get(plan.currentVersionId))!;
     expect(await store.weeklyBudget(planId)).toBeUndefined();
     const count = await db.v8PlanVersions.count();
     await store.setWeeklyBudget(planId, { mode: 'budget', minutesPerWeek: 120 });
-    const updated = (await db.v8Plans.get(planId))!, created = (await db.v8PlanVersions.get(updated.currentVersionId))!;
+    const updated = (await db.v8Plans.get(planId))!,
+      created = (await db.v8PlanVersions.get(updated.currentVersionId))!;
     expect(await db.v8PlanVersions.count()).toBe(count + 1);
     expect(await db.v8PlanVersions.get(previous.id)).toEqual(previous);
-    expect(created).toMatchObject({ versionNumber: previous.versionNumber + 1, basedOnVersionId: previous.id, weeklyBudget: { mode: 'budget', minutesPerWeek: 120 }, templates: previous.templates });
+    expect(created).toMatchObject({
+      versionNumber: previous.versionNumber + 1,
+      basedOnVersionId: previous.id,
+      weeklyBudget: { mode: 'budget', minutesPerWeek: 120 },
+      templates: previous.templates,
+    });
     expect(await store.weeklyBudget(planId)).toEqual({ mode: 'budget', minutesPerWeek: 120 });
     await store.setWeeklyBudget(planId, { mode: 'budget', minutesPerWeek: 120 });
     expect(await db.v8PlanVersions.count()).toBe(count + 1);
@@ -132,24 +189,37 @@ describe('DB 21 plan upgrade (V9.14)', () => {
 
   it('keeps fitness tests read-only and journeys versioned', async () => {
     const { store, db } = await freshService();
-    const test = (await store.addFitnessTest({ localDate: '2026-10-21', results: { pushup: 12, sitAndReachCm: 8.5 } }))!;
+    const test = (await store.addFitnessTest({
+      localDate: '2026-10-21',
+      results: { pushup: 12, sitAndReachCm: 8.5 },
+    }))!;
     await expect(db.fitnessTests.put({ ...test, results: { pushup: 99 } })).rejects.toThrow();
     expect(await store.listFitnessTests()).toEqual([test]);
     await expect(store.addFitnessTest({ localDate: '2026-10-21', results: {} })).rejects.toThrow();
     const camps = [{ id: 'c1', title: '第一营地', metric: 'pushup' as const, start: 12, target: 20 }];
     const v1 = (await store.saveJourneyVersion({ route: 'health', destination: '爬山不喘', camps }))!;
-    const v2 = (await store.saveJourneyVersion({ route: 'shape', secondaryRoute: 'health', destination: '更有力气', camps }))!;
+    const v2 = (await store.saveJourneyVersion({
+      route: 'shape',
+      secondaryRoute: 'health',
+      destination: '更有力气',
+      camps,
+    }))!;
     expect([v1.version, v2.version]).toEqual([1, 2]);
     expect(await store.currentJourney()).toEqual(v2);
     expect(await db.journeys.get(v1.id)).toEqual(v1);
   });
 
   it('round-trips the new tables and optional fields through backup', async () => {
-    const source = await freshService(), { store } = source;
+    const source = await freshService(),
+      { store } = source;
     await restore(source, fixture('v8-main-pre-engine.json'));
     const planId = (await source.db.v8State.get('v8'))!.currentPlanId!;
     await store.addFitnessTest({ localDate: '2026-10-20', results: { chairStand30s: 15 } });
-    await store.saveJourneyVersion({ route: 'postpartum', destination: '抱娃不累', camps: [{ id: 'c1', title: '营地', metric: 'sessions', start: 0, target: 8 }] });
+    await store.saveJourneyVersion({
+      route: 'postpartum',
+      destination: '抱娃不累',
+      camps: [{ id: 'c1', title: '营地', metric: 'sessions', start: 0, target: 8 }],
+    });
     const letter = (await store.saveFutureLetter('  给到达第一营地的自己  ', 'c1'))!;
     expect(letter.text).toBe('给到达第一营地的自己');
     await store.markLetterOpened(letter.id);
@@ -167,7 +237,13 @@ describe('DB 21 plan upgrade (V9.14)', () => {
     expect(await target.store.homePanelStyle()).toBe('twin');
     expect(await target.store.weeklyBudget(planId)).toEqual({ mode: 'budget', setsPerGroupPerWeek: 10 });
     // Older envelopes may not carry the new data; letters must point at a saved camp.
-    expect(() => validateBackupEnvelope({ ...exported, schemaVersion: 18, data: { ...exported.data, metadata: { ...exported.data.metadata, schemaVersion: 20 } } })).toThrow();
+    expect(() =>
+      validateBackupEnvelope({
+        ...exported,
+        schemaVersion: 18,
+        data: { ...exported.data, metadata: { ...exported.data.metadata, schemaVersion: 20 } },
+      }),
+    ).toThrow();
     expect(exported.data.fitnessTests).toHaveLength(1);
     const letters = exported.data.futureLetters.map((row: object) => ({ ...row, openAtCampId: 'missing' }));
     expect(() => validateBackupEnvelope({ ...exported, data: { ...exported.data, futureLetters: letters } })).toThrow();

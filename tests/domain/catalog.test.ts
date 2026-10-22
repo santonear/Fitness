@@ -1,20 +1,34 @@
 import { describe, expect, it } from 'vitest';
 import { searchExercises, getExercise } from '../../src/catalog/catalog-service';
-import { metadataSchema, planDaySchema, plannedExerciseSchema, setMetricsSchema, setRecordSchema, trainingPreferencesSchema } from '../../src/domain/schemas';
+import {
+  metadataSchema,
+  planDaySchema,
+  plannedExerciseSchema,
+  setMetricsSchema,
+  setRecordSchema,
+  trainingPreferencesSchema,
+} from '../../src/domain/schemas';
 
 describe('exercise catalogue', () => {
-  it.each(['strength', 'cardio', 'bodyweight'] as const)('offers usable %s exercises', (category) => {
+  it.each(['strength', 'cardio', 'bodyweight'] as const)('offers usable %s exercises', category => {
     const results = searchExercises('', 'en', { category });
     expect(results.length).toBeGreaterThan(0);
-    expect(results.every((exercise) => exercise.category === category && exercise.steps.en.length > 0 && exercise.steps.zh.length > 0)).toBe(true);
+    expect(
+      results.every(
+        exercise => exercise.category === category && exercise.steps.en.length > 0 && exercise.steps.zh.length > 0,
+      ),
+    ).toBe(true);
   });
   it('searches both languages and respects equipment filters', () => {
-    expect(searchExercises('深蹲', 'en', {}).map((item) => item.name.en)).toContain('Bodyweight squat');
-    expect(searchExercises('SQUAT', 'zh', { equipment: 'none' }).map((item) => item.name.zh)).toContain('徒手深蹲');
-    expect(searchExercises('squat', 'en', { equipment: 'dumbbell' }).map((item) => item.name.en)).toContain('Goblet squat');
+    expect(searchExercises('深蹲', 'en', {}).map(item => item.name.en)).toContain('Bodyweight squat');
+    expect(searchExercises('SQUAT', 'zh', { equipment: 'none' }).map(item => item.name.zh)).toContain('徒手深蹲');
+    expect(searchExercises('squat', 'en', { equipment: 'dumbbell' }).map(item => item.name.en)).toContain(
+      'Goblet squat',
+    );
   });
   it('filters every expanded result by equipment', () => {
-    for (const equipment of ['none', 'dumbbell', 'barbell'] as const) expect(searchExercises('squat', 'en', { equipment }).every(item => item.equipment === equipment)).toBe(true);
+    for (const equipment of ['none', 'dumbbell', 'barbell'] as const)
+      expect(searchExercises('squat', 'en', { equipment }).every(item => item.equipment === equipment)).toBe(true);
   });
   it('rejects unknown exercise IDs', () => {
     expect(() => getExercise('unknown')).toThrow();
@@ -25,20 +39,27 @@ describe('persisted training conditions and plan calendar contracts', () => {
   const updatedAt = '2026-10-03T00:00:00Z';
   it('retains exercise preferences, training location and selected weekdays', () => {
     const conditions = {
-      updatedAt, exercisePreferences: ['strength', 'bodyweight'], trainingLocation: 'home',
-      daysPerWeek: 3, trainingWeekdays: [1, 3, 7],
+      updatedAt,
+      exercisePreferences: ['strength', 'bodyweight'],
+      trainingLocation: 'home',
+      daysPerWeek: 3,
+      trainingWeekdays: [1, 3, 7],
     };
     expect(trainingPreferencesSchema.parse(conditions)).toEqual(conditions);
     expect(trainingPreferencesSchema.safeParse({ updatedAt }).success).toBe(true);
   });
   it.each([
-    { trainingWeekdays: [0] }, { trainingWeekdays: [8] }, { trainingWeekdays: [1, 1] },
-    { trainingWeekdays: [1.5] }, { trainingWeekdays: [1, 3] },
+    { trainingWeekdays: [0] },
+    { trainingWeekdays: [8] },
+    { trainingWeekdays: [1, 1] },
+    { trainingWeekdays: [1.5] },
+    { trainingWeekdays: [1, 3] },
   ])('rejects invalid or inconsistent selected weekdays %j', ({ trainingWeekdays }) => {
     expect(trainingPreferencesSchema.safeParse({ updatedAt, daysPerWeek: 1, trainingWeekdays }).success).toBe(false);
   });
   const exercise = {
-    exerciseId: 'd16325d9-fc00-4c41-88a1-000000000003', order: 0,
+    exerciseId: 'd16325d9-fc00-4c41-88a1-000000000003',
+    order: 0,
     targetSets: [{ metricType: 'reps', reps: 8 }],
   };
   it('accepts week 12 and Sunday 7 while rejecting zero-based and out-of-range days', () => {
@@ -60,10 +81,19 @@ describe('metric boundaries', () => {
 
 describe('stored record contracts', () => {
   const entity = {
-    id: '76e6310c-9ee6-48bc-a016-100000000001', createdAt: '2026-10-03T00:00:00Z',
-    updatedAt: '2026-10-03T00:00:00Z', revision: 0,
+    id: '76e6310c-9ee6-48bc-a016-100000000001',
+    createdAt: '2026-10-03T00:00:00Z',
+    updatedAt: '2026-10-03T00:00:00Z',
+    revision: 0,
   };
-  const set = { ...entity, sessionId: entity.id, exerciseInstanceId: entity.id, order: 0, metricType: 'reps', completed: false };
+  const set = {
+    ...entity,
+    sessionId: entity.id,
+    exerciseInstanceId: entity.id,
+    order: 0,
+    metricType: 'reps',
+    completed: false,
+  };
   it('permits an unfinished empty set but rejects completing it', () => {
     expect(setRecordSchema.safeParse(set).success).toBe(true);
     expect(setRecordSchema.safeParse({ ...set, completed: true }).success).toBe(false);
@@ -77,6 +107,12 @@ describe('stored record contracts', () => {
     expect(metadataSchema.safeParse({ ...metadata, dataRevision: 0.5 }).success).toBe(false);
   });
   it('rejects a well formed but unknown catalogue reference', () => {
-    expect(plannedExerciseSchema.safeParse({ exerciseId: entity.id, order: 0, targetSets: [{ metricType: 'reps', reps: 8 }] }).success).toBe(false);
+    expect(
+      plannedExerciseSchema.safeParse({
+        exerciseId: entity.id,
+        order: 0,
+        targetSets: [{ metricType: 'reps', reps: 8 }],
+      }).success,
+    ).toBe(false);
   });
 });

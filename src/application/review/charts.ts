@@ -3,11 +3,23 @@ import { addDays, todayIn, weekStart } from '../../domain/local-date';
 
 /** Read-only chart projection for the V9 review and finish screens. Never writes or infers facts. */
 export interface ChartWorkout {
-  id: string; startedAt: string; endedAt?: string; localDate?: string;
-  status: string; sets: readonly { reps?: number; loadGrams?: number | null; durationSeconds?: number }[];
+  id: string;
+  startedAt: string;
+  endedAt?: string;
+  localDate?: string;
+  status: string;
+  sets: readonly { reps?: number; loadGrams?: number | null; durationSeconds?: number }[];
 }
-interface ChartBucket { key: string; from: string; to: string }
-export interface ChartPoint extends ChartBucket { sessions: number; volumeKg: number; minutes: number }
+interface ChartBucket {
+  key: string;
+  from: string;
+  to: string;
+}
+export interface ChartPoint extends ChartBucket {
+  sessions: number;
+  volumeKg: number;
+  minutes: number;
+}
 export type ChartMetric = 'sessions' | 'volumeKg' | 'minutes';
 
 const moved = (row: ChartWorkout) => row.status === 'complete' || row.status === 'partial';
@@ -15,28 +27,52 @@ export { addDays as shiftDate, weekStart };
 
 export function dayOf(row: ChartWorkout, timeZone: string): string {
   const value = todayIn(timeZone, row.startedAt);
-  return /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : row.localDate ?? '';
+  return /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : (row.localDate ?? '');
 }
 /** Total lifted in kilograms: reps × load for loaded sets only. Bodyweight and timed sets add nothing. */
 export function volumeKg(row: ChartWorkout): number {
-  const grams = row.sets.reduce((sum, set) => sum + (typeof set.reps === 'number' && typeof set.loadGrams === 'number' && set.loadGrams > 0 ? set.reps * set.loadGrams : 0), 0);
+  const grams = row.sets.reduce(
+    (sum, set) =>
+      sum +
+      (typeof set.reps === 'number' && typeof set.loadGrams === 'number' && set.loadGrams > 0
+        ? set.reps * set.loadGrams
+        : 0),
+    0,
+  );
   return Math.round(grams / 100) / 10;
 }
 export const sessionMinutes = (row: ChartWorkout) => Math.round(workoutSeconds(row.startedAt, row.endedAt) / 60);
 
 /** Seven days starting at `from`. */
-export const dayBuckets = (from: string): ChartBucket[] => Array.from({ length: 7 }, (_, index) => { const day = addDays(from, index); return { key: day, from: day, to: day }; });
+export const dayBuckets = (from: string): ChartBucket[] =>
+  Array.from({ length: 7 }, (_, index) => {
+    const day = addDays(from, index);
+    return { key: day, from: day, to: day };
+  });
 /** Calendar weeks (Mon–Sun) overlapping [from, to]. */
 export function weekBuckets(from: string, to: string): ChartBucket[] {
   const result: ChartBucket[] = [];
-  for (let start = weekStart(from); start <= to; start = addDays(start, 7)) result.push({ key: start, from: start, to: addDays(start, 6) });
+  for (let start = weekStart(from); start <= to; start = addDays(start, 7))
+    result.push({ key: start, from: start, to: addDays(start, 6) });
   return result;
 }
-export function chartSeries(rows: readonly ChartWorkout[], buckets: readonly ChartBucket[], timeZone: string): ChartPoint[] {
+export function chartSeries(
+  rows: readonly ChartWorkout[],
+  buckets: readonly ChartBucket[],
+  timeZone: string,
+): ChartPoint[] {
   const unique = rows.filter(moved).filter((row, index, all) => all.findIndex(other => other.id === row.id) === index);
   return buckets.map(bucket => {
-    const inside = unique.filter(row => { const day = dayOf(row, timeZone); return day >= bucket.from && day <= bucket.to; });
-    return { ...bucket, sessions: inside.length, volumeKg: Math.round(inside.reduce((sum, row) => sum + volumeKg(row), 0) * 10) / 10, minutes: inside.reduce((sum, row) => sum + sessionMinutes(row), 0) };
+    const inside = unique.filter(row => {
+      const day = dayOf(row, timeZone);
+      return day >= bucket.from && day <= bucket.to;
+    });
+    return {
+      ...bucket,
+      sessions: inside.length,
+      volumeKg: Math.round(inside.reduce((sum, row) => sum + volumeKg(row), 0) * 10) / 10,
+      minutes: inside.reduce((sum, row) => sum + sessionMinutes(row), 0),
+    };
   });
 }
 

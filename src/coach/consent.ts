@@ -1,16 +1,31 @@
-import {engineHealthScope} from './engine-health';
+import { engineHealthScope } from './engine-health';
 import { confirmationFor } from '../domain/request-fingerprint';
 import { coachRequestSchema, type CoachRequest } from './contracts';
 
 /** Optional sensitive fields are absent, not empty placeholders, until selected. */
-export function coachScope(request: CoachRequest, includeBody = false, includeHistory = false, includeNutrition = false, includeHealth = false): CoachRequest {
-  const { body, history, nutrition, ...required } = engineHealthScope(request,includeHealth);
-  return coachRequestSchema.parse({ ...required, ...(includeBody && body ? { body } : {}), ...(includeHistory && history ? { history } : {}), ...(includeNutrition && nutrition ? {nutrition} : {}) });
+export function coachScope(
+  request: CoachRequest,
+  includeBody = false,
+  includeHistory = false,
+  includeNutrition = false,
+  includeHealth = false,
+): CoachRequest {
+  const { body, history, nutrition, ...required } = engineHealthScope(request, includeHealth);
+  return coachRequestSchema.parse({
+    ...required,
+    ...(includeBody && body ? { body } : {}),
+    ...(includeHistory && history ? { history } : {}),
+    ...(includeNutrition && nutrition ? { nutrition } : {}),
+  });
 }
 /** Shared by the home disclosure and its explicitly authorized panel send. */
-export function coachMessageScope(request:CoachRequest,message:string):CoachRequest{
-  const text=message.trim();
-  return coachScope({...request,...('instruction' in request&&text?{instruction:text}:{}),messages:text?[...request.messages.slice(-7),{role:'user',content:text}]:request.messages});
+export function coachMessageScope(request: CoachRequest, message: string): CoachRequest {
+  const text = message.trim();
+  return coachScope({
+    ...request,
+    ...('instruction' in request && text ? { instruction: text } : {}),
+    messages: text ? [...request.messages.slice(-7), { role: 'user', content: text }] : request.messages,
+  });
 }
 
 export async function approveCoachScope(request: CoachRequest): Promise<CoachRequest> {
@@ -20,6 +35,7 @@ export async function approveCoachScope(request: CoachRequest): Promise<CoachReq
 
 /** Complete actual payload for disclosure, including snapshot and conversation text. */
 export function coachScopeFields(request: CoachRequest) {
-  return Object.entries(request).filter(([key]) => key !== 'sendConfirmation')
+  return Object.entries(request)
+    .filter(([key]) => key !== 'sendConfirmation')
     .map(([key, value]) => ({ key, value: typeof value === 'string' ? value : JSON.stringify(value) }));
 }

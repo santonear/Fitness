@@ -1,13 +1,143 @@
-import {it,expect} from 'vitest';
-import {nextTargets,validatePlan} from '../../../src/engine';
-import type {EnginePlan} from '../../../src/engine/contracts';
-import type {WorkoutRecord} from '../../../src/domain/v8/contracts';
-import {baseProfile} from '../../../tools/eval/training-engine-profiles';
-const id='d16325d9-fc00-4c41-88a1-000000000001';
-function fixture(day='2026-10-14'){const p=baseProfile({level:'intermediate',trainingAgeWeeks:52,equipment:['none','dumbbell','kettlebell'],daysPerWeek:1,availableLoadsKg:{[id]:[10,10.1,10.5,11]}});const plan:EnginePlan={weeklyTarget:1,sessionMinutes:30,templates:[{id:'audit',name:'audit',estimatedMinutes:30,items:[{exerciseId:id,equipment:'dumbbell',sets:2,target:{metricType:'reps_load',reps:8,loadGrams:10000},prescription:{pattern:'squat',block:'main',rir:[3,4],restSeconds:90,structure:'straight'}}]}],meta:{engineVersion:'2.0.0',rulesVersion:'fixture',seed:'audit'},trace:[],notices:[],gates:[]};const history:WorkoutRecord[]=[{id:'actual',templateId:'audit',localDate:day,timeZone:'UTC',status:'complete',startedAt:day+'T08:00:00Z',endedAt:day+'T08:30:00Z',plannedSetCount:2,sets:[0,1].map(setIndex=>({exerciseId:id,itemIndex:0,setIndex,reps:8,loadGrams:10000,completedAt:day+'T08:20:00Z'})),setFeedbackEvents:[{id:'effort',exerciseId:id,itemIndex:0,setIndex:1,effort:'too_light',rir:1,createdAt:day+'T08:21:00Z'}]}];return {p,plan,history};}
-it('source novice load step waits for all working sets at rep maximum',()=>{const {p,plan,history}=fixture();p.level='beginner';p.trainingAgeWeeks=1;const out=nextTargets(history,plan,p),target=out.value.templates[0].items[0].target;expect(target.metricType).toBe('reps_load');if(target.metricType==='reps_load')expect(target.loadGrams).toBeLessThanOrEqual(10000);});
-it('source older load progression requires completed reps at RIR at least two',()=>{const {p,plan,history}=fixture();p.birthYearMonth='1956-01';p.population={kind:'older_adult',fallsAnswers:[false,false,false,false]};const target=nextTargets(history,plan,p).value.templates[0].items[0].target;if(target.metricType!=='reps_load')throw Error();expect(target.loadGrams).toBeLessThanOrEqual(10000);});
-it('source return first load stays below recorded prebreak working load',()=>{const {p,plan,history}=fixture('2026-09-20');history[0].setFeedbackEvents=[];for(const set of history[0].sets)set.loadGrams=5000;const target=nextTargets(history,plan,p).value.templates[0].items[0].target;if(target.metricType!=='reps_load')throw Error();expect(target.loadGrams).toBeLessThan(5000);});
+import { it, expect } from 'vitest';
+import { nextTargets, validatePlan } from '../../../src/engine';
+import type { EnginePlan } from '../../../src/engine/contracts';
+import type { WorkoutRecord } from '../../../src/domain/v8/contracts';
+import { baseProfile } from '../../../tools/eval/training-engine-profiles';
+const id = 'd16325d9-fc00-4c41-88a1-000000000001';
+function fixture(day = '2026-10-14') {
+  const p = baseProfile({
+    level: 'intermediate',
+    trainingAgeWeeks: 52,
+    equipment: ['none', 'dumbbell', 'kettlebell'],
+    daysPerWeek: 1,
+    availableLoadsKg: { [id]: [10, 10.1, 10.5, 11] },
+  });
+  const plan: EnginePlan = {
+    weeklyTarget: 1,
+    sessionMinutes: 30,
+    templates: [
+      {
+        id: 'audit',
+        name: 'audit',
+        estimatedMinutes: 30,
+        items: [
+          {
+            exerciseId: id,
+            equipment: 'dumbbell',
+            sets: 2,
+            target: { metricType: 'reps_load', reps: 8, loadGrams: 10000 },
+            prescription: { pattern: 'squat', block: 'main', rir: [3, 4], restSeconds: 90, structure: 'straight' },
+          },
+        ],
+      },
+    ],
+    meta: { engineVersion: '2.0.0', rulesVersion: 'fixture', seed: 'audit' },
+    trace: [],
+    notices: [],
+    gates: [],
+  };
+  const history: WorkoutRecord[] = [
+    {
+      id: 'actual',
+      templateId: 'audit',
+      localDate: day,
+      timeZone: 'UTC',
+      status: 'complete',
+      startedAt: day + 'T08:00:00Z',
+      endedAt: day + 'T08:30:00Z',
+      plannedSetCount: 2,
+      sets: [0, 1].map(setIndex => ({
+        exerciseId: id,
+        itemIndex: 0,
+        setIndex,
+        reps: 8,
+        loadGrams: 10000,
+        completedAt: day + 'T08:20:00Z',
+      })),
+      setFeedbackEvents: [
+        {
+          id: 'effort',
+          exerciseId: id,
+          itemIndex: 0,
+          setIndex: 1,
+          effort: 'too_light',
+          rir: 1,
+          createdAt: day + 'T08:21:00Z',
+        },
+      ],
+    },
+  ];
+  return { p, plan, history };
+}
+it('source novice load step waits for all working sets at rep maximum', () => {
+  const { p, plan, history } = fixture();
+  p.level = 'beginner';
+  p.trainingAgeWeeks = 1;
+  const out = nextTargets(history, plan, p),
+    target = out.value.templates[0].items[0].target;
+  expect(target.metricType).toBe('reps_load');
+  if (target.metricType === 'reps_load') expect(target.loadGrams).toBeLessThanOrEqual(10000);
+});
+it('source older load progression requires completed reps at RIR at least two', () => {
+  const { p, plan, history } = fixture();
+  p.birthYearMonth = '1956-01';
+  p.population = { kind: 'older_adult', fallsAnswers: [false, false, false, false] };
+  const target = nextTargets(history, plan, p).value.templates[0].items[0].target;
+  if (target.metricType !== 'reps_load') throw Error();
+  expect(target.loadGrams).toBeLessThanOrEqual(10000);
+});
+it('source return first load stays below recorded prebreak working load', () => {
+  const { p, plan, history } = fixture('2026-09-20');
+  history[0].setFeedbackEvents = [];
+  for (const set of history[0].sets) set.loadGrams = 5000;
+  const target = nextTargets(history, plan, p).value.templates[0].items[0].target;
+  if (target.metricType !== 'reps_load') throw Error();
+  expect(target.loadGrams).toBeLessThan(5000);
+});
 
-it('independent validation consumes actual novice, older and return history changes',()=>{for(const kind of ['new','older','return']){const {p,plan,history}=fixture(kind==='return'?'2026-09-20':'2026-10-14');if(kind==='new'){p.level='beginner';p.trainingAgeWeeks=1;}if(kind==='older'){p.birthYearMonth='1956-01';p.population={kind:'older_adult',fallsAnswers:[false,false,false,false]};}if(kind==='return'){history[0].setFeedbackEvents=[];for(const set of history[0].sets)set.loadGrams=5000;}const bad=structuredClone(plan);bad.templates[0].items[0].target={metricType:'reps_load',reps:8,loadGrams:kind==='return'?9000:10500};const ctx={progression:{baseline:plan,history,templateId:'audit'}};expect(validatePlan(bad,p,ctx).some(i=>i.code==='history_progression'),kind).toBe(true);const good=nextTargets(history,plan,p).value;expect(validatePlan(good,p,ctx).filter(i=>i.code==='history_progression'),kind).toEqual([]);}});
-it('novice at rep maximum takes the smallest legal available load and holds when no legal step exists',()=>{const {p,plan,history}=fixture();p.level='beginner';p.trainingAgeWeeks=1;for(const set of history[0].sets)set.reps=15;const target=nextTargets(history,plan,p).value.templates[0].items[0].target;if(target.metricType!=='reps_load')throw Error();expect(target.loadGrams).toBe(10100);p.availableLoadsKg={[id]:[20]};const held=nextTargets(history,plan,p).value.templates[0].items[0].target;if(held.metricType!=='reps_load')throw Error();expect(held.loadGrams).toBe(10000);});
+it('independent validation consumes actual novice, older and return history changes', () => {
+  for (const kind of ['new', 'older', 'return']) {
+    const { p, plan, history } = fixture(kind === 'return' ? '2026-09-20' : '2026-10-14');
+    if (kind === 'new') {
+      p.level = 'beginner';
+      p.trainingAgeWeeks = 1;
+    }
+    if (kind === 'older') {
+      p.birthYearMonth = '1956-01';
+      p.population = { kind: 'older_adult', fallsAnswers: [false, false, false, false] };
+    }
+    if (kind === 'return') {
+      history[0].setFeedbackEvents = [];
+      for (const set of history[0].sets) set.loadGrams = 5000;
+    }
+    const bad = structuredClone(plan);
+    bad.templates[0].items[0].target = {
+      metricType: 'reps_load',
+      reps: 8,
+      loadGrams: kind === 'return' ? 9000 : 10500,
+    };
+    const ctx = { progression: { baseline: plan, history, templateId: 'audit' } };
+    expect(
+      validatePlan(bad, p, ctx).some(i => i.code === 'history_progression'),
+      kind,
+    ).toBe(true);
+    const good = nextTargets(history, plan, p).value;
+    expect(
+      validatePlan(good, p, ctx).filter(i => i.code === 'history_progression'),
+      kind,
+    ).toEqual([]);
+  }
+});
+it('novice at rep maximum takes the smallest legal available load and holds when no legal step exists', () => {
+  const { p, plan, history } = fixture();
+  p.level = 'beginner';
+  p.trainingAgeWeeks = 1;
+  for (const set of history[0].sets) set.reps = 15;
+  const target = nextTargets(history, plan, p).value.templates[0].items[0].target;
+  if (target.metricType !== 'reps_load') throw Error();
+  expect(target.loadGrams).toBe(10100);
+  p.availableLoadsKg = { [id]: [20] };
+  const held = nextTargets(history, plan, p).value.templates[0].items[0].target;
+  if (held.metricType !== 'reps_load') throw Error();
+  expect(held.loadGrams).toBe(10000);
+});

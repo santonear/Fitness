@@ -3,7 +3,10 @@ export type OperationCounts = { understand: number; generate: number; summary?: 
 export type RequestStatus = 'reserved' | 'submitted' | 'pending' | 'settled' | 'released';
 export interface ControlState {
   adminReceipts?: Record<string, import('./admin/core/idempotent-store').AdminReceipt>;
-  quotaRestorations?: Record<string, { subjectId: string; period: string; reason: string; at: number; credits: { understand: number; generate: number } }>;
+  quotaRestorations?: Record<
+    string,
+    { subjectId: string; period: string; reason: string; at: number; credits: { understand: number; generate: number } }
+  >;
   applications?: Record<string, import('./trial-applications').TrialApplication>;
   version: 1;
   aiEnabled: boolean;
@@ -13,20 +16,48 @@ export interface ControlState {
   sessions: Record<string, { subjectId: string; revoked: boolean }>;
   usages: Record<string, OperationCounts>;
   budgets: Record<string, { spent: number; reserved: number }>;
-  requests: Record<string, { subjectId: string; requestId: string; inputDigest: string; operation: Operation;
-    createdAt?: number;
-    period: string; bound: number; status: RequestStatus; cancelled: boolean; actualCost?: number; error?: string;
-    verifiedBoundFen?: number;
-    coachContract?: { promptVersion: string; schemaVersion: string; catalogVersion: number; task: string } }>;
+  requests: Record<
+    string,
+    {
+      subjectId: string;
+      requestId: string;
+      inputDigest: string;
+      operation: Operation;
+      createdAt?: number;
+      period: string;
+      bound: number;
+      status: RequestStatus;
+      cancelled: boolean;
+      actualCost?: number;
+      error?: string;
+      verifiedBoundFen?: number;
+      coachContract?: { promptVersion: string; schemaVersion: string; catalogVersion: number; task: string };
+    }
+  >;
   audit: Array<{ at: number; event: string; subjectId?: string }>;
 }
-export const initialState = (): ControlState => ({ version: 1, aiEnabled: false, recoveryRequired: false,
-  invites: {}, subjects: {}, sessions: {}, usages: {}, budgets: {}, requests: {}, audit: [] });
+export const initialState = (): ControlState => ({
+  version: 1,
+  aiEnabled: false,
+  recoveryRequired: false,
+  invites: {},
+  subjects: {},
+  sessions: {},
+  usages: {},
+  budgets: {},
+  requests: {},
+  audit: [],
+});
 /** Callbacks must be synchronous and pure: CAS adapters may run them more than once. */
 export interface ControlStore {
   read(): Promise<ControlState>;
   transact<T>(change: (state: ControlState) => T): Promise<T>;
 }
 export class ControlError extends Error {
-  constructor(public readonly code: string, public readonly status = 409) { super(code); }
+  constructor(
+    public readonly code: string,
+    public readonly status = 409,
+  ) {
+    super(code);
+  }
 }

@@ -1,8 +1,8 @@
-import { type Plan, type EngineProfile, type ScoreResult } from "../contracts";
-import { Rules } from "../data";
-import { type Facts, type GenerationTimingBatch } from "./types";
-import { targetSatisfactions } from "./registry";
-import { clamp } from "./math";
+import { type Plan, type EngineProfile, type ScoreResult } from '../contracts';
+import { Rules } from '../data';
+import { type Facts, type GenerationTimingBatch } from './types';
+import { targetSatisfactions } from './registry';
+import { clamp } from './math';
 export function evaluate(
   plan: Plan,
   p: EngineProfile,
@@ -11,8 +11,8 @@ export function evaluate(
   timing?: GenerationTimingBatch,
 ): ScoreResult {
   const perRule = r.data.rules
-    .filter((rule) => rule.severity === "target")
-    .flatMap((rule) => {
+    .filter(rule => rule.severity === 'target')
+    .flatMap(rule => {
       const satisfaction = targetSatisfactions[rule.id]?.({
         plan,
         p,
@@ -33,21 +33,16 @@ export function evaluate(
     });
   return {
     quality: perRule.length
-      ? perRule.reduce((n, x) => n + x.weight * x.satisfaction, 0) /
-        perRule.reduce((n, x) => n + x.weight, 0)
+      ? perRule.reduce((n, x) => n + x.weight * x.satisfaction, 0) / perRule.reduce((n, x) => n + x.weight, 0)
       : 0,
     perRule,
     advice: r.data.rules
-      .filter((rule) => rule.severity === "advice")
-      .map((rule) => ({
+      .filter(rule => rule.severity === 'advice')
+      .map(rule => ({
         id: rule.id,
         satisfied:
-          rule.id === "balance.week.carry_ground"
-            ? f.items.some((i) =>
-                (rule.value?.patterns ?? []).includes(
-                  r.byExercise.get(i.exerciseId)?.primary_pattern,
-                ),
-              )
+          rule.id === 'balance.week.carry_ground'
+            ? f.items.some(i => (rule.value?.patterns ?? []).includes(r.byExercise.get(i.exerciseId)?.primary_pattern))
             : false,
       })),
   };

@@ -11,13 +11,22 @@ export function createNutritionService(repo: Repository, enabled = () => isFeatu
       const row = nutritionRecordSchema.parse({ ...input, createdAt: new Date().toISOString() });
       if (row.localDate > activityDate(row.timeZone)) throw new DomainError('INVALID', 'INVALID_DATE');
       return repo.write(async () => {
-        if (!enabled() || ((await repo.readMetadata()).restoreGeneration ?? 0) !== generation) throw new DomainError('CONFLICT', 'STALE_NUTRITION');
-        await repo.db.nutritionRecords.add(row); return row;
+        if (!enabled() || ((await repo.readMetadata()).restoreGeneration ?? 0) !== generation)
+          throw new DomainError('CONFLICT', 'STALE_NUTRITION');
+        await repo.db.nutritionRecords.add(row);
+        return row;
       }, revision);
     },
   };
 }
 /** Explicit nutrition consent is independent of body/history consent. No identifiers or timestamps. */
 export function nutritionForCoach(rows: NutritionRecord[], consent: boolean) {
-  return consent ? rows.slice(-30).map(({ localDate, meal, portion, calories }) => ({ localDate, meal, ...(portion ? { portion } : {}), ...(calories !== undefined ? { calories } : {}) })) : undefined;
+  return consent
+    ? rows.slice(-30).map(({ localDate, meal, portion, calories }) => ({
+        localDate,
+        meal,
+        ...(portion ? { portion } : {}),
+        ...(calories !== undefined ? { calories } : {}),
+      }))
+    : undefined;
 }

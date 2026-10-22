@@ -18,11 +18,28 @@ export function FitnessTestPage() {
   const values = data?.profile?.bodyDetails?.values;
   const today = activityDate(data?.profile?.timeZone ?? DEFAULT_TIME_ZONE);
   const [tests, setTests] = useState<FitnessTestRecord[]>([]);
-  const reload = useCallback(async () => { try { setTests(await listFitnessTests()); } catch { setTests([]); } }, []);
-  useEffect(() => { void reload(); }, [reload]);
+  const reload = useCallback(async () => {
+    try {
+      setTests(await listFitnessTests());
+    } catch {
+      setTests([]);
+    }
+  }, []);
+  useEffect(() => {
+    void reload();
+  }, [reload]);
   const sex = binarySex(values?.biologicalSex);
-  return <main className="v9-energy">
-    <Head title={planPagesCopy[locale].testTitle} sub={energyCopy[locale].testSub}/>
-    <FitnessTestCard locale={locale} today={today} {...(values?.age !== undefined ? { age: values.age } : {})} {...(sex ? { sex } : {})} tests={tests} onSaved={() => void reload()}/>
-  </main>;
+  return (
+    <main className="v9-energy">
+      <Head title={planPagesCopy[locale].testTitle} sub={energyCopy[locale].testSub} />
+      <FitnessTestCard
+        locale={locale}
+        today={today}
+        {...(values?.age !== undefined ? { age: values.age } : {})}
+        {...(sex ? { sex } : {})}
+        tests={tests}
+        onSaved={() => void reload()}
+      />
+    </main>
+  );
 }
