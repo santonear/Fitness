@@ -1,6 +1,6 @@
 import type {WorkoutRecord} from '../domain/v8/contracts';
 import {Rules,calendarDay} from '../engine/data';
-export interface ActivityEvidenceInput {
+interface ActivityEvidenceInput {
  records:readonly WorkoutRecord[];asOfDate:string;timeZone:string;weeklyTarget:number;
  screeningEvents?:readonly {answeredAt:string;symptoms:boolean}[];
 }

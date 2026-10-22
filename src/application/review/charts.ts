@@ -5,7 +5,7 @@ export interface ChartWorkout {
   id: string; startedAt: string; endedAt?: string; localDate?: string;
   status: string; sets: readonly { reps?: number; loadGrams?: number | null; durationSeconds?: number }[];
 }
-export interface ChartBucket { key: string; from: string; to: string }
+interface ChartBucket { key: string; from: string; to: string }
 export interface ChartPoint extends ChartBucket { sessions: number; volumeKg: number; minutes: number }
 export type ChartMetric = 'sessions' | 'volumeKg' | 'minutes';
 

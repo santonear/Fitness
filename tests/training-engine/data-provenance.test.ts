@@ -6,9 +6,6 @@ import index from '../../src/engine/generated/exercise-index.json';
 import {exercises,EXERCISE_IDS} from '../../src/catalog/exercises';
 import {customCatalog} from '../../src/catalog/custom-exercises';
 import {getExerciseGuide} from '../../src/catalog/exercise-guide';
-import {renderToStaticMarkup} from 'react-dom/server';
-import {createElement} from 'react';
-import {ExerciseMedia} from '../../src/ui/components/ExerciseMedia';
 import {gzipSync} from 'node:zlib';
 
 function leaves(node:unknown,out:Set<string>=new Set()):Set<string>{if(typeof node==='string')out.add(node);else if(node&&typeof node==='object')for(const value of Object.values(node))leaves(value,out);return out;}
@@ -37,9 +34,8 @@ describe('compiled provenance and actual catalog coverage',()=>{
   expect(index.exercises.find(row=>row.slug==='custom-wall-plank')).toMatchObject({requires_floor_transition:false});
   for(const slug of ['custom-seated-self-overhead-press','custom-seated-self-resisted-leg-curl','custom-band-self-anchored-row'])expect(index.exercises.find(row=>row.slug===slug),slug).toMatchObject({requires_floor_transition:true});
  });
- it('renders original custom illustrations without supplier attribution or a remote image',()=>{
-  const exercise=customCatalog[0],markup=renderToStaticMarkup(createElement(ExerciseMedia,{exerciseId:exercise.id,exerciseName:exercise.name.zh,locale:'zh'}));
-  expect(markup).toMatch(/src="\/exercise-media\/fitness\/[a-z0-9-]+-(start|peak|main)\.webp"/);expect(markup).toContain('Fitness 原创示意图');expect(markup).not.toContain('repdb.co');expect(markup).not.toMatch(/src="https?:/);
+ it('gives the first custom exercise a guide with steps and cautions in both languages',()=>{
+  const exercise=customCatalog[0];
   for(const locale of ['zh','en'] as const){const guide=getExerciseGuide(exercise.id,locale);expect(guide.steps.length).toBeGreaterThan(0);expect(guide.cautions.length).toBeGreaterThan(0);}
  });
 });

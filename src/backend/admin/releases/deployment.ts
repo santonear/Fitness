@@ -49,7 +49,7 @@ export async function checkCurrentRelease(context:AdminContext<ReleasesEnv>,envi
   return runReleaseSmoke(context,environment,target);
 }
 /** Only recognized Access login destinations count as protected redirects. Never follow them. */
-export function isAccessLoginRedirect(response:Response,origin:string,issuer?:string){
+function isAccessLoginRedirect(response:Response,origin:string,issuer?:string){
  if(![301,302,303,307,308].includes(response.status))return false;
  const location=response.headers.get('Location');if(!location)return false;
  try{const url=new URL(location,origin);if(url.protocol!=='https:'||url.username||url.password)return false;

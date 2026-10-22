@@ -17,10 +17,10 @@ export const timeZoneSchema = z.string().refine((value) => {
   try { new Intl.DateTimeFormat('en', { timeZone: value }); return true; }
   catch { return false; }
 }, 'Expected an IANA time zone');
-export const metricTypeSchema = z.enum(['reps_load', 'reps', 'duration', 'duration_distance']);
-export const categorySchema = z.enum(['strength', 'cardio', 'bodyweight']);
-export const equipmentSchema = z.enum(EQUIPMENT);
-export const bilingualTextSchema = z.strictObject({ zh: z.string().min(1), en: z.string().min(1) });
+const metricTypeSchema = z.enum(['reps_load', 'reps', 'duration', 'duration_distance']);
+const categorySchema = z.enum(['strength', 'cardio', 'bodyweight']);
+const equipmentSchema = z.enum(EQUIPMENT);
+const bilingualTextSchema = z.strictObject({ zh: z.string().min(1), en: z.string().min(1) });
 const positive = z.number().int().positive().max(Number.MAX_SAFE_INTEGER);
 const nonnegative = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 export const setMetricsSchema = z.discriminatedUnion('metricType', [
@@ -29,7 +29,7 @@ export const setMetricsSchema = z.discriminatedUnion('metricType', [
   z.strictObject({ metricType: z.literal('duration'), durationSeconds: positive }),
   z.strictObject({ metricType: z.literal('duration_distance'), durationSeconds: positive, distanceMeters: nonnegative.optional() }),
 ]);
-export const entityFields = { id: uuidSchema, createdAt: utcTimestampSchema, updatedAt: utcTimestampSchema, revision: nonnegative };
+const entityFields = { id: uuidSchema, createdAt: utcTimestampSchema, updatedAt: utcTimestampSchema, revision: nonnegative };
 export const exerciseSchema = z.strictObject({
   id: uuidSchema, catalogVersion: positive, name: bilingualTextSchema,
   category: categorySchema, equipment: equipmentSchema, metricType: metricTypeSchema,
@@ -66,7 +66,7 @@ export const planDaySchema = z.strictObject({
   dayId: uuidSchema, weekIndex: positive.max(12), dayOfWeek: positive.max(7), exercises: z.array(plannedExerciseSchema).min(1),
 });
 export const goalSnapshotSchema = z.strictObject({ goal: z.string(), trainingPreferences: trainingPreferencesSchema.optional() });
-export const generationMetadataSchema = z.strictObject({
+const generationMetadataSchema = z.strictObject({
   requestId: uuidSchema.optional(), model: z.string().optional(), promptVersion: z.string().optional(), generatedAt: utcTimestampSchema.optional(), memoRevision: nonnegative.optional(),
 });
 export const legacyPlanVersionSchema = z.strictObject({
@@ -108,7 +108,7 @@ export const scheduledWorkoutSchema = z.strictObject({
   ...schedulingFields, status: z.enum(['pending', 'skipped']), completedSessionId: uuidSchema.optional(), hiddenAt: utcTimestampSchema.optional(),
 }).superRefine(validateScheduling);
 // Restore-only schema: preserve malformed historical duration values without weakening new scheduling writes.
-export const legacyBackupScheduleSchema = z.strictObject({
+const legacyBackupScheduleSchema = z.strictObject({
   ...entityFields, planVersionId: uuidSchema, plannedDayId: uuidSchema, originalDate: localDateSchema, scheduledDate: localDateSchema,
   startTime: schedulingFields.startTime, durationMinutes: z.unknown().optional(), status: z.enum(['pending', 'skipped']),
   completedSessionId: uuidSchema.optional(), hiddenAt: utcTimestampSchema.optional(),
@@ -121,7 +121,7 @@ export const metadataSchema = z.strictObject({
   restoreGeneration: nonnegative.optional(),
   assistantScheduleRecoveryV2At: utcTimestampSchema.optional(),
 });
-export const memoSessionSchema = z.strictObject({ session: workoutSessionSchema, sets: z.array(setRecordSchema), planVersionSnapshot: planVersionSchema.optional() });
+const memoSessionSchema = z.strictObject({ session: workoutSessionSchema, sets: z.array(setRecordSchema), planVersionSnapshot: planVersionSchema.optional() });
 export const trainingMemoSchema = z.strictObject({ schemaVersion: positive, revision: nonnegative, updatedAt: utcTimestampSchema, sourceRevision: nonnegative, sessions: z.array(memoSessionSchema) });
 export const aiMemoryNoteSchema = z.strictObject({ ...entityFields, memoRevision: nonnegative, generatorVersion: z.string(), locale: localeSchema, suggestion: z.string(), explanation: z.string(),
   kind:z.enum(['dislike_exercise','cannot_do','caution_area','preferred_days','equipment']).optional(),
@@ -172,7 +172,7 @@ export const v8PlanVersionSchema = z.strictObject({
   changeSummary: z.array(z.string()), basedOnVersionId: uuidSchema.optional(), source: z.enum(['local', 'ai']).optional(),
 });
 const v8NextWorkoutOverrideSchema = z.strictObject({ planVersionId: uuidSchema, templateId: z.string(), template: v8PlanVersionSchema.shape.templates.element, requestId: uuidSchema });
-export const v8PlanSchema = z.strictObject({ id: uuidSchema, name: z.string(), currentVersionId: uuidSchema, readOnly: z.boolean(), deletedAt: utcTimestampSchema.optional(), deletedWasCurrent: z.boolean().optional(), deletedNextWorkoutOverride: v8NextWorkoutOverrideSchema.optional() });
+const v8PlanSchema = z.strictObject({ id: uuidSchema, name: z.string(), currentVersionId: uuidSchema, readOnly: z.boolean(), deletedAt: utcTimestampSchema.optional(), deletedWasCurrent: z.boolean().optional(), deletedNextWorkoutOverride: v8NextWorkoutOverrideSchema.optional() });
 const v8Feel = z.enum(['easy', 'right', 'tired', 'very_tired']);
 const v8Reason = z.enum(['time', 'fatigue', 'discomfort', 'equipment_busy', 'not_today', 'other']);
 export const setFeedbackEventSchema=z.strictObject({id:uuidSchema,itemIndex:nonnegative,setIndex:nonnegative,exerciseId:exerciseIdSchema,createdAt:utcTimestampSchema,effort:z.enum(['too_light','right','too_hard','discomfort']),rir:z.number().min(0).max(10).optional(),painScore:z.number().int().min(0).max(10).optional(),painArea:cautionSchema.optional()}).superRefine((event,ctx)=>{if(event.effort==='discomfort'&&(event.painScore===undefined||!event.painArea))ctx.addIssue({code:'custom',message:'Discomfort requires an explicit score and area'});});
@@ -233,7 +233,7 @@ export const v8StateSchema = z.strictObject({
   /** Home panel style (V9.14); absent means the default big-number panel. */
   homePanelStyle: z.enum(HOME_PANEL_STYLES).optional(),
 });
-export const v8PlanReferenceSchema = z.strictObject({ id: uuidSchema, planId: uuidSchema, planName: z.string(), versionNumber: positive, templateIds: z.array(z.string()), legacyTemplates: z.array(v8PlanVersionSchema.shape.templates.element).optional() });
+const v8PlanReferenceSchema = z.strictObject({ id: uuidSchema, planId: uuidSchema, planName: z.string(), versionNumber: positive, templateIds: z.array(z.string()), legacyTemplates: z.array(v8PlanVersionSchema.shape.templates.element).optional() });
 export const v8BackupSchema = z.strictObject({ state: v8StateSchema, plans: z.array(v8PlanSchema), planVersions: z.array(v8PlanVersionSchema),
   workouts: z.array(v8WorkoutSchema), activities: z.array(v8ActivitySchema), planReferences: z.array(v8PlanReferenceSchema).optional() });
 // ---- Training-plan upgrade rows (UIUX20261008 V9.14, DB 21) ----
@@ -242,7 +242,7 @@ export const fitnessTestRecordSchema = z.strictObject({
   id: uuidSchema, localDate: localDateSchema, createdAt: utcTimestampSchema,
   results: z.partialRecord(z.enum(FITNESS_TEST_ITEMS), fitnessTestValue),
 }).refine(record => Object.keys(record.results).length > 0, 'A fitness test needs at least one result');
-export const campSchema = z.strictObject({
+const campSchema = z.strictObject({
   id: z.string().min(1).max(80), title: z.string().min(1).max(200),
   metric: z.enum([...FITNESS_TEST_ITEMS, 'weightKg', 'waistCm', 'sessions']),
   start: z.number().finite(), target: z.number().finite(), reachedAt: utcTimestampSchema.optional(),

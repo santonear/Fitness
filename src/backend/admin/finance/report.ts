@@ -33,7 +33,7 @@ export function financeLocalDate(at:number,timeZone:string):string {
  return ['year','month','day'].map(key=>parts.find(part=>part.type===key)!.value).join('-');
 }
 const taskOf=(r:ControlState['requests'][string])=>({ONBOARD_PLAN:'generate',ADJUST_TODAY:'adjust',MODIFY_PLAN:'modify',PERIOD_REVIEW:'review'}[r.coachContract?.task??'']??r.operation);
-export function ledgerRows(state:ControlState,timeZone:string){return Object.values(state.requests).filter(r=>r.status!=='released').map(r=>({subjectShortId:r.subjectId.slice(0,8),requestShortId:r.requestId.slice(0,8),operation:r.operation,task:taskOf(r),status:r.status,period:r.period,day:r.createdAt===undefined?null:financeLocalDate(r.createdAt,timeZone),reservedFen:['reserved','submitted','pending'].includes(r.status)?r.bound:0,settledFen:r.status==='settled'?r.actualCost??0:0}));}
+function ledgerRows(state:ControlState,timeZone:string){return Object.values(state.requests).filter(r=>r.status!=='released').map(r=>({subjectShortId:r.subjectId.slice(0,8),requestShortId:r.requestId.slice(0,8),operation:r.operation,task:taskOf(r),status:r.status,period:r.period,day:r.createdAt===undefined?null:financeLocalDate(r.createdAt,timeZone),reservedFen:['reserved','submitted','pending'].includes(r.status)?r.bound:0,settledFen:r.status==='settled'?r.actualCost??0:0}));}
 export function ledgerProjection(state:ControlState, month:string,timeZone='UTC') {
  const rows=ledgerRows(state,timeZone).filter(r=>r.day?r.day.startsWith(month):r.period===month);
  const recorded=Object.values(state.requests).filter(r=>r.period===month).reduce((sum,r)=>sum+(r.status==='settled'?r.actualCost??0:0),0);

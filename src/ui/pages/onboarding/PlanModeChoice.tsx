@@ -6,8 +6,8 @@ import { MorphPanel } from '../../components/common';
 import { BigChoice, PrimaryButton, Yaya } from '../../components/kit';
 import { TrialAccess } from '../../components/TrialAccess';
 
-export type PlanMode = 'ai' | 'local';
-export type AiReadiness = 'checking' | 'active' | 'needed' | 'disabled' | 'quota' | 'connection';
+type PlanMode = 'ai' | 'local';
+type AiReadiness = 'checking' | 'active' | 'needed' | 'disabled' | 'quota' | 'connection';
 
 /** Server access state for the AI choice; only read while the AI option is selected. */
 export function useAiReadiness(enabled: boolean): { readiness: AiReadiness; refresh: () => Promise<void> } {

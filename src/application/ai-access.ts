@@ -2,7 +2,7 @@ import {z} from 'zod';
 import {readTrialReceipt} from '../ai/trial-recovery';
 export const accessStatusSchema=z.object({qualification:z.enum(['none','active','expired','revoked']),sessionValid:z.boolean(),expiresAt:z.number().finite().optional(),aiEnabled:z.boolean().optional(),summaryAvailable:z.boolean().optional(),planningBudgetDisabled:z.boolean().optional(),used:z.object({generate:z.number(),understand:z.number().optional()}).optional(),limits:z.object({generate:z.number(),understand:z.number().optional()}).optional()});
 export type AccessStatus=z.infer<typeof accessStatusSchema>;
-export type AccessReason='invalid'|'disabled'|'quota'|'connection';
+type AccessReason='invalid'|'disabled'|'quota'|'connection';
 const previousAccessKey='fitness.access-confirmed.v1';
 export function hadConfirmedAccess(){try{return localStorage.getItem(previousAccessKey)==='yes'}catch{return false}}
 const pending=new Map<typeof fetch,Promise<AccessStatus>>();

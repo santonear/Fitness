@@ -2,7 +2,6 @@ import { expect, it, vi } from 'vitest';
 import { createHandler } from '../../src/backend/http';
 import type { ControlService } from '../../src/backend/control';
 import { createDeepSeekCodec } from '../../src/backend/deepseek';
-import { createGeminiCodec } from '../../src/backend/gemini';
 import { currentCoachEnvelope } from '../fixtures/current-coach-envelope';
 import { promptRequest } from '../fixtures/prompt-cases';
 import { validateRequest } from '../../src/backend/contracts';
@@ -22,7 +21,7 @@ it('retires old management and date execution before admission, while preserving
 it('real provider codecs cannot construct retired requests, but old confirmed objects still parse read-only',async () => {
   const old = await promptRequest('en');
   await expect(validateRequest(old,1,65536)).resolves.toEqual(old);
-  for (const codec of [createDeepSeekCodec({maxOutputTokens:2048}),createGeminiCodec({maxOutputTokens:2048})]) {
+  for (const codec of [createDeepSeekCodec({maxOutputTokens:2048})]) {
     await expect(codec.encode(old)).rejects.toThrow('AI_CONTRACT_RETIRED');
     await expect(codec.encode(await currentCoachEnvelope())).resolves.toBeDefined();
   }

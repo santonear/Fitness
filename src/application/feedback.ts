@@ -9,7 +9,7 @@ export const FEEDBACK_CONTACT_MAX = 100;
 const historyKey = 'fitness.feedback-sent.v1';
 const HISTORY_MAX = 20;
 export interface SentFeedback { id: string; at: number; message: string; contact?: string }
-export type FeedbackFailure = 'rate' | 'invalid' | 'unavailable';
+type FeedbackFailure = 'rate' | 'invalid' | 'unavailable';
 export class FeedbackSendError extends Error { constructor(public reason: FeedbackFailure) { super(reason); } }
 
 export function sentFeedback(): SentFeedback[] {

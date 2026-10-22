@@ -139,7 +139,7 @@ export type EngineProfileFields = Partial<
   >
 > & { healthStorageConsent?: { acceptedAt: string } };
 export type EngineCoachProfile = CoachProfile & EngineProfileFields;
-export type StoredPreference = { kind?: string; value?: string | string[] };
+type StoredPreference = { kind?: string; value?: string | string[] };
 
 export function enginePreferences(
   profile: EngineProfileFields,

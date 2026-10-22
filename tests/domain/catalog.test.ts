@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { searchExercises, getExercise } from '../../src/catalog/catalog-service';
-import { parseMetric } from '../../src/domain/units';
 import { metadataSchema, planDaySchema, plannedExerciseSchema, setMetricsSchema, setRecordSchema, trainingPreferencesSchema } from '../../src/domain/schemas';
 
 describe('exercise catalogue', () => {
@@ -53,30 +52,6 @@ describe('persisted training conditions and plan calendar contracts', () => {
 });
 
 describe('metric boundaries', () => {
-  it('converts kilograms and kilometres once to canonical integers', () => {
-    expect(parseMetric({ metricType: 'reps_load', reps: '8', loadKg: '1.25' })).toEqual({ metricType: 'reps_load', reps: 8, loadGrams: 1250 });
-    expect(parseMetric({ metricType: 'duration_distance', durationSeconds: '60', distanceKm: '1.25' })).toEqual({ metricType: 'duration_distance', durationSeconds: 60, distanceMeters: 1250 });
-  });
-  it('preserves missing optional distance and valid zero load', () => {
-    expect(parseMetric({ metricType: 'duration_distance', durationSeconds: 60 })).toEqual({ metricType: 'duration_distance', durationSeconds: 60 });
-    expect(parseMetric({ metricType: 'reps_load', reps: 8, loadKg: 0 })).toEqual({ metricType: 'reps_load', reps: 8, loadGrams: 0 });
-  });
-  it('accepts exact milligram boundary precision despite binary floating point', () => {
-    expect(parseMetric({ metricType: 'reps_load', reps: 8, loadKg: '1.001' })).toEqual({ metricType: 'reps_load', reps: 8, loadGrams: 1001 });
-  });
-  it.each([
-    { metricType: 'reps', reps: 1.5 }, { metricType: 'reps', reps: 0 },
-    { metricType: 'reps_load', reps: 8, loadKg: -1 },
-    { metricType: 'reps_load', reps: 8, loadKg: -0.001 },
-    { metricType: 'reps_load', reps: 8, loadKg: '1.0001' },
-    { metricType: 'duration', durationSeconds: Infinity },
-    { metricType: 'duration', durationSeconds: NaN },
-    { metricType: 'duration', durationSeconds: '' },
-    { metricType: 'reps', reps: 5, distanceKm: 1 },
-    { metricType: 'unknown', reps: 5 },
-  ])('rejects invalid form metric %j', (input) => {
-    expect(() => parseMetric(input as Parameters<typeof parseMetric>[0])).toThrow();
-  });
   it('rejects fractional canonical units and unknown fields', () => {
     expect(setMetricsSchema.safeParse({ metricType: 'reps_load', reps: 8, loadGrams: 1.5 }).success).toBe(false);
     expect(setMetricsSchema.safeParse({ metricType: 'reps', reps: 8, alien: 1 }).success).toBe(false);

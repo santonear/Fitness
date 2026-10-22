@@ -157,7 +157,7 @@ function applyChanges(template:SessionTemplate,changes:Extract<AssistantIntent,{
  return applied;
 }
 /** Picked calendar days stay fixed unless the latest user message explicitly asks to change days. */
-export function daysLocked(request:AssistantRequest):boolean{
+function daysLocked(request:AssistantRequest):boolean{
  return !!request.context?.schedule&&!explicitScheduleChange(request.messages.at(-1)?.content??'');
 }
 /** The model may describe changes; identity, metrics and durations come only from code. */

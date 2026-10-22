@@ -19,7 +19,7 @@ import guideEn from '../../../i18n/features/training/guide.en.json';
 import {EXERCISE_IDS} from '../../../catalog/exercise-ids';
 import {durationText} from '../../components/ExerciseTargets';
 
-export interface PlanPageProps {
+interface PlanPageProps {
   version: PlanVersion;
   /** Supplied by the host from its selected plan; never inferred from version numbers. */
   currentVersionId: string;

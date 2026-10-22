@@ -9,7 +9,7 @@ const symptomKeys=DATA.rules.find(r=>r.id==='postpartum.symptom_regression')!.va
 export const postpartumReportSchema=z.strictObject({urgent:z.record(z.string(),z.boolean()),regression:z.record(z.string(),z.boolean())}).superRefine((input,ctx)=>{
  for(const [group,keys] of [['urgent',urgentKeys],['regression',symptomKeys]] as const)if(Object.keys(input[group]).some(key=>!keys.includes(key)))ctx.addIssue({code:'custom',path:[group],message:'Unknown source symptom'});
  const positive=Object.values(input.urgent).some(Boolean)||Object.values(input.regression).some(Boolean),complete=urgentKeys.every(key=>typeof input.urgent[key]==='boolean')&&symptomKeys.every(key=>typeof input.regression[key]==='boolean');if(!positive&&!complete)ctx.addIssue({code:'custom',message:'Symptom-free evidence requires explicit answers to every source symptom'});
-});export type PostpartumReport=z.infer<typeof postpartumReportSchema>;
+});type PostpartumReport=z.infer<typeof postpartumReportSchema>;
 const invalid=(message:string):never=>{throw new DomainError('INVALID',message);};
 export function assertPostpartumItems(items:Pick<PlannedItem,'exerciseId'>[],state?:PostpartumSafetyState){
  if(state?.urgentAt)invalid('POSTPARTUM_PROFESSIONAL_REQUIRED');

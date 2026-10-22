@@ -10,14 +10,14 @@ import en from '../../i18n/features/training/guide.en.json';
 import './exercise-guide.css';
 import '../pages/plan/exercise-detail.css';
 
-export function ExerciseGuideImage({id,locale}:{id:string;locale:Locale}) {
+function ExerciseGuideImage({id,locale}:{id:string;locale:Locale}) {
  const guide=getExerciseGuide(id,locale),copy=locale==='zh'?zh:en;
  const [failed,setFailed]=useState(false);
  return <figure className="exercise-guide-image">
   {guide.media&&!failed?<img src={guide.media.src} alt={guide.media.alt} onError={()=>setFailed(true)}/>:<figcaption>{copy.unavailable}</figcaption>}
  </figure>;
 }
-export function ExerciseGuideAttribution({id,locale}:{id:string;locale:Locale}) {
+function ExerciseGuideAttribution({id,locale}:{id:string;locale:Locale}) {
  const media=getExerciseGuide(id,locale).media;
  return media?.attribution.includes('RepDB')?<RepDBAttribution/>:media?.attribution?<small>{media.attribution==='Fitness original movement-pattern symbol'?(locale==='zh'?'动作模式图标（非姿势示范）':'Movement-pattern icon (not a technique demonstration)'):media.attribution==='Fitness original illustration'?(locale==='zh'?zh:en).original:media.attribution}</small>:null;
 }

@@ -26,7 +26,7 @@ type Group = 'parq' | 'cmr' | 'other' | 'preg' | 'falls' | 'redflag';
 interface Item { key: string; text: string; value: boolean | undefined; set: (answer: boolean) => void }
 interface Screen { id: string; group?: Group; item?: Item; index?: number; total?: number }
 
-export interface HealthCheckWizardProps {
+interface HealthCheckWizardProps {
   locale: 'zh' | 'en'; answers: OnboardingAnswers; engineEnabled: boolean; bodyEnabled: boolean;
   mode: 'ai' | 'basic'; busy: boolean; error?: string; step: number; total: number; complete: boolean;
   sendFields: [string, string | number][];

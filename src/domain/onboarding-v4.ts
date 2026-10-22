@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const onboardingKeys = ['biologicalSex','age','heightCm','weightKg','waistCm','goal','experience','location','equipment','safety','schedule','preferences'] as const;
-export type OnboardingKey = typeof onboardingKeys[number];
+type OnboardingKey = typeof onboardingKeys[number];
 export const durations = [30,40,50,60,70,80,90,100,110,120] as const;
 export const wheelRanges = { age: [12,70], heightCm: [100,230], weightKg: [30,300], waistCm: [40,200] } as const;
 export type Answer = { status: 'answered'; value: string | number | string[] } | { status: 'skipped' };

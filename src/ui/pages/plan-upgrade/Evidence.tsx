@@ -4,7 +4,7 @@ import './plan-upgrade.css';
 
 /** v5 §16: fixed, curated evidence notes with a strength label. Never generated. */
 export const EVIDENCE = { strength: { key: 'evidenceStrength', level: 'strong' }, fragment: { key: 'evidenceFragment', level: 'moderate' } } as const;
-export type EvidenceId = keyof typeof EVIDENCE;
+type EvidenceId = keyof typeof EVIDENCE;
 
 export function EvidenceFold({ locale, items }: { locale: 'zh' | 'en'; items: readonly EvidenceId[] }) {
   const c = planPagesCopy[locale];

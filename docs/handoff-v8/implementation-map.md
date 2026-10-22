@@ -32,14 +32,14 @@
 
 |文件|处置|负责线 / 原因|
 |---|---|---|
-|src/application/ai-candidate-save.ts|保留|0：保持既有业务边界，按需由统筹转交|
-|src/application/ai-context.ts|保留|0：保持既有业务边界，按需由统筹转交|
+|src/application/ai-candidate-save.ts|已删除|2026-10-22 无运行时调用方|
+|src/application/ai-context.ts|已删除|2026-10-22 无运行时调用方|
 |src/application/backup.ts|改造|B：扩展存储与兼容迁移，历史事实保留|
 |src/application/body-weight.ts|保留|0：保持既有业务边界，按需由统筹转交|
 |src/application/coach-plans.ts|改造|D：接入新任务，保留写入授权边界|
 |src/application/coach-reminders.ts|改造|C：仅用户设置的前台提醒|
 |src/application/day-plans.ts|改造|B：旧资料与历史读取保留；新流程按冻结契约接入|
-|src/application/guided-history.ts|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
+|src/application/guided-history.ts|已删除|2026-10-22 无运行时调用方|
 |src/application/guided.ts|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
 |src/application/history-context.ts|保留|0：保持既有业务边界，按需由统筹转交|
 |src/application/legacy-collisions.ts|保留|0：保持既有业务边界，按需由统筹转交|
@@ -47,8 +47,8 @@
 |src/application/profile.ts|改造|B：仅负责新库 metadata 初始化与迁移版本一致；不混同 Dexie、metadata 和备份 envelope 版本|
 |src/application/progress-calculation.ts|保留|0：保持既有业务边界，按需由统筹转交|
 |src/application/progress.ts|保留|0：保持既有业务边界，按需由统筹转交|
-|src/application/stage-summary-core.ts|保留|0：保持既有业务边界，按需由统筹转交|
-|src/application/stage-summary.ts|保留|0：保持既有业务边界，按需由统筹转交|
+|src/application/stage-summary-core.ts|已删除|2026-10-22 无运行时调用方|
+|src/application/stage-summary.ts|已删除|2026-10-22 无运行时调用方|
 |src/application/timers.ts|保留|0：保持既有业务边界，按需由统筹转交|
 |src/application/training-memory.ts|保留|0：保持既有业务边界，按需由统筹转交|
 |src/application/workouts.ts|保留|0：保持既有业务边界，按需由统筹转交|
@@ -63,11 +63,11 @@
 |src/domain/guided-limits.ts|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
 |src/domain/models.ts|改造|B：扩展存储与兼容迁移，历史事实保留|
 |src/domain/onboarding-v4.ts|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
-|src/domain/onboarding-v5.ts|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
+|src/domain/onboarding-v5.ts|已删除|2026-10-22 无运行时调用方|
 |src/domain/schemas.ts|改造|B：扩展存储与兼容迁移，历史事实保留|
 |src/domain/timer.ts|保留|0：保持既有业务边界，按需由统筹转交|
 |src/domain/training-time.ts|保留|0：保持既有业务边界，按需由统筹转交|
-|src/domain/units.ts|保留|0：保持既有业务边界，按需由统筹转交|
+|src/domain/units.ts|已删除|2026-10-22 无运行时调用方|
 |src/i18n/en.json|保留|0：保持既有业务边界，按需由统筹转交|
 |src/i18n/index.ts|保留|0：保持既有业务边界，按需由统筹转交|
 |src/i18n/zh.json|保留|0：保持既有业务边界，按需由统筹转交|
@@ -75,7 +75,7 @@
 |src/persistence/repository.ts|改造|B：扩展存储与兼容迁移，历史事实保留|
 |src/ui/analytics-theme.css|删除|0：第3波替换并确认无引用后删除；暂不删除|
 |src/ui/App.tsx|保留|0：保持既有业务边界，按需由统筹转交|
-|src/ui/calendar-projection.ts|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
+|src/ui/calendar-projection.ts|已删除|2026-10-22 无运行时调用方|
 |src/ui/coach.css|删除|0：第3波替换并确认无引用后删除；暂不删除|
 |src/ui/components/AiCandidateEditor.tsx|保留|0：保持既有业务边界，按需由统筹转交|
 |src/ui/components/Appearance.tsx|改造|A：主题与陶瓷组件|
@@ -92,7 +92,7 @@
 |src/ui/components/DayPlansPanel.tsx|删除（第 3 波）|0：旧资料读取兼容留在数据层；替换路由后删除旧引导/排期UI|
 |src/ui/components/ExerciseDetails.tsx|保留|0：保持既有业务边界，按需由统筹转交|
 |src/ui/components/ExerciseEditor.tsx|保留|0：保持既有业务边界，按需由统筹转交|
-|src/ui/components/ExerciseMedia.tsx|保留|0：保持既有业务边界，按需由统筹转交|
+|src/ui/components/ExerciseMedia.tsx|已删除|2026-10-22 无运行时调用方|
 |src/ui/components/ExerciseTargets.tsx|保留|0：保持既有业务边界，按需由统筹转交|
 |src/ui/components/FloatingCoach.tsx|改造|F：保留全局单实例与状态|
 |src/ui/components/guided/CandidateEditor.tsx|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
@@ -124,11 +124,11 @@
 |src/ui/components/TrialAccess.tsx|保留|0：保持既有业务边界，按需由统筹转交|
 |src/ui/components/WorkoutLifecycleControls.tsx|保留|0：保持既有业务边界，按需由统筹转交|
 |src/ui/components/WorkoutTimer.tsx|保留|0：保持既有业务边界，按需由统筹转交|
-|src/ui/day-plan-feedback.ts|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
+|src/ui/day-plan-feedback.ts|已删除|2026-10-22 无运行时调用方|
 |src/ui/guided-theme.css|删除|0：第3波替换并确认无引用后删除；暂不删除|
 |src/ui/guided.css|删除|0：第3波替换并确认无引用后删除；暂不删除|
 |src/ui/icons-v5.css|删除|0：第3波替换并确认无引用后删除；暂不删除|
-|src/ui/legacy-confirmation.ts|保留|0：保持既有业务边界，按需由统筹转交|
+|src/ui/legacy-confirmation.ts|已删除|2026-10-22 无运行时调用方|
 |src/ui/onboarding-theme.css|删除|0：第3波替换并确认无引用后删除；暂不删除|
 |src/ui/onboarding-v4.css|删除|0：第3波替换并确认无引用后删除；暂不删除|
 |src/ui/pages/AiPage.tsx|改造|0：E/F在独占目录实现新页，统筹第3波替换旧路由|

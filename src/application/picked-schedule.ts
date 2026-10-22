@@ -23,7 +23,7 @@ export function explicitScheduleChange(text: string): boolean {
 }
 
 /** The latest user words of a coach request (chat message or MODIFY_PLAN instruction). */
-export function latestUserText(request: CoachRequest): string {
+function latestUserText(request: CoachRequest): string {
   const message = [...request.messages].reverse().find(row => row.role === 'user')?.content ?? '';
   return message || ('instruction' in request ? request.instruction : '');
 }

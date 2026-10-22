@@ -2,7 +2,7 @@ export const financeCopy={zh:{dailyMessageLimit:'每人每天消息上限',ledge
 export type FinanceLanguage='zh'|'en';
 export function financeLabel(value:string,language:FinanceLanguage){const labels:Record<string,[string,string]>={ONBOARD_PLAN:['生成计划','Create plan'],ADJUST_TODAY:['今日调整','Adjust today'],MODIFY_PLAN:['修改计划','Modify plan'],PERIOD_REVIEW:['回顾','Review'],CHAT:['对话','Chat'],understand:['理解目标','Understand goal'],generate:['生成计划','Generate plan'],adjust:['今日调整','Adjust today'],modify:['修改计划','Modify plan'],review:['回顾','Review'],summary:['回顾','Review'],reserved:['已预留','Reserved'],submitted:['已提交','Submitted'],pending:['待核算','Pending settlement'],settled:['已核算','Settled'],released:['已释放','Released'],fallback:['本地规则','Local rules']};return labels[value]?.[language==='zh'?0:1]??(language==='zh'?'其他或尚未记录':'Other / not recorded')}
 
-export type UsageOutcome='success'|'fallback'|'failed';
+type UsageOutcome='success'|'fallback'|'failed';
 /** Usage rows store a result or a provider failure code; operators only see plain outcomes. */
 export function usageResultOutcome(result:string):UsageOutcome{return result==='success'||result==='repaired'||result==='no_change'?'success':result==='fallback'?'fallback':'failed'}
 const failureReasons:[RegExp,string,string][]=[

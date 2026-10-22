@@ -12,7 +12,7 @@ export type CautionJoint=typeof cautionJoints[number];
 export type CautionLevels=Partial<Record<CautionJoint,{level:0|1|2;changedAt:string}>>;
 export interface CautionMorning {workoutId:string;joint:CautionJoint;painLastedToNextMorning:boolean}
 export type CautionCheckinRow=TrainingCheckinRow&{cautionMorning?:CautionMorning};
-export interface CautionFollowup {pattern:string;appliedAt:string;sourceWorkoutId:string;cautionLevelDelta:number}
+interface CautionFollowup {pattern:string;appliedAt:string;sourceWorkoutId:string;cautionLevelDelta:number}
 const rules=new Rules(),jointSchema=z.enum(cautionJoints),invalid=(message:string):never=>{throw new DomainError('INVALID',message);};
 const morningSchema=z.strictObject({workoutId:z.uuid(),joint:jointSchema,painLastedToNextMorning:z.boolean()});
 const reviewSchema=z.strictObject({joint:jointSchema,level:z.union([z.literal(0),z.literal(1)]),answers:z.record(z.string(),z.boolean()),requestedAt:z.iso.datetime()});
@@ -32,7 +32,7 @@ export function effectiveCautionLevels(stored:CautionLevels|undefined,history:re
  return levels;
 }
 /** Independent engine callers can use the same predicate without treating one low report as an entire low-pain workout. */
-export function allPerformedJointSetsLow(record:WorkoutRecord,joint:CautionJoint,source=rules):boolean {
+function allPerformedJointSetsLow(record:WorkoutRecord,joint:CautionJoint,source=rules):boolean {
  if(record.sets.some(set=>!source.byExercise.has(set.exerciseId)))return false;
  const sets=record.sets.filter(set=>(source.byExercise.get(set.exerciseId)?.joint_load[joint]??0)>0),keys=new Set(sets.map(set=>`${set.itemIndex}:${set.setIndex}:${set.exerciseId}`));
  if(!sets.length||keys.size!==sets.length)return false;

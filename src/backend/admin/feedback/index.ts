@@ -8,7 +8,7 @@ import {adminJson,AdminError,requireAdminDb,type AdminContext} from '../core/con
 export interface FeedbackRow {id:string;createdAt:number;subjectShortId:string|null;message:string;contact:string|null;locale:string;status:'new'|'handled';handledAt:number|null}
 type Raw={id:string;created_at:number;subject_short_id:string|null;message:string;contact:string|null;locale:string;status:'new'|'handled';handled_at:number|null};
 const row=(r:Raw):FeedbackRow=>({id:r.id,createdAt:r.created_at,subjectShortId:r.subject_short_id,message:r.message,contact:r.contact,locale:r.locale,status:r.status,handledAt:r.handled_at});
-export const feedbackStatusSchema=z.strictObject({id:z.uuid(),status:z.enum(['new','handled'])});
+const feedbackStatusSchema=z.strictObject({id:z.uuid(),status:z.enum(['new','handled'])});
 export async function handleFeedbackAdmin(request:Request,c:AdminContext):Promise<Response|undefined>{
  const url=new URL(request.url),part=url.pathname.split('/console/')[1];
  if(part!=='feedback'&&part!=='feedback/status')return;

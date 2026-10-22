@@ -3,7 +3,7 @@ import { entryCopy, fill } from '../../../i18n/features/onboarding/entry';
 import { HomeExit } from '../../components/HomeExit';
 import { PrimaryButton } from '../../components/kit';
 
-export interface OnboardingFrameProps {
+interface OnboardingFrameProps {
   locale: 'zh' | 'en';
   /** 1-based outer step and total. */
   step: number; total: number;

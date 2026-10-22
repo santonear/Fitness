@@ -21,7 +21,7 @@ export const activeBuckets = (points: readonly ChartPoint[]) => points.filter(po
 /** `MM/DD` for compact date chips. */
 export const shortDate = (date: string) => date.slice(5).replace('-', '/');
 
-export interface SetLine { exerciseId: string; text: string; note?: string }
+interface SetLine { exerciseId: string; text: string; note?: string }
 /**
  * Consecutive sets of one exercise become one line: identical sets read "2 × 10 次 · 8 公斤",
  * different ones are joined with " / ". Every set note stays visible next to its set.

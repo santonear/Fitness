@@ -16,4 +16,3 @@ export const featureCopy:Record<string,[string,string,string,string]>={
   activityImport:['活动导入','启用用户主动选择的活动数据导入。','Activity import','Enable user-selected activity imports.'],
   trainingReminders:['训练提醒','显示“我的”里的训练提醒设置和应用内提醒；默认关闭，已保存的提醒设置不会被删除。','Training reminders','Show reminder settings in Me and in-app reminders. Off by default; saved reminder settings are kept.'],
 };
-export const taskCopy:Record<string,[string,string]>={ASSISTANT_CHAT:['芽芽对话','Assistant chat'],ONBOARD_PLAN:['生成计划','Create plan'],ADJUST_TODAY:['今日调整','Adjust today'],MODIFY_PLAN:['修改计划','Modify plan'],PERIOD_REVIEW:['回顾','Review']};

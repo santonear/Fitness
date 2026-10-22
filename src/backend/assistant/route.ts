@@ -11,9 +11,9 @@ import {readFeatureFlags} from '../feature-config';
 import type {FeatureConfigEnv} from '../feature-config';
 export type AssistantEnv=DeepSeekWorkerEnv&FeatureConfigEnv&{ASSISTANT_MAX_OUTPUT_TOKENS?:string;ASSISTANT_MAX_ATTACHMENT_TOKENS?:string};
 // Official pricing verified 2026-10-12: uncached peak CNY 2 / 8 per million. Display estimate, never admission.
-export const assistantPrice={inputFenPerMillion:200,outputFenPerMillion:800,version:'deepseek-flash-2026-10-12-peak'};
+const assistantPrice={inputFenPerMillion:200,outputFenPerMillion:800,version:'deepseek-flash-2026-10-12-peak'};
 const json=(value:unknown,status=200)=>Response.json(value,{status,headers:{'Cache-Control':'no-store'}});
-export async function assistantSubject(request:Request,env:AssistantEnv){
+async function assistantSubject(request:Request,env:AssistantEnv){
  if(!env.CONTROL_DB||!env.CONTROL_DIGEST_SECRET)throw new AssistantAccessError('SERVICE_UNAVAILABLE',503);
  const cookies=(request.headers.get('cookie')??'').split(';').map(s=>s.trim()).filter(s=>s.startsWith('__Host-fitness_trial='));
  const token=cookies.length===1?cookies[0].slice('__Host-fitness_trial='.length):'';

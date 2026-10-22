@@ -32,7 +32,7 @@ export type OnboardingAnswers = Pick<CoachProfile, 'goalText' | 'scheduleOrigina
   /** Planned start time of day, HH:MM. */
   startTime?: string;
 };
-export interface OnboardingPageProps {
+interface OnboardingPageProps {
   engineEnabled?:boolean; locale: V8Locale; step: 0 | 1 | 2 | 3 | 4; bodyEnabled?: boolean; answers: OnboardingAnswers;
   slots?: Partial<Pick<ThemeSlots, 'BrandMark' | 'AiLine' | 'Suggestions'>>;
   mode: 'ai' | 'basic'; busy?: boolean; error?: string;

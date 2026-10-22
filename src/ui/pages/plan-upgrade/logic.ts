@@ -23,9 +23,8 @@ export function figureShape(values: { heightCm?: number; weightKg?: number; wais
   return { sex, ...(values?.heightCm ? { heightCm: values.heightCm } : {}), ...(weightKg ? { weightKg } : {}), ...(values?.waistCm ? { waistCm: values.waistCm } : {}) };
 }
 
-export interface WeightRow { localDate: string; weightGrams: number }
+interface WeightRow { localDate: string; weightGrams: number }
 const sorted = (rows: readonly WeightRow[]) => [...rows].sort((a, b) => a.localDate.localeCompare(b.localDate));
-export const latestWeight = (rows: readonly WeightRow[]) => sorted(rows).at(-1);
 
 /** The earlier weight for the dashed outline: the record closest to a month before the latest one (at least 3 weeks earlier). */
 export function ghostWeight(rows: readonly WeightRow[]): WeightRow | undefined {
@@ -86,7 +85,6 @@ export function shownFocus(focus: SessionMuscleFocus, exerciseId: string | undef
 export const testItemsFor = (age: number | undefined): FitnessTestItem[] =>
   FITNESS_TEST_ITEMS.filter(item => item !== 'chairStand30s' || (age ?? 0) >= 60);
 
-export interface CampLike { id: string; title: string; reachedAt?: string }
 /** 起点 → 已到营地 → 现在 → 下一站 → 终点. */
 export function journeyStops(journey: Pick<Journey, 'camps' | 'destination'> | undefined, locale: Locale): JourneyStop[] {
   const c = planPagesCopy[locale];
@@ -126,8 +124,6 @@ export function breathingCycles(minutes: number) {
 }
 export const breathingPhase = (elapsedSeconds: number) => (elapsedSeconds % 10) < 4 ? 'inhale' as const : 'exhale' as const;
 
-const zhNumber = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
-export const ordinalZh = (n: number) => zhNumber[n] ?? String(n);
 
 /** v5 §19: only events from bodyChangeEvents() are spoken; safety kinds carry no emoji. */
 export function bodyChangeLine(event: BodyChangeEvent, locale: Locale, names: { metric: string; from?: string; to?: string; month?: string }): string | undefined {
@@ -164,8 +160,6 @@ export const testValueText = (item: FitnessTestItem, value: number, locale: Loca
   return unit ? `${value} ${unit}` : String(value);
 };
 
-/** First-meeting answer → suggested route (shape only when the person chose it). */
-export const suggestedRoute = (whyIndex: number | undefined) => whyIndex === 3 ? 'shape' as const : 'health' as const;
 
 /** Weighted sets from finished workouts, for personal records (local only). */
 type LiftSet = { exerciseId: string; reps?: number; loadGrams?: number | null };

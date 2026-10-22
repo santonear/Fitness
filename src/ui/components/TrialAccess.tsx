@@ -36,7 +36,7 @@ const messages: Record<string, [string, string]> = {
   SUBJECT_NOT_FOUND: ['资格不可用或已撤销，本地训练数据未改变。', 'Access is unavailable or revoked. Local training data is unchanged.'],
   USE_EXTENSION: ['已有资格，请申请延期或补发。', 'You already have a trial. Request an extension or replacement.'],
 };
-export function accessError(reason: unknown, zh: boolean) {
+function accessError(reason: unknown, zh: boolean) {
   const key = reason instanceof Error ? reason.message : '';
   return messages[key]?.[zh ? 0 : 1] ?? (zh ? '暂时无法完成操作，状态未知。请稍后刷新，已保存训练不受影响。' : 'The service is unavailable; status is unknown. Refresh later. Saved training is unaffected.');
 }

@@ -1,18 +1,18 @@
 import {shortId} from '../admin/core/short-id';
 import type { AdminDatabase } from '../admin/core/contracts';
 export class AssistantAccessError extends Error { constructor(public code:string,public status:number,public resetAt?:number){super(code)} }
-export interface DailyState {subject_id:string;day:string;time_zone:string;reset_at:number;used:number;active_request:string|null;lease_until:number}
+interface DailyState {subject_id:string;day:string;time_zone:string;reset_at:number;used:number;active_request:string|null;lease_until:number}
 export function localDay(now:number,timeZone:string){return new Intl.DateTimeFormat('en-CA',{timeZone,year:'numeric',month:'2-digit',day:'2-digit'}).format(now)}
 /** Find the next local date boundary, including DST and non-whole-hour offsets. */
 export function nextMidnight(now:number,timeZone:string){const day=localDay(now,timeZone);let lo=now,hi=now+27*3600000;while(hi-lo>1){const mid=Math.floor((lo+hi)/2);if(localDay(mid,timeZone)===day)lo=mid;else hi=mid}return hi}
-export function admissionWindow(previous:DailyState|null,now:number,timeZone:string){
+function admissionWindow(previous:DailyState|null,now:number,timeZone:string){
  if(previous&&previous.lease_until>now&&previous.active_request)throw new AssistantAccessError('CONCURRENT_REQUEST',409);
  if(previous&&now<previous.reset_at)return {day:previous.day,timeZone:previous.time_zone,resetAt:previous.reset_at,used:previous.used};
  return {day:localDay(now,timeZone),timeZone,resetAt:nextMidnight(now,timeZone),used:0};
 }
 export interface UsageCall {inputTokens?:number;outputTokens?:number;result:string;stage:string;failureCode?:string;failureDetail?:string}
-export interface UsagePrice {inputFenPerMillion:number;outputFenPerMillion:number;version:string}
-export function estimateFen(call:UsageCall,price:UsagePrice):number|null {return call.inputTokens===undefined||call.outputTokens===undefined?null:(call.inputTokens*price.inputFenPerMillion+call.outputTokens*price.outputFenPerMillion)/1000000}
+interface UsagePrice {inputFenPerMillion:number;outputFenPerMillion:number;version:string}
+function estimateFen(call:UsageCall,price:UsagePrice):number|null {return call.inputTokens===undefined||call.outputTokens===undefined?null:(call.inputTokens*price.inputFenPerMillion+call.outputTokens*price.outputFenPerMillion)/1000000}
 export class AssistantUsageStore {
  constructor(private db:AdminDatabase){}
  async read(subjectId:string){return this.db.prepare('SELECT * FROM assistant_daily WHERE subject_id=?').bind(subjectId).first<DailyState>()}

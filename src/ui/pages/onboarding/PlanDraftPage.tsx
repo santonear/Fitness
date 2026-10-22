@@ -21,7 +21,7 @@ import { WeekPlan, PlanReasons, PlanStops, PlanTip, SessionItems } from '../plan
 import './onboarding.css';
 
 export type OnboardingProposal = Extract<CoachResponse, { type: 'plan_proposal' }>;
-export interface PlanDraftPageProps {
+interface PlanDraftPageProps {
   locale: V8Locale; candidate: OnboardingProposal & {profile?:{place?:string};enginePlan?:EnginePlan;startDate?:string;trainingDates?:string[];startTime?:string};
   /** Updates the draft's start date (local YYYY-MM-DD); nothing is saved until the user accepts. */
   onStartDate?: (date: string) => void;

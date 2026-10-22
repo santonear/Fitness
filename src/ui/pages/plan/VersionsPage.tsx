@@ -7,7 +7,7 @@ import './plan.css';
 import guideZh from '../../../i18n/features/training/guide.zh.json';
 import guideEn from '../../../i18n/features/training/guide.en.json';
 
-export interface VersionsPageProps {
+interface VersionsPageProps {
   versions: readonly PlanVersion[];
   currentVersionId: string;
   language: PlanLanguage;

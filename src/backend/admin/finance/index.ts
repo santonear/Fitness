@@ -8,7 +8,7 @@ import { FinanceStore, environmentDefaults, runtimeSchema, validateAnnouncement,
 import { ledgerDailyCosts, ledgerRecentCosts, financeLocalDate, financeTodos, ledgerCsv, ledgerProjection, reconciliationTodos } from './report';
 export * from './runtime';
 export * from './report';
-export type FinanceContext = AdminContext & { env: AdminContext['env'] & FinanceEnv; settle?: (subjectId:string, requestId:string, actualCost:number)=>Promise<void> };
+type FinanceContext = AdminContext & { env: AdminContext['env'] & FinanceEnv; settle?: (subjectId:string, requestId:string, actualCost:number)=>Promise<void> };
 const monthSchema=z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/);
 export async function evaluateFinanceTodos(context:AdminContext) {
   if(!context.env.ADMIN_DB || !context.env.CONTROL_DB) return [];

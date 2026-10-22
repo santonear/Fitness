@@ -21,7 +21,7 @@ export interface ControlConfig {
 export const testConfig: ControlConfig = { mode: 'local-test', timeZone: 'UTC', k: 1, budgetLimit: 3500,
   maximumRequestCost: 1000, requestBounds: { understand: 100, generate: 300, summary: 300 }, quotas: { understand: 8, generate: 4, summary: 4 },
   maxInputBytes: 65536, maxConcurrent: 4, adminSecret: 'local-test-admin-only', digestSecret: 'local-test-digest-key-only' };
-export interface MockSupplier { kind: 'local-mock'; costUpperBoundFen?(request: AiRequest): number | undefined; call(request: AiRequest): Promise<{ result: unknown; actualCost?: number }> }
+interface MockSupplier { kind: 'local-mock'; costUpperBoundFen?(request: AiRequest): number | undefined; call(request: AiRequest): Promise<{ result: unknown; actualCost?: number }> }
 export interface ExternalSupplier { kind: 'external-transport'; costUpperBoundFen?(request: AiRequest): number | undefined; call(request: AiRequest): Promise<{ result: unknown; actualCost?: number }> }
 function token() { return Array.from(crypto.getRandomValues(new Uint8Array(32)), byte => byte.toString(16).padStart(2, '0')).join(''); }
 function integer(value: number) { return Number.isSafeInteger(value) && value >= 0; }

@@ -29,7 +29,7 @@ const olderAge = new Rules()
   .trigger.any.find((condition: { user?: string }) => condition.user === "age")
   .gte as number;
 
-export interface EngineProfileDraftProps {
+interface EngineProfileDraftProps {
   value: EngineProfileFields;
   onChange: (value: EngineProfileFields) => void;
   locale: "zh" | "en";

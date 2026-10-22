@@ -10,7 +10,7 @@ import {shortId} from '../core/short-id';
  */
 export interface UserActivity {registeredAt:number|null;lastActiveAt:number|null;monthCalls:number;monthCostFen:number;monthCostUnknown:boolean}
 
-export function policyMonth(now:number,policy='{}'){
+function policyMonth(now:number,policy='{}'){
  let timeZone='Asia/Shanghai';try{timeZone=(JSON.parse(policy) as {timeZone?:string}).timeZone??timeZone}catch{/* default */}
  const parts=new Intl.DateTimeFormat('en-CA',{timeZone,year:'numeric',month:'2-digit'}).formatToParts(now);
  return {month:`${parts.find(p=>p.type==='year')!.value}-${parts.find(p=>p.type==='month')!.value}`,timeZone};

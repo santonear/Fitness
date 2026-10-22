@@ -103,7 +103,7 @@ export function PlanReasons({ reasons, locale }: { reasons: readonly string[]; l
 
 const isEnvironmentNotice = (code: string) => code.startsWith('engine.copy.environment_');
 /** Stop-level safety notices stay on top (unchanged); everything else becomes one gentle tip at the bottom, the rest folded. */
-export function splitNotices(plan: Pick<EnginePlan, 'notices'> & Partial<Pick<EnginePlan, 'gates'>> | undefined) {
+function splitNotices(plan: Pick<EnginePlan, 'notices'> & Partial<Pick<EnginePlan, 'gates'>> | undefined) {
   const all = plan ? engineDisplayNotices(plan) : [];
   const stops = all.filter(notice => notice.severity === 'stop'), others = all.filter(notice => notice.severity !== 'stop');
   // An actionable environment notice (it opens the training-space settings) is the one shown first.

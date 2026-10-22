@@ -6,7 +6,7 @@ const taskFiles: Record<V3Task, keyof typeof v3PromptSections> = {
   ONBOARD_PLAN:'tasks/plan', ADJUST_TODAY:'tasks/today', MODIFY_PLAN:'tasks/modify', PERIOD_REVIEW:'tasks/review',
 };
 
-export type V3Topic = 'nutrition';
+type V3Topic = 'nutrition';
 const topicFiles: Record<V3Topic, keyof typeof v3PromptSections> = { nutrition:'topics/nutrition' };
 
 export function v3Prompt(stage:'text'|'attachment',task?:V3Task,repairErrors?:string,engine=false,topic?:V3Topic) {

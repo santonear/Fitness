@@ -11,13 +11,13 @@ export const monthTitle = (month: string, locale: 'zh' | 'en') =>
   new Intl.DateTimeFormat(locale === 'zh' ? 'zh-CN' : 'en', { timeZone: 'UTC', year: 'numeric', month: 'long' }).format(new Date(`${month}-01T00:00:00Z`));
 
 /** Words for a cleaned-up selection: which days were left out and why (conservative, never silent). */
-export function droppedNotice(result: Pick<NormalizedDates, 'rest' | 'outside'>, today: string, locale: 'zh' | 'en') {
+function droppedNotice(result: Pick<NormalizedDates, 'rest' | 'outside'>, today: string, locale: 'zh' | 'en') {
   const t = trainingDaysCopy[locale], list = (dates: string[]) => dates.map(date => startDateLabel(date, today, locale, false)).join(locale === 'zh' ? '、' : ', ');
   return [result.outside.length ? fill(t.outside, { dates: list(result.outside) }) : '', result.rest.length ? fill(t.rest, { dates: list(result.rest) }) : ''].filter(Boolean).join(' ');
 }
 
 interface Drag { anchor: string; current: string; mode: 'add' | 'remove'; pointerId: number }
-export interface TrainingCalendarProps {
+interface TrainingCalendarProps {
   locale: 'zh' | 'en';
   /** Today's local date: earlier days cannot be picked. */
   today: string;

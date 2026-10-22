@@ -28,7 +28,7 @@ export function estimatedOneRepMaxKg(loadGrams: number, reps: number): number | 
   if (!(loadGrams > 0) || !(reps >= 1) || reps > 12) return undefined;
   return Math.round((loadGrams / 1000) * (reps === 1 ? 1 : 1 + reps / 30) * 10) / 10;
 }
-export interface StrengthTrend extends Trend { exerciseId: string; sets: number }
+interface StrengthTrend extends Trend { exerciseId: string; sets: number }
 /** Main lifts = the loaded exercises the user did most often; per date the best estimated 1RM. */
 export function strengthTrends(workouts: readonly WorkoutRecord[], limit = 3): StrengthTrend[] {
   const byExercise = new Map<string, { sets: number; best: Map<string, number> }>();
@@ -54,7 +54,7 @@ export function sessionsByMonth(workouts: readonly WorkoutRecord[], month: strin
   while (months.length < count) months.unshift(previousMonth(months[0]));
   return months.map(key => ({ date: key, value: workouts.filter(workout => finished(workout) && monthKey(workout.localDate) === key).length }));
 }
-export interface MonthSummary { month: string; sessions: number; complete: number; minutes: number; sets: number; weightChange?: number }
+interface MonthSummary { month: string; sessions: number; complete: number; minutes: number; sets: number; weightChange?: number }
 const minutesOf = (workout: WorkoutRecord) => {
   const correction = (workout as WorkoutRecord & { timeCorrections?: { startedAt: string; endedAt: string }[] }).timeCorrections?.at(-1);
   const start = correction?.startedAt ?? workout.startedAt, end = correction?.endedAt ?? workout.endedAt;
