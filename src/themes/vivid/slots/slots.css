@@ -18,7 +18,7 @@
 .v9-vivid-stat b { font-size: var(--t7); line-height: 1; color: var(--c-ink); }
 .v8-start .v9-btn.v9-vivid-hero-start { color: var(--c-accent-text); font-weight: 700; letter-spacing: var(--tr-button); }
 .v8-ai-line.v9-vivid-ai { display: flex; align-items: center; gap: var(--s4); padding: calc(var(--s4) + 2px) var(--s5) calc(var(--s4) + 2px) var(--s3); border-radius: var(--r-panel); background: var(--grain-card), var(--c-ai-panel); color: var(--c-ink); border: var(--bw) solid var(--card-border); box-shadow: var(--card-shadow); font-size: var(--t4); line-height: 1.55; font-weight: 500; }
-.v9-vivid-set .v8-set-value { font-size: calc(var(--t8) * .8); color: var(--c-accent-text); }
+.v9-vivid-set .v8-set-value { font-size: var(--t7); color: var(--c-accent-text); }
 .v9-vivid-rest { padding: var(--s6) var(--s4); border-radius: var(--r-hero); background: var(--grain-wood), var(--c-invert-bg); box-shadow: var(--el-inset); }
 .v9-vivid-rest .v8-rest { color: var(--c-invert-ink); letter-spacing: .28em; }
 .v9-vivid-rest time { font-size: calc(var(--t8) * 1.5); color: var(--c-invert-ink); letter-spacing: -0.02em; }

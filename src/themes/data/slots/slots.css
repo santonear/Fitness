@@ -13,7 +13,7 @@
 .v9-data-num { font-family: var(--f-num); font-size: var(--t5); font-weight: var(--w-num); color: var(--c-ink); }
 .v8-start.v9-data-start h2 { font-family: var(--f-body); font-weight: 700; font-size: var(--t5); }
 .v8-ai-line.v9-data-ai { display: flex; align-items: center; gap: var(--s3); padding: var(--s3) var(--s4); border-radius: var(--r-panel); font-size: var(--t3); }
-.v9-data-set .v8-set-value { font-weight: 200; font-size: calc(var(--t8) * .9); color: var(--c-ink); letter-spacing: -0.02em; text-shadow: 0 0 var(--s5) rgba(92,242,230,.45); }
+.v9-data-set .v8-set-value { font-weight: 200; font-size: var(--t7); color: var(--c-ink); letter-spacing: -0.02em; text-shadow: 0 0 var(--s5) rgba(92,242,230,.45); }
 .v9-data-rest time { font-weight: 200; color: var(--c-ink); text-shadow: 0 0 var(--s5) rgba(92,242,230,.45); }
 .v8-feature.v9-data-feature { border-radius: var(--r-panel); }
 .v9-data-nav { display: grid; place-items: center; inline-size: calc(var(--s8) + var(--s2)); block-size: var(--touch-primary); border-radius: var(--r-control); }
