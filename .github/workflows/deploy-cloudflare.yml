@@ -34,9 +34,27 @@ jobs:
             exit 1
           fi
 
+  # Bo 2026-10-22: the full browser suites already ran on the pull request for
+  # this exact code, so a release runs only the quick checks before approval;
+  # the smoke test after deploy checks the live site.
   tests:
     needs: preflight
-    uses: ./.github/workflows/ci.yml
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci
+      - run: node tools/v8/check.mjs
+      - run: npm run typecheck
+      - run: npm test -- --exclude tests/training-engine/diagnostic.test.ts
+      - run: npm run build
+      - run: npm run engine:check
 
   release:
     needs: tests
