@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { exercises } from '../../catalog/exercises';
 import { replacementScore } from '../../catalog/catalog-service';
 import { engineAction } from '../../application/engine-plan';
-import { estimatePlannedMinutes } from '../../application/rules/duration-estimate';
+import { estimatePlannedMinutes } from '../../domain/duration-estimate';
 import { isFeatureEnabled } from '../../application/feature-flags';
 import { buildCoachRequest } from '../../coach/request-builder';
 import { coachResponseSchema, type CoachRequest, type CoachResponse } from '../../coach/contracts';

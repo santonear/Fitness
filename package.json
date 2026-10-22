@@ -21,7 +21,7 @@
     "pretypecheck": "npm run catalog:prepare && npm run engine:prepare",
     "prebuild": "npm run catalog:prepare && npm run engine:prepare",
     "pretest": "npm run catalog:prepare && npm run engine:prepare",
-    "lint": "node tools/v8/check.mjs",
+    "lint": "node tools/v8/check.mjs && node tools/check-layers.mjs",
     "engine:prepare": "node tools/training-engine/compile-annotations.ts",
     "engine:check": "node tools/training-engine/check-data.ts && node tools/training-engine/coverage.ts",
     "engine:fast": "node tools/training-engine/fast.mjs",

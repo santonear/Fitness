@@ -1,7 +1,7 @@
 import type * as P from '../../contract';
 import * as Base from '../../base/slots';
 import { PrimaryButton } from '../../../ui/components/kit/primitives';
-import { Yaya } from '../../../ui/components/Yaya';
+import { YayaFigure } from '../../YayaFigure';
 import './slots.css';
 
 /** 温和陪伴 (Gentle.dc.html): white rounded cards, lime ringed buttons, the weekly sprout. */
@@ -16,12 +16,12 @@ export function WeekProgress({ complete, partial, target, label }: P.WeekProgres
     <span>{label}</span></div>;
 }
 export function StartHero({ name, templateId, estimatedMinutes, startLabel, nextLabel, disabled, onStart }: P.StartHeroProps) {
-  return <div className="v8-start v9-gentle-start" data-template-id={templateId}><Yaya pose="cheer" size={120} alt="" />
+  return <div className="v8-start v9-gentle-start" data-template-id={templateId}><YayaFigure mascot="gentle" pose="cheer" size={120} alt="" />
     {nextLabel && <span className="v9-gentle-kicker">{nextLabel}</span>}<h2>{name}</h2><span className="v8-minutes">{estimatedMinutes} min</span>
     <PrimaryButton disabled={disabled} onClick={onStart}>{startLabel}</PrimaryButton></div>;
 }
 export function Suggestions(props: P.SuggestionsProps) { return <div className="v9-gentle-suggestions"><Base.Suggestions {...props} /></div>; }
-export function AiLine({ children }: P.AiLineProps) { return <div className="v8-ai-line v9-gentle-ai"><Yaya pose="head" size={48} alt="" /><div>{children}</div></div>; }
+export function AiLine({ children }: P.AiLineProps) { return <div className="v8-ai-line v9-gentle-ai"><YayaFigure mascot="gentle" pose="head" size={48} alt="" /><div>{children}</div></div>; }
 export function SetValue(props: P.SetValueProps) { return <div className="v9-gentle-set"><Base.SetValue {...props} /></div>; }
 export function RestClock(props: P.RestClockProps) { return <div className="v9-gentle-rest"><span className="v9-gentle-breath" aria-hidden="true" /><Base.RestClock {...props} /></div>; }
 export function FeatureCard({ children, context, motionReduced, trainingActive }: P.FeatureCardProps) {

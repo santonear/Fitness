@@ -7,7 +7,7 @@ import {sessionDuration} from '../../application/rules/session-duration';
 import {explicitScheduleChange} from '../../application/picked-schedule';
 import { assistantIntentSchema, type AssistantAttachment, type AssistantIntent, type AssistantRequest } from '../../assistant/contracts';
 import { basicProposal } from '../../application/v8-workflow';
-import { estimatePlannedMinutes } from '../../application/rules/duration-estimate';
+import { estimatePlannedMinutes } from '../../domain/duration-estimate';
 import { selectAssistantCandidates, assistantMovement } from '../../catalog/ai-catalog';
 import {applicableAssistantCandidates,lowerBodyAddition} from './applicable-candidates';
 import { catalogMetadata } from '../../catalog/registry';

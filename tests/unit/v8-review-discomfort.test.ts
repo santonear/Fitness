@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { exercises } from '../../src/catalog/exercises';
-import { estimatePlannedMinutes } from '../../src/application/rules/duration-estimate';
+import { estimatePlannedMinutes } from '../../src/domain/duration-estimate';
 import { discomfortReplacement } from '../../src/application/rules/basic-items';
 import { recurringDiscomfort, suggestChange } from '../../src/application/review/suggest';
 import { computeWeekFacts } from '../../src/application/review/compute';

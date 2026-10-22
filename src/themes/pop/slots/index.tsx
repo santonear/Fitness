@@ -1,7 +1,7 @@
 import type * as P from '../../contract';
 import * as Base from '../../base/slots';
 import { PrimaryButton, ProgressRing } from '../../../ui/components/kit/primitives';
-import { Yaya } from '../../../ui/components/Yaya';
+import { YayaFigure } from '../../YayaFigure';
 import './slots.css';
 
 /** 柔光拟物 (Pop.dc.html): raised dials, recessed wells, warm amber gradient arcs. */
@@ -16,7 +16,7 @@ export function StartHero({ name, templateId, estimatedMinutes, startLabel, next
     <PrimaryButton disabled={disabled} onClick={onStart}>{startLabel}</PrimaryButton></div>;
 }
 export function Suggestions(props: P.SuggestionsProps) { return <div className="v9-pop-suggestions"><Base.Suggestions {...props} /></div>; }
-export function AiLine({ children }: P.AiLineProps) { return <div className="v8-ai-line v9-pop-ai"><Yaya pose="head" size={56} alt="" /><div>{children}</div></div>; }
+export function AiLine({ children }: P.AiLineProps) { return <div className="v8-ai-line v9-pop-ai"><YayaFigure mascot="pop" pose="head" size={56} alt="" /><div>{children}</div></div>; }
 export function SetValue(props: P.SetValueProps) { return <div className="v9-pop-dial"><Base.SetValue {...props} /></div>; }
 export function RestClock(props: P.RestClockProps) { return <div className="v9-pop-dial v9-pop-rest"><Base.RestClock {...props} /></div>; }
 export function FeatureCard({ children, context, motionReduced, trainingActive }: P.FeatureCardProps) {

@@ -8,7 +8,7 @@ import { exercises } from '../../../catalog/exercises';
 import { type ExerciseSearchFilters } from '../../../catalog/catalog-service';
 import { basicProposal } from '../../../application/v8-workflow';
 import { localProfile } from '../../../application/rules/local-profile';
-import { estimatePlannedMinutes } from '../../../application/rules/duration-estimate';
+import { estimatePlannedMinutes } from '../../../domain/duration-estimate';
 import { manualTrainingItems } from '../../../application/rules/manual-items';
 import { CoachPanel, type CoachApplication } from '../../components/CoachPanel';
 import { ExerciseGuidePanel } from '../../components/ExerciseGuide';

@@ -1,5 +1,5 @@
 import { describe,it,expect } from 'vitest';
-import { estimatePlannedMinutes } from '../../src/application/rules/duration-estimate';
+import { estimatePlannedMinutes } from '../../src/domain/duration-estimate';
 import { suggestChange } from '../../src/application/review/suggest';
 import { computeWeekFacts } from '../../src/application/review/compute';
 import { currentPlan } from '../fixtures/v8-plan-data';

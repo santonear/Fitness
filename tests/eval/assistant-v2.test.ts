@@ -5,7 +5,7 @@ import { EXERCISE_IDS } from '../../src/catalog/exercises';
 import { summarizeAssistantEvaluation, compareAssistantPromptVersions, promptByteBounds, evaluationUsageCalls } from '../../tools/eval/assistant-v2-metrics';
 import { parseBodyText, localProfile } from '../../src/application/rules/local-profile';
 import { basicProposal } from '../../src/application/v8-workflow';
-import { estimatePlannedMinutes } from '../../src/application/rules/duration-estimate';
+import { estimatePlannedMinutes } from '../../src/domain/duration-estimate';
 import { exercises } from '../../src/catalog/exercises';
 import { assistantMovement } from '../../src/catalog/ai-catalog';
 import { catalogMetadata } from '../../src/catalog/registry';

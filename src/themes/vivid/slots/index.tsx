@@ -2,7 +2,7 @@ import type * as P from '../../contract';
 import * as Base from '../../base/slots';
 import { PrimaryButton } from '../../../ui/components/kit/primitives';
 import { Scene } from '../../../ui/components/Scene';
-import { Yaya } from '../../../ui/components/Yaya';
+import { YayaFigure } from '../../YayaFigure';
 import './slots.css';
 
 /** 山野暖阳 (Vivid.dc.html + Scene.dc.html): arched windows over hills, serif titles, italic numerals, clay buttons. */
@@ -19,7 +19,7 @@ export function StartHero({ name, templateId, estimatedMinutes, startLabel, next
     <PrimaryButton className="v9-vivid-hero-start" tone="quiet" disabled={disabled} onClick={onStart}>{startLabel}</PrimaryButton></div>;
 }
 export function Suggestions(props: P.SuggestionsProps) { return <div className="v9-vivid-suggestions"><Base.Suggestions {...props} /></div>; }
-export function AiLine({ children }: P.AiLineProps) { return <div className="v8-ai-line v9-vivid-ai"><Yaya pose="care" size={88} alt="" /><div>{children}</div></div>; }
+export function AiLine({ children }: P.AiLineProps) { return <div className="v8-ai-line v9-vivid-ai"><YayaFigure mascot="vivid" pose="care" size={88} alt="" /><div>{children}</div></div>; }
 export function SetValue(props: P.SetValueProps) { return <div className="v9-vivid-set"><Base.SetValue {...props} /></div>; }
 export function RestClock(props: P.RestClockProps) { return <div className="v9-vivid-rest"><Base.RestClock {...props} /></div>; }
 export function FeatureCard({ children, context, motionReduced, trainingActive }: P.FeatureCardProps) {

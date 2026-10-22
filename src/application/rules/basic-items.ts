@@ -1,6 +1,6 @@
 import type { CoachProfile, PlannedItem } from '../../domain/v8/contracts';
 import { exercises } from '../../catalog/exercises';
-import { estimatePlannedMinutes } from './duration-estimate';
+import { estimatePlannedMinutes } from '../../domain/duration-estimate';
 
 type Area = CoachProfile['cautions'][number];
 // Conservative exclusions, not a medical suitability assessment.

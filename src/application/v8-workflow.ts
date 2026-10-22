@@ -50,7 +50,7 @@ import type { CoachResponse, CoachRequest } from "../coach/contracts";
 import { adaptCoachResponse } from "../coach/response-adapter";
 import { planProposalSchema } from "../coach/contracts";
 import { exercises } from "../catalog/exercises";
-import { estimatePlannedMinutes } from "./rules/duration-estimate";
+import { estimatePlannedMinutes } from "../domain/duration-estimate";
 import { manualTrainingItems } from "./rules/manual-items";
 import { basicItems } from "./rules/basic-items";
 import basicZh from "../i18n/features/onboarding/basic.zh.json";

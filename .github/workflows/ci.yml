@@ -39,6 +39,7 @@ jobs:
       - run: npm ci
       - run: node --test tools/v8/check.test.mjs
       - run: node tools/v8/check.mjs
+      - run: node tools/check-layers.mjs
       # Same functional group as tools/training-engine/test.mjs. The complete
       # diagnostic group runs in engine-audit, and verify requires both jobs.
       - run: npm run typecheck

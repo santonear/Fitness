@@ -1,7 +1,7 @@
 import type * as P from '../../contract';
 import * as Base from '../../base/slots';
 import { PrimaryButton, ProgressRing } from '../../../ui/components/kit/primitives';
-import { Yaya } from '../../../ui/components/Yaya';
+import { YayaFigure } from '../../YayaFigure';
 import './slots.css';
 
 /** 专业数据 (Data.dc.html): dark glass panels, cyan-blue jelly, glowing concentric rings, thin numerals. */
@@ -17,7 +17,7 @@ export function StartHero({ name, templateId, estimatedMinutes, startLabel, next
     <h2>{name}</h2><PrimaryButton disabled={disabled} onClick={onStart}>{startLabel}</PrimaryButton></div>;
 }
 export function Suggestions(props: P.SuggestionsProps) { return <div className="v9-data-suggestions"><Base.Suggestions {...props} /></div>; }
-export function AiLine({ children }: P.AiLineProps) { return <div className="v8-ai-line v9-data-ai"><Yaya pose="head" size={40} alt="" /><div>{children}</div></div>; }
+export function AiLine({ children }: P.AiLineProps) { return <div className="v8-ai-line v9-data-ai"><YayaFigure mascot="data" pose="head" size={40} alt="" /><div>{children}</div></div>; }
 export function SetValue(props: P.SetValueProps) { return <div className="v9-data-set"><Base.SetValue {...props} /></div>; }
 export function RestClock(props: P.RestClockProps) { return <div className="v9-data-rest"><Base.RestClock {...props} /></div>; }
 export function FeatureCard({ children, context, motionReduced, trainingActive }: P.FeatureCardProps) {

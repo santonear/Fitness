@@ -1,7 +1,6 @@
-import {z} from 'zod';
+import {conversationSchema,type AssistantConversation} from '../domain/assistant-conversation';
+export {conversationSchema,type AssistantConversation} from '../domain/assistant-conversation';
 import type {FitnessDatabase} from './db';
-export const conversationSchema=z.strictObject({id:z.uuid(),title:z.string().max(80),consent:z.strictObject({body:z.boolean(),history:z.boolean(),bodyFields:z.array(z.string().max(80)).max(20).optional()}).optional(),updatedAt:z.string().datetime(),messages:z.array(z.strictObject({role:z.enum(['user','assistant']),content:z.string().max(16000)}))});
-export type AssistantConversation=z.infer<typeof conversationSchema>;
 export function conversationStore(db:FitnessDatabase){return {
  list:()=>db.assistantConversations.orderBy('updatedAt').reverse().toArray(),
  remove:(id:string)=>db.assistantConversations.delete(id),

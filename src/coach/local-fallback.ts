@@ -2,7 +2,7 @@ import type { CoachRequest, CoachResponse } from './contracts';
 import type { CoachProfile } from '../domain/v8/contracts';
 import { exercises } from '../catalog/exercises';
 import { basicItems, discomfortReplacement, discomfortExample } from '../application/rules/basic-items';
-import { estimatePlannedMinutes } from '../application/rules/duration-estimate';
+import { estimatePlannedMinutes } from '../domain/duration-estimate';
 import zh from '../i18n/features/coach/local.zh.json';
 import en from '../i18n/features/coach/local.en.json';
 
