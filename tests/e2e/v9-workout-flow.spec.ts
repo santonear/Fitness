@@ -105,10 +105,10 @@ test('timed countdown, rest countdown with +15 s and skip, finish summary and re
   await expect(page.getByText(/如实记下来/)).toHaveCount(1);
 });
 
-test('390px screenshots of player, rest, finish and review in all five themes', async ({ page }) => {
+test('390px screenshots of player, rest, finish and review in all five themes @screens', async ({ page }) => {
   test.skip(test.info().project.name !== 'chromium', 'Screenshots are a chromium self-check');
   test.setTimeout(240_000);
-  mkdirSync('outputs/v9-workout', { recursive: true });
+  mkdirSync('test-results-review/v9-workout', { recursive: true });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.clock.install();
@@ -116,7 +116,7 @@ test('390px screenshots of player, rest, finish and review in all five themes', 
     await page.goto('/');
     await page.evaluate(theme => localStorage.setItem('fitness-theme', theme), theme);
     await startManual(page, ['平板支撑', '哑铃深蹲']);
-    const shot = async (name: string) => { await page.evaluate(() => document.fonts.ready); expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true); await page.screenshot({ path: `outputs/v9-workout/${theme}-${name}.png` }); if (theme === 'pop' && ['player-timed', 'rest', 'finish', 'review'].includes(name)) { await page.setViewportSize({ width: 1440, height: 900 }); await page.screenshot({ path: `outputs/v9-workout/pop-${name}-1440.png` }); await page.setViewportSize({ width: 390, height: 844 }); } };
+    const shot = async (name: string) => { await page.evaluate(() => document.fonts.ready); expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true); await page.screenshot({ path: `test-results-review/v9-workout/${theme}-${name}.png` }); if (theme === 'pop' && ['player-timed', 'rest', 'finish', 'review'].includes(name)) { await page.setViewportSize({ width: 1440, height: 900 }); await page.screenshot({ path: `test-results-review/v9-workout/pop-${name}-1440.png` }); await page.setViewportSize({ width: 390, height: 844 }); } };
     await shot('player-timed');
     await page.getByRole('button', { name: '开始计时', exact: true }).click();
     await page.clock.runFor(3000);

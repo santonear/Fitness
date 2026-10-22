@@ -139,7 +139,7 @@ for(const mode of ['success','denied','failure','reject','stale','stale-start'] 
  }else{
   await expect(page.getByRole('button',{name:'带回手动训练页选择',exact:true})).toBeVisible();
   if(mode==='success')await expect(page.getByRole('dialog').getByText('15 分钟',{exact:true})).toHaveCount(2);
-  if(mode==='success'&&process.env.MANUAL_AI_SCREENSHOTS==='1'){for(const width of [375,1280]){await page.setViewportSize({width,height:900});await page.getByRole('dialog').locator('.assistant-attachment').first().scrollIntoViewIfNeeded();await page.screenshot({path:`outputs/mainline-polish/mock-${width}-manual-ai-candidate.png`,animations:'disabled'});}}
+  if(mode==='success'&&process.env.MANUAL_AI_SCREENSHOTS==='1'){for(const width of [375,1280]){await page.setViewportSize({width,height:900});await page.getByRole('dialog').locator('.assistant-attachment').first().scrollIntoViewIfNeeded();await page.screenshot({path:`test-results-review/mainline-polish/mock-${width}-manual-ai-candidate.png`,animations:'disabled'});}}
   if(mode==='stale'){
    await page.evaluate(async()=>{const path='/src/persistence/repository.ts';const {repository}=await import(/* @vite-ignore */ path);const m=await repository.readMetadata();await repository.db.metadata.put({...m,restoreGeneration:(m.restoreGeneration??0)+1});});
    await expect(page.getByRole('button',{name:'带回手动训练页选择',exact:true})).toHaveCount(0);await expect(page.getByRole('dialog')).toHaveCount(0);expect(await snapshot()).toEqual(before);return;

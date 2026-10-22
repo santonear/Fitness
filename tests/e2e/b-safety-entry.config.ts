@@ -1,2 +1,0 @@
-import base from './training-engine.config';
-export default {...base,testMatch:'b-safety-entry.spec.ts',outputDir:'../../.cache/b-safety-browser-results',use:{...base.use,baseURL:'http://127.0.0.1:5417'},webServer:{...base.webServer,command:'node node_modules/vite/bin/vite.js --config tests/e2e/helpers/b-safety-vite.config.ts --configLoader runner --host 127.0.0.1 --port 5417 --strictPort',url:'http://127.0.0.1:5417'}};

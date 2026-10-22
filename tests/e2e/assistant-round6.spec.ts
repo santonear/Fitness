@@ -17,12 +17,12 @@ test('AI switch off keeps the modern panel local and makes zero model requests',
  await page.getByRole('textbox').fill('时间不够');await page.getByRole('button',{name:'发送',exact:true}).click();
  await expect(page.getByRole('log')).not.toBeEmpty();await expect(page.locator('.assistant-panel')).toContainText('现在用的是本地建议');expect(calls).toBe(0);
 });
-for(const theme of ['pop', 'vivid', 'gentle', 'data', 'fire'])for(const width of [375,1280])test(`round6 panel ${theme} ${width}`,async({page},info)=>{
+for(const theme of ['pop', 'vivid', 'gentle', 'data', 'fire'])for(const width of [375,1280])test(`round6 panel ${theme} ${width} @screens`,async({page},info)=>{
  await page.setViewportSize({width,height:900});await page.goto('/tests/fixtures/v8-coach/index.html');
  await page.addStyleTag({url:`/src/themes/${theme}/tokens.css`});await page.evaluate(theme=>document.documentElement.dataset.theme=theme,theme);
  await page.getByRole('button',{name:'跟芽芽说',exact:true}).click();await expect(page.locator('.assistant-panel')).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- if(info.project.name==='chromium')await page.screenshot({path:`outputs/assistant-round6/${theme}-${width}.png`,fullPage:true});
+ if(info.project.name==='chromium')await page.screenshot({path:`test-results-review/assistant-round6/${theme}-${width}.png`,fullPage:true});
 });
 test('admin presents one assistant settings card and preserves confirmation and service gates',async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('fitness.language','zh'));
@@ -36,5 +36,5 @@ test('admin presents one assistant settings card and preserves confirmation and 
  await page.goto('/admin/settings');const card=page.getByRole('heading',{name:'芽芽AI助手',exact:true}).locator('..');await expect(card).toBeVisible();await expect(card.getByRole('combobox')).toHaveCount(1);await expect(card.getByLabel('每人每天消息上限')).toHaveValue('30');await expect(page.getByRole('heading',{name:'AI 服务开关'})).toHaveCount(0);
  await expect(card).toContainText('当前：开启');await card.getByRole('button',{name:'关闭 AI',exact:true}).click();expect(calls).toEqual([]);await page.getByRole('dialog').getByRole('button',{name:'确认',exact:true}).click();await expect.poll(()=>calls).toEqual(['releases/flags','users/action']);
  await expect(card.getByRole('button',{name:'开启 AI',exact:true})).toBeVisible();await expect(card).toContainText('当前：关闭（AI 服务已关闭）');
- for(const width of [375,1280]){await page.setViewportSize({width,height:900});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:`outputs/assistant-round6/admin-${width}.png`,fullPage:true});}
+ for(const width of [375,1280]){await page.setViewportSize({width,height:900});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:`test-results-review/assistant-round6/admin-${width}.png`,fullPage:true});}
 });

@@ -8,4 +8,4 @@ for(const theme of ['vivid','gentle','data','fire']) test(`${theme} signatures p
  await expect(page.locator('.v8-rest time')).toHaveText('2:05');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
 });
-for(const width of [390,1440]) test(`pop signatures ${width}`,async({page})=>{await page.setViewportSize({width,height:1000});await page.goto('/tests/fixtures/v8-signatures/index.html');await page.evaluate(()=>document.fonts.ready);await page.screenshot({path:`outputs/v8-signatures/pop-${width}.png`});});
+for(const width of [390,1440]) test(`pop signatures ${width} @screens`,async({page})=>{await page.setViewportSize({width,height:1000});await page.goto('/tests/fixtures/v8-signatures/index.html');await page.evaluate(()=>document.fonts.ready);await page.screenshot({path:`test-results-review/v8-signatures/pop-${width}.png`});});

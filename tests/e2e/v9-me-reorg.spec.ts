@@ -119,3 +119,16 @@ test('我的: grouped sections with 我 first; 我的变化 shows measurements, 
   await page.getByRole('dialog', { name: '芽芽快捷助手' }).getByRole('button', { name: '吃什么、喝多少' }).click();
   await expect(page.getByRole('heading', { name: '营养建议', exact: true })).toBeVisible();
 });
+
+test('今天: the muscle map follows the plan and the body answer, and names the same main muscles as the focus list', async ({ page }) => {
+  await flags(page); await access(page);
+  await toPlan(page);
+  const map = page.locator('.v9-anatomy').first();
+  await expect(map).toBeVisible();
+  await expect(map).toHaveAttribute('data-sex', 'female');
+  await expect(map.locator('.v9-am-muscle[data-role="primary"]')).not.toHaveCount(0);
+  const label = await map.getByRole('img').getAttribute('aria-label');
+  const focus = await page.locator('.v9-focus-list .v9-focus-item').allInnerTexts();
+  expect(focus.length).toBeGreaterThan(0);
+  for (const name of focus.map(text => text.replace(/^\d+\s*/, '').trim())) expect(label).toContain(name);
+});

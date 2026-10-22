@@ -1,2 +1,0 @@
-import base from './b-safety-entry.config';
-export default {...base,testMatch:'b-postpartum-evidence.spec.ts',outputDir:'../../.cache/b-postpartum-evidence-browser-results',use:{...base.use,baseURL:'http://127.0.0.1:5419'},webServer:{...base.webServer,command:'node node_modules/vite/bin/vite.js --config tests/e2e/helpers/b-safety-vite.config.ts --configLoader runner --host 127.0.0.1 --port 5419 --strictPort',url:'http://127.0.0.1:5419'}};

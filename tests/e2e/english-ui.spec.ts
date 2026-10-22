@@ -36,7 +36,7 @@ const shotNames = new Set(['switched today', 'switched plan week', 'switched pla
 async function check(page: Page, where: string) {
   await page.waitForTimeout(250);
   const found = await leaks(page);
-  if (process.env.ENGLISH_SHOTS && shotNames.has(where)) await page.screenshot({ path: `outputs/english-leaks/${where.replace(/ +/g, '-')}-${page.viewportSize()?.width}.png` });
+  if (process.env.ENGLISH_SHOTS && shotNames.has(where)) await page.screenshot({ path: `test-results-review/english-leaks/${where.replace(/ +/g, '-')}-${page.viewportSize()?.width}.png` });
   if (explore) { if (found.length) console.log(`\n== ${where}\n${found.map(line => '  ' + line.slice(0, 220)).join('\n')}`); return; }
   expect(found, `Chinese text on ${where}`).toEqual([]);
 }

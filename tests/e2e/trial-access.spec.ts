@@ -12,7 +12,7 @@ test('planning admission can stay open while accounting remains pending, with co
  });
  await completedPlanningProfile(page);await page.goto('/trial');
  const start=page.getByRole('button',{name:'返回训练',exact:true});await expect(start).toBeEnabled({timeout:20_000}); // first page of a cold WebKit run can take longer than the default wait
- for(const width of [390,1440]){await page.setViewportSize({width,height:900});await page.screenshot({path:`outputs/deepseek-diagnostic/${info.project.name}-trial-${width}.png`,fullPage:true});}
+ for(const width of [390,1440]){await page.setViewportSize({width,height:900});await page.screenshot({path:`test-results-review/deepseek-diagnostic/${info.project.name}-trial-${width}.png`,fullPage:true});}
  planningFlag=undefined;await page.reload();await expect(start).toBeEnabled();
  planningFlag=true;await page.reload();await expect(start).toBeEnabled();
 });

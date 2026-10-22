@@ -12,7 +12,7 @@ Validation on 2026-10-10:
 - `node node_modules/vitest/vitest.mjs run tests/unit/v8-common.test.ts tests/unit/v8-theme-tokens.test.ts`: 9 passed.
 - `node node_modules/typescript/bin/tsc --noEmit`: passed.
 - `node tools/v8/check.mjs`: no new violations; two inherited legacy rule/file pairs remain.
-- `node node_modules/@playwright/test/cli.js test --config tests/e2e/v8-common.config.ts`: 16 passed, Chromium and WebKit, four themes × two widths.
+- `node node_modules/@playwright/test/cli.js test tests/e2e/v8-common.spec.ts` (main config): 16 passed, Chromium and WebKit, four themes × two widths.
 - Browser assertions cover keyboard activation, visible focus, native disabled state,
   selection and switch semantics, minimum target sizes, horizontal overflow,
   theme-specific pressed transforms, release and reduced-motion behavior.

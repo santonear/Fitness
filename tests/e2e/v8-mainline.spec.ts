@@ -83,8 +83,8 @@ test('real local mainline persists a confirmed plan, training and review with no
   expect(await page.evaluate(async () => { const p = '/src/persistence/db.ts'; return (await import(/* @vite-ignore */ p)).database.v8Plans.count(); })).toBe(0);
   await page.getByRole('button', { name: '就用这份计划' }).click(); await page.getByRole('button', { name: '先不写', exact: true }).click();
   await expect(page.getByRole('heading', { name: '今天', exact: true })).toBeVisible();
-  await page.screenshot({ path: 'tests/fixtures/v8-mainline/qingci-390.png', fullPage: true });
-  await page.setViewportSize({ width: 1440, height: 1000 }); await page.screenshot({ path: 'tests/fixtures/v8-mainline/qingci-1440.png', fullPage: true });
+  await page.screenshot({ path: 'test-results-review/v8-mainline/qingci-390.png', fullPage: true });
+  await page.setViewportSize({ width: 1440, height: 1000 }); await page.screenshot({ path: 'test-results-review/v8-mainline/qingci-1440.png', fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
   await startToday(page);
   await page.getByRole('button', { name: '完成这一组', exact: true }).click();

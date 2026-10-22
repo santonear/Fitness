@@ -1,2 +1,0 @@
-import base from './training-engine.config';
-export default {...base,testMatch:'f-engine-environment.spec.ts',outputDir:'../../.cache/f-environment-browser-results',use:{...base.use,baseURL:'http://127.0.0.1:5403'},webServer:{...base.webServer,command:'node node_modules/vite/bin/vite.js --config tests/e2e/helpers/training-engine-vite.config.ts --configLoader runner --host 127.0.0.1 --port 5403 --strictPort',url:'http://127.0.0.1:5403'}};

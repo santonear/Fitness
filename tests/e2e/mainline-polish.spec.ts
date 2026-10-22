@@ -4,7 +4,7 @@ import {answerTexts,basicSafety,generate,startOnboarding} from './helpers/onboar
 import {startToday} from './helpers/home-start';
 async function shot(page:Page,name:string){
  await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- await page.screenshot({path:`outputs/mainline-polish/${process.env.POLISH_BASE_URL?'preview':'local'}-${page.viewportSize()!.width}-${name}.png`,fullPage:!name.startsWith('manual'),animations:'disabled'});
+ await page.screenshot({path:`test-results-review/mainline-polish/${process.env.POLISH_BASE_URL?'preview':'local'}-${page.viewportSize()!.width}-${name}.png`,fullPage:!name.startsWith('manual'),animations:'disabled'});
 }
 async function onboard(page:Page){
  await startOnboarding(page);
