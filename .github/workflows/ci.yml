@@ -124,8 +124,9 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && 'chromium-webkit' || 'chromium' }}
-      - run: npx playwright install --with-deps $PW_BROWSERS
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ matrix.browser }}
+      # Each shard installs only its own browser (both Chrome shards stalled in this step on the 2026-10-22 full runs).
+      - run: npx playwright install --with-deps ${{ matrix.browser }}
       # Execute every existing test once; independent runners keep the job deadline unchanged.
       - run: npm run test:e2e -- --project=${{ matrix.browser }} --shard=${{ matrix.shard }}/2 --workers=2 --retries=1 $PW_SCREENS --reporter=line
       - uses: actions/upload-artifact@v4
