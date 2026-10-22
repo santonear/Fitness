@@ -9,26 +9,26 @@ import {archiveLegacyUsage} from './usage-report';
 import type {DeepSeekWorkerEnv} from '../deepseek-worker';
 import {readFeatureFlags} from '../feature-config';
 import type {FeatureConfigEnv} from '../feature-config';
+import { activeTrialSubject, noStoreJson, readJsonBody, sameOrigin, trialToken } from '../request';
 export type AssistantEnv=DeepSeekWorkerEnv&FeatureConfigEnv&{ASSISTANT_MAX_OUTPUT_TOKENS?:string;ASSISTANT_MAX_ATTACHMENT_TOKENS?:string};
 // Official pricing verified 2026-10-12: uncached peak CNY 2 / 8 per million. Display estimate, never admission.
 export const assistantPrice={inputFenPerMillion:200,outputFenPerMillion:800,version:'deepseek-flash-2026-10-12-peak'};
-const json=(value:unknown,status=200)=>Response.json(value,{status,headers:{'Cache-Control':'no-store'}});
+const json=(value:unknown,status=200)=>noStoreJson(value,status);
 export async function assistantSubject(request:Request,env:AssistantEnv){
  if(!env.CONTROL_DB||!env.CONTROL_DIGEST_SECRET)throw new AssistantAccessError('SERVICE_UNAVAILABLE',503);
- const cookies=(request.headers.get('cookie')??'').split(';').map(s=>s.trim()).filter(s=>s.startsWith('__Host-fitness_trial='));
- const token=cookies.length===1?cookies[0].slice('__Host-fitness_trial='.length):'';
- if(!/^[a-f0-9]{64}$/.test(token))throw new AssistantAccessError('QUALIFICATION_REQUIRED',401);
- const state=await new D1ControlStore(env.CONTROL_DB).read(),session=state.sessions[await digest(token,env.CONTROL_DIGEST_SECRET)],subject=session&&state.subjects[session.subjectId];
- if(!session||session.revoked||!subject||subject.revoked||subject.deletedAt||subject.expiresAt<=Date.now())throw new AssistantAccessError('QUALIFICATION_REQUIRED',401);
+ const token=trialToken(request);
+ if(!token)throw new AssistantAccessError('QUALIFICATION_REQUIRED',401);
+ const state=await new D1ControlStore(env.CONTROL_DB).read(),subjectId=await activeTrialSubject(state,token,env.CONTROL_DIGEST_SECRET);
+ if(!subjectId)throw new AssistantAccessError('QUALIFICATION_REQUIRED',401);
  if(!state.aiEnabled||env.CONTROL_MODE!=='external')throw new AssistantAccessError('AI_DISABLED',503);
- return {subjectId:session.subjectId,state};
+ return {subjectId,state};
 }
-async function readInput(request:Request){if(!request.headers.get('content-type')?.startsWith('application/json'))throw new AssistantAccessError('INVALID_INPUT',400);const reader=request.body?.getReader();if(!reader)throw new AssistantAccessError('INVALID_INPUT',400);let size=0,text='';const decoder=new TextDecoder();try{while(true){const part=await reader.read();if(part.done)break;size+=part.value.byteLength;if(size>131072){await reader.cancel();throw new AssistantAccessError('INPUT_TOO_LARGE',413)}text+=decoder.decode(part.value,{stream:true})}return JSON.parse(text+decoder.decode())}finally{reader.releaseLock()}}
+async function readInput(request:Request){if(!request.headers.get('content-type')?.startsWith('application/json'))throw new AssistantAccessError('INVALID_INPUT',400);return readJsonBody(request,131072,problem=>problem==='too-large'?new AssistantAccessError('INPUT_TOO_LARGE',413):new AssistantAccessError('INVALID_INPUT',400))}
 export async function handleAssistant(request:Request,env:AssistantEnv,runner=runAssistantModel):Promise<Response>{
  let releaseSetup:undefined|(()=>Promise<void>),cancelSetup:undefined|(()=>void);
  try{
   if(request.method!=='POST')return json({error:'METHOD_NOT_ALLOWED'},405);
-  const url=new URL(request.url);if(url.protocol!=='https:'||request.headers.get('origin')!==url.origin||request.headers.get('sec-fetch-site')==='cross-site')return json({error:'ORIGIN_DENIED'},403);
+  if(!sameOrigin(request))return json({error:'ORIGIN_DENIED'},403);
   let input;try{input=sanitizeAssistantRequest(await readInput(request))}catch(e){if(e instanceof AssistantAccessError)throw e;throw new AssistantAccessError('INVALID_INPUT',400)}
   if(input.context?.trainingEngine&&!(await readFeatureFlags(env) as Record<string,boolean>).trainingEngine)throw new AssistantAccessError('AI_DISABLED',503);
   const {subjectId,state}=await assistantSubject(request,env);
@@ -81,8 +81,7 @@ export async function assistantAccessStatus(request:Request,env:AssistantEnv){
   if(!env.CONTROL_DB||!env.CONTROL_DIGEST_SECRET)return json({error:'SERVICE_UNAVAILABLE'},503);
   const raw=request.method==='GET'?{}:await readInput(request) as {receipt?:unknown};if(!raw||typeof raw!=='object'||Array.isArray(raw)||Object.keys(raw).some(k=>k!=='receipt')||raw.receipt!==undefined&&(typeof raw.receipt!=='string'||!/^[a-f0-9]{64}$/.test(raw.receipt)))return json({error:'INVALID_INPUT'},400);
   const state=await new D1ControlStore(env.CONTROL_DB).read();
-  const cookies=(request.headers.get('cookie')??'').split(';').map(s=>s.trim()).filter(s=>s.startsWith('__Host-fitness_trial='));const token=cookies.length===1?cookies[0].slice('__Host-fitness_trial='.length):'';
-  const session=/^[a-f0-9]{64}$/.test(token)?state.sessions[await digest(token,env.CONTROL_DIGEST_SECRET)]:undefined;
+  const token=trialToken(request),session=token?state.sessions[await digest(token,env.CONTROL_DIGEST_SECRET)]:undefined;
   const owner=raw.receipt?await digest(`application:${raw.receipt}`,env.CONTROL_DIGEST_SECRET):undefined;
   const claimed=owner?Object.values(state.applications??{}).filter(a=>a.ownerDigest===owner&&a.state==='claimed'&&a.subjectId).sort((a,b)=>b.createdAt-a.createdAt)[0]:undefined;
   const id=session?.subjectId??claimed?.subjectId,subject=id?state.subjects[id]:undefined;

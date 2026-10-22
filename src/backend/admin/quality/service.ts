@@ -1,6 +1,7 @@
 import { readFeatureFlags, type FeatureConfigEnv } from '../../feature-config';
 import { errorEvent, blockCategory, evaluationReport, isSpike, type QualityEnv, type QualityDatabase } from './contracts';
 import { adminJson, type AdminTodo } from '../core/contracts';
+import { readJsonBody } from '../../request';
 
 const HOUR = 3600000;
 /** Collection needs both the deployment switch and the errorReports flag; the admin page says which. */
@@ -12,15 +13,8 @@ export async function collectError(request: Request, env: QualityEnv, now = Date
   if ((origin && origin !== new URL(request.url).origin) || request.headers.get('Sec-Fetch-Site') === 'cross-site') return adminJson({ error: 'ORIGIN_REJECTED' }, 403);
   if (!request.headers.get('Content-Type')?.toLowerCase().startsWith('application/json')) return adminJson({ error: 'INVALID_CONTENT_TYPE' }, 415);
   if (Number(request.headers.get('Content-Length')) > 2048) return adminJson({ error: 'INVALID_EVENT' }, 400);
-  const reader = request.body?.getReader();
-  if (!reader) return adminJson({ error: 'INVALID_EVENT' }, 400);
-  const chunks: Uint8Array[] = []; let length = 0;
-  try {
-    while (true) { const next = await reader.read(); if (next.done) break; length += next.value.byteLength; if (length > 2048) { await reader.cancel(); return adminJson({ error: 'INVALID_EVENT' }, 400); } chunks.push(next.value); }
-  } catch { return adminJson({ error: 'INVALID_EVENT' }, 400); }
-  const combined = new Uint8Array(length); let offset = 0; for (const chunk of chunks) { combined.set(chunk, offset); offset += chunk.length; }
-  const raw = new TextDecoder().decode(combined);
-  let parsed; try { parsed = errorEvent.safeParse(JSON.parse(raw)); } catch { return adminJson({ error: 'INVALID_EVENT' }, 400); }
+  let raw: unknown; try { raw = await readJsonBody(request, 2048, problem => problem); } catch { return adminJson({ error: 'INVALID_EVENT' }, 400); }
+  const parsed = errorEvent.safeParse(raw);
   if (!parsed.success || Math.abs(parsed.data.time - now) > 300000) return adminJson({ error: 'INVALID_EVENT' }, 400);
   const { type, route, version, browser, os, time } = parsed.data;
   await env.ADMIN_DB.prepare('INSERT INTO admin_quality_errors(type,route,version,browser,os,time) VALUES(?,?,?,?,?,?)').bind(type, route, version, browser, os, time).run();
