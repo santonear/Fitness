@@ -19,7 +19,7 @@ Worker 名称为 `fitness`，实际稳定地址为 https://fitness.initdevl.work
 | 工作流 | 触发 | 审批 | 步骤 |
 | --- | --- | --- | --- |
 | `deploy-preview.yml`（Publish a Fitness preview） | 任意分支手动运行，选择预览目标 | 无 | 检查配置不含正式 Worker/D1/KV → `npm run check` → 部署预览 |
-| `deploy-cloudflare.yml`（Publish Fitness to Cloudflare） | 只能从 `main` 手动运行 | `cloudflare-production` 环境审批 | 完整 CI（复用 `ci.yml`）→ 审批 → 记录当前线上版本 → D1 迁移（`ADMIN_DB`）→ 部署 → 冒烟测试 |
+| `deploy-cloudflare.yml`（Publish Fitness to Cloudflare） | 只能从 `main` 手动运行 | `cloudflare-production` 环境审批 | 快检查（规则检查、类型检查、单元测试、打包；完整浏览器测试已在 PR 上跑过，Bo 2026-10-22）→ 审批 → 记录当前线上版本 → D1 迁移（`ADMIN_DB`）→ 部署 → 冒烟测试 |
 | `rollback-production.yml`（Roll back Fitness production） | 只能从 `main` 手动运行，可填版本号和原因 | `cloudflare-production` 环境审批 | 审批 → `wrangler rollback` → 冒烟测试 |
 
 两个正式工作流第一步都会检查 `cloudflare-production` 环境是否设置了必需审批人；没有设置就直接失败，不会进入测试或部署。
