@@ -13,8 +13,6 @@ import {independentlyRepeatedExerciseIds} from './reference/independent-ramp-rep
 const household=new Rules().get('environment.household_support');
 function independentlyOwned(profile:EngineProfile){const support=profile.householdSupport??household.default_places.includes(profile.place);return new Set<string>(['none','yoga-mat-optional',...profile.equipment,...(support?household.equipment:[])]);}
 
-/** Each fixture generates its plan twice; on a busy shared runner mobility6x90 exceeded the 5 s default. */
-const GOLDEN_TIMEOUT_MS=20000;
 describe('20 explicit synthetic golden profiles',()=>{
  it('keeps all 20 reviewable input fixtures in sync with the fixed generator',()=>{expect(inputs).toEqual(goldenProfiles);expect(inputs).toHaveLength(20);});
  for(const fixture of goldenProfiles)it(fixture.id,()=>{
@@ -43,5 +41,5 @@ describe('20 explicit synthetic golden profiles',()=>{
   }
   // Full output is reviewed for changes. Quality assertions remain separate from snapshots.
   expect({plan,issues}).toMatchSnapshot();
- },GOLDEN_TIMEOUT_MS);
+ });
 });
