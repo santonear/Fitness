@@ -60,11 +60,39 @@ test('今天: B plan, fragment scene with the honest line and its evidence fold;
   await expect(page.getByText('周二下班后，客厅', { exact: false })).toBeVisible();
 });
 
-test('我的 › 训练设置: panel style and outline toggle; the outline on 我的 respects the toggle and follows 自记录', async ({ page }) => {
+test('今天: the panel style switches on the panel itself (knob, arrow keys, swipe) and is remembered; 我的 has no style setting', async ({ page }) => {
+  await flags(page);
+  await toPlan(page);
+  const panel = page.locator('section.v9-home-panel[data-style]');
+  await expect(panel).toHaveAttribute('data-style', 'hero');
+  const knob = panel.getByRole('radiogroup', { name: '首页面板样式' });
+  await knob.getByRole('radio', { name: '双表盘' }).click();
+  await expect(panel).toHaveAttribute('data-style', 'twin');
+  await knob.getByRole('radio', { name: '双表盘' }).press('ArrowRight');
+  await expect(panel).toHaveAttribute('data-style', 'hero');
+  await expect(knob.getByRole('radio', { name: '大数字' })).toBeFocused();
+  await panel.getByRole('button', { name: '下一个样式' }).click();
+  await expect(panel).toHaveAttribute('data-style', 'ring');
+  // A horizontal touch swipe (right to left) moves to the next style; a vertical move does nothing.
+  const swipe = (dx: number, dy: number) => panel.evaluate((node, [dx, dy]) => {
+    const box = node.getBoundingClientRect(), x = box.left + box.width / 2, y = box.top + 40;
+    const fire = (type: string, cx: number, cy: number) => node.dispatchEvent(new PointerEvent(type, { bubbles: true, pointerId: 7, pointerType: 'touch', isPrimary: true, clientX: cx, clientY: cy }));
+    fire('pointerdown', x, y); fire('pointerup', x + dx, y + dy);
+  }, [dx, dy]);
+  await swipe(-80, 6);
+  await expect(panel).toHaveAttribute('data-style', 'twin');
+  await swipe(10, 120);
+  await expect(panel).toHaveAttribute('data-style', 'twin');
+  await page.reload();
+  await expect(panel).toHaveAttribute('data-style', 'twin');
+  await page.goto('/settings');
+  await expect(page.getByText('首页面板样式')).toHaveCount(0);
+});
+
+test('我的 › 训练设置: outline toggle; the outline on 我的 respects the toggle and follows 自记录', async ({ page }) => {
   await flags(page);
   await toPlan(page);
   await page.goto('/settings');
-  await page.getByRole('radio', { name: '双表盘' }).click();
   const summary = page.locator('section.v9-change-summary');
   await expect(summary.getByText('轮廓按身高、体重和体脂估算，仅作示意')).toBeVisible();
   await page.getByRole('button', { name: /^自记录/ }).click();

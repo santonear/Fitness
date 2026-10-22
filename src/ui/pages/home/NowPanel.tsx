@@ -4,7 +4,7 @@ import { FieldIssue } from '../../components/common/FieldIssue';
 import { Card, ChoiceChip, HomePanel, PrimaryButton } from '../../components/kit';
 import { DEFAULT_HOME_PANEL_STYLE, NOW_MINUTES, type BudgetRequest, type HomePanelStyle, type NowMinutes, type NowSession } from '../../../domain/plan-upgrade';
 import { buildNowSession, sessionMuscleFocus, weeklyMuscleLoad } from '../../../application/rules/plan-upgrade';
-import { homePanelStyle } from '../../../persistence/plan-upgrade-store';
+import { homePanelStyle, setHomePanelStyle } from '../../../persistence/plan-upgrade-store';
 import { coachReminderService } from '../../../application/coach-reminders';
 import type { SessionTemplate, WorkoutRecord } from '../../../domain/v8/contracts';
 import { yayaV5 } from '../../../i18n/features/coach/yaya-v5';
@@ -62,6 +62,8 @@ export function NowPanel({ template, weekDates, blocked, today, onStart }: { tem
   const [returnClosed, setReturnClosed] = useState(false);
   const [reminderAsk, setReminderAsk] = useState(false);
   useEffect(() => { let alive = true; void homePanelStyle().then(value => { if (alive) setStyle(value); }).catch(() => undefined); return () => { alive = false; }; }, []);
+  // Switched on the panel itself (knob or swipe); a failed save puts the previous style back.
+  const chooseStyle = (next: HomePanelStyle) => { const previous = style; setStyle(next); void setHomePanelStyle(next).catch(() => setStyle(previous)); };
   // v5 §15: only when the person turned reminders on themselves.
   useEffect(() => {
     if (!remindersEnabled) return;
@@ -88,7 +90,7 @@ export function NowPanel({ template, weekDates, blocked, today, onStart }: { tem
       </div>
     </Card>}
     {plan && !editing && <p className="v9-home-reason">{c.intentionLabel} · {plan} <PrimaryButton tone="text" size="sm" onClick={() => { setDraft(plan); setEditing(true); }}>{c.intentionEdit}</PrimaryButton></p>}
-    <HomePanel style={style} locale={locale} minutes={scene ? 5 : minutes} onMinutes={value => { setScene(undefined); setMinutes(value); }} focus={focus} weekLoads={weekLoads}
+    <HomePanel style={style} onStyle={chooseStyle} locale={locale} minutes={scene ? 5 : minutes} onMinutes={value => { setScene(undefined); setMinutes(value); }} focus={focus} weekLoads={weekLoads}
       weekDone={facts?.complete ?? 0} weekTarget={data?.version?.weeklyTarget ?? 0} {...(shape ? { shape } : {})} coachLine={coachLine} disabled={blocked || !session} onStart={start}/>
     <div className="v9-home-row">
       <PrimaryButton tone="text" size="sm" aria-expanded={more || !!scene || variant !== 'standard'} onClick={() => setMore(value => !value)}>{c.moreWays}</PrimaryButton>

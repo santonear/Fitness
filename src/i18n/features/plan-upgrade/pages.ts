@@ -6,8 +6,8 @@ export const planPagesCopy = {
     sceneLabel: '碎片时间', scene: { commute: '通勤', office: '办公室', bedtime: '睡前' },
     intentionLabel: '我练的时间和地点', intentionPlaceholder: '比如：周二下班后，客厅', intentionSave: '记下', intentionEdit: '改一下', moreWays: '换个练法', intentionAdd: '写下何时何地练',
     calm: '现在有点烦', journey: '我的山路',
-    // Settings › 训练设置
-    panelStyle: '首页面板样式', panelStyles: { hero: '大数字', ring: '肌群环', twin: '双表盘' },
+    // 今天's panel style knob (aria labels only); 训练设置 below
+    panelStyle: '首页面板样式', panelStyles: { hero: '大数字', ring: '肌群环', twin: '双表盘' }, panelPrev: '上一个样式', panelNext: '下一个样式',
     showOutline: '显示体型轮廓', voice: '语音播报', voiceHint: '只用本机语音，不联网', voiceUnavailable: '这台设备没有本机语音',
     // 今天练这里
     focusTitle: '今天练这里', primary: '主练', secondary: '辅助', start: '开始 · {minutes}′', male: '男', female: '女', sexLabel: '体型',
@@ -34,7 +34,7 @@ export const planPagesCopy = {
     sceneLabel: 'Spare moments', scene: { commute: 'Commute', office: 'Office', bedtime: 'Bedtime' },
     intentionLabel: 'When and where I train', intentionPlaceholder: 'e.g. Tuesday after work, living room', intentionSave: 'Save', intentionEdit: 'Edit', moreWays: 'Other ways to train', intentionAdd: 'Set when and where',
     calm: 'Feeling a bit on edge', journey: 'My trail',
-    panelStyle: 'Home panel style', panelStyles: { hero: 'Big number', ring: 'Muscle ring', twin: 'Twin dials' },
+    panelStyle: 'Home panel style', panelStyles: { hero: 'Big number', ring: 'Muscle ring', twin: 'Twin dials' }, panelPrev: 'Previous style', panelNext: 'Next style',
     showOutline: 'Show body outline', voice: 'Voice cues', voiceHint: 'Uses on-device voices only, no network', voiceUnavailable: 'No on-device voice on this device',
     focusTitle: 'Today you train', primary: 'Main', secondary: 'Support', start: 'Start · {minutes}′', male: 'Male', female: 'Female', sexLabel: 'Figure',
     back: 'Back',

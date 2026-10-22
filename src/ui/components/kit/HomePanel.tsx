@@ -1,10 +1,12 @@
 // Component line owns this file (UIUX20261008 V9.14). Port of docs/design/plan-upgrade/Panel.dc.html (hero / ring / twin).
-import { useId } from 'react';
+import { useId, useRef, type KeyboardEvent, type MouseEvent, type PointerEvent } from 'react';
 import {
-  DEFAULT_HOME_PANEL_STYLE, MUSCLE_GROUP_NAMES, NOW_MINUTES,
-  type HomePanelProps, type MuscleGroup, type MuscleLoad, type MuscleLoadLevel, type NowMinutes,
+  DEFAULT_HOME_PANEL_STYLE, HOME_PANEL_STYLES, MUSCLE_GROUP_NAMES, NOW_MINUTES,
+  type HomePanelProps, type HomePanelStyle, type MuscleGroup, type MuscleLoad, type MuscleLoadLevel, type NowMinutes,
 } from '../../../domain/plan-upgrade';
 import { Yaya } from '../Yaya';
+import { AppIcon } from '../AppIcon';
+import { planPagesCopy } from '../../../i18n/features/plan-upgrade/pages';
 import { AnatomyMap, useKitLocale, type KitLocale } from './AnatomyMap';
 import { Card, PrimaryButton, ProgressRing } from './primitives';
 import './kit.css';
@@ -68,6 +70,33 @@ export function MinutesGroup({ minutes, onMinutes, locale }: { minutes: NowMinut
       onClick={() => onMinutes(m)}>{m}′</button>)}</div>;
 }
 
+/** The style after `style`, `step` places away (wraps around). */
+export const stepStyle = (style: HomePanelStyle, step: number): HomePanelStyle =>
+  HOME_PANEL_STYLES[(HOME_PANEL_STYLES.indexOf(style) + step + HOME_PANEL_STYLES.length * 2) % HOME_PANEL_STYLES.length];
+/** Horizontal swipe distance (px) that switches the style; a mostly vertical move stays a page scroll. */
+export const SWIPE_MIN = 40;
+export const swipeStep = (dx: number, dy: number) => Math.abs(dx) >= SWIPE_MIN && Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? 1 : -1) : 0;
+
+/** Text-free style knob on the panel: ‹ • • • › (aria labels only; arrow keys move between the dots). */
+function StyleKnob({ style, onStyle, locale }: { style: HomePanelStyle; onStyle: (style: HomePanelStyle) => void; locale: KitLocale }) {
+  const c = planPagesCopy[locale];
+  const keys = (event: KeyboardEvent<HTMLButtonElement>) => {
+    const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[event.key];
+    const next = event.key === 'Home' ? HOME_PANEL_STYLES[0] : event.key === 'End' ? HOME_PANEL_STYLES[HOME_PANEL_STYLES.length - 1] : step ? stepStyle(style, step) : undefined;
+    if (!next) return;
+    event.preventDefault();
+    onStyle(next);
+    event.currentTarget.parentElement?.querySelector<HTMLButtonElement>(`[data-value="${next}"]`)?.focus();
+  };
+  return <div className="v9-home-knob-ctl">
+    <button type="button" className="v9-home-knob-arrow v8-press" aria-label={c.panelPrev} onClick={() => onStyle(stepStyle(style, -1))}><AppIcon name="back" /></button>
+    <div className="v9-home-knob-dots" role="radiogroup" aria-label={c.panelStyle}>{HOME_PANEL_STYLES.map(value =>
+      <button key={value} type="button" role="radio" data-value={value} aria-checked={value === style} aria-label={c.panelStyles[value]}
+        tabIndex={value === style ? 0 : -1} className="v9-home-knob-dot" onClick={() => onStyle(value)} onKeyDown={keys} />)}</div>
+    <button type="button" className="v9-home-knob-arrow v8-press" aria-label={c.panelNext} onClick={() => onStyle(stepStyle(style, 1))}><AppIcon name="next" /></button>
+  </div>;
+}
+
 function FocusList({ groups, locale, inline, suffix }: { groups: readonly MuscleGroup[]; locale: KitLocale; inline?: boolean; suffix?: (group: MuscleGroup) => string }) {
   const lang = locale === 'en' ? 1 : 0;
   if (!groups.length) return null;
@@ -76,12 +105,25 @@ function FocusList({ groups, locale, inline, suffix }: { groups: readonly Muscle
       {MUSCLE_GROUP_NAMES[group][lang]}{suffix?.(group)}</li>)}</ul>;
 }
 
-export function HomePanel({ style, minutes, onMinutes, onStart, focus, weekLoads, weekDone, weekTarget, shape, coachLine, disabled, locale: localeProp }: HomePanelProps & { locale?: KitLocale }) {
+export function HomePanel({ style, minutes, onMinutes, onStart, focus, weekLoads, weekDone, weekTarget, shape, coachLine, disabled, locale: localeProp, onStyle }: HomePanelProps & { locale?: KitLocale; onStyle?: (style: HomePanelStyle) => void }) {
   const locale = useKitLocale(localeProp);
   const lang = locale === 'en' ? 1 : 0;
   const t = homePanelCopy[locale];
   const gradientId = `hp-${useId().replace(/[^\w-]/g, '')}`;
   const variant = style ?? DEFAULT_HOME_PANEL_STYLE;
+  // Touch swipe across the panel switches the style; the tap that ends a swipe does not also press what it started on.
+  const swipe = useRef<{ x: number; y: number; id: number }>(undefined), swipedAt = useRef(-Infinity);
+  const down = (event: PointerEvent) => { swipe.current = onStyle && event.pointerType !== 'mouse' && event.isPrimary ? { x: event.clientX, y: event.clientY, id: event.pointerId } : undefined; };
+  const up = (event: PointerEvent) => {
+    const start = swipe.current;
+    swipe.current = undefined;
+    if (!start || start.id !== event.pointerId || !onStyle) return;
+    const step = swipeStep(event.clientX - start.x, event.clientY - start.y);
+    if (!step) return;
+    swipedAt.current = event.timeStamp;
+    onStyle(stepStyle(variant, step));
+  };
+  const swallowClick = (event: MouseEvent) => { if (event.timeStamp - swipedAt.current < 500) { event.preventDefault(); event.stopPropagation(); } };
   const primary = focus.primary.slice(0, 2);
   const focusNames = primary.map(group => MUSCLE_GROUP_NAMES[group][lang]).join(t.join);
   const reached = reachedCount(weekLoads);
@@ -153,8 +195,9 @@ export function HomePanel({ style, minutes, onMinutes, onStart, focus, weekLoads
     </>;
   }
 
-  return <section className="v9-home-panel" data-style={variant}>
-    <div className="v9-home-panel-head"><span className="v9-home-week">{t.week(weekDone, weekTarget)}</span></div>
+  return <section className="v9-home-panel" data-style={variant} data-swipe={onStyle ? 'true' : undefined}
+    onPointerDown={down} onPointerUp={up} onPointerCancel={() => { swipe.current = undefined; }} onClickCapture={swallowClick}>
+    <div className="v9-home-panel-head">{onStyle && <StyleKnob style={variant} onStyle={onStyle} locale={locale} />}<span className="v9-home-week">{t.week(weekDone, weekTarget)}</span></div>
     {body}
     {coachLine && <Card padding="sm" className="v9-home-coach"><Yaya pose="head" size={42} mode="disc" alt="" float={false} /><p>{coachLine}</p></Card>}
   </section>;

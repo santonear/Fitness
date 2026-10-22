@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import { DEFAULT_HOME_PANEL_STYLE, MUSCLE_GROUPS, type HomePanelProps, type MuscleGroup, type NowMinutes } from '../../src/domain/plan-upgrade';
 import { AnatomyMap, FIGURE_OUTLINES, anatomyLabel, buildAnatomy, fatFromPercent, fatOf } from '../../src/ui/components/kit/AnatomyMap';
-import { HomePanel, MinutesGroup, heroKnob, ringLevel } from '../../src/ui/components/kit/HomePanel';
+import { HomePanel, MinutesGroup, heroKnob, ringLevel, stepStyle, swipeStep } from '../../src/ui/components/kit/HomePanel';
 import { JourneyTrail } from '../../src/ui/components/kit/JourneyTrail';
 import * as kit from '../../src/ui/components/kit';
 
@@ -155,6 +155,27 @@ describe('HomePanel', () => {
     buttons[2].props.onClick();
     buttons[0].props.onClick();
     expect(onMinutes.mock.calls).toEqual([[30], [5]]);
+  });
+
+  it('shows the text-free style knob only when the style can be switched, with spoken names', () => {
+    expect(html(createElement(HomePanel, base()))).not.toContain('v9-home-knob-ctl');
+    const markup = html(createElement(HomePanel, { ...base({ style: 'ring' }), onStyle() {} }));
+    expect(markup).toContain('data-swipe="true"');
+    expect(markup).toContain('role="radiogroup" aria-label="首页面板样式"');
+    expect(markup).toMatch(/aria-checked="true" aria-label="肌群环" tabindex="0"/);
+    expect(markup).toContain('aria-label="上一个样式"');
+    expect(markup).toContain('aria-label="下一个样式"');
+    expect(markup).not.toMatch(/>(大数字|肌群环|双表盘)</);
+  });
+
+  it('steps through the three styles with wrap-around; only a mostly horizontal swipe of 40px counts', () => {
+    expect(stepStyle('hero', 1)).toBe('ring');
+    expect(stepStyle('twin', 1)).toBe('hero');
+    expect(stepStyle('hero', -1)).toBe('twin');
+    expect(swipeStep(-40, 5)).toBe(1);
+    expect(swipeStep(60, -10)).toBe(-1);
+    expect(swipeStep(39, 0)).toBe(0);
+    expect(swipeStep(50, 80)).toBe(0);
   });
 });
 

@@ -156,7 +156,17 @@
 
 /* Home panel (V9.14 hero / ring / twin, docs/design/plan-upgrade/Panel.dc.html) */
 .v9-home-panel { position: relative; display: flex; flex-direction: column; gap: var(--s4); color: var(--c-ink); }
-.v9-home-panel-head { display: flex; justify-content: flex-end; }
+.v9-home-panel-head { display: flex; align-items: center; gap: var(--s3); }
+.v9-home-panel-head > .v9-home-week { margin-inline-start: auto; }
+/* Style knob (‹ • • • ›) and touch swipe switch the panel style in place (Bo 2026-10-22). */
+.v9-home-panel[data-swipe="true"] { touch-action: pan-y; }
+.v9-home-knob-ctl { display: inline-flex; align-items: center; border-radius: var(--r-chip); background: var(--c-inset); box-shadow: var(--el-inset); }
+.v9-home-knob-arrow { display: grid; place-items: center; inline-size: var(--touch-min); block-size: var(--touch-min); padding: 0; border: 0; border-radius: var(--r-chip); background: transparent; color: var(--c-ink-muted); cursor: pointer; }
+.v9-home-knob-arrow .app-action-icon { inline-size: var(--s4); block-size: var(--s4); }
+.v9-home-knob-dots { display: flex; align-items: center; }
+.v9-home-knob-dot { position: relative; inline-size: var(--s5); block-size: var(--touch-min); padding: 0; border: 0; background: transparent; cursor: pointer; }
+.v9-home-knob-dot::before { content: ''; position: absolute; inset: 0; margin: auto; inline-size: var(--s2); block-size: var(--s2); border-radius: var(--r-chip); background: var(--c-ink-muted); opacity: .45; transition: inline-size .2s ease, opacity .2s ease; }
+.v9-home-knob-dot[aria-checked="true"]::before { inline-size: var(--s4); background: var(--meter-to); opacity: 1; }
 .v9-home-week { font: var(--w-body) var(--t3) / var(--lh-tight) var(--f-num); color: var(--c-ink-muted); font-variant-numeric: lining-nums tabular-nums; }
 .v9-home-small { font-size: var(--t1); color: var(--c-ink-muted); }
 .v9-home-label { font-size: var(--t3); font-weight: var(--w-strong); }
@@ -176,8 +186,8 @@
 .v9-home-knob { fill: var(--c-surface); stroke: var(--meter-to); stroke-width: 3; }
 .v9-home-mark { fill: var(--c-ink-muted); font: var(--w-body) var(--t1) / 1 var(--f-num); }
 .v9-home-mark[data-on="true"] { fill: var(--c-accent-text); font-weight: var(--w-strong); }
-.v9-home-body { display: flex; align-items: center; gap: var(--s3); }
-.v9-home-body-text { display: flex; flex: 1; flex-direction: column; gap: var(--s2); min-inline-size: 0; }
+.v9-home-body { display: flex; align-items: center; justify-content: center; gap: var(--s4); }
+.v9-home-body-text { display: flex; flex: 0 1 auto; flex-direction: column; gap: var(--s2); min-inline-size: 0; }
 .v9-home-count { font: var(--w-body) var(--t6) / 1 var(--f-num); font-variant-numeric: lining-nums tabular-nums; }
 .v9-home-count small { font-size: var(--t3); opacity: .5; }
 .v9-home-ring { display: flex; flex-direction: column; align-items: center; gap: var(--s3); }
@@ -222,6 +232,7 @@
 /* V9.14 information motion stops under reduced motion and keeps the lit end state. */
 @media (prefers-reduced-motion: reduce) {
   .v9-am-glow, .v9-am-leader, .v9-am-badge, .v9-badge, .v9-trail-dot, .v9-home-seg, .v9-anatomy-scan { animation: none !important; }
+  .v9-home-knob-dot::before { transition: none; }
   .v9-am-glow { opacity: .6; }
   .v9-anatomy-scan { display: none; }
 }
