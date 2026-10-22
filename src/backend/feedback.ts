@@ -4,6 +4,7 @@ import {digest} from './contracts';
 import {D1ControlStore, type D1Binding} from './d1-store';
 import {shortId} from './admin/core/short-id';
 import type {AdminDatabase} from './admin/core/contracts';
+import { DAY_MS } from '../domain/local-date';
 
 /**
  * 我的 → 给我们留言. The user types a message (and optionally a contact) and
@@ -62,7 +63,7 @@ const dayBucket = (now: number) => new Date(now).toISOString().slice(0, 10);
 async function admit(db: AdminDatabase, key: string, now: number) {
   const hour = hourBucket(now), day = dayBucket(now);
   // Old buckets carry no meaning after a day; keep the table small.
-  await db.prepare('DELETE FROM user_feedback_rate WHERE bucket < ?').bind(dayBucket(now - 86400000)).run();
+  await db.prepare('DELETE FROM user_feedback_rate WHERE bucket < ?').bind(dayBucket(now - DAY_MS)).run();
   const bump = (k: string, bucket: string) => db.prepare('INSERT INTO user_feedback_rate(key,bucket,count) VALUES(?,?,1) ON CONFLICT(key,bucket) DO UPDATE SET count=count+1').bind(k, bucket);
   await db.batch([bump(key, hour), bump('*', day)]);
   const own = await db.prepare('SELECT count FROM user_feedback_rate WHERE key=? AND bucket=?').bind(key, hour).first<{count: number}>();

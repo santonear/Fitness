@@ -6,6 +6,7 @@ import {
   type FitnessTestItem, type LiftEntry, type MuscleGroup, type MuscleLoad, type MuscleLoadLevel, type NowSession,
   type NowSessionContext, type PersonalRecord, type SessionMuscleFocus, type SetEntry,
 } from '../../domain/plan-upgrade';
+import { addDays, daysBetween } from '../../domain/local-date';
 import { catalogMetadata } from '../../catalog/registry';
 import { DATA, type Exercise as EngineExercise } from '../../engine/data';
 import { FITNESS_NORMS_2023, bandMiddleAge, type NormBand } from './fitness-norms-2023';
@@ -249,9 +250,6 @@ export function bodyAge(sex: 'male' | 'female', age: number, results: Partial<Re
 
 // ---------------------------------------------------------------- body change lines (wording v5 §19)
 
-const DAY_MS = 86_400_000;
-const dayNumber = (localDate: string) => Math.round(Date.parse(`${localDate}T00:00:00Z`) / DAY_MS);
-const shiftDate = (localDate: string, days: number) => new Date((dayNumber(localDate) + days) * DAY_MS).toISOString().slice(0, 10);
 const round2 = (value: number) => Math.round(value * 100) / 100;
 
 export const BODY_CHANGE_RULES = {
@@ -267,7 +265,7 @@ export const BODY_CHANGE_RULES = {
 } as const;
 
 function strongerEvent(input: BodyChangeInput): BodyChangeEvent | undefined {
-  const cutoff = shiftDate(input.today, -BODY_CHANGE_RULES.baselineDays);
+  const cutoff = addDays(input.today, -BODY_CHANGE_RULES.baselineDays);
   const candidates: { event: BodyChangeEvent; ratio: number }[] = [];
   const byExercise = new Map<string, PersonalRecord[]>();
   for (const record of input.records) {
@@ -294,7 +292,7 @@ function strongerEvent(input: BodyChangeInput): BodyChangeEvent | undefined {
 }
 
 function weekAverage(weights: BodyChangeInput['weights'], today: string, weeksBack: number): number | undefined {
-  const to = shiftDate(today, -7 * weeksBack), from = shiftDate(to, -6);
+  const to = addDays(today, -7 * weeksBack), from = addDays(to, -6);
   const values = weights.filter(w => w.localDate >= from && w.localDate <= to && Number.isFinite(w.weightKg) && w.weightKg > 0).map(w => w.weightKg);
   return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : undefined;
 }
@@ -308,12 +306,12 @@ function weightEvents(input: BodyChangeInput): BodyChangeEvent[] {
   const heightM = input.heightCm && input.heightCm > 0 ? input.heightCm / 100 : undefined;
   const bmi = latest && heightM ? latest.weightKg / (heightM * heightM) : undefined;
   if (bmi !== undefined && bmi < BODY_CHANGE_RULES.minBmi)
-    return [{ kind: 'care-low-bmi', metric: 'bmi', delta: round2(bmi - BODY_CHANGE_RULES.minBmi), sinceLocalDate: shiftDate(input.today, -13) }];
+    return [{ kind: 'care-low-bmi', metric: 'bmi', delta: round2(bmi - BODY_CHANGE_RULES.minBmi), sinceLocalDate: addDays(input.today, -13) }];
   if (w1 - w0 > w1 * BODY_CHANGE_RULES.maxWeeklyLossShare)
-    return [{ kind: 'care-fast-loss', metric: 'weightKg', delta: round2(w0 - w1), sinceLocalDate: shiftDate(input.today, -13) }];
+    return [{ kind: 'care-fast-loss', metric: 'weightKg', delta: round2(w0 - w1), sinceLocalDate: addDays(input.today, -13) }];
   if (!input.route || !BODY_CHANGE_RULES.weightRoutes.includes(input.route) || bmi === undefined || w2 === undefined) return [];
   if (!(w1 < w2) || w2 - w1 > w2 * BODY_CHANGE_RULES.maxWeeklyLossShare) return [];
-  return [{ kind: 'lighter', metric: 'weightKg', delta: round2(w0 - w2), sinceLocalDate: shiftDate(input.today, -20) }];
+  return [{ kind: 'lighter', metric: 'weightKg', delta: round2(w0 - w2), sinceLocalDate: addDays(input.today, -20) }];
 }
 
 /**
@@ -323,7 +321,7 @@ function weightEvents(input: BodyChangeInput): BodyChangeEvent[] {
 export function bodyChangeEvents(input: BodyChangeInput): BodyChangeEvent[] {
   const recent = (kind: BodyChangeKind) => {
     const last = input.lastSpokenByKind[kind];
-    return last !== undefined && dayNumber(input.today) - dayNumber(last) < BODY_CHANGE_RULES.repeatDays;
+    return last !== undefined && daysBetween(last, input.today) < BODY_CHANGE_RULES.repeatDays;
   };
   const events = [strongerEvent(input), ...weightEvents(input)].filter((event): event is BodyChangeEvent => !!event);
   return events.filter(event => !recent(event.kind));

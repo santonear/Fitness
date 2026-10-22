@@ -12,6 +12,7 @@ import {isMoneyField,yuanToFen,configDisplay,localDateInput,parseLocalDateInput,
 import {TaskCostChart} from './TaskCostChart';
 import {configReview,canDismissBudget} from './config-review';
 import {financeOutcome,mutationCopy} from './outcome';
+import { DAY_MS } from '../../../domain/local-date';
 type Ledger=ReturnType<typeof ledgerProjection>;
 function useData<T>(path:string){const[value,setValue]=useState<T>();const[error,setError]=useState(false);const[revision,setRevision]=useState(0);useEffect(()=>{let alive=true;setValue(undefined);setError(false);adminRequest<T>(/^finance\/(ledger|costs)(?:\?|$)/.test(path)?`${path}${path.includes('?')?'&':'?'}timeZone=${encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone)}`:path).then(v=>{if(alive)setValue(v)}).catch(()=>{if(alive)setError(true)});return()=>{alive=false}},[path,revision]);return{value,error,refresh:()=>setRevision(x=>x+1)}}
 const money=(fen:number)=>`¥ ${(fen/100).toFixed(2)}`;
@@ -47,7 +48,7 @@ function LegacyFinanceCosts({language='zh'}:{language?:FinanceLanguage}){
 export function FinanceSettings({language='zh'}:{language?:FinanceLanguage}){
  const assistantV2=true;
  const t=financeCopy[language],data=useData<{current:ConfigVersion;history:ConfigVersion[];defaults:RuntimeConfig}>('finance/config'),notice=useData<{announcement:Announcement|null}>('finance/announcement'),mutation=useMutation('finance-settings-pending',language);
- const[draft,setDraft]=useState<RuntimeConfig>(),[review,setReview]=useState<Pending>(),[announcement,setAnnouncement]=useState<Announcement>({text:'芽芽暂时休息，训练和记录不受影响。',start:Date.now(),end:Date.now()+86400000});
+ const[draft,setDraft]=useState<RuntimeConfig>(),[review,setReview]=useState<Pending>(),[announcement,setAnnouncement]=useState<Announcement>({text:'芽芽暂时休息，训练和记录不受影响。',start:Date.now(),end:Date.now()+DAY_MS});
  useEffect(()=>{if(data.value)setDraft({...data.value.current.config,dailyMessageLimit:data.value.current.config.dailyMessageLimit??30})},[data.value]);useEffect(()=>{if(notice.value?.announcement)setAnnouncement(notice.value.announcement)},[notice.value]);
  function queue(path:string,body:unknown){try{if(path.endsWith("config")&&(body as {config?:RuntimeConfig}).config)runtimeSchema.parse((body as {config:RuntimeConfig}).config);if(path.endsWith("announcement")&&(body as {announcement:Announcement|null}).announcement)validateAnnouncement((body as {announcement:Announcement}).announcement);setReview({path,body,id:crypto.randomUUID()})}catch{mutation.setMessage(language==="zh"?"请检查数值范围、公告时间和用语。":"Check value ranges, notice dates and wording.")}}
  useEffect(()=>{const refresh=()=>data.refresh();window.addEventListener('fitness-admin-config-changed',refresh);return()=>window.removeEventListener('fitness-admin-config-changed',refresh);},[]);

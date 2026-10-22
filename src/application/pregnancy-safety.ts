@@ -7,6 +7,7 @@ import { runGates } from "../engine/gates";
 import { toEngineProfile } from "./engine-profile";
 import { effectivePainItem } from "./training-pain";
 import type { EngineProfile } from "../engine/contracts";
+import { DEFAULT_TIME_ZONE } from "../domain/local-date";
 
 type Pregnant = Extract<EngineProfile["population"], { kind: "pregnant" }>;
 export const pregnancyAbsoluteKeys = DATA.rules.find(
@@ -387,7 +388,7 @@ export function createPregnancySafety(repo: Repository) {
       if (!freshScreening(state.coachProfile, pause.requiredAt))
         return invalid("PREGNANCY_NEW_SCREENING_REQUIRED");
       const local = await repo.db.profiles.toCollection().first(),
-        zone = local?.timeZone ?? "Asia/Shanghai",
+        zone = local?.timeZone ?? DEFAULT_TIME_ZONE,
         today = calendarDay(new Date().toISOString(), zone)!;
       const mapped = toEngineProfile(state.coachProfile!, {
         asOfDate: today,

@@ -40,14 +40,4 @@ export const invalid = (message: string): never => {
 };
 /** Days after today a plan may start (V9 start-date picker). */
 export const START_DATE_WINDOW_DAYS = 14;
-export function localDate(timeZone: string) {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(new Date());
-  return ["year", "month", "day"]
-    .map((type) => parts.find((part) => part.type === type)!.value)
-    .join("-");
-}
+export { todayIn as localDate } from "../../domain/local-date";

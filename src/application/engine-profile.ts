@@ -19,6 +19,7 @@ import {
   painQuestionKeys,
   historyDangerReview,
 } from "./pain-events";
+import { DEFAULT_TIME_ZONE, addDays, weekStart } from "../domain/local-date";
 
 export interface PainFollowupRestriction {
   pattern: Pattern;
@@ -219,16 +220,12 @@ export function toEngineProfile(
     horizon = instants.length
       ? Math.max(...instants.map(Date.parse))
       : undefined,
-    zone = options.timeZone ?? "Asia/Shanghai";
+    zone = options.timeZone ?? DEFAULT_TIME_ZONE;
   let cutoff: string | undefined;
   if (horizon !== undefined) {
     const day = calendarDay(new Date(horizon).toISOString(), zone);
     if (day) {
-      const stamp = Date.parse(day + "T00:00:00Z"),
-        weekday = (new Date(stamp).getUTCDay() + 6) % 7;
-      cutoff = new Date(stamp + (7 - weekday) * 86400000)
-        .toISOString()
-        .slice(0, 10);
+      cutoff = addDays(weekStart(day), 7);
     }
   }
   const afterHorizon = (at: string) =>

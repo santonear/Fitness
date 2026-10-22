@@ -4,6 +4,7 @@ import {v8StateSchema,v8WorkoutSchema} from '../domain/schemas';
 import type {PostpartumSafetyState,PlannedItem,CoachProfile} from '../domain/v8/contracts';
 import type {Repository} from '../persistence/repository';
 import {DATA,calendarDay,condition} from '../engine/data';
+import { DEFAULT_TIME_ZONE, addDays } from '../domain/local-date';
 const urgentKeys=DATA.rules.find(r=>r.id==='postpartum.urgent')!.value!.items as string[];
 const symptomKeys=DATA.rules.find(r=>r.id==='postpartum.symptom_regression')!.value!.when.contains_any as string[];
 export const postpartumReportSchema=z.strictObject({urgent:z.record(z.string(),z.boolean()),regression:z.record(z.string(),z.boolean())}).superRefine((input,ctx)=>{
@@ -22,7 +23,7 @@ function phase(profile:CoachProfile):1|2|3 {
  return !pop.cleared?1:pop.weeksSinceBirth>=source.base_weeks.phase3_from+buffer?3:pop.weeksSinceBirth>=source.base_weeks.phase2[0]+buffer?2:1;
 }
 /** Source-required consecutive local dates; a missing date cannot be inferred or backfilled. */
-export function twoSymptomFreeWeeks(dates:string[],today:string){const days=new Set(dates),weeks=DATA.rules.find(r=>r.id==='postpartum.symptom_regression')!.value!.no_auto_progress_until.any.find((row:{user?:string})=>row.user==='symptom_free_consecutive_weeks').gte;return Array.from({length:weeks*7},(_,n)=>new Date(Date.parse(today+'T12:00:00Z')-n*86400000).toISOString().slice(0,10)).every(day=>days.has(day));}
+export function twoSymptomFreeWeeks(dates:string[],today:string){const days=new Set(dates),weeks=DATA.rules.find(r=>r.id==='postpartum.symptom_regression')!.value!.no_auto_progress_until.any.find((row:{user?:string})=>row.user==='symptom_free_consecutive_weeks').gte;return Array.from({length:weeks*7},(_,n)=>addDays(today,-n)).every(day=>days.has(day));}
 export function createPostpartumSafety(repo:Repository){
  async function report(workoutId:string|undefined,input:PostpartumReport,expectedRevision?:number){
   const answers=postpartumReportSchema.parse(input);
@@ -30,7 +31,7 @@ export function createPostpartumSafety(repo:Repository){
    const state=await repo.db.v8State.get('v8'),profile=state?.coachProfile;if(!state||!profile)return invalid('PROFILE_REQUIRED');
    if(profile.population?.kind!=='postpartum'&&!state.postpartumSafety?.urgentAt&&!state.postpartumSafety?.regression)return invalid('POSTPARTUM_CONTEXT_REQUIRED');
    const record=workoutId?await repo.db.v8Workouts.get(workoutId):undefined;if(workoutId&&(!record||record.status!=='in_progress'))return invalid('TRAINING_ENDED');
-   const at=new Date().toISOString(),local=await repo.db.profiles.toCollection().first(),zone=local?.timeZone??record?.timeZone??'Asia/Shanghai',today=calendarDay(at,zone)!;
+   const at=new Date().toISOString(),local=await repo.db.profiles.toCollection().first(),zone=local?.timeZone??record?.timeZone??DEFAULT_TIME_ZONE,today=calendarDay(at,zone)!;
    const urgent=urgentKeys.filter(key=>answers.urgent[key]),regression=symptomKeys.filter(key=>answers.regression[key]),prior=state.postpartumSafety??{};let next:PostpartumSafetyState={...prior};
    if(urgent.length||regression.length){next.lastSymptomAt=at;if(prior.regression)next.regression={...prior.regression,requiredAt:at,symptomFreeDates:[]};}
    if(urgent.length)next.urgentAt=prior.urgentAt??at;

@@ -8,13 +8,13 @@ import { useTheme } from '../../themes/ThemeProvider';
 import { getThemeSlots } from '../../themes/registry';
 import { createV8Workflow, type LocalCandidate, type ManualSelection } from '../../application/v8-workflow';
 import { optionalCoachBody,optionalCoachHistory } from '../../application/v8-coach-optional';
-import { activityDate } from '../../application/v8-activity';
 import { backfillOnboarding } from '../../application/v8-onboarding-backfill';
 import { buildCoachRequest } from '../../coach/request-builder';
 import type { CoachRequest, PickedSchedule } from '../../coach/contracts';
 import { pickedSchedule } from '../../application/picked-schedule';
 import { normalizeTrainingDates } from '../../application/training-dates';
-import { localDateIn } from '../../application/plan-presentation';
+import { DEFAULT_TIME_ZONE, addDays, todayIn, weekStart } from '../../domain/local-date';
+import { monthOf, shiftMonth } from '../../application/plan-calendar';
 import type { CoachProfile } from '../../domain/v8/contracts';
 import i18n from '../../i18n';
 import { profileService } from '../../application/profile';
@@ -28,11 +28,9 @@ import zh from '../../i18n/features/training/zh.json';
 import en from '../../i18n/features/training/en.json';
 export const workflow = createV8Workflow(repository);
 const blank: OnboardingAnswers = { goalText: '', scheduleOriginalText: '', placeEquipmentText: '', adultConfirmed: false, cautions: [] };
-function week(timeZone: string) {
- const parts = new Intl.DateTimeFormat('en-US', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date());
- const date = new Date(`${['year','month','day'].map(type => parts.find(p => p.type === type)!.value).join('-')}T00:00:00Z`);
- date.setUTCDate(date.getUTCDate() - (date.getUTCDay()+6)%7); const from = date.toISOString().slice(0,10); date.setUTCDate(date.getUTCDate()+6);
- return { from, to: date.toISOString().slice(0,10) };
+function week(today: string) {
+ const from = weekStart(today);
+ return { from, to: addDays(from, 6) };
 }
 function useController() {
  const planLifecycle=useFeature('planLifecycle');
@@ -57,7 +55,7 @@ function useController() {
  function openCoach(task:CoachRequest['task']='MODIFY_PLAN',templateId?:string,profile?:CoachProfile,schedule?:PickedSchedule){
   if(!data)return;
   // A new plan discussed in chat keeps the calendar days already picked (draft first, then the onboarding answers).
-  const picked=task==='ONBOARD_PLAN'?schedule??(candidate?pickedSchedule(candidate):pickedSchedule({...answers,trainingDates:normalizeTrainingDates(answers.trainingDates??[],localDateIn(data.profile?.timeZone??'Asia/Shanghai')).dates})):undefined;
+  const picked=task==='ONBOARD_PLAN'?schedule??(candidate?pickedSchedule(candidate):pickedSchedule({...answers,trainingDates:normalizeTrainingDates(answers.trainingDates??[],todayIn(data.profile?.timeZone??DEFAULT_TIME_ZONE)).dates})):undefined;
   coachTrigger.current=document.activeElement instanceof HTMLElement?document.activeElement:null;
   const selectedFacts=reviewKind==='month'?monthFacts:facts;
   const nextRequest=buildCoachRequest({...optionalCoach,task,data,templateId,profile,schedule:picked,facts:selectedFacts?{...selectedFacts,improvements:[...selectedFacts.improvements]}:undefined,kind:reviewKind});
@@ -88,16 +86,15 @@ function useController() {
   const counters={plans:next.versions.length,started:next.workouts.length,completed:next.workouts.filter(w=>['complete','partial','not_started'].includes(w.status)).length};
   if(observedCounts.current){for(const [key,event] of [['plans','plan_confirmed'],['started','workout_started'],['completed','workout_completed']] as const){const delta=counters[key]-observedCounts.current[key];if(delta>0)countUsage(event,delta);}}observedCounts.current=counters;
   const review = await createV8DataService(repository).getReviewWorkouts();
-  setOptionalCoach({body:optionalCoachBody(next.profile),history:optionalCoachHistory([...review.legacyWorkouts,...review.workouts],activityDate(next.profile?.timeZone??'Asia/Shanghai'),next.profile?.timeZone??'Asia/Shanghai',next.profile?.locale==='en'?'en':'zh')});
-  const input={ ...week(next.profile?.timeZone ?? 'Asia/Shanghai'), timeZone: next.profile?.timeZone ?? 'Asia/Shanghai', weeklyTarget: next.version?.weeklyTarget ?? next.state?.reviewWeeklyTarget ?? next.state?.coachProfile?.weeklyTarget ?? 2, ...review, activities: next.activities, bodyWeights: await repository.db.bodyWeights.toArray() };
+  const zone=next.profile?.timeZone??DEFAULT_TIME_ZONE,today=todayIn(zone);
+  setOptionalCoach({body:optionalCoachBody(next.profile),history:optionalCoachHistory([...review.legacyWorkouts,...review.workouts],today,zone,next.profile?.locale==='en'?'en':'zh')});
+  const input={ ...week(today), timeZone: zone, weeklyTarget: next.version?.weeklyTarget ?? next.state?.reviewWeeklyTarget ?? next.state?.coachProfile?.weeklyTarget ?? 2, ...review, activities: next.activities, bodyWeights: await repository.db.bodyWeights.toArray() };
   setFacts(computeWeekFacts(input));
-  const shift=(d:string,n:number)=>new Date(Date.parse(d+'T00:00:00Z')+n*86400000).toISOString().slice(0,10);
-  const previous=computeWeekFacts({...input,from:shift(input.from,-7),to:shift(input.from,-1)});
+  const previous=computeWeekFacts({...input,from:addDays(input.from,-7),to:addDays(input.from,-1)});
   setPreviousFacts(previous);
-  setCompletedWeeks([computeWeekFacts({...input,from:shift(input.from,-14),to:shift(input.from,-8)}),previous]);
-  const today=new Intl.DateTimeFormat('en-CA',{timeZone:input.timeZone,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
-  const year=Number(today.find(p=>p.type==='year')!.value),month=Number(today.find(p=>p.type==='month')!.value);
-  setMonthFacts(computeMonthFacts({...input,from:new Date(Date.UTC(year,month-1,1)).toISOString().slice(0,10),to:new Date(Date.UTC(year,month,0)).toISOString().slice(0,10)}));
+  setCompletedWeeks([computeWeekFacts({...input,from:addDays(input.from,-14),to:addDays(input.from,-8)}),previous]);
+  const month=monthOf(today);
+  setMonthFacts(computeMonthFacts({...input,from:`${month}-01`,to:addDays(`${shiftMonth(month,1)}-01`,-1)}));
   // Publish the snapshot only when its assistant/review context is ready.
   setData(next);
   return next;

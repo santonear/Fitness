@@ -1,5 +1,6 @@
 import type { PlanVersion } from '../domain/v8/contracts';
-import { addDays, weekSchedule, weekdayOf } from './plan-presentation';
+import { addDays, daysBetween, isLocalDate } from '../domain/local-date';
+import { weekSchedule, weekdayOf } from './plan-presentation';
 
 /**
  * Training days picked on a month calendar (Bo 2026-10-19): 1–30 chosen dates instead of a fixed
@@ -12,11 +13,8 @@ export const TRAINING_START_WINDOW_DAYS = 14;
 /** Engine limit (daysPerWeek ≤ 6): any 7 consecutive days keep at least one rest day. */
 export const TRAINING_MAX_PER_7_DAYS = 6;
 
-const datePattern = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
-export const isLocalDate = (value: string) => datePattern.test(value) && new Date(`${value}T00:00:00Z`).toISOString().slice(0, 10) === value;
+export { isLocalDate, daysBetween };
 export const timePattern = /^([01]\d|2[0-3]):[0-5]\d$/;
-const dayIndex = (date: string) => Math.round(Date.parse(`${date}T00:00:00Z`) / 86400000);
-export const daysBetween = (from: string, to: string) => dayIndex(to) - dayIndex(from);
 
 /** Every date from `a` to `b` inclusive, in calendar order (either may come first). */
 export function dateRange(a: string, b: string): string[] {

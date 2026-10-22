@@ -1,5 +1,5 @@
 import { localDateSchema, timeZoneSchema } from './schemas';
-const DAY = 86400000;
+import { DAY_MS as DAY } from './local-date';
 export const dateProjectionPolicy = 'civil-day-max-overlap-v1';
 function formatter(zone: string) { return new Intl.DateTimeFormat('en-US', { timeZone: zone, year: 'numeric', month: '2-digit', day: '2-digit' }); }
 function label(format: Intl.DateTimeFormat, instant: number): string {

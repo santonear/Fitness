@@ -5,6 +5,7 @@ import type {Repository} from '../persistence/repository';
 import {DATA,calendarDay,addCalendarMonths} from '../engine/data';
 import {runGates} from '../engine/gates';
 import {toEngineProfile} from './engine-profile';
+import { DEFAULT_TIME_ZONE } from '../domain/local-date';
 
 const source=DATA.rules.find(row=>row.id==='safety.stop.button')!.value!;
 export const cardiacSymptomKeys=Object.freeze([...(source.cardiac_symptoms as string[])]);
@@ -36,7 +37,7 @@ export function createTrainingStop(repo:Repository){
    if(!state||!pause)return invalid('CARDIAC_REVIEW_NOT_REQUIRED');
    const now=new Date().toISOString(),completed=Date.parse(screen?.completedAt??'');
    if(!profile?.healthStorageConsent?.acceptedAt||!Number.isFinite(completed)||completed<Date.parse(pause.requiredAt)||completed>Date.parse(now)||screen?.rescreenRequired===true||screen?.symptoms!==false||!cmrKeys.every(key=>screen.cmrSymptoms?.[key]===false)||screen?.parqAnswers?.length!==7||!Array.from(screen.parqAnswers).every(answer=>typeof answer==='boolean'))return invalid('CARDIAC_NEW_SCREENING_REQUIRED');
-   const local=await repo.db.profiles.toCollection().first(),zone=local?.timeZone??'Asia/Shanghai',today=calendarDay(now,zone)!,requiredDay=calendarDay(pause.requiredAt,zone)!;
+   const local=await repo.db.profiles.toCollection().first(),zone=local?.timeZone??DEFAULT_TIME_ZONE,today=calendarDay(now,zone)!,requiredDay=calendarDay(pause.requiredAt,zone)!;
    if(!clearance.attested_intensity_options.includes(confirmed.intensity)||confirmed.date>today||confirmed.date<requiredDay||addCalendarMonths(confirmed.date,clearance.valid_months_max)<today)return invalid('INVALID_CLEARANCE_DATE');
    const updatedProfile={...profile,screening:{...screen,clearance:confirmed}};
    const mapped=toEngineProfile(updatedProfile,{asOfDate:today,timeZone:zone,ageYears:local?.bodyDetails?.values.age,bodyWeightKg:local?.bodyDetails?.values.weightKg});

@@ -22,6 +22,7 @@ import { timePattern, validTrainingDates } from "../training-dates";
 import { unresolvedReview } from "../training-pain";
 import { type LocalCandidate, carriedBudget, carriedSchedule, invalid, localDate } from "./shared";
 import type { WorkflowContext } from "./context";
+import { DEFAULT_TIME_ZONE } from "../../domain/local-date";
 
 /** Basic rules are local and conservative; no model call or inferred medical suitability. */
 export function basicProposal(profile: CoachProfile, locale = "zh") {
@@ -122,7 +123,7 @@ export function createPlanSetup(ctx: WorkflowContext) {
             1,
           afterPhase = requestedPostpartumPhase(parsed.population)!,
           local = await db.profiles.toCollection().first(),
-          timeZone = local?.timeZone ?? "Asia/Shanghai",
+          timeZone = local?.timeZone ?? DEFAULT_TIME_ZONE,
           input = { asOfDate: localDate(timeZone), timeZone, requestedAt };
         if (
           afterPhase > beforePhase &&
@@ -296,7 +297,7 @@ export function createPlanSetup(ctx: WorkflowContext) {
             row.status === "pending" &&
             !row.completedSessionId &&
             row.scheduledDate >=
-              localDate(profile?.timeZone ?? "Asia/Shanghai"),
+              localDate(profile?.timeZone ?? DEFAULT_TIME_ZONE),
         );
       return {
         metadata,
@@ -361,7 +362,7 @@ export function createPlanSetup(ctx: WorkflowContext) {
         screeningEvidenceEvents: painState?.screeningEvidenceEvents,
         olderSafety: painState?.olderSafety,
         postpartumSafety: painState?.postpartumSafety,
-        asOfDate: localDate(local?.timeZone ?? "Asia/Shanghai"),
+        asOfDate: localDate(local?.timeZone ?? DEFAULT_TIME_ZONE),
         timeZone: local?.timeZone,
         locale,
         history,

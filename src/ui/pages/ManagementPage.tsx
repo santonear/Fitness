@@ -9,6 +9,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import {getFeatureLoadState,subscribeFeatureLoadState,refreshFeatureFlags,hasValidRemoteConfig} from '../../application/feature-flags';
 import { useTranslation } from 'react-i18next';
 import { trialApi } from '../components/TrialAccess';
+import { DEFAULT_TIME_ZONE, todayIn } from '../../domain/local-date';
 import { ManualInvites } from '../components/ManualInvites';
 import type { ControlService } from '../../backend/control';
 type Data = Awaited<ReturnType<ControlService['managementReport']>>;
@@ -56,8 +57,7 @@ function LegacyManagementPage() {
   }
   useEffect(() => { void run(async () => {}); }, []);
   const money = (fen: number) => `¥${(fen / 100).toFixed(2)}`;
-  const period = new Intl.DateTimeFormat('en-CA', { timeZone: data?.policy.timeZone ?? 'Asia/Shanghai', year: 'numeric', month: '2-digit' }).formatToParts(new Date());
-  const month = `${period.find(p => p.type === 'year')?.value}-${period.find(p => p.type === 'month')?.value}`;
+  const month = todayIn(data?.policy.timeZone ?? DEFAULT_TIME_ZONE).slice(0, 7);
   const budget = data?.report.budgets.find(b => b.period === month);
   const reserved = data?.report.budgets.reduce((sum, b) => sum + b.reservedFen, 0);
   return <div className="admin-console" style={adminTokens}><aside><a className="management-brand" href="/">Fitness.</a><p>{zh ? '管理工作台' : 'Management'}</p>

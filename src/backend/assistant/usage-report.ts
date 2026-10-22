@@ -1,6 +1,7 @@
 import type { AdminDatabase } from '../admin/core/contracts';
 import type { ControlState } from '../store';
 import {localDay} from './admission';
+import { DAY_MS } from '../../domain/local-date';
 export interface UsageRow {at:number;subject_short_id:string;task:string;stage:string;input_tokens:number|null;output_tokens:number|null;estimated_fen:number|null;result:string;pricing_version:string}
 /** Sidecar archive: never rewrites historic status, spent cost or reservations. */
 export async function archiveLegacyUsage(db:AdminDatabase,state:ControlState,now:number){
@@ -8,7 +9,7 @@ export async function archiveLegacyUsage(db:AdminDatabase,state:ControlState,now
  for(let i=0;i<entries.length;i+=50)await db.batch(entries.slice(i,i+50).map(([key])=>db.prepare("INSERT OR IGNORE INTO assistant_legacy_archive(request_key,archived_at,label) VALUES(?,?,'archived_unaccounted')").bind(key,now)));
 }
 export async function assistantUsageReport(db:AdminDatabase,month:string,timeZone:string){
- const start=Date.parse(month+'-01T00:00:00Z')-86400000,end=start+34*86400000;
+ const start=Date.parse(month+'-01T00:00:00Z')-DAY_MS,end=start+34*DAY_MS;
  const all=(await db.prepare('SELECT at,subject_short_id,task,stage,input_tokens,output_tokens,estimated_fen,result,pricing_version FROM assistant_usage WHERE at>=? AND at<? ORDER BY at DESC').bind(start,end).all<UsageRow>()).results;
  const rows=all.map(r=>({...r,day:localDay(r.at,timeZone)})).filter(r=>r.day.startsWith(month));
  const archived=(await db.prepare('SELECT COUNT(*) AS count FROM assistant_legacy_archive').first<{count:number}>())?.count??0;

@@ -2,6 +2,7 @@ import type { PlannedItem, PlanVersion, SessionTemplate } from '../domain/v8/con
 import type { Pattern } from '../engine/contracts';
 import { Rules } from '../engine/data';
 import { exerciseBodyPart } from '../catalog/registry';
+import { addDays, todayIn } from '../domain/local-date';
 
 /**
  * Read-only presentation of a plan (V9 plan/home screens): session names derived from
@@ -158,14 +159,12 @@ export function planReasons(plan: Pick<PlanVersion, 'weeklyTarget' | 'preferredD
 
 /* ---------- Start date (V9: the user picks when the plan starts) ---------- */
 /** Local calendar date (YYYY-MM-DD) in the given time zone. */
-export const localDateIn = (timeZone: string, date = new Date()) =>
-  new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
-export const addDays = (date: string, days: number) => new Date(Date.parse(`${date}T00:00:00Z`) + days * 86400000).toISOString().slice(0, 10);
+export { todayIn as localDateIn, addDays };
 export const weekdayOf = (date: string): Weekday => weekdays[(new Date(`${date}T00:00:00Z`).getUTCDay() + 6) % 7];
 /** When the plan starts: the chosen date, or for older versions the day the version was created. */
 export function planStartDate(version: { startDate?: string; createdAt?: string }, timeZone: string): string | undefined {
   if (version.startDate) return version.startDate;
-  return version.createdAt && Number.isFinite(Date.parse(version.createdAt)) ? localDateIn(timeZone, new Date(version.createdAt)) : undefined;
+  return version.createdAt && Number.isFinite(Date.parse(version.createdAt)) ? todayIn(timeZone, version.createdAt) : undefined;
 }
 /** Today plus the next `days` days, the dates offered by the start-date picker. */
 export const startDateOptions = (today: string, days = 14) => Array.from({ length: days + 1 }, (_, index) => addDays(today, index));

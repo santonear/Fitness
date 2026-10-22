@@ -15,6 +15,7 @@ import { enginePlanSchema, type EnginePlan } from "../../engine/contracts";
 import { isFeatureEnabled } from "../feature-flags";
 import { stableString, DATA } from "../../engine/data";
 import { type LocalCandidate, invalid, localDate } from "./shared";
+import { DEFAULT_TIME_ZONE } from "../../domain/local-date";
 
 export function createWorkflowContext(repo: Repository) {
   const db = repo.db;
@@ -86,7 +87,7 @@ export function createWorkflowContext(repo: Repository) {
       screeningEvidenceEvents: safety?.screeningEvidenceEvents,
       olderSafety: safety?.olderSafety,
       postpartumSafety: safety?.postpartumSafety,
-      asOfDate: localDate(local?.timeZone ?? "Asia/Shanghai"),
+      asOfDate: localDate(local?.timeZone ?? DEFAULT_TIME_ZONE),
       timeZone: local?.timeZone,
       locale: local?.locale,
       history: await db.v8Workouts.toArray(),

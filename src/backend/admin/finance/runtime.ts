@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { checkCoachLanguage } from '../../../application/rules/coach-language';
 import type { AdminDatabase } from '../core/contracts';
 import { AdminError } from '../core/contracts';
+import { DAY_MS } from '../../../domain/local-date';
 
 const integer = (min: number, max: number) => z.number().int().min(min).max(max);
 export const runtimeSchema = z.strictObject({ dailyMessageLimit: integer(1,1000).optional(), quotaUnderstand: integer(0, 10000), quotaGenerate: integer(0, 10000), quotaSummary: integer(0, 10000).optional(), monthlyBudgetFen: integer(1, 100000000), reservationFen: integer(1, 1000000), maxConcurrent: integer(1, 100), retentionDays: integer(1, 365) }).refine(v => v.reservationFen <= v.monthlyBudgetFen);
@@ -37,7 +38,7 @@ export class FinanceStore {
 }
 export function validateAnnouncement(value: unknown): Announcement {
   const a = z.strictObject({ text:z.string().trim().min(1).max(160).refine(t => !/[\r\n]/.test(t)), start:z.number().int().nonnegative(), end:z.number().int().nonnegative() }).parse(value);
-  if (a.end <= a.start || a.end - a.start > 7*86400000 || checkCoachLanguage(a.text).length) throw new AdminError('INVALID_ANNOUNCEMENT',400);
+  if (a.end <= a.start || a.end - a.start > 7*DAY_MS || checkCoachLanguage(a.text).length) throw new AdminError('INVALID_ANNOUNCEMENT',400);
   return a;
 }
 export async function activeAnnouncement(env: FinanceEnv, now = Date.now()): Promise<Announcement | null> {

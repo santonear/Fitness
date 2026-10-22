@@ -7,6 +7,7 @@ import { confirmGuidedSending, validateGuidedResponse } from '../ai/guided-dialo
 import { ControlError } from './store';
 
 import { guidedServiceLimits } from '../domain/guided-limits';
+import { DAY_MS } from '../domain/local-date';
 export { guidedServiceLimits } from '../domain/guided-limits';
 const text = z.string().trim().min(1).max(8000);
 const refusal = z.strictObject({ kind: z.literal('refused'), reason: z.enum(['unrelated', 'clarification_needed', 'safety_limit']), message: text });
@@ -26,7 +27,7 @@ export function validateGuidedProviderInput(request: GuidedDialogueRequest, k: n
   if (request.onboardingVersion === 4 && request.adultConfirmed !== true || request.adultConfirmed === false || typeof explicitAge === 'number' && explicitAge < 18) throw new ControlError('ADULT_ONLY', 403);
   try { confirmGuidedSending(request); } catch { throw new ControlError('CONFIRMATION_REQUIRED', 400); }
   if ((request.dates?.length ?? 0) > Math.min(k, guidedServiceLimits.maxDays)) throw new ControlError('DATE_BOUND_EXCEEDED', 400);
-  if (request.startDate && request.endDate && (Date.parse(request.endDate) - Date.parse(request.startDate)) / 86400000 + 1 > guidedServiceLimits.maxRangeDays)
+  if (request.startDate && request.endDate && (Date.parse(request.endDate) - Date.parse(request.startDate)) / DAY_MS + 1 > guidedServiceLimits.maxRangeDays)
     throw new ControlError('RANGE_TOO_LARGE', 413);
 }
 

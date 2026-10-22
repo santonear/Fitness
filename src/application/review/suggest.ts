@@ -3,11 +3,11 @@ import type { SuggestionInput, ReviewSuggestion, PlanProposal } from './contract
 import { computeExerciseEvidence } from './evidence';
 import { estimatePlannedMinutes } from '../../domain/duration-estimate';
 import { discomfortReplacement } from '../rules/basic-items';
+import { addDays, todayIn } from '../../domain/local-date';
 
 function reviewDate(input:SuggestionInput,workout:SuggestionInput['workouts'][number]):string {
  if(!input.timeZone)return workout.localDate;
- const parts=new Intl.DateTimeFormat('en-CA',{timeZone:input.timeZone,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date(workout.startedAt));
- return ['year','month','day'].map(key=>parts.find(part=>part.type===key)!.value).join('-');
+ return todayIn(input.timeZone,workout.startedAt);
 }
 function shortTemplate(source:SessionTemplate):SessionTemplate {
  const items=source.items.slice(0,3).map(item=>({...structuredClone(item),sets:2}));
@@ -84,7 +84,7 @@ export function suggestChange(input: SuggestionInput): ReviewSuggestion | null {
  // A newly saved plan is not evidence of two weeks without training.
  const completed = input.completedWeeks;
  if(completed && input.todayLocalDate && completed.every(w=>w.to<input.todayLocalDate! && w.complete===0) &&
-  new Date(Date.parse(completed[0].to+'T00:00:00Z')+86400000).toISOString().slice(0,10)===completed[1].from &&
+  addDays(completed[0].to,1)===completed[1].from &&
   plan.createdAt.slice(0,10)<completed[0].from && current.complete===0 && plan.weeklyTarget>2) {
   const source=plan.templates.find(t=>t.items.length>=3);
   if(source)return candidate('restart',{...base,weeklyTarget:2,templates:[shortTemplate(source)]});

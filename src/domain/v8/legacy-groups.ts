@@ -1,5 +1,6 @@
 import type { GuidedState } from '../guided-contracts';
 import type { Plan, PlanVersion } from '../models';
+import { daysBetween } from '../local-date';
 
 /** Only explicit generation ownership establishes a batch. Dates/names are not identities. */
 export function legacyPlanGroups(plans: readonly Plan[], versions: readonly PlanVersion[], states: readonly GuidedState[]) {
@@ -33,7 +34,7 @@ export function legacyPlanGroups(plans: readonly Plan[], versions: readonly Plan
 export function dateWeeklyTarget(dates: readonly string[]) {
   const unique = [...new Set(dates)].sort();
   if (!unique.length) return 1;
-  const days = (Date.parse(`${unique.at(-1)}T00:00:00Z`) - Date.parse(`${unique[0]}T00:00:00Z`)) / 86400000 + 1;
+  const days = daysBetween(unique[0], unique.at(-1)!) + 1;
   const weeks = Math.max(1, Math.ceil(days / 7));
   return Math.max(1, Math.min(7, Math.round(unique.length / weeks)));
 }

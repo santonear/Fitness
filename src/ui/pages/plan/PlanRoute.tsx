@@ -21,6 +21,7 @@ import { ExerciseGuidePanel } from "../../components/ExerciseGuide";
 import { planLifecycleCopy } from "../../../i18n/features/plan/lifecycle";
 import guideZh from "../../../i18n/features/training/guide.zh.json";
 import guideEn from "../../../i18n/features/training/guide.en.json";
+import { DEFAULT_TIME_ZONE } from "../../../domain/local-date";
 export function PlanRoute({ versions = false }: { versions?: boolean }) {
   const enabled = useFeature("planLifecycle"),
     engineEnabled = useFeature("trainingEngine"),
@@ -48,7 +49,7 @@ export function PlanRoute({ versions = false }: { versions?: boolean }) {
       setActivating({ id, revision: c.data.metadata.dataRevision });
     else void activate(id, c.data.metadata.dataRevision);
   };
-  const timeZone = c.data?.profile?.timeZone ?? "Asia/Shanghai",
+  const timeZone = c.data?.profile?.timeZone ?? DEFAULT_TIME_ZONE,
     todayDate = localDateIn(timeZone),
     sd = startDateCopy[c.locale];
   const tools = useExerciseTools("plan", { swapBlocked: c.data?.active ? exerciseToolsCopy[c.locale].blocked : undefined });

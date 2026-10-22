@@ -27,6 +27,7 @@ import en from '../../../i18n/features/review/en.json';
 import activityZh from '../../../i18n/features/training/activity.zh.json';
 import activityEn from '../../../i18n/features/training/activity.en.json';
 import { PageSwitches } from '../../components/PageSwitches';
+import { DAY_MS, DEFAULT_TIME_ZONE } from '../../../domain/local-date';
 export function ReviewPage(){
  useEffect(()=>{countUsage('review_opened');},[]);
  const c=useMainline(),{data,t,name}=c,r=c.locale==='zh'?zh:en,activities=c.locale==='zh'?activityZh:activityEn;
@@ -40,17 +41,17 @@ export function ReviewPage(){
  const dietDays=facts&&nutritionEnabled?new Set(dietDates.filter(d=>d>=facts.from&&d<=facts.to)).size:0;
  const key=`fitness-v8-review-dismissed:${data?.metadata.localProfileId}:${data?.metadata.restoreGeneration??0}:${c.facts?.from}`;
  let stored:string[]=[];try{const value=JSON.parse(localStorage.getItem(key)??'[]');if(Array.isArray(value))stored=value.filter(v=>typeof v==='string');}catch{/* A storage error must not change a plan. */}
- const suggestionInput=data?.version&&c.facts&&c.previousFacts?{timeZone:data.profile?.timeZone,plan:data.version,current:c.facts,previous:c.previousFacts,workouts:data.workouts,dismissedIds:[...stored,...dismissed],profile:data.state?.coachProfile,todayLocalDate:activityDate(data.profile?.timeZone??'Asia/Shanghai'),completedWeeks:c.completedWeeks}:undefined;
+ const suggestionInput=data?.version&&c.facts&&c.previousFacts?{timeZone:data.profile?.timeZone,plan:data.version,current:c.facts,previous:c.previousFacts,workouts:data.workouts,dismissedIds:[...stored,...dismissed],profile:data.state?.coachProfile,todayLocalDate:activityDate(data.profile?.timeZone??DEFAULT_TIME_ZONE),completedWeeks:c.completedWeeks}:undefined;
  const suggestion=suggestionInput?suggestChange(suggestionInput):null;
  const discomfort=suggestionInput?recurringDiscomfort(suggestionInput):[];
  const suggestionText=(value:ReviewSuggestion)=>value.rule==='time'?r.time.replace('20',String(value.proposal.templates.find(template=>template.name.match(/^\d+ min$/))!.estimatedMinutes)):r[value.rule];
  const bodyEnabled=useFeature('bodyProfile'),body=data?.profile?.bodyDetails;
- const weightDue=bodyEnabled&&!monthly&&body?.confirmedAt&&Date.now()-Date.parse(body.weightPromptAt??body.updatedAt)>=28*86400000;
+ const weightDue=bodyEnabled&&!monthly&&body?.confirmedAt&&Date.now()-Date.parse(body.weightPromptAt??body.updatedAt)>=28*DAY_MS;
  if(!facts)return null;
  // V9 #13: a partial session counts as done toward the weekly target; missingCount stays a coach-only fact.
  const target=data?.version?.weeklyTarget??0,week=weeklyRemaining(target,facts.complete,facts.partial);
  const progressText=!hasCurrentPlan?format(r.noPlanFacts,{complete:facts.complete,partial:facts.partial}):monthly?format(facts.partial?r.monthProgressPartial:r.monthProgress,{done:week.done,partial:facts.partial}):format(week.left===0?r.progressMet:facts.partial?r.progressPartial:r.progress,{target,done:week.done,partial:facts.partial,left:week.left});
- const timeZone=data?.profile?.timeZone??'Asia/Shanghai';
+ const timeZone=data?.profile?.timeZone??DEFAULT_TIME_ZONE;
  const buckets=monthly?weekBuckets(facts.from,facts.to).map(bucket=>({...bucket,from:bucket.from<facts.from?facts.from:bucket.from,to:bucket.to>facts.to?facts.to:bucket.to})):dayBuckets(facts.from);
  const points=chartSeries(historyInPeriod(history,facts.from,facts.to,timeZone),buckets,timeZone);
  const chartLabels=monthly?points.map(point=>point.from.slice(5).replace('-','/')):r.weekdays;

@@ -4,6 +4,7 @@ import {DomainError} from '../domain/errors';
 import {v8StateSchema} from '../domain/schemas';
 import type {Repository} from '../persistence/repository';
 import type {EngineProfile} from '../engine/contracts';
+import { weekStart } from '../domain/local-date';
 export const postpartumReferralKeys=Object.freeze([...(DATA.rules.find(row=>row.id==='postpartum.referral_signs')!.value!.items as string[])]);
 export const referralOccasions=['each_phase_transition','running_readiness_check','weekly_checkin'] as const;
 export type ReferralOccasion=typeof referralOccasions[number];
@@ -21,7 +22,7 @@ export const postpartumReferralSchema=z.strictObject({occasion:z.enum(referralOc
 /** Readiness and transitions require a check for that attempt. Weekly checks use the existing local calendar week. */
 export function needsPostpartumReferralCheck(checks:ReferralChecks|undefined,occasion:ReferralOccasion,input:{asOfDate:string;timeZone:string;phase?:1|2|3;requestedAt?:string}){
  const check=checks?.[occasion];if(!check||!Number.isFinite(Date.parse(check.answeredAt))||!Number.isFinite(Date.parse(input.asOfDate)))return true;
- if(occasion==='weekly_checkin'){const day=calendarDay(check.answeredAt,input.timeZone);if(!day)return true;const stamp=Date.parse(input.asOfDate+'T00:00:00Z'),monday=stamp-((new Date(stamp).getUTCDay()+6)%7)*86400000;return Date.parse(day+'T00:00:00Z')<monday||day>input.asOfDate;}
+ if(occasion==='weekly_checkin'){const day=calendarDay(check.answeredAt,input.timeZone);if(!day)return true;return day<weekStart(input.asOfDate)||day>input.asOfDate;}
  return !input.requestedAt||!Number.isFinite(Date.parse(input.requestedAt))||Date.parse(check.answeredAt)<Date.parse(input.requestedAt)||(occasion==='each_phase_transition'&&checks?.each_phase_transition?.phase!==input.phase);
 }
 export function createPostpartumReferral(repo:Repository){
