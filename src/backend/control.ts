@@ -7,6 +7,7 @@ import { guidedServiceLimits } from '../domain/guided-limits';
 import { COACH_PROMPT_VERSION, coachTask } from './coach-prompt-registry';
 import { CATALOG_VERSION } from '../catalog/exercises';
 import { DAY_MS as DAY, todayIn } from '../domain/local-date';
+import { randomHex } from '../domain/hex';
 export { ControlError } from './store';
 
 export interface ControlConfig {
@@ -24,7 +25,7 @@ export const testConfig: ControlConfig = { mode: 'local-test', timeZone: 'UTC', 
   maxInputBytes: 65536, maxConcurrent: 4, adminSecret: 'local-test-admin-only', digestSecret: 'local-test-digest-key-only' };
 export interface MockSupplier { kind: 'local-mock'; costUpperBoundFen?(request: AiRequest): number | undefined; call(request: AiRequest): Promise<{ result: unknown; actualCost?: number }> }
 export interface ExternalSupplier { kind: 'external-transport'; costUpperBoundFen?(request: AiRequest): number | undefined; call(request: AiRequest): Promise<{ result: unknown; actualCost?: number }> }
-function token() { return Array.from(crypto.getRandomValues(new Uint8Array(32)), byte => byte.toString(16).padStart(2, '0')).join(''); }
+const token = () => randomHex();
 function integer(value: number) { return Number.isSafeInteger(value) && value >= 0; }
 const requestKey = (subjectId: string, requestId: string) => `${subjectId}:${requestId}`;
 const usageKey = (subjectId: string, period: string) => `${subjectId}:${period}`;

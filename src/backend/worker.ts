@@ -12,6 +12,7 @@ import { DailyUsageStore, withDailyUsage } from './daily-usage-store';
 import { readFeatureFlags, type FeatureConfigEnv } from './feature-config';
 import { supplierDiagnostics } from './supplier-diagnostics';
 import { idempotentAdminStore } from './admin/core/idempotent-store';
+import { sha256Hex } from '../domain/hex';
 
 export interface WorkerEnv extends FeatureConfigEnv {
   TURNSTILE_SECRET_KEY?: string; TURNSTILE_SITE_KEY?: string;
@@ -83,7 +84,7 @@ export function createWorker(dependencies: { store?: (env: WorkerEnv) => Control
       const operationId=request.headers.get('x-admin-operation-id');
       if(path.startsWith('/api/v1/admin/') && operationId) {
         if(request.headers.get('authorization')!==`Bearer ${config.control.adminSecret}`||!/^[a-f0-9-]{36}$/i.test(operationId))throw new ControlError('ADMIN_REQUIRED',403);
-        const fingerprint=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(path+await request.clone().text()))),v=>v.toString(16).padStart(2,'0')).join('');
+        const fingerprint=await sha256Hex(path+await request.clone().text());
         store=idempotentAdminStore(store,operationId,fingerprint,request.headers.get('x-admin-actor')??'owner');
         config.control.adminOperationId=operationId;
       }

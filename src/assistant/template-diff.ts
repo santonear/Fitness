@@ -1,13 +1,3 @@
-function canonical(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(canonical);
-  if (value && typeof value === "object")
-    return Object.fromEntries(
-      Object.entries(value)
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([key, v]) => [key, canonical(v)]),
-    );
-  return value;
-}
 const visibleItem = (item: PlannedItem) => ({
   exerciseId: item.exerciseId,
   sets: item.sets,
@@ -22,6 +12,7 @@ const visibleItem = (item: PlannedItem) => ({
     : undefined,
 });
 import type { PlannedItem, SessionTemplate } from "../domain/v8/contracts";
+import { canonical } from "../domain/request-fingerprint";
 
 export interface TemplateChange {
   key: string;
@@ -53,8 +44,8 @@ export function diffTemplates(
       }
       used.add(oi);
       if (
-        JSON.stringify(canonical(visibleItem(old[oi]))) ===
-        JSON.stringify(canonical(visibleItem(item)))
+        canonical(visibleItem(old[oi])) ===
+        canonical(visibleItem(item))
       )
         unchanged++;
       else
@@ -115,8 +106,8 @@ export function unchangedTemplates(
         if (index < 0) return false;
         used.add(index);
         return (
-          JSON.stringify(canonical(visibleItem(old[index]))) ===
-          JSON.stringify(canonical(visibleItem(item)))
+          canonical(visibleItem(old[index])) ===
+          canonical(visibleItem(item))
         );
       }),
     };

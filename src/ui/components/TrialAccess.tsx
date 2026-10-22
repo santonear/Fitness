@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import type { ApplicationKind } from '../../backend/trial-applications';
+import { randomHex } from '../../domain/hex';
 
 type Application = z.infer<typeof applicationSchema>;
 const counts = z.object({ understand: z.number().int().nonnegative(), generate: z.number().int().nonnegative() });
@@ -113,7 +114,7 @@ export function TrialAccess({ onContinue, onSkip, onStartPlanning }: { onContinu
     if (nameIssue || noteIssue) return;
     await run(async () => {
       let owner = receipt;
-      if (!owner) { owner = Array.from(crypto.getRandomValues(new Uint8Array(32)), b => b.toString(16).padStart(2, '0')).join(''); localStorage.setItem(receiptKey, owner); setReceipt(owner); }
+      if (!owner) { owner = randomHex(); localStorage.setItem(receiptKey, owner); setReceipt(owner); }
       try {
         await trialApi('trial/apply', { receipt: owner, id: requestId.current, kind, name, note, proof });
         setForm(false); requestId.current = crypto.randomUUID(); await refresh(owner);

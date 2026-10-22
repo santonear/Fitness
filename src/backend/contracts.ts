@@ -1,4 +1,5 @@
 import { canonical, confirmationFor, goalConfirmationFor } from '../domain/request-fingerprint';
+import { hex } from '../domain/hex';
 export { canonical, confirmationFor, goalConfirmationFor } from '../domain/request-fingerprint';
 import { selectAiExercises } from '../catalog/ai-catalog';
 import { z } from 'zod';
@@ -16,7 +17,6 @@ export async function digest(value: string, secret: string): Promise<string> {
   const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
   return hex(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(value)));
 }
-function hex(value: ArrayBuffer) { return Array.from(new Uint8Array(value), byte => byte.toString(16).padStart(2, '0')).join(''); }
 const text = z.string().min(1).max(8000);
 const base = { contractVersion: z.literal(1), requestId: uuidSchema, goalText: text, locale: localeSchema,
   restoreGeneration: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER), sendConfirmation: z.string().length(64) };
