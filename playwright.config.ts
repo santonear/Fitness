@@ -7,6 +7,9 @@ export default defineConfig({
   // HTTP qualification tests require the production transport, not the local demo.
   testIgnore: ['mainline-polish.spec.ts', 'followup-finish.spec.ts', 'followup-pwa.spec.ts', 'v8-final-matrix.spec.ts', 'trial-access.spec.ts', 'v8-mainline.spec.ts', 'v8-plan-review.spec.ts', 'v8-coach-panel.spec.ts'],
   workers: 4,
+  // A first visit opens the local database and the dev server compiles on demand; on slow shared
+  // runners that took longer than the 5 s default, so assertions wait up to 15 s.
+  expect: { timeout: 15_000 },
   use: {
     baseURL: `http://127.0.0.1:${port}`,
     viewport: { width: 320, height: 700 },
