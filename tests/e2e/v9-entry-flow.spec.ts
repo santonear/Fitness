@@ -53,8 +53,15 @@ test('fresh user: welcome → tap onboarding → one-question health check → p
   await page.getByRole('navigation', { name: '主导航' }).getByRole('button', { name: '我的' }).click();
   await expect(page.getByRole('heading', { name: '我的', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: '运动前自查与训练偏好' })).toHaveCount(1);
-  // Bo 2026-10-19: themes change from 今天's 换风格 only; 我的 has no 界面风格 entry.
+  // Bo 2026-10-22: 今天, 计划, 回顾 and 我的 each have separate language and 换风格 buttons; no inline 界面风格 group.
   await expect(page.getByRole('radiogroup', { name: '界面风格' })).toHaveCount(0);
+  const nav = page.getByRole('navigation', { name: '主导航' });
+  for (const tab of ['今天', '计划', '回顾', '我的']) {
+    await nav.getByRole('button', { name: tab }).click();
+    const switches = page.getByRole('group', { name: '语言和风格' });
+    await expect(switches.getByRole('button', { name: '语言：中文。切换到 English' })).toBeVisible();
+    await expect(switches.getByRole('button', { name: '换风格', exact: true })).toBeVisible();
+  }
   expect(modelCalls).toBe(0);
   // Target: a new user gets a plan in about three minutes; scripted taps are far quicker.
   expect(Date.now() - started).toBeLessThan(180000);

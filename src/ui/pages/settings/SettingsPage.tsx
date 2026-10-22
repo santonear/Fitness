@@ -10,6 +10,7 @@ import { restVibrationKey, timerSoundKey } from '../training/useRestVibration';
 import settingsZh from '../../../i18n/features/settings/zh.json';
 import settingsEn from '../../../i18n/features/settings/en.json';
 import { meCopy } from '../../../i18n/features/settings/me';
+import { PageSwitches } from '../../components/PageSwitches';
 import { energyCopy } from '../../../i18n/features/me/energy';
 import { bodyCopy } from '../../../i18n/features/onboarding/body';
 import { useMainline } from '../../mainline/context';
@@ -47,7 +48,7 @@ export function SettingsPage(){const bodyEnabled=useFeature('bodyProfile');const
  const toggle=(next:Section)=>setSection(section===next?'':next);
  const version=data?.version;
  const nutritionEntry=nutritionEnabled||hasNutrition||aiEnabled;
- return <main className="v9-settings"><header className="v9-settings-head"><span className="v9-settings-kicker" aria-hidden="true">me</span><h1 className="v9-display">{me.title}</h1><i className="v9-brand-dash" aria-hidden="true"/></header>
+ return <main className="v9-settings"><PageSwitches/><header className="v9-settings-head"><span className="v9-settings-kicker" aria-hidden="true">me</span><h1 className="v9-display">{me.title}</h1><i className="v9-brand-dash" aria-hidden="true"/></header>
  <section className="v9-settings-group v9-settings-me" aria-label={me.me}><h2>{me.me}</h2>
   <Card variant="raised" padding="md" as="section" className="v9-settings-profile" aria-label={me.profile}>
    <Yaya pose="thanks" size={64} alt=""/>

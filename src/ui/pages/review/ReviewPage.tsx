@@ -26,6 +26,7 @@ import zh from '../../../i18n/features/review/zh.json';
 import en from '../../../i18n/features/review/en.json';
 import activityZh from '../../../i18n/features/training/activity.zh.json';
 import activityEn from '../../../i18n/features/training/activity.en.json';
+import { PageSwitches } from '../../components/PageSwitches';
 export function ReviewPage(){
  useEffect(()=>{countUsage('review_opened');},[]);
  const c=useMainline(),{data,t,name}=c,r=c.locale==='zh'?zh:en,activities=c.locale==='zh'?activityZh:activityEn;
@@ -70,6 +71,7 @@ export function ReviewPage(){
  const notes=[discomfort.length>0&&{tone:'warn',text:`${discomfort.map(name).join(' / ')} · ${r.discomfort}`},!empty&&!facts.hasBodyWeight&&{tone:'info',text:r.noWeight},!dietDays&&weightGoal&&{tone:'info',text:r.diet},dietDays>0&&{tone:'info',text:lifestyleCopy[c.locale].dietBoundary.replace('{days}',String(dietDays))}].filter((note):note is {tone:string;text:string}=>!!note);
  const noPlanActions=!hasCurrentPlan&&<div className="rv-actions"><PrimaryButton tone="quiet" size="sm" onClick={()=>c.navigate('/manual')}>{r.manualTraining}</PrimaryButton><PrimaryButton tone="quiet" size="sm" onClick={c.restartPlanning}>{r.newPlan}</PrimaryButton></div>;
  return <main className="rv-page">
+ <PageSwitches/>
  <header className="rv-head"><h1 className="rv-title">{monthly?r.month:r.week}</h1><p className="rv-range v9-num">{shortDate(facts.from)} – {shortDate(facts.to)}</p></header>
  <SegmentedTabs label={r.period} value={monthly?'month':'week'} onChange={value=>c.setReviewKind(value==='month'?'month':'week')} options={[{value:'week',label:r.weekTab},{value:'month',label:r.monthTab}]}/>
  <c.slots.FeatureCard context="review" motionReduced={false} trainingActive={!!data?.active}>

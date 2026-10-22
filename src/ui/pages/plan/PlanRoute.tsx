@@ -6,6 +6,7 @@ import { startDateCopy } from "../../../i18n/features/plan/start-date";
 import { exerciseToolsCopy } from "../../../i18n/features/plan/exercise-tools";
 import { StartDatePicker } from "../../components/StartDatePicker";
 import { HomeExit } from "../../components/HomeExit";
+import { PageSwitches } from "../../components/PageSwitches";
 import { useExerciseTools } from "../../components/ExerciseTools";
 import { fill } from "../../../i18n/features/onboarding/entry";
 import { Card, PrimaryButton } from "../../components/kit";
@@ -139,6 +140,7 @@ export function PlanRoute({ versions = false }: { versions?: boolean }) {
     );
   return (
     <main>
+      <PageSwitches />
       {prenatalPrompt}
       {engineEnabled && selected?.enginePlan && (
         <PlanStops plan={selected.enginePlan} locale={c.locale} />
