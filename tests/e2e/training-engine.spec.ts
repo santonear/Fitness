@@ -154,6 +154,8 @@ async function openSourceWarmup(page:Page){
 }
 
 test('actual screening UI generates deterministic local drafts and preserves engine fields in backup',async({page,browser},info)=>{
+ // Ten themed screenshot passes; on a shared CI worker this runs past the file-wide four minutes.
+ test.setTimeout(480000);
  await localFeatures(page);const apiRequests:string[]=[];page.on('request',request=>{if(new URL(request.url()).pathname.startsWith('/api/'))apiRequests.push(new URL(request.url()).pathname);});
  const first=await screenAndDraft(page,true);expect(first.length).toBeGreaterThan(0);
  const other=await browser.newContext({viewport:{width:375,height:844}}),otherPage=await other.newPage();
