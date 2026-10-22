@@ -61,10 +61,10 @@ jobs:
       - run: node --test tools/v8/check.test.mjs
       - run: node tools/v8/check.mjs
       - run: node tools/check-layers.mjs
-      # Same functional group as tools/training-engine/test.mjs. The complete
-      # diagnostic group runs in engine-audit, and verify requires both jobs.
+      # The functional group (npm run test:unit). The complete diagnostic
+      # group runs in engine-audit, and verify requires both jobs.
       - run: npm run typecheck
-      - run: npm test -- --exclude tests/training-engine/diagnostic.test.ts
+      - run: npm run test:unit
       - run: npm run build
       - run: npm run engine:check
       - run: node tools/check-coach-client-boundary.mjs
@@ -97,7 +97,7 @@ jobs:
       # Build a fresh receipt outside Vitest, on this same source/input/runtime.
       # Original diagnostic assertions and their timeout remain unchanged.
       - run: npm run engine:full
-      - run: npm test -- tests/training-engine/diagnostic.test.ts
+      - run: npm run test:diagnostic
 
   browser-main:
     needs: changes
