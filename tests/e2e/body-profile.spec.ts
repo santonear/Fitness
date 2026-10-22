@@ -53,3 +53,11 @@ test('four-week weight entry is optional and dismissed across reloads; stale bod
  const staleRejected=await page.evaluate(async()=>{const p='/src/persistence/repository.ts',b='/src/application/body-profile.ts',repo=(await import(/* @vite-ignore */ p)).repository,service=(await import(/* @vite-ignore */ b)).bodyProfileService;const profile=await repo.db.profiles.toCollection().first();await repo.db.profiles.put({...profile,bodyDetails:{...profile.bodyDetails,weightPromptAt:new Date(Date.now()-29*86400000).toISOString()}});try{await service.validateSending({weightKg:69});return false}catch{return true}});expect(staleRejected).toBe(true);
  await page.goto('/review');await expect(page.getByRole('button',{name:'体重有变化吗？',exact:true})).toBeVisible();await expect(page.getByRole('dialog')).toHaveCount(0);await page.getByRole('button',{name:'先不更新',exact:true}).click();await expect(page.getByRole('button',{name:'体重有变化吗？',exact:true})).toHaveCount(0);await page.reload();await expect(page.getByRole('button',{name:'体重有变化吗？',exact:true})).toHaveCount(0);
 });
+
+test('body text rejects code and explains unreadable answers',async({page})=>{
+ await enable(page);await bodyStep(page);const box=page.getByLabel('说说你的身体情况'),next=page.getByRole('button',{name:'下一步',exact:true});
+ await box.fill('SELECT * FROM users WHERE id IN (1,2,3);');await expect(page.getByRole('alert')).toContainText('请不要输入代码');await expect(box).toHaveAttribute('aria-invalid','true');await expect(next).toBeDisabled();
+ await box.fill('男，34岁，167，70公斤 <script>alert(1)</script>');await expect(page.getByRole('button',{name:'身高（厘米） · 点这里选择',exact:true})).toBeVisible();await expect(next).toBeDisabled();
+ await box.fill('随便写写');await expect(page.getByText('没认出年龄、身高或体重',{exact:false})).toBeVisible();await expect(page.getByRole('alert')).toHaveCount(0);
+ await box.fill('男，34岁，167，70公斤');await expect(page.getByText('没认出年龄、身高或体重',{exact:false})).toHaveCount(0);await expect(next).toBeEnabled();
+});

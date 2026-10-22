@@ -1,4 +1,5 @@
 import {z} from 'zod';
+import { textIssue } from '../domain/input-guard';
 import {digest} from './contracts';
 import {D1ControlStore, type D1Binding} from './d1-store';
 import {shortId} from './admin/core/short-id';
@@ -21,8 +22,8 @@ export const FEEDBACK_DAILY_LIMIT = 500;
 const MAX_BODY = 8192;
 export const feedbackInputSchema = z.strictObject({
   id: z.uuid(),
-  message: z.string().trim().min(1).max(FEEDBACK_MESSAGE_MAX),
-  contact: z.string().trim().max(FEEDBACK_CONTACT_MAX).optional(),
+  message: z.string().trim().min(1).max(FEEDBACK_MESSAGE_MAX).refine(text => !textIssue(text)),
+  contact: z.string().trim().max(FEEDBACK_CONTACT_MAX).refine(text => !textIssue(text)).optional(),
   locale: z.enum(['zh', 'en']).optional(),
 });
 const json = (value: unknown, status = 200) => Response.json(value, {status, headers: {'Cache-Control': 'no-store'}});

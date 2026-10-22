@@ -76,7 +76,7 @@ export function NutritionAdvicePage() {
       {messages.length > 0 && <div role="log" aria-label={t.chatTitle} aria-live="polite" className="v9-nutrition-log">{messages.map((message, index) =>
         <div key={index} className="v9-nutrition-bubble" data-role={message.role}><span className="v9-nutrition-speaker">{message.role === 'user' ? t.you : t.yaya}</span><p>{message.content}</p></div>)}</div>}
       {!messages.length && <div className="v9-nutrition-quick" role="group" aria-label={t.quick}>{t.prompts.map(prompt => <ChoiceChip key={prompt} size="sm" selected={false} disabled={busy || !available} onClick={() => setText(prompt)}>{prompt}</ChoiceChip>)}</div>}
-      <Composer value={text} onChange={setText} onSend={value => void send(value)} label={t.input} sendLabel={t.send} busy={busy} disabled={busy || !available} />
+      <Composer value={text} onChange={setText} onSend={value => void send(value)} label={t.input} sendLabel={t.send} busy={busy} disabled={busy || !available} locale={locale} />
       {busy && <PrimaryButton tone="quiet" size="sm" onClick={() => controller.current?.abort()}>{t.stop}</PrimaryButton>}
       {error && <p role="alert">{error}</p>}
     </Card>

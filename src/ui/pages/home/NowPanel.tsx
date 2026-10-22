@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
+import { TEXT_LIMITS, textIssue } from '../../../domain/input-guard';
+import { FieldIssue } from '../../components/common/FieldIssue';
 import { Card, ChoiceChip, HomePanel, PrimaryButton } from '../../components/kit';
 import { DEFAULT_HOME_PANEL_STYLE, NOW_MINUTES, type BudgetRequest, type HomePanelStyle, type NowMinutes, type NowSession } from '../../../domain/plan-upgrade';
 import { buildNowSession, sessionMuscleFocus, weeklyMuscleLoad } from '../../../application/rules/plan-upgrade';
@@ -103,8 +105,8 @@ export function NowPanel({ template, weekDates, blocked, today, onStart }: { tem
     </>}
     {scene && <EvidenceFold locale={locale} items={['fragment', 'strength']}/>}
     {editing && <Card variant="raised" padding="md" as="section" className="v9-home-panel">
-      <label className="v9-home-intention"><span>{y.intentionAsk}</span><input value={draft} maxLength={80} placeholder={c.intentionPlaceholder} onChange={event => setDraft(event.target.value)}/></label>
-      <PrimaryButton tone="quiet" size="sm" disabled={!draft.trim()} onClick={() => { if (setIntention(draft)) { setPlan(draft.trim().slice(0, 80)); setEditing(false); } }}>{c.intentionSave}</PrimaryButton>
+      <label className="v9-home-intention"><span>{y.intentionAsk}</span><input value={draft} maxLength={TEXT_LIMITS.short} placeholder={c.intentionPlaceholder} aria-invalid={textIssue(draft, TEXT_LIMITS.short) ? true : undefined} onChange={event => setDraft(event.target.value)}/><FieldIssue issue={textIssue(draft, TEXT_LIMITS.short)} locale={locale} max={TEXT_LIMITS.short}/></label>
+      <PrimaryButton tone="quiet" size="sm" disabled={!draft.trim() || !!textIssue(draft, TEXT_LIMITS.short)} onClick={() => { if (setIntention(draft)) { setPlan(draft.trim().slice(0, 80)); setEditing(false); } }}>{c.intentionSave}</PrimaryButton>
     </Card>}
     {reminderAsk && <Card variant="raised" padding="md" as="section" className="v9-home-panel">
       <p>{y.reminderUnused}</p>

@@ -43,7 +43,7 @@ export function JourneyPage() {
   const nextCamp = journey?.camps.find(camp => !camp.reachedAt);
   const saveWeight = async () => {
     const value = Number(form?.value);
-    if (!form || !Number.isFinite(value) || value < 20 || value > 300) return setForm({ value: form?.value ?? '', error: true });
+    if (!form || !/^\d{2,3}(?:\.\d{1,2})?$/.test(form.value.trim()) || !Number.isFinite(value) || value < 20 || value > 300) return setForm({ value: form?.value ?? '', error: true });
     const existing = weights.find(row => row.localDate === today);
     let saved = false;
     await run(async () => {
@@ -91,7 +91,7 @@ export function JourneyPage() {
         {diff !== undefined && ghost && <span className="pu-line"><span className="v9-num">{diff > 0 ? '+' : diff < 0 ? '−' : ''}{Math.abs(diff)}</span> {fillLine(c.weightSince, { month: monthLabel(ghost.localDate, locale) })}{values?.heightCm ? ` · ${fillLine(c.heightCm, { cm: values.heightCm })}` : ''}</span>}
       </div>}
       {form ? <>
-        <label className="pu-field"><span>{c.weightLabel}</span><input inputMode="decimal" value={form.value} aria-invalid={form.error || undefined} onChange={event => setForm({ value: event.target.value })}/></label>
+        <label className="pu-field"><span>{c.weightLabel}</span><input inputMode="decimal" maxLength={6} value={form.value} aria-invalid={form.error || undefined} onChange={event => setForm({ value: event.target.value })}/></label>
         {form.error && <p className="pu-line" role="alert">{c.weightInvalid}</p>}
         <div className="pu-row"><PrimaryButton size="sm" disabled={busy} onClick={() => void saveWeight()}>{c.save}</PrimaryButton><PrimaryButton tone="quiet" size="sm" onClick={() => setForm(undefined)}>{c.cancel}</PrimaryButton></div>
       </> : <PrimaryButton tone="quiet" onClick={() => setForm({ value: last ? String(kg(last.weightGrams)) : '' })}>{c.recordWeight}</PrimaryButton>}

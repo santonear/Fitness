@@ -49,7 +49,7 @@ export function MyChangesPage() {
   const save = async () => {
     if (!form) return;
     const kg = Number(form.weight), percent = form.fat.trim() === '' ? undefined : Number(form.fat);
-    if (!Number.isFinite(kg) || kg < 20 || kg > 300 || (percent !== undefined && (!Number.isFinite(percent) || percent < 3 || percent > 70)) || !form.date || form.date > today) return setForm({ ...form, error: true });
+    if (!Number.isFinite(kg) || kg < 20 || kg > 300 || (percent !== undefined && (!Number.isFinite(percent) || percent < 3 || percent > 70)) || !form.date || form.date > today || form.date < '2000-01-01') return setForm({ ...form, error: true });
     let saved = false;
     await c.run(async () => {
       await bodyWeightService.saveBodyWeight({ ...(existing ? { id: existing.id } : {}), localDate: form.date, timeZone: zone, weightGrams: Math.round(kg * 1000), ...(percent !== undefined ? { bodyFatPercent: Math.round(percent * 10) / 10 } : {}) }, existing?.revision);
@@ -97,7 +97,7 @@ export function MyChangesPage() {
     </Card>
     <MorphPanel open={!!form} title={t.addTitle} closeLabel={t.cancel} onClose={() => { if (!c.busy) setForm(undefined); }} triggerRef={trigger}>
       {form && <div className="v9-change-form">
-        <label><span>{t.date}</span><input type="date" value={form.date} max={today} onChange={event => setForm({ ...form, date: event.currentTarget.value, error: false })} /></label>
+        <label><span>{t.date}</span><input type="date" value={form.date} min="2000-01-01" max={today} onChange={event => setForm({ ...form, date: event.currentTarget.value, error: false })} /></label>
         <label><span>{t.weightLabel}</span><input type="number" inputMode="decimal" min={20} max={300} step={0.1} value={form.weight} onChange={event => setForm({ ...form, weight: event.currentTarget.value, error: false })} /></label>
         <label><span>{t.fatLabel}</span><input type="number" inputMode="decimal" min={3} max={70} step={0.1} value={form.fat} onChange={event => setForm({ ...form, fat: event.currentTarget.value, error: false })} /></label>
         {existing && <p className="v9-change-note">{t.sameDay}</p>}

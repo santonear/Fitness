@@ -15,6 +15,7 @@ export const planPagesCopy = {
     // 我的山路
     journeyTitle: '我的山路', now: '现在', before: '{month}', outlineNote: '轮廓按身高体重估算，仅作示意',
     recordWeight: '记今天的体重', weightLabel: '今天的体重（kg）', save: '保存', cancel: '取消', weightInvalid: '请填 20 到 300 之间的数字',
+    testInvalid: '请填 {min} 到 {max} 之间的数字',
     weightSince: '比 {month}', heightCm: '{cm} cm', kg: 'kg',
     stopStart: '起点', stopNow: '现在', destination: '终点',
     testTitle: '体能小测', testItems: { pushup: '俯卧撑（女性可跪姿）', situp60s: '1 分钟仰卧起坐', sitAndReachCm: '坐位体前屈（cm）', singleLegStandEyesClosedS: '闭眼单脚站（秒）', chairStand30s: '30 秒坐站' },
@@ -39,6 +40,7 @@ export const planPagesCopy = {
     back: 'Back',
     journeyTitle: 'My trail', now: 'Now', before: '{month}', outlineNote: 'The outline is estimated from height and weight, for illustration only',
     recordWeight: "Log today's weight", weightLabel: "Today's weight (kg)", save: 'Save', cancel: 'Cancel', weightInvalid: 'Enter a number from 20 to 300',
+    testInvalid: 'Enter a number from {min} to {max}',
     weightSince: 'vs {month}', heightCm: '{cm} cm', kg: 'kg',
     stopStart: 'Start', stopNow: 'Now', destination: 'Destination',
     testTitle: 'Fitness mini-test', testItems: { pushup: 'Push-ups (kneeling for women)', situp60s: '1-minute sit-ups', sitAndReachCm: 'Sit and reach (cm)', singleLegStandEyesClosedS: 'One-leg stand, eyes closed (s)', chairStand30s: '30-second chair stand' },

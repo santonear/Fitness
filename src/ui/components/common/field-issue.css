@@ -1,0 +1,2 @@
+/* Inline message under a free-text field that cannot be saved as typed. */
+.v9-field-issue { margin: var(--s1) 0 0; font-size: var(--t2); color: var(--c-warn); }
