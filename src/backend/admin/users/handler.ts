@@ -7,6 +7,7 @@ import {D1ControlStore} from '../../d1-store';
 import {AdminError,adminJson,requireFreshContext,requireAdminDb,type AdminContext,type AdminDatabase} from '../core/contracts';
 import type {ControlState} from '../../store';
 import {readFeatureFlags,type FeatureConfigEnv} from '../../feature-config';
+import { csvRow } from '../../csv';
 /** One source of truth for every admin view of the AI switch: the state the app actually serves. */
 export async function aiSwitchState(state:Pick<ControlState,'aiEnabled'>,env:FeatureConfigEnv&{CONTROL_MODE?:string}){
  const flag=(await readFeatureFlags(env).catch(()=>({aiAssistantV2:false}))).aiAssistantV2===true,model=env.CONTROL_MODE==='external';
@@ -36,7 +37,6 @@ function withActivity(state:ControlState,id:string,activity:Map<string,UserActiv
 function resolve(id:string,keys:string[]){if(!/^[a-f0-9-]{8,64}$/i.test(id))throw new AdminError('INVALID_OBJECT_ID');const found=keys.filter(k=>k.startsWith(id));if(found.length!==1)throw new AdminError('OBJECT_NOT_FOUND',404);return found[0]}
 export const usersTodoSource={id:'users',evaluate:async(c:AdminContext)=>{const state=await readUserState(c);const pending=Object.values(state.applications??{}).filter(a=>a.state==='pending');return pending.length?[{id:'applications-pending',level:'info' as const,title:'新申请',text:`${pending.length} 份申请等待审核`,actions:[{label:'逐个审核',href:'/admin/applications'}]}]:[]}};
 export async function pendingOver48h(c:AdminContext){const state=await readUserState(c);return Object.values(state.applications??{}).filter(a=>a.state==='pending'&&c.now-a.createdAt>48*3600000).length}
-function csvRow(row:unknown[]){return row.map(v=>{const text=String(v??'');const safe=/^[\s\u0000-\u001f]*[=+@-]|^[\t\r\n]/.test(text)?"'"+text:text;return '"'+safe.replaceAll('"','""')+'"'}).join(',')+'\r\n'}
 type AuditExportRow={id:string;actor:string;at:number;object_id:string;action:string;result:string};
 async function exportAudit(db:AdminDatabase,c:UsersContext):Promise<Response>{
  const snapshot=await db.prepare('SELECT MAX(rowid) AS maximum FROM admin_audit').first<{maximum:number|null}>();

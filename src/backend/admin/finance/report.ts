@@ -2,6 +2,7 @@ import type { ControlState } from '../../store';
 import type { AdminDatabase, AdminTodo } from '../core/contracts';
 import { z } from 'zod';
 import { addDays, todayIn } from '../../../domain/local-date';
+import { csvRow } from '../../csv';
 
 const eventSchema = z.strictObject({eventKey:z.string().regex(/^[a-f0-9]{64}$/), day:z.string().regex(/^\d{4}-\d{2}-\d{2}$/), task:z.enum(['generate','adjust','modify','review','understand','summary']), status:z.enum(['settled','pending','fallback','released']), costFen:z.number().int().nonnegative(), reservedFen:z.number().int().nonnegative(), at:z.number().int().nonnegative()});
 /** Caller hashes a stable request identifier; payload and subject identities are rejected. */
@@ -57,7 +58,7 @@ export function financeTodos(spent:number,pending:number,budget:number,month:str
 }
 export function ledgerCsv(value:ReturnType<typeof ledgerProjection>) {
   const rows=[['month','subject','request','task','status','reserved_fen','settled_fen'],...value.rows.map(r=>[value.month,r.subjectShortId,r.requestShortId,r.task,r.status,r.reservedFen,r.settledFen]),[value.month,'','','','unattributed',0,value.unattributedFen]];
-  return '\uFEFF'+rows.map(r=>r.map(v=>'"'+String(v).replace(/^[=+@\-]/,"'$&").replaceAll('"','""')+'"').join(',')).join('\r\n');
+  return '\uFEFF'+rows.map(csvRow).join('');
 }
 
 

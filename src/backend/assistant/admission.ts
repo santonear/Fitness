@@ -1,8 +1,9 @@
 import {shortId} from '../admin/core/short-id';
 import type { AdminDatabase } from '../admin/core/contracts';
+import { todayIn } from '../../domain/local-date';
 export class AssistantAccessError extends Error { constructor(public code:string,public status:number,public resetAt?:number){super(code)} }
 export interface DailyState {subject_id:string;day:string;time_zone:string;reset_at:number;used:number;active_request:string|null;lease_until:number}
-export function localDay(now:number,timeZone:string){return new Intl.DateTimeFormat('en-CA',{timeZone,year:'numeric',month:'2-digit',day:'2-digit'}).format(now)}
+export const localDay=(now:number,timeZone:string)=>todayIn(timeZone,now);
 /** Find the next local date boundary, including DST and non-whole-hour offsets. */
 export function nextMidnight(now:number,timeZone:string){const day=localDay(now,timeZone);let lo=now,hi=now+27*3600000;while(hi-lo>1){const mid=Math.floor((lo+hi)/2);if(localDay(mid,timeZone)===day)lo=mid;else hi=mid}return hi}
 export function admissionWindow(previous:DailyState|null,now:number,timeZone:string){
