@@ -2,6 +2,7 @@ import type {ControlStore,ControlState} from '../../store';
 import type {AdminDatabase} from './contracts';
 import {recordFinanceEvent} from '../finance';
 import { sha256Hex } from '../../../domain/hex';
+import { utcDay } from '../../../domain/local-date';
 type LedgerRequest=ControlState['requests'][string];
 const signature=(r:LedgerRequest)=>`${r.status}:${r.actualCost??''}:${r.bound}`;
 /** Track committed metadata changes, outside callbacks which CAS may replay. */
@@ -26,6 +27,6 @@ export async function syncFinanceMetadata(store:ControlStore,db:AdminDatabase,ke
   const tasks={ONBOARD_PLAN:'generate',ADJUST_TODAY:'adjust',MODIFY_PLAN:'modify',PERIOD_REVIEW:'review'} as const;
   const task=tasks[r.coachContract?.task as keyof typeof tasks]??r.operation;
   const status=r.status==='settled'?'settled':r.status==='released'?'released':'pending';
-  await recordFinanceEvent(db,{eventKey,day:new Date(r.createdAt).toISOString().slice(0,10),task,status,costFen:status==='settled'?r.actualCost??0:0,reservedFen:status==='pending'?r.bound:0,at:r.createdAt});
+  await recordFinanceEvent(db,{eventKey,day:utcDay(r.createdAt),task,status,costFen:status==='settled'?r.actualCost??0:0,reservedFen:status==='pending'?r.bound:0,at:r.createdAt});
  }
 }

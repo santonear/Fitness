@@ -4,7 +4,7 @@ import {digest} from './contracts';
 import {D1ControlStore, type D1Binding} from './d1-store';
 import {shortId} from './admin/core/short-id';
 import type {AdminDatabase} from './admin/core/contracts';
-import { DAY_MS } from '../domain/local-date';
+import { DAY_MS, utcDay } from '../domain/local-date';
 import { activeTrialSubject, noStoreJson, readJsonBody, sameOrigin, trialToken } from './request';
 
 /**
@@ -46,7 +46,7 @@ async function feedbackSubject(request: Request, env: FeedbackEnv): Promise<stri
   } catch { return; }
 }
 const hourBucket = (now: number) => new Date(now).toISOString().slice(0, 13);
-const dayBucket = (now: number) => new Date(now).toISOString().slice(0, 10);
+const dayBucket = (now: number) => utcDay(now);
 
 /** Counts first, then refuses: a refused attempt still counts so retries cannot bypass the limit. */
 async function admit(db: AdminDatabase, key: string, now: number) {

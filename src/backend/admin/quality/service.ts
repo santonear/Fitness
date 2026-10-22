@@ -2,6 +2,7 @@ import { readFeatureFlags, type FeatureConfigEnv } from '../../feature-config';
 import { errorEvent, blockCategory, evaluationReport, isSpike, type QualityEnv, type QualityDatabase } from './contracts';
 import { adminJson, type AdminTodo } from '../core/contracts';
 import { readJsonBody } from '../../request';
+import { utcDay } from '../../../domain/local-date';
 
 const HOUR = 3600000;
 /** Collection needs both the deployment switch and the errorReports flag; the admin page says which. */
@@ -23,7 +24,7 @@ export async function collectError(request: Request, env: QualityEnv, now = Date
 /** Only the rule category crosses the production instrumentation boundary. */
 export async function recordBlockedCategory(db: QualityDatabase, category: unknown, now = Date.now()): Promise<void> {
   const value = blockCategory.parse(category);
-  await db.prepare('INSERT INTO admin_quality_blocks(day,category,count) VALUES(?,?,1) ON CONFLICT(day,category) DO UPDATE SET count=count+1').bind(new Date(now).toISOString().slice(0, 10), value).run();
+  await db.prepare('INSERT INTO admin_quality_blocks(day,category,count) VALUES(?,?,1) ON CONFLICT(day,category) DO UPDATE SET count=count+1').bind(utcDay(now), value).run();
 }
 export async function saveEvaluation(db: QualityDatabase, input: unknown): Promise<boolean> {
   const value = evaluationReport.parse(input);

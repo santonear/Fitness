@@ -7,6 +7,7 @@ import { fill } from '../../../i18n/features/onboarding/entry';
 import { Card, PrimaryButton } from '../../components/kit';
 import { MorphPanel } from '../../components/common/MorphPanel';
 import './day-timeline.css';
+import { utcDay, DAY_MS } from '../../../domain/local-date';
 
 type Locale = 'zh' | 'en';
 const START_KEY = 'fitness.day-start';
@@ -85,7 +86,7 @@ export function DayActual({ workouts, templates, locale, name, sessionName, busy
     if (!validClock(start) || !validClock(end)) return setEditing({ ...editing, error: true });
     const startedAt = zonedInstant(workout.localDate, start, workout.timeZone);
     // An end clock earlier than the start means the session ran past midnight.
-    const endDate = clockMinutes(end) <= clockMinutes(start) ? new Date(Date.parse(`${workout.localDate}T00:00:00Z`) + 86400000).toISOString().slice(0, 10) : workout.localDate;
+    const endDate = clockMinutes(end) <= clockMinutes(start) ? utcDay(Date.parse(`${workout.localDate}T00:00:00Z`) + DAY_MS) : workout.localDate;
     const endedAt = zonedInstant(endDate, end, workout.timeZone);
     if (Date.parse(endedAt) <= Date.parse(startedAt) || Date.parse(endedAt) > Date.now()) return setEditing({ ...editing, error: true });
     if (await onCorrect(workout, startedAt, endedAt)) setEditing(undefined);

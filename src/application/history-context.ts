@@ -1,4 +1,5 @@
 import type { BodyWeightObservation, ExerciseSnapshot, Plan, PlanVersion, ScheduledWorkout, SetRecord, WorkoutSession } from '../domain/models';
+import { utcDay } from '../domain/local-date';
 
 export interface HistorySnapshot {
   capturedAt: string;
@@ -87,7 +88,7 @@ function canonical(value: unknown): unknown {
   return value;
 }
 function date(value: string): boolean {
-  return /^\d{4}-\d{2}-\d{2}$/.test(value) && Number.isFinite(Date.parse(value)) && new Date(value).toISOString().slice(0, 10) === value;
+  return /^\d{4}-\d{2}-\d{2}$/.test(value) && Number.isFinite(Date.parse(value)) && utcDay(value) === value;
 }
 function exercise(value: ExerciseSnapshot): ExerciseSnapshot {
   return { ...pick(value, SELECTED_FIELDS.exerciseSnapshots), allowedMetrics: [...value.allowedMetrics].sort(compare), targetSets: value.targetSets.map(set => pick(set, SELECTED_FIELDS.targetSets)) };

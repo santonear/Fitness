@@ -1,6 +1,7 @@
 import { weeklyVolume } from "./dose";
 import type { EngineProfile, EnginePlan } from "./contracts";
 import { Rules, addCalendarMonths, type Exercise } from "./data";
+import { utcDay, DAY_MS } from '../domain/local-date';
 type RiskProfile = EngineProfile & { postpartumRisk?: Record<string, boolean> };
 /** Unknown modifiers choose the conservative rate without becoming negative health answers. */
 export function derivePostpartumRisk(
@@ -38,10 +39,8 @@ export function derivePostpartumRisk(
       today = Date.parse(profile.asOfDate + "T00:00:00Z"),
       week = Math.floor(pop.weeksSinceBirth);
     // A reported completed week gives a date interval, not an exact birth date or month/week conversion.
-    const earliest = new Date(today - ((week + 1) * 7 - 1) * 86400000)
-        .toISOString()
-        .slice(0, 10),
-      latest = new Date(today - week * 7 * 86400000).toISOString().slice(0, 10);
+    const earliest = utcDay(today - ((week + 1) * 7 - 1) * DAY_MS),
+      latest = utcDay(today - week * 7 * DAY_MS);
     if (profile.asOfDate < addCalendarMonths(earliest, months))
       known[monthsKey] = true;
     else if (

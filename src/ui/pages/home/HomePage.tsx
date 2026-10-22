@@ -45,6 +45,7 @@ import {DayTimeline} from './DayTimeline';
 import {dayViewCopy} from '../../../i18n/features/home/day-view';
 import {NowPanel,type FocusState} from './NowPanel';
 import './home.css';
+import { utcDay, DAY_MS } from '../../../domain/local-date';
 
 const localDay=(timeZone:string,date=new Date())=>new Intl.DateTimeFormat('en-CA',{timeZone,year:'numeric',month:'2-digit',day:'2-digit'}).format(date);
 /** 今天 (V9 home): today's session and start first; status check and week below. The 芽芽 orb is the only AI entry here. */
@@ -82,8 +83,8 @@ export function HomePage(){
  const picked=version?.trainingDates?.length?version.trainingDates:undefined,pickedNext=picked?nextTrainingDate(picked,addDays(todayDate,1)):undefined;
  const scheduledToday=!notStarted&&(picked?picked.includes(todayDate):schedule.sessions.some(session=>session.day===today));
  const shown=(template?:{id:string})=>template?names.get(template.id)??'':'';
- const monday=new Date(Date.parse(localDay(timeZone,now)+'T00:00:00Z')-todayIndex*86400000);
- const weekDates=weekdays.map((_,index)=>new Date(monday.getTime()+index*86400000).toISOString().slice(0,10));
+ const monday=new Date(Date.parse(localDay(timeZone,now)+'T00:00:00Z')-todayIndex*DAY_MS);
+ const weekDates=weekdays.map((_,index)=>utcDay(monday.getTime()+index*DAY_MS));
  const doneDays:Partial<Record<Weekday,'done'|'partial'>>={};
  // Only an explicitly chosen start date hides this week's earlier sessions; older plans keep their full week.
  const beforeStart=(index:number)=>!!version?.startDate&&weekDates[index]<version.startDate;

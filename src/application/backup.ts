@@ -13,7 +13,7 @@ import { projectDay } from '../domain/day-date-projection';
 import { prepareV8Migration, writeV8Library } from '../persistence/v8-migration';
 import { recoverAssistantSchedule } from '../persistence/assistant-schedule-migration';
 import Dexie from 'dexie';
-import { DAY_MS } from '../domain/local-date';
+import { DAY_MS, utcDay } from '../domain/local-date';
 
 // UTF-8 file bytes, not characters. Candidate verified on synthetic desktop data;
 // physical-phone capacity support remains unverified.
@@ -35,7 +35,7 @@ function distinct(values: string[], label: string): void {
 }
 function validDate(value: string): void {
   const date = new Date(`${value}T00:00:00Z`);
-  if (!Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== value) invalid('Impossible calendar date');
+  if (!Number.isFinite(date.getTime()) || utcDay(date) !== value) invalid('Impossible calendar date');
 }
 function validateSnapshot(snapshot: ExerciseSnapshot): void {
   const catalog = exercises.find(exercise => exercise.id === snapshot.exerciseId);

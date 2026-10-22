@@ -17,6 +17,8 @@ export function violations(file, source) {
   // Admin console: colors live only in the admin token file (approved V9 admin design).
   if (/^src\/ui\/admin\//.test(file) && file !== 'src/ui/admin/tokens.ts' && /#[\da-f]{3,8}\b|\brgba?\(/i.test(source)) found.push('admin-literal-color');
   if (ui && /AI\s*架构评审|契约示例|评测面板|Prompt\s*结构/.test(source)) found.push('developer-entry');
+  // AGENTS.md §7: day arithmetic lives in src/domain/local-date.ts (utcDay, addDays, DAY_MS, todayIn).
+  if (/^src\/.*\.tsx?$/.test(file) && file !== 'src/domain/local-date.ts' && /toISOString\(\)\s*\.slice\(0,\s*10\)|\b86_?400_?000\b/.test(source)) found.push('hand-written-date');
   found.push(...coachCopyViolations(file, source));
   return found;
 }

@@ -2,7 +2,7 @@ import type { WorkoutRecord, LegacyWorkoutProjection } from '../../domain/v8/con
 import type { ReviewInput, ReviewFacts, ComputeWeekFacts, ComputeMonthFacts } from './contracts';
 import { workoutSeconds } from '../workout-duration';
 import { computeIncompleteTiming } from './evidence';
-import { addDays, isLocalDate, todayIn, weekStart } from '../../domain/local-date';
+import { addDays, isLocalDate, todayIn, weekStart, utcDay } from '../../domain/local-date';
 
 type Record = WorkoutRecord | LegacyWorkoutProjection;
 const within = (date: string, from: string, to: string) => date >= from && date <= to;
@@ -67,7 +67,7 @@ export const computeWeekFacts: ComputeWeekFacts = input => {
 };
 export const computeMonthFacts: ComputeMonthFacts = input => {
   const first = new Date(`${input.from}T00:00:00Z`);
-  const priorMonth = new Date(Date.UTC(first.getUTCFullYear(), first.getUTCMonth() - 1, 1)).toISOString().slice(0, 10);
+  const priorMonth = utcDay(Date.UTC(first.getUTCFullYear(), first.getUTCMonth() - 1, 1));
   const weeks: { from: string; complete: number; partial: number }[] = [];
   const all = records(input).filter(row => row.planVersionId && within(dateAt(row.startedAt, input.timeZone), input.from, input.to));
   for (let from = weekStart(input.from); from <= input.to; from = addDays(from, 7)) {

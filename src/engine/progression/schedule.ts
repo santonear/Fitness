@@ -1,6 +1,7 @@
 import type { EngineProfile, RuleTrace } from "../contracts";
 import type { WorkoutRecord } from "../../domain/v8/contracts";
 import { Rules } from "../data";
+import { utcDay } from '../../domain/local-date';
 export function offerScheduledDeload(
   completed: WorkoutRecord[],
   p: EngineProfile,
@@ -12,7 +13,7 @@ export function offerScheduledDeload(
     completed.map((h) => {
       const d = new Date(h.localDate);
       d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7));
-      return d.toISOString().slice(0, 10);
+      return utcDay(d);
     }),
   );
   if (

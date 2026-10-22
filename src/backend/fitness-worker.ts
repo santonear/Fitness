@@ -14,6 +14,7 @@ import { collectError, errorCollectionEnabled } from './admin/quality';
 import { anonymousBatchSchema, TelemetryStore } from './telemetry-store';
 import { handleFeedback } from './feedback';
 import { readJsonBody, sameOrigin } from './request';
+import { utcDay } from '../domain/local-date';
 export interface FitnessWorkerEnv extends DeepSeekWorkerEnv, ManagementEnv, FeatureConfigEnv, AdminEnvironment, ConsoleEnv {
   ASSETS?: { fetch(request: Request): Promise<Response> };
   FITNESS_TELEMETRY?: { send(event: unknown): Promise<void> };
@@ -65,7 +66,7 @@ export function createFitnessWorker(control = createDeepSeekWorker(), authentica
         const count = anonymousBatchSchema.safeParse(raw);
         const event = path.endsWith('/errors') ? monitoringError(raw,true) : count.success ? {event:count.data.event,count:count.data.count} : undefined;
         if (!event) return new Response(null,{status:400});
-        if (env.FITNESS_OPS_DB) await new TelemetryStore(env.FITNESS_OPS_DB).count(new Date().toISOString().slice(0,10),raw,path.endsWith('/errors') ? 'errors' : 'counts');
+        if (env.FITNESS_OPS_DB) await new TelemetryStore(env.FITNESS_OPS_DB).count(utcDay(),raw,path.endsWith('/errors') ? 'errors' : 'counts');
         else await env.FITNESS_TELEMETRY!.send(event);
         return new Response(null,{status:204});
       } catch (error) { return error instanceof Response ? error : new Response(null,{status:503}); }
@@ -81,12 +82,12 @@ export function createFitnessWorker(control = createDeepSeekWorker(), authentica
       }
       if (path === '/api/v1/management/usage-counts' && request.method === 'GET') {
         if (!(await readFeatureFlags(env)).anonymousUsage || !env.FITNESS_OPS_DB) return new Response(null,{status:404});
-        try { return new Response(JSON.stringify(await new TelemetryStore(env.FITNESS_OPS_DB).usage(new Date().toISOString().slice(0,10))),{headers:{'Content-Type':'application/json','Cache-Control':'no-store'}}); }
+        try { return new Response(JSON.stringify(await new TelemetryStore(env.FITNESS_OPS_DB).usage(utcDay())),{headers:{'Content-Type':'application/json','Cache-Control':'no-store'}}); }
         catch { return new Response(null,{status:503}); }
       }
       if (path === '/api/v1/management/ops-usage' && request.method === 'GET') {
         if (!(await readFeatureFlags(env)).aiOperations || !env.FITNESS_OPS_DB) return new Response(null,{status:404});
-        try { const usage = await new DailyUsageStore(env.FITNESS_OPS_DB).get(new Date().toISOString().slice(0,10));
+        try { const usage = await new DailyUsageStore(env.FITNESS_OPS_DB).get(utcDay());
           return new Response(JSON.stringify({timeZone:'UTC',...usage}),{headers:{'Content-Type':'application/json','Cache-Control':'no-store'}});
         } catch {return new Response(null,{status:503});}
       }

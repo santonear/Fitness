@@ -8,6 +8,7 @@ import type {
 import type { PlannedItem } from "../domain/v8/contracts";
 import compiledRules from "./generated/rules-runtime.json" with { type: "json" };
 import compiledExercises from "./generated/exercise-index.json" with { type: "json" };
+import { utcDay, DAY_MS } from '../domain/local-date';
 
 /** Rule values intentionally retain their authored shape. Their schema is checked by the compiler. */
 export type RuleValue = Record<string, any>;
@@ -227,7 +228,7 @@ export function age(profile: EngineProfile): number | undefined {
   return profile.ageYears;
 }
 export function elapsedDays(from: string, to: string): number {
-  return (Date.parse(to) - Date.parse(from)) / 86400000;
+  return (Date.parse(to) - Date.parse(from)) / DAY_MS;
 }
 // Cache only bounded, non-user-specific formatters; never dates or health profiles.
 const calendarFormatters = new Map<string, Intl.DateTimeFormat>();
@@ -269,7 +270,7 @@ export function addCalendarMonths(day: string, months: number): string {
     Date.UTC(target.getUTCFullYear(), target.getUTCMonth() + 1, 0),
   ).getUTCDate();
   target.setUTCDate(Math.min(date, last));
-  return target.toISOString().slice(0, 10);
+  return utcDay(target);
 }
 export function getPath(value: unknown, path: string): unknown {
   return path

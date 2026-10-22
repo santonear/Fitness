@@ -1,5 +1,5 @@
 import { localDateSchema, timeZoneSchema } from './schemas';
-import { DAY_MS as DAY } from './local-date';
+import { DAY_MS as DAY, utcDay } from './local-date';
 function formatter(zone: string) { return new Intl.DateTimeFormat('en-US', { timeZone: zone, year: 'numeric', month: '2-digit', day: '2-digit' }); }
 function label(format: Intl.DateTimeFormat, instant: number): string {
   const parts = format.formatToParts(instant); const get = (type: string) => parts.find(part => part.type === type)!.value;
@@ -25,7 +25,7 @@ export function projectDay(date: string, sourceZone: string, calendarZone: strin
   const format = formatter(calendarZone); const first = label(format, interval[0]), last = label(format, interval[1] - 1);
   let best: string | null = null, maximum = 0, tied = false;
   for (let instant = Date.parse(`${first}T00:00:00Z`); instant <= Date.parse(`${last}T00:00:00Z`); instant += DAY) {
-    const candidate = new Date(instant).toISOString().slice(0, 10); const target = civilDayInterval(candidate, calendarZone);
+    const candidate = utcDay(instant); const target = civilDayInterval(candidate, calendarZone);
     if (!target) continue;
     const overlap = Math.max(0, Math.min(interval[1], target[1]) - Math.max(interval[0], target[0]));
     if (overlap > maximum) { maximum = overlap; best = candidate; tied = false; } else if (overlap > 0 && overlap === maximum) tied = true;

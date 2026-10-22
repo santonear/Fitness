@@ -21,3 +21,5 @@ export function todayIn(timeZone: string, now: Date | number | string = new Date
   const parts = new Intl.DateTimeFormat('en-US', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date(now));
   return ['year', 'month', 'day'].map(type => parts.find(part => part.type === type)!.value).join('-');
 }
+/** The UTC calendar date of an instant, for UTC day buckets and for dates already held as UTC midnights. */
+export const utcDay = (at: Date | number | string = new Date()) => new Date(at).toISOString().slice(0, 10);

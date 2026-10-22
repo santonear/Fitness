@@ -2,6 +2,7 @@ import type { D1Binding } from './d1-store';
 import type { ExternalSupplier } from './control';
 import { ControlError } from './store';
 import { assessDailyUsage } from './daily-usage-monitor';
+import { utcDay } from '../domain/local-date';
 
 /** Deploy only to the separate optional operations database, never CONTROL_DB. */
 export const dailyUsageDDL = 'CREATE TABLE IF NOT EXISTS ops_daily_usage (day TEXT PRIMARY KEY, calls INTEGER NOT NULL DEFAULT 0, cost_fen INTEGER NOT NULL DEFAULT 0, reserved_fen INTEGER NOT NULL DEFAULT 0)';
@@ -28,7 +29,7 @@ export function withDailyUsage(supplier: ExternalSupplier, store: DailyUsageStor
   return {...supplier,call:async request => {
     const bound = supplier.costUpperBoundFen?.(request);
     if (bound === undefined || !Number.isSafeInteger(bound) || bound < 0) throw new ControlError('DAILY_USAGE_FALLBACK',503);
-    const day = now().toISOString().slice(0,10);
+    const day = utcDay(now());
     await store.reserve(day,bound,limits);
     const response = await supplier.call(request);
     if (response.actualCost !== undefined) await store.settle(day,bound,response.actualCost);

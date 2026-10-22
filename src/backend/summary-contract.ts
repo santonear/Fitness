@@ -6,7 +6,7 @@ import { buildHistoryContext, type HistorySnapshot } from '../application/histor
 import { calculateProgress, dateInZone } from '../application/progress-calculation';
 import { ControlError } from './store';
 import { exercises } from '../catalog/exercises';
-import { daysBetween } from '../domain/local-date';
+import { daysBetween, utcDay } from '../domain/local-date';
 
 const count = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 export const stageSelectionSchema = z.discriminatedUnion('kind', [
@@ -44,7 +44,7 @@ export function validateSummaryStage(stage: SummaryStage, restoreGeneration: num
   if (selection.kind === 'dateRange' && (selection.from !== stage.range.from || selection.to !== stage.range.to)) invalid();
   if (selection.kind === 'planWeek') {
     const end = new Date(`${selection.from}T00:00:00Z`); end.setUTCDate(end.getUTCDate() + 6);
-    if (selection.from !== stage.range.from || end.toISOString().slice(0, 10) !== stage.range.to) invalid();
+    if (selection.from !== stage.range.from || utcDay(end) !== stage.range.to) invalid();
   }
   if (payload.sources.length !== 3 || new Set(payload.sources).size !== 3) invalid();
   if (payload.sessions.some(row => row.status !== 'completed') || payload.sets.some(row => !row.completed)) invalid();
