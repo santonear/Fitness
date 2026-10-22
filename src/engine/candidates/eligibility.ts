@@ -4,6 +4,7 @@ import type {
   Caution,
   EngineProfile,
   GateOutcome,
+  GateState,
   PipelineContext,
 } from "../contracts";
 import {
@@ -148,6 +149,19 @@ function computeEligibility(e: Exercise, ctx: SelectionContext): boolean {
       .gated_flags.some((f: string) => e.flags.includes(f))
   )
     return false;
+  return sharedEligibility(e, ctx, false);
+}
+/**
+ * Checks shared with the legacy source-target pool (progression/legacy-candidates).
+ * `legacySource` keeps that pool's older rules: noJump does not exclude running, and caution
+ * levels ignore the profile's own levels and pain-driven level increases.
+ */
+export function sharedEligibility(
+  e: Exercise,
+  ctx: Omit<SelectionContext, "safety"> & { safety: GateState },
+  legacySource: boolean,
+): boolean {
+  const { profile: p, rules: r, safety: s } = ctx;
   const pop = p.population;
   if (e.stretch_hold_s && !stretchHoldRange(e, r, s.population)) return false;
   if (
@@ -170,7 +184,7 @@ function computeEligibility(e: Exercise, ctx: SelectionContext): boolean {
   if (
     (p.constraints.noJump || p.preferences.cannotDo.includes("jumping")) &&
     (e.flags.includes("jumping") ||
-      e.flags.includes("running") ||
+      (!legacySource && e.flags.includes("running")) ||
       e.modality === "plyometric" ||
       e.primary_pattern === "jump_land")
   )
@@ -232,15 +246,21 @@ function computeEligibility(e: Exercise, ctx: SelectionContext): boolean {
     ...(s.user.redflag_cautions ?? []),
   ])) {
     if (joint === "other") continue;
-    const level = Math.max(
-      p.cautionLevels?.[joint as "knee" | "back" | "shoulder" | "wrist"] ?? 1,
-      s.user.redflag_caution_level ?? 1,
-      p.painState?.some(
-        (x) => (x.score ?? 0) > 5 || (x.cautionLevelDelta ?? 0) > 0,
-      )
-        ? 2
-        : 1,
-    );
+    const level = legacySource
+      ? Math.max(
+          s.user.redflag_caution_level ?? 1,
+          p.painState?.some((x) => (x.score ?? 0) > 5) ? 2 : 1,
+        )
+      : Math.max(
+          p.cautionLevels?.[joint as "knee" | "back" | "shoulder" | "wrist"] ??
+            1,
+          s.user.redflag_caution_level ?? 1,
+          p.painState?.some(
+            (x) => (x.score ?? 0) > 5 || (x.cautionLevelDelta ?? 0) > 0,
+          )
+            ? 2
+            : 1,
+        );
     const v = r.get(`caution.${joint}.filter`)[`level_${level}`];
     if (condition(v.exclude_if, e, s.user)) return false;
   }

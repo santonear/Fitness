@@ -5,19 +5,9 @@ import { safety, SafetyState } from "../gates/strength-scoring";
 import { hardEligible, mobilityRegions } from "./legacy-candidates";
 import { estimatedSeconds } from "../fit/elapsed-time";
 import { ensureSafetyBlocks } from "./legacy-blocks";
+import { durationTier } from "../dose/warmup-identity";
 
-export function durationTier(
-  minutes: number,
-  p: EngineProfile,
-  r: Rules,
-): number {
-  const v = r.get("session.durations.allowed");
-  const result =
-    v.minutes.filter((n: number) => n <= minutes).at(-1) ?? v.minutes[0];
-  return p.level === "beginner" && result === 90
-    ? v.min90_beginner_fallback
-    : result;
-}
+export { durationTier };
 
 export function timingRow(minutes: number, r: Rules) {
   return r

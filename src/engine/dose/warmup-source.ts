@@ -1,4 +1,4 @@
-import { type Template, effectiveGoalRole } from "../dose";
+import { type Item, type Template, effectiveGoalRole } from "../dose";
 import { type EngineProfile } from "../contracts";
 import { type Rules } from "../data";
 import { sourcePosition, durationTier } from "./warmup-identity";
@@ -11,11 +11,15 @@ export interface SourceWarmupRamp {
   scheme: { reps: number; pct_working_load?: number }[];
 }
 
+type ItemPosition = (item: Item, template: Template) => string | undefined;
+
 /** These source warmup sets are already counted once by estimatedSeconds. */
 export function sourceWarmupRamps(
   template: Template,
   p: EngineProfile,
   r: Rules,
+  /** The legacy source target reads the raw stored position instead of the template-scoped one. */
+  position: ItemPosition = sourcePosition,
 ): SourceWarmupRamp[] {
   const result: SourceWarmupRamp[] = [],
     source = r.get("duration.ramp.sets"),
@@ -43,10 +47,10 @@ export function sourceWarmupRamps(
       );
     });
   const mains = work.filter(({ item }) =>
-      /^main_[1-9]\d*$/.test(sourcePosition(item, template) ?? ""),
+      /^main_[1-9]\d*$/.test(position(item, template) ?? ""),
     ),
     uniqueMains =
-      new Set(mains.map(({ item }) => sourcePosition(item, template))).size ===
+      new Set(mains.map(({ item }) => position(item, template))).size ===
       mains.length,
     goal = r.get(`goal.params.${p.goal}`);
   let days: Rules["data"]["rules"] | undefined;
@@ -114,7 +118,7 @@ export function sourceWarmupRamps(
       });
       continue;
     }
-    const pos = sourcePosition(item, template),
+    const pos = position(item, template),
       recipe = r.get(`session.template.min${durationTier(minutes, p, r)}`),
       container = recipe.slots.find((slot: { from_pos?: string[] }) =>
         slot.from_pos?.includes(pos ?? ""),
@@ -126,10 +130,10 @@ export function sourceWarmupRamps(
         uniqueMains &&
         sourceDays().some((day) =>
           mains.every(({ item: other }) => {
-            const position = sourcePosition(other, template);
-            if (!position) return true;
+            const otherPos = position(other, template);
+            if (!otherPos) return true;
             const slot = day.value?.slots.find(
-                (slot: { pos?: string }) => slot.pos === position,
+                (slot: { pos?: string }) => slot.pos === otherPos,
               ),
               exercise = r.byExercise.get(other.exerciseId);
             return (
@@ -184,18 +188,28 @@ export function refreshWarmupRamps(
   p: EngineProfile,
   r: Rules,
 ): Template {
-  const copy = structuredClone(template),
-    expected = new Map(
-      sourceWarmupRamps(copy, p, r).map((entry) => [
-        entry.itemIndex,
-        entry.seconds,
-      ]),
-    );
-  for (const [index, item] of copy.items.entries())
+  const copy = structuredClone(template);
+  writeWarmupRamps(copy, p, r);
+  return copy;
+}
+
+/** Writes each work item's expected ramp seconds in place. */
+export function writeWarmupRamps(
+  template: Template,
+  p: EngineProfile,
+  r: Rules,
+  position?: ItemPosition,
+): void {
+  const expected = new Map(
+    sourceWarmupRamps(template, p, r, position).map((entry) => [
+      entry.itemIndex,
+      entry.seconds,
+    ]),
+  );
+  for (const [index, item] of template.items.entries())
     if (["main", "accessory"].includes(item.prescription?.block ?? "")) {
       const seconds = expected.get(index);
       if (seconds !== undefined) item.prescription!.warmupSeconds = seconds;
       else if (item.prescription) delete item.prescription.warmupSeconds;
     }
-  return copy;
 }
