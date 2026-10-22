@@ -8,6 +8,7 @@ import type {Pattern} from '../engine/contracts';
 import {toEngineProfile} from './engine-profile';
 import {setMetricsSchema} from '../domain/schemas';
 import {latestSetFeedback,painQuestionKeys,pendingPainReviews,historyDangerReview} from './pain-events';
+import { DEFAULT_TIME_ZONE } from '../domain/local-date';
 export {latestSetFeedback,painQuestionKeys} from './pain-events';
 
 export interface PainFeedbackPreview {action:'none'|'substitute'|'exclude';replacement?:(PlannedItem&{itemIndex:number});notices:string[];redFlagsRequired:boolean;repeatJointReferral:boolean;questions:{key:string;copyKey:string}[];blocked:boolean;applied:boolean}
@@ -64,7 +65,7 @@ export function createTrainingPain(repo:Repository){
   if(action!=='none')notices.push(notice(action==='exclude'?'pain.copy.drop_pattern':'pain.copy.stop_exercise',locale));
   if(repeat)notices.push(notice('pain.copy.referral',locale));if(tier)notices.push(notice(tier,locale));
   const preview:PainFeedbackPreview={action,notices,redFlagsRequired:questions.length>0&&!complete,repeatJointReferral:repeat,questions,blocked:!!tier,applied:!!previous};
-  const mapped=toEngineProfile(state.coachProfile!,{asOfDate:localDate(local?.timeZone??'Asia/Shanghai'),timeZone:local?.timeZone,locale,history,ageYears:local?.bodyDetails?.values.age,bodyWeightKg:local?.bodyDetails?.values.weightKg});
+  const mapped=toEngineProfile(state.coachProfile!,{asOfDate:localDate(local?.timeZone??DEFAULT_TIME_ZONE),timeZone:local?.timeZone,locale,history,ageYears:local?.bodyDetails?.values.age,bodyWeightKg:local?.bodyDetails?.values.weightKg});
   if(mapped&&complete&&action!=='none'){
    const reviewAnswers={...allAnswers};if(retain)for(const [key,value] of Object.entries(retained!.answers??{}))if(value)reviewAnswers[key]=true;
    const requiredAt=[event.createdAt,...pending.map(row=>row.event.createdAt),...(retain?[retained!.requiredAt]:[])].sort((a,b)=>Date.parse(a)-Date.parse(b)).at(-1)!;

@@ -7,6 +7,7 @@ import {Rules,calendarDay} from '../engine/data';
 import {v8StateSchema} from '../domain/schemas';
 import {historyDangerReview,painQuestionKeys} from './pain-events';
 import {unresolvedReview} from './training-pain';
+import { DAY_MS, DEFAULT_TIME_ZONE, addDays } from '../domain/local-date';
 export const cautionJoints=['knee','back','shoulder','wrist'] as const;
 export type CautionJoint=typeof cautionJoints[number];
 export type CautionLevels=Partial<Record<CautionJoint,{level:0|1|2;changedAt:string}>>;
@@ -16,7 +17,7 @@ interface CautionFollowup {pattern:string;appliedAt:string;sourceWorkoutId:strin
 const rules=new Rules(),jointSchema=z.enum(cautionJoints),invalid=(message:string):never=>{throw new DomainError('INVALID',message);};
 const morningSchema=z.strictObject({workoutId:z.uuid(),joint:jointSchema,painLastedToNextMorning:z.boolean()});
 const reviewSchema=z.strictObject({joint:jointSchema,level:z.union([z.literal(0),z.literal(1)]),answers:z.record(z.string(),z.boolean()),requestedAt:z.iso.datetime()});
-function onFollowingLocalDate(answeredAt:string,endedAt:string,zone:string){const day=calendarDay(endedAt,zone),answer=calendarDay(answeredAt,zone);return !!day&&!!answer&&answer===new Date(Date.parse(day+'T12:00:00Z')+86400000).toISOString().slice(0,10);}
+function onFollowingLocalDate(answeredAt:string,endedAt:string,zone:string){const day=calendarDay(endedAt,zone),answer=calendarDay(answeredAt,zone);return !!day&&!!answer&&answer===addDays(day,1);}
 /** Existing high-pain facts remain effective even before a dedicated level state was introduced. */
 export function effectiveCautionLevels(stored:CautionLevels|undefined,history:readonly WorkoutRecord[],followups:readonly CautionFollowup[]=[],activeJoints:readonly string[]=[]):CautionLevels {
  const levels={...stored},threshold=rules.get('pain.rule').bands[1].when.all[1].lte;
@@ -62,7 +63,7 @@ export function createCautionSafety(repo:Repository){
   const stored=(state as typeof state&{cautionLevels?:CautionLevels}).cautionLevels,history=await repo.db.v8Workouts.toArray(),current=effectiveCautionLevels(stored,history,state.painFollowupRestrictions,state.coachProfile.cautions);
   const now=new Date().toISOString();await repo.db.trainingCheckins.where('expiresAt').belowOrEqual(now).delete();
   const profile=await repo.db.profiles.toCollection().first(),rows=await repo.db.trainingCheckins.toArray(),next={...current};let changed=cautionJoints.some(joint=>stored?.[joint]?.level!==current[joint]?.level||stored?.[joint]?.changedAt!==current[joint]?.changedAt);
-  for(const joint of cautionJoints)if(state.coachProfile.healthStorageConsent?.acceptedAt&&current[joint]?.level===2&&deriveCautionEvidence(history,rows,joint,{now,timeZone:profile?.timeZone??'Asia/Shanghai',since:current[joint]!.changedAt}).canLowerTo1){next[joint]={level:1,changedAt:now};changed=true;}
+  for(const joint of cautionJoints)if(state.coachProfile.healthStorageConsent?.acceptedAt&&current[joint]?.level===2&&deriveCautionEvidence(history,rows,joint,{now,timeZone:profile?.timeZone??DEFAULT_TIME_ZONE,since:current[joint]!.changedAt}).canLowerTo1){next[joint]={level:1,changedAt:now};changed=true;}
   if(changed)await repo.db.v8State.put(v8StateSchema.parse({...state,cautionLevels:next}));
  }
  async function review(input:z.infer<typeof reviewSchema>,revision?:number){const value=reviewSchema.parse(input);return repo.write(async()=>{
@@ -89,12 +90,12 @@ export function createCautionSafety(repo:Repository){
  },revision);}
  async function reportMorning(input:CautionMorning,revision?:number){const value=morningSchema.parse(input);return repo.write(async()=>{
   const state=await repo.db.v8State.get('v8');if(!state?.coachProfile?.healthStorageConsent?.acceptedAt)return invalid('HEALTH_STORAGE_CONSENT_REQUIRED');
-  const record=await repo.db.v8Workouts.get(value.workoutId),at=new Date(),local=await repo.db.profiles.toCollection().first(),zone=local?.timeZone??'Asia/Shanghai';
+  const record=await repo.db.v8Workouts.get(value.workoutId),at=new Date(),local=await repo.db.profiles.toCollection().first(),zone=local?.timeZone??DEFAULT_TIME_ZONE;
   if(!record||!['complete','partial'].includes(record.status)||!record.endedAt||!record.sets.some(set=>(rules.byExercise.get(set.exerciseId)?.joint_load[value.joint]??0)>0)||!onFollowingLocalDate(at.toISOString(),record.endedAt,zone))return invalid('CAUTION_MORNING_WORKOUT_REQUIRED');
   await repo.db.trainingCheckins.where('expiresAt').belowOrEqual(at.toISOString()).delete();
   const id=`caution-morning:${record.id}:${value.joint}`,prior=await repo.db.trainingCheckins.get(id) as CautionCheckinRow|undefined;
   if(prior?.cautionMorning?.painLastedToNextMorning===true&&!value.painLastedToNextMorning)return invalid('CAUTION_MORNING_ALREADY_POSITIVE');
-  const row:CautionCheckinRow={id,recordedAt:at.toISOString(),expiresAt:new Date(at.getTime()+rules.get('deload.checkin.inputs').retain_days*86400000).toISOString(),answers:{},cautionMorning:value};
+  const row:CautionCheckinRow={id,recordedAt:at.toISOString(),expiresAt:new Date(at.getTime()+rules.get('deload.checkin.inputs').retain_days*DAY_MS).toISOString(),answers:{},cautionMorning:value};
   await repo.db.trainingCheckins.put(row);
   if(value.painLastedToNextMorning){
    const levels=(state as typeof state&{cautionLevels?:CautionLevels}).cautionLevels??{},patterns=[...new Set(record.sets.filter(set=>(rules.byExercise.get(set.exerciseId)?.joint_load[value.joint]??0)>0).map(set=>rules.byExercise.get(set.exerciseId)!.primary_pattern))],source=rules.get('pain.rule').bands.find((band:{action:string})=>band.action==='drop_pattern'),followups=[...state.painFollowupRestrictions??[]];

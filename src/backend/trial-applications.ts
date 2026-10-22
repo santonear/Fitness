@@ -1,7 +1,7 @@
 import { digest } from './contracts';
 import { ControlError, type ControlState, type ControlStore } from './store';
+import { DAY_MS as DAY } from '../domain/local-date';
 
-const DAY = 86_400_000;
 export type ApplicationKind = 'new' | 'extend' | 'replace';
 export interface TrialApplication {
   id: string; ownerDigest: string; kind: ApplicationKind; name: string; note: string;

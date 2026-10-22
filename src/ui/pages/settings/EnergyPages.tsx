@@ -7,6 +7,7 @@ import { BigChoice, Card, PrimaryButton, SegmentedTabs, StatTile } from '../../c
 import { useMainline } from '../../mainline/context';
 import { useOptionalTheme } from '../../../themes/ThemeProvider';
 import './energy.css';
+import { binarySex } from '../../../domain/body-profile';
 
 /** Calculator inputs and the last daily target stay on this device (localStorage), never sent. */
 interface Saved { sex?: EnergySex; age?: number; heightCm?: number; weightKg?: number; goal?: EnergyGoal; kcal?: number; preset?: MacroPreset; meals?: number }
@@ -92,7 +93,7 @@ export function CaloriePage() {
   const [stored] = useState(load);
   const [latestKg, setLatestKg] = useState<number>();
   useEffect(() => { let alive = true; void bodyWeightService.listBodyWeights().then(rows => { const last = [...rows].sort((a, b) => a.localDate.localeCompare(b.localDate)).at(-1); if (alive && last) setLatestKg(Math.round(last.weightGrams / 1000)); }).catch(() => undefined); return () => { alive = false; }; }, []);
-  const profileSex: EnergySex | undefined = values?.biologicalSex === '男性' ? 'male' : values?.biologicalSex === '女性' ? 'female' : undefined;
+  const profileSex: EnergySex | undefined = binarySex(values?.biologicalSex);
   const [sex, setSex] = useState<EnergySex>(stored.sex ?? profileSex ?? 'unspecified');
   const [age, setAge] = useState(clamp(stored.age ?? values?.age ?? 30, ENERGY_LIMITS.age));
   const [heightCm, setHeight] = useState(clamp(stored.heightCm ?? values?.heightCm ?? 165, ENERGY_LIMITS.heightCm));

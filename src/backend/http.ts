@@ -2,34 +2,22 @@ import { z } from 'zod';
 import { textIssue } from '../domain/input-guard';
 import { ControlService, ControlError } from './control';
 import { assertCurrentAiExecution } from './retired-ai';
+import { TRIAL_COOKIE, noStoreJson, readJsonBody, trialToken } from './request';
 
-const cookieName = '__Host-fitness_trial';
-const json = (data: unknown, status = 200, headers: Record<string, string> = {}) => new Response(JSON.stringify(data), {
-  status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', ...headers },
-});
+const json = (data: unknown, status = 200, headers: Record<string, string> = {}) => noStoreJson(data, status, { 'Content-Type': 'application/json; charset=utf-8', ...headers });
 function sessionToken(request: Request) {
-  const entries = (request.headers.get('cookie') ?? '').split(';').map(value => value.trim()).filter(value => value.startsWith(`${cookieName}=`));
-  if (entries.length !== 1) throw new ControlError('QUALIFICATION_REQUIRED', 401);
-  const value = entries[0].slice(cookieName.length + 1);
-  if (!/^[a-f0-9]{64}$/.test(value)) throw new ControlError('QUALIFICATION_REQUIRED', 401); return value;
+  const token = trialToken(request);
+  if (!token) throw new ControlError('QUALIFICATION_REQUIRED', 401); return token;
 }
 async function body(request: Request, maxBytes: number) {
   if (!request.headers.get('content-type')?.match(/^application\/json(?:;|$)/i)) throw new ControlError('JSON_REQUIRED', 415);
-  const reader = request.body?.getReader(); if (!reader) throw new ControlError('INVALID_INPUT', 400);
-  const chunks: Uint8Array[] = []; let bytes = 0;
-  try {
-    while (true) { const value = await reader.read(); if (value.done) break; bytes += value.value.byteLength;
-      if (bytes > maxBytes) { await reader.cancel(); throw new ControlError('RANGE_TOO_LARGE', 413); } chunks.push(value.value); }
-  } finally { reader.releaseLock(); }
-  const joined = new Uint8Array(bytes); let offset = 0; for (const chunk of chunks) { joined.set(chunk, offset); offset += chunk.byteLength; }
-  try { return JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(joined)) as unknown; }
-  catch { throw new ControlError('INVALID_INPUT', 400); }
+  return readJsonBody(request, maxBytes, problem => problem === 'too-large' ? new ControlError('RANGE_TOO_LARGE', 413) : new ControlError('INVALID_INPUT', 400), new TextDecoder('utf-8', { fatal: true }));
 }
 function parse<T>(schema: z.ZodType<T>, value: unknown): T {
   const parsed = schema.safeParse(value); if (!parsed.success) throw new ControlError('INVALID_INPUT', 400); return parsed.data;
 }
 function cookie(token: string, expiresAt: number) {
-  return `${cookieName}=${token}; Path=/; Secure; HttpOnly; SameSite=Strict; Expires=${new Date(expiresAt).toUTCString()}`;
+  return `${TRIAL_COOKIE}=${token}; Path=/; Secure; HttpOnly; SameSite=Strict; Expires=${new Date(expiresAt).toUTCString()}`;
 }
 /** Fetch adapter only. No static assets, network calls, telemetry, or browser training writes. */
 export function createHandler(service: ControlService, options: { origins: string[]; maxBodyBytes: number; supplierMode?: 'external-transport'; nutritionEnabled?: boolean; verifyApplication?: (proof: string) => Promise<boolean>; turnstileSiteKey?: string }) {

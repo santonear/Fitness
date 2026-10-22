@@ -1,5 +1,5 @@
 import { DomainError } from "../domain/errors";
-import { v8StateSchema, v8WorkoutSchema } from "../domain/schemas";
+import { v8StateSchema } from "../domain/schemas";
 import type { PlannedItem, CoachProfile } from "../domain/v8/contracts";
 import type { Repository } from "../persistence/repository";
 import { DATA, calendarDay } from "../engine/data";
@@ -7,6 +7,8 @@ import { runGates } from "../engine/gates";
 import { toEngineProfile } from "./engine-profile";
 import { effectivePainItem } from "./training-pain";
 import type { EngineProfile } from "../engine/contracts";
+import { DEFAULT_TIME_ZONE } from "../domain/local-date";
+import { endActiveWorkouts } from "./training-stop";
 
 type Pregnant = Extract<EngineProfile["population"], { kind: "pregnant" }>;
 export const pregnancyAbsoluteKeys = DATA.rules.find(
@@ -324,28 +326,8 @@ export function createPregnancySafety(repo: Repository) {
       const state = await repo.db.v8State.get("v8");
       if (!state || state.coachProfile?.population?.kind !== "pregnant")
         return invalid("PREGNANCY_CONTEXT_REQUIRED");
-      const active = (await repo.db.v8Workouts.toArray()).filter(
-        (row) => row.status === "in_progress",
-      );
-      if (workoutId && !active.some((row) => row.id === workoutId))
-        return invalid("TRAINING_ENDED");
       const at = new Date().toISOString();
-      if (
-        active.some(
-          (row) =>
-            !Number.isFinite(Date.parse(row.startedAt)) ||
-            Date.parse(row.startedAt) > Date.parse(at),
-        )
-      )
-        return invalid("INVALID_WORKOUT_TIME");
-      for (const record of active)
-        await repo.db.v8Workouts.put(
-          v8WorkoutSchema.parse({
-            ...record,
-            status: record.sets.length ? "partial" : "not_started",
-            endedAt: at,
-          }),
-        );
+      await endActiveWorkouts(repo, at, workoutId);
       const { nextWorkoutOverride: _, ...retained } = state,
         profile = state.coachProfile;
       await repo.db.v8State.put(
@@ -387,7 +369,7 @@ export function createPregnancySafety(repo: Repository) {
       if (!freshScreening(state.coachProfile, pause.requiredAt))
         return invalid("PREGNANCY_NEW_SCREENING_REQUIRED");
       const local = await repo.db.profiles.toCollection().first(),
-        zone = local?.timeZone ?? "Asia/Shanghai",
+        zone = local?.timeZone ?? DEFAULT_TIME_ZONE,
         today = calendarDay(new Date().toISOString(), zone)!;
       const mapped = toEngineProfile(state.coachProfile!, {
         asOfDate: today,

@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { afterEach, expect, it, vi } from 'vitest';
 import { assistantAccessStatus, handleAssistant, type AssistantEnv } from '../../src/backend/assistant/route';
 import { AssistantUsageStore } from '../../src/backend/assistant/admission';
+import { runAdminSchedule } from '../../src/backend/admin/core/schedule';
 import { initialState, type ControlState } from '../../src/backend/store';
 import { digest } from '../../src/backend/contracts';
 import type { AdminDatabase, AdminStatement } from '../../src/backend/admin/core/contracts';
@@ -52,12 +53,14 @@ it.each(['missing-cookie','revoked-session','revoked-subject','expired','ai-off'
   const response=await handleAssistant(request(kind==='missing-cookie'?{Cookie:''}:kind==='origin'?{Origin:'https://evil.test'}:{}),env,runner);
   expect(response.status).toBe(kind==='ai-off'?503:kind==='origin'?403:401); expect(calls).toBe(0);
 });
-it('old pending requests are archived without blocking or rewriting legacy accounting',async () => {
+it('old pending requests neither block chat nor are rewritten; the admin schedule archives them once',async () => {
   const {db,env,request}=await setup(state => {state.requests.old={subjectId:subject,requestId:'old',inputDigest:'old',operation:'generate',period:'2026-10',bound:300,status:'pending',cancelled:false}; state.budgets['2026-10']={spent:42,reserved:300};});
   const before=db.prepare('SELECT state FROM control_ledger').get();
   const response=await handleAssistant(request(),env,success); await response.text();
-  expect(response.status).toBe(200); expect(db.prepare('SELECT state FROM control_ledger').get()).toEqual(before);
-  expect(db.prepare('SELECT label FROM assistant_legacy_archive').get()).toMatchObject({label:'archived_unaccounted'});
+  expect(response.status).toBe(200); expect(db.prepare('SELECT COUNT(*) AS count FROM assistant_legacy_archive').get()).toMatchObject({count:0});
+  await runAdminSchedule(env); await runAdminSchedule(env);
+  expect(db.prepare('SELECT state FROM control_ledger').get()).toEqual(before);
+  expect(db.prepare('SELECT COUNT(*) AS count, MIN(label) AS label FROM assistant_legacy_archive').get()).toMatchObject({count:1,label:'archived_unaccounted'});
 });
 it('attachment failure retains text, records failed calls and leaves daily count unchanged',async () => {
   const {db,env,request}=await setup();

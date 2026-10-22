@@ -1,5 +1,6 @@
 import { repository, type Repository } from '../persistence/repository';
 import { defaultCoachPreferences, eligibleReminder, quietAt, userReminderSources, zonedMinute, type CoachLedger, type CoachPreferences, type ReminderContext, type ReminderRecord, type ReminderSource } from '../domain/coach-reminders';
+import { DAY_MS } from '../domain/local-date';
 
 export function createCoachReminderService(repo: Repository) {
   const db=repo.db;
@@ -34,7 +35,7 @@ export function createCoachReminderService(repo: Repository) {
       const candidate=eligibleReminder(snapshot.result,ledger,{...context,profileId:profile.id,generation:metadata.restoreGeneration??0,training:snapshot.training,onboarding:snapshot.onboarding});
       let record:ReminderRecord|undefined;
       if(candidate){record={...candidate,profileId:profile.id,generation:ledger.generation,shownAt:context.now,day:zonedMinute(context.now,ledger.preferences.timeZone).day,status:'shown'};ledger.records.push(record);}
-      ledger.records=ledger.records.filter(r=>r.shownAt>=context.now-180*86400000);
+      ledger.records=ledger.records.filter(r=>r.shownAt>=context.now-180*DAY_MS);
       ledger.watermark=Math.max(context.now,ledger.watermark);await db.coachDevice.put(ledger);return {record,ledger,suppressed:snapshot.training||snapshot.onboarding||!ledger.preferences.enabled||ledger.preferences.dailyLimit===0||context.now<ledger.snoozeUntil||quietAt(context.now,ledger.preferences)};
     });
   }

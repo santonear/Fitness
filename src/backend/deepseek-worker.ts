@@ -1,6 +1,7 @@
 import { createDeepSeekCodec, DEEPSEEK_ENDPOINT } from './deepseek';
 import { createWorker, type WorkerEnv } from './worker';
 import {readSelectedPromptVersion} from './admin/releases/runtime';
+import { readBodyBytes } from './request';
 
 export interface DeepSeekWorkerEnv extends WorkerEnv { DEEPSEEK_API_KEY?: string; DEEPSEEK_PRICING_VERIFIED_UNTIL?: string; FITNESS_COACH_PROMPT_RELEASE?: string }
 
@@ -10,13 +11,8 @@ export function createDeepSeekWorker(dependencies: Pick<NonNullable<Parameters<t
     const path = new URL(request.url).pathname;
     if(request.method==='POST'&&['/api/v1/plans/generate','/api/v1/stages/summarize'].includes(path)) {
       const failure = (error:string,status:number) => Response.json({error},{status,headers:{'Cache-Control':'no-store'}});
-      const reader=request.body?.getReader();
-      if(!reader)return failure('INVALID_INPUT',400);
-      const chunks:Uint8Array[]=[];let length=0;
-      try {
-        while(true){const part=await reader.read();if(part.done)break;length+=part.value.byteLength;if(length>65536){await reader.cancel();return failure('BODY_TOO_LARGE',413)}chunks.push(part.value)}
-      }catch{return failure('INVALID_INPUT',400)}finally{reader.releaseLock()}
-      const bytes=new Uint8Array(length);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.length}
+      let bytes:Uint8Array<ArrayBuffer>;
+      try{bytes=await readBodyBytes(request,65536,problem=>problem)}catch(problem){return problem==='too-large'?failure('BODY_TOO_LARGE',413):failure('INVALID_INPUT',400)}
       let body:unknown;try{body=JSON.parse(new TextDecoder().decode(bytes))}catch{return failure('INVALID_INPUT',400)}
       const headers=new Headers(request.headers);headers.delete('content-length');
       request=new Request(request,{headers,body:bytes});

@@ -3,7 +3,8 @@ import { EvidenceFold } from '../plan-upgrade/Evidence';
 import type { EnginePlan } from '../../../engine/contracts';
 import type { PlanVersion, SessionTemplate } from '../../../domain/v8/contracts';
 import { engineDisplayNotices } from '../../../application/engine-presentation';
-import { addDays, planWeekDays, regionLabels, sessionNames, startDateLabel, weekSchedule, weekdayLabel, weekdayOf, weekdays, type Weekday } from '../../../application/plan-presentation';
+import { planWeekDays, regionLabels, sessionNames, startDateLabel, weekSchedule, weekdayLabel, weekdayOf, weekdays, type Weekday } from '../../../application/plan-presentation';
+import { addDays, weekStart } from '../../../domain/local-date';
 import { sessionForDate } from '../../../application/training-dates';
 import { startDateCopy } from '../../../i18n/features/plan/start-date';
 import { planViewCopy, effortWords } from '../../../i18n/features/plan/view';
@@ -42,7 +43,7 @@ export function WeekPlan({ plan, locale, today, done = {}, focusId, details, sta
   // Calendar-picked days: the Monday week holding today (or the first day, before the plan starts), real dates.
   const picked = plan.trainingDates?.length && todayDate ? plan.trainingDates : undefined;
   const anchor = picked ? (picked[0] > todayDate! ? picked[0] : todayDate!) : undefined;
-  const dated = anchor ? weekdays.map((_, index) => { const date = addDays(anchor, index - weekdays.indexOf(weekdayOf(anchor))); return { date, day: weekdayOf(date), beforeStart: false }; }) : planWeekDays(startDate, todayDate);
+  const dated = anchor ? weekdays.map((_, index) => { const date = addDays(weekStart(anchor), index); return { date, day: weekdayOf(date), beforeStart: false }; }) : planWeekDays(startDate, todayDate);
   const first = picked?.[0] ?? startDate;
   const future = !!dated && !!first && !!todayDate && first > todayDate;
   const sessionsOn = (entry: { day: Weekday; date: string; beforeStart: boolean }) => entry.beforeStart ? []

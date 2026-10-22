@@ -13,6 +13,7 @@ import { projectDay } from '../domain/day-date-projection';
 import { prepareV8Migration, writeV8Library } from '../persistence/v8-migration';
 import { recoverAssistantSchedule } from '../persistence/assistant-schedule-migration';
 import Dexie from 'dexie';
+import { DAY_MS } from '../domain/local-date';
 
 // UTF-8 file bytes, not characters. Candidate verified on synthetic desktop data;
 // physical-phone capacity support remains unverified.
@@ -218,9 +219,9 @@ export function validateBackupEnvelope(value: unknown): BackupEnvelope {
     // Historical versions keep their calendar when the plan's current start date changes.
     const dates = rows.map(row => {
       const day = version.days.find(entry => entry.dayId === row.plannedDayId)!;
-      return Date.parse(`${row.originalDate}T00:00:00Z`) - (day.weekIndex - 1) * 7 * 86_400_000;
+      return Date.parse(`${row.originalDate}T00:00:00Z`) - (day.weekIndex - 1) * 7 * DAY_MS;
     });
-    if (Math.max(...dates) - Math.min(...dates) >= 7 * 86_400_000) invalid('Schedule dates do not match cycle weeks');
+    if (Math.max(...dates) - Math.min(...dates) >= 7 * DAY_MS) invalid('Schedule dates do not match cycle weeks');
   }
   for (const session of data.sessions) {
     if (session.status === 'completed' && session.planVersionId && !data.scheduledWorkouts.some(row => row.completedSessionId === session.id)) invalid('Completed planned workout has no schedule link');
@@ -392,6 +393,7 @@ export function createBackupService(repo: Repository) {
       committedGeneration = (before.restoreGeneration ?? 0) + 1;
       if (!Number.isSafeInteger(committedGeneration) || !Number.isSafeInteger(before.dataRevision + 1)) invalid('Local revision counter exhausted');
       // Device reminder preferences and suppression ledger are not portable training facts.
+      // trainingCheckins are cleared and never exported: short-retention health check-ins (kept 10 days, deload.checkin.inputs) are intentionally not portable.
       for (const table of repo.db.tables) if (table.name !== 'coachDevice') await table.clear();
       const data = envelope.data;
       await repo.db.metadata.put({ ...data.metadata, schemaVersion: DATABASE_VERSION, revision: before.revision, dataRevision: before.dataRevision, restoreGeneration: committedGeneration, importedAt: new Date().toISOString() });

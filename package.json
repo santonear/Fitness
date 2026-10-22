@@ -9,7 +9,9 @@
   "scripts": {
     "dev": "vite",
     "typecheck": "tsc --noEmit",
-    "test": "node tools/training-engine/test.mjs",
+    "test": "npm run test:unit && npm run test:diagnostic",
+    "test:unit": "vitest run --exclude tests/training-engine/diagnostic.test.ts",
+    "test:diagnostic": "vitest run tests/training-engine/diagnostic.test.ts",
     "build": "vite build",
     "test:e2e": "playwright test",
     "check": "npm run typecheck && npm test && npm run build",

@@ -6,6 +6,7 @@ import { buildHistoryContext, type HistorySnapshot } from '../application/histor
 import { calculateProgress, dateInZone } from '../application/progress-calculation';
 import { ControlError } from './store';
 import { exercises } from '../catalog/exercises';
+import { daysBetween } from '../domain/local-date';
 
 const count = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 export const stageSelectionSchema = z.discriminatedUnion('kind', [
@@ -95,7 +96,7 @@ export function validateSummaryStage(stage: SummaryStage, restoreGeneration: num
     if (!day || !version || (task.completedSessionId && task.status !== 'pending')) invalid();
     if (version && !('durationWeeks' in version) && task.originalDate !== version.startDate) invalid();
     if (version && 'durationWeeks' in version && day && 'weekIndex' in day) {
-      const days = (Date.parse(`${task.originalDate}T00:00:00Z`) - Date.parse(`${version.startDate}T00:00:00Z`)) / 86400000;
+      const days = daysBetween(version.startDate, task.originalDate);
       if (days < (day.weekIndex - 1) * 7 || days >= day.weekIndex * 7 || (new Date(`${task.originalDate}T00:00:00Z`).getUTCDay() || 7) !== day.dayOfWeek) invalid();
     }
     const session = payload.sessions.find(row => row.id === task.completedSessionId);

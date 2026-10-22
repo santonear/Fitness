@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { trainingSlotSchema } from './training-time';
 import { localeSchema, localDateSchema, timeZoneSchema, uuidSchema } from './schemas';
 import { programCandidateSchema } from './guided-contracts';
+import { DAY_MS } from './local-date';
 
 /** Guided payload carried by the versioned /api/v1 understanding and generation endpoints. */
 export const GUIDED_DIALOGUE_VERSION = 'guided-dialogue-v1' as const;
@@ -34,7 +35,7 @@ export const guidedDialogueRequestSchema = z.strictObject({
   if (request.coachTask && request.purpose !== 'understand') context.addIssue({ code: 'custom', message: 'MANAGEMENT_REQUIRES_UNDERSTAND' });
   if (request.targetPlanRef && request.purpose !== 'refine' && request.coachTask !== 'manage') context.addIssue({ code: 'custom', message: 'TARGET_REQUIRES_MODIFICATION' });
   if (new TextEncoder().encode(JSON.stringify(request.scope)).length > 49152) context.addIssue({ code: 'custom', message: 'CONTEXT_TOO_LARGE' });
-  if (request.schedule && (!['program', 'refine'].includes(request.purpose) || request.dateSelection || !request.dates || new Set(request.schedule.map(slot => slot.date)).size !== request.schedule.length || request.schedule.length !== request.dates.length || request.schedule.some(slot => !request.dates!.includes(slot.date)) || !request.startDate || !request.endDate || (Date.parse(request.endDate) - Date.parse(request.startDate)) / 86400000 + 1 > 31)) context.addIssue({ code: 'custom', message: 'INVALID_CONFIRMED_SCHEDULE' });
+  if (request.schedule && (!['program', 'refine'].includes(request.purpose) || request.dateSelection || !request.dates || new Set(request.schedule.map(slot => slot.date)).size !== request.schedule.length || request.schedule.length !== request.dates.length || request.schedule.some(slot => !request.dates!.includes(slot.date)) || !request.startDate || !request.endDate || (Date.parse(request.endDate) - Date.parse(request.startDate)) / DAY_MS + 1 > 31)) context.addIssue({ code: 'custom', message: 'INVALID_CONFIRMED_SCHEDULE' });
   if (request.dateSelection && request.purpose !== 'program') {
     context.addIssue({ code: 'custom', message: 'AI_DATE_SELECTION_REQUIRES_PROGRAM' });
   }

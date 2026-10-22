@@ -4,6 +4,8 @@ import {digest} from './contracts';
 import {D1ControlStore, type D1Binding} from './d1-store';
 import {shortId} from './admin/core/short-id';
 import type {AdminDatabase} from './admin/core/contracts';
+import { DAY_MS } from '../domain/local-date';
+import { activeTrialSubject, noStoreJson, readJsonBody, sameOrigin, trialToken } from './request';
 
 /**
  * 我的 → 给我们留言. The user types a message (and optionally a contact) and
@@ -26,19 +28,11 @@ export const feedbackInputSchema = z.strictObject({
   contact: z.string().trim().max(FEEDBACK_CONTACT_MAX).refine(text => !textIssue(text)).optional(),
   locale: z.enum(['zh', 'en']).optional(),
 });
-const json = (value: unknown, status = 200) => Response.json(value, {status, headers: {'Cache-Control': 'no-store'}});
+const json = (value: unknown, status = 200) => noStoreJson(value, status);
 
 async function readBody(request: Request): Promise<unknown> {
   if (!request.headers.get('content-type')?.startsWith('application/json')) throw new FeedbackError('INVALID_CONTENT_TYPE', 415);
-  const reader = request.body?.getReader(); if (!reader) throw new FeedbackError('INVALID_INPUT', 400);
-  let size = 0, text = ''; const decoder = new TextDecoder();
-  try {
-    while (true) { const part = await reader.read(); if (part.done) break; size += part.value.byteLength;
-      if (size > MAX_BODY) { await reader.cancel(); throw new FeedbackError('INPUT_TOO_LARGE', 413); }
-      text += decoder.decode(part.value, {stream: true}); }
-    text += decoder.decode();
-  } finally { reader.releaseLock(); }
-  try { return JSON.parse(text); } catch { throw new FeedbackError('INVALID_INPUT', 400); }
+  return readJsonBody(request, MAX_BODY, problem => problem === 'too-large' ? new FeedbackError('INPUT_TOO_LARGE', 413) : new FeedbackError('INVALID_INPUT', 400));
 }
 class FeedbackError extends Error { constructor(public code: string, public status: number) { super(code); } }
 
@@ -46,13 +40,9 @@ class FeedbackError extends Error { constructor(public code: string, public stat
 async function feedbackSubject(request: Request, env: FeedbackEnv): Promise<string | undefined> {
   try {
     if (!env.CONTROL_DB || !env.CONTROL_DIGEST_SECRET) return;
-    const cookies = (request.headers.get('cookie') ?? '').split(';').map(s => s.trim()).filter(s => s.startsWith('__Host-fitness_trial='));
-    const token = cookies.length === 1 ? cookies[0].slice('__Host-fitness_trial='.length) : '';
-    if (!/^[a-f0-9]{64}$/.test(token)) return;
-    const state = await new D1ControlStore(env.CONTROL_DB).read();
-    const session = state.sessions[await digest(token, env.CONTROL_DIGEST_SECRET)], subject = session && state.subjects[session.subjectId];
-    if (!session || session.revoked || !subject || subject.revoked || subject.deletedAt || subject.expiresAt <= Date.now()) return;
-    return session.subjectId;
+    const token = trialToken(request);
+    if (!token) return;
+    return await activeTrialSubject(await new D1ControlStore(env.CONTROL_DB).read(), token, env.CONTROL_DIGEST_SECRET);
   } catch { return; }
 }
 const hourBucket = (now: number) => new Date(now).toISOString().slice(0, 13);
@@ -62,7 +52,7 @@ const dayBucket = (now: number) => new Date(now).toISOString().slice(0, 10);
 async function admit(db: AdminDatabase, key: string, now: number) {
   const hour = hourBucket(now), day = dayBucket(now);
   // Old buckets carry no meaning after a day; keep the table small.
-  await db.prepare('DELETE FROM user_feedback_rate WHERE bucket < ?').bind(dayBucket(now - 86400000)).run();
+  await db.prepare('DELETE FROM user_feedback_rate WHERE bucket < ?').bind(dayBucket(now - DAY_MS)).run();
   const bump = (k: string, bucket: string) => db.prepare('INSERT INTO user_feedback_rate(key,bucket,count) VALUES(?,?,1) ON CONFLICT(key,bucket) DO UPDATE SET count=count+1').bind(k, bucket);
   await db.batch([bump(key, hour), bump('*', day)]);
   const own = await db.prepare('SELECT count FROM user_feedback_rate WHERE key=? AND bucket=?').bind(key, hour).first<{count: number}>();
@@ -73,8 +63,7 @@ async function admit(db: AdminDatabase, key: string, now: number) {
 export async function handleFeedback(request: Request, env: FeedbackEnv, now = Date.now()): Promise<Response> {
   try {
     if (request.method !== 'POST') return json({error: 'METHOD_NOT_ALLOWED'}, 405);
-    const url = new URL(request.url);
-    if (url.protocol !== 'https:' || request.headers.get('origin') !== url.origin || request.headers.get('sec-fetch-site') === 'cross-site') return json({error: 'ORIGIN_DENIED'}, 403);
+    if (!sameOrigin(request)) return json({error: 'ORIGIN_DENIED'}, 403);
     const parsed = feedbackInputSchema.safeParse(await readBody(request));
     if (!parsed.success) return json({error: 'INVALID_INPUT'}, 400);
     const db = env.ADMIN_DB; if (!db) return json({error: 'SERVICE_UNAVAILABLE'}, 503);

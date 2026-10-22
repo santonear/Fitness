@@ -2,6 +2,7 @@ import { programCandidateSchema, type ProgramCandidate } from '../domain/guided-
 import { guidedDialogueRequestSchema, guidedDialogueResponseSchema,
   type GuidedDialogueRequest, type GuidedDialogueResponse, type GuidedDialogueLimits } from '../domain/guided-ai-contracts';
 import type { Exercise } from '../domain/models';
+import { DAY_MS } from '../domain/local-date';
 
 function canonical(value: unknown): string {
   if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
@@ -55,7 +56,7 @@ export function validateGuidedCandidate(raw: unknown, context: GuidedCandidateCo
   if (new Set(context.expectedDates).size !== context.expectedDates.length || new Set(dates).size !== dates.length
       || (!context.allowDateSubset && dates.length !== context.expectedDates.length) || dates.some(date => !context.expectedDates.includes(date))) throw new Error('INVALID_DATE_SET');
   if (candidate.startDate > candidate.endDate || dates.some(date => date < candidate.startDate || date > candidate.endDate)) throw new Error('INVALID_DATE_RANGE');
-  const range = (Date.parse(candidate.endDate) - Date.parse(candidate.startDate)) / 86400000 + 1;
+  const range = (Date.parse(candidate.endDate) - Date.parse(candidate.startDate)) / DAY_MS + 1;
   if (dates.length > context.limits.maxDays || range > context.limits.maxRangeDays) throw new Error('GUIDED_CAPACITY_EXCEEDED');
   if (dates.some(date => context.occupiedDates?.includes(date))) throw new Error('DATE_CONFLICT');
   for (const day of candidate.days) {

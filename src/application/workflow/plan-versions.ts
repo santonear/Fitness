@@ -11,6 +11,7 @@ import { shiftTrainingDates } from "../training-dates";
 import { carriedBudget, carriedSchedule, invalid, localDate, START_DATE_WINDOW_DAYS } from "./shared";
 import type { WorkflowContext } from "./context";
 import type { createPlanSetup } from "./plan-setup";
+import { DEFAULT_TIME_ZONE, addDays } from "../../domain/local-date";
 
 export function createPlanVersions(ctx: WorkflowContext, depsIn: { adopt: ReturnType<typeof createPlanSetup>["adopt"] }) {
   const { repo, db, assertHealthItems, checkedEnginePlan, mappedEngineProfile } = ctx;
@@ -252,10 +253,8 @@ export function createPlanVersions(ctx: WorkflowContext, depsIn: { adopt: Return
   }) {
     return repo.write(async () => {
       const local = await db.profiles.toCollection().first();
-      const today = localDate(local?.timeZone ?? "Asia/Shanghai");
-      const latest = new Date(Date.parse(`${today}T00:00:00Z`) + START_DATE_WINDOW_DAYS * 86400000)
-        .toISOString()
-        .slice(0, 10);
+      const today = localDate(local?.timeZone ?? DEFAULT_TIME_ZONE);
+      const latest = addDays(today, START_DATE_WINDOW_DAYS);
       if (!/^\d{4}-\d{2}-\d{2}$/.test(startDate) || startDate < today || startDate > latest)
         return invalid("INVALID_START_DATE");
       const state = await db.v8State.get("v8");

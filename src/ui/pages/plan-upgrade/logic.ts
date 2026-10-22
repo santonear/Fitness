@@ -3,19 +3,17 @@ import type {
   BodyChangeEvent, FigureShape, FitnessTestItem, FutureLetter, Journey, JourneyStop, LiftEntry, MuscleLoad, NowMinutes, SessionMuscleFocus, SetEntry,
 } from '../../../domain/plan-upgrade';
 import { FITNESS_TEST_ITEMS, MUSCLE_GROUP_NAMES } from '../../../domain/plan-upgrade';
+import { addDays, daysBetween } from '../../../domain/local-date';
 import { fillLine, yayaV5 } from '../../../i18n/features/coach/yaya-v5';
 import { planPagesCopy } from '../../../i18n/features/plan-upgrade/pages';
+import { binarySex, type BodyValues } from '../../../domain/body-profile';
 
 type Locale = 'zh' | 'en';
 type Sex = 'male' | 'female';
-const DAY = 86400000;
-const dayNumber = (date: string) => Math.floor(Date.parse(`${date}T00:00:00Z`) / DAY);
 
 /** 资料性别优先；“不愿透露”或未填时用上次的男 / 女切换，初始男。 */
-export function figureSex(biologicalSex: string | undefined, lastToggle: Sex | undefined): Sex {
-  if (biologicalSex === '男性') return 'male';
-  if (biologicalSex === '女性') return 'female';
-  return lastToggle ?? 'male';
+export function figureSex(biologicalSex: BodyValues['biologicalSex'], lastToggle: Sex | undefined): Sex {
+  return binarySex(biologicalSex) ?? lastToggle ?? 'male';
 }
 
 export function figureShape(values: { heightCm?: number; weightKg?: number; waistCm?: number } | undefined, sex: Sex, latestWeightKg?: number): FigureShape {
@@ -30,9 +28,9 @@ const sorted = (rows: readonly WeightRow[]) => [...rows].sort((a, b) => a.localD
 export function ghostWeight(rows: readonly WeightRow[]): WeightRow | undefined {
   const all = sorted(rows), last = all.at(-1);
   if (!last) return undefined;
-  const target = dayNumber(last.localDate) - 30, limit = dayNumber(last.localDate) - 21;
-  return all.filter(row => dayNumber(row.localDate) <= limit)
-    .sort((a, b) => Math.abs(dayNumber(a.localDate) - target) - Math.abs(dayNumber(b.localDate) - target))[0];
+  const before = (row: WeightRow) => daysBetween(row.localDate, last.localDate);
+  return all.filter(row => before(row) >= 21)
+    .sort((a, b) => Math.abs(before(a) - 30) - Math.abs(before(b) - 30))[0];
 }
 
 export const monthLabel = (localDate: string, locale: Locale) =>
@@ -57,7 +55,7 @@ export function usedMinutes(workouts: readonly WorkoutLike[], weekDates: readonl
 export function returnLine(workouts: readonly WorkoutLike[], today: string): 'returnHello' | 'returnEasy' | undefined {
   const last = workouts.filter(counted).map(w => w.localDate).sort().at(-1);
   if (!last) return undefined;
-  const gap = dayNumber(today) - dayNumber(last);
+  const gap = daysBetween(last, today);
   return gap >= 14 ? 'returnHello' : gap >= 7 ? 'returnEasy' : undefined;
 }
 
@@ -167,5 +165,5 @@ export function liftHistory(workouts: readonly (Omit<WorkoutLike, 'sets'> & { se
   return workouts.filter(w => counted(w as WorkoutLike)).flatMap(w => w.sets.filter(set => (set.loadGrams ?? 0) > 0 && (set.reps ?? 0) > 0)
     .map(set => ({ exerciseId: set.exerciseId, localDate: w.localDate, weightKg: set.loadGrams! / 1000, reps: set.reps! })));
 }
-export const shiftLocalDate = (localDate: string, days: number) => new Date(Date.parse(`${localDate}T00:00:00Z`) + days * DAY).toISOString().slice(0, 10);
+export { addDays as shiftLocalDate };
 export const isTestItem = (metric: string): metric is FitnessTestItem => (FITNESS_TEST_ITEMS as readonly string[]).includes(metric);

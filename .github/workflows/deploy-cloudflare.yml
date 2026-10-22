@@ -54,7 +54,7 @@ jobs:
       - run: npm ci
       - run: node tools/v8/check.mjs
       - run: npm run typecheck
-      - run: npm test -- --exclude tests/training-engine/diagnostic.test.ts
+      - run: npm run test:unit
       - run: npm run build
       - run: npm run engine:check
 

@@ -17,6 +17,8 @@ import type { FutureLetter } from '../../../domain/plan-upgrade';
 import { listFutureLetters } from '../../../persistence/plan-upgrade-store';
 import '../plan-upgrade/plan-upgrade.css';
 import './my-changes.css';
+import { DEFAULT_TIME_ZONE } from '../../../domain/local-date';
+import { bodyWeightInputSchema } from '../../../domain/schemas';
 
 type Locale = 'zh' | 'en';
 const listSeparator=(locale:'zh'|'en')=>locale==='zh'?'，':', ';
@@ -45,7 +47,7 @@ function TrendLine({ trend, unit, locale }: { trend: Trend; unit: string; locale
 /** 我的 › 自记录 (Bo 2026-10-22): periodic body record inline, then body fat, strength and sessions; this device only. */
 export function MyChangesPage() {
   const c = useMainline(), locale = c.locale, t = changesCopy[locale];
-  const zone = c.data?.profile?.timeZone ?? 'Asia/Shanghai', today = activityDate(zone);
+  const zone = c.data?.profile?.timeZone ?? DEFAULT_TIME_ZONE, today = activityDate(zone);
   const body = useBodyMeasurements(), workouts = c.data?.workouts ?? [];
   const weight = weightTrend(body.rows), fat = bodyFatTrend(body.rows), lifts = strengthTrends(workouts);
   const month = monthKey(today), current = monthSummary(workouts, body.rows, month), previous = monthSummary(workouts, body.rows, previousMonth(month));
@@ -58,11 +60,12 @@ export function MyChangesPage() {
   const existing = form ? body.rows.find(row => row.localDate === form.date) : undefined;
   const save = async () => {
     if (!form) return;
-    const kg = Number(form.weight), percent = form.fat.trim() === '' ? undefined : Number(form.fat);
-    if (form.weight.trim() === '' || !Number.isFinite(kg) || kg < 20 || kg > 300 || (percent !== undefined && (!Number.isFinite(percent) || percent < 3 || percent > 70)) || !form.date || form.date > today || form.date < '2000-01-01') return setForm({ ...form, error: true, saved: false });
+    const percent = form.fat.trim() === '' ? undefined : Number(form.fat);
+    const values = { weightGrams: form.weight.trim() === '' ? NaN : Math.round(Number(form.weight) * 1000), ...(percent !== undefined ? { bodyFatPercent: Math.round(percent * 10) / 10 } : {}) };
+    if (!bodyWeightInputSchema.pick({ weightGrams: true, bodyFatPercent: true }).safeParse(values).success || !form.date || form.date > today || form.date < '2000-01-01') return setForm({ ...form, error: true, saved: false });
     let saved = false;
     await c.run(async () => {
-      await bodyWeightService.saveBodyWeight({ ...(existing ? { id: existing.id } : {}), localDate: form.date, timeZone: zone, weightGrams: Math.round(kg * 1000), ...(percent !== undefined ? { bodyFatPercent: Math.round(percent * 10) / 10 } : {}) }, existing?.revision);
+      await bodyWeightService.saveBodyWeight({ ...(existing ? { id: existing.id } : {}), localDate: form.date, timeZone: zone, ...values }, existing?.revision);
       saved = true;
     });
     if (saved) { await body.reload(); setForm({ ...form, fat: '', error: false, saved: true }); }
@@ -122,7 +125,7 @@ export function MyChangesPage() {
 /** Summary on 我的: this month vs last month and the body outline drawn from the latest 自记录 weight and body fat (Bo 2026-10-22). */
 export function MyChangesCard() {
   const c = useMainline(), locale = c.locale, t = changesCopy[locale];
-  const zone = c.data?.profile?.timeZone ?? 'Asia/Shanghai', month = monthKey(activityDate(zone));
+  const zone = c.data?.profile?.timeZone ?? DEFAULT_TIME_ZONE, month = monthKey(activityDate(zone));
   const body = useBodyMeasurements(), workouts = c.data?.workouts ?? [];
   const weight = weightTrend(body.rows), current = monthSummary(workouts, body.rows, month), previous = monthSummary(workouts, body.rows, previousMonth(month));
   const lift = strengthTrends(workouts, 1)[0], fat = bodyFatTrend(body.rows);

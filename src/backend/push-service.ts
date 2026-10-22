@@ -1,5 +1,6 @@
 import { importJWK, SignJWT } from 'jose';
 import { z } from 'zod';
+import { sha256Hex } from '../domain/hex';
 
 export const pushSchedule = z.object({
   weekdays: z.array(z.number().int().min(1).max(7)).min(1).max(7),
@@ -27,7 +28,7 @@ export function duePushDay(schedule: PushSchedule, now: number, checkTime = true
   return `${parts.year}-${parts.month}-${parts.day}`;
 }
 export async function capabilityHash(token: string): Promise<string> {
-  return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token)))).map(byte => byte.toString(16).padStart(2, '0')).join('');
+  return sha256Hex(token);
 }
 /** RFC 8292 VAPID; empty-body RFC 8030 wakeup, no health payload. */
 export async function sendGenericPush(endpoint: string, privateJwk: string, publicKey: string, subject: string, now: number, transport: typeof fetch = fetch): Promise<number> {

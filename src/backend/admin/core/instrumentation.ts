@@ -1,6 +1,7 @@
 import type {ControlStore,ControlState} from '../../store';
 import type {AdminDatabase} from './contracts';
 import {recordFinanceEvent} from '../finance';
+import { sha256Hex } from '../../../domain/hex';
 type LedgerRequest=ControlState['requests'][string];
 const signature=(r:LedgerRequest)=>`${r.status}:${r.actualCost??''}:${r.bound}`;
 /** Track committed metadata changes, outside callbacks which CAS may replay. */
@@ -21,7 +22,7 @@ export async function syncFinanceMetadata(store:ControlStore,db:AdminDatabase,ke
  const ids=[...keys];if(!ids.length)return;
  const state=await store.read();
  for(const id of ids){const r=state.requests[id];if(!r||r.createdAt===undefined||r.status==='reserved')continue;
-  const eventKey=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(`${r.subjectId}:${r.requestId}`))),v=>v.toString(16).padStart(2,'0')).join('');
+  const eventKey=await sha256Hex(`${r.subjectId}:${r.requestId}`);
   const tasks={ONBOARD_PLAN:'generate',ADJUST_TODAY:'adjust',MODIFY_PLAN:'modify',PERIOD_REVIEW:'review'} as const;
   const task=tasks[r.coachContract?.task as keyof typeof tasks]??r.operation;
   const status=r.status==='settled'?'settled':r.status==='released'?'released':'pending';

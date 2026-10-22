@@ -1,6 +1,7 @@
 import type { ProgressFacts, ProgressReport, ProgressMetrics, ProgressQuery, LocalDate, SetRecord } from '../domain/models';
 import { DomainError } from '../domain/errors';
 import { localDateSchema, timeZoneSchema } from '../domain/schemas';
+import { todayIn } from '../domain/local-date';
 
 function metrics(): ProgressMetrics {
   return { reps: 0, loadGrams: 0, volumeGrams: 0, durationSeconds: 0, distanceMeters: null, missingDistanceSets: 0 };
@@ -15,11 +16,7 @@ function add(target: ProgressMetrics, set: SetRecord): void {
   else if (set.metricType === 'duration_distance') target.missingDistanceSets++;
 }
 
-export function dateInZone(nowMs: number, timeZone: string): LocalDate {
-  const parts = new Intl.DateTimeFormat('en-US', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(nowMs);
-  const part = (type: string) => parts.find(value => value.type === type)!.value;
-  return `${part('year')}-${part('month')}-${part('day')}`;
-}
+export const dateInZone = (nowMs: number, timeZone: string): LocalDate => todayIn(timeZone, nowMs);
 
 export function calculateProgress(input: ProgressFacts, cutoff: LocalDate): ProgressReport {
   if (!Number.isFinite(input.nowMs) || ![input.from, input.to, cutoff].every(date => localDateSchema.safeParse(date).success) || input.from > input.to) {

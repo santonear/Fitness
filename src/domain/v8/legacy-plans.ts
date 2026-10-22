@@ -6,6 +6,7 @@ import { legacyItemsToV8 } from './legacy-items';
 import { legacyPlanMinutes, legacyTemplateMinutes } from './legacy-duration';
 import { selectLegacyCurrentPlan } from './legacy-selection';
 import { dateWeeklyTarget, legacyPlanGroups } from './legacy-groups';
+import { hex } from '../hex';
 
 interface LegacyPlansInput {
   plans: readonly Plan[];
@@ -25,8 +26,8 @@ async function migratedVersionId(originalId: string): Promise<string> {
   const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`fitness:v8:legacy-plan-version:${originalId}`))).slice(0, 16);
   digest[6] = (digest[6] & 0x0f) | 0x80;
   digest[8] = (digest[8] & 0x3f) | 0x80;
-  const hex = Array.from(digest, byte => byte.toString(16).padStart(2, '0')).join('');
-  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  const text = hex(digest);
+  return `${text.slice(0, 8)}-${text.slice(8, 12)}-${text.slice(12, 16)}-${text.slice(16, 20)}-${text.slice(20)}`;
 }
 
 /** Pure projection. Retain legacy tables separately; precompute before writes or keep the Dexie upgrade alive with waitFor. */

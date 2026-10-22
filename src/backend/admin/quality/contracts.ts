@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { AdminDatabase, AdminEnvironment } from '../core/contracts';
+import { DAY_MS, DEFAULT_TIME_ZONE } from '../../../domain/local-date';
 
 export interface Statement { bind(...values: unknown[]): Statement; run(): Promise<{ meta: { changes: number } }>; all<T>(): Promise<{ results: T[] }>; first<T>(): Promise<T | null> }
 export type QualityDatabase = AdminDatabase;
@@ -17,7 +18,7 @@ export const evaluationReport = z.object({
   id: z.string().uuid(), synthetic: z.literal(true), time: z.number().int().nonnegative(),
   promptVersion: z.string().regex(/^[a-zA-Z0-9._-]{1,64}$/), model: z.string().regex(/^[a-zA-Z0-9._:/-]{1,80}$/),
   scenarios: z.array(z.object({ scenario: z.enum(['plan', 'adjust', 'modify', 'review', 'safety', 'tone']), passed: z.boolean(), violations: z.number().int().min(0).max(10000) }).strict()).min(1).max(100),
-  durationMs: z.number().int().min(0).max(86400000), costMicros: z.number().int().min(0).max(1000000000),
+  durationMs: z.number().int().min(0).max(DAY_MS), costMicros: z.number().int().min(0).max(1000000000),
 }).strict();
 export const categories = ['ledger', 'smoke', 'errors', 'budget80', 'budget100', 'applications', 'test'] as const;
 export type Category = typeof categories[number];
@@ -29,7 +30,7 @@ export const notificationSettings = z.object({
   timeZone: z.string().max(80).refine(value => { try { new Intl.DateTimeFormat('en', { timeZone: value }); return true; } catch { return false; } }),
 }).strict();
 export type NotificationSettings = z.infer<typeof notificationSettings>;
-export const defaultSettings: NotificationSettings = { enabled: { ledger: true, smoke: true, errors: true, budget80: true, budget100: true, applications: true }, quietStart: '22:00', quietEnd: '08:00', timeZone: 'Asia/Shanghai' };
+export const defaultSettings: NotificationSettings = { enabled: { ledger: true, smoke: true, errors: true, budget80: true, budget100: true, applications: true }, quietStart: '22:00', quietEnd: '08:00', timeZone: DEFAULT_TIME_ZONE };
 export function notificationAllowed(category: Category, settings: NotificationSettings, now: number): boolean {
   if (urgent.has(category) || category === 'test') return true;
   if (!settings.enabled[category]) return false;

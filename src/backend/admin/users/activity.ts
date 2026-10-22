@@ -2,6 +2,7 @@ import type {AdminDatabase} from '../core/contracts';
 import type {ControlState} from '../../store';
 import {assistantUsageReport} from '../../assistant/usage-report';
 import {shortId} from '../core/short-id';
+import {DEFAULT_TIME_ZONE,todayIn} from '../../../domain/local-date';
 
 /**
  * Account and usage metadata only. Derived from existing records (control
@@ -11,9 +12,8 @@ import {shortId} from '../core/short-id';
 export interface UserActivity {registeredAt:number|null;lastActiveAt:number|null;monthCalls:number;monthCostFen:number;monthCostUnknown:boolean}
 
 function policyMonth(now:number,policy='{}'){
- let timeZone='Asia/Shanghai';try{timeZone=(JSON.parse(policy) as {timeZone?:string}).timeZone??timeZone}catch{/* default */}
- const parts=new Intl.DateTimeFormat('en-CA',{timeZone,year:'numeric',month:'2-digit'}).formatToParts(now);
- return {month:`${parts.find(p=>p.type==='year')!.value}-${parts.find(p=>p.type==='month')!.value}`,timeZone};
+ let timeZone=DEFAULT_TIME_ZONE;try{timeZone=(JSON.parse(policy) as {timeZone?:string}).timeZone??timeZone}catch{/* default */}
+ return {month:todayIn(timeZone,now).slice(0,7),timeZone};
 }
 
 const registrationEvents=new Set(['invite-redeemed','subject-directly-activated']);

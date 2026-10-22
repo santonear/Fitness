@@ -7,6 +7,7 @@ import type { createV8Workflow } from '../application/v8-workflow';
 import type { CoachProfile } from '../domain/v8/contracts';
 import { coachRequestSchema, reviewFactsSchema, type CoachRequest, type PickedSchedule } from './contracts';
 import { pickedSchedule } from '../application/picked-schedule';
+import { DEFAULT_TIME_ZONE, todayIn } from '../domain/local-date';
 import type { ReviewFacts } from '../application/review/contracts';
 
 type Snapshot = Awaited<ReturnType<ReturnType<typeof createV8Workflow>['snapshot']>>;
@@ -26,10 +27,10 @@ export function buildCoachRequest(input:CoachRequestInput):CoachRequest|undefine
  if(!profile?.adultConfirmed||data.profile?.bodyDetails?.values.age!==undefined&&data.profile.bodyDetails.values.age<18)return;
  const revision=data.metadata.dataRevision,generation=data.metadata.restoreGeneration??0;
  const engineEnabled=isFeatureEnabled('trainingEngine' as FeatureName);
- const engineProfile=engineEnabled?toEngineProfile(profile,{asOfDate:new Intl.DateTimeFormat('en-CA',{timeZone:data.profile?.timeZone??'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()),timeZone:data.profile?.timeZone,locale:data.profile?.locale,history:data.workouts,notes:[],ageYears:data.profile?.bodyDetails?.values.age}):undefined;
+ const engineProfile=engineEnabled?toEngineProfile(profile,{asOfDate:todayIn(data.profile?.timeZone??DEFAULT_TIME_ZONE),timeZone:data.profile?.timeZone,locale:data.profile?.locale,history:data.workouts,notes:[],ageYears:data.profile?.bodyDetails?.values.age}):undefined;
  const common={...(engineEnabled?{trainingEngine:true,engineProfile}:{}),version:'fitness-coach-v8',requestId:crypto.randomUUID(),conversationId:input.conversationId??crypto.randomUUID(),restoreGeneration:generation,
   candidateContext:{equipment:profile.equipment,cautions:profile.cautions},
-  inputSnapshot:JSON.stringify({revision,generation,versionId:data.version?.id}),sendConfirmation:'preview',locale:data.profile?.locale??'zh',timeZone:data.profile?.timeZone??'Asia/Shanghai',adultConfirmed:true,messages:[],...(input.body?{body:input.body}:{}),...(input.history?{history:input.history}:{})};
+  inputSnapshot:JSON.stringify({revision,generation,versionId:data.version?.id}),sendConfirmation:'preview',locale:data.profile?.locale??'zh',timeZone:data.profile?.timeZone??DEFAULT_TIME_ZONE,adultConfirmed:true,messages:[],...(input.body?{body:input.body}:{}),...(input.history?{history:input.history}:{})};
  if(task==='ONBOARD_PLAN'){
   const {goalText,weeklyTarget,sessionMinutes,scheduleOriginalText,preferredDays,place,equipment,adultConfirmed,cautions,cautionNote}=profile;
   const sharedProfile={goalText,weeklyTarget,sessionMinutes,scheduleOriginalText,preferredDays,place,equipment,adultConfirmed,cautions,cautionNote};

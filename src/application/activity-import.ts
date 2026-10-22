@@ -5,6 +5,7 @@ import type { Repository } from '../persistence/repository';
 import { activityDate } from './v8-activity';
 import { isFeatureEnabled } from './feature-flags';
 import { z } from 'zod';
+import { sha256Hex } from '../domain/hex';
 const sourceTime = z.iso.datetime({ offset: true });
 export interface ImportedActivityCandidate { receiptId: string; localDate: string; minutes: number; timeZone: string }
 const invalid = () => new DomainError('INVALID', 'INVALID_ACTIVITY_FILE');
@@ -14,7 +15,7 @@ export async function parseGpxActivities(text: string, timeZone: string): Promis
   if (xml.querySelector('parsererror') || xml.documentElement.localName !== 'gpx' || xml.documentElement.getAttribute('version') !== '1.1' || xml.documentElement.namespaceURI !== 'http://www.topografix.com/GPX/1/1') throw invalid();
   const tracks = [...xml.documentElement.children].filter(element => element.localName === 'trk');
   if (!tracks.length || tracks.length > 100) throw invalid();
-  const digest = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)))].map(byte => byte.toString(16).padStart(2, '0')).join('');
+  const digest = await sha256Hex(text);
   return tracks.map((track, index) => {
     const segments = [...track.children].filter(element => element.localName === 'trkseg');
     const points = segments.flatMap(segment => [...segment.children].filter(element => element.localName === 'trkpt'));

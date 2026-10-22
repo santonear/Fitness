@@ -19,6 +19,7 @@ import { activePainReplacement, latestSetFeedback, unresolvedReview } from "../t
 import { type ManualSelection, invalid, localDate } from "./shared";
 import type { WorkflowContext } from "./context";
 import type { createPlanSetup } from "./plan-setup";
+import { DEFAULT_TIME_ZONE } from "../../domain/local-date";
 
 export function createWorkoutSession(ctx: WorkflowContext, depsIn: { snapshot: ReturnType<typeof createPlanSetup>["snapshot"] }) {
   const { repo, db, assertHealthItems, checkins, mappedEngineProfile } = ctx;
@@ -72,7 +73,7 @@ export function createWorkoutSession(ctx: WorkflowContext, depsIn: { snapshot: R
       screeningEvidenceEvents: data.state?.screeningEvidenceEvents,
       olderSafety: data.state?.olderSafety,
       postpartumSafety: data.state?.postpartumSafety,
-      asOfDate: localDate(data.profile?.timeZone ?? "Asia/Shanghai"),
+      asOfDate: localDate(data.profile?.timeZone ?? DEFAULT_TIME_ZONE),
       timeZone: data.profile?.timeZone,
       locale: data.profile?.locale,
       history: data.workouts,

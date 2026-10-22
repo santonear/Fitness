@@ -3,6 +3,7 @@ import type {Repository} from '../persistence/repository';
 import type {WorkoutRecord} from '../domain/v8/contracts';
 import {DomainError} from '../domain/errors';
 import {trainingCheckinInputSchema,type TrainingCheckinInput,type TrainingCheckinRow} from '../domain/training-checkin';
+import { DAY_MS } from '../domain/local-date';
 export {trainingCheckinInputSchema,type TrainingCheckinInput,type TrainingCheckinRow} from '../domain/training-checkin';
 import {engineCheckinSchema,type EngineCheckin} from '../engine/contracts';
 import {DATA} from '../engine/data';
@@ -31,7 +32,7 @@ export function createTrainingCheckin(repo:Repository){
    if(followup&&!followupKeys.some(key=>jointPain?.redFlagAnswers?.[key]===true)&&!followupKeys.every(key=>typeof jointPain?.redFlagAnswers?.[key]==='boolean'))throw new DomainError('INVALID','RED_FLAG_ANSWERS_REQUIRED');
    if(followup&&!state.painFollowupRestrictions?.some(row=>row.sourceWorkoutId===followup.sourceWorkoutId&&row.pattern===followup.pattern))await repo.db.v8State.put({...state,...(painFollowup?.painArea&&painFollowup.painArea!=='other'&&state.coachProfile.cautions.includes(painFollowup.painArea)?{cautionLevels:{...state.cautionLevels,[painFollowup.painArea]:{level:2 as const,changedAt:now.toISOString()}}}:{}),painFollowupRestrictions:[...state.painFollowupRestrictions??[],{...followup,appliedAt:now.toISOString()}]});
    if((parsed.newOrWorseJointPain||followup)&&Object.values(jointPain?.redFlagAnswers??{}).some(answer=>answer===true))await repo.db.v8State.put({...(await repo.db.v8State.get('v8')??state),trainingPause:state.trainingPause??{requiredAt:now.toISOString()}});
-   await repo.db.trainingCheckins.put({id:'pending',recordedAt:now.toISOString(),expiresAt:new Date(now.getTime()+retentionDays*86400000).toISOString(),answers:parsed,...(painFollowup?{painFollowup}:{}),...((parsed.newOrWorseJointPain||followup)&&jointPain?{jointPain}:{})});
+   await repo.db.trainingCheckins.put({id:'pending',recordedAt:now.toISOString(),expiresAt:new Date(now.getTime()+retentionDays*DAY_MS).toISOString(),answers:parsed,...(painFollowup?{painFollowup}:{}),...((parsed.newOrWorseJointPain||followup)&&jointPain?{jointPain}:{})});
   },expectedRevision);
  }
  async function context(history:WorkoutRecord[]){
@@ -44,7 +45,7 @@ export function createTrainingCheckin(repo:Repository){
   if(!consent)return{history:history.map(({checkin:_old,...facts})=>facts),checkin:undefined};
   const byId=new Map(rows.map(row=>[row.id,row.answers]));
   return{history:history.map(({checkin:legacy,...facts})=>{
-   const legacyExpiry=Date.parse(facts.startedAt)+retentionDays*86400000;
+   const legacyExpiry=Date.parse(facts.startedAt)+retentionDays*DAY_MS;
    const answers=byId.get(facts.id)??(legacyExpiry>Date.parse(now)?legacy:undefined);
    return{...facts,...(answers?{checkin:answers}:{})};
   }),checkin:byId.get('pending')};

@@ -1,5 +1,5 @@
 import { localDateSchema, timeZoneSchema } from './schemas';
-const DAY = 86400000;
+import { DAY_MS as DAY } from './local-date';
 function formatter(zone: string) { return new Intl.DateTimeFormat('en-US', { timeZone: zone, year: 'numeric', month: '2-digit', day: '2-digit' }); }
 function label(format: Intl.DateTimeFormat, instant: number): string {
   const parts = format.formatToParts(instant); const get = (type: string) => parts.find(part => part.type === type)!.value;

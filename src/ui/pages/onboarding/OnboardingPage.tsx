@@ -20,6 +20,7 @@ import { trainingDaysCopy } from '../../../i18n/features/plan/training-days';
 import { weeklyTargetFromDates } from '../../../application/training-dates';
 import { presetIn } from '../../../application/preset-text';
 import './onboarding.css';
+import { todayIn } from '../../../domain/local-date';
 
 /** Uninterpreted answers. The integration layer resolves them before any model request. */
 export type OnboardingAnswers = Pick<CoachProfile, 'goalText' | 'scheduleOriginalText' | 'adultConfirmed' | 'cautions' | 'cautionNote'> & EngineProfileFields & {
@@ -118,7 +119,7 @@ export function OnboardingPage({ engineEnabled=false, locale, step, answers, mod
     const pickMinutes = (count: number) => { setSchedule({ minutes: count }); setCustomOpen(open => ({ ...open, [key]: false })); compose(dates, count); };
     return <OnboardingFrame {...frame} title={t.schedule.title} sub={d.sub}>
       <div className="v9-groups">
-        {!custom && <TrainingCalendar locale={locale} today={today ?? new Date().toISOString().slice(0, 10)} value={dates} disabled={busy}
+        {!custom && <TrainingCalendar locale={locale} today={today ?? todayIn(Intl.DateTimeFormat().resolvedOptions().timeZone)} value={dates} disabled={busy}
           onChange={(next, notice) => { setDayNotice(notice); setCustomOpen(open => ({ ...open, [key]: false })); compose(next, minutes); }} />}
         {!custom && dayNotice && <p className="v9-days-notice" role="status">{dayNotice}</p>}
         {!custom && <div className="v9-group"><span className="v9-group-label">{d.minutes}</span><div className="v9-chip-row" role="group" aria-label={d.minutes}>

@@ -6,9 +6,14 @@ import {evaluateQualityNotifications,dispatchAdminPush,reconcileNotificationInci
 import type {Category} from '../quality/contracts';
 import type {AdminContext} from './contracts';
 import {readFeatureFlags} from '../../feature-config';
+import {archiveLegacyUsage} from '../../assistant/usage-report';
+import {D1ControlStore} from '../../d1-store';
 /** Scheduled metadata-only evaluation; no model calls or account mutation. */
 export async function runAdminSchedule(env:ConsoleEnv,now=Date.now()){
- if(env.ADMIN_CONSOLE_ENABLED!=='true'||!env.ADMIN_DB)return;
+ if(!env.ADMIN_DB)return;
+ // Legacy AI is retired: its open requests are archived here (idempotent), not on every chat request.
+ if(env.CONTROL_DB)await archiveLegacyUsage(env.ADMIN_DB,await new D1ControlStore(env.CONTROL_DB).read(),now).catch(()=>console.warn('legacy_usage_archive_failed'));
+ if(env.ADMIN_CONSOLE_ENABLED!=='true')return;
  const flags=await readFeatureFlags(env);if(!flags.adminConsole)return;
  const context:AdminContext<ConsoleEnv>={env,now,actor:'scheduler',fresh:false,requestId:'',audit:async()=>{}};
  await evaluateQualityNotifications(env,now,await pendingOver48h(context));

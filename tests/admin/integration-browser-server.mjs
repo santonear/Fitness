@@ -71,7 +71,7 @@ const send=(response,status,data,headers={})=>{response.writeHead(status,{'Conte
 const html='<!doctype html><html lang="zh"><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0}</style></head><body><div id="root"></div><script type="module" src="/@integration-entry"></script></body></html>';
 const server=await createServer({configFile:false,server:{host:'127.0.0.1',port,strictPort:true},esbuild:{jsx:'automatic'},plugins:[{
   name:'real-admin-integration',resolveId(id){if(id==='/@integration-entry')return '\0integration-entry';},
-  load(id){if(id==='\0integration-entry')return "import React from 'react';import {createRoot} from 'react-dom/client';import '/src/i18n/index.ts';import '/src/ui/theme.css';import '/src/ui/shared.css';import {ManagementPage} from '/src/ui/pages/ManagementPage.tsx';import {startFeatureFlags} from '/src/application/feature-flags.ts';startFeatureFlags();createRoot(document.getElementById('root')).render(React.createElement(ManagementPage));";},
+  load(id){if(id==='\0integration-entry')return "import React from 'react';import {createRoot} from 'react-dom/client';import '/src/i18n/index.ts';import '/src/ui/theme.css';import '/src/ui/shared.css';import {ManagementPage} from '/src/ui/pages/ManagementPage.tsx';import {BrowserRouter} from 'react-router-dom';import {startFeatureFlags} from '/src/application/feature-flags.ts';startFeatureFlags();createRoot(document.getElementById('root')).render(React.createElement(BrowserRouter,null,React.createElement(ManagementPage)));";},
   configureServer(vite){vite.middlewares.use(async(request,response,next)=>{
     const path=new URL(request.url??'/',origin).pathname;
     try{

@@ -1,6 +1,7 @@
 import { capabilityHash, duePushDay, pushSchedule, pushSubscription, sendGenericPush } from './push-service';
 import type { PushSchedule } from './push-service';
 import { readFeatureFlags, type FeatureConfigEnv } from './feature-config';
+import { noStoreJson, readJsonBody } from './request';
 interface Statement { bind(...values: unknown[]): Statement; run(): Promise<{ meta: { changes: number } }>; all<T>(): Promise<{ results: T[] }>; first<T>(): Promise<T | null> }
 interface Database { prepare(sql: string): Statement }
 export interface PushEnv extends FeatureConfigEnv {
@@ -8,7 +9,7 @@ export interface PushEnv extends FeatureConfigEnv {
   VAPID_PRIVATE_JWK: string; VAPID_PUBLIC_KEY: string; VAPID_SUBJECT: string;
 }
 interface Stored { id: string; endpoint: string; schedule: string; last_day: string | null; retry_at: number | null; attempts: number }
-const json = (body: unknown, status = 200) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
+const json = (body: unknown, status = 200) => noStoreJson(body, status);
 async function pushAllowed(env: PushEnv) {
   if (env.PUSH_ENABLED !== 'true') return false;
   const flags = await readFeatureFlags(env);
@@ -28,11 +29,9 @@ export async function pushFetch(request: Request, env: PushEnv): Promise<Respons
   if (!await pushAllowed(env)) return json({ error: 'PUSH_DISABLED' }, 503);
   if (!request.headers.get('Content-Type')?.startsWith('application/json')) return json({ error: 'JSON_REQUIRED' }, 415);
   // Stream limit applies even when Content-Length is absent or dishonest.
-  let text = ''; const reader = request.body?.getReader();
-  if (!reader) return json({ error: 'INVALID_SUBSCRIPTION' }, 400);
-  const decoder = new TextDecoder(); let length = 0;
-  while (true) { const chunk = await reader.read(); if (chunk.done) break; length += chunk.value.byteLength; if (length > 8192) { await reader.cancel(); return json({ error: 'TOO_LARGE' }, 413); } text += decoder.decode(chunk.value, { stream: true }); }
-  let value: unknown; try { value = JSON.parse(text + decoder.decode()); } catch { return json({ error: 'INVALID_SUBSCRIPTION' }, 400); }
+  let value: unknown;
+  try { value = await readJsonBody(request, 8192, problem => json({ error: problem === 'too-large' ? 'TOO_LARGE' : 'INVALID_SUBSCRIPTION' }, problem === 'too-large' ? 413 : 400)); }
+  catch (error) { if (error instanceof Response) return error; throw error; }
   if (!value || typeof value !== 'object' || Object.keys(value).some(key => !['subscription','schedule'].includes(key))) return json({ error: 'INVALID_SUBSCRIPTION' }, 400);
   const input = value as Record<string, unknown>, subscription = pushSubscription.safeParse(input.subscription), schedule = pushSchedule.safeParse(input.schedule);
   if (!subscription.success || !schedule.success) return json({ error: 'INVALID_SUBSCRIPTION' }, 400);

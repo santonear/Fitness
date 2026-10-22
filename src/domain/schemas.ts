@@ -115,6 +115,8 @@ const legacyBackupScheduleSchema = z.strictObject({
 });
 /** bodyFatPercent: optional, user-entered (我的变化); absent on older rows means not measured. */
 export const bodyWeightObservationSchema = z.strictObject({ ...entityFields, localDate: localDateSchema, timeZone: timeZoneSchema, weightGrams: positive, bodyFatPercent: z.number().min(3).max(70).optional() });
+/** A new or edited entry: 20–300 kg. Stored rows and backups keep the looser schema above so older records stay valid. */
+export const bodyWeightInputSchema = bodyWeightObservationSchema.extend({ weightGrams: positive.min(20_000).max(300_000) });
 export const metadataSchema = z.strictObject({
   schemaVersion: positive, localProfileId: uuidSchema, catalogVersion: positive, revision: nonnegative, dataRevision: nonnegative,
   importedAt: utcTimestampSchema.optional(), upgradedAt: utcTimestampSchema.optional(),

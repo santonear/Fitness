@@ -2,6 +2,7 @@ import {BudgetDismissButton} from '../todos/BudgetDismissButton';
 import {StatusOverview} from '../finance/StatusOverview';
 import {useEffect,useState,type ReactNode} from 'react';
 import {useTranslation} from 'react-i18next';
+import {Link,useLocation,useNavigate} from 'react-router-dom';
 import {adminRequest,reverifyAdmin} from '../shared/api';
 import {AdminDialog,AdminToast} from '../shared/components';
 import type {AdminTodo} from '../../../backend/admin/core/contracts';
@@ -28,20 +29,19 @@ const entries:readonly Entry[]=[
  ['settings','设置','Settings','gear'],
  ['audit','操作记录','Audit log','log'],
 ];
-const pageFromPath=()=>location.pathname.split('/')[2]||'todo';
 
 export function AdminShell(){
  const{i18n}=useTranslation();const zh=i18n.resolvedLanguage!=='en';const language=zh?'zh':'en';
- const[page,setPage]=useState(pageFromPath);const[todos,setTodos]=useState<AdminTodo[]>([]);const[pendingApplications,setPendingApplications]=useState(0);const[openFeedback,setOpenFeedback]=useState(0);const[feedbackVersion,setFeedbackVersion]=useState(0);
+ const navigate=useNavigate(),page=useLocation().pathname.split('/')[2]||'todo';const[todos,setTodos]=useState<AdminTodo[]>([]);const[pendingApplications,setPendingApplications]=useState(0);const[openFeedback,setOpenFeedback]=useState(0);const[feedbackVersion,setFeedbackVersion]=useState(0);
  const[error,setError]=useState('');const[fresh,setFresh]=useState(false);const[environment,setEnvironment]=useState<string>();const[refresh,setRefresh]=useState(0);const[menuOpen,setMenuOpen]=useState(false);
  useEffect(()=>{const old=document.querySelector<HTMLLinkElement>('link[rel="manifest"]');const previous=old?.getAttribute('href');const link=old??document.createElement('link');link.rel='manifest';link.href='/admin-manifest.webmanifest';if(!old)document.head.appendChild(link);return()=>{if(old){if(previous===null)old.removeAttribute('href');else if(previous!==undefined)old.setAttribute('href',previous)}else link.remove()}},[]);
- useEffect(()=>{const pop=()=>setPage(pageFromPath());window.addEventListener('popstate',pop);return()=>window.removeEventListener('popstate',pop)},[]);
  useEffect(()=>{let active=true;Promise.all([adminRequest<{items:AdminTodo[]}>('todos'),adminRequest<{fresh:boolean;environment:string}>('session')]).then(([data,s])=>{if(active){setTodos(data.items);setFresh(s.fresh);setEnvironment(s.environment);setError('')}}).catch(()=>{if(active)setError(zh?'后台数据暂时不可用，请刷新重试':'Admin data is unavailable. Refresh to retry.')});
   adminRequest<{items:{state:string}[]}>('applications').then(r=>{if(active)setPendingApplications(r.items.filter(a=>a.state==='pending').length)}).catch(()=>{});
   adminRequest<{open:number}>('feedback?filter=open').then(r=>{if(active)setOpenFeedback(r.open)}).catch(()=>{});
   return()=>{active=false}},[refresh,zh,page,feedbackVersion]);
  useEffect(()=>{if(!menuOpen)return;const close=(e:KeyboardEvent)=>{if(e.key==='Escape')setMenuOpen(false)};window.addEventListener('keydown',close);return()=>window.removeEventListener('keydown',close)},[menuOpen]);
- function go(id:string){history.pushState(null,'',`/admin/${id}`);setPage(id);setMenuOpen(false);window.scrollTo(0,0)}
+ const opened=()=>{setMenuOpen(false);window.scrollTo(0,0)};
+ function go(id:string){navigate(`/admin/${id}`);opened()}
  const badge=(id:string)=>id==='todo'?todos.length:id==='applications'?pendingApplications:id==='feedback'?openFeedback:0;
  const known=entries.find(e=>e[0]===page);
  const title=page==='todo'?(todos.length?(zh?`今天有 ${todos.length} 件事要处理`:`${todos.length} ${todos.length===1?'thing needs':'things need'} attention today`):(zh?'今天没有要处理的事':'Nothing needs attention today')):known?.[zh?1:2]??(zh?'页面不存在':'Page not found');
@@ -62,7 +62,7 @@ export function AdminShell(){
  return <div className="admin-workspace" style={adminWorkspaceTokens} data-menu={menuOpen?'open':'closed'}>
   <div className="admin-topbar"><span className="admin-brand"><span className="admin-brand-mark" aria-hidden="true"><AdminIcon name="sprout"/></span>Fitness {zh?'后台':'Admin'}</span><button type="button" className="admin-menu-button" aria-expanded={menuOpen} aria-controls="admin-sidebar" onClick={()=>setMenuOpen(v=>!v)}><AdminIcon name={menuOpen?'close':'menu'}/>{zh?'菜单':'Menu'}</button></div>
   <aside id="admin-sidebar"><span className="admin-brand"><span className="admin-brand-mark" aria-hidden="true"><AdminIcon name="sprout"/></span>Fitness {zh?'后台':'Admin'}</span>
-   <nav aria-label={zh?'后台导航':'Admin navigation'}>{entries.map(([id,zhLabel,enLabel,icon])=><a key={id} href={`/admin/${id}`} aria-current={page===id?'page':undefined} onClick={e=>{e.preventDefault();go(id)}}><span className="admin-nav-icon" aria-hidden="true"><AdminIcon name={icon}/></span><span className="admin-nav-label">{zh?zhLabel:enLabel}</span>{badge(id)>0&&<span className="admin-badge" aria-label={zh?`${badge(id)} 项`:`${badge(id)} items`}>{badge(id)}</span>}</a>)}</nav>
+   <nav aria-label={zh?'后台导航':'Admin navigation'}>{entries.map(([id,zhLabel,enLabel,icon])=><Link key={id} to={`/admin/${id}`} aria-current={page===id?'page':undefined} onClick={opened}><span className="admin-nav-icon" aria-hidden="true"><AdminIcon name={icon}/></span><span className="admin-nav-label">{zh?zhLabel:enLabel}</span>{badge(id)>0&&<span className="admin-badge" aria-label={zh?`${badge(id)} 项`:`${badge(id)} items`}>{badge(id)}</span>}</Link>)}</nav>
    <p className="admin-privacy">{zh?'后台只显示账号、用量、费用和用户主动发来的留言，不显示用户的训练、健康和聊天内容。':'This console shows accounts, usage, costs and messages users chose to send — never users’ training, health or chat content.'}</p></aside>
   {menuOpen&&<button type="button" className="admin-scrim" aria-label={zh?'关闭菜单':'Close menu'} onClick={()=>setMenuOpen(false)}/>}
   <main><header className="admin-page-header"><div><p className="admin-kicker">{today}{envLabel&&` · ${envLabel}`}</p><h1>{title}</h1></div><div className="admin-actions"><button onClick={()=>setRefresh(n=>n+1)}><AdminIcon name="refresh"/>{zh?'刷新':'Refresh'}</button><button onClick={()=>void i18n.changeLanguage(zh?'en':'zh')}>{zh?'English':'中文'}</button></div></header>
