@@ -3,14 +3,31 @@ import { answerTexts, engineSafety, nextButton, startOnboarding, weeklySchedule 
 
 /** Bo 2026-10-19 UX fixes: start date, AI-or-local onboarding, one AI entry on 今天, theme on 今天, tools outside the chat. */
 test.setTimeout(120000);
-const flags = (page: Page, extra: Record<string, boolean> = {}) => page.route('**/api/v1/features', route => route.fulfill({ json: { version: 1, flags: { trainingEngine: true, bodyProfile: true, planLifecycle: true, ...extra }, expiresAt: Date.now() + 3600000 } }));
-const noAccess = (page: Page) => page.route('**/api/v1/trial/**', route => {
-  const url = route.request().url();
-  if (url.endsWith('/access-status')) return route.fulfill({ json: { qualification: 'none', sessionValid: false, aiEnabled: false } });
-  if (url.endsWith('/application-config')) return route.fulfill({ json: { available: false, siteKey: null } });
-  return route.fulfill({ json: [] });
-});
-const localDate = (offset = 0) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(Date.now() + offset * 86400000));
+const flags = (page: Page, extra: Record<string, boolean> = {}) =>
+  page.route('**/api/v1/features', route =>
+    route.fulfill({
+      json: {
+        version: 1,
+        flags: { trainingEngine: true, bodyProfile: true, planLifecycle: true, ...extra },
+        expiresAt: Date.now() + 3600000,
+      },
+    }),
+  );
+const noAccess = (page: Page) =>
+  page.route('**/api/v1/trial/**', route => {
+    const url = route.request().url();
+    if (url.endsWith('/access-status'))
+      return route.fulfill({ json: { qualification: 'none', sessionValid: false, aiEnabled: false } });
+    if (url.endsWith('/application-config')) return route.fulfill({ json: { available: false, siteKey: null } });
+    return route.fulfill({ json: [] });
+  });
+const localDate = (offset = 0) =>
+  new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Shanghai',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date(Date.now() + offset * 86400000));
 
 async function toReady(page: Page, planMode: 'local' | 'stop' = 'local') {
   await startOnboarding(page);
@@ -24,9 +41,16 @@ async function toReady(page: Page, planMode: 'local' | 'stop' = 'local') {
   await engineSafety(page, { planMode });
 }
 
-test('onboarding: 芽芽 asks AI or local; AI without access guides activation, local continues offline', async ({ page }) => {
-  await flags(page, { aiAssistantV2: true }); await noAccess(page);
-  let modelCalls = 0; await page.route('**/api/v1/assistant/**', route => { modelCalls++; return route.abort(); });
+test('onboarding: 芽芽 asks AI or local; AI without access guides activation, local continues offline', async ({
+  page,
+}) => {
+  await flags(page, { aiAssistantV2: true });
+  await noAccess(page);
+  let modelCalls = 0;
+  await page.route('**/api/v1/assistant/**', route => {
+    modelCalls++;
+    return route.abort();
+  });
   await page.setViewportSize({ width: 390, height: 844 });
   await toReady(page, 'stop');
   await expect(page.getByRole('heading', { name: '想让我怎么帮你排计划？' })).toBeVisible();
@@ -49,14 +73,16 @@ test('onboarding: 芽芽 asks AI or local; AI without access guides activation, 
 });
 
 test('onboarding without AI in this deployment does not ask the AI question', async ({ page }) => {
-  await flags(page); await noAccess(page);
+  await flags(page);
+  await noAccess(page);
   await toReady(page);
   await expect(page.getByRole('heading', { name: '想让我怎么帮你排计划？' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: '生成计划', exact: true })).toBeEnabled();
 });
 
 test('start date: draft picker moves the first week; 计划 can change it as a new version', async ({ page }) => {
-  await flags(page); await noAccess(page);
+  await flags(page);
+  await noAccess(page);
   await page.setViewportSize({ width: 390, height: 844 });
   await toReady(page);
   await page.getByRole('button', { name: '生成计划', exact: true }).click();
@@ -67,14 +93,21 @@ test('start date: draft picker moves the first week; 计划 can change it as a n
   await picker.locator(`[data-date="${later}"]`).click();
   await expect(picker.locator(`[data-date="${later}"]`)).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('.v9-week-summary-label')).toContainText('第一周');
-  const dates = await page.locator('.v9-session[data-date]').evaluateAll(rows => rows.map(row => row.getAttribute('data-date')!));
+  const dates = await page
+    .locator('.v9-session[data-date]')
+    .evaluateAll(rows => rows.map(row => row.getAttribute('data-date')!));
   expect(dates.length).toBeGreaterThan(0);
   for (const date of dates) expect(date >= later).toBe(true);
   await page.screenshot({ path: test.info().outputPath('draft-start-date-390.png'), fullPage: true });
-  await page.getByRole('button', { name: '就用这份计划', exact: true }).click(); await page.getByRole('button', { name: '先不写', exact: true }).click();
+  await page.getByRole('button', { name: '就用这份计划', exact: true }).click();
+  await page.getByRole('button', { name: '先不写', exact: true }).click();
   await expect(page.getByRole('heading', { name: '今天', exact: true })).toBeVisible();
   await expect(page.getByText(/开始$/).first()).toBeVisible();
-  const stored = await page.evaluate(async () => { const path = '/src/ui/mainline/context.tsx'; const data = await (await import(/* @vite-ignore */ path)).workflow.snapshot(); return data.version?.startDate; });
+  const stored = await page.evaluate(async () => {
+    const path = '/src/ui/mainline/context.tsx';
+    const data = await (await import(/* @vite-ignore */ path)).workflow.snapshot();
+    return data.version?.startDate;
+  });
   expect(stored).toBe(later);
   await page.getByRole('navigation', { name: '主导航' }).getByRole('button', { name: '计划' }).click();
   await page.getByRole('button', { name: '改开始日期', exact: true }).click();
@@ -82,16 +115,24 @@ test('start date: draft picker moves the first week; 计划 can change it as a n
   await sheet.locator(`[data-date="${localDate(5)}"]`).click();
   await sheet.getByRole('button', { name: '就从这天开始', exact: true }).click();
   await expect(sheet).toBeHidden();
-  const after = await page.evaluate(async () => { const path = '/src/ui/mainline/context.tsx'; const data = await (await import(/* @vite-ignore */ path)).workflow.snapshot(); return { start: data.version?.startDate, number: data.version?.versionNumber, versions: data.versions.length }; });
+  const after = await page.evaluate(async () => {
+    const path = '/src/ui/mainline/context.tsx';
+    const data = await (await import(/* @vite-ignore */ path)).workflow.snapshot();
+    return { start: data.version?.startDate, number: data.version?.versionNumber, versions: data.versions.length };
+  });
   expect(after).toEqual({ start: localDate(5), number: 2, versions: 2 });
 });
 
-test('今天: one AI entry (the orb), theme button switches style, 动作怎么做 opens the guide, 换动作 opens its own sheet', async ({ page }) => {
-  await flags(page); await noAccess(page);
+test('今天: one AI entry (the orb), theme button switches style, 动作怎么做 opens the guide, 换动作 opens its own sheet', async ({
+  page,
+}) => {
+  await flags(page);
+  await noAccess(page);
   await page.setViewportSize({ width: 390, height: 844 });
   await toReady(page);
   await page.getByRole('button', { name: '生成计划', exact: true }).click();
-  await page.getByRole('button', { name: '就用这份计划', exact: true }).click(); await page.getByRole('button', { name: '先不写', exact: true }).click();
+  await page.getByRole('button', { name: '就用这份计划', exact: true }).click();
+  await page.getByRole('button', { name: '先不写', exact: true }).click();
   await expect(page.getByRole('heading', { name: '今天', exact: true })).toBeVisible();
   const main = page.locator('main.v9-home');
   await expect(main.getByRole('button', { name: '和芽芽聊聊' })).toHaveCount(0);
@@ -100,7 +141,8 @@ test('今天: one AI entry (the orb), theme button switches style, 动作怎么�
   await expect(main.getByRole('textbox').and(page.locator('textarea, input:not([type="time"])'))).toHaveCount(0);
   await expect(page.getByRole('button', { name: '芽芽助手，按住可上下拖动' })).toHaveCount(1);
   await page.screenshot({ path: test.info().outputPath('home-pop-390.png') });
-  await page.setViewportSize({ width: 1440, height: 900 }); await page.screenshot({ path: test.info().outputPath('home-pop-1440.png') });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.screenshot({ path: test.info().outputPath('home-pop-1440.png') });
   await page.setViewportSize({ width: 390, height: 844 });
   // Theme: visible on 今天, applies live.
   await page.getByRole('button', { name: '换风格', exact: true }).click();
@@ -133,7 +175,8 @@ test('今天: one AI entry (the orb), theme button switches style, 动作怎么�
   // The orb's quick actions cover the common today requests and open the chat with the text ready.
   await page.getByRole('button', { name: '芽芽助手，按住可上下拖动' }).click();
   const panel = page.getByRole('dialog', { name: '芽芽快捷助手' });
-  for (const label of ['只有 20 分钟', '今天有点累', '换个地方练']) await expect(panel.getByRole('button', { name: label })).toBeVisible();
+  for (const label of ['只有 20 分钟', '今天有点累', '换个地方练'])
+    await expect(panel.getByRole('button', { name: label })).toBeVisible();
   await panel.getByRole('button', { name: '只有 20 分钟' }).click();
   const chat = page.getByRole('dialog', { name: '芽芽', exact: true });
   await expect(chat.getByRole('textbox')).toHaveValue('只有 20 分钟');
@@ -142,6 +185,7 @@ test('今天: one AI entry (the orb), theme button switches style, 动作怎么�
   await expect(chat.getByRole('checkbox').first()).toBeHidden();
   await page.waitForTimeout(900);
   await page.screenshot({ path: test.info().outputPath('chat-390.png') });
-  await page.setViewportSize({ width: 1440, height: 900 }); await page.waitForTimeout(300);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.waitForTimeout(300);
   await page.screenshot({ path: test.info().outputPath('chat-1440.png') });
 });

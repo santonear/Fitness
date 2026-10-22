@@ -21,14 +21,17 @@ export interface CalendarDay {
 const monthPattern = /^\d{4}-(0[1-9]|1[0-2])$/;
 export const monthOf = (date: string) => date.slice(0, 7);
 export function shiftMonth(month: string, delta: number): string {
-  const [year, value] = month.split('-').map(Number), index = year * 12 + (value - 1) + delta;
+  const [year, value] = month.split('-').map(Number),
+    index = year * 12 + (value - 1) + delta;
   return `${String(Math.floor(index / 12)).padStart(4, '0')}-${String((index % 12) + 1).padStart(2, '0')}`;
 }
 /** Monday-first dates covering every week that touches the month (5 or 6 rows of 7). */
 export function monthGridDates(month: string): string[] {
   if (!monthPattern.test(month)) throw new RangeError('month must be YYYY-MM');
-  const first = `${month}-01`, start = addDays(first, -weekdays.indexOf(weekdayOf(first)));
-  const next = `${shiftMonth(month, 1)}-01`, last = addDays(next, -1);
+  const first = `${month}-01`,
+    start = addDays(first, -weekdays.indexOf(weekdayOf(first)));
+  const next = `${shiftMonth(month, 1)}-01`,
+    last = addDays(next, -1);
   const end = addDays(last, 6 - weekdays.indexOf(weekdayOf(last)));
   const dates: string[] = [];
   for (let date = start; date <= end; date = addDays(date, 1)) dates.push(date);
@@ -37,7 +40,13 @@ export function monthGridDates(month: string): string[] {
 
 const finished = (workout: WorkoutRecord) => workout.status === 'complete' || workout.status === 'partial';
 
-export function monthCalendar({ plan, workouts, month, today, startDate }: {
+export function monthCalendar({
+  plan,
+  workouts,
+  month,
+  today,
+  startDate,
+}: {
   plan: Pick<PlanVersion, 'weeklyTarget' | 'preferredDays' | 'templates'> & Partial<Pick<PlanVersion, 'trainingDates'>>;
   workouts: readonly WorkoutRecord[];
   month: string;
@@ -47,13 +56,20 @@ export function monthCalendar({ plan, workouts, month, today, startDate }: {
   startDate?: string;
 }): CalendarDay[] {
   const byDate = new Map<string, WorkoutRecord[]>();
-  for (const workout of workouts) if (finished(workout)) byDate.set(workout.localDate, [...(byDate.get(workout.localDate) ?? []), workout]);
+  for (const workout of workouts)
+    if (finished(workout)) byDate.set(workout.localDate, [...(byDate.get(workout.localDate) ?? []), workout]);
   return monthGridDates(month).map(date => {
     const recorded = (byDate.get(date) ?? []).slice().sort((a, b) => b.startedAt.localeCompare(a.startedAt));
     const templateId = sessionForDate(plan, date, startDate);
-    const state: CalendarDayState = recorded.some(workout => workout.status === 'complete') ? 'done'
-      : recorded.length ? 'partial'
-      : templateId ? (date < today ? 'missed' : 'planned') : 'rest';
+    const state: CalendarDayState = recorded.some(workout => workout.status === 'complete')
+      ? 'done'
+      : recorded.length
+        ? 'partial'
+        : templateId
+          ? date < today
+            ? 'missed'
+            : 'planned'
+          : 'rest';
     return { date, inMonth: monthOf(date) === month, state, templateId, workouts: recorded };
   });
 }

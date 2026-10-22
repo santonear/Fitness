@@ -3,15 +3,22 @@ import { expect, test } from '@playwright/test';
 /** Bo 2026-10-21: calorie and macro calculators under 我的; macros inherit the daily calories; no activity selector, no copy/share. */
 test('calorie result carries into the macro calculator and both stay on this device', async ({ page }) => {
   const outbound: string[] = [];
-  page.on('request', request => { if (request.method() !== 'GET') outbound.push(request.url()); });
+  page.on('request', request => {
+    if (request.method() !== 'GET') outbound.push(request.url());
+  });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/settings/calories');
   await expect(page.getByRole('heading', { name: '卡路里计算器' })).toBeVisible();
   await expect(page.getByText(/活动水平/)).toHaveCount(0);
   await page.getByRole('radiogroup', { name: '性别' }).getByRole('radio', { name: '女' }).click();
-  for (const [label, value] of [['年龄', '30'], ['身高', '165'], ['体重', '60']] as const) {
+  for (const [label, value] of [
+    ['年龄', '30'],
+    ['身高', '165'],
+    ['体重', '60'],
+  ] as const) {
     const box = page.getByRole('textbox', { name: label, exact: true });
-    await box.fill(value); await box.press('Enter');
+    await box.fill(value);
+    await box.press('Enter');
   }
   // No plan yet: activity 1.2 → maintenance 1584, goals ±10%.
   await expect(page.getByRole('radio', { name: /保持\s*1,584/ })).toHaveAttribute('aria-checked', 'true');

@@ -10,10 +10,17 @@ import { themeTokens } from '../../src/themes/token-css';
  */
 const themes = Object.keys(source.themes) as BuiltinThemeId[];
 const luminance = (hex: string) => {
-  const channels = hex.replace('#', '').match(/../g)!.map(part => parseInt(part, 16) / 255).map(c => c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+  const channels = hex
+    .replace('#', '')
+    .match(/../g)!
+    .map(part => parseInt(part, 16) / 255)
+    .map(c => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
   return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
 };
-const ratio = (a: string, b: string) => { const [x, y] = [luminance(a), luminance(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
+const ratio = (a: string, b: string) => {
+  const [x, y] = [luminance(a), luminance(b)].sort((m, n) => n - m);
+  return (x + 0.05) / (y + 0.05);
+};
 const hex = /^#[0-9A-F]{6}$/i;
 
 describe('V9 month calendar contrast', () => {
@@ -22,7 +29,9 @@ describe('V9 month calendar contrast', () => {
     const grounds = { bg: color.bg, surface: color.surface };
 
     it(`${id}: calendar colours are plain hex values exposed as --cal-* tokens`, () => {
-      const colours = Object.entries(cal).filter(([key]) => !['radius', 'doneShadow', 'todayGlow', 'todayLift'].includes(key));
+      const colours = Object.entries(cal).filter(
+        ([key]) => !['radius', 'doneShadow', 'todayGlow', 'todayLift'].includes(key),
+      );
       for (const [key, value] of colours) expect(value, `${id} calendar.${key}`).toMatch(hex);
       const tokens = themeTokens(id);
       expect(tokens['--cal-today-bg']).toBe(cal.todayBg);

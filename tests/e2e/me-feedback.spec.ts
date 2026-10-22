@@ -1,16 +1,24 @@
 import { expect, test, type Page } from '@playwright/test';
 
 /** Bo 2026-10-19: 我的 drops 界面风格, hides training reminders by default and adds 给我们留言. */
-const flags = (page: Page, extra: Record<string, boolean> = {}) => page.route('**/api/v1/features', route => route.fulfill({ json: { version: 1, flags: extra, expiresAt: Date.now() + 3600000 } }));
+const flags = (page: Page, extra: Record<string, boolean> = {}) =>
+  page.route('**/api/v1/features', route =>
+    route.fulfill({ json: { version: 1, flags: extra, expiresAt: Date.now() + 3600000 } }),
+  );
 
-test('我的: no 界面风格 or training reminders by default; 给我们留言 states the recipient, sends only the text and keeps a local copy', async ({ page }) => {
+test('我的: no 界面风格 or training reminders by default; 给我们留言 states the recipient, sends only the text and keeps a local copy', async ({
+  page,
+}) => {
   await page.addInitScript(() => localStorage.setItem('fitness.language', 'zh'));
   await flags(page);
   const sent: Record<string, unknown>[] = [];
   let fail = true;
   await page.route('**/api/v1/feedback', route => {
     sent.push(route.request().postDataJSON());
-    if (fail) { fail = false; return route.fulfill({ status: 503, json: { error: 'SERVICE_UNAVAILABLE' } }); }
+    if (fail) {
+      fail = false;
+      return route.fulfill({ status: 503, json: { error: 'SERVICE_UNAVAILABLE' } });
+    }
     return route.fulfill({ status: 201, json: { ok: true } });
   });
   await page.goto('/settings');
@@ -35,7 +43,12 @@ test('我的: no 界面风格 or training reminders by default; 给我们留言 
   await expect(page.getByRole('status').filter({ hasText: '已发送，谢谢你' })).toBeVisible();
   await expect(page.getByLabel('想说的话')).toHaveValue('');
   expect(sent).toHaveLength(2);
-  expect(sent[1]).toEqual({ id: sent[0].id, message: '希望能把计划同步到手机日历', contact: 'me@example.com', locale: 'zh' });
+  expect(sent[1]).toEqual({
+    id: sent[0].id,
+    message: '希望能把计划同步到手机日历',
+    contact: 'me@example.com',
+    locale: 'zh',
+  });
   const history = page.getByRole('region', { name: /你发过的留言/ });
   await expect(history.getByText('希望能把计划同步到手机日历')).toBeVisible();
   await expect(page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).resolves.toBe(true);
@@ -46,7 +59,9 @@ test('我的: no 界面风格 or training reminders by default; 给我们留言 
   }
   await page.reload();
   await page.getByRole('button', { name: /^给我们留言/ }).click();
-  await expect(page.getByRole('region', { name: /你发过的留言/ }).getByText('希望能把计划同步到手机日历')).toBeVisible();
+  await expect(
+    page.getByRole('region', { name: /你发过的留言/ }).getByText('希望能把计划同步到手机日历'),
+  ).toBeVisible();
 });
 
 test('training reminder settings come back only when the flag is on', async ({ page }) => {

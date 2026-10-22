@@ -1,25 +1,145 @@
-import {expect,it} from 'vitest';
-import {generatePlan,validatePlan} from '../../src/engine';
-import {engineProfileSchema,type EnginePlan} from '../../src/engine/contracts';
-import {Rules} from '../../src/engine/data';
-import {prescribe} from '../../src/engine/dose';
-import {safety} from '../../src/engine/gates/strength-scoring';
-import {runGates} from '../../src/engine/gates';
-import {scorePlan} from '../../src/engine/score';
-import {baseProfile} from '../../tools/eval/training-engine-profiles';
+import { expect, it } from 'vitest';
+import { generatePlan, validatePlan } from '../../src/engine';
+import { engineProfileSchema, type EnginePlan } from '../../src/engine/contracts';
+import { Rules } from '../../src/engine/data';
+import { prescribe } from '../../src/engine/dose';
+import { safety } from '../../src/engine/gates/strength-scoring';
+import { runGates } from '../../src/engine/gates';
+import { scorePlan } from '../../src/engine/score';
+import { baseProfile } from '../../tools/eval/training-engine-profiles';
 import saved from '../fixtures/training-engine/older-low-start-mobility85.json';
-import {actualBlockSeconds,independentlyApplicableSessionTypes} from '../unit/engine/reference/training-engine-session-time';
-import {independentElapsedAllocation} from '../unit/engine/reference/training-engine-goal-share';
-const r=new Rules(),legacy=engineProfileSchema.parse(saved),p=baseProfile({...structuredClone(legacy),screening:baseProfile().screening});
-function pure():EnginePlan{
- const move=(slug:string,block:'mobility'|'warmup'|'cooldown',seconds:number,sets:number)=>{const e=r.data.exercises.find(e=>e.slug===slug)!,i=prescribe(e,p,r,safety(p,r),block,sets);i.target={metricType:'duration',durationSeconds:seconds};return i;};
- return {weeklyTarget:p.daysPerWeek,sessionMinutes:p.sessionMinutes,meta:{engineVersion:'2.0.0-test',rulesVersion:r.data.rulesVersion,seed:'older-formal'},gates:[],notices:[],trace:[],templates:[{id:'formal',name:'Source formal mobility',targetMinutes:20,estimatedMinutes:20,items:[move('standing-quad-stretch','mobility',30,2),move('custom-standing-upper-back-stretch','mobility',30,2),move('pilates-roll-down','mobility',30,2)]}]};
+import {
+  actualBlockSeconds,
+  independentlyApplicableSessionTypes,
+} from '../unit/engine/reference/training-engine-session-time';
+import { independentElapsedAllocation } from '../unit/engine/reference/training-engine-goal-share';
+const r = new Rules(),
+  legacy = engineProfileSchema.parse(saved),
+  p = baseProfile({ ...structuredClone(legacy), screening: baseProfile().screening });
+function pure(): EnginePlan {
+  const move = (slug: string, block: 'mobility' | 'warmup' | 'cooldown', seconds: number, sets: number) => {
+    const e = r.data.exercises.find(e => e.slug === slug)!,
+      i = prescribe(e, p, r, safety(p, r), block, sets);
+    i.target = { metricType: 'duration', durationSeconds: seconds };
+    return i;
+  };
+  return {
+    weeklyTarget: p.daysPerWeek,
+    sessionMinutes: p.sessionMinutes,
+    meta: { engineVersion: '2.0.0-test', rulesVersion: r.data.rulesVersion, seed: 'older-formal' },
+    gates: [],
+    notices: [],
+    trace: [],
+    templates: [
+      {
+        id: 'formal',
+        name: 'Source formal mobility',
+        targetMinutes: 20,
+        estimatedMinutes: 20,
+        items: [
+          move('standing-quad-stretch', 'mobility', 30, 2),
+          move('custom-standing-upper-back-stretch', 'mobility', 30, 2),
+          move('pilates-roll-down', 'mobility', 30, 2),
+        ],
+      },
+    ],
+  };
 }
-function addModerate(plan:EnginePlan){const e=r.data.exercises.find(e=>e.slug==='custom-quiet-shadow-boxing')!,i=prescribe(e,p,r,safety(p,r),'conditioning',1),range=r.get('aerobic.intensity.rpe_scale').moderate;i.target={metricType:'duration',durationSeconds:60};i.prescription!.targetRpe=[range[0],Math.min(range[1],safety(p,r).maxRpe)];plan.templates[0].items.push(i);}
-function addWarmup(plan:EnginePlan,seconds=300){const e=r.data.exercises.find(e=>e.slug==='custom-quiet-march')!,i=prescribe(e,p,r,safety(p,r),'warmup',1);i.target={metricType:'duration',durationSeconds:seconds-r.get('duration.set.overhead').overhead_s_per_set};plan.templates[0].items.unshift(i);}
-it('keeps the retained older input with unknown screening blocked and unchanged',()=>{const before=structuredClone(legacy);expect(runGates(legacy,r).status).toBe('blocked');expect(generatePlan(legacy).templates).toEqual([]);expect(legacy).toEqual(before);});
-it('keeps source formal stretch doses and a saved twenty-minute target with five real warmup minutes',()=>{const plan=pure();addModerate(plan);addWarmup(plan);const t=plan.templates[0];expect(t.targetMinutes).toBe(20);expect(actualBlockSeconds(t,'warmup')).toBe(300);for(const i of t.items.filter(i=>i.prescription?.block==='mobility'&&r.byExercise.get(i.exerciseId)?.mobility_type==='static'))expect(i.sets).toBe(r.get('dose.stretch').reps_per_muscle[0]);expect(validatePlan(plan,p).filter(i=>['declared_target_invalid','stretch_dose_bounds'].includes(i.code))).toEqual([]);expect(independentElapsedAllocation(plan).total).toBeGreaterThan(300);});
-it('applies low-start strength limits without cutting real source mobility repetitions',()=>{const work=r.data.exercises.find(e=>e.slug==='custom-self-resisted-chest-press')!,stretch=r.data.exercises.find(e=>e.slug==='cross-body-shoulder-stretch')!,sets=r.get('dose.stretch').reps_per_muscle[0];expect(prescribe(work,p,r,safety(p,r),'main',sets).sets).toBe(r.get('older.strength.low_start').start.sets);expect(prescribe(stretch,p,r,safety(p,r),'mobility',sets).sets).toBe(sets);});
-it('exposes missing lower-body coverage without replacing the stored target or imposing a seven-minute hard floor',()=>{const plan=pure();addModerate(plan);addWarmup(plan);const t=plan.templates[0];t.items=t.items.filter(i=>!(i.prescription?.block==='mobility'&&r.byExercise.get(i.exerciseId)?.stretch_targets?.some(g=>['quads','glutes','hamstrings'].includes(g))));expect(t.items.some(i=>i.prescription?.block==='mobility'&&r.byExercise.get(i.exerciseId)?.stretch_targets?.includes('quads'))).toBe(false);expect(t.targetMinutes).toBe(20);const tier=r.get('session.durations.allowed').minutes.filter((n:number)=>n<=p.sessionMinutes).at(-1),row=r.get('duration.block.warmup_cooldown').by_session_min.filter((v:{session:number})=>v.session<=tier).at(-1);expect(row.warmup*60).toBe(420);expect(actualBlockSeconds(t,'warmup')).toBe(300);expect(validatePlan(plan,p).some(i=>i.code==='declared_target_invalid')).toBe(false);});
-it('does not apply moderate-or-circuit warmup targets to the same pure formal mobility items',()=>{const plan=pure(),t=plan.templates[0];expect(t.items.some(i=>i.prescription?.block==='conditioning')).toBe(false);expect(independentlyApplicableSessionTypes(t,p).some(type=>r.get('safety.session.warmup_cooldown').applies_to_session_types.includes(type))).toBe(false);expect(scorePlan(plan,p,r).perRule.some(row=>row.id==='safety.session.warmup_cooldown')).toBe(false);});
-it('measures the source warmup deficit immediately when real moderate conditioning is added',()=>{const plan=pure(),t=plan.templates[0];addModerate(plan);expect(independentlyApplicableSessionTypes(t,p)).toContain('aerobic_moderate_plus');expect(actualBlockSeconds(t,'warmup')).toBe(0);const row=()=>scorePlan(plan,p,r).perRule.find(row=>row.id==='safety.session.warmup_cooldown')!.satisfaction,short=row();addWarmup(plan);expect(actualBlockSeconds(t,'warmup')).toBe(300);expect(row()).toBeGreaterThan(short);expect(r.byId.get('safety.session.warmup_cooldown')?.severity).toBe('target');});
+function addModerate(plan: EnginePlan) {
+  const e = r.data.exercises.find(e => e.slug === 'custom-quiet-shadow-boxing')!,
+    i = prescribe(e, p, r, safety(p, r), 'conditioning', 1),
+    range = r.get('aerobic.intensity.rpe_scale').moderate;
+  i.target = { metricType: 'duration', durationSeconds: 60 };
+  i.prescription!.targetRpe = [range[0], Math.min(range[1], safety(p, r).maxRpe)];
+  plan.templates[0].items.push(i);
+}
+function addWarmup(plan: EnginePlan, seconds = 300) {
+  const e = r.data.exercises.find(e => e.slug === 'custom-quiet-march')!,
+    i = prescribe(e, p, r, safety(p, r), 'warmup', 1);
+  i.target = { metricType: 'duration', durationSeconds: seconds - r.get('duration.set.overhead').overhead_s_per_set };
+  plan.templates[0].items.unshift(i);
+}
+it('keeps the retained older input with unknown screening blocked and unchanged', () => {
+  const before = structuredClone(legacy);
+  expect(runGates(legacy, r).status).toBe('blocked');
+  expect(generatePlan(legacy).templates).toEqual([]);
+  expect(legacy).toEqual(before);
+});
+it('keeps source formal stretch doses and a saved twenty-minute target with five real warmup minutes', () => {
+  const plan = pure();
+  addModerate(plan);
+  addWarmup(plan);
+  const t = plan.templates[0];
+  expect(t.targetMinutes).toBe(20);
+  expect(actualBlockSeconds(t, 'warmup')).toBe(300);
+  for (const i of t.items.filter(
+    i => i.prescription?.block === 'mobility' && r.byExercise.get(i.exerciseId)?.mobility_type === 'static',
+  ))
+    expect(i.sets).toBe(r.get('dose.stretch').reps_per_muscle[0]);
+  expect(
+    validatePlan(plan, p).filter(i => ['declared_target_invalid', 'stretch_dose_bounds'].includes(i.code)),
+  ).toEqual([]);
+  expect(independentElapsedAllocation(plan).total).toBeGreaterThan(300);
+});
+it('applies low-start strength limits without cutting real source mobility repetitions', () => {
+  const work = r.data.exercises.find(e => e.slug === 'custom-self-resisted-chest-press')!,
+    stretch = r.data.exercises.find(e => e.slug === 'cross-body-shoulder-stretch')!,
+    sets = r.get('dose.stretch').reps_per_muscle[0];
+  expect(prescribe(work, p, r, safety(p, r), 'main', sets).sets).toBe(r.get('older.strength.low_start').start.sets);
+  expect(prescribe(stretch, p, r, safety(p, r), 'mobility', sets).sets).toBe(sets);
+});
+it('exposes missing lower-body coverage without replacing the stored target or imposing a seven-minute hard floor', () => {
+  const plan = pure();
+  addModerate(plan);
+  addWarmup(plan);
+  const t = plan.templates[0];
+  t.items = t.items.filter(
+    i =>
+      !(
+        i.prescription?.block === 'mobility' &&
+        r.byExercise.get(i.exerciseId)?.stretch_targets?.some(g => ['quads', 'glutes', 'hamstrings'].includes(g))
+      ),
+  );
+  expect(
+    t.items.some(
+      i => i.prescription?.block === 'mobility' && r.byExercise.get(i.exerciseId)?.stretch_targets?.includes('quads'),
+    ),
+  ).toBe(false);
+  expect(t.targetMinutes).toBe(20);
+  const tier = r
+      .get('session.durations.allowed')
+      .minutes.filter((n: number) => n <= p.sessionMinutes)
+      .at(-1),
+    row = r
+      .get('duration.block.warmup_cooldown')
+      .by_session_min.filter((v: { session: number }) => v.session <= tier)
+      .at(-1);
+  expect(row.warmup * 60).toBe(420);
+  expect(actualBlockSeconds(t, 'warmup')).toBe(300);
+  expect(validatePlan(plan, p).some(i => i.code === 'declared_target_invalid')).toBe(false);
+});
+it('does not apply moderate-or-circuit warmup targets to the same pure formal mobility items', () => {
+  const plan = pure(),
+    t = plan.templates[0];
+  expect(t.items.some(i => i.prescription?.block === 'conditioning')).toBe(false);
+  expect(
+    independentlyApplicableSessionTypes(t, p).some(type =>
+      r.get('safety.session.warmup_cooldown').applies_to_session_types.includes(type),
+    ),
+  ).toBe(false);
+  expect(scorePlan(plan, p, r).perRule.some(row => row.id === 'safety.session.warmup_cooldown')).toBe(false);
+});
+it('measures the source warmup deficit immediately when real moderate conditioning is added', () => {
+  const plan = pure(),
+    t = plan.templates[0];
+  addModerate(plan);
+  expect(independentlyApplicableSessionTypes(t, p)).toContain('aerobic_moderate_plus');
+  expect(actualBlockSeconds(t, 'warmup')).toBe(0);
+  const row = () =>
+      scorePlan(plan, p, r).perRule.find(row => row.id === 'safety.session.warmup_cooldown')!.satisfaction,
+    short = row();
+  addWarmup(plan);
+  expect(actualBlockSeconds(t, 'warmup')).toBe(300);
+  expect(row()).toBeGreaterThan(short);
+  expect(r.byId.get('safety.session.warmup_cooldown')?.severity).toBe('target');
+});

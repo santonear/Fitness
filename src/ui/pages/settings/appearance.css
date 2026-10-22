@@ -1,2 +1,11 @@
-.v8-appearance { display: grid; gap: var(--s3); margin-block: var(--s4); }
-main .v8-appearance > h2 { margin: 0; font-size: var(--t2); font-weight: var(--w-body); color: var(--c-ink-muted); }
+.v8-appearance {
+  display: grid;
+  gap: var(--s3);
+  margin-block: var(--s4);
+}
+main .v8-appearance > h2 {
+  margin: 0;
+  font-size: var(--t2);
+  font-weight: var(--w-body);
+  color: var(--c-ink-muted);
+}

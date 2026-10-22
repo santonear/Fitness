@@ -1,13 +1,13 @@
-import { type Plan, type EngineProfile } from "../contracts";
-import { Rules, type RuleValue } from "../data";
-import { safety } from "../gates/strength-scoring";
-import { strengthRoles } from "../dose";
+import { type Plan, type EngineProfile } from '../contracts';
+import { Rules, type RuleValue } from '../data';
+import { safety } from '../gates/strength-scoring';
+import { strengthRoles } from '../dose';
 
-export type Session = Plan["templates"][number];
+export type Session = Plan['templates'][number];
 
 export interface Facts {
   sessions: Session[];
-  items: Session["items"];
+  items: Session['items'];
   rt: Session[];
   sets: Record<string, number>;
   patterns: Set<string>;
@@ -26,7 +26,7 @@ export interface Facts {
   mainSetsBySession?: Map<Session, Record<string, number>>;
 }
 
-export type Item = Session["items"][number];
+export type Item = Session['items'][number];
 
 export interface ItemFacts {
   work: boolean;
@@ -43,8 +43,8 @@ export interface ItemFacts {
 
 export interface SessionFacts {
   session: Session;
-  items: Session["items"];
-  work: Session["items"];
+  items: Session['items'];
+  work: Session['items'];
   sets: Record<string, number>;
   patterns: string[];
   aerobic: number;
@@ -79,7 +79,7 @@ export interface GenerationTimingBatch {
     {
       name: string;
       source: RuleValue;
-      role: "main" | "accessory" | undefined;
+      role: 'main' | 'accessory' | undefined;
       value: number;
     }[]
   >;

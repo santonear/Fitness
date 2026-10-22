@@ -3,7 +3,10 @@ import { DomainError } from './errors';
 /** Normalized targets shared by base plans and legacy migration; not recorded workout facts. */
 export type DurationTarget = { reps: number } | { durationSeconds: number } | { distanceMeters: number };
 
-export function estimateTrainingMinutes(exercises: readonly { sets: readonly DurationTarget[] }[], minimum = 15): number {
+export function estimateTrainingMinutes(
+  exercises: readonly { sets: readonly DurationTarget[] }[],
+  minimum = 15,
+): number {
   if (!exercises.length || exercises.some(exercise => !exercise.sets.length)) {
     throw new DomainError('INVALID', 'Duration estimation requires exercises and sets');
   }
@@ -11,8 +14,10 @@ export function estimateTrainingMinutes(exercises: readonly { sets: readonly Dur
   for (const exercise of exercises) {
     seconds += (exercise.sets.length - 1) * 90;
     for (const target of exercise.sets) {
-      const value = 'reps' in target ? target.reps : 'durationSeconds' in target ? target.durationSeconds : target.distanceMeters;
-      if (!Number.isFinite(value) || value <= 0) throw new DomainError('INVALID', 'Duration estimation requires positive targets');
+      const value =
+        'reps' in target ? target.reps : 'durationSeconds' in target ? target.durationSeconds : target.distanceMeters;
+      if (!Number.isFinite(value) || value <= 0)
+        throw new DomainError('INVALID', 'Duration estimation requires positive targets');
       seconds += 'reps' in target ? Math.max(20, value * 3) : 'durationSeconds' in target ? value : value / 1.5;
     }
   }
@@ -20,6 +25,12 @@ export function estimateTrainingMinutes(exercises: readonly { sets: readonly Dur
 }
 
 /** One estimator for plan cards, drafts and local adjustments. */
-export function estimatePlannedMinutes(items: readonly { sets: number; target: DurationTarget }[], minimum = 15): number {
-  return estimateTrainingMinutes(items.map(item => ({ sets: Array.from({ length: item.sets }, () => item.target) })), minimum);
+export function estimatePlannedMinutes(
+  items: readonly { sets: number; target: DurationTarget }[],
+  minimum = 15,
+): number {
+  return estimateTrainingMinutes(
+    items.map(item => ({ sets: Array.from({ length: item.sets }, () => item.target) })),
+    minimum,
+  );
 }

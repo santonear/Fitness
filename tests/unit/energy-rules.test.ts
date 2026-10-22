@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { activityFactor, energyTargets, lossBlock, macroTargets, restingEnergy } from '../../src/application/rules/energy';
+import {
+  activityFactor,
+  energyTargets,
+  lossBlock,
+  macroTargets,
+  restingEnergy,
+} from '../../src/application/rules/energy';
 
 describe('energy (V9.15 calculators)', () => {
   it('uses Mifflin-St Jeor resting energy, with the midpoint when sex is not given', () => {

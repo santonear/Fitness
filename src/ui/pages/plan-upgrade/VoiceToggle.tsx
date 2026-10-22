@@ -10,8 +10,18 @@ export function VoiceToggle({ locale, cue }: { locale: 'zh' | 'en'; cue?: string
   const [on, setOn] = useState(voiceOn);
   const available = voices.length > 0;
   useVoiceCue(cue, on && available, voices);
-  return <label className="wk-voice" title={available ? c.voiceHint : c.voiceUnavailable}>
-    <input type="checkbox" checked={on && available} disabled={!available} onChange={event => { const value = event.target.checked; if (setVoiceOn(value)) setOn(value); }}/>
-    <span>{c.voice}</span>
-  </label>;
+  return (
+    <label className="wk-voice" title={available ? c.voiceHint : c.voiceUnavailable}>
+      <input
+        type="checkbox"
+        checked={on && available}
+        disabled={!available}
+        onChange={event => {
+          const value = event.target.checked;
+          if (setVoiceOn(value)) setOn(value);
+        }}
+      />
+      <span>{c.voice}</span>
+    </label>
+  );
 }

@@ -2,7 +2,15 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import source from '../../docs/handoff-v8/02-design-tokens.json';
 import type { BuiltinThemeId } from '../../src/themes/contract';
-import { baseTokenCss, sceneTokens, sceneVariants, sharedTokens, themeSelector, themeTokens, tokenBlock } from '../../src/themes/token-css';
+import {
+  baseTokenCss,
+  sceneTokens,
+  sceneVariants,
+  sharedTokens,
+  themeSelector,
+  themeTokens,
+  tokenBlock,
+} from '../../src/themes/token-css';
 
 const themes = Object.keys(source.themes) as BuiltinThemeId[];
 const generatedHeader = '/* Generated from 02-design-tokens.json; checked by v8-theme-tokens.test.ts. */\n';
@@ -24,7 +32,9 @@ describe('V9 tokens', () => {
   for (const id of themes) {
     it(`${id}: every generated theme value matches the JSON adapter`, () => {
       const tokens = themeTokens(id);
-      expect(read(`src/themes/${id}/tokens.css`)).toBe(generatedHeader + tokenBlock(themeSelector(id), tokens as Record<string, string | number>));
+      expect(read(`src/themes/${id}/tokens.css`)).toBe(
+        generatedHeader + tokenBlock(themeSelector(id), tokens as Record<string, string | number>),
+      );
       expect(tokens['--c-ink']).toBe(source.themes[id].color.ink);
       expect(tokens['--f-num']).toBe(source.themes[id].font.num);
       expect(tokens['--el-2']).toBe(source.themes[id].material.elevation2);
@@ -38,7 +48,7 @@ describe('V9 tokens', () => {
 
   it('maps every approved frozen name including V9 additions', () => {
     const contract = read('src/themes/contract.ts');
-    const names = [...contract.matchAll(/"(--[\w-]+)"/g)].map(match => match[1]);
+    const names = [...contract.matchAll(/['"](--[\w-]+)['"]/g)].map(match => match[1]);
     for (const id of themes) {
       expect(Object.keys({ ...sharedTokens(), ...themeTokens(id) }).sort()).toEqual(names.sort());
       expect(themeTokens(id)['--w-strong']).toBe(source.themes[id].font.weightStrong);
@@ -51,10 +61,17 @@ describe('V9 tokens', () => {
 
   it('keeps body text readable in every theme (WCAG AA 4.5:1 for body, accent and on-primary text)', () => {
     const luminance = (hex: string) => {
-      const channels = hex.replace('#', '').match(/../g)!.map(part => parseInt(part, 16) / 255).map(c => c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+      const channels = hex
+        .replace('#', '')
+        .match(/../g)!
+        .map(part => parseInt(part, 16) / 255)
+        .map(c => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
       return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
     };
-    const ratio = (a: string, b: string) => { const [x, y] = [luminance(a), luminance(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
+    const ratio = (a: string, b: string) => {
+      const [x, y] = [luminance(a), luminance(b)].sort((m, n) => n - m);
+      return (x + 0.05) / (y + 0.05);
+    };
     for (const id of themes) {
       const { color } = source.themes[id];
       for (const ground of [color.bg, color.surface]) {

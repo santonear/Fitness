@@ -6,6 +6,7 @@ import { legacyItemsToV8 } from './legacy-items';
 import { legacyPlanMinutes, legacyTemplateMinutes } from './legacy-duration';
 import { selectLegacyCurrentPlan } from './legacy-selection';
 import { dateWeeklyTarget, legacyPlanGroups } from './legacy-groups';
+import { hex } from '../hex';
 
 interface LegacyPlansInput {
   plans: readonly Plan[];
@@ -17,16 +18,19 @@ interface LegacyPlansInput {
 
 function templateName(index: number): string {
   let name = '';
-  for (let value = index + 1; value > 0; value = Math.floor((value - 1) / 26)) name = String.fromCharCode(65 + (value - 1) % 26) + name;
+  for (let value = index + 1; value > 0; value = Math.floor((value - 1) / 26))
+    name = String.fromCharCode(65 + ((value - 1) % 26)) + name;
   return name;
 }
 
 async function migratedVersionId(originalId: string): Promise<string> {
-  const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`fitness:v8:legacy-plan-version:${originalId}`))).slice(0, 16);
+  const digest = new Uint8Array(
+    await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`fitness:v8:legacy-plan-version:${originalId}`)),
+  ).slice(0, 16);
   digest[6] = (digest[6] & 0x0f) | 0x80;
   digest[8] = (digest[8] & 0x3f) | 0x80;
-  const hex = Array.from(digest, byte => byte.toString(16).padStart(2, '0')).join('');
-  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  const text = hex(digest);
+  return `${text.slice(0, 8)}-${text.slice(8, 12)}-${text.slice(12, 16)}-${text.slice(16, 20)}-${text.slice(20)}`;
 }
 
 /** Pure projection. Retain legacy tables separately; precompute before writes or keep the Dexie upgrade alive with waitFor. */
@@ -34,48 +38,83 @@ export async function migrateLegacyPlans(
   source: LegacyPlansInput,
   estimate: (exercises: LegacyPlanVersion['days'][number]['exercises']) => number,
   migratedAt: string,
-): Promise<{ plans: { id: string; name: string; currentVersionId: string; readOnly: boolean }[]; versions: PlanVersion[]; currentPlanId?: string }> {
+): Promise<{
+  plans: { id: string; name: string; currentVersionId: string; readOnly: boolean }[];
+  versions: PlanVersion[];
+  currentPlanId?: string;
+}> {
   const onboarding = source.guidedStates?.find(state => state.id === 'guided')?.onboarding;
   const schedule = onboarding?.answers.schedule;
   const scheduleValue = schedule?.status === 'answered' ? schedule.value : undefined;
   const onboardingSlot = Array.isArray(scheduleValue) && scheduleValue[1] !== '' ? Number(scheduleValue[1]) : undefined;
   const retainedPlans = source.plans.filter(plan => !plan.deletedAt);
-  const versions = await Promise.all(retainedPlans.map(async plan => {
-    const original = source.planVersions.find(version => version.id === plan.currentVersionId && version.planId === plan.id);
-    if (!original) throw new DomainError('INVALID', 'Legacy current plan version is missing');
-    const id = await migratedVersionId(original.id);
-    const templates: SessionTemplate[] = [];
-    const unique = new Set<string>();
-    let estimated = false;
-    for (const day of original.days) {
-      const items = legacyItemsToV8(day.exercises);
-      const schedules = source.scheduledWorkouts.filter(row => row.planVersionId === original.id && row.plannedDayId === day.dayId);
-      const durations = schedules.length ? schedules.map(row => row.durationMinutes) : [undefined];
-      for (const raw of durations) {
-        const duration = legacyTemplateMinutes(raw, () => estimate(day.exercises));
-        estimated ||= duration.estimated;
-        const key = JSON.stringify([items, duration.minutes]);
-        if (unique.has(key)) continue;
-        unique.add(key);
-        const index = templates.length;
-        templates.push({ id: `${id}:template:${index}`, name: templateName(index), estimatedMinutes: duration.minutes, items });
+  const versions = await Promise.all(
+    retainedPlans.map(async plan => {
+      const original = source.planVersions.find(
+        version => version.id === plan.currentVersionId && version.planId === plan.id,
+      );
+      if (!original) throw new DomainError('INVALID', 'Legacy current plan version is missing');
+      const id = await migratedVersionId(original.id);
+      const templates: SessionTemplate[] = [];
+      const unique = new Set<string>();
+      let estimated = false;
+      for (const day of original.days) {
+        const items = legacyItemsToV8(day.exercises);
+        const schedules = source.scheduledWorkouts.filter(
+          row => row.planVersionId === original.id && row.plannedDayId === day.dayId,
+        );
+        const durations = schedules.length ? schedules.map(row => row.durationMinutes) : [undefined];
+        for (const raw of durations) {
+          const duration = legacyTemplateMinutes(raw, () => estimate(day.exercises));
+          estimated ||= duration.estimated;
+          const key = JSON.stringify([items, duration.minutes]);
+          if (unique.has(key)) continue;
+          unique.add(key);
+          const index = templates.length;
+          templates.push({
+            id: `${id}:template:${index}`,
+            name: templateName(index),
+            estimatedMinutes: duration.minutes,
+            items,
+          });
+        }
       }
-    }
-    if (!templates.length) throw new DomainError('INVALID', 'Legacy plan has no training templates');
-    return {
-      id, planId: plan.id, versionNumber: original.versionNumber + 1,
-      goalText: original.goalSnapshot.goal,
-      // Period-plan days already contain every week; date-day plans contain exactly one day.
-      weeklyTarget: 'durationWeeks' in original ? original.daysPerWeek : dateWeeklyTarget(source.scheduledWorkouts.filter(row => row.planVersionId === original.id).map(row => row.scheduledDate)),
-      // Legacy plan versions have no plan-scoped original schedule text. A current global answer is not its provenance.
-      scheduleOriginalText: '',
-      sessionMinutes: legacyPlanMinutes(onboardingSlot, templates.map(template => template.estimatedMinutes)),
-      templates, createdAt: migratedAt, origin: 'migrated' as const,
-      changeSummary: estimated ? ['部分时长按动作估算'] : [], basedOnVersionId: original.id,
-    };
-  }));
+      if (!templates.length) throw new DomainError('INVALID', 'Legacy plan has no training templates');
+      return {
+        id,
+        planId: plan.id,
+        versionNumber: original.versionNumber + 1,
+        goalText: original.goalSnapshot.goal,
+        // Period-plan days already contain every week; date-day plans contain exactly one day.
+        weeklyTarget:
+          'durationWeeks' in original
+            ? original.daysPerWeek
+            : dateWeeklyTarget(
+                source.scheduledWorkouts.filter(row => row.planVersionId === original.id).map(row => row.scheduledDate),
+              ),
+        // Legacy plan versions have no plan-scoped original schedule text. A current global answer is not its provenance.
+        scheduleOriginalText: '',
+        sessionMinutes: legacyPlanMinutes(
+          onboardingSlot,
+          templates.map(template => template.estimatedMinutes),
+        ),
+        templates,
+        createdAt: migratedAt,
+        origin: 'migrated' as const,
+        changeSummary: estimated ? ['部分时长按动作估算'] : [],
+        basedOnVersionId: original.id,
+      };
+    }),
+  );
   const current = selectLegacyCurrentPlan(source.plans, source.planVersions, source.sessions);
-  const eligible = retainedPlans.map(plan => plan.model === 'date-day' && !source.scheduledWorkouts.some(row => row.planVersionId === plan.currentVersionId && !row.hiddenAt && row.status !== 'skipped') ? { ...plan, status: 'archived' as const } : plan);
+  const eligible = retainedPlans.map(plan =>
+    plan.model === 'date-day' &&
+    !source.scheduledWorkouts.some(
+      row => row.planVersionId === plan.currentVersionId && !row.hiddenAt && row.status !== 'skipped',
+    )
+      ? { ...plan, status: 'archived' as const }
+      : plan,
+  );
   const groups = legacyPlanGroups(eligible, source.planVersions, source.guidedStates ?? []);
   const combined = groups.map(ids => {
     const representative = ids.includes(current?.id ?? '') ? current!.id : ids[0];
@@ -83,12 +122,32 @@ export async function migrateLegacyPlans(
     if (ids.length === 1) return base;
     const members = versions.filter(v => ids.includes(v.planId));
     const templates = members.flatMap(v => v.templates).map((t, index) => ({ ...t, name: templateName(index) }));
-    const sourceIds = new Set(source.planVersions.filter(v => ids.includes(v.planId) && retainedPlans.some(p => p.currentVersionId === v.id)).map(v => v.id));
-    return { ...base, templates, weeklyTarget: dateWeeklyTarget(source.scheduledWorkouts.filter(row => sourceIds.has(row.planVersionId)).map(row => row.scheduledDate)),
-      sessionMinutes: legacyPlanMinutes(onboardingSlot, templates.map(t => t.estimatedMinutes)), changeSummary: [...new Set(members.flatMap(v => v.changeSummary))] };
+    const sourceIds = new Set(
+      source.planVersions
+        .filter(v => ids.includes(v.planId) && retainedPlans.some(p => p.currentVersionId === v.id))
+        .map(v => v.id),
+    );
+    return {
+      ...base,
+      templates,
+      weeklyTarget: dateWeeklyTarget(
+        source.scheduledWorkouts.filter(row => sourceIds.has(row.planVersionId)).map(row => row.scheduledDate),
+      ),
+      sessionMinutes: legacyPlanMinutes(
+        onboardingSlot,
+        templates.map(t => t.estimatedMinutes),
+      ),
+      changeSummary: [...new Set(members.flatMap(v => v.changeSummary))],
+    };
   });
   return {
-    plans: combined.map(version => ({ id: version.planId, name: retainedPlans.find(p => p.id === version.planId)!.name, currentVersionId: version.id, readOnly: version.planId !== current?.id })),
-    versions: combined, ...(current ? { currentPlanId: current.id } : {}),
+    plans: combined.map(version => ({
+      id: version.planId,
+      name: retainedPlans.find(p => p.id === version.planId)!.name,
+      currentVersionId: version.id,
+      readOnly: version.planId !== current?.id,
+    })),
+    versions: combined,
+    ...(current ? { currentPlanId: current.id } : {}),
   };
 }

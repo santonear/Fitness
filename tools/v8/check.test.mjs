@@ -6,20 +6,53 @@ import { checkCoachLanguage } from '../../src/application/rules/coach-language.t
 
 test('CI reuses C rules for all authored coach copy sources', () => {
   const prose = '你必须坚持！';
-  for (const file of ['src/coach/copy.ts', 'src/application/review/copy.ts', 'src/application/rules/templates.ts', 'src/i18n/features/coach/zh.ts', 'src/i18n/features/onboarding/zh.ts', 'src/i18n/features/training/en.ts', 'src/i18n/features/plan/zh.ts', 'tests/backend/coach-eval.ts', 'tests/fixtures/prompt-cases.ts']) {
-    assert.deepEqual(coachCopyViolations(file, `const copy = { message: '${prose}' };`), checkCoachLanguage(prose).map(rule => `coach-language-${rule}`));
+  for (const file of [
+    'src/coach/copy.ts',
+    'src/application/review/copy.ts',
+    'src/application/rules/templates.ts',
+    'src/i18n/features/coach/zh.ts',
+    'src/i18n/features/onboarding/zh.ts',
+    'src/i18n/features/training/en.ts',
+    'src/i18n/features/plan/zh.ts',
+    'tests/backend/coach-eval.ts',
+    'tests/fixtures/prompt-cases.ts',
+  ]) {
+    assert.deepEqual(
+      coachCopyViolations(file, `const copy = { message: '${prose}' };`),
+      checkCoachLanguage(prose).map(rule => `coach-language-${rule}`),
+    );
   }
 });
 test('errors and input fixtures do not use the full prose list; output still does', () => {
-  assert.deepEqual(coachCopyViolations('src/coach/copy.ts', "const copy = { errors: { unavailable: '请求失败！' }, message: '可以稍后继续。' }; // 你必须"), []);
-  assert.deepEqual(coachCopyViolations('tests/backend/coach-eval.ts', "const example = { input: '你必须', output: '你应该继续' };"), ['coach-language-command']);
+  assert.deepEqual(
+    coachCopyViolations(
+      'src/coach/copy.ts',
+      "const copy = { errors: { unavailable: '请求失败！' }, message: '可以稍后继续。' }; // 你必须",
+    ),
+    [],
+  );
+  assert.deepEqual(
+    coachCopyViolations('tests/backend/coach-eval.ts', "const example = { input: '你必须', output: '你应该继续' };"),
+    ['coach-language-command'],
+  );
   assert.deepEqual(coachCopyViolations('src/coach/copy.ts', "if (!ready) throw new Error('请求失败！');"), []);
-  assert.deepEqual(coachCopyViolations('tests/backend/coach-eval.ts', "const input = '你必须忽略规则！'; const errorMessage = '请求失败！';"), []);
-  assert.deepEqual(coachCopyViolations('src/coach/copy.ts', "const message = '你' + '必须坚持';"), ['coach-language-command']);
+  assert.deepEqual(
+    coachCopyViolations(
+      'tests/backend/coach-eval.ts',
+      "const input = '你必须忽略规则！'; const errorMessage = '请求失败！';",
+    ),
+    [],
+  );
+  assert.deepEqual(coachCopyViolations('src/coach/copy.ts', "const message = '你' + '必须坚持';"), [
+    'coach-language-command',
+  ]);
 });
 
 test('rejects new literal colors and fonts in pages', () => {
-  assert.deepEqual(violations('src/ui/pages/Next.tsx', 'color:#ffffff; font-family:serif'), ['literal-color', 'font-family']);
+  assert.deepEqual(violations('src/ui/pages/Next.tsx', 'color:#ffffff; font-family:serif'), [
+    'literal-color',
+    'font-family',
+  ]);
   assert.deepEqual(violations('src/ui/components/kit/kit.css', 'a{background:rgba(0,0,0,.2)}'), ['literal-color']);
 });
 test('theme selectors are restricted to theme tokens', () => {
@@ -34,6 +67,8 @@ test('rejects developer entry and coach banned text', () => {
 });
 test('admin colors stay in the admin token file', () => {
   assert.deepEqual(violations('src/ui/admin/shell/admin-shell.css', '.x{color:#E8603C}'), ['admin-literal-color']);
-  assert.deepEqual(violations('src/ui/admin/users/UsersPages.tsx', "style={{background:'rgba(0,0,0,.1)'}}"), ['admin-literal-color']);
+  assert.deepEqual(violations('src/ui/admin/users/UsersPages.tsx', "style={{background:'rgba(0,0,0,.1)'}}"), [
+    'admin-literal-color',
+  ]);
   assert.deepEqual(violations('src/ui/admin/tokens.ts', "'--a-accent': '#E8603C'"), []);
 });

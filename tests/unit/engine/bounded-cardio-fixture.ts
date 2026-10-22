@@ -1,8 +1,8 @@
-import { estimateSeconds } from "../../../src/engine/fit";
-import { Rules } from "../../../src/engine/data";
-import { cardioWorkCap } from "../../../src/engine/fit/cardio-cap";
-import { runGates } from "../../../src/engine/gates";
-import { fixtureProfile, planFixture } from "./fixtures";
+import { estimateSeconds } from '../../../src/engine/fit';
+import { Rules } from '../../../src/engine/data';
+import { cardioWorkCap } from '../../../src/engine/fit/cardio-cap';
+import { runGates } from '../../../src/engine/gates';
+import { fixtureProfile, planFixture } from './fixtures';
 
 /** Hand-built, source-bounded positive control; scoring fixtures remain unchanged. */
 export const boundedCardioProfile = {
@@ -18,13 +18,8 @@ export function boundedCardioPlanFixture() {
   const item = template.items[0],
     exercise = rules.byExercise.get(item.exerciseId)!;
   item.target = {
-    metricType: "duration",
-    durationSeconds: cardioWorkCap(
-      exercise,
-      profile,
-      rules,
-      runGates(profile, rules),
-    ),
+    metricType: 'duration',
+    durationSeconds: cardioWorkCap(exercise, profile, rules, runGates(profile, rules)),
   };
   plan.sessionMinutes = profile.sessionMinutes;
   template.targetMinutes = profile.sessionMinutes;

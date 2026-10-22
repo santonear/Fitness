@@ -1,49 +1,352 @@
-import {DATABASE_VERSION,BACKUP_VERSION} from '../../src/domain/storage-version';
-import {readFileSync} from 'node:fs';
-import {describe,it,expect} from 'vitest';
-import {createPlanLifecycle,PLAN_RETENTION_MS,PLAN_UNDO_MS} from '../../src/application/plan-lifecycle';
-import {createV8Workflow} from '../../src/application/v8-workflow';
-import {createRepository} from '../../src/persistence/repository';
-import type {FitnessDatabase} from '../../src/persistence/db';
-import {validateBackupEnvelope,createBackupService} from '../../src/application/backup';
-import {computeWeekFacts} from '../../src/application/review/compute';
-const fixture=()=>JSON.parse(readFileSync(new URL('../fixtures/legacy-backups/v807-mainline.json',import.meta.url),'utf8'));
-function setup(){
- const source=fixture();let clock=Date.parse('2026-10-12T00:00:00Z'),fail='';
- source.schemaVersion=BACKUP_VERSION;source.data.metadata.schemaVersion=DATABASE_VERSION;source.data.assistantConversations=[];source.data.exerciseFavorites=[];source.data.nutritionRecords=[];source.data.activityImportReceipts=[];source.data.fitnessTests=[];source.data.journeys=[];source.data.futureLetters=[];source.data.v8.planReferences=[];source.data.v8.planVersions[0].weeklyTarget=3;
- let rows:Record<string,any[]>={};for(const [key,value] of Object.entries(source.data))if(Array.isArray(value))rows[key]=structuredClone(value);rows.metadata=[source.data.metadata];rows.trainingMemo=[source.data.trainingMemo];for(const key of ['plans','planVersions','workouts','activities','planReferences'])rows['v8'+key[0].toUpperCase()+key.slice(1)]=structuredClone(source.data.v8[key]);rows.v8State=[source.data.v8.state];
- const table=(name:string)=>({name,toArray:async()=>structuredClone(rows[name]),get:async(id:string|number)=>structuredClone(rows[name].find(r=>(r.id??r.localProfileId??r.schemaVersion)===id)),put:async(v:any)=>{if(fail===name)throw Error('injected write failure');const k=v.id??v.localProfileId??v.schemaVersion;rows[name]=rows[name].filter(r=>(r.id??r.localProfileId??r.schemaVersion)!==k);rows[name].push(structuredClone(v));},delete:async(id:string)=>{if(fail===name)throw Error('injected write failure');rows[name]=rows[name].filter(r=>r.id!==id);},toCollection:()=>({first:async()=>structuredClone(rows[name][0])}),where:(field:string)=>({equals:(value:string)=>({toArray:async()=>structuredClone(rows[name].filter(r=>r[field]===value))})})});
- const db:any={tables:[],transaction:async(_mode:unknown,_tables:unknown,fn:()=>Promise<unknown>)=>{const before=structuredClone(rows);try{return await fn();}catch(e){rows=before;throw e;}}};for(const key of Object.keys(rows)){db[key]=table(key);db.tables.push(db[key]);}
- const repo=createRepository(db as FitnessDatabase),lifecycle=createPlanLifecycle(repo,()=>clock),planId=rows.v8Plans[0].id;
- const exportEnvelope=()=>({...source,data:{...source.data,metadata:rows.metadata[0],v8:{state:rows.v8State[0],plans:rows.v8Plans,planVersions:rows.v8PlanVersions,workouts:rows.v8Workouts,activities:rows.v8Activities,planReferences:rows.v8PlanReferences}}});
- return {repo,lifecycle,planId,rows:()=>rows,revision:()=>rows.metadata[0].dataRevision,advance:(ms:number)=>{clock+=ms;},fail:(name:string)=>{fail=name;},envelope:exportEnvelope};
+import { DATABASE_VERSION, BACKUP_VERSION } from '../../src/domain/storage-version';
+import { readFileSync } from 'node:fs';
+import { describe, it, expect } from 'vitest';
+import { createPlanLifecycle, PLAN_RETENTION_MS, PLAN_UNDO_MS } from '../../src/application/plan-lifecycle';
+import { createV8Workflow } from '../../src/application/v8-workflow';
+import { createRepository } from '../../src/persistence/repository';
+import type { FitnessDatabase } from '../../src/persistence/db';
+import { validateBackupEnvelope, createBackupService } from '../../src/application/backup';
+import { computeWeekFacts } from '../../src/application/review/compute';
+const fixture = () =>
+  JSON.parse(readFileSync(new URL('../fixtures/legacy-backups/v807-mainline.json', import.meta.url), 'utf8'));
+function setup() {
+  const source = fixture();
+  let clock = Date.parse('2026-10-12T00:00:00Z'),
+    fail = '';
+  source.schemaVersion = BACKUP_VERSION;
+  source.data.metadata.schemaVersion = DATABASE_VERSION;
+  source.data.assistantConversations = [];
+  source.data.exerciseFavorites = [];
+  source.data.nutritionRecords = [];
+  source.data.activityImportReceipts = [];
+  source.data.fitnessTests = [];
+  source.data.journeys = [];
+  source.data.futureLetters = [];
+  source.data.v8.planReferences = [];
+  source.data.v8.planVersions[0].weeklyTarget = 3;
+  let rows: Record<string, any[]> = {};
+  for (const [key, value] of Object.entries(source.data)) if (Array.isArray(value)) rows[key] = structuredClone(value);
+  rows.metadata = [source.data.metadata];
+  rows.trainingMemo = [source.data.trainingMemo];
+  for (const key of ['plans', 'planVersions', 'workouts', 'activities', 'planReferences'])
+    rows['v8' + key[0].toUpperCase() + key.slice(1)] = structuredClone(source.data.v8[key]);
+  rows.v8State = [source.data.v8.state];
+  const table = (name: string) => ({
+    name,
+    toArray: async () => structuredClone(rows[name]),
+    get: async (id: string | number) =>
+      structuredClone(rows[name].find(r => (r.id ?? r.localProfileId ?? r.schemaVersion) === id)),
+    put: async (v: any) => {
+      if (fail === name) throw Error('injected write failure');
+      const k = v.id ?? v.localProfileId ?? v.schemaVersion;
+      rows[name] = rows[name].filter(r => (r.id ?? r.localProfileId ?? r.schemaVersion) !== k);
+      rows[name].push(structuredClone(v));
+    },
+    delete: async (id: string) => {
+      if (fail === name) throw Error('injected write failure');
+      rows[name] = rows[name].filter(r => r.id !== id);
+    },
+    toCollection: () => ({ first: async () => structuredClone(rows[name][0]) }),
+    where: (field: string) => ({
+      equals: (value: string) => ({ toArray: async () => structuredClone(rows[name].filter(r => r[field] === value)) }),
+    }),
+  });
+  const db: any = {
+    tables: [],
+    transaction: async (_mode: unknown, _tables: unknown, fn: () => Promise<unknown>) => {
+      const before = structuredClone(rows);
+      try {
+        return await fn();
+      } catch (e) {
+        rows = before;
+        throw e;
+      }
+    },
+  };
+  for (const key of Object.keys(rows)) {
+    db[key] = table(key);
+    db.tables.push(db[key]);
+  }
+  const repo = createRepository(db as FitnessDatabase),
+    lifecycle = createPlanLifecycle(repo, () => clock),
+    planId = rows.v8Plans[0].id;
+  const exportEnvelope = () => ({
+    ...source,
+    data: {
+      ...source.data,
+      metadata: rows.metadata[0],
+      v8: {
+        state: rows.v8State[0],
+        plans: rows.v8Plans,
+        planVersions: rows.v8PlanVersions,
+        workouts: rows.v8Workouts,
+        activities: rows.v8Activities,
+        planReferences: rows.v8PlanReferences,
+      },
+    },
+  });
+  return {
+    repo,
+    lifecycle,
+    planId,
+    rows: () => rows,
+    revision: () => rows.metadata[0].dataRevision,
+    advance: (ms: number) => {
+      clock += ms;
+    },
+    fail: (name: string) => {
+      fail = name;
+    },
+    envelope: exportEnvelope,
+  };
 }
-describe('plan soft deletion transaction boundary',()=>{
- it('roundtrips older adjusted snapshots whose ID differs from the original template reference',async()=>{const s=setup();s.rows().v8Workouts[0].templateSnapshot.id='older-adjusted-template';const facts=structuredClone(s.rows().v8Workouts);expect(()=>validateBackupEnvelope(s.envelope())).not.toThrow();await s.lifecycle.deletePlan(s.planId,s.revision());s.advance(PLAN_RETENTION_MS);await s.lifecycle.purgeExpiredPlans();const exported=await createBackupService(s.repo).exportBackupWithReceipt();expect(validateBackupEnvelope(JSON.parse(await exported.blob.text())).data.v8?.workouts).toEqual(facts);expect(s.rows().v8PlanReferences[0].templateIds).toEqual(['basic-0']);});
- it('preserves today adjustment in backup and restores it only with undo to the original current plan',async()=>{for(const mode of ['undo','ordinary','replacement','failure']){const s=setup(),version=s.rows().v8PlanVersions[0],template=structuredClone(version.templates[0]);template.items[0].sets=1;template.id='adjusted-template-id';const override={planVersionId:version.id,templateId:version.templates[0].id,template,requestId:s.planId};s.rows().v8State[0].nextWorkoutOverride=override;const facts=structuredClone(s.rows().v8Workouts);
- if(mode==='failure'){const before=structuredClone(s.rows());s.fail('v8State');await expect(s.lifecycle.deletePlan(s.planId,s.revision())).rejects.toThrow('injected');expect(s.rows()).toEqual(before);continue;}
- await s.lifecycle.deletePlan(s.planId,s.revision());expect(s.rows().v8State[0].nextWorkoutOverride).toBeUndefined();expect(validateBackupEnvelope(JSON.parse(JSON.stringify(s.envelope()))).data.v8?.plans[0].deletedNextWorkoutOverride).toEqual(override);
- const invalid=structuredClone(s.envelope());invalid.data.v8.plans[0].deletedNextWorkoutOverride.templateId='wrong';expect(()=>validateBackupEnvelope(invalid)).toThrow('Invalid deleted plan workout override');
- if(mode==='replacement')s.rows().v8State[0].currentPlanId='replacement';await s.lifecycle.restorePlan(s.planId,s.revision(),mode!=='ordinary');expect(s.rows().v8State[0].nextWorkoutOverride).toEqual(mode==='undo'?override:undefined);expect(s.rows().v8Plans[0].deletedNextWorkoutOverride).toBeUndefined();expect(s.rows().v8Workouts).toEqual(facts);
- }});
+describe('plan soft deletion transaction boundary', () => {
+  it('roundtrips older adjusted snapshots whose ID differs from the original template reference', async () => {
+    const s = setup();
+    s.rows().v8Workouts[0].templateSnapshot.id = 'older-adjusted-template';
+    const facts = structuredClone(s.rows().v8Workouts);
+    expect(() => validateBackupEnvelope(s.envelope())).not.toThrow();
+    await s.lifecycle.deletePlan(s.planId, s.revision());
+    s.advance(PLAN_RETENTION_MS);
+    await s.lifecycle.purgeExpiredPlans();
+    const exported = await createBackupService(s.repo).exportBackupWithReceipt();
+    expect(validateBackupEnvelope(JSON.parse(await exported.blob.text())).data.v8?.workouts).toEqual(facts);
+    expect(s.rows().v8PlanReferences[0].templateIds).toEqual(['basic-0']);
+  });
+  it('preserves today adjustment in backup and restores it only with undo to the original current plan', async () => {
+    for (const mode of ['undo', 'ordinary', 'replacement', 'failure']) {
+      const s = setup(),
+        version = s.rows().v8PlanVersions[0],
+        template = structuredClone(version.templates[0]);
+      template.items[0].sets = 1;
+      template.id = 'adjusted-template-id';
+      const override = {
+        planVersionId: version.id,
+        templateId: version.templates[0].id,
+        template,
+        requestId: s.planId,
+      };
+      s.rows().v8State[0].nextWorkoutOverride = override;
+      const facts = structuredClone(s.rows().v8Workouts);
+      if (mode === 'failure') {
+        const before = structuredClone(s.rows());
+        s.fail('v8State');
+        await expect(s.lifecycle.deletePlan(s.planId, s.revision())).rejects.toThrow('injected');
+        expect(s.rows()).toEqual(before);
+        continue;
+      }
+      await s.lifecycle.deletePlan(s.planId, s.revision());
+      expect(s.rows().v8State[0].nextWorkoutOverride).toBeUndefined();
+      expect(
+        validateBackupEnvelope(JSON.parse(JSON.stringify(s.envelope()))).data.v8?.plans[0].deletedNextWorkoutOverride,
+      ).toEqual(override);
+      const invalid = structuredClone(s.envelope());
+      invalid.data.v8.plans[0].deletedNextWorkoutOverride.templateId = 'wrong';
+      expect(() => validateBackupEnvelope(invalid)).toThrow('Invalid deleted plan workout override');
+      if (mode === 'replacement') s.rows().v8State[0].currentPlanId = 'replacement';
+      await s.lifecycle.restorePlan(s.planId, s.revision(), mode !== 'ordinary');
+      expect(s.rows().v8State[0].nextWorkoutOverride).toEqual(mode === 'undo' ? override : undefined);
+      expect(s.rows().v8Plans[0].deletedNextWorkoutOverride).toBeUndefined();
+      expect(s.rows().v8Workouts).toEqual(facts);
+    }
+  });
 
- it('clears only the current association, preserves facts and review target, and invalidates stale revisions',async()=>{const s=setup(),facts=structuredClone(s.rows().v8Workouts),rev=s.revision();await s.lifecycle.deletePlan(s.planId,rev);expect(s.rows().v8State[0]).toMatchObject({reviewWeeklyTarget:3});expect(s.rows().v8State[0].currentPlanId).toBeUndefined();expect(s.rows().v8Plans[0]).toMatchObject({readOnly:true,deletedWasCurrent:true});expect(s.rows().v8Workouts).toEqual(facts);await expect(s.lifecycle.restorePlan(s.planId,rev,true)).rejects.toThrow('Data changed');expect(()=>validateBackupEnvelope(s.envelope())).not.toThrow();});
- it('undo before ten seconds restores current but never steals a new current plan',async()=>{for(const replace of [false,true]){const s=setup();await s.lifecycle.deletePlan(s.planId,s.revision());if(replace)s.rows().v8State[0].currentPlanId='new-current';s.advance(9999);const result=await s.lifecycle.restorePlan(s.planId,s.revision(),true);expect(result.restoredAsCurrent).toBe(!replace);expect(s.rows().v8State[0].currentPlanId).toBe(replace?'new-current':s.planId);expect(s.rows().v8Plans[0].deletedAt).toBeUndefined();}});
- it('ordinary restore is read-only and respects both exact expiry boundaries',async()=>{const s=setup();await s.lifecycle.deletePlan(s.planId,s.revision());s.advance(PLAN_UNDO_MS);await expect(s.lifecycle.restorePlan(s.planId,s.revision(),true)).rejects.toThrow('PLAN_UNDO_EXPIRED');await s.lifecycle.restorePlan(s.planId,s.revision());expect(s.rows().v8Plans[0].readOnly).toBe(true);expect(s.rows().v8State[0].currentPlanId).toBeUndefined();await s.lifecycle.deletePlan(s.planId,s.revision());s.advance(PLAN_RETENTION_MS);await expect(s.lifecycle.restorePlan(s.planId,s.revision())).rejects.toThrow('PLAN_RECOVERY_EXPIRED');});
- it('blocks only a linked active workout, not unrelated free training',async()=>{const s=setup();s.rows().v8Workouts[0].status='in_progress';await expect(s.lifecycle.deletePlan(s.planId,s.revision())).rejects.toThrow('PLAN_TRAINING_ACTIVE');delete s.rows().v8Workouts[0].planVersionId;delete s.rows().v8Workouts[0].templateId;await expect(s.lifecycle.deletePlan(s.planId,s.revision())).resolves.toBeDefined();});
- it('cleans expired plan/version rows once, preserving minimal references and byte-identical workouts',async()=>{const s=setup(),facts=structuredClone(s.rows().v8Workouts);await s.lifecycle.deletePlan(s.planId,s.revision());const rev=s.revision();expect(await s.lifecycle.purgeExpiredPlans()).toBe(0);expect(s.revision()).toBe(rev);s.advance(PLAN_RETENTION_MS);expect(await s.lifecycle.purgeExpiredPlans()).toBe(1);expect(s.rows().v8Plans).toEqual([]);expect(s.rows().v8PlanVersions).toEqual([]);expect(s.rows().v8PlanReferences[0].legacyTemplates).toBeUndefined();expect(s.rows().v8PlanReferences[0].templateIds).toEqual(['basic-0']);expect(s.rows().v8Workouts).toEqual(facts);expect(s.rows().v8State[0].planDismissedAt).toBeTruthy();const after=s.revision();expect(await s.lifecycle.purgeExpiredPlans()).toBe(0);expect(s.revision()).toBe(after);expect(()=>validateBackupEnvelope(s.envelope())).not.toThrow();});
- it('retains only needed templates for old workouts without snapshots and roundtrips a strict backup',async()=>{const s=setup();delete s.rows().v8Workouts[0].templateSnapshot;await s.lifecycle.deletePlan(s.planId,s.revision());s.advance(PLAN_RETENTION_MS);await s.lifecycle.purgeExpiredPlans();expect(s.rows().v8PlanReferences[0].legacyTemplates).toHaveLength(1);const parsed=validateBackupEnvelope(JSON.parse(JSON.stringify(s.envelope())));expect(parsed.data.v8?.workouts).toEqual(s.rows().v8Workouts);const exported=await createBackupService(s.repo).exportBackupWithReceipt();expect(validateBackupEnvelope(JSON.parse(await exported.blob.text())).data.v8?.planReferences).toEqual(parsed.data.v8?.planReferences);s.rows().v8PlanReferences[0].legacyTemplates=[];expect(()=>validateBackupEnvelope(s.envelope())).toThrow('Archived workout provenance incomplete');});
- it('keeps review facts and improvement calculations identical after cleanup',async()=>{const s=setup();const input=()=>({from:'2026-10-05',to:'2026-10-11',timeZone:'Etc/GMT-8',weeklyTarget:s.rows().v8State[0].reviewWeeklyTarget??3,workouts:s.rows().v8Workouts,activities:[],bodyWeights:[]});const before=computeWeekFacts(input());await s.lifecycle.deletePlan(s.planId,s.revision());s.advance(PLAN_RETENTION_MS);await s.lifecycle.purgeExpiredPlans();expect(computeWeekFacts(input())).toEqual(before);});
- it('rolls back deletion and cleanup if a later write fails',async()=>{const s=setup(),before=structuredClone(s.rows());s.fail('v8State');await expect(s.lifecycle.deletePlan(s.planId,s.revision())).rejects.toThrow('injected');expect(s.rows()).toEqual(before);s.fail('');await s.lifecycle.deletePlan(s.planId,s.revision());s.advance(PLAN_RETENTION_MS);const deleted=structuredClone(s.rows());s.fail('v8Plans');await expect(s.lifecycle.purgeExpiredPlans()).rejects.toThrow('injected');expect(s.rows()).toEqual(deleted);});
- it('does not silently accept lifecycle fields in an older envelope or dangling provenance',async()=>{const s=setup();await s.lifecycle.deletePlan(s.planId,s.revision());const old=s.envelope();old.schemaVersion=8;old.data.metadata.schemaVersion=10;expect(()=>validateBackupEnvelope(old)).toThrow();s.advance(PLAN_RETENTION_MS);await s.lifecycle.purgeExpiredPlans();s.rows().metadata[0].schemaVersion=11;s.rows().v8PlanReferences[0].templateIds=['wrong'];expect(()=>validateBackupEnvelope(s.envelope())).toThrow();});
- it('returns only visible plans/versions and lists recoverable deleted plans in snapshots',async()=>{const s=setup();await s.lifecycle.deletePlan(s.planId,s.revision());const result=await createV8Workflow(s.repo).snapshot();expect(result.plans).toHaveLength(0);expect(result.versions).toHaveLength(0);expect(result.deletedPlans).toHaveLength(1);expect(result.plan).toBeUndefined();});
+  it('clears only the current association, preserves facts and review target, and invalidates stale revisions', async () => {
+    const s = setup(),
+      facts = structuredClone(s.rows().v8Workouts),
+      rev = s.revision();
+    await s.lifecycle.deletePlan(s.planId, rev);
+    expect(s.rows().v8State[0]).toMatchObject({ reviewWeeklyTarget: 3 });
+    expect(s.rows().v8State[0].currentPlanId).toBeUndefined();
+    expect(s.rows().v8Plans[0]).toMatchObject({ readOnly: true, deletedWasCurrent: true });
+    expect(s.rows().v8Workouts).toEqual(facts);
+    await expect(s.lifecycle.restorePlan(s.planId, rev, true)).rejects.toThrow('Data changed');
+    expect(() => validateBackupEnvelope(s.envelope())).not.toThrow();
+  });
+  it('undo before ten seconds restores current but never steals a new current plan', async () => {
+    for (const replace of [false, true]) {
+      const s = setup();
+      await s.lifecycle.deletePlan(s.planId, s.revision());
+      if (replace) s.rows().v8State[0].currentPlanId = 'new-current';
+      s.advance(9999);
+      const result = await s.lifecycle.restorePlan(s.planId, s.revision(), true);
+      expect(result.restoredAsCurrent).toBe(!replace);
+      expect(s.rows().v8State[0].currentPlanId).toBe(replace ? 'new-current' : s.planId);
+      expect(s.rows().v8Plans[0].deletedAt).toBeUndefined();
+    }
+  });
+  it('ordinary restore is read-only and respects both exact expiry boundaries', async () => {
+    const s = setup();
+    await s.lifecycle.deletePlan(s.planId, s.revision());
+    s.advance(PLAN_UNDO_MS);
+    await expect(s.lifecycle.restorePlan(s.planId, s.revision(), true)).rejects.toThrow('PLAN_UNDO_EXPIRED');
+    await s.lifecycle.restorePlan(s.planId, s.revision());
+    expect(s.rows().v8Plans[0].readOnly).toBe(true);
+    expect(s.rows().v8State[0].currentPlanId).toBeUndefined();
+    await s.lifecycle.deletePlan(s.planId, s.revision());
+    s.advance(PLAN_RETENTION_MS);
+    await expect(s.lifecycle.restorePlan(s.planId, s.revision())).rejects.toThrow('PLAN_RECOVERY_EXPIRED');
+  });
+  it('blocks only a linked active workout, not unrelated free training', async () => {
+    const s = setup();
+    s.rows().v8Workouts[0].status = 'in_progress';
+    await expect(s.lifecycle.deletePlan(s.planId, s.revision())).rejects.toThrow('PLAN_TRAINING_ACTIVE');
+    delete s.rows().v8Workouts[0].planVersionId;
+    delete s.rows().v8Workouts[0].templateId;
+    await expect(s.lifecycle.deletePlan(s.planId, s.revision())).resolves.toBeDefined();
+  });
+  it('cleans expired plan/version rows once, preserving minimal references and byte-identical workouts', async () => {
+    const s = setup(),
+      facts = structuredClone(s.rows().v8Workouts);
+    await s.lifecycle.deletePlan(s.planId, s.revision());
+    const rev = s.revision();
+    expect(await s.lifecycle.purgeExpiredPlans()).toBe(0);
+    expect(s.revision()).toBe(rev);
+    s.advance(PLAN_RETENTION_MS);
+    expect(await s.lifecycle.purgeExpiredPlans()).toBe(1);
+    expect(s.rows().v8Plans).toEqual([]);
+    expect(s.rows().v8PlanVersions).toEqual([]);
+    expect(s.rows().v8PlanReferences[0].legacyTemplates).toBeUndefined();
+    expect(s.rows().v8PlanReferences[0].templateIds).toEqual(['basic-0']);
+    expect(s.rows().v8Workouts).toEqual(facts);
+    expect(s.rows().v8State[0].planDismissedAt).toBeTruthy();
+    const after = s.revision();
+    expect(await s.lifecycle.purgeExpiredPlans()).toBe(0);
+    expect(s.revision()).toBe(after);
+    expect(() => validateBackupEnvelope(s.envelope())).not.toThrow();
+  });
+  it('retains only needed templates for old workouts without snapshots and roundtrips a strict backup', async () => {
+    const s = setup();
+    delete s.rows().v8Workouts[0].templateSnapshot;
+    await s.lifecycle.deletePlan(s.planId, s.revision());
+    s.advance(PLAN_RETENTION_MS);
+    await s.lifecycle.purgeExpiredPlans();
+    expect(s.rows().v8PlanReferences[0].legacyTemplates).toHaveLength(1);
+    const parsed = validateBackupEnvelope(JSON.parse(JSON.stringify(s.envelope())));
+    expect(parsed.data.v8?.workouts).toEqual(s.rows().v8Workouts);
+    const exported = await createBackupService(s.repo).exportBackupWithReceipt();
+    expect(validateBackupEnvelope(JSON.parse(await exported.blob.text())).data.v8?.planReferences).toEqual(
+      parsed.data.v8?.planReferences,
+    );
+    s.rows().v8PlanReferences[0].legacyTemplates = [];
+    expect(() => validateBackupEnvelope(s.envelope())).toThrow('Archived workout provenance incomplete');
+  });
+  it('keeps review facts and improvement calculations identical after cleanup', async () => {
+    const s = setup();
+    const input = () => ({
+      from: '2026-10-05',
+      to: '2026-10-11',
+      timeZone: 'Etc/GMT-8',
+      weeklyTarget: s.rows().v8State[0].reviewWeeklyTarget ?? 3,
+      workouts: s.rows().v8Workouts,
+      activities: [],
+      bodyWeights: [],
+    });
+    const before = computeWeekFacts(input());
+    await s.lifecycle.deletePlan(s.planId, s.revision());
+    s.advance(PLAN_RETENTION_MS);
+    await s.lifecycle.purgeExpiredPlans();
+    expect(computeWeekFacts(input())).toEqual(before);
+  });
+  it('rolls back deletion and cleanup if a later write fails', async () => {
+    const s = setup(),
+      before = structuredClone(s.rows());
+    s.fail('v8State');
+    await expect(s.lifecycle.deletePlan(s.planId, s.revision())).rejects.toThrow('injected');
+    expect(s.rows()).toEqual(before);
+    s.fail('');
+    await s.lifecycle.deletePlan(s.planId, s.revision());
+    s.advance(PLAN_RETENTION_MS);
+    const deleted = structuredClone(s.rows());
+    s.fail('v8Plans');
+    await expect(s.lifecycle.purgeExpiredPlans()).rejects.toThrow('injected');
+    expect(s.rows()).toEqual(deleted);
+  });
+  it('does not silently accept lifecycle fields in an older envelope or dangling provenance', async () => {
+    const s = setup();
+    await s.lifecycle.deletePlan(s.planId, s.revision());
+    const old = s.envelope();
+    old.schemaVersion = 8;
+    old.data.metadata.schemaVersion = 10;
+    expect(() => validateBackupEnvelope(old)).toThrow();
+    s.advance(PLAN_RETENTION_MS);
+    await s.lifecycle.purgeExpiredPlans();
+    s.rows().metadata[0].schemaVersion = 11;
+    s.rows().v8PlanReferences[0].templateIds = ['wrong'];
+    expect(() => validateBackupEnvelope(s.envelope())).toThrow();
+  });
+  it('returns only visible plans/versions and lists recoverable deleted plans in snapshots', async () => {
+    const s = setup();
+    await s.lifecycle.deletePlan(s.planId, s.revision());
+    const result = await createV8Workflow(s.repo).snapshot();
+    expect(result.plans).toHaveLength(0);
+    expect(result.versions).toHaveLength(0);
+    expect(result.deletedPlans).toHaveLength(1);
+    expect(result.plan).toBeUndefined();
+  });
 });
 
-
-function withPrevious(){const s=setup(),plan=structuredClone(s.rows().v8Plans[0]),version=structuredClone(s.rows().v8PlanVersions[0]);plan.id='00000000-0000-4000-8000-000000000091';version.id='00000000-0000-4000-8000-000000000092';version.planId=plan.id;version.weeklyTarget=2;plan.currentVersionId=version.id;plan.readOnly=true;s.rows().v8Plans.push(plan);s.rows().v8PlanVersions.push(version);return {...s,previousId:plan.id};}
-describe('reactivating previous plans',()=>{
- it('atomically selects the existing version, makes the old current read-only, and preserves training facts',async()=>{const s=withPrevious(),facts=structuredClone(s.rows().v8Workouts),versions=structuredClone(s.rows().v8PlanVersions);s.rows().v8State[0].planDismissedAt='2026-10-11T00:00:00Z';s.rows().v8State[0].nextWorkoutOverride={old:true};await s.lifecycle.activatePlan(s.previousId,s.revision());expect(s.rows().v8Plans.find(p=>p.id===s.planId).readOnly).toBe(true);expect(s.rows().v8Plans.find(p=>p.id===s.previousId).readOnly).toBe(false);expect(s.rows().v8State[0]).toMatchObject({currentPlanId:s.previousId,reviewWeeklyTarget:2});expect(s.rows().v8State[0].nextWorkoutOverride).toBeUndefined();expect(s.rows().v8State[0].planDismissedAt).toBeUndefined();expect(s.rows().v8Workouts).toEqual(facts);expect(s.rows().v8PlanVersions).toEqual(versions);expect(()=>validateBackupEnvelope(s.envelope())).not.toThrow();});
- it('activates a restored plan when there is no current plan',async()=>{const s=setup();await s.lifecycle.deletePlan(s.planId,s.revision());await s.lifecycle.restorePlan(s.planId,s.revision());await createV8Workflow(s.repo).activatePlan(s.planId,s.revision());expect(s.rows().v8State[0].currentPlanId).toBe(s.planId);expect(s.rows().v8Plans[0].readOnly).toBe(false);});
- it('rejects stale revision, restored generation, deleted plans and ongoing training without writes',async()=>{for(const reason of ['revision','generation','deleted','active','manual-active']){const s=withPrevious();await s.repo.readMetadata();if(reason==='generation')s.rows().metadata[0].restoreGeneration=99;if(reason==='deleted')s.rows().v8Plans[1].deletedAt='2026-10-11T00:00:00Z';if(reason.includes('active')){s.rows().v8Workouts[0].status='in_progress';if(reason==='manual-active')delete s.rows().v8Workouts[0].planVersionId;}const before=structuredClone(s.rows());await expect(s.lifecycle.activatePlan(s.previousId,s.revision()-(reason==='revision'?1:0))).rejects.toThrow();expect(s.rows()).toEqual(before);}});
- it('rolls back both plan flags when state write fails',async()=>{const s=withPrevious(),before=structuredClone(s.rows());s.fail('v8State');await expect(s.lifecycle.activatePlan(s.previousId,s.revision())).rejects.toThrow('injected');expect(s.rows()).toEqual(before);});
+function withPrevious() {
+  const s = setup(),
+    plan = structuredClone(s.rows().v8Plans[0]),
+    version = structuredClone(s.rows().v8PlanVersions[0]);
+  plan.id = '00000000-0000-4000-8000-000000000091';
+  version.id = '00000000-0000-4000-8000-000000000092';
+  version.planId = plan.id;
+  version.weeklyTarget = 2;
+  plan.currentVersionId = version.id;
+  plan.readOnly = true;
+  s.rows().v8Plans.push(plan);
+  s.rows().v8PlanVersions.push(version);
+  return { ...s, previousId: plan.id };
+}
+describe('reactivating previous plans', () => {
+  it('atomically selects the existing version, makes the old current read-only, and preserves training facts', async () => {
+    const s = withPrevious(),
+      facts = structuredClone(s.rows().v8Workouts),
+      versions = structuredClone(s.rows().v8PlanVersions);
+    s.rows().v8State[0].planDismissedAt = '2026-10-11T00:00:00Z';
+    s.rows().v8State[0].nextWorkoutOverride = { old: true };
+    await s.lifecycle.activatePlan(s.previousId, s.revision());
+    expect(s.rows().v8Plans.find(p => p.id === s.planId).readOnly).toBe(true);
+    expect(s.rows().v8Plans.find(p => p.id === s.previousId).readOnly).toBe(false);
+    expect(s.rows().v8State[0]).toMatchObject({ currentPlanId: s.previousId, reviewWeeklyTarget: 2 });
+    expect(s.rows().v8State[0].nextWorkoutOverride).toBeUndefined();
+    expect(s.rows().v8State[0].planDismissedAt).toBeUndefined();
+    expect(s.rows().v8Workouts).toEqual(facts);
+    expect(s.rows().v8PlanVersions).toEqual(versions);
+    expect(() => validateBackupEnvelope(s.envelope())).not.toThrow();
+  });
+  it('activates a restored plan when there is no current plan', async () => {
+    const s = setup();
+    await s.lifecycle.deletePlan(s.planId, s.revision());
+    await s.lifecycle.restorePlan(s.planId, s.revision());
+    await createV8Workflow(s.repo).activatePlan(s.planId, s.revision());
+    expect(s.rows().v8State[0].currentPlanId).toBe(s.planId);
+    expect(s.rows().v8Plans[0].readOnly).toBe(false);
+  });
+  it('rejects stale revision, restored generation, deleted plans and ongoing training without writes', async () => {
+    for (const reason of ['revision', 'generation', 'deleted', 'active', 'manual-active']) {
+      const s = withPrevious();
+      await s.repo.readMetadata();
+      if (reason === 'generation') s.rows().metadata[0].restoreGeneration = 99;
+      if (reason === 'deleted') s.rows().v8Plans[1].deletedAt = '2026-10-11T00:00:00Z';
+      if (reason.includes('active')) {
+        s.rows().v8Workouts[0].status = 'in_progress';
+        if (reason === 'manual-active') delete s.rows().v8Workouts[0].planVersionId;
+      }
+      const before = structuredClone(s.rows());
+      await expect(
+        s.lifecycle.activatePlan(s.previousId, s.revision() - (reason === 'revision' ? 1 : 0)),
+      ).rejects.toThrow();
+      expect(s.rows()).toEqual(before);
+    }
+  });
+  it('rolls back both plan flags when state write fails', async () => {
+    const s = withPrevious(),
+      before = structuredClone(s.rows());
+    s.fail('v8State');
+    await expect(s.lifecycle.activatePlan(s.previousId, s.revision())).rejects.toThrow('injected');
+    expect(s.rows()).toEqual(before);
+  });
 });

@@ -77,9 +77,13 @@
 本仓库已有的轮子，不得另造：
 
 - 输入校验用 `zod`；JWT 和推送签名用 `jose`；本地数据库用 `dexie`；文案用 `i18next`；路由（含 `/admin`）用 `react-router-dom`。
-- 本地日期运算用 `src/application/plan-presentation.ts` 的 `addDays` 和 `src/application/training-dates.ts` 的 `daysBetween`、`isLocalDate`；不要再写 `toISOString().slice(0,10)` 或 `86400000` 的换算。
-- 规范化 JSON 用 `src/domain/request-fingerprint.ts` 的 `canonical`。
+- 日期一律用 `src/domain/local-date.ts`（`todayIn`、`addDays`、`daysBetween`、`weekStart`、`isLocalDate`、`utcDay`、`DAY_MS`、`DEFAULT_TIME_ZONE`）；不要再写 `toISOString().slice(0,10)` 或 `86400000`，`npm run lint` 会拦截。
+- 规范化 JSON 用 `src/domain/request-fingerprint.ts` 的 `canonical`；十六进制和 SHA-256 用 `src/domain/hex.ts`。
+- 后端读请求体、同源校验、试用资格用 `src/backend/request.ts`；CSV 导出用 `src/backend/csv.ts` 的 `csvRow`。
+- 结束进行中的训练用 `src/application/training-stop.ts` 的 `endActiveWorkouts`。
 - 界面组件先用 `src/ui/components/kit`。
+
+代码格式由 Prettier 统一：提交前运行 `npm run format`，CI 会检查。
 
 不能省的：信任边界上的校验、防止丢数据的错误处理、安全、无障碍、用户明确要求的内容。走捷径且有已知限制时，在代码里留一行 `shortcut: <限制>，<何时升级>`。
 

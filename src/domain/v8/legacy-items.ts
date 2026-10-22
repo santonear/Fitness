@@ -7,10 +7,18 @@ import type { PlannedItem } from './contracts';
 function sameTarget(left: SetMetrics, right: SetMetrics): boolean {
   if (left.metricType !== right.metricType) return false;
   switch (left.metricType) {
-    case 'reps': return right.metricType === 'reps' && left.reps === right.reps;
-    case 'reps_load': return right.metricType === 'reps_load' && left.reps === right.reps && left.loadGrams === right.loadGrams;
-    case 'duration': return right.metricType === 'duration' && left.durationSeconds === right.durationSeconds;
-    case 'duration_distance': return right.metricType === 'duration_distance' && left.durationSeconds === right.durationSeconds && left.distanceMeters === right.distanceMeters;
+    case 'reps':
+      return right.metricType === 'reps' && left.reps === right.reps;
+    case 'reps_load':
+      return right.metricType === 'reps_load' && left.reps === right.reps && left.loadGrams === right.loadGrams;
+    case 'duration':
+      return right.metricType === 'duration' && left.durationSeconds === right.durationSeconds;
+    case 'duration_distance':
+      return (
+        right.metricType === 'duration_distance' &&
+        left.durationSeconds === right.durationSeconds &&
+        left.distanceMeters === right.distanceMeters
+      );
   }
 }
 

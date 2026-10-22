@@ -1,26 +1,242 @@
-import {afterEach,expect,it,vi} from 'vitest';
-import {createV8Workflow} from '../../src/application/v8-workflow';
-import {createPostpartumSafety} from '../../src/application/postpartum-safety';
-import {v8StateSchema} from '../../src/domain/schemas';
-import {DATA} from '../../src/engine/data';
-import {baseProfile} from '../../tools/eval/training-engine-profiles';
-import {toEngineProfile} from '../../src/application/engine-profile';
-import type {CoachProfile,WorkoutRecord} from '../../src/domain/v8/contracts';
-import type {Repository} from '../../src/persistence/repository';
-const at='2026-10-15T02:00:00.000Z',id='a1111111-1111-4111-8111-111111111111';
-function fixture(){
- vi.useFakeTimers();vi.setSystemTime(new Date(at));const p=baseProfile({population:{kind:'older_adult',fallsAnswers:[false,false,false]}}),walk=DATA.exercises.find(e=>e.slug==='walking')!;
- const profile:CoachProfile={goalText:'活动',goal:'health',weeklyTarget:3,sessionMinutes:30,scheduleOriginalText:'',place:'home',equipment:['none'],adultConfirmed:true,cautions:[],confirmedAt:at,population:p.population,screening:p.screening,healthStorageConsent:{acceptedAt:at}};
- let state=v8StateSchema.parse({id:'v8',migratedAt:at,legacyPlanIds:[],notice:{planCount:0,acknowledged:true},coachProfile:profile}),rows:WorkoutRecord[]=[{id,startedAt:at,localDate:'2026-10-15',timeZone:'Asia/Shanghai',status:'in_progress',plannedSetCount:2,plannedExercises:[{exerciseId:walk.id,itemIndex:0,plannedSetCount:2}],sets:[{exerciseId:walk.id,itemIndex:0,setIndex:0,durationSeconds:30,completedAt:at}]}],revision=0,fail=false;
- const repo={readMetadata:async()=>({dataRevision:revision,restoreGeneration:0}),write:async<T>(fn:()=>Promise<T>,expected?:number)=>{if(expected!==undefined&&expected!==revision)throw Error('STALE_REVISION');const before=structuredClone({state,rows,revision});try{const out=await fn();revision++;return out;}catch(e){({state,rows,revision}=before);throw e;}},db:{profiles:{toCollection:()=>({first:async()=>({timeZone:'Asia/Shanghai',locale:'zh'})})},sessions:{where:()=>({equals:()=>({count:async()=>0})})},v8Plans:{toArray:async()=>[]},v8Workouts:{get:async(key:string)=>structuredClone(rows.find(r=>r.id===key)),toArray:async()=>structuredClone(rows),put:async(row:WorkoutRecord)=>{rows=rows.map(old=>old.id===row.id?structuredClone(row):old);},add:async(row:WorkoutRecord)=>{rows.push(structuredClone(row));},where:()=>({equals:(status:string)=>({count:async()=>rows.filter(r=>r.status===status).length,toArray:async()=>structuredClone(rows.filter(r=>r.status===status))})})},v8State:{get:async()=>structuredClone(state),put:async(value:typeof state)=>{if(fail)throw Error('WRITE_FAILED');state=v8StateSchema.parse(value);}},trainingCheckins:{clear:async()=>{},get:async()=>undefined,toArray:async()=>[],where:()=>({belowOrEqual:()=>({delete:async()=>{}})})},aiMemoryNotes:{toArray:async()=>[]}}} as unknown as Repository;
- return {repo,workflow:createV8Workflow(repo),safety:createPostpartumSafety(repo),walk,get state(){return state},get rows(){return rows},get revision(){return revision},setItem:(item:NonNullable<WorkoutRecord['templateSnapshot']>['items'][number])=>{rows[0]={...rows[0],sets:[],plannedSetCount:item.sets,templateSnapshot:{id:'actual',name:'actual',estimatedMinutes:30,items:[item]},plannedExercises:[{exerciseId:item.exerciseId,itemIndex:0,plannedSetCount:item.sets}]};},fail:()=>{fail=true},reopen:()=>{rows[0].status='in_progress'},end:()=>{rows[0].status='partial'}};
+import { afterEach, expect, it, vi } from 'vitest';
+import { createV8Workflow } from '../../src/application/v8-workflow';
+import { createPostpartumSafety } from '../../src/application/postpartum-safety';
+import { v8StateSchema } from '../../src/domain/schemas';
+import { DATA } from '../../src/engine/data';
+import { baseProfile } from '../../tools/eval/training-engine-profiles';
+import { toEngineProfile } from '../../src/application/engine-profile';
+import type { CoachProfile, WorkoutRecord } from '../../src/domain/v8/contracts';
+import type { Repository } from '../../src/persistence/repository';
+const at = '2026-10-15T02:00:00.000Z',
+  id = 'a1111111-1111-4111-8111-111111111111';
+function fixture() {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date(at));
+  const p = baseProfile({ population: { kind: 'older_adult', fallsAnswers: [false, false, false] } }),
+    walk = DATA.exercises.find(e => e.slug === 'walking')!;
+  const profile: CoachProfile = {
+    goalText: '活动',
+    goal: 'health',
+    weeklyTarget: 3,
+    sessionMinutes: 30,
+    scheduleOriginalText: '',
+    place: 'home',
+    equipment: ['none'],
+    adultConfirmed: true,
+    cautions: [],
+    confirmedAt: at,
+    population: p.population,
+    screening: p.screening,
+    healthStorageConsent: { acceptedAt: at },
+  };
+  let state = v8StateSchema.parse({
+      id: 'v8',
+      migratedAt: at,
+      legacyPlanIds: [],
+      notice: { planCount: 0, acknowledged: true },
+      coachProfile: profile,
+    }),
+    rows: WorkoutRecord[] = [
+      {
+        id,
+        startedAt: at,
+        localDate: '2026-10-15',
+        timeZone: 'Asia/Shanghai',
+        status: 'in_progress',
+        plannedSetCount: 2,
+        plannedExercises: [{ exerciseId: walk.id, itemIndex: 0, plannedSetCount: 2 }],
+        sets: [{ exerciseId: walk.id, itemIndex: 0, setIndex: 0, durationSeconds: 30, completedAt: at }],
+      },
+    ],
+    revision = 0,
+    fail = false;
+  const repo = {
+    readMetadata: async () => ({ dataRevision: revision, restoreGeneration: 0 }),
+    write: async <T>(fn: () => Promise<T>, expected?: number) => {
+      if (expected !== undefined && expected !== revision) throw Error('STALE_REVISION');
+      const before = structuredClone({ state, rows, revision });
+      try {
+        const out = await fn();
+        revision++;
+        return out;
+      } catch (e) {
+        ({ state, rows, revision } = before);
+        throw e;
+      }
+    },
+    db: {
+      profiles: { toCollection: () => ({ first: async () => ({ timeZone: 'Asia/Shanghai', locale: 'zh' }) }) },
+      sessions: { where: () => ({ equals: () => ({ count: async () => 0 }) }) },
+      v8Plans: { toArray: async () => [] },
+      v8Workouts: {
+        get: async (key: string) => structuredClone(rows.find(r => r.id === key)),
+        toArray: async () => structuredClone(rows),
+        put: async (row: WorkoutRecord) => {
+          rows = rows.map(old => (old.id === row.id ? structuredClone(row) : old));
+        },
+        add: async (row: WorkoutRecord) => {
+          rows.push(structuredClone(row));
+        },
+        where: () => ({
+          equals: (status: string) => ({
+            count: async () => rows.filter(r => r.status === status).length,
+            toArray: async () => structuredClone(rows.filter(r => r.status === status)),
+          }),
+        }),
+      },
+      v8State: {
+        get: async () => structuredClone(state),
+        put: async (value: typeof state) => {
+          if (fail) throw Error('WRITE_FAILED');
+          state = v8StateSchema.parse(value);
+        },
+      },
+      trainingCheckins: {
+        clear: async () => {},
+        get: async () => undefined,
+        toArray: async () => [],
+        where: () => ({ belowOrEqual: () => ({ delete: async () => {} }) }),
+      },
+      aiMemoryNotes: { toArray: async () => [] },
+    },
+  } as unknown as Repository;
+  return {
+    repo,
+    workflow: createV8Workflow(repo),
+    safety: createPostpartumSafety(repo),
+    walk,
+    get state() {
+      return state;
+    },
+    get rows() {
+      return rows;
+    },
+    get revision() {
+      return revision;
+    },
+    setItem: (item: NonNullable<WorkoutRecord['templateSnapshot']>['items'][number]) => {
+      rows[0] = {
+        ...rows[0],
+        sets: [],
+        plannedSetCount: item.sets,
+        templateSnapshot: { id: 'actual', name: 'actual', estimatedMinutes: 30, items: [item] },
+        plannedExercises: [{ exerciseId: item.exerciseId, itemIndex: 0, plannedSetCount: item.sets }],
+      };
+    },
+    fail: () => {
+      fail = true;
+    },
+    reopen: () => {
+      rows[0].status = 'in_progress';
+    },
+    end: () => {
+      rows[0].status = 'partial';
+    },
+  };
 }
-afterEach(()=>vi.useRealTimers());
-it('ends actual training and preserves completed facts before unknown injury answers are resolved',async()=>{const f=fixture(),facts=structuredClone(f.rows[0].sets);await f.workflow.reportOlderFall(id,0);expect(f.rows[0]).toMatchObject({status:'partial',endedAt:at,sets:facts});expect(f.state.olderSafety?.reviewRequiredAt).toBe(at);expect(f.state.cardiacPause).toBeUndefined();await expect(f.workflow.start(undefined,f.walk.id)).rejects.toThrow('FALL_PROFESSIONAL_REQUIRED');await expect(f.workflow.answerOlderFall({headHit:false} as never,f.revision)).rejects.toThrow();expect(f.state.olderSafety?.reviewRequiredAt).toBe(at);});
-it.each([{headHit:true,cannotBearWeight:false},{headHit:false,cannotBearWeight:true}])('persists each injury condition independently and cannot replace it with negative answers',async answers=>{const f=fixture();await f.workflow.reportOlderFall(id,0);await f.workflow.answerOlderFall(answers,f.revision);expect(f.state.olderSafety?.injuryConfirmed).toBe(true);await expect(f.workflow.answerOlderFall({headHit:false,cannotBearWeight:false},f.revision)).rejects.toThrow('FALL_PROFESSIONAL_REQUIRED');await f.workflow.saveEngineSettings({...f.state.coachProfile!,healthStorageConsent:undefined,population:undefined,screening:undefined},f.revision);f.reopen();await expect(f.workflow.recordSet(id,0,1,{durationSeconds:30})).rejects.toThrow('FALL_PROFESSIONAL_REQUIRED');await expect(f.workflow.confirmPainProfessionalSeen(f.revision)).rejects.toThrow();await expect(f.workflow.confirmPostpartumProfessionalSeen(f.revision)).rejects.toThrow();f.end();await f.workflow.confirmOlderFallProfessionalSeen(f.revision);expect(f.state.olderSafety?.reviewRequiredAt).toBeUndefined();expect(await f.workflow.start(undefined,f.walk.id)).toMatchObject({status:'in_progress'});});
-it('uses explicit double-negative evidence to regress one known stage, with the source stage-one floor',async()=>{const f=fixture();await f.repo.db.v8State.put({...f.state,olderSafety:{fallAt:at,balanceStage:3}});await f.workflow.reportOlderFall(id,f.revision);await f.workflow.answerOlderFall({headHit:false,cannotBearWeight:false},f.revision);expect(f.state.olderSafety).toMatchObject({balanceStage:2});expect(f.state.olderSafety?.reviewRequiredAt).toBeUndefined();expect(toEngineProfile(f.state.coachProfile!,{asOfDate:'2026-10-15',olderSafety:f.state.olderSafety})?.olderSafety).toEqual({fallPaused:false,balanceStage:2});f.reopen();await f.workflow.reportOlderFall(id,f.revision);await f.workflow.answerOlderFall({headHit:false,cannotBearWeight:false},f.revision);expect(f.state.olderSafety?.balanceStage).toBe(1);});
-it('does not infer an advanced balance stage from missing history',async()=>{const f=fixture();await f.workflow.reportOlderFall(id,0);await f.workflow.answerOlderFall({headHit:false,cannotBearWeight:false},f.revision);expect(f.state.olderSafety?.balanceStage).toBe(1);});
-it('rolls back ended training and the independent injury lock together on write failure',async()=>{const f=fixture(),before=structuredClone(f.rows);f.fail();await expect(f.workflow.reportOlderFall(id,0)).rejects.toThrow('WRITE_FAILED');expect(f.rows).toEqual(before);expect(f.state.olderSafety).toBeUndefined();expect(f.revision).toBe(0);});
+afterEach(() => vi.useRealTimers());
+it('ends actual training and preserves completed facts before unknown injury answers are resolved', async () => {
+  const f = fixture(),
+    facts = structuredClone(f.rows[0].sets);
+  await f.workflow.reportOlderFall(id, 0);
+  expect(f.rows[0]).toMatchObject({ status: 'partial', endedAt: at, sets: facts });
+  expect(f.state.olderSafety?.reviewRequiredAt).toBe(at);
+  expect(f.state.cardiacPause).toBeUndefined();
+  await expect(f.workflow.start(undefined, f.walk.id)).rejects.toThrow('FALL_PROFESSIONAL_REQUIRED');
+  await expect(f.workflow.answerOlderFall({ headHit: false } as never, f.revision)).rejects.toThrow();
+  expect(f.state.olderSafety?.reviewRequiredAt).toBe(at);
+});
+it.each([
+  { headHit: true, cannotBearWeight: false },
+  { headHit: false, cannotBearWeight: true },
+])('persists each injury condition independently and cannot replace it with negative answers', async answers => {
+  const f = fixture();
+  await f.workflow.reportOlderFall(id, 0);
+  await f.workflow.answerOlderFall(answers, f.revision);
+  expect(f.state.olderSafety?.injuryConfirmed).toBe(true);
+  await expect(f.workflow.answerOlderFall({ headHit: false, cannotBearWeight: false }, f.revision)).rejects.toThrow(
+    'FALL_PROFESSIONAL_REQUIRED',
+  );
+  await f.workflow.saveEngineSettings(
+    { ...f.state.coachProfile!, healthStorageConsent: undefined, population: undefined, screening: undefined },
+    f.revision,
+  );
+  f.reopen();
+  await expect(f.workflow.recordSet(id, 0, 1, { durationSeconds: 30 })).rejects.toThrow('FALL_PROFESSIONAL_REQUIRED');
+  await expect(f.workflow.confirmPainProfessionalSeen(f.revision)).rejects.toThrow();
+  await expect(f.workflow.confirmPostpartumProfessionalSeen(f.revision)).rejects.toThrow();
+  f.end();
+  await f.workflow.confirmOlderFallProfessionalSeen(f.revision);
+  expect(f.state.olderSafety?.reviewRequiredAt).toBeUndefined();
+  expect(await f.workflow.start(undefined, f.walk.id)).toMatchObject({ status: 'in_progress' });
+});
+it('uses explicit double-negative evidence to regress one known stage, with the source stage-one floor', async () => {
+  const f = fixture();
+  await f.repo.db.v8State.put({ ...f.state, olderSafety: { fallAt: at, balanceStage: 3 } });
+  await f.workflow.reportOlderFall(id, f.revision);
+  await f.workflow.answerOlderFall({ headHit: false, cannotBearWeight: false }, f.revision);
+  expect(f.state.olderSafety).toMatchObject({ balanceStage: 2 });
+  expect(f.state.olderSafety?.reviewRequiredAt).toBeUndefined();
+  expect(
+    toEngineProfile(f.state.coachProfile!, { asOfDate: '2026-10-15', olderSafety: f.state.olderSafety })?.olderSafety,
+  ).toEqual({ fallPaused: false, balanceStage: 2 });
+  f.reopen();
+  await f.workflow.reportOlderFall(id, f.revision);
+  await f.workflow.answerOlderFall({ headHit: false, cannotBearWeight: false }, f.revision);
+  expect(f.state.olderSafety?.balanceStage).toBe(1);
+});
+it('does not infer an advanced balance stage from missing history', async () => {
+  const f = fixture();
+  await f.workflow.reportOlderFall(id, 0);
+  await f.workflow.answerOlderFall({ headHit: false, cannotBearWeight: false }, f.revision);
+  expect(f.state.olderSafety?.balanceStage).toBe(1);
+});
+it('rolls back ended training and the independent injury lock together on write failure', async () => {
+  const f = fixture(),
+    before = structuredClone(f.rows);
+  f.fail();
+  await expect(f.workflow.reportOlderFall(id, 0)).rejects.toThrow('WRITE_FAILED');
+  expect(f.rows).toEqual(before);
+  expect(f.state.olderSafety).toBeUndefined();
+  expect(f.revision).toBe(0);
+});
 
-it('professional injury review releases only the fall lock and backup retains the independent pauses',async()=>{const f=fixture();await f.repo.db.v8State.put({...f.state,cardiacPause:{requiredAt:at},postpartumSafety:{urgentAt:at},trainingPause:{requiredAt:at}});await f.workflow.reportOlderFall(id,0);await f.workflow.answerOlderFall({headHit:true,cannotBearWeight:false},f.revision);await f.workflow.confirmOlderFallProfessionalSeen(f.revision);const restored=v8StateSchema.parse(JSON.parse(JSON.stringify(f.state)));expect(restored.olderSafety?.reviewRequiredAt).toBeUndefined();expect(restored.cardiacPause).toEqual({requiredAt:at});expect(restored.trainingPause).toEqual({requiredAt:at});expect(restored.postpartumSafety?.urgentAt).toBe(at);});
-it('does not reuse a previous professional review for a new fall',async()=>{const f=fixture();await f.workflow.reportOlderFall(id,0);await f.workflow.confirmOlderFallProfessionalSeen(f.revision);f.reopen();vi.setSystemTime(new Date('2026-10-16T02:00:00Z'));await f.workflow.reportOlderFall(id,f.revision);expect(f.state.olderSafety?.professionalSeenAt).toBeUndefined();expect(f.state.olderSafety?.reviewRequiredAt).toBe('2026-10-16T02:00:00.000Z');});
+it('professional injury review releases only the fall lock and backup retains the independent pauses', async () => {
+  const f = fixture();
+  await f.repo.db.v8State.put({
+    ...f.state,
+    cardiacPause: { requiredAt: at },
+    postpartumSafety: { urgentAt: at },
+    trainingPause: { requiredAt: at },
+  });
+  await f.workflow.reportOlderFall(id, 0);
+  await f.workflow.answerOlderFall({ headHit: true, cannotBearWeight: false }, f.revision);
+  await f.workflow.confirmOlderFallProfessionalSeen(f.revision);
+  const restored = v8StateSchema.parse(JSON.parse(JSON.stringify(f.state)));
+  expect(restored.olderSafety?.reviewRequiredAt).toBeUndefined();
+  expect(restored.cardiacPause).toEqual({ requiredAt: at });
+  expect(restored.trainingPause).toEqual({ requiredAt: at });
+  expect(restored.postpartumSafety?.urgentAt).toBe(at);
+});
+it('does not reuse a previous professional review for a new fall', async () => {
+  const f = fixture();
+  await f.workflow.reportOlderFall(id, 0);
+  await f.workflow.confirmOlderFallProfessionalSeen(f.revision);
+  f.reopen();
+  vi.setSystemTime(new Date('2026-10-16T02:00:00Z'));
+  await f.workflow.reportOlderFall(id, f.revision);
+  expect(f.state.olderSafety?.professionalSeenAt).toBeUndefined();
+  expect(f.state.olderSafety?.reviewRequiredAt).toBe('2026-10-16T02:00:00.000Z');
+});
+it('checks every active workout start time before ending any of them', async () => {
+  const f = fixture();
+  f.rows.push({
+    ...structuredClone(f.rows[0]),
+    id: 'b2222222-2222-4222-8222-222222222222',
+    startedAt: '2026-10-16T02:00:00.000Z',
+  });
+  const before = structuredClone(f.rows);
+  await expect(f.workflow.reportOlderFall(id, 0)).rejects.toThrow('INVALID_WORKOUT_TIME');
+  expect(f.rows).toEqual(before);
+  expect(f.state.olderSafety).toBeUndefined();
+});

@@ -11,7 +11,10 @@ const responseEnvelope = z.strictObject({ schemaVersion: version, payload: z.unk
 export function readCoachRequestEnvelope(raw: unknown): CoachRequest {
   return requestEnvelope.parse(raw).payload;
 }
-export function writeCoachRequestEnvelope(request: CoachRequest, schemaVersion: typeof coachWireVersions[number] = '8.1') {
+export function writeCoachRequestEnvelope(
+  request: CoachRequest,
+  schemaVersion: (typeof coachWireVersions)[number] = '8.1',
+) {
   return requestEnvelope.parse({ schemaVersion, payload: request });
 }
 export function readCoachResponseEnvelope(request: CoachRequest, raw: unknown) {

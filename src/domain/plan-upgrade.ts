@@ -4,36 +4,75 @@
 
 /** The 15 muscle regions drawn by the AnatomyMap component, front and back. */
 export const MUSCLE_GROUPS = [
-  'traps', 'delts', 'chest', 'biceps', 'triceps', 'forearms', 'abs', 'obliques',
-  'lats', 'lowerback', 'glutes', 'quads', 'adductors', 'hamstrings', 'calves',
+  'traps',
+  'delts',
+  'chest',
+  'biceps',
+  'triceps',
+  'forearms',
+  'abs',
+  'obliques',
+  'lats',
+  'lowerback',
+  'glutes',
+  'quads',
+  'adductors',
+  'hamstrings',
+  'calves',
 ] as const;
-export type MuscleGroup = typeof MUSCLE_GROUPS[number];
+export type MuscleGroup = (typeof MUSCLE_GROUPS)[number];
 
 export const MUSCLE_GROUP_NAMES: Record<MuscleGroup, [zh: string, en: string]> = {
-  traps: ['斜方肌', 'Traps'], delts: ['三角肌', 'Shoulders'], chest: ['胸大肌', 'Chest'],
-  biceps: ['肱二头', 'Biceps'], triceps: ['肱三头', 'Triceps'], forearms: ['前臂', 'Forearms'],
-  abs: ['腹肌', 'Abs'], obliques: ['腹斜肌', 'Obliques'], lats: ['背阔肌', 'Lats'],
-  lowerback: ['下背', 'Lower back'], glutes: ['臀大肌', 'Glutes'], quads: ['股四头', 'Quads'],
-  adductors: ['内收肌', 'Adductors'], hamstrings: ['腘绳肌', 'Hamstrings'], calves: ['小腿', 'Calves'],
+  traps: ['斜方肌', 'Traps'],
+  delts: ['三角肌', 'Shoulders'],
+  chest: ['胸大肌', 'Chest'],
+  biceps: ['肱二头', 'Biceps'],
+  triceps: ['肱三头', 'Triceps'],
+  forearms: ['前臂', 'Forearms'],
+  abs: ['腹肌', 'Abs'],
+  obliques: ['腹斜肌', 'Obliques'],
+  lats: ['背阔肌', 'Lats'],
+  lowerback: ['下背', 'Lower back'],
+  glutes: ['臀大肌', 'Glutes'],
+  quads: ['股四头', 'Quads'],
+  adductors: ['内收肌', 'Adductors'],
+  hamstrings: ['腘绳肌', 'Hamstrings'],
+  calves: ['小腿', 'Calves'],
 };
 
 /** Catalog muscle ids (registry primaryMuscles / secondaryMuscles) → drawn region. */
 export const MUSCLE_TO_GROUP: Readonly<Record<string, MuscleGroup>> = {
-  trapezius: 'traps', rhomboids: 'traps',
-  'anterior-deltoid': 'delts', 'lateral-deltoid': 'delts', 'posterior-deltoid': 'delts', supraspinatus: 'delts',
-  'pectoralis-major': 'chest', 'serratus-anterior': 'chest',
-  'biceps-brachii': 'biceps', brachialis: 'biceps',
+  trapezius: 'traps',
+  rhomboids: 'traps',
+  'anterior-deltoid': 'delts',
+  'lateral-deltoid': 'delts',
+  'posterior-deltoid': 'delts',
+  supraspinatus: 'delts',
+  'pectoralis-major': 'chest',
+  'serratus-anterior': 'chest',
+  'biceps-brachii': 'biceps',
+  brachialis: 'biceps',
   'triceps-brachii': 'triceps',
-  'forearm-flexors': 'forearms', 'forearm-extensors': 'forearms', brachioradialis: 'forearms', forearms: 'forearms',
-  'rectus-abdominis': 'abs', 'transverse-abdominis': 'abs',
+  'forearm-flexors': 'forearms',
+  'forearm-extensors': 'forearms',
+  brachioradialis: 'forearms',
+  forearms: 'forearms',
+  'rectus-abdominis': 'abs',
+  'transverse-abdominis': 'abs',
   obliques: 'obliques',
   'latissimus-dorsi': 'lats',
-  'erector-spinae': 'lowerback', 'quadratus-lumborum': 'lowerback',
-  'gluteus-maximus': 'glutes', 'gluteus-medius': 'glutes', abductors: 'glutes',
-  quadriceps: 'quads', 'hip-flexors': 'quads',
+  'erector-spinae': 'lowerback',
+  'quadratus-lumborum': 'lowerback',
+  'gluteus-maximus': 'glutes',
+  'gluteus-medius': 'glutes',
+  abductors: 'glutes',
+  quadriceps: 'quads',
+  'hip-flexors': 'quads',
   adductors: 'adductors',
   hamstrings: 'hamstrings',
-  gastrocnemius: 'calves', soleus: 'calves', 'tibialis-anterior': 'calves',
+  gastrocnemius: 'calves',
+  soleus: 'calves',
+  'tibialis-anterior': 'calves',
 };
 
 export const muscleGroupOf = (muscleId: string): MuscleGroup | undefined => MUSCLE_TO_GROUP[muscleId];
@@ -69,12 +108,12 @@ export interface FigureShape {
 }
 
 export const HOME_PANEL_STYLES = ['hero', 'ring', 'twin'] as const;
-export type HomePanelStyle = typeof HOME_PANEL_STYLES[number];
+export type HomePanelStyle = (typeof HOME_PANEL_STYLES)[number];
 /** Bo 2026-10-21: the big-number panel is the default. */
 export const DEFAULT_HOME_PANEL_STYLE: HomePanelStyle = 'hero';
 
 export const NOW_MINUTES = [5, 15, 30, 45] as const;
-export type NowMinutes = typeof NOW_MINUTES[number];
+export type NowMinutes = (typeof NOW_MINUTES)[number];
 
 /** Optional weekly-budget layer on top of an existing plan; absent means "by day" as before. */
 export interface WeeklyBudget {
@@ -91,8 +130,14 @@ export interface BudgetRequest {
 }
 
 /** Home-testable items of 国民体质测定标准（2023 年修订）. */
-export const FITNESS_TEST_ITEMS = ['pushup', 'situp60s', 'sitAndReachCm', 'singleLegStandEyesClosedS', 'chairStand30s'] as const;
-export type FitnessTestItem = typeof FITNESS_TEST_ITEMS[number];
+export const FITNESS_TEST_ITEMS = [
+  'pushup',
+  'situp60s',
+  'sitAndReachCm',
+  'singleLegStandEyesClosedS',
+  'chairStand30s',
+] as const;
+export type FitnessTestItem = (typeof FITNESS_TEST_ITEMS)[number];
 
 export interface FitnessTestRecord {
   id: string;
@@ -103,7 +148,7 @@ export interface FitnessTestRecord {
 }
 
 export const ROUTES = ['health', 'shape', 'postpartum'] as const;
-export type Route = typeof ROUTES[number];
+export type Route = (typeof ROUTES)[number];
 
 export interface Camp {
   id: string;
@@ -181,16 +226,46 @@ export interface HomePanelProps {
 }
 
 /** Component line: src/ui/components/kit/JourneyTrail.tsx */
-export interface JourneyStop { label: string; state: 'done' | 'now' | 'next' }
-export interface JourneyTrailProps { stops: readonly JourneyStop[] }
+export interface JourneyStop {
+  label: string;
+  state: 'done' | 'now' | 'next';
+}
+export interface JourneyTrailProps {
+  stops: readonly JourneyStop[];
+}
 
 /** Rules line: src/application/rules/plan-upgrade.ts */
-export interface SetEntry { exerciseId: string; completedSets: number }
-export interface LiftEntry { exerciseId: string; localDate: string; weightKg: number; reps: number }
-export interface PersonalRecord { exerciseId: string; e1rmKg: number; localDate: string }
-export interface NowSessionContext { weekLoads: readonly MuscleLoad[]; usedMinutesThisWeek: number; budget?: WeeklyBudget; planId?: string }
-export interface NowSession { exerciseIds: string[]; minutes: number; focus: SessionMuscleFocus }
-export interface BodyAgeResult { years: number; items: number; estimated: true }
+export interface SetEntry {
+  exerciseId: string;
+  completedSets: number;
+}
+export interface LiftEntry {
+  exerciseId: string;
+  localDate: string;
+  weightKg: number;
+  reps: number;
+}
+export interface PersonalRecord {
+  exerciseId: string;
+  e1rmKg: number;
+  localDate: string;
+}
+export interface NowSessionContext {
+  weekLoads: readonly MuscleLoad[];
+  usedMinutesThisWeek: number;
+  budget?: WeeklyBudget;
+  planId?: string;
+}
+export interface NowSession {
+  exerciseIds: string[];
+  minutes: number;
+  focus: SessionMuscleFocus;
+}
+export interface BodyAgeResult {
+  years: number;
+  items: number;
+  estimated: true;
+}
 export interface BodyChangeInput {
   route?: Route;
   heightCm?: number;

@@ -21,7 +21,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const base = process.env.BASE_SHA;
   let scope = 'full';
   if (process.env.GITHUB_EVENT_NAME === 'pull_request' && base) {
-    const files = execFileSync('git', ['diff', '--name-only', `${base}...HEAD`], { encoding: 'utf8' }).split('\n').filter(Boolean);
+    const files = execFileSync('git', ['diff', '--name-only', `${base}...HEAD`], { encoding: 'utf8' })
+      .split('\n')
+      .filter(Boolean);
     scope = scopeFor(files);
     console.log(`${files.length} changed file(s) -> scope ${scope}`);
   } else console.log(`${process.env.GITHUB_EVENT_NAME ?? 'local'} run -> scope full`);

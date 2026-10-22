@@ -7,7 +7,10 @@ export function useWidth<T extends HTMLElement>(fallback = 343) {
   useEffect(() => {
     const node = ref.current;
     if (!node) return;
-    const update = () => { const next = Math.round(node.getBoundingClientRect().width); if (next > 0) setWidth(next); };
+    const update = () => {
+      const next = Math.round(node.getBoundingClientRect().width);
+      if (next > 0) setWidth(next);
+    };
     update();
     if (typeof ResizeObserver === 'undefined') return;
     const observer = new ResizeObserver(update);

@@ -35,7 +35,8 @@ for (const file of files) {
     const target = resolve(dirname(file), spec);
     if (!target.startsWith(src + '/')) continue;
     const to = layerOf(target);
-    if (banned.includes(to)) violations.push(`${relative(root, file)} -> ${relative(root, target)} (${from} must not import ${to})`);
+    if (banned.includes(to))
+      violations.push(`${relative(root, file)} -> ${relative(root, target)} (${from} must not import ${to})`);
   }
 }
 

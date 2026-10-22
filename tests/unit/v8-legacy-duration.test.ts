@@ -4,7 +4,8 @@ import { legacyPlanMinutes, legacyTemplateMinutes } from '../../src/domain/v8/le
 describe('approved legacy duration normalization', () => {
   it('retains valid actual durations, including the exact boundaries, without estimating', () => {
     const estimate = vi.fn(() => 99);
-    for (const minutes of [15, 25, 45, 120]) expect(legacyTemplateMinutes(minutes, estimate)).toEqual({ minutes, estimated: false });
+    for (const minutes of [15, 25, 45, 120])
+      expect(legacyTemplateMinutes(minutes, estimate)).toEqual({ minutes, estimated: false });
     expect(estimate).not.toHaveBeenCalled();
   });
   it('estimates missing, zero, malformed and out-of-range durations, preserving the original input', () => {
@@ -20,10 +21,12 @@ describe('approved legacy duration normalization', () => {
   it('clamps estimated durations to 15–120 minutes and rejects unavailable estimates', () => {
     expect(legacyTemplateMinutes(undefined, () => 5)).toEqual({ minutes: 15, estimated: true });
     expect(legacyTemplateMinutes(undefined, () => 300)).toEqual({ minutes: 120, estimated: true });
-    for (const value of [NaN, Infinity, -Infinity]) expect(() => legacyTemplateMinutes(undefined, () => value)).toThrow('Duration estimation must be finite');
+    for (const value of [NaN, Infinity, -Infinity])
+      expect(() => legacyTemplateMinutes(undefined, () => value)).toThrow('Duration estimation must be finite');
   });
   it('keeps legal onboarding slots before the template median', () => {
-    for (const slot of [30, 40, 50, 60, 70, 80, 90, 100, 110, 120]) expect(legacyPlanMinutes(slot, [15, 25])).toBe(slot);
+    for (const slot of [30, 40, 50, 60, 70, 80, 90, 100, 110, 120])
+      expect(legacyPlanMinutes(slot, [15, 25])).toBe(slot);
   });
   it('uses the median for absent and invalid slots without changing template ordering', () => {
     const durations = [90, 15, 30];

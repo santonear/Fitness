@@ -1,46 +1,410 @@
-import {prescribe} from '../../src/engine/dose';
-import {runGates} from '../../src/engine/gates';
-import {Rules} from '../../src/engine/data';
-import {v8CoachProfileSchema} from '../../src/domain/schemas';
-import {afterEach,expect,it,vi} from 'vitest';
-import {createV8Workflow} from '../../src/application/v8-workflow';
-import {createPostpartumSafety,postpartumReportSchema,twoSymptomFreeWeeks} from '../../src/application/postpartum-safety';
-import {v8StateSchema,v8WorkoutSchema} from '../../src/domain/schemas';
-import {DATA} from '../../src/engine/data';
-import {baseProfile} from '../../tools/eval/training-engine-profiles';
-import {toEngineProfile} from '../../src/application/engine-profile';
-import type {CoachProfile,WorkoutRecord} from '../../src/domain/v8/contracts';
-import type {Repository} from '../../src/persistence/repository';
-const at='2026-10-15T02:00:00.000Z',id='a1111111-1111-4111-8111-111111111111';
-const urgent=DATA.rules.find(r=>r.id==='postpartum.urgent')!.value!.items as string[],symptoms=DATA.rules.find(r=>r.id==='postpartum.symptom_regression')!.value!.when.contains_any as string[];
-const negative=()=>({urgent:Object.fromEntries(urgent.map(k=>[k,false])),regression:Object.fromEntries(symptoms.map(k=>[k,false]))});
-function fixture(){
- vi.useFakeTimers();vi.setSystemTime(new Date(at));const p=baseProfile({population:{kind:'postpartum',weeksSinceBirth:20,delivery:'vaginal',cleared:true}}),walk=DATA.exercises.find(e=>e.slug==='walking')!;
- const profile:CoachProfile={goalText:'活动',goal:'health',weeklyTarget:3,sessionMinutes:30,scheduleOriginalText:'',place:'home',equipment:['none'],adultConfirmed:true,cautions:[],confirmedAt:at,population:p.population,screening:p.screening,healthStorageConsent:{acceptedAt:at}};
- let state=v8StateSchema.parse({id:'v8',migratedAt:at,legacyPlanIds:[],notice:{planCount:0,acknowledged:true},coachProfile:profile}),rows:WorkoutRecord[]=[{id,startedAt:at,localDate:'2026-10-15',timeZone:'Asia/Shanghai',status:'in_progress',plannedSetCount:2,plannedExercises:[{exerciseId:walk.id,itemIndex:0,plannedSetCount:2}],sets:[{exerciseId:walk.id,itemIndex:0,setIndex:0,durationSeconds:30,completedAt:at}]}],revision=0,fail=false;
- const repo={readMetadata:async()=>({dataRevision:revision,restoreGeneration:0}),write:async<T>(fn:()=>Promise<T>,expected?:number)=>{if(expected!==undefined&&expected!==revision)throw Error('STALE_REVISION');const before=structuredClone({state,rows,revision});try{const out=await fn();revision++;return out;}catch(e){({state,rows,revision}=before);throw e;}},db:{profiles:{toCollection:()=>({first:async()=>({timeZone:'Asia/Shanghai',locale:'zh'})})},sessions:{where:()=>({equals:()=>({count:async()=>0})})},v8Plans:{toArray:async()=>[]},v8Workouts:{get:async(key:string)=>structuredClone(rows.find(r=>r.id===key)),toArray:async()=>structuredClone(rows),put:async(row:WorkoutRecord)=>{rows=rows.map(old=>old.id===row.id?structuredClone(row):old);},add:async(row:WorkoutRecord)=>{rows.push(structuredClone(row));},where:()=>({equals:(status:string)=>({count:async()=>rows.filter(r=>r.status===status).length,toArray:async()=>structuredClone(rows.filter(r=>r.status===status))})})},v8State:{get:async()=>structuredClone(state),put:async(value:typeof state)=>{if(fail)throw Error('WRITE_FAILED');state=v8StateSchema.parse(value);}},trainingCheckins:{clear:async()=>{},get:async()=>undefined,toArray:async()=>[],where:()=>({belowOrEqual:()=>({delete:async()=>{}})})},aiMemoryNotes:{toArray:async()=>[]}}} as unknown as Repository;
- return {repo,workflow:createV8Workflow(repo),safety:createPostpartumSafety(repo),walk,get state(){return state},get rows(){return rows},get revision(){return revision},setItem:(item:NonNullable<WorkoutRecord['templateSnapshot']>['items'][number])=>{rows[0]={...rows[0],sets:[],plannedSetCount:item.sets,templateSnapshot:{id:'actual',name:'actual',estimatedMinutes:30,items:[item]},plannedExercises:[{exerciseId:item.exerciseId,itemIndex:0,plannedSetCount:item.sets}]};},fail:()=>{fail=true},reopen:()=>{rows[0].status='in_progress'},end:()=>{rows[0].status='partial'}};
+import { prescribe } from '../../src/engine/dose';
+import { runGates } from '../../src/engine/gates';
+import { Rules } from '../../src/engine/data';
+import { v8CoachProfileSchema } from '../../src/domain/schemas';
+import { afterEach, expect, it, vi } from 'vitest';
+import { createV8Workflow } from '../../src/application/v8-workflow';
+import {
+  createPostpartumSafety,
+  postpartumReportSchema,
+  twoSymptomFreeWeeks,
+} from '../../src/application/postpartum-safety';
+import { v8StateSchema, v8WorkoutSchema } from '../../src/domain/schemas';
+import { DATA } from '../../src/engine/data';
+import { baseProfile } from '../../tools/eval/training-engine-profiles';
+import { toEngineProfile } from '../../src/application/engine-profile';
+import type { CoachProfile, WorkoutRecord } from '../../src/domain/v8/contracts';
+import type { Repository } from '../../src/persistence/repository';
+const at = '2026-10-15T02:00:00.000Z',
+  id = 'a1111111-1111-4111-8111-111111111111';
+const urgent = DATA.rules.find(r => r.id === 'postpartum.urgent')!.value!.items as string[],
+  symptoms = DATA.rules.find(r => r.id === 'postpartum.symptom_regression')!.value!.when.contains_any as string[];
+const negative = () => ({
+  urgent: Object.fromEntries(urgent.map(k => [k, false])),
+  regression: Object.fromEntries(symptoms.map(k => [k, false])),
+});
+function fixture() {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date(at));
+  const p = baseProfile({
+      population: { kind: 'postpartum', weeksSinceBirth: 20, delivery: 'vaginal', cleared: true },
+    }),
+    walk = DATA.exercises.find(e => e.slug === 'walking')!;
+  const profile: CoachProfile = {
+    goalText: '活动',
+    goal: 'health',
+    weeklyTarget: 3,
+    sessionMinutes: 30,
+    scheduleOriginalText: '',
+    place: 'home',
+    equipment: ['none'],
+    adultConfirmed: true,
+    cautions: [],
+    confirmedAt: at,
+    population: p.population,
+    screening: p.screening,
+    healthStorageConsent: { acceptedAt: at },
+  };
+  let state = v8StateSchema.parse({
+      id: 'v8',
+      migratedAt: at,
+      legacyPlanIds: [],
+      notice: { planCount: 0, acknowledged: true },
+      coachProfile: profile,
+    }),
+    rows: WorkoutRecord[] = [
+      {
+        id,
+        startedAt: at,
+        localDate: '2026-10-15',
+        timeZone: 'Asia/Shanghai',
+        status: 'in_progress',
+        plannedSetCount: 2,
+        plannedExercises: [{ exerciseId: walk.id, itemIndex: 0, plannedSetCount: 2 }],
+        sets: [{ exerciseId: walk.id, itemIndex: 0, setIndex: 0, durationSeconds: 30, completedAt: at }],
+      },
+    ],
+    revision = 0,
+    fail = false;
+  const repo = {
+    readMetadata: async () => ({ dataRevision: revision, restoreGeneration: 0 }),
+    write: async <T>(fn: () => Promise<T>, expected?: number) => {
+      if (expected !== undefined && expected !== revision) throw Error('STALE_REVISION');
+      const before = structuredClone({ state, rows, revision });
+      try {
+        const out = await fn();
+        revision++;
+        return out;
+      } catch (e) {
+        ({ state, rows, revision } = before);
+        throw e;
+      }
+    },
+    db: {
+      profiles: { toCollection: () => ({ first: async () => ({ timeZone: 'Asia/Shanghai', locale: 'zh' }) }) },
+      sessions: { where: () => ({ equals: () => ({ count: async () => 0 }) }) },
+      v8Plans: { toArray: async () => [] },
+      v8Workouts: {
+        get: async (key: string) => structuredClone(rows.find(r => r.id === key)),
+        toArray: async () => structuredClone(rows),
+        put: async (row: WorkoutRecord) => {
+          rows = rows.map(old => (old.id === row.id ? structuredClone(row) : old));
+        },
+        add: async (row: WorkoutRecord) => {
+          rows.push(structuredClone(row));
+        },
+        where: () => ({
+          equals: (status: string) => ({
+            count: async () => rows.filter(r => r.status === status).length,
+            toArray: async () => structuredClone(rows.filter(r => r.status === status)),
+          }),
+        }),
+      },
+      v8State: {
+        get: async () => structuredClone(state),
+        put: async (value: typeof state) => {
+          if (fail) throw Error('WRITE_FAILED');
+          state = v8StateSchema.parse(value);
+        },
+      },
+      trainingCheckins: {
+        clear: async () => {},
+        get: async () => undefined,
+        toArray: async () => [],
+        where: () => ({ belowOrEqual: () => ({ delete: async () => {} }) }),
+      },
+      aiMemoryNotes: { toArray: async () => [] },
+    },
+  } as unknown as Repository;
+  return {
+    repo,
+    workflow: createV8Workflow(repo),
+    safety: createPostpartumSafety(repo),
+    walk,
+    get state() {
+      return state;
+    },
+    get rows() {
+      return rows;
+    },
+    get revision() {
+      return revision;
+    },
+    setItem: (item: NonNullable<WorkoutRecord['templateSnapshot']>['items'][number]) => {
+      rows[0] = {
+        ...rows[0],
+        sets: [],
+        plannedSetCount: item.sets,
+        templateSnapshot: { id: 'actual', name: 'actual', estimatedMinutes: 30, items: [item] },
+        plannedExercises: [{ exerciseId: item.exerciseId, itemIndex: 0, plannedSetCount: item.sets }],
+      };
+    },
+    fail: () => {
+      fail = true;
+    },
+    reopen: () => {
+      rows[0].status = 'in_progress';
+    },
+    end: () => {
+      rows[0].status = 'partial';
+    },
+  };
 }
-afterEach(()=>vi.useRealTimers());
-it.each(urgent)('immediately ends the workout and persists the urgent %s lock atomically',async key=>{const f=fixture(),facts=structuredClone(f.rows[0].sets);await f.workflow.reportPostpartumSymptoms(id,{urgent:{[key]:true},regression:{}},0);expect(f.rows[0].status).toBe('partial');expect(f.rows[0].sets).toEqual(facts);expect(f.state.postpartumSafety?.urgentAt).toBe(at);expect(f.rows[0].postpartumSymptoms?.[0].urgent).toEqual([key]);await expect(f.workflow.start(undefined,f.walk.id)).rejects.toThrow(key==='chest_pain'?'CARDIAC_CLEARANCE_REQUIRED':'POSTPARTUM_PROFESSIONAL_REQUIRED');});
-it('rolls back both workout completion and the lock if the state write fails',async()=>{const f=fixture(),before=structuredClone(f.rows);f.fail();await expect(f.workflow.reportPostpartumSymptoms(id,{urgent:{chest_pain:true},regression:{}},0)).rejects.toThrow('WRITE_FAILED');expect(f.rows).toEqual(before);expect(f.state.postpartumSafety).toBeUndefined();expect(f.revision).toBe(0);});
-it('keeps the minimal urgent lock after consent revocation and population edits, and only dedicated confirmation releases it',async()=>{const f=fixture();await f.workflow.reportPostpartumSymptoms(id,{urgent:{fever:true},regression:{}},0);await f.workflow.saveEngineSettings({...f.state.coachProfile!,healthStorageConsent:undefined,population:undefined,screening:undefined,powerOneRm:{[f.walk.id]:{kg:20,source:'user_record'}}},f.revision);expect(f.rows[0].postpartumSymptoms).toBeUndefined();expect(f.state.coachProfile?.powerOneRm).toBeUndefined();expect(f.state.postpartumSafety?.urgentAt).toBe(at);await expect(f.workflow.confirmPainProfessionalSeen(f.revision)).rejects.toThrow();await expect(f.workflow.start(undefined,f.walk.id)).rejects.toThrow('POSTPARTUM_PROFESSIONAL_REQUIRED');f.reopen();await expect(f.workflow.recordSet(id,0,1,{durationSeconds:30})).rejects.toThrow('POSTPARTUM_PROFESSIONAL_REQUIRED');f.end();await f.workflow.confirmPostpartumProfessionalSeen(f.revision);expect(f.state.postpartumSafety?.urgentAt).toBeUndefined();expect(await f.workflow.start(undefined,f.walk.id)).toMatchObject({status:'in_progress'});});
-it.each(symptoms)('regresses one stage for %s and rejects impact or heavy-load substitution despite the engine flag being off',async key=>{const f=fixture();await f.workflow.reportPostpartumSymptoms(id,{urgent:{},regression:{[key]:true}},0);expect(f.state.postpartumSafety?.regression?.phase).toBe(2);const unsafe=DATA.exercises.find(e=>e.impact>=1||e.flags.includes('heavy_axial_load'))!;await expect(f.workflow.substitute(id,0,unsafe.id,'other')).rejects.toThrow('POSTPARTUM_REGRESSION_RESTRICTED');const mapped=toEngineProfile(f.state.coachProfile!,{asOfDate:'2026-10-15',postpartumSafety:f.state.postpartumSafety});expect(mapped?.postpartumSafety).toEqual({urgentPaused:false,regressedPhase:2});});
-it('requires fourteen distinct consecutive reported local dates and never counts symptom day or repeated reports twice',async()=>{const f=fixture();await f.workflow.reportPostpartumSymptoms(id,{urgent:{},regression:{leakage:true}},0);await f.workflow.reportPostpartumSymptoms(undefined,negative(),f.revision);expect(f.state.postpartumSafety?.regression?.symptomFreeDates).toEqual([]);for(let day=16;day<=28;day++){vi.setSystemTime(new Date(`2026-10-${day}T02:00:00Z`));await f.workflow.reportPostpartumSymptoms(undefined,negative(),f.revision);await f.workflow.reportPostpartumSymptoms(undefined,negative(),f.revision);}expect(f.state.postpartumSafety?.regression?.symptomFreeDates).toHaveLength(13);vi.setSystemTime(new Date('2026-10-29T02:00:00Z'));await f.workflow.reportPostpartumSymptoms(undefined,negative(),f.revision);expect(f.state.postpartumSafety?.regression).toBeUndefined();});
-it('never substitutes elapsed time, missing dates or incomplete answers for symptom-free evidence',()=>{expect(twoSymptomFreeWeeks(['2026-10-01','2026-10-15'],'2026-10-15')).toBe(false);expect(postpartumReportSchema.safeParse({urgent:{},regression:{}}).success).toBe(false);expect(postpartumReportSchema.safeParse({urgent:{invented:true},regression:{}}).success).toBe(false);});
-it('a new positive symptom resets the recorded symptom-free dates and fourteen negative days cannot clear an urgent lock',async()=>{const f=fixture();await f.workflow.reportPostpartumSymptoms(id,{urgent:{fever:true},regression:{pain:true}},0);for(let day=16;day<=29;day++){vi.setSystemTime(new Date(`2026-10-${day}T02:00:00Z`));await f.workflow.reportPostpartumSymptoms(undefined,negative(),f.revision);}expect(f.state.postpartumSafety?.regression).toBeUndefined();expect(f.state.postpartumSafety?.urgentAt).toBe(at);});
-it('appends real screening evidence only on a new explicit consenting screening and clears it on withdrawal',async()=>{const f=fixture(),profile=f.state.coachProfile!;await f.workflow.saveEngineSettings(profile,0);expect(f.state.screeningEvidenceEvents).toEqual([]);await f.workflow.saveEngineSettings({...profile,screening:{...profile.screening!,completedAt:'2026-10-14T02:00:00Z',symptoms:false,cmrSymptoms:Object.fromEntries((DATA.rules.find(r=>r.id==='safety.screen.cmr_symptoms')!.value!.symptoms as string[]).map(k=>[k,false]))}},f.revision);expect(f.state.screeningEvidenceEvents).toEqual([{answeredAt:at,symptoms:false}]);await f.workflow.saveEngineSettings(f.state.coachProfile!,f.revision);expect(f.state.screeningEvidenceEvents).toHaveLength(1);await f.workflow.saveEngineSettings({...f.state.coachProfile!,healthStorageConsent:undefined},f.revision);expect(f.state.screeningEvidenceEvents).toBeUndefined();});
-it('does not change the original completed facts when a postpartum event is backed up',async()=>{const f=fixture();await f.workflow.reportPostpartumSymptoms(id,{urgent:{breathlessness:true},regression:{}},0);expect(v8StateSchema.parse(JSON.parse(JSON.stringify(f.state))).postpartumSafety?.urgentAt).toBe(at);expect(v8WorkoutSchema.parse(JSON.parse(JSON.stringify(f.rows[0]))).sets).toEqual(f.rows[0].sets);});
+afterEach(() => vi.useRealTimers());
+it.each(urgent)('immediately ends the workout and persists the urgent %s lock atomically', async key => {
+  const f = fixture(),
+    facts = structuredClone(f.rows[0].sets);
+  await f.workflow.reportPostpartumSymptoms(id, { urgent: { [key]: true }, regression: {} }, 0);
+  expect(f.rows[0].status).toBe('partial');
+  expect(f.rows[0].sets).toEqual(facts);
+  expect(f.state.postpartumSafety?.urgentAt).toBe(at);
+  expect(f.rows[0].postpartumSymptoms?.[0].urgent).toEqual([key]);
+  await expect(f.workflow.start(undefined, f.walk.id)).rejects.toThrow(
+    key === 'chest_pain' ? 'CARDIAC_CLEARANCE_REQUIRED' : 'POSTPARTUM_PROFESSIONAL_REQUIRED',
+  );
+});
+it('rolls back both workout completion and the lock if the state write fails', async () => {
+  const f = fixture(),
+    before = structuredClone(f.rows);
+  f.fail();
+  await expect(
+    f.workflow.reportPostpartumSymptoms(id, { urgent: { chest_pain: true }, regression: {} }, 0),
+  ).rejects.toThrow('WRITE_FAILED');
+  expect(f.rows).toEqual(before);
+  expect(f.state.postpartumSafety).toBeUndefined();
+  expect(f.revision).toBe(0);
+});
+it('keeps the minimal urgent lock after consent revocation and population edits, and only dedicated confirmation releases it', async () => {
+  const f = fixture();
+  await f.workflow.reportPostpartumSymptoms(id, { urgent: { fever: true }, regression: {} }, 0);
+  await f.workflow.saveEngineSettings(
+    {
+      ...f.state.coachProfile!,
+      healthStorageConsent: undefined,
+      population: undefined,
+      screening: undefined,
+      powerOneRm: { [f.walk.id]: { kg: 20, source: 'user_record' } },
+    },
+    f.revision,
+  );
+  expect(f.rows[0].postpartumSymptoms).toBeUndefined();
+  expect(f.state.coachProfile?.powerOneRm).toBeUndefined();
+  expect(f.state.postpartumSafety?.urgentAt).toBe(at);
+  await expect(f.workflow.confirmPainProfessionalSeen(f.revision)).rejects.toThrow();
+  await expect(f.workflow.start(undefined, f.walk.id)).rejects.toThrow('POSTPARTUM_PROFESSIONAL_REQUIRED');
+  f.reopen();
+  await expect(f.workflow.recordSet(id, 0, 1, { durationSeconds: 30 })).rejects.toThrow(
+    'POSTPARTUM_PROFESSIONAL_REQUIRED',
+  );
+  f.end();
+  await f.workflow.confirmPostpartumProfessionalSeen(f.revision);
+  expect(f.state.postpartumSafety?.urgentAt).toBeUndefined();
+  expect(await f.workflow.start(undefined, f.walk.id)).toMatchObject({ status: 'in_progress' });
+});
+it.each(symptoms)(
+  'regresses one stage for %s and rejects impact or heavy-load substitution despite the engine flag being off',
+  async key => {
+    const f = fixture();
+    await f.workflow.reportPostpartumSymptoms(id, { urgent: {}, regression: { [key]: true } }, 0);
+    expect(f.state.postpartumSafety?.regression?.phase).toBe(2);
+    const unsafe = DATA.exercises.find(e => e.impact >= 1 || e.flags.includes('heavy_axial_load'))!;
+    await expect(f.workflow.substitute(id, 0, unsafe.id, 'other')).rejects.toThrow('POSTPARTUM_REGRESSION_RESTRICTED');
+    const mapped = toEngineProfile(f.state.coachProfile!, {
+      asOfDate: '2026-10-15',
+      postpartumSafety: f.state.postpartumSafety,
+    });
+    expect(mapped?.postpartumSafety).toEqual({ urgentPaused: false, regressedPhase: 2 });
+  },
+);
+it('requires fourteen distinct consecutive reported local dates and never counts symptom day or repeated reports twice', async () => {
+  const f = fixture();
+  await f.workflow.reportPostpartumSymptoms(id, { urgent: {}, regression: { leakage: true } }, 0);
+  await f.workflow.reportPostpartumSymptoms(undefined, negative(), f.revision);
+  expect(f.state.postpartumSafety?.regression?.symptomFreeDates).toEqual([]);
+  for (let day = 16; day <= 28; day++) {
+    vi.setSystemTime(new Date(`2026-10-${day}T02:00:00Z`));
+    await f.workflow.reportPostpartumSymptoms(undefined, negative(), f.revision);
+    await f.workflow.reportPostpartumSymptoms(undefined, negative(), f.revision);
+  }
+  expect(f.state.postpartumSafety?.regression?.symptomFreeDates).toHaveLength(13);
+  vi.setSystemTime(new Date('2026-10-29T02:00:00Z'));
+  await f.workflow.reportPostpartumSymptoms(undefined, negative(), f.revision);
+  expect(f.state.postpartumSafety?.regression).toBeUndefined();
+});
+it('never substitutes elapsed time, missing dates or incomplete answers for symptom-free evidence', () => {
+  expect(twoSymptomFreeWeeks(['2026-10-01', '2026-10-15'], '2026-10-15')).toBe(false);
+  expect(postpartumReportSchema.safeParse({ urgent: {}, regression: {} }).success).toBe(false);
+  expect(postpartumReportSchema.safeParse({ urgent: { invented: true }, regression: {} }).success).toBe(false);
+});
+it('a new positive symptom resets the recorded symptom-free dates and fourteen negative days cannot clear an urgent lock', async () => {
+  const f = fixture();
+  await f.workflow.reportPostpartumSymptoms(id, { urgent: { fever: true }, regression: { pain: true } }, 0);
+  for (let day = 16; day <= 29; day++) {
+    vi.setSystemTime(new Date(`2026-10-${day}T02:00:00Z`));
+    await f.workflow.reportPostpartumSymptoms(undefined, negative(), f.revision);
+  }
+  expect(f.state.postpartumSafety?.regression).toBeUndefined();
+  expect(f.state.postpartumSafety?.urgentAt).toBe(at);
+});
+it('appends real screening evidence only on a new explicit consenting screening and clears it on withdrawal', async () => {
+  const f = fixture(),
+    profile = f.state.coachProfile!;
+  await f.workflow.saveEngineSettings(profile, 0);
+  expect(f.state.screeningEvidenceEvents).toEqual([]);
+  await f.workflow.saveEngineSettings(
+    {
+      ...profile,
+      screening: {
+        ...profile.screening!,
+        completedAt: '2026-10-14T02:00:00Z',
+        symptoms: false,
+        cmrSymptoms: Object.fromEntries(
+          (DATA.rules.find(r => r.id === 'safety.screen.cmr_symptoms')!.value!.symptoms as string[]).map(k => [
+            k,
+            false,
+          ]),
+        ),
+      },
+    },
+    f.revision,
+  );
+  expect(f.state.screeningEvidenceEvents).toEqual([{ answeredAt: at, symptoms: false }]);
+  await f.workflow.saveEngineSettings(f.state.coachProfile!, f.revision);
+  expect(f.state.screeningEvidenceEvents).toHaveLength(1);
+  await f.workflow.saveEngineSettings({ ...f.state.coachProfile!, healthStorageConsent: undefined }, f.revision);
+  expect(f.state.screeningEvidenceEvents).toBeUndefined();
+});
+it('does not change the original completed facts when a postpartum event is backed up', async () => {
+  const f = fixture();
+  await f.workflow.reportPostpartumSymptoms(id, { urgent: { breathlessness: true }, regression: {} }, 0);
+  expect(v8StateSchema.parse(JSON.parse(JSON.stringify(f.state))).postpartumSafety?.urgentAt).toBe(at);
+  expect(v8WorkoutSchema.parse(JSON.parse(JSON.stringify(f.rows[0]))).sets).toEqual(f.rows[0].sets);
+});
 
-it('a new positive report actually resets earlier symptom-free dates without stacking the same unresolved episode stage',async()=>{const f=fixture();await f.workflow.reportPostpartumSymptoms(id,{urgent:{},regression:{pain:true}},0);vi.setSystemTime(new Date('2026-10-16T02:00:00Z'));await f.workflow.reportPostpartumSymptoms(undefined,negative(),f.revision);expect(f.state.postpartumSafety?.regression?.symptomFreeDates).toEqual(['2026-10-16']);await f.workflow.reportPostpartumSymptoms(undefined,{urgent:{},regression:{bleeding:true}},f.revision);expect(f.state.postpartumSafety?.regression?.symptomFreeDates).toEqual([]);expect(f.state.postpartumSafety?.regression?.phase).toBe(2);});
-it('stores and maps explicit power references only with health consent, never inferring a maximum from equipment loads',async()=>{const f=fixture(),power={example:{kg:20,source:'reliable_estimate' as const}};await f.workflow.saveEngineSettings({...f.state.coachProfile!,powerOneRm:power},0);expect(toEngineProfile(f.state.coachProfile!,{asOfDate:'2026-10-15'})?.powerOneRm).toEqual(power);expect(v8CoachProfileSchema.safeParse({...f.state.coachProfile!,healthStorageConsent:undefined}).success).toBe(false);expect(toEngineProfile({...f.state.coachProfile!,healthStorageConsent:undefined},{asOfDate:'2026-10-15'})).toBeUndefined();});
-it('logs an actual relative-power repetition fact without inventing kilograms, while a plain load band still requires a load',async()=>{const f=fixture(),r=new Rules(),p=baseProfile({level:'intermediate',trainingAgeWeeks:30,equipment:['none','dumbbell']}),e=r.data.exercises.find(e=>e.slug==='one-arm-dumbbell-swing')!,item=prescribe(e,p,r,runGates(p,r).restrictions);expect(item.target.metricType).toBe('reps');expect(item.prescription?.safetyCue).toBeDefined();f.setItem(item);const out=await f.workflow.recordSet(id,0,0,{reps:4});expect(out.sets[0]).toMatchObject({reps:4,exerciseId:e.id});expect(out.sets[0]).not.toHaveProperty('loadGrams');const plain=structuredClone(item);delete plain.prescription!.safetyCue;plain.target={metricType:'reps_load',reps:4,loadGrams:10000};f.setItem(plain);await expect(f.workflow.recordSet(id,0,0,{reps:4})).rejects.toThrow();});
-it('does not append a false symptom-free screening event for a legacy aggregate-only answer',async()=>{const f=fixture(),profile=f.state.coachProfile!;await f.workflow.saveEngineSettings({...profile,screening:{...profile.screening!,completedAt:'2026-10-14T02:00:00Z',symptoms:false,cmrSymptoms:undefined}},0);expect(f.state.screeningEvidenceEvents).toEqual([]);});
-it('retains the last positive timestamp after both professional confirmation and fourteen symptom-free days',async()=>{const f=fixture();await f.workflow.reportPostpartumSymptoms(id,{urgent:{},regression:{pain:true}},0);expect(f.state.postpartumSafety?.lastSymptomAt).toBe(at);await f.workflow.confirmPostpartumProfessionalSeen(f.revision);expect(f.state.postpartumSafety?.lastSymptomAt).toBe(at);expect(f.state.postpartumSafety?.regression).toBeUndefined();});
+it('a new positive report actually resets earlier symptom-free dates without stacking the same unresolved episode stage', async () => {
+  const f = fixture();
+  await f.workflow.reportPostpartumSymptoms(id, { urgent: {}, regression: { pain: true } }, 0);
+  vi.setSystemTime(new Date('2026-10-16T02:00:00Z'));
+  await f.workflow.reportPostpartumSymptoms(undefined, negative(), f.revision);
+  expect(f.state.postpartumSafety?.regression?.symptomFreeDates).toEqual(['2026-10-16']);
+  await f.workflow.reportPostpartumSymptoms(undefined, { urgent: {}, regression: { bleeding: true } }, f.revision);
+  expect(f.state.postpartumSafety?.regression?.symptomFreeDates).toEqual([]);
+  expect(f.state.postpartumSafety?.regression?.phase).toBe(2);
+});
+it('stores and maps explicit power references only with health consent, never inferring a maximum from equipment loads', async () => {
+  const f = fixture(),
+    power = { example: { kg: 20, source: 'reliable_estimate' as const } };
+  await f.workflow.saveEngineSettings({ ...f.state.coachProfile!, powerOneRm: power }, 0);
+  expect(toEngineProfile(f.state.coachProfile!, { asOfDate: '2026-10-15' })?.powerOneRm).toEqual(power);
+  expect(v8CoachProfileSchema.safeParse({ ...f.state.coachProfile!, healthStorageConsent: undefined }).success).toBe(
+    false,
+  );
+  expect(
+    toEngineProfile({ ...f.state.coachProfile!, healthStorageConsent: undefined }, { asOfDate: '2026-10-15' }),
+  ).toBeUndefined();
+});
+it('logs an actual relative-power repetition fact without inventing kilograms, while a plain load band still requires a load', async () => {
+  const f = fixture(),
+    r = new Rules(),
+    p = baseProfile({ level: 'intermediate', trainingAgeWeeks: 30, equipment: ['none', 'dumbbell'] }),
+    e = r.data.exercises.find(e => e.slug === 'one-arm-dumbbell-swing')!,
+    item = prescribe(e, p, r, runGates(p, r).restrictions);
+  expect(item.target.metricType).toBe('reps');
+  expect(item.prescription?.safetyCue).toBeDefined();
+  f.setItem(item);
+  const out = await f.workflow.recordSet(id, 0, 0, { reps: 4 });
+  expect(out.sets[0]).toMatchObject({ reps: 4, exerciseId: e.id });
+  expect(out.sets[0]).not.toHaveProperty('loadGrams');
+  const plain = structuredClone(item);
+  delete plain.prescription!.safetyCue;
+  plain.target = { metricType: 'reps_load', reps: 4, loadGrams: 10000 };
+  f.setItem(plain);
+  await expect(f.workflow.recordSet(id, 0, 0, { reps: 4 })).rejects.toThrow();
+});
+it('does not append a false symptom-free screening event for a legacy aggregate-only answer', async () => {
+  const f = fixture(),
+    profile = f.state.coachProfile!;
+  await f.workflow.saveEngineSettings(
+    {
+      ...profile,
+      screening: {
+        ...profile.screening!,
+        completedAt: '2026-10-14T02:00:00Z',
+        symptoms: false,
+        cmrSymptoms: undefined,
+      },
+    },
+    0,
+  );
+  expect(f.state.screeningEvidenceEvents).toEqual([]);
+});
+it('retains the last positive timestamp after both professional confirmation and fourteen symptom-free days', async () => {
+  const f = fixture();
+  await f.workflow.reportPostpartumSymptoms(id, { urgent: {}, regression: { pain: true } }, 0);
+  expect(f.state.postpartumSafety?.lastSymptomAt).toBe(at);
+  await f.workflow.confirmPostpartumProfessionalSeen(f.revision);
+  expect(f.state.postpartumSafety?.lastSymptomAt).toBe(at);
+  expect(f.state.postpartumSafety?.regression).toBeUndefined();
+});
 
-it('chest pain activates both independent source locks and postpartum confirmation cannot clear cardiac review',async()=>{const f=fixture();await f.workflow.reportPostpartumSymptoms(id,{urgent:{chest_pain:true},regression:{}},0);expect(f.state.cardiacPause?.requiredAt).toBe(at);await f.workflow.confirmPostpartumProfessionalSeen(f.revision);expect(f.state.postpartumSafety?.urgentAt).toBeUndefined();expect(f.state.postpartumSafety?.lastSymptomAt).toBe(at);await expect(f.workflow.start(undefined,f.walk.id)).rejects.toThrow('CARDIAC_CLEARANCE_REQUIRED');});
+it('chest pain activates both independent source locks and postpartum confirmation cannot clear cardiac review', async () => {
+  const f = fixture();
+  await f.workflow.reportPostpartumSymptoms(id, { urgent: { chest_pain: true }, regression: {} }, 0);
+  expect(f.state.cardiacPause?.requiredAt).toBe(at);
+  await f.workflow.confirmPostpartumProfessionalSeen(f.revision);
+  expect(f.state.postpartumSafety?.urgentAt).toBeUndefined();
+  expect(f.state.postpartumSafety?.lastSymptomAt).toBe(at);
+  await expect(f.workflow.start(undefined, f.walk.id)).rejects.toThrow('CARDIAC_CLEARANCE_REQUIRED');
+});
 
-it('does not infer disproportionate cardiac breathlessness from the more general postpartum source option',async()=>{const f=fixture();await f.workflow.reportPostpartumSymptoms(id,{urgent:{breathlessness:true},regression:{}},0);expect(f.state.cardiacPause).toBeUndefined();expect(f.state.postpartumSafety?.urgentAt).toBe(at);});
-it('ends an active workout atomically even when an urgent report comes from outside the workout page',async()=>{const f=fixture(),facts=structuredClone(f.rows[0].sets);await f.workflow.reportPostpartumSymptoms(undefined,{urgent:{fever:true},regression:{}},0);expect(f.rows[0]).toMatchObject({status:'partial',endedAt:at,sets:facts});expect(f.state.postpartumSafety?.urgentAt).toBe(at);});
+it('does not infer disproportionate cardiac breathlessness from the more general postpartum source option', async () => {
+  const f = fixture();
+  await f.workflow.reportPostpartumSymptoms(id, { urgent: { breathlessness: true }, regression: {} }, 0);
+  expect(f.state.cardiacPause).toBeUndefined();
+  expect(f.state.postpartumSafety?.urgentAt).toBe(at);
+});
+it('ends an active workout atomically even when an urgent report comes from outside the workout page', async () => {
+  const f = fixture(),
+    facts = structuredClone(f.rows[0].sets);
+  await f.workflow.reportPostpartumSymptoms(undefined, { urgent: { fever: true }, regression: {} }, 0);
+  expect(f.rows[0]).toMatchObject({ status: 'partial', endedAt: at, sets: facts });
+  expect(f.state.postpartumSafety?.urgentAt).toBe(at);
+});
 
-it('does not reuse symptom-free weeks before a retained postpartum symptom or later professional review',()=>{const f=fixture(),history:WorkoutRecord[]=[],events:{answeredAt:string;symptoms:boolean}[]=[];for(const monday of [5,12,19,26]){events.push({answeredAt:`2026-10-${String(monday).padStart(2,'0')}T02:00:00Z`,symptoms:false});for(let offset=0;offset<3;offset++){const day=String(monday+offset).padStart(2,'0'),stamp=`2026-10-${day}T02:00:00Z`;history.push({...structuredClone(f.rows[0]),id:`week-${monday}-${offset}`,localDate:`2026-10-${day}`,startedAt:stamp,endedAt:stamp,status:'complete',plannedSetCount:1});}}const options={asOfDate:'2026-11-02',timeZone:'Asia/Shanghai',history,screeningEvidenceEvents:events};expect(toEngineProfile(f.state.coachProfile!,options)?.screening.activityEvidence?.noSymptomReportsWeeks).toBe(4);expect(toEngineProfile(f.state.coachProfile!,{...options,postpartumSafety:{lastSymptomAt:'2026-10-14T02:00:00Z'}})?.screening.activityEvidence?.noSymptomReportsWeeks).toBe(2);expect(toEngineProfile(f.state.coachProfile!,{...options,postpartumSafety:{lastSymptomAt:'2026-10-14T02:00:00Z',professionalSeenAt:'2026-10-22T02:00:00Z'}})?.screening.activityEvidence?.noSymptomReportsWeeks).toBe(1);expect(toEngineProfile(f.state.coachProfile!,{...options,postpartumSafety:{lastSymptomAt:'2026-10-29T02:00:00Z'}})?.screening.activityEvidence?.noSymptomReportsWeeks).toBe(0);});
+it('does not reuse symptom-free weeks before a retained postpartum symptom or later professional review', () => {
+  const f = fixture(),
+    history: WorkoutRecord[] = [],
+    events: { answeredAt: string; symptoms: boolean }[] = [];
+  for (const monday of [5, 12, 19, 26]) {
+    events.push({ answeredAt: `2026-10-${String(monday).padStart(2, '0')}T02:00:00Z`, symptoms: false });
+    for (let offset = 0; offset < 3; offset++) {
+      const day = String(monday + offset).padStart(2, '0'),
+        stamp = `2026-10-${day}T02:00:00Z`;
+      history.push({
+        ...structuredClone(f.rows[0]),
+        id: `week-${monday}-${offset}`,
+        localDate: `2026-10-${day}`,
+        startedAt: stamp,
+        endedAt: stamp,
+        status: 'complete',
+        plannedSetCount: 1,
+      });
+    }
+  }
+  const options = { asOfDate: '2026-11-02', timeZone: 'Asia/Shanghai', history, screeningEvidenceEvents: events };
+  expect(toEngineProfile(f.state.coachProfile!, options)?.screening.activityEvidence?.noSymptomReportsWeeks).toBe(4);
+  expect(
+    toEngineProfile(f.state.coachProfile!, { ...options, postpartumSafety: { lastSymptomAt: '2026-10-14T02:00:00Z' } })
+      ?.screening.activityEvidence?.noSymptomReportsWeeks,
+  ).toBe(2);
+  expect(
+    toEngineProfile(f.state.coachProfile!, {
+      ...options,
+      postpartumSafety: { lastSymptomAt: '2026-10-14T02:00:00Z', professionalSeenAt: '2026-10-22T02:00:00Z' },
+    })?.screening.activityEvidence?.noSymptomReportsWeeks,
+  ).toBe(1);
+  expect(
+    toEngineProfile(f.state.coachProfile!, { ...options, postpartumSafety: { lastSymptomAt: '2026-10-29T02:00:00Z' } })
+      ?.screening.activityEvidence?.noSymptomReportsWeeks,
+  ).toBe(0);
+});

@@ -19,7 +19,10 @@ describe('stored preset answers follow the current language', () => {
   });
   it('shows fixed app-written plan summaries in the current language', () => {
     expect(storedSummaryText('部分时长按动作估算', 'en')).toBe('Some durations are estimated from the exercises');
-    expect(versionSummary({ changeSummary: ['部分时长按动作估算', '我自己的备注'] } as PlanVersion, 'en')).toEqual(['Some durations are estimated from the exercises', '我自己的备注']);
+    expect(versionSummary({ changeSummary: ['部分时长按动作估算', '我自己的备注'] } as PlanVersion, 'en')).toEqual([
+      'Some durations are estimated from the exercises',
+      '我自己的备注',
+    ]);
   });
 });
 
@@ -36,7 +39,10 @@ describe('session names written by the app follow the current language', () => {
     expect(templateLabel({ id: 'a', name: '训练' }, 'en')).toBe('Training');
     expect(templateLabel({ id: 'a', name: 'Training' }, 'zh')).toBe('训练');
     expect(templateLabel({ id: 'a', name: '全身 B' }, 'en')).toBe('Full body B');
-    const plan = [{ id: 'a', name: '训练', items }, { id: 'b', name: '训练', items }];
+    const plan = [
+      { id: 'a', name: '训练', items },
+      { id: 'b', name: '训练', items },
+    ];
     expect(templateLabel(plan[1], 'en', plan)).toBe(sessionNames(plan, 'en').get('b'));
     expect(templateLabel({ id: 'a', name: '15 分钟' }, 'en')).toBe('15 min');
   });

@@ -15,13 +15,45 @@ export function LetterStep({ locale, onDone }: { locale: 'zh' | 'en'; onDone: ()
   const issue = textIssue(text, TEXT_LIMITS.long);
   const save = async () => {
     setSaving(true);
-    try { await saveFutureLetter(text.trim()); onDone(); } finally { setSaving(false); }
+    try {
+      await saveFutureLetter(text.trim());
+      onDone();
+    } finally {
+      setSaving(false);
+    }
   };
-  return <OnboardingFrame locale={locale} step={1} total={1} screenKey="letter" title={c.letterTitle} sub={c.letterHint} busy={saving}
-    footer={<>
-      <PrimaryButton disabled={saving || !text.trim() || !!issue} onClick={() => void save()}>{c.letterSave}</PrimaryButton>
-      <PrimaryButton tone="quiet" disabled={saving} onClick={onDone}>{c.letterSkip}</PrimaryButton>
-    </>}>
-    <label className="pu-field"><textarea aria-label={c.letterTitle} rows={5} maxLength={TEXT_LIMITS.long} placeholder={c.letterPlaceholder} value={text} aria-invalid={issue ? true : undefined} onChange={event => setText(event.target.value)}/><FieldIssue issue={issue} locale={locale} max={TEXT_LIMITS.long}/></label>
-  </OnboardingFrame>;
+  return (
+    <OnboardingFrame
+      locale={locale}
+      step={1}
+      total={1}
+      screenKey="letter"
+      title={c.letterTitle}
+      sub={c.letterHint}
+      busy={saving}
+      footer={
+        <>
+          <PrimaryButton disabled={saving || !text.trim() || !!issue} onClick={() => void save()}>
+            {c.letterSave}
+          </PrimaryButton>
+          <PrimaryButton tone="quiet" disabled={saving} onClick={onDone}>
+            {c.letterSkip}
+          </PrimaryButton>
+        </>
+      }
+    >
+      <label className="pu-field">
+        <textarea
+          aria-label={c.letterTitle}
+          rows={5}
+          maxLength={TEXT_LIMITS.long}
+          placeholder={c.letterPlaceholder}
+          value={text}
+          aria-invalid={issue ? true : undefined}
+          onChange={event => setText(event.target.value)}
+        />
+        <FieldIssue issue={issue} locale={locale} max={TEXT_LIMITS.long} />
+      </label>
+    </OnboardingFrame>
+  );
 }

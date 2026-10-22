@@ -7,12 +7,22 @@ const pending = new Map<string, Promise<void>>();
 const nextRefreshAt = new Map<string, number>();
 let stopPolling: (() => void) | undefined;
 let consumers = 0;
-let loadState: 'idle'|'loading'|'ready'|'error' = 'idle';
+let loadState: 'idle' | 'loading' | 'ready' | 'error' = 'idle';
 export const getFeatureLoadState = () => loadState;
-const loadListeners=new Set<()=>void>();
-export const subscribeFeatureLoadState=(listener:()=>void)=>{loadListeners.add(listener);return()=>{loadListeners.delete(listener)}};
+const loadListeners = new Set<() => void>();
+export const subscribeFeatureLoadState = (listener: () => void) => {
+  loadListeners.add(listener);
+  return () => {
+    loadListeners.delete(listener);
+  };
+};
 const listeners = new Set<() => void>();
-export const subscribeFeatureFlags = (listener: () => void) => { listeners.add(listener); return () => { listeners.delete(listener); }; };
+export const subscribeFeatureFlags = (listener: () => void) => {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+};
 function mergeFlags(value: unknown): FeatureFlags {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('FEATURE_CONFIG_INVALID');
   const next = { ...flags };
@@ -29,36 +39,72 @@ function loadCache() {
   loaded = true;
   try {
     const cached = JSON.parse(localStorage.getItem(cacheKey) ?? 'null');
-    if (cached?.version === 1) { flags = mergeFlags(cached.flags); confirmed = true; }
-  } catch { /* Missing or unavailable cache leaves first-use defaults unchanged. */ }
+    if (cached?.version === 1) {
+      flags = mergeFlags(cached.flags);
+      confirmed = true;
+    }
+  } catch {
+    /* Missing or unavailable cache leaves first-use defaults unchanged. */
+  }
 }
-export function isFeatureEnabled(name: FeatureName): boolean { loadCache(); return flags[name]; }
-export function getFeatureFlags(): FeatureFlags { loadCache(); return { ...flags }; }
+export function isFeatureEnabled(name: FeatureName): boolean {
+  loadCache();
+  return flags[name];
+}
 /** Last validated configuration, not a grant of AI access or external-data consent. */
-export const hasValidRemoteConfig = () => { loadCache(); return confirmed; };
+export const hasValidRemoteConfig = () => {
+  loadCache();
+  return confirmed;
+};
 function publish(next: FeatureFlags) {
-  flags = next; confirmed = true;
-  try { localStorage.setItem(cacheKey, JSON.stringify({ version: 1, flags })); } catch { /* Keep in-memory state if storage is unavailable. */ }
+  flags = next;
+  confirmed = true;
+  try {
+    localStorage.setItem(cacheKey, JSON.stringify({ version: 1, flags }));
+  } catch {
+    /* Keep in-memory state if storage is unavailable. */
+  }
   for (const listener of listeners) listener();
 }
 /** Admin requests need the same-origin Access session; public pages remain cookieless. */
 export function refreshFeatureFlags(transport: typeof fetch = fetch, useCache = false): Promise<void> {
   loadCache();
-  const admin=typeof location!=='undefined'&&/^\/admin(?:\/|$)/.test(location.pathname);
-  const scope=admin?'admin':'public';
-  const active=pending.get(scope); if(active) return active;
-  if(useCache && Date.now()<(nextRefreshAt.get(scope)??-Infinity)) return Promise.resolve();
-  loadState='loading';for(const listener of loadListeners)listener();
+  const admin = typeof location !== 'undefined' && /^\/admin(?:\/|$)/.test(location.pathname);
+  const scope = admin ? 'admin' : 'public';
+  const active = pending.get(scope);
+  if (active) return active;
+  if (useCache && Date.now() < (nextRefreshAt.get(scope) ?? -Infinity)) return Promise.resolve();
+  loadState = 'loading';
+  for (const listener of loadListeners) listener();
   const request = (async () => {
     try {
-      const response = await transport('/api/v1/features', { credentials: admin?'same-origin':'omit', cache: 'no-store', signal: AbortSignal.timeout(5000) });
+      const response = await transport('/api/v1/features', {
+        credentials: admin ? 'same-origin' : 'omit',
+        cache: 'no-store',
+        signal: AbortSignal.timeout(5000),
+      });
       if (!response.ok) throw new Error('FEATURE_CONFIG_UNAVAILABLE');
-      const value = await response.json() as { version?: unknown; flags?: unknown; expiresAt?: unknown };
-      if (value.version !== 1 || typeof value.expiresAt !== 'number' || !Number.isFinite(value.expiresAt) || value.expiresAt <= Date.now()) throw new Error('FEATURE_CONFIG_INVALID');
-      const next=mergeFlags(value.flags);nextRefreshAt.set(scope,Math.min(value.expiresAt,Date.now()+60_000));loadState='ready';publish(next);for(const listener of loadListeners)listener();
-    } catch { loadState='error';for(const listener of loadListeners)listener(); /* Preserve last validated flags. */ }
-  })().finally(() => { pending.delete(scope); });
-  pending.set(scope,request);
+      const value = (await response.json()) as { version?: unknown; flags?: unknown; expiresAt?: unknown };
+      if (
+        value.version !== 1 ||
+        typeof value.expiresAt !== 'number' ||
+        !Number.isFinite(value.expiresAt) ||
+        value.expiresAt <= Date.now()
+      )
+        throw new Error('FEATURE_CONFIG_INVALID');
+      const next = mergeFlags(value.flags);
+      nextRefreshAt.set(scope, Math.min(value.expiresAt, Date.now() + 60_000));
+      loadState = 'ready';
+      publish(next);
+      for (const listener of loadListeners) listener();
+    } catch {
+      loadState = 'error';
+      for (const listener of loadListeners) listener(); /* Preserve last validated flags. */
+    }
+  })().finally(() => {
+    pending.delete(scope);
+  });
+  pending.set(scope, request);
   return request;
 }
 /** One shared poller; background/offline tabs retain state without sending requests. */
@@ -69,17 +115,30 @@ export function startFeatureFlags(): () => void {
     if (confirmed) for (const listener of listeners) listener();
     let lastAttempt = -Infinity;
     const refresh = () => {
-      if (document.visibilityState !== 'visible' || navigator.onLine === false || Date.now() - lastAttempt < 1000) return;
-      lastAttempt = Date.now(); void refreshFeatureFlags(fetch, true);
+      if (document.visibilityState !== 'visible' || navigator.onLine === false || Date.now() - lastAttempt < 1000)
+        return;
+      lastAttempt = Date.now();
+      void refreshFeatureFlags(fetch, true);
     };
     // Startup always tries once, including hidden/offline tabs; failures retain cache.
     lastAttempt = Date.now();
     void refreshFeatureFlags(fetch, true);
     const timer = setInterval(refresh, 30_000);
-    document.addEventListener('visibilitychange', refresh); window.addEventListener('online', refresh);
-    stopPolling = () => { clearInterval(timer); document.removeEventListener('visibilitychange', refresh); window.removeEventListener('online', refresh); };
+    document.addEventListener('visibilitychange', refresh);
+    window.addEventListener('online', refresh);
+    stopPolling = () => {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', refresh);
+      window.removeEventListener('online', refresh);
+    };
   }
   let stopped = false;
-  return () => { if (stopped) return; stopped = true; if (--consumers === 0) { stopPolling?.(); stopPolling = undefined; } };
+  return () => {
+    if (stopped) return;
+    stopped = true;
+    if (--consumers === 0) {
+      stopPolling?.();
+      stopPolling = undefined;
+    }
+  };
 }
-

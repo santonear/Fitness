@@ -17,8 +17,10 @@ export interface HoldTimer {
 export type HoldStatus = 'idle' | 'running' | 'paused' | 'done';
 
 export const holdIdle = (total: number): HoldTimer => ({ total: Math.max(1, Math.round(total)), accumulatedMs: 0 });
-export const holdElapsedMs = (timer: HoldTimer, now: number) => timer.accumulatedMs + (timer.startedAt === undefined ? 0 : Math.max(0, now - timer.startedAt));
-export const holdRemaining = (timer: HoldTimer, now: number) => Math.max(0, Math.ceil((timer.total * 1000 - holdElapsedMs(timer, now)) / 1000));
+export const holdElapsedMs = (timer: HoldTimer, now: number) =>
+  timer.accumulatedMs + (timer.startedAt === undefined ? 0 : Math.max(0, now - timer.startedAt));
+export const holdRemaining = (timer: HoldTimer, now: number) =>
+  Math.max(0, Math.ceil((timer.total * 1000 - holdElapsedMs(timer, now)) / 1000));
 export function holdStatus(timer: HoldTimer, now: number): HoldStatus {
   if (holdRemaining(timer, now) === 0) return 'done';
   if (timer.startedAt !== undefined) return 'running';
@@ -53,12 +55,20 @@ export const REST_LINGER_SECONDS = 10 * 60;
 
 /** Recommended rest: the prescription's value when present, otherwise 60 s, kept within 15 s – 5 min. */
 export function recommendedRestSeconds(prescriptionRest?: number): number {
-  const value = typeof prescriptionRest === 'number' && Number.isFinite(prescriptionRest) && prescriptionRest > 0 ? prescriptionRest : DEFAULT_REST_SECONDS;
+  const value =
+    typeof prescriptionRest === 'number' && Number.isFinite(prescriptionRest) && prescriptionRest > 0
+      ? prescriptionRest
+      : DEFAULT_REST_SECONDS;
   return Math.min(MAX_REST_SECONDS, Math.max(MIN_REST_SECONDS, Math.round(value)));
 }
-export interface RestPlan { completedAt: number; baseSeconds: number; extraSeconds: number }
+export interface RestPlan {
+  completedAt: number;
+  baseSeconds: number;
+  extraSeconds: number;
+}
 export const restTotal = (plan: RestPlan) => plan.baseSeconds + plan.extraSeconds;
-export const restRemaining = (plan: RestPlan, now: number) => Math.max(0, Math.ceil((plan.completedAt + restTotal(plan) * 1000 - now) / 1000));
+export const restRemaining = (plan: RestPlan, now: number) =>
+  Math.max(0, Math.ceil((plan.completedAt + restTotal(plan) * 1000 - now) / 1000));
 export const restDone = (plan: RestPlan, now: number) => restRemaining(plan, now) === 0;
 /** +15 s: extends from now when the countdown already ended, so the reminder fires again 15 s later. */
 export function restExtend(plan: RestPlan, now: number): RestPlan {
@@ -72,6 +82,12 @@ export function restVisible(plan: RestPlan | undefined, now: number, dismissed: 
   return now - plan.completedAt < (restTotal(plan) + REST_LINGER_SECONDS) * 1000;
 }
 /** Only one hold countdown may run: pauses every running timer except `keepKey`. */
-export function pauseOtherHolds(holds: Record<string, HoldTimer>, now: number, keepKey?: string): Record<string, HoldTimer> {
-  return Object.fromEntries(Object.entries(holds).map(([key, timer]) => [key, key === keepKey ? timer : holdPause(timer, now)]));
+export function pauseOtherHolds(
+  holds: Record<string, HoldTimer>,
+  now: number,
+  keepKey?: string,
+): Record<string, HoldTimer> {
+  return Object.fromEntries(
+    Object.entries(holds).map(([key, timer]) => [key, key === keepKey ? timer : holdPause(timer, now)]),
+  );
 }

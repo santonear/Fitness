@@ -1,6 +1,19 @@
 /** Per-device display preferences for V9.14 pages, stored like the other 训练设置 switches (timer sound, rest vibration). */
-const read = (key: string) => { try { return localStorage.getItem(key); } catch { return null; } };
-const write = (key: string, value: string) => { try { localStorage.setItem(key, value); return true; } catch { return false; } };
+const read = (key: string) => {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+};
+const write = (key: string, value: string) => {
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch {
+    return false;
+  }
+};
 
 export const outlineKey = 'fitness.bodyOutline';
 export const figureSexKey = 'fitness.figureSex';
@@ -12,8 +25,15 @@ export const spokenKey = 'fitness.bodyChangeSpoken';
 export const outlineShown = () => read(outlineKey) !== 'off';
 export const outlineEvent = 'fitness:outline';
 /** Saves the switch and tells outlines already on screen (我的's 我的变化 card sits on the same page as the switch). */
-export const setOutlineShown = (value: boolean) => { const saved = write(outlineKey, value ? 'on' : 'off'); if (saved) window.dispatchEvent(new Event(outlineEvent)); return saved; };
-export const lastFigureSex = (): 'male' | 'female' | undefined => { const value = read(figureSexKey); return value === 'male' || value === 'female' ? value : undefined; };
+export const setOutlineShown = (value: boolean) => {
+  const saved = write(outlineKey, value ? 'on' : 'off');
+  if (saved) window.dispatchEvent(new Event(outlineEvent));
+  return saved;
+};
+export const lastFigureSex = (): 'male' | 'female' | undefined => {
+  const value = read(figureSexKey);
+  return value === 'male' || value === 'female' ? value : undefined;
+};
 export const setLastFigureSex = (value: 'male' | 'female') => write(figureSexKey, value);
 /** Voice cues are off by default. */
 export const voiceOn = () => read(voiceKey) === 'on';
@@ -22,6 +42,12 @@ export const setVoiceOn = (value: boolean) => write(voiceKey, value ? 'on' : 'of
 export const intention = () => read(intentionKey) ?? '';
 export const setIntention = (text: string) => write(intentionKey, text.trim().slice(0, 80));
 export function lastSpoken(): Record<string, string> {
-  try { const value: unknown = JSON.parse(read(spokenKey) ?? '{}'); return value && typeof value === 'object' ? value as Record<string, string> : {}; } catch { return {}; }
+  try {
+    const value: unknown = JSON.parse(read(spokenKey) ?? '{}');
+    return value && typeof value === 'object' ? (value as Record<string, string>) : {};
+  } catch {
+    return {};
+  }
 }
-export const markSpoken = (kind: string, localDate: string) => write(spokenKey, JSON.stringify({ ...lastSpoken(), [kind]: localDate }));
+export const markSpoken = (kind: string, localDate: string) =>
+  write(spokenKey, JSON.stringify({ ...lastSpoken(), [kind]: localDate }));

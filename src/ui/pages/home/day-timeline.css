@@ -1,32 +1,196 @@
 /* 今天 › 日视图: numbered steps with clock times on a vertical rail. Tokens only. */
-.v9-day-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s2) var(--s3); }
-.v9-day-start { display: flex; align-items: center; gap: var(--s2); font-size: var(--t2); color: var(--c-ink-muted); }
-.v9-day-start input, .v9-day-adjust input { box-sizing: border-box; min-block-size: var(--touch-min); padding: 0 var(--s3); border: var(--bw) solid var(--card-border); border-radius: var(--r-control); background: var(--c-inset); box-shadow: var(--el-inset); color: var(--c-ink); font: inherit; font-size: var(--t3); }
-.v9-day-hint { margin: 0; font-size: var(--t2); line-height: var(--lh-body); color: var(--c-ink-muted); }
-.v9-day-steps { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
-.v9-home-items.v9-day-steps details { background: transparent; box-shadow: none; padding: 0; border-radius: 0; }
-.v9-day-step { display: grid; gap: var(--s1); }
-.v9-day-phase { justify-self: start; margin-block: var(--s2) var(--s1); margin-inline-start: calc(var(--s7) + var(--s6)); padding: calc(var(--s1) / 2) var(--s3); border-radius: var(--r-chip); background: var(--c-inset); box-shadow: var(--el-inset); font-size: var(--t1); color: var(--c-accent-text); font-weight: var(--w-strong); }
-.v9-day-step:first-child .v9-day-phase { margin-block-start: 0; }
-.v9-day-row { display: grid; grid-template-columns: var(--s7) var(--s6) minmax(0, 1fr); align-items: start; column-gap: var(--s2); }
-.v9-day-time { padding-block-start: var(--s3); font-size: var(--t2); color: var(--c-ink-muted); text-align: end; }
-.v9-day-marker { position: relative; display: flex; justify-content: center; align-self: stretch; }
-.v9-day-marker::before { content: ''; position: absolute; inset-block: 0; inset-inline-start: 50%; inline-size: var(--bw); background: var(--c-line); }
-.v9-day-step:first-child .v9-day-marker::before { inset-block-start: var(--s4); }
-.v9-day-step:last-child .v9-day-marker::before { inset-block-end: calc(100% - var(--s4)); }
-.v9-day-number { position: relative; display: grid; place-items: center; inline-size: var(--s6); block-size: var(--s6); margin-block-start: var(--s2); border-radius: 50%; background: var(--card-bg); border: var(--bw) solid var(--card-border); box-shadow: var(--el-1); font-size: var(--t2); color: var(--c-accent-text); }
-.v9-day-step[data-phase="main"] .v9-day-number { background: var(--c-primary); color: var(--c-on-primary); border-color: transparent; }
-.v9-day-step[data-done="false"] .v9-day-number { opacity: .55; }
-.v9-day-body { min-inline-size: 0; margin-block-end: var(--s2); border-radius: var(--r-panel); background: var(--c-inset); box-shadow: var(--el-inset); padding: 0 var(--s4); }
-.v9-day-body summary { min-block-size: var(--touch-min); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 var(--s2); cursor: pointer; font-size: var(--t3); padding-block: var(--s2); }
-.v9-day-body[open] { padding-block-end: var(--s3); }
-.v9-day-frame { display: grid; gap: calc(var(--s1) / 2); padding-block: var(--s3); }
-.v9-day-frame p { margin: 0; font-size: var(--t2); color: var(--c-ink-muted); line-height: var(--lh-body); }
-.v9-day-name { font-size: var(--t3); font-weight: var(--w-strong); color: var(--c-ink); }
-.v9-day-meta { font-size: var(--t1); color: var(--c-ink-muted); }
-.v9-day-actual .v9-day-record { display: grid; gap: var(--s2); }
-.v9-day-actual h3 { margin: 0; font-size: var(--t3); }
-.v9-day-actual-line { margin: 0; font-size: var(--t3); color: var(--c-accent-text); }
-.v9-day-adjust { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s3); margin-block: var(--s3); }
-.v9-day-adjust label { display: grid; gap: var(--s1); font-size: var(--t2); color: var(--c-ink-muted); }
-.v9-day-error { color: var(--c-warn); font-size: var(--t2); }
+.v9-day-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s2) var(--s3);
+}
+.v9-day-start {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  font-size: var(--t2);
+  color: var(--c-ink-muted);
+}
+.v9-day-start input,
+.v9-day-adjust input {
+  box-sizing: border-box;
+  min-block-size: var(--touch-min);
+  padding: 0 var(--s3);
+  border: var(--bw) solid var(--card-border);
+  border-radius: var(--r-control);
+  background: var(--c-inset);
+  box-shadow: var(--el-inset);
+  color: var(--c-ink);
+  font: inherit;
+  font-size: var(--t3);
+}
+.v9-day-hint {
+  margin: 0;
+  font-size: var(--t2);
+  line-height: var(--lh-body);
+  color: var(--c-ink-muted);
+}
+.v9-day-steps {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.v9-home-items.v9-day-steps details {
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  border-radius: 0;
+}
+.v9-day-step {
+  display: grid;
+  gap: var(--s1);
+}
+.v9-day-phase {
+  justify-self: start;
+  margin-block: var(--s2) var(--s1);
+  margin-inline-start: calc(var(--s7) + var(--s6));
+  padding: calc(var(--s1) / 2) var(--s3);
+  border-radius: var(--r-chip);
+  background: var(--c-inset);
+  box-shadow: var(--el-inset);
+  font-size: var(--t1);
+  color: var(--c-accent-text);
+  font-weight: var(--w-strong);
+}
+.v9-day-step:first-child .v9-day-phase {
+  margin-block-start: 0;
+}
+.v9-day-row {
+  display: grid;
+  grid-template-columns: var(--s7) var(--s6) minmax(0, 1fr);
+  align-items: start;
+  column-gap: var(--s2);
+}
+.v9-day-time {
+  padding-block-start: var(--s3);
+  font-size: var(--t2);
+  color: var(--c-ink-muted);
+  text-align: end;
+}
+.v9-day-marker {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-self: stretch;
+}
+.v9-day-marker::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 50%;
+  inline-size: var(--bw);
+  background: var(--c-line);
+}
+.v9-day-step:first-child .v9-day-marker::before {
+  inset-block-start: var(--s4);
+}
+.v9-day-step:last-child .v9-day-marker::before {
+  inset-block-end: calc(100% - var(--s4));
+}
+.v9-day-number {
+  position: relative;
+  display: grid;
+  place-items: center;
+  inline-size: var(--s6);
+  block-size: var(--s6);
+  margin-block-start: var(--s2);
+  border-radius: 50%;
+  background: var(--card-bg);
+  border: var(--bw) solid var(--card-border);
+  box-shadow: var(--el-1);
+  font-size: var(--t2);
+  color: var(--c-accent-text);
+}
+.v9-day-step[data-phase='main'] .v9-day-number {
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+  border-color: transparent;
+}
+.v9-day-step[data-done='false'] .v9-day-number {
+  opacity: 0.55;
+}
+.v9-day-body {
+  min-inline-size: 0;
+  margin-block-end: var(--s2);
+  border-radius: var(--r-panel);
+  background: var(--c-inset);
+  box-shadow: var(--el-inset);
+  padding: 0 var(--s4);
+}
+.v9-day-body summary {
+  min-block-size: var(--touch-min);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0 var(--s2);
+  cursor: pointer;
+  font-size: var(--t3);
+  padding-block: var(--s2);
+}
+.v9-day-body[open] {
+  padding-block-end: var(--s3);
+}
+.v9-day-frame {
+  display: grid;
+  gap: calc(var(--s1) / 2);
+  padding-block: var(--s3);
+}
+.v9-day-frame p {
+  margin: 0;
+  font-size: var(--t2);
+  color: var(--c-ink-muted);
+  line-height: var(--lh-body);
+}
+.v9-day-name {
+  font-size: var(--t3);
+  font-weight: var(--w-strong);
+  color: var(--c-ink);
+}
+.v9-day-meta {
+  font-size: var(--t1);
+  color: var(--c-ink-muted);
+}
+.v9-day-actual .v9-day-record {
+  display: grid;
+  gap: var(--s2);
+}
+.v9-day-actual h2 {
+  margin: 0;
+  font-size: var(--t3);
+  font-weight: var(--w-strong);
+}
+.v9-day-actual h3 {
+  margin: 0;
+  font-size: var(--t3);
+}
+.v9-day-actual-line {
+  margin: 0;
+  font-size: var(--t3);
+  color: var(--c-accent-text);
+}
+.v9-day-adjust {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s3);
+  margin-block: var(--s3);
+}
+.v9-day-adjust label {
+  display: grid;
+  gap: var(--s1);
+  font-size: var(--t2);
+  color: var(--c-ink-muted);
+}
+.v9-day-error {
+  color: var(--c-warn);
+  font-size: var(--t2);
+}

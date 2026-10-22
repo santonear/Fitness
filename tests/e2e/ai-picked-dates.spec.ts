@@ -1,5 +1,13 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
-import { answerTexts, ensurePressed, cautions, nextButton, pickTrainingDays, shanghaiDate, startOnboarding } from './helpers/onboarding-v9';
+import {
+  answerTexts,
+  ensurePressed,
+  cautions,
+  nextButton,
+  pickTrainingDays,
+  shanghaiDate,
+  startOnboarding,
+} from './helpers/onboarding-v9';
 
 /**
  * Bo 2026-10-19: after picking training days on the calendar, 芽芽 must not ask which days to rest, and
@@ -7,32 +15,58 @@ import { answerTexts, ensurePressed, cautions, nextButton, pickTrainingDays, sha
  * assembly drops it, and the draft keeps the picked dates through a chat regenerate.
  */
 test.setTimeout(150000);
-const flags = (page: Page) => page.route('**/api/v1/features', route => route.fulfill({ json: { version: 1, flags: { aiAssistantV2: true }, expiresAt: Date.now() + 3600000 } }));
-const access = (page: Page) => page.route('**/api/v1/trial/access-status', route => route.fulfill({ json: { qualification: 'active', sessionValid: true, expiresAt: Date.now() + 86400000, aiEnabled: true, planningBudgetDisabled: true } }));
+const flags = (page: Page) =>
+  page.route('**/api/v1/features', route =>
+    route.fulfill({ json: { version: 1, flags: { aiAssistantV2: true }, expiresAt: Date.now() + 3600000 } }),
+  );
+const access = (page: Page) =>
+  page.route('**/api/v1/trial/access-status', route =>
+    route.fulfill({
+      json: {
+        qualification: 'active',
+        sessionValid: true,
+        expiresAt: Date.now() + 86400000,
+        aiEnabled: true,
+        planningBudgetDisabled: true,
+      },
+    }),
+  );
 const sse = (events: unknown[]) => events.map(event => `data: ${JSON.stringify(event)}\n\n`).join('');
 
-test('picked dates reach the model as a fixed constraint and survive an AI plan and a chat regenerate', async ({ page }) => {
-  await flags(page); await access(page);
-  const sent: any[] = [], prompts: string[] = [];
+test('picked dates reach the model as a fixed constraint and survive an AI plan and a chat regenerate', async ({
+  page,
+}) => {
+  await flags(page);
+  await access(page);
+  const sent: any[] = [],
+    prompts: string[] = [];
   await page.route('**/api/v1/assistant/chat', async (route: Route) => {
     const body = route.request().postDataJSON();
     sent.push(body);
     // Server code (sanitize, prompt, assembly) runs from the dev server's modules in the page.
     // The model ignores the dates and asks for a default Mon–Fri week; the server must not follow it.
     const { attachment, prompt } = await page.evaluate(async raw => {
-      const c = '/src/assistant/contracts.ts', a = '/src/backend/assistant/assemble.ts', p = '/src/backend/assistant/prompts.ts';
+      const c = '/src/assistant/contracts.ts',
+        a = '/src/backend/assistant/assemble.ts',
+        p = '/src/backend/assistant/prompts.ts';
       const request = (await import(/* @vite-ignore */ c)).sanitizeAssistantRequest(raw);
       const prompt = (await import(/* @vite-ignore */ p)).assistantPrompt(request, 'text')[0].content as string;
-      const { attachment } = (await import(/* @vite-ignore */ a)).assembleAssistantIntent({ kind: 'plan_new', params: { daysPerWeek: 5, preferredDays: ['mon', 'tue', 'wed', 'thu', 'fri'] } }, request);
+      const { attachment } = (await import(/* @vite-ignore */ a)).assembleAssistantIntent(
+        { kind: 'plan_new', params: { daysPerWeek: 5, preferredDays: ['mon', 'tue', 'wed', 'thu', 'fri'] } },
+        request,
+      );
       return { attachment, prompt };
     }, body);
     prompts.push(prompt);
-    await route.fulfill({ contentType: 'text/event-stream', body: sse([
-      { type: 'text_delta', delta: '按你选的日子排好了。' },
-      { type: 'attachment_pending' },
-      { type: 'attachment', attachment },
-      { type: 'done', success: true, usage: { inputTokens: 1, outputTokens: 1 }, promptVersion: 'test' },
-    ]) });
+    await route.fulfill({
+      contentType: 'text/event-stream',
+      body: sse([
+        { type: 'text_delta', delta: '按你选的日子排好了。' },
+        { type: 'attachment_pending' },
+        { type: 'attachment', attachment },
+        { type: 'done', success: true, usage: { inputTokens: 1, outputTokens: 1 }, promptVersion: 'test' },
+      ]),
+    });
   });
   await page.setViewportSize({ width: 390, height: 844 });
   await startOnboarding(page);
@@ -62,7 +96,10 @@ test('picked dates reach the model as a fixed constraint and survive an AI plan 
 
   // 2. The draft keeps exactly the picked dates (not Mon–Fri).
   const month = page.locator('section.v9-month-plan');
-  const planned = () => month.locator('.v9-month-day[data-state="planned"]').evaluateAll(cells => cells.map(cell => cell.getAttribute('data-date')));
+  const planned = () =>
+    month
+      .locator('.v9-month-day[data-state="planned"]')
+      .evaluateAll(cells => cells.map(cell => cell.getAttribute('data-date')));
   await expect(page.getByTestId('draft-days')).toContainText('共 2 天');
   await expect.poll(planned).toEqual(picked.filter(date => date.slice(0, 7) === picked[0].slice(0, 7)));
 
@@ -81,9 +118,13 @@ test('picked dates reach the model as a fixed constraint and survive an AI plan 
   await expect.poll(planned).toEqual(picked.filter(date => date.slice(0, 7) === picked[0].slice(0, 7)));
 
   // 4. The saved plan keeps the picked dates and start time.
-  await page.getByRole('button', { name: '就用这份计划', exact: true }).click(); await page.getByRole('button', { name: '先不写', exact: true }).click();
+  await page.getByRole('button', { name: '就用这份计划', exact: true }).click();
+  await page.getByRole('button', { name: '先不写', exact: true }).click();
   await expect(page).not.toHaveURL(/plan-draft/);
-  const version = await page.evaluate(async () => { const path = '/src/ui/mainline/context.tsx'; return (await (await import(/* @vite-ignore */ path)).workflow.snapshot()).version; });
+  const version = await page.evaluate(async () => {
+    const path = '/src/ui/mainline/context.tsx';
+    return (await (await import(/* @vite-ignore */ path)).workflow.snapshot()).version;
+  });
   expect(version.trainingDates).toEqual(picked);
   expect(version.startTime).toBe('19:00');
   expect(version.preferredDays ?? []).toEqual([]);

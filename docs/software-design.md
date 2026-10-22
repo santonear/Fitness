@@ -517,7 +517,7 @@ R35/R36：目录来源、原创示意图权属、专业审阅、视频内容、�
 
 ## 18. 同源控制服务与可选阶段总结
 
-静态资产和控制API可由同一Worker提供。`wrangler.fullstack.jsonc`是独立装配配置，ASSETS处理页面，`/api`与`/api/*`优先进入控制处理器，API失败不返回SPA。默认CONTROL_MODE=disabled；没有D1或供应商配置时不能产生模型调用。原静态配置继续保留。
+静态资产和控制API由同一Worker（`src/backend/fitness-worker.ts`）提供，装配见`wrangler.production.jsonc`与各预览配置：ASSETS处理页面，`/api`与`/api/*`优先进入控制处理器，API失败不返回SPA。CONTROL_MODE=disabled时，或没有D1或供应商配置时，不能产生模型调用。原静态配置`wrangler.jsonc`继续保留。（2026-10-22 删除了无人使用的`wrangler.fullstack.jsonc`与`wrangler.backend.jsonc`。）
 
 阶段总结使用`POST /api/v1/stages/summarize`。operation=summary，请求包含选择、明确日期/时区、来源修订与恢复代次、已保存事实、目标快照和最小完成关联。范围外补练只发送task/session/version/day身份关联，不发送范围外组记录或备注。完整发送JSON在本次确认前展示；本地准备和查询资格不发送训练事实。
 

@@ -1,53 +1,40 @@
-import { fittingPlan } from "./plan-context";
-import { withinMobilityBudget, trimMobilityBudget } from "./mobility-budget";
-import { cardioWorkCap, capCardioItems } from "./cardio-cap";
-import { pregnancyRampMinutes } from "../pregnancy-limits";
-import { fillSafeBudget } from "./refill";
-import { finalizeFit } from "./finalize";
-import { type SessionDraft, type PipelineContext } from "../contracts";
-import { insertBeforeCooldown } from "./item-order";
-import { estimateSeconds } from "./estimate";
-import { retainsRequirements } from "./requirements";
-import { checkHard } from "../hard-checks";
-import { newWeek, prescribe } from "../dose";
-import { marginal } from "../score";
-import { candidatesFor } from "../candidates";
+import { fittingPlan } from './plan-context';
+import { withinMobilityBudget, trimMobilityBudget } from './mobility-budget';
+import { cardioWorkCap, capCardioItems } from './cardio-cap';
+import { pregnancyRampMinutes } from '../pregnancy-limits';
+import { fillSafeBudget } from './refill';
+import { finalizeFit } from './finalize';
+import { type SessionDraft, type PipelineContext } from '../contracts';
+import { insertBeforeCooldown } from './item-order';
+import { estimateSeconds } from './estimate';
+import { retainsRequirements } from './requirements';
+import { checkHard } from '../hard-checks';
+import { newWeek, prescribe } from '../dose';
+import { marginal } from '../score';
+import { candidatesFor } from '../candidates';
 
-export function fitDuration(
-  session: SessionDraft,
-  target: number,
-  ctx: PipelineContext,
-): SessionDraft {
+export function fitDuration(session: SessionDraft, target: number, ctx: PipelineContext): SessionDraft {
   let out = structuredClone(session);
   const r = ctx.rules,
     p = ctx.profile,
-    bounds = r.get("duration.fit.bounds"),
-    band = r.get("duration.fit.tolerance").band,
+    bounds = r.get('duration.fit.bounds'),
+    band = r.get('duration.fit.tolerance').band,
     T = target * 60,
     pregnancyCeiling = (pregnancyRampMinutes(p, r) ?? Infinity) * 60,
-    locked = new Set(
-      (ctx.lockedItemIndexes ?? []).map((n) => out.items[n]?.exerciseId),
-    ),
+    locked = new Set((ctx.lockedItemIndexes ?? []).map(n => out.items[n]?.exerciseId)),
     distance = (s: SessionDraft) => Math.abs(estimateSeconds(s, r) - T),
     accept = (next: SessionDraft) => {
-      if (
-        !retainsRequirements(out, next, ctx) ||
-        !withinMobilityBudget(next, r)
-      )
-        return false;
+      if (!retainsRequirements(out, next, ctx) || !withinMobilityBudget(next, r)) return false;
       const before = estimateSeconds(out, r),
         after = estimateSeconds(next, r);
       if (before <= pregnancyCeiling && after > pregnancyCeiling) return false;
-      if (
-        distance(next) < distance(out) ||
-        (before > pregnancyCeiling && after < before)
-      ) {
+      if (distance(next) < distance(out) || (before > pregnancyCeiling && after < before)) {
         const base = ctx.plan ?? {
             weeklyTarget: p.daysPerWeek,
             sessionMinutes: target,
             templates: [],
             meta: {
-              engineVersion: "2",
+              engineVersion: '2',
               rulesVersion: r.data.rulesVersion,
               seed: ctx.profileHash,
             },
@@ -57,15 +44,10 @@ export function fitDuration(
           },
           plan = {
             ...base,
-            templates: [
-              ...base.templates.filter((t) => t.id !== next.id),
-              next,
-            ],
+            templates: [...base.templates.filter(t => t.id !== next.id), next],
           },
           violations = checkHard(plan, p, ctx.gate, r, true).filter(
-            (e) =>
-              e.severity === "error" &&
-              !["duration_tolerance", "balance_days"].includes(e.code),
+            e => e.severity === 'error' && !['duration_tolerance', 'balance_days'].includes(e.code),
           );
         if (violations.length) return false;
         out = next;
@@ -77,30 +59,21 @@ export function fitDuration(
   const week = newWeek(p, r),
     cap = Math.min(
       bounds.sets_per_exercise_max[p.level],
-      week
-        ? Array.isArray(week.sets_per_exercise)
-          ? week.sets_per_exercise[1]
-          : week.sets_per_exercise
-        : Infinity,
+      week ? (Array.isArray(week.sets_per_exercise) ? week.sets_per_exercise[1] : week.sets_per_exercise) : Infinity,
     );
   const planFor = (session: SessionDraft) => fittingPlan(session, ctx, target);
   out = trimMobilityBudget(out, r, locked, (before, next) => {
     if (!retainsRequirements(before, next, ctx)) return false;
     const unsafe = checkHard(planFor(next), p, ctx.gate, r, true).some(
-      (issue) =>
-        issue.severity === "error" &&
-        !["duration_tolerance", "balance_days"].includes(issue.code),
+      issue => issue.severity === 'error' && !['duration_tolerance', 'balance_days'].includes(issue.code),
     );
     if (unsafe) return false;
     ctx.trace.push({
-      ruleId: "duration.cardio.cap",
-      step: "fit",
-      reason: "mobility content budget",
+      ruleId: 'duration.cardio.cap',
+      step: 'fit',
+      reason: 'mobility content budget',
       note: r.byExercise.get(
-        before.items.find(
-          (item) =>
-            !next.items.some((row) => row.exerciseId === item.exerciseId),
-        )!.exerciseId,
+        before.items.find(item => !next.items.some(row => row.exerciseId === item.exerciseId))!.exerciseId,
       )?.slug,
     });
     return true;
@@ -110,47 +83,31 @@ export function fitDuration(
     const plan = planFor(out),
       choices = out.items
         .flatMap((item, index) => {
-          const slot =
-            out.slots.find((s) => s.id === item.prescription?.sourcePosition) ??
-            out.slots[index];
-          if (
-            locked.has(item.exerciseId) ||
-            !slot?.optional ||
-            out.items.length <= 1
-          )
-            return [];
+          const slot = out.slots.find(s => s.id === item.prescription?.sourcePosition) ?? out.slots[index];
+          if (locked.has(item.exerciseId) || !slot?.optional || out.items.length <= 1) return [];
           const next = structuredClone(out);
           next.items.splice(index, 1);
           return retainsRequirements(out, next, ctx)
             ? [
                 {
                   next,
-                  gain: marginal(
-                    plan,
-                    { kind: "remove", templateId: out.id, itemIndex: index },
-                    p,
-                    r,
-                  ),
+                  gain: marginal(plan, { kind: 'remove', templateId: out.id, itemIndex: index }, p, r),
                 },
               ]
             : [];
         })
         .sort((a, b) => b.gain - a.gain);
-    if (!choices.some((choice) => accept(choice.next))) break;
+    if (!choices.some(choice => accept(choice.next))) break;
   }
   if (estimateSeconds(out, r) < T * band[0])
     for (const slot of out.slots.filter(
-      (s) =>
-        s.optional &&
-        !out.items.some((i) => i.prescription?.sourcePosition === s.id),
+      s => s.optional && !out.items.some(i => i.prescription?.sourcePosition === s.id),
     )) {
       const pool = candidatesFor(slot, p, ctx.gate, {
         ...ctx,
-        usedIds: new Set(out.items.map((i) => i.exerciseId)),
+        usedIds: new Set(out.items.map(i => i.exerciseId)),
         usedLadders: new Set(
-          out.items
-            .map((i) => r.byExercise.get(i.exerciseId)?.ladder.id)
-            .filter((id): id is string => !!id),
+          out.items.map(i => r.byExercise.get(i.exerciseId)?.ladder.id).filter((id): id is string => !!id),
         ),
       });
       const e = pool[0];
@@ -172,16 +129,13 @@ export function fitDuration(
         e = r.byExercise.get(i.exerciseId);
       if (
         locked.has(i.exerciseId) ||
-        !["main", "accessory"].includes(i.prescription?.block ?? "") ||
+        !['main', 'accessory'].includes(i.prescription?.block ?? '') ||
         !e ||
-        !["strength", "isometric", "power"].includes(e.modality)
+        !['strength', 'isometric', 'power'].includes(e.modality)
       )
         continue;
       const min =
-          i.prescription?.block === "main" &&
-          e.nsca_class === "compound" &&
-          target > 10 &&
-          !week
+          i.prescription?.block === 'main' && e.nsca_class === 'compound' && target > 10 && !week
             ? bounds.sets_per_exercise_min.main_compound
             : bounds.sets_per_exercise_min.other,
         next = structuredClone(out);
@@ -193,7 +147,7 @@ export function fitDuration(
           gain: marginal(
             plan!,
             {
-              kind: "replace",
+              kind: 'replace',
               templateId: out.id,
               itemIndex: n,
               item: next.items[n],
@@ -209,18 +163,18 @@ export function fitDuration(
     }
     if (over) {
       choices.sort((a, b) => b.gain - a.gain);
-      if (!choices.some((choice) => accept(choice.next))) break;
+      if (!choices.some(choice => accept(choice.next))) break;
     } else if (!increased) break;
   }
   // Compress only source-allowed noncompeting pairs, after slot and set changes.
   if (estimateSeconds(out, r) > T * band[1]) {
-    const when = r.get("session.superset.when"),
-      pairing = r.get("session.superset.pairing"),
+    const when = r.get('session.superset.when'),
+      pairing = r.get('session.superset.pairing'),
       forbid = pairing.forbidden_if,
       group = (id: string, key: string) => {
         const e = r.byExercise.get(id)!;
-        return key === "any_strength"
-          ? ["strength", "isometric"].includes(e.modality)
+        return key === 'any_strength'
+          ? ['strength', 'isometric'].includes(e.modality)
           : (pairing.groups[key] ?? []).includes(e.primary_pattern);
       };
     for (let a = 0; a < out.items.length; a++)
@@ -238,35 +192,25 @@ export function fitDuration(
           y.prescription?.groupId ||
           !x.prescription ||
           !y.prescription ||
-          (p.goal === "strength" &&
-            when.strength_goal_main_lifts === "straight" &&
-            (x.prescription.block === "main" ||
-              y.prescription.block === "main"))
+          (p.goal === 'strength' &&
+            when.strength_goal_main_lifts === 'straight' &&
+            (x.prescription.block === 'main' || y.prescription.block === 'main'))
         )
           continue;
         if (
           ex.primary_pattern === ey.primary_pattern ||
           (ex.ladder.id && ex.ladder.id === ey.ladder.id) ||
-          forbid.both_flag.some(
-            (f: string) => ex.flags.includes(f) && ey.flags.includes(f),
-          ) ||
+          forbid.both_flag.some((f: string) => ex.flags.includes(f) && ey.flags.includes(f)) ||
           Object.entries(forbid.both_joint_load_min).some(
-            ([j, n]) =>
-              ex.joint_load[j] >= Number(n) && ey.joint_load[j] >= Number(n),
+            ([j, n]) => ex.joint_load[j] >= Number(n) && ey.joint_load[j] >= Number(n),
           ) ||
-          (ex.time.setup_s >= forbid.both_setup_s_min &&
-            ey.time.setup_s >= forbid.both_setup_s_min) ||
-          (forbid.different_space_large &&
-            ex.space !== ey.space &&
-            [ex.space, ey.space].includes("large")) ||
-          (p.goal === "strength" &&
-            [...ex.flags, ...ey.flags].some((f) =>
-              forbid.either_flag_when_goal_strength.includes(f),
-            ))
+          (ex.time.setup_s >= forbid.both_setup_s_min && ey.time.setup_s >= forbid.both_setup_s_min) ||
+          (forbid.different_space_large && ex.space !== ey.space && [ex.space, ey.space].includes('large')) ||
+          (p.goal === 'strength' &&
+            [...ex.flags, ...ey.flags].some(f => forbid.either_flag_when_goal_strength.includes(f)))
         )
           continue;
-        const back =
-          forbid.core_member_joint_load_min_with_back_loaded_partner?.back;
+        const back = forbid.core_member_joint_load_min_with_back_loaded_partner?.back;
         if (
           back !== undefined &&
           (((pairing.groups.core ?? []).includes(ex.primary_pattern) &&
@@ -280,16 +224,15 @@ export function fitDuration(
         if (
           !pairing.allowed_pairs.some(
             ([u, v]: string[]) =>
-              (group(x.exerciseId, u) && group(y.exerciseId, v)) ||
-              (group(x.exerciseId, v) && group(y.exerciseId, u)),
+              (group(x.exerciseId, u) && group(y.exerciseId, v)) || (group(x.exerciseId, v) && group(y.exerciseId, u)),
           )
         )
           continue;
         const next = structuredClone(out);
         for (const n of [a, b])
           Object.assign(next.items[n].prescription!, {
-            structure: "superset",
-            groupId: "fit-" + a + "-" + b,
+            structure: 'superset',
+            groupId: 'fit-' + a + '-' + b,
           });
         accept(next);
       }
@@ -299,42 +242,33 @@ export function fitDuration(
   for (let n = 0; n < out.items.length; n++) {
     const i = out.items[n],
       e = r.byExercise.get(i.exerciseId);
-    if (locked.has(i.exerciseId) || !e || !("durationSeconds" in i.target))
-      continue;
+    if (locked.has(i.exerciseId) || !e || !('durationSeconds' in i.target)) continue;
     const next = structuredClone(out),
       item = next.items[n];
-    if (!("durationSeconds" in item.target)) continue;
-    const side =
-        i.prescription?.perSide || e.time.per_side
-          ? r.get("session.time.model").per_side_multiplier
-          : 1,
+    if (!('durationSeconds' in item.target)) continue;
+    const side = i.prescription?.perSide || e.time.per_side ? r.get('session.time.model').per_side_multiplier : 1,
       delta = (T - estimateSeconds(out, r)) / (i.sets * side),
       range =
-        e.modality === "isometric"
-          ? r.get("dose.isometric")[p.level].hold_s
-          : e.modality === "mobility"
-            ? p.population.kind === "older_adult"
-              ? r.get("dose.stretch").hold_s.older_adult
-              : r.get("dose.stretch").hold_s.range
-            : e.modality === "cardio" &&
-                i.prescription?.block === "conditioning"
+        e.modality === 'isometric'
+          ? r.get('dose.isometric')[p.level].hold_s
+          : e.modality === 'mobility'
+            ? p.population.kind === 'older_adult'
+              ? r.get('dose.stretch').hold_s.older_adult
+              : r.get('dose.stretch').hold_s.range
+            : e.modality === 'cardio' && i.prescription?.block === 'conditioning'
               ? [1, cardioWorkCap(e, p, r, ctx.gate) / (i.sets * side)]
               : e.default_dose[p.level]?.seconds;
     if (!range) continue;
     if (
-      e.modality === "mobility" &&
+      e.modality === 'mobility' &&
       delta < 0 &&
-      r.get("duration.cardio.cap").refill
-        .preserve_mobility_dose_inside_tolerance &&
+      r.get('duration.cardio.cap').refill.preserve_mobility_dose_inside_tolerance &&
       estimateSeconds(out, r) <= Math.min(T * band[1], pregnancyCeiling)
     )
       continue;
     item.target.durationSeconds = Math.max(
       Math.ceil(range[0]),
-      Math.min(
-        Math.floor(range[1]),
-        Math.round(item.target.durationSeconds + delta),
-      ),
+      Math.min(Math.floor(range[1]), Math.round(item.target.durationSeconds + delta)),
     );
     accept(next);
   }
@@ -342,9 +276,8 @@ export function fitDuration(
   fillSafeBudget(() => out, T, ctx, locked, accept);
   // Only repair a remaining hard-duration overflow after all ordinary fitting stages.
   const hardHigh =
-    target === r.get("session.durations.allowed").minutes[0]
-      ? (bounds.min10_duration_seconds?.[1] ??
-        target * 60 * bounds.duration_band[1])
+    target === r.get('session.durations.allowed').minutes[0]
+      ? (bounds.min10_duration_seconds?.[1] ?? target * 60 * bounds.duration_band[1])
       : target * 60 * bounds.duration_band[1];
   while (estimateSeconds(out, r) > hardHigh) {
     const plan = planFor(out),
@@ -354,8 +287,8 @@ export function fitDuration(
             range = e?.default_dose[p.level]?.sets;
           if (
             locked.has(item.exerciseId) ||
-            item.prescription?.block !== "balance" ||
-            e?.primary_pattern !== "balance" ||
+            item.prescription?.block !== 'balance' ||
+            e?.primary_pattern !== 'balance' ||
             !range ||
             range.length !== 2 ||
             item.sets - 1 < range[0] ||
@@ -370,7 +303,7 @@ export function fitDuration(
               gain: marginal(
                 plan,
                 {
-                  kind: "replace",
+                  kind: 'replace',
                   templateId: out.id,
                   itemIndex: index,
                   item: next.items[index],
@@ -382,7 +315,7 @@ export function fitDuration(
           ];
         })
         .sort((a, b) => b.gain - a.gain);
-    if (!choices.some((choice) => accept(choice.next))) break;
+    if (!choices.some(choice => accept(choice.next))) break;
   }
   return finalizeFit(out, target, session, ctx, r, T);
 }

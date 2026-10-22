@@ -11,10 +11,14 @@ describe('day slot contract (no persistence or timezone inference)', () => {
     expect(input).toEqual(before);
   });
   it('completed identity wins over hidden; temporary facts are not slot tasks', () => {
-    expect(evaluateSlot([task({ hidden: true, completedSessionId: 'session-a' })], slot).occupants).toEqual(['legacy-a']);
+    expect(evaluateSlot([task({ hidden: true, completedSessionId: 'session-a' })], slot).occupants).toEqual([
+      'legacy-a',
+    ]);
   });
   it('in-progress protection wins over hidden and archived flags', () => {
-    expect(evaluateSlot([task({ hidden: true, current: false, inProgressSessionId: 'ongoing' })], slot).occupants).toEqual(['legacy-a']);
+    expect(
+      evaluateSlot([task({ hidden: true, current: false, inProgressSessionId: 'ongoing' })], slot).occupants,
+    ).toEqual(['legacy-a']);
   });
   it('rescheduled task occupies its projected scheduled date only', () => {
     expect(evaluateSlot([task({ projectedDate: '2027-01-05' })], slot).occupants).toEqual([]);
@@ -47,9 +51,13 @@ describe('legacy collision confirmation dependency guard', () => {
     expect(validateLegacyConfirmation(before, { ...before, restoreGeneration: 3 })).toBe(false);
   });
   it('invalidates revisions, occupant additions/removals and state/date changes', () => {
-    for (const tasks of [before.tasks.slice(1), [...before.tasks, task({ taskId: 'third' })],
-      [task({ revision: 2 }), before.tasks[1]], [task({ hidden: true }), before.tasks[1]],
-      [task({ projectedDate: '2027-01-05' }), before.tasks[1]]]) {
+    for (const tasks of [
+      before.tasks.slice(1),
+      [...before.tasks, task({ taskId: 'third' })],
+      [task({ revision: 2 }), before.tasks[1]],
+      [task({ hidden: true }), before.tasks[1]],
+      [task({ projectedDate: '2027-01-05' }), before.tasks[1]],
+    ]) {
       expect(validateLegacyConfirmation(before, { ...before, tasks })).toBe(false);
     }
   });

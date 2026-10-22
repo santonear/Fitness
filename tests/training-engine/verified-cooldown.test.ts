@@ -1,35 +1,218 @@
-import {describe,it,expect} from 'vitest';
-import {DATA,Rules} from '../../src/engine/data';
-import {ensureCooldown,requiredStretchGroups} from '../../src/engine/progression/legacy-cooldown';
-import {blockSeconds} from '../../src/engine/fit/elapsed-time';
-import {prescribe,type Template} from '../../src/engine/dose';
-import {baseProfile} from '../../tools/eval/training-engine-profiles';
-import {safety} from '../../src/engine/gates/strength-scoring';
-import {scorePlan} from '../../src/engine/score';
-describe('verified stretch and actual light cooldown',()=>{
- const p=baseProfile({equipment:['none','dumbbell','resistance-band'],constraints:{noJump:false,quiet:false,space:'small'}});
- function setup(known:boolean){const data=structuredClone(DATA);for(const e of data.exercises)e.stretch_targets=undefined;for(const e of data.exercises)if(e.slug==='banded-chest-stretch'){e.mobility_type='static';e.stretch_targets=known?['chest']:undefined;}const r=new Rules(data),s=safety(p,r),press=data.exercises.find(e=>e.slug==='dumbbell-floor-press')!;const t:Template={id:'t',name:'x',estimatedMinutes:30,items:[prescribe(press,p,r,s,'main',2)]};return{r,s,t};}
- it('only verified targets count, ordinary static metadata is insufficient',()=>{const {r,s,t}=setup(false);ensureCooldown(t,p,r,s);expect(requiredStretchGroups(t,r)).toContain('chest');expect(t.items.some(i=>r.byExercise.get(i.exerciseId)?.stretch_targets?.includes('chest'))).toBe(false);});
- it('prescribes full source stretch before light remaining cooldown',()=>{const {r,s,t}=setup(true);const cardio=r.data.exercises.find(e=>e.slug==='heel-flicks')!;const work=prescribe(cardio,p,r,s,'conditioning',1);work.target={metricType:'duration',durationSeconds:60};t.items.push(work);ensureCooldown(t,p,r,s);const stretch=t.items.find(i=>r.byExercise.get(i.exerciseId)?.slug==='banded-chest-stretch')!;expect(stretch.sets).toBe(2);expect(stretch.target).toEqual({metricType:'duration',durationSeconds:30});expect(blockSeconds(t,'cooldown',r)).toBeGreaterThanOrEqual(300);expect(t.items.filter(i=>i.prescription?.block==='cooldown').every(i=>{const e=r.byExercise.get(i.exerciseId)!;return e.modality==='cardio'||e.mobility_type==='static'&&!!e.stretch_targets?.length;})).toBe(true);});
+import { describe, it, expect } from 'vitest';
+import { DATA, Rules } from '../../src/engine/data';
+import { ensureCooldown, requiredStretchGroups } from '../../src/engine/progression/legacy-cooldown';
+import { blockSeconds } from '../../src/engine/fit/elapsed-time';
+import { prescribe, type Template } from '../../src/engine/dose';
+import { baseProfile } from '../../tools/eval/training-engine-profiles';
+import { safety } from '../../src/engine/gates/strength-scoring';
+import { scorePlan } from '../../src/engine/score';
+describe('verified stretch and actual light cooldown', () => {
+  const p = baseProfile({
+    equipment: ['none', 'dumbbell', 'resistance-band'],
+    constraints: { noJump: false, quiet: false, space: 'small' },
+  });
+  function setup(known: boolean) {
+    const data = structuredClone(DATA);
+    for (const e of data.exercises) e.stretch_targets = undefined;
+    for (const e of data.exercises)
+      if (e.slug === 'banded-chest-stretch') {
+        e.mobility_type = 'static';
+        e.stretch_targets = known ? ['chest'] : undefined;
+      }
+    const r = new Rules(data),
+      s = safety(p, r),
+      press = data.exercises.find(e => e.slug === 'dumbbell-floor-press')!;
+    const t: Template = { id: 't', name: 'x', estimatedMinutes: 30, items: [prescribe(press, p, r, s, 'main', 2)] };
+    return { r, s, t };
+  }
+  it('only verified targets count, ordinary static metadata is insufficient', () => {
+    const { r, s, t } = setup(false);
+    ensureCooldown(t, p, r, s);
+    expect(requiredStretchGroups(t, r)).toContain('chest');
+    expect(t.items.some(i => r.byExercise.get(i.exerciseId)?.stretch_targets?.includes('chest'))).toBe(false);
+  });
+  it('prescribes full source stretch before light remaining cooldown', () => {
+    const { r, s, t } = setup(true);
+    const cardio = r.data.exercises.find(e => e.slug === 'heel-flicks')!;
+    const work = prescribe(cardio, p, r, s, 'conditioning', 1);
+    work.target = { metricType: 'duration', durationSeconds: 60 };
+    t.items.push(work);
+    ensureCooldown(t, p, r, s);
+    const stretch = t.items.find(i => r.byExercise.get(i.exerciseId)?.slug === 'banded-chest-stretch')!;
+    expect(stretch.sets).toBe(2);
+    expect(stretch.target).toEqual({ metricType: 'duration', durationSeconds: 30 });
+    expect(blockSeconds(t, 'cooldown', r)).toBeGreaterThanOrEqual(300);
+    expect(
+      t.items
+        .filter(i => i.prescription?.block === 'cooldown')
+        .every(i => {
+          const e = r.byExercise.get(i.exerciseId)!;
+          return e.modality === 'cardio' || (e.mobility_type === 'static' && !!e.stretch_targets?.length);
+        }),
+    ).toBe(true);
+  });
 });
 
-
-
-import {generatePlan,validatePlan} from '../../src/engine';
-import type {EnginePlan,EngineProfile} from '../../src/engine/contracts';
-import {actualBlockSeconds,independentSessionTimeIssues} from '../unit/engine/reference/training-engine-session-time';
-import {externalIssues} from '../../tools/eval/training-engine-invariants';
-const rules=new Rules();
-function fixture(p=baseProfile({equipment:['none','dumbbell','resistance-band'],constraints:{noJump:false,quiet:false,space:'small'}})){
- const state=safety(p,rules),press=rules.data.exercises.find(e=>e.slug==='dumbbell-floor-press')!,stretch=rules.data.exercises.find(e=>e.slug==='banded-chest-stretch')!;
- const main=prescribe(press,p,rules,state,'main',2),cool=prescribe(stretch,p,rules,state,'cooldown',rules.get('dose.stretch').reps_per_muscle[0]);cool.sets=rules.get('dose.stretch').reps_per_muscle[0];cool.target={metricType:'duration',durationSeconds:rules.get('dose.stretch').hold_s.range[0]};
- const t:Template={id:'controlled-stretch',name:'source bounds fixture',estimatedMinutes:30,items:[main,cool]};const plan:EnginePlan={weeklyTarget:p.daysPerWeek,sessionMinutes:p.sessionMinutes,templates:[t],meta:{engineVersion:'fixture',rulesVersion:rules.data.rulesVersion,seed:'stretch-bounds'},gates:[],notices:[],trace:[]};return {p,state,t,plan,cool};
+import { generatePlan, validatePlan } from '../../src/engine';
+import type { EnginePlan, EngineProfile } from '../../src/engine/contracts';
+import {
+  actualBlockSeconds,
+  independentSessionTimeIssues,
+} from '../unit/engine/reference/training-engine-session-time';
+import { externalIssues } from '../../tools/eval/training-engine-invariants';
+const rules = new Rules();
+function fixture(
+  p = baseProfile({
+    equipment: ['none', 'dumbbell', 'resistance-band'],
+    constraints: { noJump: false, quiet: false, space: 'small' },
+  }),
+) {
+  const state = safety(p, rules),
+    press = rules.data.exercises.find(e => e.slug === 'dumbbell-floor-press')!,
+    stretch = rules.data.exercises.find(e => e.slug === 'banded-chest-stretch')!;
+  const main = prescribe(press, p, rules, state, 'main', 2),
+    cool = prescribe(stretch, p, rules, state, 'cooldown', rules.get('dose.stretch').reps_per_muscle[0]);
+  cool.sets = rules.get('dose.stretch').reps_per_muscle[0];
+  cool.target = { metricType: 'duration', durationSeconds: rules.get('dose.stretch').hold_s.range[0] };
+  const t: Template = {
+    id: 'controlled-stretch',
+    name: 'source bounds fixture',
+    estimatedMinutes: 30,
+    items: [main, cool],
+  };
+  const plan: EnginePlan = {
+    weeklyTarget: p.daysPerWeek,
+    sessionMinutes: p.sessionMinutes,
+    templates: [t],
+    meta: { engineVersion: 'fixture', rulesVersion: rules.data.rulesVersion, seed: 'stretch-bounds' },
+    gates: [],
+    notices: [],
+    trace: [],
+  };
+  return { p, state, t, plan, cool };
 }
-it('scores short-source holds proportionally without a warning or hard target floor',()=>{const {p,plan,cool}=fixture();expect(cool.sets*('durationSeconds'in cool.target?cool.target.durationSeconds:0)).toBeLessThan(rules.get('session.cooldown.stretch').total_s_per_muscle_target);const issues=validatePlan(plan,p);expect(issues.some(i=>i.ruleId==='session.cooldown.stretch')).toBe(false);expect(scorePlan(plan,p,rules).perRule.find(v=>v.id==='session.cooldown.stretch')!.satisfaction).toBeGreaterThan(0);expect(scorePlan(plan,p,rules).perRule.find(v=>v.id==='session.cooldown.stretch')!.satisfaction).toBeLessThan(1);expect(issues.some(i=>i.code==='stretch_dose_bounds'&&i.itemIndex===1)).toBe(false);});
-it.each(['hold','sets_low','sets_high'] as const)('distinguishes actual source hold/set caps from an approved short-session one-set dose: %s',mode=>{const {p,plan,cool}=fixture();if(mode==='hold')cool.target={metricType:'duration',durationSeconds:rules.get('dose.stretch').hold_s.range[0]-1};if(mode==='sets_low')cool.sets=rules.get('dose.stretch').reps_per_muscle[0]-1;if(mode==='sets_high')cool.sets=rules.get('dose.stretch').reps_per_muscle[1]+1;if(mode==='sets_low'){expect(cool.sets).toBe(1);expect(validatePlan(plan,p).some(i=>i.code==='stretch_dose_bounds'&&i.itemIndex===1)).toBe(false);expect(scorePlan(plan,p,rules).perRule.find(v=>v.id==='session.cooldown.stretch')!.satisfaction).toBeLessThan(1);}else expect(validatePlan(plan,p).some(i=>i.severity==='error'&&i.itemIndex===1&&i.code==='stretch_dose_bounds')).toBe(true);});
-it('clamps older-adult produced holds to the older source minimum and independently rejects a shorter actual hold',()=>{const p:EngineProfile=baseProfile({birthYearMonth:'1950-01',population:{kind:'older_adult',fallsAnswers:[false,false,false,false]},equipment:['none','dumbbell','resistance-band']}),{state,t,plan,cool}=fixture(p),minimum=rules.get('dose.stretch').hold_s.older_adult[0];cool.target={metricType:'duration',durationSeconds:minimum-1};expect(validatePlan(plan,p).some(i=>i.code==='stretch_dose_bounds'&&i.itemIndex===1&&i.severity==='error')).toBe(true);t.items=t.items.filter(i=>i.prescription?.block!=='cooldown');ensureCooldown(t,p,rules,{...state,cooldownHoldSeconds:rules.get('dose.stretch').hold_s.range[0]});const actual=t.items.filter(i=>i.prescription?.block==='cooldown'&&rules.byExercise.get(i.exerciseId)?.mobility_type==='static');expect(actual.length).toBeGreaterThan(0);for(const i of actual)expect('durationSeconds'in i.target&&i.target.durationSeconds).toBeGreaterThanOrEqual(minimum);});
-it('scores missing verified stretch coverage at zero without guessing from unknown metadata',()=>{const {p,plan,t}=fixture(),unknown=rules.data.exercises.find(e=>e.modality==='mobility'&&!e.stretch_targets?.length)!;const copy=structuredClone(t.items[1]);copy.exerciseId=unknown.id;t.items[1]=copy;expect(validatePlan(plan,p).some(i=>i.ruleId==='session.cooldown.stretch')).toBe(false);expect(scorePlan(plan,p,rules).perRule.find(v=>v.id==='session.cooldown.stretch')!.satisfaction).toBe(0);});
-it('scores actual cooldown time rather than false displayed metadata without restoring the target as hard',()=>{const {p,state,plan,t}=fixture(),cardio=rules.data.exercises.find(e=>e.slug==='custom-quiet-march')!,work=prescribe(cardio,p,rules,state,'conditioning',1);work.target={metricType:'duration',durationSeconds:60};work.prescription!.targetRpe=[...rules.get('aerobic.intensity.rpe_scale').moderate] as [number,number];t.items.push(work);t.estimatedMinutes=999;t.estimatedSeconds=99999;expect(actualBlockSeconds(t,'cooldown')).toBeLessThan(rules.get('safety.session.warmup_cooldown').cooldown_min_minutes*60);expect(validatePlan(plan,p).some(i=>i.ruleId==='safety.session.warmup_cooldown')).toBe(false);const actual=scorePlan(plan,p,rules).perRule.find(v=>v.id==='safety.session.warmup_cooldown')!.satisfaction;expect(actual).toBeGreaterThan(0);expect(actual).toBeLessThan(1);t.estimatedMinutes=1;t.estimatedSeconds=1;expect(scorePlan(plan,p,rules).perRule.find(v=>v.id==='safety.session.warmup_cooldown')!.satisfaction).toBe(actual);expect(independentSessionTimeIssues(plan,p).some(i=>i.code==='safety_cooldown_duration')).toBe(true);});
-it('replays the exact first-user profile offline with all hard checks passed while evaluating stretch as an explicit target score',()=>{const base=baseProfile(),p=baseProfile({trainingAgeWeeks:0,equipment:['none','dumbbell','resistance-band'],constraints:{noJump:false,quiet:false,space:'small'},timeZone:'Asia/Shanghai',screening:{...base.screening,completedAt:'2026-10-15T03:00:00Z',lastScreenedAt:'2026-10-15T03:00:00Z'}}),before=structuredClone(p),plan=generatePlan(p);expect(plan.templates.length).toBeGreaterThan(0);expect(validatePlan(plan,p).filter(i=>i.severity==='error')).toEqual([]);expect(externalIssues(plan,p)).toEqual([]);const grade=scorePlan(plan,p,rules).perRule.find(v=>v.id==='session.cooldown.stretch');expect(grade).toBeDefined();expect(grade!.satisfaction).toBeGreaterThanOrEqual(0);expect(grade!.satisfaction).toBeLessThanOrEqual(1);for(const notice of plan.notices.filter(n=>n.ruleId==='session.copy.short_stretch_target'))expect(notice.message).toEqual(rules.text('session.copy.short_stretch_target'));expect(p).toEqual(before);});
+it('scores short-source holds proportionally without a warning or hard target floor', () => {
+  const { p, plan, cool } = fixture();
+  expect(cool.sets * ('durationSeconds' in cool.target ? cool.target.durationSeconds : 0)).toBeLessThan(
+    rules.get('session.cooldown.stretch').total_s_per_muscle_target,
+  );
+  const issues = validatePlan(plan, p);
+  expect(issues.some(i => i.ruleId === 'session.cooldown.stretch')).toBe(false);
+  expect(
+    scorePlan(plan, p, rules).perRule.find(v => v.id === 'session.cooldown.stretch')!.satisfaction,
+  ).toBeGreaterThan(0);
+  expect(scorePlan(plan, p, rules).perRule.find(v => v.id === 'session.cooldown.stretch')!.satisfaction).toBeLessThan(
+    1,
+  );
+  expect(issues.some(i => i.code === 'stretch_dose_bounds' && i.itemIndex === 1)).toBe(false);
+});
+it.each(['hold', 'sets_low', 'sets_high'] as const)(
+  'distinguishes actual source hold/set caps from an approved short-session one-set dose: %s',
+  mode => {
+    const { p, plan, cool } = fixture();
+    if (mode === 'hold')
+      cool.target = { metricType: 'duration', durationSeconds: rules.get('dose.stretch').hold_s.range[0] - 1 };
+    if (mode === 'sets_low') cool.sets = rules.get('dose.stretch').reps_per_muscle[0] - 1;
+    if (mode === 'sets_high') cool.sets = rules.get('dose.stretch').reps_per_muscle[1] + 1;
+    if (mode === 'sets_low') {
+      expect(cool.sets).toBe(1);
+      expect(validatePlan(plan, p).some(i => i.code === 'stretch_dose_bounds' && i.itemIndex === 1)).toBe(false);
+      expect(
+        scorePlan(plan, p, rules).perRule.find(v => v.id === 'session.cooldown.stretch')!.satisfaction,
+      ).toBeLessThan(1);
+    } else
+      expect(
+        validatePlan(plan, p).some(
+          i => i.severity === 'error' && i.itemIndex === 1 && i.code === 'stretch_dose_bounds',
+        ),
+      ).toBe(true);
+  },
+);
+it('clamps older-adult produced holds to the older source minimum and independently rejects a shorter actual hold', () => {
+  const p: EngineProfile = baseProfile({
+      birthYearMonth: '1950-01',
+      population: { kind: 'older_adult', fallsAnswers: [false, false, false, false] },
+      equipment: ['none', 'dumbbell', 'resistance-band'],
+    }),
+    { state, t, plan, cool } = fixture(p),
+    minimum = rules.get('dose.stretch').hold_s.older_adult[0];
+  cool.target = { metricType: 'duration', durationSeconds: minimum - 1 };
+  expect(
+    validatePlan(plan, p).some(i => i.code === 'stretch_dose_bounds' && i.itemIndex === 1 && i.severity === 'error'),
+  ).toBe(true);
+  t.items = t.items.filter(i => i.prescription?.block !== 'cooldown');
+  ensureCooldown(t, p, rules, { ...state, cooldownHoldSeconds: rules.get('dose.stretch').hold_s.range[0] });
+  const actual = t.items.filter(
+    i => i.prescription?.block === 'cooldown' && rules.byExercise.get(i.exerciseId)?.mobility_type === 'static',
+  );
+  expect(actual.length).toBeGreaterThan(0);
+  for (const i of actual)
+    expect('durationSeconds' in i.target && i.target.durationSeconds).toBeGreaterThanOrEqual(minimum);
+});
+it('scores missing verified stretch coverage at zero without guessing from unknown metadata', () => {
+  const { p, plan, t } = fixture(),
+    unknown = rules.data.exercises.find(e => e.modality === 'mobility' && !e.stretch_targets?.length)!;
+  const copy = structuredClone(t.items[1]);
+  copy.exerciseId = unknown.id;
+  t.items[1] = copy;
+  expect(validatePlan(plan, p).some(i => i.ruleId === 'session.cooldown.stretch')).toBe(false);
+  expect(scorePlan(plan, p, rules).perRule.find(v => v.id === 'session.cooldown.stretch')!.satisfaction).toBe(0);
+});
+it('scores actual cooldown time rather than false displayed metadata without restoring the target as hard', () => {
+  const { p, state, plan, t } = fixture(),
+    cardio = rules.data.exercises.find(e => e.slug === 'custom-quiet-march')!,
+    work = prescribe(cardio, p, rules, state, 'conditioning', 1);
+  work.target = { metricType: 'duration', durationSeconds: 60 };
+  work.prescription!.targetRpe = [...rules.get('aerobic.intensity.rpe_scale').moderate] as [number, number];
+  t.items.push(work);
+  t.estimatedMinutes = 999;
+  t.estimatedSeconds = 99999;
+  expect(actualBlockSeconds(t, 'cooldown')).toBeLessThan(
+    rules.get('safety.session.warmup_cooldown').cooldown_min_minutes * 60,
+  );
+  expect(validatePlan(plan, p).some(i => i.ruleId === 'safety.session.warmup_cooldown')).toBe(false);
+  const actual = scorePlan(plan, p, rules).perRule.find(v => v.id === 'safety.session.warmup_cooldown')!.satisfaction;
+  expect(actual).toBeGreaterThan(0);
+  expect(actual).toBeLessThan(1);
+  t.estimatedMinutes = 1;
+  t.estimatedSeconds = 1;
+  expect(scorePlan(plan, p, rules).perRule.find(v => v.id === 'safety.session.warmup_cooldown')!.satisfaction).toBe(
+    actual,
+  );
+  expect(independentSessionTimeIssues(plan, p).some(i => i.code === 'safety_cooldown_duration')).toBe(true);
+});
+it('replays the exact first-user profile offline with all hard checks passed while evaluating stretch as an explicit target score', () => {
+  const base = baseProfile(),
+    p = baseProfile({
+      trainingAgeWeeks: 0,
+      equipment: ['none', 'dumbbell', 'resistance-band'],
+      constraints: { noJump: false, quiet: false, space: 'small' },
+      timeZone: 'Asia/Shanghai',
+      screening: { ...base.screening, completedAt: '2026-10-15T03:00:00Z', lastScreenedAt: '2026-10-15T03:00:00Z' },
+    }),
+    before = structuredClone(p),
+    plan = generatePlan(p);
+  expect(plan.templates.length).toBeGreaterThan(0);
+  expect(validatePlan(plan, p).filter(i => i.severity === 'error')).toEqual([]);
+  expect(externalIssues(plan, p)).toEqual([]);
+  const grade = scorePlan(plan, p, rules).perRule.find(v => v.id === 'session.cooldown.stretch');
+  expect(grade).toBeDefined();
+  expect(grade!.satisfaction).toBeGreaterThanOrEqual(0);
+  expect(grade!.satisfaction).toBeLessThanOrEqual(1);
+  for (const notice of plan.notices.filter(n => n.ruleId === 'session.copy.short_stretch_target'))
+    expect(notice.message).toEqual(rules.text('session.copy.short_stretch_target'));
+  expect(p).toEqual(before);
+});
 
-it('orders primary-work stretches ahead of accessory groups even when accessory items appear first',()=>{const {p,state,t}=fixture(),main=t.items[0],squat=rules.data.exercises.find(e=>e.slug==='bodyweight-squat')!;t.items=[prescribe(squat,p,rules,state,'accessory',2),main];ensureCooldown(t,p,rules,{...state,cooldownHoldSeconds:rules.get('dose.stretch').hold_s.range[0]});const stretches=t.items.filter(i=>i.prescription?.block==='cooldown'&&rules.byExercise.get(i.exerciseId)?.mobility_type==='static');expect(stretches.length).toBeGreaterThan(0);expect(rules.byExercise.get(stretches[0].exerciseId)?.stretch_targets).toContain('chest');});
+it('orders primary-work stretches ahead of accessory groups even when accessory items appear first', () => {
+  const { p, state, t } = fixture(),
+    main = t.items[0],
+    squat = rules.data.exercises.find(e => e.slug === 'bodyweight-squat')!;
+  t.items = [prescribe(squat, p, rules, state, 'accessory', 2), main];
+  ensureCooldown(t, p, rules, { ...state, cooldownHoldSeconds: rules.get('dose.stretch').hold_s.range[0] });
+  const stretches = t.items.filter(
+    i => i.prescription?.block === 'cooldown' && rules.byExercise.get(i.exerciseId)?.mobility_type === 'static',
+  );
+  expect(stretches.length).toBeGreaterThan(0);
+  expect(rules.byExercise.get(stretches[0].exerciseId)?.stretch_targets).toContain('chest');
+});

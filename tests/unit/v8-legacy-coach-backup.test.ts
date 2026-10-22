@@ -11,7 +11,11 @@ describe('V7.1 fixed-mock coach plan saved through legacy UI', () => {
     const { data } = validateBackupEnvelope(JSON.parse(bytes.toString()));
     expect(data.plans).toHaveLength(1);
     expect(data.plans[0]).toMatchObject({ name: 'Reviewed synthetic coach plan', source: 'ai' });
-    expect(data.planVersions[0].days[0].exercises[0]).toMatchObject({ notes: 'Synthetic coach instruction', targetSets: [{ metricType: 'reps', reps: 8 }], setTimings: [{ durationSeconds: 40, restSeconds: 30 }] });
+    expect(data.planVersions[0].days[0].exercises[0]).toMatchObject({
+      notes: 'Synthetic coach instruction',
+      targetSets: [{ metricType: 'reps', reps: 8 }],
+      setTimings: [{ durationSeconds: 40, restSeconds: 30 }],
+    });
     expect(data.scheduledWorkouts).toHaveLength(1);
     expect(data.sessions).toHaveLength(0);
   });

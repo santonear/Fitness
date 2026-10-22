@@ -1,7 +1,25 @@
 /** 芽芽悬浮助手文案（docs/design/v9/Orb.dc.html 与各主题稿 OT 表）。 */
 export const orbCopy = {
-  zh: { orb: '芽芽助手，按住可上下拖动', title: '芽芽', close: '收起', closeTip: '收起提示', openChat: '打开对话', tuck: '靠边', panel: '芽芽快捷助手', nutrition: '吃什么、喝多少' },
-  en: { orb: 'Yaya assistant, drag up or down to move', title: 'Yaya', close: 'Close', closeTip: 'Dismiss tip', openChat: 'Open chat', tuck: 'Tuck away', panel: 'Yaya quick help', nutrition: 'What to eat and drink' },
+  zh: {
+    orb: '芽芽助手，按住可上下拖动',
+    title: '芽芽',
+    close: '收起',
+    closeTip: '收起提示',
+    openChat: '打开对话',
+    tuck: '靠边',
+    panel: '芽芽快捷助手',
+    nutrition: '吃什么、喝多少',
+  },
+  en: {
+    orb: 'Yaya assistant, drag up or down to move',
+    title: 'Yaya',
+    close: 'Close',
+    closeTip: 'Dismiss tip',
+    openChat: 'Open chat',
+    tuck: 'Tuck away',
+    panel: 'Yaya quick help',
+    nutrition: 'What to eat and drink',
+  },
 } as const;
 
 export type OrbContextId = 'home' | 'plan' | 'review' | 'settings' | 'finish' | 'other';
@@ -16,11 +34,26 @@ export const orbContextCopy: Record<'zh' | 'en', Record<OrbContextId, { tip: str
     other: { tip: '', actions: ['只有 20 分钟', '今天有点累', '换个地方练'] },
   },
   en: {
-    home: { tip: 'Warm up for 5 minutes first, or start right away?', actions: ['I only have 20 minutes', 'I feel a bit tired today', 'Train somewhere else'] },
-    plan: { tip: 'Want to move a training day or shorten sessions? Tap me.', actions: ['Move a training day', 'Make sessions 20 minutes', 'Add one cardio session'] },
-    review: { tip: 'Want to see how your recent training went?', actions: ['Show my most improved exercise', 'Help me make up a missed session', 'Plan next week'] },
-    settings: { tip: 'When you change the style, I change outfits too.', actions: ['Recommend a style', 'Change reminder time', 'Update my health details'] },
-    finish: { tip: 'Nice work. Want to see how to progress next time?', actions: ['How to progress next time', 'What went well today', 'Should I rest tomorrow'] },
+    home: {
+      tip: 'Warm up for 5 minutes first, or start right away?',
+      actions: ['I only have 20 minutes', 'I feel a bit tired today', 'Train somewhere else'],
+    },
+    plan: {
+      tip: 'Want to move a training day or shorten sessions? Tap me.',
+      actions: ['Move a training day', 'Make sessions 20 minutes', 'Add one cardio session'],
+    },
+    review: {
+      tip: 'Want to see how your recent training went?',
+      actions: ['Show my most improved exercise', 'Help me make up a missed session', 'Plan next week'],
+    },
+    settings: {
+      tip: 'When you change the style, I change outfits too.',
+      actions: ['Recommend a style', 'Change reminder time', 'Update my health details'],
+    },
+    finish: {
+      tip: 'Nice work. Want to see how to progress next time?',
+      actions: ['How to progress next time', 'What went well today', 'Should I rest tomorrow'],
+    },
     other: { tip: '', actions: ['I only have 20 minutes', 'I feel a bit tired today', 'Train somewhere else'] },
   },
 };

@@ -1,6 +1,6 @@
 // Refuse to deploy a preview with a config that points at production resources.
 // Usage: node tools/release/check-preview-config.mjs wrangler.assistant-preview.jsonc
-import {readFile} from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 
 const path = process.argv[2];
 if (!/^wrangler\.[a-z0-9-]*preview[a-z0-9-]*\.jsonc$/.test(path ?? '')) throw Error('Not a preview config');

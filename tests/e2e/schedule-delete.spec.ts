@@ -1,41 +1,135 @@
 import { expect, test } from '@playwright/test';
 test.use({ locale: 'en-US' });
 // Preserve the real IndexedDB contract after retiring the legacy presentation.
-test.beforeEach(async({page})=>{await page.goto("/tests/e2e/helpers/capacity-entry.html");});
-test('schedule hide preserves completion statistics, guards concurrent and ongoing writes and rejects hidden starts', async ({ page }) => {
+test.beforeEach(async ({ page }) => {
+  await page.goto('/tests/e2e/helpers/capacity-entry.html');
+});
+test('schedule hide preserves completion statistics, guards concurrent and ongoing writes and rejects hidden starts', async ({
+  page,
+}) => {
   const result = await page.evaluate(async () => {
-    const profilePath='/src/application/profile.ts';await (await import(/* @vite-ignore */ profilePath)).profileService.initialize('en');
+    const profilePath = '/src/application/profile.ts';
+    await (await import(/* @vite-ignore */ profilePath)).profileService.initialize('en');
     const { planService } = await import(String('/src/application/plans.ts'));
     const { workoutService } = await import(String('/src/application/workouts.ts'));
     const { database } = await import(String('/src/persistence/db.ts'));
     const { progressService } = await import(String('/src/application/progress.ts'));
     const { backupService } = await import(String('/src/application/backup.ts'));
-    const plan = await planService.savePlan({ name: 'Pending', source: 'manual', startDate: '2026-10-05', scheduleTimeZone: 'UTC', goalSnapshot: { goal: '' }, durationWeeks: 1, daysPerWeek: 1, days: [{ dayId: crypto.randomUUID(), weekIndex: 1, dayOfWeek: 1, exercises: [{ exerciseId: 'd16325d9-fc00-4c41-88a1-000000000003', order: 0, targetSets: [{ metricType: 'reps', reps: 10 }] }] }] });
+    const plan = await planService.savePlan({
+      name: 'Pending',
+      source: 'manual',
+      startDate: '2026-10-05',
+      scheduleTimeZone: 'UTC',
+      goalSnapshot: { goal: '' },
+      durationWeeks: 1,
+      daysPerWeek: 1,
+      days: [
+        {
+          dayId: crypto.randomUUID(),
+          weekIndex: 1,
+          dayOfWeek: 1,
+          exercises: [
+            {
+              exerciseId: 'd16325d9-fc00-4c41-88a1-000000000003',
+              order: 0,
+              targetSets: [{ metricType: 'reps', reps: 10 }],
+            },
+          ],
+        },
+      ],
+    });
     const row = (await database.scheduledWorkouts.toArray())[0];
     const originalBackup = await (await backupService.exportBackup()).text();
-    const stale = await planService.hideScheduledWorkout(row.id, row.revision + 1).then(() => 'accepted', (e: { code: string }) => e.code);
-    const session = await workoutService.startWorkout({ sessionId: crypto.randomUUID(), scheduledWorkoutId: row.id, localDate: row.originalDate, timeZone: 'UTC' });
-    const ongoing = await planService.hideScheduledWorkout(row.id, row.revision).then(() => 'accepted', (e: { code: string }) => e.code);
+    const stale = await planService.hideScheduledWorkout(row.id, row.revision + 1).then(
+      () => 'accepted',
+      (e: { code: string }) => e.code,
+    );
+    const session = await workoutService.startWorkout({
+      sessionId: crypto.randomUUID(),
+      scheduledWorkoutId: row.id,
+      localDate: row.originalDate,
+      timeZone: 'UTC',
+    });
+    const ongoing = await planService.hideScheduledWorkout(row.id, row.revision).then(
+      () => 'accepted',
+      (e: { code: string }) => e.code,
+    );
     const forged = JSON.parse(await (await backupService.exportBackup()).text());
     forged.data.scheduledWorkouts[0].hiddenAt = new Date().toISOString();
-    const forgedRejected = await backupService.validateBackup(new File([JSON.stringify(forged)], 'forged.json')).then(() => false, (e: { code: string }) => e.code === 'BACKUP_REFERENCE_INVALID');
+    const forgedRejected = await backupService.validateBackup(new File([JSON.stringify(forged)], 'forged.json')).then(
+      () => false,
+      (e: { code: string }) => e.code === 'BACKUP_REFERENCE_INVALID',
+    );
     await workoutService.abandonWorkout(session.id, session.revision);
     row.revision = (await database.scheduledWorkouts.get(row.id)).revision;
-    const snapshot = async () => JSON.stringify(await Promise.all(database.tables.filter((table:{name:string})=>table.name!=='coachDevice').map((table: { toArray: () => Promise<unknown[]> }) => table.toArray())));
+    const snapshot = async () =>
+      JSON.stringify(
+        await Promise.all(
+          database.tables
+            .filter((table: { name: string }) => table.name !== 'coachDevice')
+            .map((table: { toArray: () => Promise<unknown[]> }) => table.toArray()),
+        ),
+      );
     const beforeFailure = await snapshot();
     const originalPut = database.scheduledWorkouts.put;
     database.scheduledWorkouts.put = () => Promise.reject(new Error('Injected schedule write failure'));
-    const failed = await planService.hideScheduledWorkout(row.id, row.revision).then(() => false, () => true);
+    const failed = await planService.hideScheduledWorkout(row.id, row.revision).then(
+      () => false,
+      () => true,
+    );
     database.scheduledWorkouts.put = originalPut;
-    const rolledBack = beforeFailure === await snapshot();
+    const rolledBack = beforeFailure === (await snapshot());
     const range = { from: '2026-10-01', to: '2026-10-31', timeZone: 'UTC', nowMs: Date.parse('2026-11-01T00:00:00Z') };
     const before = await progressService.queryProgress(range, range.nowMs);
     await planService.hideScheduledWorkout(row.id, row.revision);
     const after = await progressService.queryProgress(range, range.nowMs);
-    const start = await workoutService.startWorkout({ sessionId: crypto.randomUUID(), scheduledWorkoutId: row.id, localDate: row.originalDate, timeZone: 'UTC' }).then(() => 'accepted', (e: { code: string }) => e.code);
-    const direct = await workoutService.startWorkout({ sessionId: crypto.randomUUID(), planVersionId: plan.currentVersionId, plannedDayId: row.plannedDayId, localDate: row.originalDate, timeZone: 'UTC' }).then(() => 'accepted', (e: { code: string }) => e.code);
+    const start = await workoutService
+      .startWorkout({
+        sessionId: crypto.randomUUID(),
+        scheduledWorkoutId: row.id,
+        localDate: row.originalDate,
+        timeZone: 'UTC',
+      })
+      .then(
+        () => 'accepted',
+        (e: { code: string }) => e.code,
+      );
+    const direct = await workoutService
+      .startWorkout({
+        sessionId: crypto.randomUUID(),
+        planVersionId: plan.currentVersionId,
+        plannedDayId: row.plannedDayId,
+        localDate: row.originalDate,
+        timeZone: 'UTC',
+      })
+      .then(
+        () => 'accepted',
+        (e: { code: string }) => e.code,
+      );
     const oldBackupAccepted = Boolean(await backupService.validateBackup(new File([originalBackup], 'old.json')));
-    return { stale, ongoing, forgedRejected, failed, rolledBack, start, direct, available: (await workoutService.listAvailableSchedule()).length, unchanged: JSON.stringify(before) === JSON.stringify(after), oldBackupAccepted };
+    return {
+      stale,
+      ongoing,
+      forgedRejected,
+      failed,
+      rolledBack,
+      start,
+      direct,
+      available: (await workoutService.listAvailableSchedule()).length,
+      unchanged: JSON.stringify(before) === JSON.stringify(after),
+      oldBackupAccepted,
+    };
   });
-  expect(result).toEqual({ stale: 'CONFLICT', ongoing: 'WORKOUT_IN_PROGRESS', forgedRejected: true, failed: true, rolledBack: true, start: 'INVALID', direct: 'INVALID', available: 0, unchanged: true, oldBackupAccepted: true });
+  expect(result).toEqual({
+    stale: 'CONFLICT',
+    ongoing: 'WORKOUT_IN_PROGRESS',
+    forgedRejected: true,
+    failed: true,
+    rolledBack: true,
+    start: 'INVALID',
+    direct: 'INVALID',
+    available: 0,
+    unchanged: true,
+    oldBackupAccepted: true,
+  });
 });

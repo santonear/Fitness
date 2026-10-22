@@ -1,6 +1,28 @@
 /* 我的变化 trend charts. Tokens only. */
-.v9-trend { display: block; inline-size: 100%; block-size: auto; max-block-size: calc(var(--s8) * 2); overflow: visible; }
-.v9-trend-base { stroke: var(--chart-track); stroke-width: 1; vector-effect: non-scaling-stroke; }
-.v9-trend-line { fill: none; stroke: var(--trend-color); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
-.v9-trend-dot { fill: var(--card-bg); stroke: var(--trend-color); stroke-width: 2; }
-.v9-trend-bar { fill: var(--trend-color); }
+.v9-trend {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  max-block-size: calc(var(--s8) * 2);
+  overflow: visible;
+}
+.v9-trend-base {
+  stroke: var(--chart-track);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.v9-trend-line {
+  fill: none;
+  stroke: var(--trend-color);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.v9-trend-dot {
+  fill: var(--card-bg);
+  stroke: var(--trend-color);
+  stroke-width: 2;
+}
+.v9-trend-bar {
+  fill: var(--trend-color);
+}

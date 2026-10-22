@@ -11,7 +11,7 @@ export interface NormBand {
   /** Lower bound of the 60-score row and upper bound of the 70-score row, in the item's unit. */
   mid: readonly [low: number, high: number];
 }
-export type NormTable = Readonly<Partial<Record<FitnessTestItem, readonly NormBand[]>>>;
+type NormTable = Readonly<Partial<Record<FitnessTestItem, readonly NormBand[]>>>;
 
 const ADULT_AGES = [20, 25, 30, 35, 40, 45, 50, 55] as const;
 const OLDER_AGES = [60, 65, 70, 75] as const;

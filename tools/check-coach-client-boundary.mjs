@@ -5,7 +5,11 @@ const files = (await readdir(directory)).filter(file => file.endsWith('.js'));
 if (!files.length) throw new Error('Build production client assets first');
 for (const file of files) {
   const source = await readFile(new URL(file, directory), 'utf8');
-  for (const marker of ['fitness/system/safety', "You are Fitness's adult general-fitness planner", 'MANAGE_PLAN: explain only']) {
+  for (const marker of [
+    'fitness/system/safety',
+    "You are Fitness's adult general-fitness planner",
+    'MANAGE_PLAN: explain only',
+  ]) {
     if (source.includes(marker)) throw new Error(`Backend prompt found in client asset ${file}`);
   }
 }
