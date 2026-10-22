@@ -13,7 +13,7 @@ test('actual onboarding applies an environment plan and starts and the settings 
  await page.getByRole('button',{name:'生成计划',exact:true}).click();
  await expect(page.getByRole('heading',{name:'你的第一版计划',exact:true})).toBeVisible();
  await expect(page.getByText(/平衡练习需要一个能扶的地方/).first()).toBeVisible();
- const apply=page.getByRole('button',{name:'就用这份计划',exact:true});await expect(apply).toBeEnabled();await apply.click();await expect(page).toHaveURL(/\/$/);
+ const apply=page.getByRole('button',{name:'就用这份计划',exact:true});await expect(apply).toBeEnabled();await apply.click();await page.getByRole('button',{name:'先不写',exact:true}).click();await expect(page).toHaveURL(/\/$/);
  const first=await page.evaluate(async()=>{const path='/src/ui/mainline/context.tsx',context=await import(/* @vite-ignore */path),snapshot=await context.workflow.snapshot();if(snapshot.version?.enginePlan?.quality?.status!=='environmentLimited')throw Error('Actual UI-applied draft must retain its environment claim');return snapshot.version.id;});
  await page.goto('/plans');const disclosure=page.getByRole('button',{name:/平衡练习需要一个能扶的地方/});await expect(disclosure).toBeVisible();await disclosure.click();await expect(page).toHaveURL(/settings\/engine#environment/);
  const support=page.getByRole('checkbox',{name:'家里有可扶的墙或椅子',exact:true});await expect(support).not.toBeChecked();

@@ -107,7 +107,7 @@ test('English UI shows no Chinese across the main flow', async ({ page }) => {
   await page.getByRole('button', { name: 'Create my plan', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Your first plan', exact: true })).toBeVisible();
   await check(page, 'plan draft');
-  await page.getByRole('button', { name: 'Use this plan', exact: true }).click();
+  await page.getByRole('button', { name: 'Use this plan', exact: true }).click(); await page.getByRole('button', { name: 'Not now', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Today', exact: true })).toBeVisible();
   await check(page, 'today');
   await walkEnglish(page, 'fresh');
@@ -144,7 +144,7 @@ async function walkEnglish(page: Page, tag: string) {
     const button = page.locator('main').getByRole('button', { name: new RegExp(row, 'i') }).first();
     if (await button.count()) { await button.click(); await check(page, `${tag} me · ${row}`); await button.click(); }
   }
-  for (const [row, path] of [['My changes', '/settings/changes'], ['Body details', '/settings/body'], ['Screening and training preferences', '/settings/engine'], ['Nutrition advice', '/settings/nutrition']] as const) {
+  for (const [row, path] of [['My records', '/settings/changes'], ['Body details', '/settings/body'], ['Screening and training preferences', '/settings/engine'], ['Nutrition advice', '/settings/nutrition']] as const) {
     await page.locator('main').getByRole('button', { name: new RegExp(`^${row}`) }).first().click();
     await expect(page).toHaveURL(new RegExp(path));
     await check(page, `${tag} ${row}`);
@@ -199,7 +199,7 @@ test('plan made in Chinese with preset choices reads fully in English after swit
   await answerText(page, '去健身房');
   await engineSafety(page, { caution: '膝盖' });
   await generate(page);
-  await page.getByRole('button', { name: '就用这份计划', exact: true }).click();
+  await page.getByRole('button', { name: '就用这份计划', exact: true }).click(); await page.getByRole('button', { name: '先不写', exact: true }).click();
   await expect(page.getByRole('heading', { name: '今天', exact: true })).toBeVisible();
   await page.getByRole('navigation', { name: '主导航' }).getByRole('button', { name: '我的' }).click();
   // The detector itself sees Chinese on the Chinese screen.

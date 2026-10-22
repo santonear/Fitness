@@ -19,7 +19,7 @@ for(const theme of ['pop', 'vivid', 'gentle', 'data', 'fire'])for(const width of
  await page.addInitScript(theme=>localStorage.setItem('fitness-theme',theme),theme);
  await page.setViewportSize({width,height:900});await page.emulateMedia({reducedMotion:'reduce'});
  await page.goto('/');await enable(page,{fontSubset:true,exercisePanel:true});
- await page.getByRole('button',{name:'开始',exact:true}).click();await answerTexts(page,['保持力量','每周3次，每次30分钟','在家，只有瑜伽垫']);await basicSafety(page);await generate(page);await page.getByRole('button',{name:o.accept,exact:true}).click();
+ await page.getByRole('button',{name:'开始',exact:true}).click();await answerTexts(page,['保持力量','每周3次，每次30分钟','在家，只有瑜伽垫']);await basicSafety(page);await generate(page);await page.getByRole('button',{name:o.accept,exact:true}).click();await page.getByRole('button',{name:'先不写',exact:true}).click();
  await expect(page.getByRole('heading',{name:'今天',exact:true})).toBeVisible();
  const prefix=`${info.project.name}-${theme}-${width}`;await capture(page,`${prefix}-next`);
  await page.goto('/exercises');await enable(page,{fontSubset:true,exercisePanel:true});
@@ -38,7 +38,7 @@ for(const theme of ['pop', 'vivid', 'gentle', 'data', 'fire'])for(const width of
 for(const theme of ['pop', 'vivid', 'gentle', 'data', 'fire'])test(`${theme} coach 320`,async({page},info)=>{
  await page.addInitScript(theme=>localStorage.setItem('fitness-theme',theme),theme);
  await page.setViewportSize({width:320,height:844});await page.goto('/');
- await page.getByRole('button',{name:'开始',exact:true}).click();await answerTexts(page,['保持力量','每周3次，每次30分钟','在家，只有瑜伽垫']);await basicSafety(page);await generate(page);await page.getByRole('button',{name:o.accept,exact:true}).click();
+ await page.getByRole('button',{name:'开始',exact:true}).click();await answerTexts(page,['保持力量','每周3次，每次30分钟','在家，只有瑜伽垫']);await basicSafety(page);await generate(page);await page.getByRole('button',{name:o.accept,exact:true}).click();await page.getByRole('button',{name:'先不写',exact:true}).click();
  await expect(homeStart(page)).toBeVisible();
  await openHomeCoach(page);await page.getByRole('dialog').getByRole('textbox').fill('保留本地草稿');
  await capture(page,`${info.project.name}-${theme}-320-coach`);

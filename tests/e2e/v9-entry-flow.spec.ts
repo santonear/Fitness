@@ -40,7 +40,7 @@ test('fresh user: welcome → tap onboarding → one-question health check → p
   expect(await page.locator('.v9-plan-tip').count()).toBeLessThanOrEqual(1);
   await expect(page.getByText('基础计划', { exact: true })).toHaveCount(0);
   await expect(page.getByText('开启 AI 后可以得到更贴合的计划')).toHaveCount(0);
-  await page.getByRole('button', { name: '就用这份计划', exact: true }).click();
+  await page.getByRole('button', { name: '就用这份计划', exact: true }).click(); await page.getByRole('button', { name: '先不写', exact: true }).click();
   // Home: applied feedback, today's session first, start before the status check.
   await expect(page.getByRole('heading', { name: '今天', exact: true })).toBeVisible();
   await expect(page.getByRole('status').filter({ hasText: '计划已经用上了' })).toBeVisible();

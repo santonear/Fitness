@@ -1,14 +1,21 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { BodyWeightObservation } from '../../../domain/models';
 import { bodyFatTrend, monthKey, monthSummary, previousMonth, sessionsByMonth, strengthTrends, weightTrend, type Trend } from '../../../application/my-changes';
 import { bodyWeightService } from '../../../application/body-weight';
 import { activityDate } from '../../../application/v8-activity';
 import { changesCopy } from '../../../i18n/features/me/changes';
 import { fill } from '../../../i18n/features/onboarding/entry';
-import { Card, PrimaryButton, StatTile } from '../../components/kit';
-import { MorphPanel } from '../../components/common/MorphPanel';
+import { AnatomyMap, Card, PrimaryButton, StatTile } from '../../components/kit';
 import { TrendChart } from '../../components/TrendChart';
 import { useMainline } from '../../mainline/context';
+import { figureSex, figureShape, ghostWeight, monthLabel } from '../plan-upgrade/logic';
+import { lastFigureSex, outlineEvent, outlineShown } from '../plan-upgrade/prefs';
+import { useWidth } from '../plan-upgrade/useWidth';
+import { planPagesCopy } from '../../../i18n/features/plan-upgrade/pages';
+import { fillLine } from '../../../i18n/features/coach/yaya-v5';
+import type { FutureLetter } from '../../../domain/plan-upgrade';
+import { listFutureLetters } from '../../../persistence/plan-upgrade-store';
+import '../plan-upgrade/plan-upgrade.css';
 import './my-changes.css';
 
 type Locale = 'zh' | 'en';
@@ -35,7 +42,7 @@ function TrendLine({ trend, unit, locale }: { trend: Trend; unit: string; locale
   </p>;
 }
 
-/** 我的 › 我的变化: weight, body fat, strength and sessions over time, from this device only. */
+/** 我的 › 自记录 (Bo 2026-10-22): periodic body record inline, then body fat, strength and sessions; this device only. */
 export function MyChangesPage() {
   const c = useMainline(), locale = c.locale, t = changesCopy[locale];
   const zone = c.data?.profile?.timeZone ?? 'Asia/Shanghai', today = activityDate(zone);
@@ -43,31 +50,41 @@ export function MyChangesPage() {
   const weight = weightTrend(body.rows), fat = bodyFatTrend(body.rows), lifts = strengthTrends(workouts);
   const month = monthKey(today), current = monthSummary(workouts, body.rows, month), previous = monthSummary(workouts, body.rows, previousMonth(month));
   const perMonth = sessionsByMonth(workouts, month);
-  const trigger = useRef<HTMLElement | null>(null);
   const [form, setForm] = useState<{ date: string; weight: string; fat: string; error?: boolean; saved?: boolean }>();
+  const [letters, setLetters] = useState<FutureLetter[]>([]);
+  useEffect(() => { void listFutureLetters().then(setLetters).catch(() => setLetters([])); }, []);
+  // The form starts from today and the last logged weight once the records have loaded.
+  useEffect(() => { if (body.loaded && !form) setForm({ date: today, weight: weight.last ? String(weight.last.value) : '', fat: '' }); }, [body.loaded]);
   const existing = form ? body.rows.find(row => row.localDate === form.date) : undefined;
   const save = async () => {
     if (!form) return;
     const kg = Number(form.weight), percent = form.fat.trim() === '' ? undefined : Number(form.fat);
-    if (!Number.isFinite(kg) || kg < 20 || kg > 300 || (percent !== undefined && (!Number.isFinite(percent) || percent < 3 || percent > 70)) || !form.date || form.date > today || form.date < '2000-01-01') return setForm({ ...form, error: true });
+    if (form.weight.trim() === '' || !Number.isFinite(kg) || kg < 20 || kg > 300 || (percent !== undefined && (!Number.isFinite(percent) || percent < 3 || percent > 70)) || !form.date || form.date > today || form.date < '2000-01-01') return setForm({ ...form, error: true, saved: false });
     let saved = false;
     await c.run(async () => {
       await bodyWeightService.saveBodyWeight({ ...(existing ? { id: existing.id } : {}), localDate: form.date, timeZone: zone, weightGrams: Math.round(kg * 1000), ...(percent !== undefined ? { bodyFatPercent: Math.round(percent * 10) / 10 } : {}) }, existing?.revision);
       saved = true;
     });
-    if (saved) { await body.reload(); setForm(undefined); }
+    if (saved) { await body.reload(); setForm({ ...form, fat: '', error: false, saved: true }); }
   };
-  const openForm = (target: HTMLElement) => { trigger.current = target; const last = weight.last?.value; setForm({ date: today, weight: last !== undefined ? String(last) : '', fat: '' }); };
+  const edit = (patch: Partial<NonNullable<typeof form>>) => form && setForm({ ...form, ...patch, error: false, saved: false });
   return <main className="v9-changes">
     <header className="v9-changes-head">
       <PrimaryButton tone="text" size="sm" onClick={() => c.navigate('/settings')}>{t.back}</PrimaryButton>
-      <h1 className="v9-display">{t.title}</h1><p>{t.local}</p>
+      <h1 className="v9-display">{t.pageTitle}</h1><p>{t.local}</p>
     </header>
     <Card variant="raised" padding="md" as="section" className="v9-change-card" aria-labelledby="v9-change-weight">
-      <h2 id="v9-change-weight">{t.weight}</h2>
-      {weight.last ? <><TrendLine trend={weight} unit={t.kg} locale={locale} /><TrendChart points={weight.points} tone={1} label={`${t.weight} · ${weight.points.map(point => `${dateText(point.date, locale)} ${point.value}${t.kg}`).join(listSeparator(locale))}`} /></>
-        : body.loaded && <p className="v9-change-note">{t.emptyBody}</p>}
-      <PrimaryButton tone="quiet" size="sm" onClick={event => openForm(event.currentTarget)}>{t.add}</PrimaryButton>
+      <h2 id="v9-change-weight">{t.addTitle}</h2>
+      {weight.last ? <TrendLine trend={weight} unit={t.kg} locale={locale} /> : body.loaded && <p className="v9-change-note">{t.emptyBody}</p>}
+      {form && <div className="v9-change-form">
+        <label><span>{t.date}</span><input type="date" value={form.date} min="2000-01-01" max={today} onChange={event => edit({ date: event.currentTarget.value })} /></label>
+        <label><span>{t.weightLabel}</span><input type="number" inputMode="decimal" min={20} max={300} step={0.1} value={form.weight} onChange={event => edit({ weight: event.currentTarget.value })} /></label>
+        <label><span>{t.fatLabel}</span><input type="number" inputMode="decimal" min={3} max={70} step={0.1} value={form.fat} onChange={event => edit({ fat: event.currentTarget.value })} /></label>
+        {existing && !form.saved && <p className="v9-change-note">{t.sameDay}</p>}
+        {form.error && <p role="alert" className="v9-change-error">{t.invalid}</p>}
+        {form.saved && <p role="status" className="v9-change-note">{t.saved}</p>}
+        <PrimaryButton disabled={c.busy} onClick={() => void save()}>{t.save}</PrimaryButton>
+      </div>}
     </Card>
     <Card variant="raised" padding="md" as="section" className="v9-change-card" aria-labelledby="v9-change-fat">
       <h2 id="v9-change-fat">{t.bodyFat}</h2>
@@ -95,26 +112,29 @@ export function MyChangesPage() {
         <PrimaryButton tone="text" size="sm" onClick={() => { c.setReviewKind('week'); c.navigate('/review'); }}>{t.review}</PrimaryButton>
       </div>
     </Card>
-    <MorphPanel open={!!form} title={t.addTitle} closeLabel={t.cancel} onClose={() => { if (!c.busy) setForm(undefined); }} triggerRef={trigger}>
-      {form && <div className="v9-change-form">
-        <label><span>{t.date}</span><input type="date" value={form.date} min="2000-01-01" max={today} onChange={event => setForm({ ...form, date: event.currentTarget.value, error: false })} /></label>
-        <label><span>{t.weightLabel}</span><input type="number" inputMode="decimal" min={20} max={300} step={0.1} value={form.weight} onChange={event => setForm({ ...form, weight: event.currentTarget.value, error: false })} /></label>
-        <label><span>{t.fatLabel}</span><input type="number" inputMode="decimal" min={3} max={70} step={0.1} value={form.fat} onChange={event => setForm({ ...form, fat: event.currentTarget.value, error: false })} /></label>
-        {existing && <p className="v9-change-note">{t.sameDay}</p>}
-        {form.error && <p role="alert" className="v9-change-error">{t.invalid}</p>}
-        <PrimaryButton disabled={c.busy} onClick={() => void save()}>{t.save}</PrimaryButton>
-      </div>}
-    </MorphPanel>
+    {letters.length > 0 && <Card variant="raised" padding="md" as="section" className="v9-change-card" aria-labelledby="v9-change-letter">
+      <h2 id="v9-change-letter">{planPagesCopy[locale].letterTitle}</h2>
+      {[...letters].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).map(letter => <p key={letter.id} className="pu-letter">{letter.text}</p>)}
+    </Card>}
   </main>;
 }
 
-/** Summary on 我的: latest weight change and this month vs last month, linking to 我的变化. */
+/** Summary on 我的: this month vs last month and the body outline drawn from the latest 自记录 weight and body fat (Bo 2026-10-22). */
 export function MyChangesCard() {
   const c = useMainline(), locale = c.locale, t = changesCopy[locale];
   const zone = c.data?.profile?.timeZone ?? 'Asia/Shanghai', month = monthKey(activityDate(zone));
   const body = useBodyMeasurements(), workouts = c.data?.workouts ?? [];
   const weight = weightTrend(body.rows), current = monthSummary(workouts, body.rows, month), previous = monthSummary(workouts, body.rows, previousMonth(month));
-  const lift = strengthTrends(workouts, 1)[0];
+  const lift = strengthTrends(workouts, 1)[0], fat = bodyFatTrend(body.rows);
+  const values = c.data?.profile?.bodyDetails?.values, p = planPagesCopy[locale];
+  const [mapRef, width] = useWidth<HTMLDivElement>();
+  const ghost = ghostWeight(body.rows) as BodyWeightObservation | undefined;
+  const shape = { ...figureShape(values, figureSex(values?.biologicalSex, lastFigureSex()), weight.last?.value), ...(fat.last ? { bodyFatPercent: fat.last.value } : {}) };
+  // Compare like with like: with a body-fat reading the earlier outline needs one too.
+  const ghostProps = !ghost ? {} : fat.last ? (ghost.bodyFatPercent !== undefined ? { ghostBodyFatPercent: ghost.bodyFatPercent } : {}) : { ghostWeightKg: ghost.weightGrams / 1000 };
+  const [outline, setOutline] = useState(outlineShown);
+  useEffect(() => { const update = () => setOutline(outlineShown()); window.addEventListener(outlineEvent, update); return () => window.removeEventListener(outlineEvent, update); }, []);
+  const showFigure = body.loaded && outline;
   return <Card variant="raised" padding="md" as="section" className="v9-change-card v9-change-summary" aria-labelledby="v9-change-summary-title">
     <h3 id="v9-change-summary-title">{t.title}</h3>
     <div className="v9-change-tiles">
@@ -123,7 +143,9 @@ export function MyChangesCard() {
       {weight.last && <StatTile label={t.weight} value={weight.change !== undefined ? signed(weight.change) : weight.last.value} unit={t.kg} />}
       {lift?.last && <StatTile label={c.name(lift.exerciseId)} value={lift.change !== undefined ? signed(lift.change) : lift.last.value} unit={t.kg} />}
     </div>
-    {weight.points.length > 1 && <TrendChart points={weight.points} tone={1} label={`${t.weight} · ${weight.points.map(point => `${dateText(point.date, locale)} ${point.value}${t.kg}`).join(listSeparator(locale))}`} />}
+    {showFigure && <div className="pu-map" ref={mapRef}><AnatomyMap locale={locale} width={width} primary={[]} secondary={[]} shape={shape} {...ghostProps} /></div>}
+    {showFigure && ghost && Object.keys(ghostProps).length > 0 && <div className="pu-legend" aria-hidden="true"><span><i className="pu-dot" />{p.now}</span><span><i className="pu-dot" data-role="ghost" />{fillLine(p.before, { month: monthLabel(ghost.localDate, locale) })}</span></div>}
+    {showFigure && <p className="pu-note">{t.outlineNote}</p>}
     {body.loaded && !weight.last && <p className="v9-change-note">{t.emptyBody}</p>}
   </Card>;
 }

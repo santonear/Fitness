@@ -23,7 +23,7 @@ async function toPlan(page: Page) {
   await answerTexts(page, ['在家，有一对哑铃']);
   await engineSafety(page);
   await page.getByRole('button', { name: '生成计划', exact: true }).click();
-  await page.getByRole('button', { name: '就用这份计划', exact: true }).click();
+  await page.getByRole('button', { name: '就用这份计划', exact: true }).click(); await page.getByRole('button', { name: '先不写', exact: true }).click();
   await expect(page.getByRole('heading', { name: '今天', exact: true })).toBeVisible();
 }
 
@@ -79,7 +79,8 @@ test('今天 day view: numbered steps with times from the chosen start; actual t
   await actual.getByRole('button', { name: '改开始和结束时间', exact: true }).click();
   const sheet = page.getByRole('dialog', { name: '改这次的开始和结束时间' });
   const recordedStart = await sheet.getByLabel('开始').inputValue();
-  const [h, m] = recordedStart.split(':').map(Number), earlier = `${String(Math.floor(((h * 60 + m + 1440 - 20) % 1440) / 60)).padStart(2, '0')}:${String((m + 40) % 60).padStart(2, '0')}`;
+  // Stay on the same day: just after midnight, 20 minutes earlier would wrap to the previous evening and fail validation.
+  const [h, m] = recordedStart.split(':').map(Number), earlierMinutes = Math.max(0, h * 60 + m - 20), earlier = `${String(Math.floor(earlierMinutes / 60)).padStart(2, '0')}:${String(earlierMinutes % 60).padStart(2, '0')}`;
   await sheet.getByLabel('开始').fill(earlier);
   await sheet.getByRole('button', { name: '保存时间', exact: true }).click();
   await expect(sheet).toBeHidden();

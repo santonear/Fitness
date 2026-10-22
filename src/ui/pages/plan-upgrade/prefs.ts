@@ -10,7 +10,9 @@ export const spokenKey = 'fitness.bodyChangeSpoken';
 
 /** 显示体型轮廓: on unless the person turned it off. */
 export const outlineShown = () => read(outlineKey) !== 'off';
-export const setOutlineShown = (value: boolean) => write(outlineKey, value ? 'on' : 'off');
+export const outlineEvent = 'fitness:outline';
+/** Saves the switch and tells outlines already on screen (我的's 我的变化 card sits on the same page as the switch). */
+export const setOutlineShown = (value: boolean) => { const saved = write(outlineKey, value ? 'on' : 'off'); if (saved) window.dispatchEvent(new Event(outlineEvent)); return saved; };
 export const lastFigureSex = (): 'male' | 'female' | undefined => { const value = read(figureSexKey); return value === 'male' || value === 'female' ? value : undefined; };
 export const setLastFigureSex = (value: 'male' | 'female') => write(figureSexKey, value);
 /** Voice cues are off by default. */

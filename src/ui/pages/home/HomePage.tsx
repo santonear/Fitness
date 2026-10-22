@@ -43,7 +43,6 @@ function ItemPrescription({item,locale}:{item:PlannedItem;locale:'zh'|'en'}){
 }
 import {DayActual,DayTimeline} from './DayTimeline';
 import {NowPanel,type FocusState} from './NowPanel';
-import {planPagesCopy} from '../../../i18n/features/plan-upgrade/pages';
 import './home.css';
 
 const localDay=(timeZone:string,date=new Date())=>new Intl.DateTimeFormat('en-CA',{timeZone,year:'numeric',month:'2-digit',day:'2-digit'}).format(date);
@@ -124,7 +123,7 @@ export function HomePage(){
    {engineEnabled&&<><SourceWarmupSteps template={selected} itemIndex={index}/><ItemPrescription item={item} locale={locale}/></>}
    <div className="v9-item-actions">{tools.buttons(selected.id,index,item.exerciseId)}</div>
   </>}/>
- <div className="v9-home-row"><PrimaryButton tone="quiet" size="sm" disabled={templates.length<2} onClick={()=>setChoice(templates[(templates.findIndex(item=>item.id===selected.id)+1)%templates.length].id)}>{t.switch}</PrimaryButton><PrimaryButton tone="quiet" size="sm" onClick={()=>navigate('/manual')}>{t.manual}</PrimaryButton><PrimaryButton tone="quiet" size="sm" onClick={()=>navigate('/activity')}>{t.recordActivity}</PrimaryButton><PrimaryButton tone="quiet" size="sm" onClick={()=>navigate('/journey')}>{planPagesCopy[locale].journey}</PrimaryButton></div>
+ <div className="v9-home-row"><PrimaryButton tone="quiet" size="sm" disabled={templates.length<2} onClick={()=>setChoice(templates[(templates.findIndex(item=>item.id===selected.id)+1)%templates.length].id)}>{t.switch}</PrimaryButton><PrimaryButton tone="quiet" size="sm" onClick={()=>navigate('/manual')}>{t.manual}</PrimaryButton><PrimaryButton tone="quiet" size="sm" onClick={()=>navigate('/activity')}>{t.recordActivity}</PrimaryButton></div>
  </>:<Card variant="raised" padding="lg" as="section" className="v9-home-empty"><Yaya pose="side" size={120} alt=""/><p>{planLifecycleCopy[locale].empty}</p><PrimaryButton onClick={restartPlanning}>{planLifecycleCopy[locale].create}</PrimaryButton><div className="v9-home-row"><PrimaryButton tone="quiet" size="sm" onClick={()=>navigate('/manual')}>{t.manual}</PrimaryButton><PrimaryButton tone="quiet" size="sm" onClick={()=>navigate('/activity')}>{t.recordActivity}</PrimaryButton></div></Card>}
  <Card variant="raised" padding="md" as="section" className="v9-home-checkin" aria-labelledby="v9-home-checkin-title"><h2 id="v9-home-checkin-title">{h.checkin}</h2><CautionMorningControls/><PreTrainingCheckin/></Card>
  {version&&<Card variant="raised" padding="md" as="section" className="v9-home-week" aria-labelledby="v9-home-week-title">

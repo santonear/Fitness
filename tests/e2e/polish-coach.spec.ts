@@ -37,7 +37,7 @@ test('review has one factual feature card and finish includes elapsed time and p
  await startOnboarding(page);await answerTexts(page,['保持力量']);
  await answerTexts(page,['每周3次，每次30–45分钟']);
  await answerTexts(page,['在家，只有瑜伽垫']);
- await basicSafety(page);await generate(page);await page.getByRole('button',{name:'就用这份计划'}).click();
+ await basicSafety(page);await generate(page);await page.getByRole('button',{name:'就用这份计划'}).click();await page.getByRole('button',{name:'先不写',exact:true}).click();
  await expect(page.getByRole('heading',{name:'今天',exact:true})).toBeVisible();
  const activeId=await page.evaluate(async()=>{
   const rp='/src/persistence/repository.ts',wp='/src/application/v8-workflow.ts',ep='/src/catalog/exercises.ts';
@@ -58,7 +58,7 @@ test('review has one factual feature card and finish includes elapsed time and p
 test('week and month reviews without a current plan retain facts and offer manual or new planning',async({page})=>{
  await page.goto('/onboarding');await toFirstQuestion(page);
  await answerTexts(page,['保持力量','每周3次，每次30分钟','在家，只有瑜伽垫']);
- await basicSafety(page);await generate(page);await page.getByRole('button',{name:'就用这份计划',exact:true}).click();
+ await basicSafety(page);await generate(page);await page.getByRole('button',{name:'就用这份计划',exact:true}).click();await page.getByRole('button',{name:'先不写',exact:true}).click();
  await expect(page.getByRole('heading',{name:'今天',exact:true})).toBeVisible();
  await page.evaluate(async()=>{const rp='/src/persistence/repository.ts',wp='/src/application/v8-workflow.ts';const {repository}=await import(/* @vite-ignore */ rp),{createV8Workflow}=await import(/* @vite-ignore */ wp);const flow=createV8Workflow(repository),s=await flow.snapshot();const w=await flow.start(s.version.templates[0].id);await flow.recordSet(w.id,0,0,{reps:8});await flow.finish(w.id,{reasons:['time']});});
  await page.goto('/review');await expect(page.locator('.rv-facts dd')).toHaveCount(5);const before=await page.locator('.rv-facts dd').allTextContents();

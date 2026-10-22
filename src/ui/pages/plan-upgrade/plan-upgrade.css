@@ -2,7 +2,7 @@
 .pu-page { display: flex; flex-direction: column; gap: var(--s4); padding-block-start: var(--s4); }
 .pu-head { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); }
 .pu-head h1 { margin: 0; font-size: var(--t6); line-height: var(--lh-tight); }
-.pu-map { inline-size: 100%; }
+.pu-map { inline-size: 100%; min-inline-size: 0; }
 .pu-legend { display: flex; justify-content: center; gap: var(--s4); font-size: var(--t2); color: var(--c-ink-muted); }
 .pu-legend span { display: inline-flex; align-items: center; gap: var(--s1); }
 .pu-dot { inline-size: var(--s2); block-size: var(--s2); border-radius: var(--r-chip); background: var(--c-primary); }

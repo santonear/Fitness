@@ -66,7 +66,7 @@ function EnergyDial({ ratio, marks, children }: { ratio: number; marks: { key: s
   </div>;
 }
 
-function Head({ title, sub }: { title: string; sub: string }) {
+export function Head({ title, sub }: { title: string; sub: string }) {
   const { navigate, locale } = useMainline(), t = energyCopy[locale];
   return <header className="v9-energy-head">
     <PrimaryButton tone="text" size="sm" onClick={() => navigate('/settings')}>{t.back}</PrimaryButton>

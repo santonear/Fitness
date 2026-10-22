@@ -23,7 +23,7 @@ async function toPlan(page: Page) {
   await answerTexts(page, ['在家，有一对哑铃']);
   await engineSafety(page, { planMode: 'local' });
   await page.getByRole('button', { name: '生成计划', exact: true }).click();
-  await page.getByRole('button', { name: '就用这份计划', exact: true }).click();
+  await page.getByRole('button', { name: '就用这份计划', exact: true }).click(); await page.getByRole('button', { name: '先不写', exact: true }).click();
   await expect(page.getByRole('heading', { name: '今天', exact: true })).toBeVisible();
 }
 
@@ -52,36 +52,35 @@ test('我的: grouped sections with 我 first; 我的变化 shows measurements, 
   await page.getByRole('navigation', { name: '主导航' }).getByRole('button', { name: '我的' }).click();
   await expect(page.getByRole('heading', { name: '我的', exact: true })).toBeVisible();
   const groups = await page.locator('main.v9-settings > section.v9-settings-group > h2').allInnerTexts();
-  expect(groups).toEqual(['我', '营养建议', '饮食工具', '训练设置', '芽芽与 AI', '数据与隐私', '通用']);
+  expect(groups).toEqual(['我', '营养建议', '自测组件', '训练设置', '芽芽与 AI', '数据与隐私', '通用']);
   await expect(page.getByRole('button', { name: '运动前自查与训练偏好' })).toHaveCount(1);
   await expect(page.getByRole('radiogroup', { name: '界面风格' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: /^给我们留言/ })).toHaveCount(1);
   const summary = page.locator('section.v9-change-summary');
   await expect(summary.getByText('这个月', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^体能自测/ })).toHaveCount(1);
+  await expect(page.getByRole('button', { name: /^我的山路/ })).toHaveCount(0);
   await page.screenshot({ path: test.info().outputPath('me-pop-390.png'), fullPage: true });
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.screenshot({ path: test.info().outputPath('me-pop-1440.png'), fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
 
-  // 我的变化: invite a measurement, then show the change.
-  await page.getByRole('button', { name: /^我的变化/ }).click();
-  await expect(page.getByRole('heading', { name: '我的变化', exact: true })).toBeVisible();
+  // 自记录: the periodic body record is an inline form, then the change shows.
+  await page.getByRole('button', { name: /^自记录/ }).click();
+  await expect(page.getByRole('heading', { name: '自记录', exact: true })).toBeVisible();
   await expect(page.getByTestId('month-current')).toContainText('1');
-  await page.getByRole('button', { name: '记一次身体数据', exact: true }).click();
-  let sheet = page.getByRole('dialog', { name: '记一次身体数据' });
-  await sheet.getByLabel('日期').fill(localDate(-10));
-  await sheet.getByLabel('体重（公斤）').fill('61.5');
-  await sheet.getByLabel('体脂率（%，可选）').fill('28');
-  await sheet.getByRole('button', { name: '保存', exact: true }).click();
-  await expect(sheet).toBeHidden();
-  await page.getByRole('button', { name: '记一次身体数据', exact: true }).click();
-  sheet = page.getByRole('dialog', { name: '记一次身体数据' });
-  await sheet.getByLabel('体重（公斤）').fill('60');
-  await sheet.getByLabel('体脂率（%，可选）').fill('26.5');
-  await sheet.getByRole('button', { name: '保存', exact: true }).click();
-  await expect(sheet).toBeHidden();
-  const weight = page.locator('section.v9-change-card').filter({ has: page.getByRole('heading', { name: '体重', exact: true }) });
-  await expect(weight.locator('.v9-change-delta')).toContainText('-1.5公斤');
+  const record = page.locator('section.v9-change-card').filter({ has: page.getByRole('heading', { name: '阶段性数据记录', exact: true }) });
+  await expect(record.getByRole('img')).toHaveCount(0);
+  await record.getByLabel('日期').fill(localDate(-30));
+  await record.getByLabel('体重（公斤）').fill('61.5');
+  await record.getByLabel('体脂率（%，可选）').fill('28');
+  await record.getByRole('button', { name: '保存', exact: true }).click();
+  await expect(record.getByRole('status')).toHaveText('已记下');
+  await record.getByLabel('日期').fill(localDate(0));
+  await record.getByLabel('体重（公斤）').fill('60');
+  await record.getByLabel('体脂率（%，可选）').fill('26.5');
+  await record.getByRole('button', { name: '保存', exact: true }).click();
+  await expect(record.locator('.v9-change-delta')).toContainText('-1.5公斤');
   const fat = page.locator('section.v9-change-card').filter({ has: page.getByRole('heading', { name: '体脂', exact: true }) });
   await expect(fat.locator('.v9-change-delta')).toContainText('-1.5%');
   await expect(page.getByRole('img', { name: /^最近 6 个月每月训练次数/ })).toBeVisible();
@@ -91,6 +90,10 @@ test('我的: grouped sections with 我 first; 我的变化 shows measurements, 
 
   // 营养建议 from 我的: conversation only, records below.
   await page.getByRole('navigation', { name: '主导航' }).getByRole('button', { name: '我的' }).click();
+  // The body outline on 我的 follows the latest record, with the earlier one dashed.
+  await expect(summary.getByRole('img', { name: /全身肌群图/ })).toBeVisible();
+  await expect(summary.locator('.v9-am-ghost')).not.toHaveCount(0);
+  await expect(summary.getByText('轮廓按身高、体重和体脂估算，仅作示意')).toBeVisible();
   await page.getByRole('button', { name: /^营养建议/ }).click();
   await expect(page.getByRole('heading', { name: '营养建议', exact: true })).toBeVisible();
   await page.getByRole('radio', { name: '练完吃什么比较好' }).or(page.getByRole('button', { name: '练完吃什么比较好' })).first().click();
