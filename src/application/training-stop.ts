@@ -14,17 +14,27 @@ const cmrKeys=DATA.rules.find(row=>row.id==='safety.screen.cmr_symptoms')!.value
 const confirmationSchema=z.strictObject({date:z.iso.date(),intensity:z.enum(['moderate','vigorous'])});
 const invalid=(message:string):never=>{throw new DomainError('INVALID',message);};
 
+/**
+ * Safety stop for every workout still in progress, ended at `at`: with sets it is partial, otherwise not
+ * started. Call inside repo.write. Nothing is written when `workoutId` is no longer in progress
+ * (TRAINING_ENDED) or any start time is unreadable or after `at` (INVALID_WORKOUT_TIME).
+ */
+export async function endActiveWorkouts(repo:Repository,at:string,workoutId?:string){
+ const active=(await repo.db.v8Workouts.toArray()).filter(row=>row.status==='in_progress');
+ if(workoutId&&!active.some(row=>row.id===workoutId))return invalid('TRAINING_ENDED');
+ if(active.some(row=>!Number.isFinite(Date.parse(row.startedAt))||Date.parse(row.startedAt)>Date.parse(at)))return invalid('INVALID_WORKOUT_TIME');
+ for(const record of active)await repo.db.v8Workouts.put(v8WorkoutSchema.parse({...record,status:record.sets.length?'partial':'not_started',endedAt:at}));
+ return active;
+}
+
 /** Symptom selections are transient: even with consent only the independent pause instant is stored. */
 export function createTrainingStop(repo:Repository){
  async function report(workoutId:string|undefined,symptoms:readonly string[],expectedRevision?:number){
   if(!symptoms.length||symptoms.some(key=>!cardiacSymptomKeys.includes(key)))return invalid('CARDIAC_SYMPTOM_REQUIRED');
   return repo.write(async()=>{
    const state=await repo.db.v8State.get('v8');if(!state)return invalid('PROFILE_REQUIRED');
-   const records=await repo.db.v8Workouts.toArray(),active=records.filter(row=>row.status==='in_progress');
-   if(workoutId&&!active.some(row=>row.id===workoutId))return invalid('TRAINING_ENDED');
    const at=new Date().toISOString();
-   if(active.some(row=>!Number.isFinite(Date.parse(row.startedAt))||Date.parse(row.startedAt)>Date.parse(at)))return invalid('INVALID_WORKOUT_TIME');
-   for(const record of active)await repo.db.v8Workouts.put(v8WorkoutSchema.parse({...record,status:record.sets.length?'partial':'not_started',endedAt:at}));
+   await endActiveWorkouts(repo,at,workoutId);
    const {nextWorkoutOverride:_,...retained}=state;
    await repo.db.v8State.put(v8StateSchema.parse({...retained,cardiacPause:{requiredAt:at}}));
    return {requiredAt:at};
