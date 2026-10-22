@@ -326,19 +326,26 @@ export function generatePlan(
     ctx.rules.notice(notice, "session.copy.intentional_short");
     result.notices = [...result.notices.slice(0, 2), ...notice].slice(0, 3);
   }
-  result.quality = {
+  result.quality = planQuality(ctx.gate, violations, score);
+  return retainEnvironmentDraft(result, ctx);
+}
+/** Plan quality from the health gate, hard-check issues and score. */
+export function planQuality(
+  gate: PipelineContext["gate"],
+  issues: ReturnType<typeof checkHard>,
+  score: ReturnType<typeof scorePlan>,
+): NonNullable<EnginePlan["quality"]> {
+  return {
     status:
-      ctx.gate.status === "blocked"
+      gate.status === "blocked" ||
+      issues.some((issue) => issue.severity === "error")
         ? "unavailable"
-        : violations.some((issue) => issue.severity === "error")
-          ? "unavailable"
-          : ctx.gate.status === "restricted"
-            ? "limited"
-            : "ready",
-    ...(ctx.gate.status === "blocked" ? { basis: "health_gate" as const } : {}),
+        : gate.status === "restricted"
+          ? "limited"
+          : "ready",
+    ...(gate.status === "blocked" ? { basis: "health_gate" as const } : {}),
     score: score.quality,
     perRule: score.perRule,
-    issues: violations,
+    issues,
   };
-  return retainEnvironmentDraft(result, ctx);
 }

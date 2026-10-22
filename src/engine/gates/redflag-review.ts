@@ -12,6 +12,7 @@ export function reviewRedFlags(
   rules: Rules,
   state: GateState,
   gate: Gate,
+  legacyScoring = false,
 ) {
   const screening = profile.screening;
   const screenDate = screening?.completedAt ?? screening?.lastScreenedAt;
@@ -35,12 +36,14 @@ export function reviewRedFlags(
   let professionalSeen = false;
   let redFlagCautions: string[] = [];
   let resumedCautionLevel = 0;
-  const unreviewed = profile.cautions.filter(
-    (joint) =>
-      joint !== "other" &&
-      !(profile.cautionLevels?.[joint] ?? 0) &&
-      !review?.areas.includes(joint),
-  );
+  const unreviewed = legacyScoring
+    ? []
+    : profile.cautions.filter(
+        (joint) =>
+          joint !== "other" &&
+          !(profile.cautionLevels?.[joint] ?? 0) &&
+          !review?.areas.includes(joint),
+      );
   if (unreviewed.length)
     gate(
       "caution.activation",

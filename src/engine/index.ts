@@ -4,6 +4,7 @@ import { Rules } from "./data";
 import {
   generatePlan as pipeline,
   createContext,
+  planQuality,
   retainEnvironmentDraft,
 } from "./pipeline";
 import { adjust, modify, substituteItem } from "./operations";
@@ -17,19 +18,7 @@ function assess(plan: EnginePlan, profile: EngineProfile): EnginePlan {
   const ctx = createContext(profile, 0, rules),
     issues = checkHard(plan, profile, ctx.gate, rules),
     score = scorePlan(plan, profile, rules);
-  plan.quality = {
-    status:
-      ctx.gate.status === "blocked" ||
-      issues.some((issue) => issue.severity === "error")
-        ? "unavailable"
-        : ctx.gate.status === "restricted"
-          ? "limited"
-          : "ready",
-    ...(ctx.gate.status === "blocked" ? { basis: "health_gate" as const } : {}),
-    score: score.quality,
-    perRule: score.perRule,
-    issues,
-  };
+  plan.quality = planQuality(ctx.gate, issues, score);
   return retainEnvironmentDraft(plan, ctx);
 }
 export const generatePlan: EngineApi["generatePlan"] = (profile, opts) =>

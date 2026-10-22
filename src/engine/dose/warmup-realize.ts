@@ -13,26 +13,9 @@ export function realizeBodyweightWarmup<T extends Template>(
   r: Rules,
 ): T {
   const copy = structuredClone(template),
-    minutes = Math.min(
-      p.sessionMinutes,
-      template.targetMinutes ?? p.sessionMinutes,
-    ),
-    recipe = r.get(`session.template.min${durationTier(minutes, p, r)}`);
-  const ramp = sourceWarmupRamps(template, p, r).find(
-    (row) =>
-      row.kind === "bodyweight_main" &&
-      sourcePosition(template.items[row.itemIndex], template) === "main_1",
-  );
-  if (!ramp) return copy;
-  const slot = recipe.slots.find(
-    (slot: { block: string; ramp?: string; pattern?: unknown }) =>
-      slot.block === "warmup" &&
-      slot.ramp &&
-      ["from_slot_M1", "from_slot_SS1_first", "from_next_slot"].includes(
-        String(slot.pattern),
-      ),
-  );
-  if (!slot) return copy;
+    found = mainRampSlot(template, p, r);
+  if (!found) return copy;
+  const { ramp, slot } = found;
   const index = copy.items.findIndex(
     (item) =>
       item.prescription?.block === "warmup" &&
@@ -101,18 +84,9 @@ export function isRealizedBodyweightWarmup(
     warm.target.metricType !== "reps"
   )
     return false;
-  const minutes = Math.min(
-      p.sessionMinutes,
-      template.targetMinutes ?? p.sessionMinutes,
-    ),
-    recipe = r.get(`session.template.min${durationTier(minutes, p, r)}`);
-  const slot = recipe.slots.find(
-    (slot: { slot: string; block: string; ramp?: string; pattern?: unknown }) =>
-      slot.block === "warmup" &&
-      slot.ramp &&
-      ["from_slot_M1", "from_slot_SS1_first", "from_next_slot"].includes(
-        String(slot.pattern),
-      ) &&
+  const slot = rampRecipe(template, p, r).slots.find(
+    (slot: RampSlot) =>
+      isRampWarmupSlot(slot) &&
       (rx.sourcePosition === slot.slot ||
         rx.sourcePosition === template.id + "-" + slot.slot),
   );
@@ -126,11 +100,7 @@ export function isRealizedBodyweightWarmup(
     ).length !== 1
   )
     return false;
-  const ramp = sourceWarmupRamps(template, p, r).find(
-    (row) =>
-      row.kind === "bodyweight_main" &&
-      sourcePosition(template.items[row.itemIndex], template) === "main_1",
-  );
+  const ramp = mainBodyweightRamp(template, p, r);
   if (!ramp || ramp.itemIndex <= index || ramp.scheme.length !== 1)
     return false;
   const main = template.items[ramp.itemIndex],
@@ -179,4 +149,48 @@ export function isRealizedBodyweightWarmup(
   )
     return false;
   return isHardEligible(w, p, runGates(p, r), { rules: r });
+}
+
+interface RampSlot {
+  slot: string;
+  block: string;
+  ramp?: string;
+  pattern?: unknown;
+}
+
+/** The first main slot's bodyweight ramp and the recipe warmup slot that may carry it. */
+export function mainRampSlot(template: Template, p: EngineProfile, r: Rules) {
+  const recipe = rampRecipe(template, p, r),
+    ramp = mainBodyweightRamp(template, p, r);
+  if (!ramp) return undefined;
+  const slot = recipe.slots.find(isRampWarmupSlot);
+  return slot ? { ramp, slot } : undefined;
+}
+
+/** The session recipe whose warmup slot may carry the bodyweight ramp. */
+function rampRecipe(template: Template, p: EngineProfile, r: Rules) {
+  const minutes = Math.min(
+    p.sessionMinutes,
+    template.targetMinutes ?? p.sessionMinutes,
+  );
+  return r.get(`session.template.min${durationTier(minutes, p, r)}`);
+}
+
+function isRampWarmupSlot(slot: RampSlot): boolean {
+  return (
+    slot.block === "warmup" &&
+    !!slot.ramp &&
+    ["from_slot_M1", "from_slot_SS1_first", "from_next_slot"].includes(
+      String(slot.pattern),
+    )
+  );
+}
+
+/** The source bodyweight ramp of the template's first main slot, if any. */
+function mainBodyweightRamp(template: Template, p: EngineProfile, r: Rules) {
+  return sourceWarmupRamps(template, p, r).find(
+    (row) =>
+      row.kind === "bodyweight_main" &&
+      sourcePosition(template.items[row.itemIndex], template) === "main_1",
+  );
 }
