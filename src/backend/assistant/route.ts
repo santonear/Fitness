@@ -5,7 +5,6 @@ import {AssistantAccessError,AssistantUsageStore,type UsageCall} from './admissi
 import {D1ControlStore} from '../d1-store';
 import {digest} from '../contracts';
 import {FinanceStore} from '../admin/finance/runtime';
-import {archiveLegacyUsage} from './usage-report';
 import type {DeepSeekWorkerEnv} from '../deepseek-worker';
 import {readFeatureFlags} from '../feature-config';
 import type {FeatureConfigEnv} from '../feature-config';
@@ -36,7 +35,6 @@ export async function handleAssistant(request:Request,env:AssistantEnv,runner=ru
   const config=(await new FinanceStore(env.ADMIN_DB).read()).versions.at(-1)?.config;
   const limit=config?.dailyMessageLimit??30;
   const store=new AssistantUsageStore(env.ADMIN_DB),now=Date.now();
-  await archiveLegacyUsage(env.ADMIN_DB,state,now);
   let promptVersion=ASSISTANT_PROMPT_VERSION;
   const selected=await env.ADMIN_DB.prepare('SELECT version FROM admin_prompt_selection WHERE environment=? AND task=?').bind(env.ADMIN_ENVIRONMENT??'preview','ASSISTANT_CHAT').first<{version:string}>();
   try{promptVersion=selectAssistantPromptVersion(input.context?.trainingEngine===true,selected?.version)}catch{throw new AssistantAccessError('MODEL_UNAVAILABLE',503)}
