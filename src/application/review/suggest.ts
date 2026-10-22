@@ -1,7 +1,7 @@
 import type { SessionTemplate } from '../../domain/v8/contracts';
 import type { SuggestionInput, ReviewSuggestion, PlanProposal } from './contracts';
 import { computeExerciseEvidence } from './evidence';
-import { estimatePlannedMinutes } from '../rules/duration-estimate';
+import { estimatePlannedMinutes } from '../../domain/duration-estimate';
 import { discomfortReplacement } from '../rules/basic-items';
 
 function reviewDate(input:SuggestionInput,workout:SuggestionInput['workouts'][number]):string {

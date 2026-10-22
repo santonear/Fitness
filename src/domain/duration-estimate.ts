@@ -1,4 +1,4 @@
-import { DomainError } from '../../domain/errors';
+import { DomainError } from './errors';
 
 /** Normalized targets shared by base plans and legacy migration; not recorded workout facts. */
 export type DurationTarget = { reps: number } | { durationSeconds: number } | { distanceMeters: number };

@@ -1,6 +1,6 @@
 import { hasHouseholdSupport } from "../engine/equipment";
 import { DATABASE_VERSION } from "../domain/storage-version";
-import type { AssistantConversation } from "./assistant-conversations";
+import type { AssistantConversation } from "../domain/assistant-conversation";
 import {
   recoverAssistantSchedule,
   recoverLegacyPlanSchedules,
@@ -31,7 +31,7 @@ import type {
   NutritionRecord,
   ActivityImportReceipt,
 } from "../domain/lifestyle";
-import type { TrainingCheckinRow } from "../application/training-checkin";
+import type { TrainingCheckinRow } from "../domain/training-checkin";
 import type {
   FitnessTestRecord,
   FutureLetter,

@@ -1,5 +1,5 @@
 import type {PlanVersion} from '../domain/v8/contracts';
-import type {AssistantConversation} from './assistant-conversations';
+import type {AssistantConversation} from '../domain/assistant-conversation';
 
 type LegacyPlanSchedule = {id:string;currentVersionId:string;scheduleOriginalText?:string;scheduleRecovery?:PlanVersion['scheduleRecovery']};
 function userMessages(conversations:readonly AssistantConversation[]):Set<string>{

@@ -1,6 +1,6 @@
 import { exercises } from '../../catalog/exercises';
 import { DomainError } from '../../domain/errors';
-import type { DurationTarget } from './duration-estimate';
+import type { DurationTarget } from '../../domain/duration-estimate';
 
 /** Defaults for a free session, not recorded facts or an inferred load prescription. */
 export function manualTrainingItems(ids: readonly string[]): { exerciseId:string; sets:number; target:DurationTarget }[] {

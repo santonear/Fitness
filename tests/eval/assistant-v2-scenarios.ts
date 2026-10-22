@@ -1,7 +1,7 @@
 import type { AssistantEvent } from '../../src/assistant/contracts';
 import { exercises } from '../../src/catalog/exercises';
 import { assistantMovement } from '../../src/catalog/ai-catalog';
-import { estimatePlannedMinutes } from '../../src/application/rules/duration-estimate';
+import { estimatePlannedMinutes } from '../../src/domain/duration-estimate';
 import type { CoachResponse } from '../../src/coach/contracts';
 
 type Case = { id: string; zh: string; en: string; attachment: 'forbidden' | 'optional'; required?: string; forbidden?: string; expect?: { absentMovements?: string[]; absentExercise?: string; minutes?: number; noSquat?: boolean } };

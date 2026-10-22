@@ -2,7 +2,7 @@ import Dexie, { type Transaction } from 'dexie';
 import type { z } from 'zod';
 import { v8BackupSchema, type backupDataSchema } from '../domain/schemas';
 import { migrateLegacyPlans } from '../domain/v8/legacy-plans';
-import { estimateTrainingMinutes } from '../application/rules/duration-estimate';
+import { estimateTrainingMinutes } from '../domain/duration-estimate';
 
 export type V8Library = z.infer<typeof v8BackupSchema>;
 type LegacyInput = Pick<z.infer<typeof backupDataSchema>, 'plans' | 'planVersions' | 'sessions' | 'scheduledWorkouts' | 'guidedStates'>;

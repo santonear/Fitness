@@ -88,7 +88,7 @@ for (const scope of ['valid', 'stale-version', 'stale-template'] as const) test(
     const load = (path: string) => import(/* @vite-ignore */ path);
     const { workflow } = await load('/src/ui/mainline/context.tsx');
     const { repository } = await load('/src/persistence/repository.ts');
-    const { estimatePlannedMinutes } = await load('/src/application/rules/duration-estimate.ts');
+    const { estimatePlannedMinutes } = await load('/src/domain/duration-estimate.ts');
     const candidate = await workflow.propose({ goalText: '体能', scheduleOriginalText: '每周2次，每次30分钟', weeklyTarget: 2, sessionMinutes: 30, place: 'home', equipment: ['none'], adultConfirmed: true, cautions: [], confirmedAt: new Date().toISOString() });
     await workflow.adopt(candidate);
     const { version, state } = await workflow.snapshot(); const original = version.templates[0];

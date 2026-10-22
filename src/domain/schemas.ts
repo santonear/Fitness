@@ -1,4 +1,4 @@
-import {conversationSchema} from '../persistence/assistant-conversations';
+import {conversationSchema} from './assistant-conversation';
 import {bodyDetailsSchema} from './body-profile';
 import { z } from 'zod';
 import {engineProfileSchema,prescriptionSchema,enginePlanSchema,cautionSchema,patternSchema,engineItemSchema} from '../engine/contracts';

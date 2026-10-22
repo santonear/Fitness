@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { estimateTrainingMinutes, type DurationTarget } from '../../src/application/rules/duration-estimate';
+import { estimateTrainingMinutes, type DurationTarget } from '../../src/domain/duration-estimate';
 
 const routine = (actions: number, sets: number, target: DurationTarget) => Array.from({ length: actions }, () => ({ sets: Array.from({ length: sets }, () => ({ ...target })) }));
 

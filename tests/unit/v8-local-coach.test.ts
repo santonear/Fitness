@@ -3,7 +3,7 @@ import { basicProposal, createV8Workflow } from '../../src/application/v8-workfl
 import { createRepository } from '../../src/persistence/repository';
 import type { FitnessDatabase } from '../../src/persistence/db';
 import { localCoachReply } from '../../src/coach/local-fallback';
-import { estimatePlannedMinutes } from '../../src/application/rules/duration-estimate';
+import { estimatePlannedMinutes } from '../../src/domain/duration-estimate';
 import { manualTrainingItems } from '../../src/application/rules/manual-items';
 import { exercises,EXERCISE_IDS } from '../../src/catalog/exercises';
 import type { CoachProfile } from '../../src/domain/v8/contracts';

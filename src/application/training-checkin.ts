@@ -2,18 +2,15 @@ import {derivePainFollowup} from './pain-followup';
 import type {Repository} from '../persistence/repository';
 import type {WorkoutRecord} from '../domain/v8/contracts';
 import {DomainError} from '../domain/errors';
+import {trainingCheckinInputSchema,type TrainingCheckinInput,type TrainingCheckinRow} from '../domain/training-checkin';
+export {trainingCheckinInputSchema,type TrainingCheckinInput,type TrainingCheckinRow} from '../domain/training-checkin';
 import {engineCheckinSchema,type EngineCheckin} from '../engine/contracts';
 import {DATA} from '../engine/data';
 import {z} from 'zod';
 import {painQuestionKeys} from './pain-events';
 import type {PlannedItem} from '../domain/v8/contracts';
 
-const jointPainSchema=z.strictObject({painScore:z.number().int().min(0).max(10).optional(),painArea:z.enum(['knee','back','shoulder','wrist','other']).optional(),redFlagAnswers:z.record(z.string(),z.boolean()).optional()});
-export const trainingCheckinInputSchema=engineCheckinSchema.extend({painFollowup:z.strictObject({workoutId:z.uuid(),itemIndex:z.number().int().nonnegative(),painArea:z.enum(['knee','back','shoulder','wrist','other'])}).optional(),jointPain:jointPainSchema.optional()});
-export type TrainingCheckinInput=z.infer<typeof trainingCheckinInputSchema>;
 
-/** Ephemeral local health answers. Intentionally absent from the backup envelope. */
-export interface TrainingCheckinRow {id:string;recordedAt:string;expiresAt:string;answers:EngineCheckin;cautionMorning?:{workoutId:string;joint:'knee'|'back'|'shoulder'|'wrist';painLastedToNextMorning:boolean};painFollowup?:TrainingCheckinInput['painFollowup'];jointPain?:z.infer<typeof jointPainSchema>}
 const retentionDays=DATA.rules.find(rule=>rule.id==='deload.checkin.inputs')!.value!.retain_days;
 export function createTrainingCheckin(repo:Repository){
  async function prune(){
