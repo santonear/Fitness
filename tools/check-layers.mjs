@@ -2,6 +2,7 @@
 // the database or the training engine. Usage: node tools/check-layers.mjs
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
+import ts from 'typescript';
 
 const root = resolve(dirname(new URL(import.meta.url).pathname), '..');
 const src = join(root, 'src');
@@ -28,7 +29,9 @@ for (const file of files) {
   const from = layerOf(file);
   const banned = forbidden[from];
   if (!banned) continue;
-  for (const [, spec] of readFileSync(file, 'utf8').matchAll(/(?:from|import)\s*\(?\s*['"](\.[^'"]+)['"]/g)) {
+  // TypeScript's own import scanner (static, dynamic and re-exports) instead of a hand-written regex.
+  for (const { fileName: spec } of ts.preProcessFile(readFileSync(file, 'utf8'), true, true).importedFiles) {
+    if (!spec.startsWith('.')) continue;
     const target = resolve(dirname(file), spec);
     if (!target.startsWith(src + '/')) continue;
     const to = layerOf(target);
