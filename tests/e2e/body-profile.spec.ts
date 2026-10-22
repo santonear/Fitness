@@ -8,15 +8,15 @@ async function enable(page:Page,theme='pop'){
 }
 async function bodyStep(page:Page){await startOnboarding(page);await answerText(page,'想有些力量');await expect(page.getByRole('heading',{name:'身体情况',exact:true})).toBeVisible()}
 async function draft(page:Page){await nextButton(page).click();await answerTexts(page,['每周2次，每次30分钟','在家，只有瑜伽垫']);await ensurePressed(page,'我已年满 18 岁');await nextButton(page).click();await page.getByRole('radio',{name:'有，选一下部位'}).click();for(const part of ['膝盖','肩','手腕'])await page.getByRole('button',{name:part,exact:true}).click();await nextButton(page).click();await generate(page);await expect(page.getByRole('button',{name:'就用这份计划'})).toBeVisible();}
-for(const theme of ['pop', 'vivid', 'gentle', 'data', 'fire'])for(const width of [375,1280])test(`body and draft ${theme} ${width}`,async({page},info)=>{
+for(const theme of ['pop', 'vivid', 'gentle', 'data', 'fire'])for(const width of [375,1280])test(`body and draft ${theme} ${width} @screens`,async({page},info)=>{
  await enable(page,theme);await page.setViewportSize({width,height:900});await bodyStep(page);
  await expect(page.getByRole('button',{name:'下一步',exact:true})).toBeDisabled();await expect(page.getByRole('status')).toContainText('再告诉我');
  await page.getByLabel('说说你的身体情况').fill('男，34岁，167，70公斤');await expect(page.getByRole('button',{name:'身高（厘米） · 167 厘米',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'下一步',exact:true})).toBeEnabled();
- await page.screenshot({path:`outputs/production-review/body-${theme}-${width}-${info.project.name}.png`,fullPage:true});
+ await page.screenshot({path:`test-results-review/production-review/body-${theme}-${width}-${info.project.name}.png`,fullPage:true});
  await page.reload();await expect(page.getByLabel('说说你的身体情况')).toHaveValue('男，34岁，167，70公斤');
  await draft(page);await expect(page.locator('.v9-session').first()).toBeVisible();await expect(page.getByText('已按你选的注意部位换掉了部分动作。',{exact:false})).toBeVisible();await page.locator('.v9-session summary').first().click();
  const card=page.locator('button.v9-item').first();expect(await card.evaluate(e=>parseFloat(getComputedStyle(e).paddingLeft))).toBeGreaterThan(0);await expect(card.locator('button')).toHaveCount(0);expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
- await page.screenshot({path:`outputs/production-review/draft-${theme}-${width}-${info.project.name}.png`,fullPage:true});await card.click();await expect(page.getByRole('dialog')).toBeVisible();await page.getByRole('dialog').getByRole('button',{name:'关闭',exact:true}).click();await expect(card).toBeFocused();
+ await page.screenshot({path:`test-results-review/production-review/draft-${theme}-${width}-${info.project.name}.png`,fullPage:true});await card.click();await expect(page.getByRole('dialog')).toBeVisible();await page.getByRole('dialog').getByRole('button',{name:'关闭',exact:true}).click();await expect(card).toBeFocused();
  await page.getByRole('button',{name:'修改注意部位'}).click();await expect(page.getByRole('button',{name:'膝盖',exact:true})).toHaveAttribute('aria-pressed','true');
 });
 test('body rollers, weight append, backup roundtrip and explicit deletion',async({page})=>{

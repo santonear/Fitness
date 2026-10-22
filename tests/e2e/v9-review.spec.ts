@@ -48,17 +48,17 @@ test('empty review shows 芽芽 and no zero grid; with records it shows ring, ba
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
-test('390px review screenshots in all five themes, empty and with records', async ({ page }) => {
+test('390px review screenshots in all five themes, empty and with records @screens', async ({ page }) => {
   test.skip(test.info().project.name !== 'chromium', 'Screenshots are a chromium self-check');
   test.setTimeout(180_000);
-  mkdirSync('outputs/v9-review', { recursive: true });
+  mkdirSync('test-results-review/v9-review', { recursive: true });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.clock.setFixedTime(new Date('2026-10-23T04:00:00Z'));
   const shot = async (name: string) => {
     await page.evaluate(() => document.fonts.ready);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-    await page.screenshot({ path: `outputs/v9-review/${name}.png`, fullPage: true });
+    await page.screenshot({ path: `test-results-review/v9-review/${name}.png`, fullPage: true });
   };
   const visit = async (theme: string) => { await page.evaluate(value => localStorage.setItem('fitness-theme', value), theme); await page.goto('/review'); await expect(page.getByRole('heading', { name: '本周回顾', exact: true })).toBeVisible(); await page.waitForTimeout(300); };
   await page.goto('/review');

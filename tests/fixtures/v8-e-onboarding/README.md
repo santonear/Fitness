@@ -15,7 +15,7 @@ $env:TEMP = (Resolve-Path .cache/v8-e-temp).Path
 $env:TMP = $env:TEMP
 node node_modules/typescript/bin/tsc --noEmit
 node node_modules/vitest/vitest.mjs run tests/unit/v8-e-onboarding.test.ts --configLoader runner
-node node_modules/@playwright/test/cli.js test --config tests/e2e/v8-e-onboarding.config.ts
+node node_modules/@playwright/test/cli.js test tests/e2e/v8-e-onboarding.spec.ts
 node tools/v8/check.mjs
 ```
 

@@ -19,6 +19,8 @@ permissions:
 env:
   PW_PROJECT: ${{ (github.event_name != 'schedule' && github.event_name != 'workflow_dispatch') && '--project=chromium' || '' }}
   PW_BROWSERS: ${{ (github.event_name != 'schedule' && github.event_name != 'workflow_dispatch') && 'chromium' || 'chromium webkit' }}
+  # Tests tagged @screens only take theme/width review screenshots; they run nightly and on manual runs.
+  PW_SCREENS: ${{ (github.event_name != 'schedule' && github.event_name != 'workflow_dispatch') && '--grep-invert=@screens' || '' }}
 
 concurrency:
   group: fitness-checks-${{ github.workflow }}-${{ github.ref }}
@@ -125,7 +127,7 @@ jobs:
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && 'chromium-webkit' || 'chromium' }}
       - run: npx playwright install --with-deps $PW_BROWSERS
       # Execute every existing test once; independent runners keep the job deadline unchanged.
-      - run: npm run test:e2e -- --project=${{ matrix.browser }} --shard=${{ matrix.shard }}/2 --workers=2 --retries=1 --reporter=line
+      - run: npm run test:e2e -- --project=${{ matrix.browser }} --shard=${{ matrix.shard }}/2 --workers=2 --retries=1 $PW_SCREENS --reporter=line
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
@@ -155,7 +157,7 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && 'chromium-webkit' || 'chromium' }}
       - run: npx playwright install --with-deps $PW_BROWSERS
-      - run: npx playwright test --config tests/e2e/followup-finish.config.ts $PW_PROJECT --retries=1
+      - run: npx playwright test --config tests/e2e/followup-finish.config.ts $PW_PROJECT --retries=1 $PW_SCREENS
       - run: npm run build && npx playwright test --config followup-pwa.config.ts --retries=1
 
   browser-flows:
@@ -180,11 +182,11 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && 'chromium-webkit' || 'chromium' }}
       - run: npx playwright install --with-deps $PW_BROWSERS
-      - run: npx playwright test --config playwright.trial.config.ts $PW_PROJECT --retries=1
-      - run: npx playwright test --config tests/e2e/v8-mainline.config.ts --retries=1
-      - run: npx playwright test --config tests/e2e/mainline-polish.config.ts --retries=1
-      - run: npx playwright test --config tests/e2e/v8-plan-review.config.ts --retries=1
-      - run: npx playwright test --config playwright.v8-coach.config.ts --retries=1
+      - run: npx playwright test --config playwright.trial.config.ts $PW_PROJECT --retries=1 $PW_SCREENS
+      - run: npx playwright test --config tests/e2e/v8-mainline.config.ts --retries=1 $PW_SCREENS
+      - run: npx playwright test --config tests/e2e/mainline-polish.config.ts --retries=1 $PW_SCREENS
+      - run: npx playwright test --config tests/e2e/v8-plan-review.config.ts --retries=1 $PW_SCREENS
+      - run: npx playwright test --config playwright.v8-coach.config.ts --retries=1 $PW_SCREENS
 
   browser-engine:
     needs: changes
@@ -208,7 +210,7 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-chromium
       - run: npx playwright install --with-deps chromium
-      - run: npx playwright test --config tests/e2e/training-engine.config.ts --retries=1
+      - run: npx playwright test --config tests/e2e/training-engine.config.ts --retries=1 $PW_SCREENS
 
   browser-admin:
     needs: changes

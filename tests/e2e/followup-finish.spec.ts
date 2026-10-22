@@ -13,7 +13,7 @@ async function enable(page:Page,flags:Record<string,boolean>){
 async function capture(page:Page,name:string){
  await page.evaluate(()=>document.fonts.ready);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- await page.screenshot({path:`outputs/followup-finish/${name}.png`,fullPage:true});
+ await page.screenshot({path:`test-results-review/followup-finish/${name}.png`,fullPage:true});
 }
 for(const theme of ['pop', 'vivid', 'gentle', 'data', 'fire'])for(const width of [375,430,768,1024])test(`${theme} ${width} responsive signatures and RepDB`,async({page},info)=>{
  await page.addInitScript(theme=>localStorage.setItem('fitness-theme',theme),theme);
@@ -33,7 +33,7 @@ for(const theme of ['pop', 'vivid', 'gentle', 'data', 'fire'])for(const width of
  await capture(page,`${prefix}-repdb`);
  const metrics=await images.evaluateAll(nodes=>nodes.map(node=>{const r=node.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height};}));
  expect(metrics[0].x===metrics[1].x).toBe(width<768);
- mkdirSync('outputs/followup-finish/metrics',{recursive:true});writeFileSync(`outputs/followup-finish/metrics/${prefix}.json`,JSON.stringify(metrics));
+ mkdirSync('test-results-review/followup-finish/metrics',{recursive:true});writeFileSync(`test-results-review/followup-finish/metrics/${prefix}.json`,JSON.stringify(metrics));
 });
 for(const theme of ['pop', 'vivid', 'gentle', 'data', 'fire'])test(`${theme} coach 320`,async({page},info)=>{
  await page.addInitScript(theme=>localStorage.setItem('fitness-theme',theme),theme);
