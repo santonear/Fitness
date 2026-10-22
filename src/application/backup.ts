@@ -393,6 +393,7 @@ export function createBackupService(repo: Repository) {
       committedGeneration = (before.restoreGeneration ?? 0) + 1;
       if (!Number.isSafeInteger(committedGeneration) || !Number.isSafeInteger(before.dataRevision + 1)) invalid('Local revision counter exhausted');
       // Device reminder preferences and suppression ledger are not portable training facts.
+      // trainingCheckins are cleared and never exported: short-retention health check-ins (kept 10 days, deload.checkin.inputs) are intentionally not portable.
       for (const table of repo.db.tables) if (table.name !== 'coachDevice') await table.clear();
       const data = envelope.data;
       await repo.db.metadata.put({ ...data.metadata, schemaVersion: DATABASE_VERSION, revision: before.revision, dataRevision: before.dataRevision, restoreGeneration: committedGeneration, importedAt: new Date().toISOString() });
