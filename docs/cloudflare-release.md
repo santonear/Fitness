@@ -14,15 +14,15 @@ Worker 名称为 `fitness`，实际稳定地址为 https://fitness.initdevl.work
 
 ## GitHub 发布流程（2026-10-12 起）
 
-三个工作流，正式环境的发布与回滚都要 Bo 在 GitHub 上批准：
+三个工作流。仓库为私有，GitHub 只有 Enterprise 才能给私有仓库设置环境审批人，所以正式发布与回滚改为只由 Bo 本人在 Actions 手动运行（Bo 2026-10-22）；Claude 只有在 Bo 明确说“发布”时才代为运行：
 
 | 工作流 | 触发 | 审批 | 步骤 |
 | --- | --- | --- | --- |
 | `deploy-preview.yml`（Publish a Fitness preview） | 任意分支手动运行，选择预览目标 | 无 | 检查配置不含正式 Worker/D1/KV → `npm run check` → 部署预览 |
-| `deploy-cloudflare.yml`（Publish Fitness to Cloudflare） | 只能从 `main` 手动运行 | `cloudflare-production` 环境审批 | 快检查（规则检查、类型检查、单元测试、打包；完整浏览器测试已在 PR 上跑过，Bo 2026-10-22。PR 只跑 Chrome 内核，Safari 内核每天北京时间 02:00 定时跑一次，也可在 Actions 手动运行 Local MVP checks）→ 审批 → 记录当前线上版本 → D1 迁移（`ADMIN_DB`）→ 部署 → 冒烟测试 |
-| `rollback-production.yml`（Roll back Fitness production） | 只能从 `main` 手动运行，可填版本号和原因 | `cloudflare-production` 环境审批 | 审批 → `wrangler rollback` → 冒烟测试 |
+| `deploy-cloudflare.yml`（Publish Fitness to Cloudflare） | 只能从 `main` 手动运行 | Bo 手动运行即批准 | 快检查（规则检查、类型检查、单元测试、打包；完整浏览器测试已在 PR 上跑过，Bo 2026-10-22。PR 只跑 Chrome 内核，Safari 内核每天北京时间 02:00 定时跑一次，也可在 Actions 手动运行 Local MVP checks）→ 记录当前线上版本 → D1 迁移（`ADMIN_DB`）→ 部署 → 冒烟测试 |
+| `rollback-production.yml`（Roll back Fitness production） | 只能从 `main` 手动运行，可填版本号和原因 | Bo 手动运行即批准 | `wrangler rollback` → 冒烟测试 |
 
-两个正式工作流第一步都会检查 `cloudflare-production` 环境是否设置了必需审批人；没有设置就直接失败，不会进入测试或部署。
+两个正式工作流第一步都会检查 `cloudflare-production` 环境存在且只允许 `main` 部署；不满足就直接失败，不会进入测试或部署。如果以后仓库改为公开或升级 Enterprise，可重新设置 Required reviewers，工作流会自动等待审批。
 
 回滚只回退 Worker 代码，不回退 D1 迁移；迁移必须保持向后兼容，旧版本代码要能读新表结构。每次正式发布的运行摘要里记录发布前的线上版本号，回滚时可直接填写。
 
@@ -34,7 +34,7 @@ Worker 名称为 `fitness`，实际稳定地址为 https://fitness.initdevl.work
 
 GitHub 环境配置：
 
-- `cloudflare-production`：Required reviewers 设为 Bo；Deployment branches 限定 `main`；Secrets `CLOUDFLARE_API_TOKEN`、`CLOUDFLARE_ACCOUNT_ID`。
+- `cloudflare-production`：私有仓库无法设置 Required reviewers；Deployment branches 限定 `main`；Secrets `CLOUDFLARE_API_TOKEN`、`CLOUDFLARE_ACCOUNT_ID`。
 - `cloudflare-preview`：不设审批；Secrets 同名，建议使用只能部署预览 Worker 的独立 Token。
 
 Token 按 Cloudflare 官方 Workers 部署权限创建，只授予目标账号所需权限；凭据不写入代码或 Vite 环境变量。

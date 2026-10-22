@@ -1,7 +1,7 @@
 name: Roll back Fitness production
 
-# One-click rollback of the production Worker. Waits for approval on the
-# cloudflare-production environment. D1 migrations are not reverted.
+# One-click rollback of the production Worker, started by Bo by hand (the
+# private repo cannot require an environment reviewer). D1 migrations are not reverted.
 on:
   workflow_dispatch:
     inputs:
@@ -31,7 +31,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
-      - name: Require an approver on cloudflare-production
+      - name: Check the cloudflare-production environment
         env:
           GH_TOKEN: ${{ github.token }}
         run: node tools/release/check-environment.mjs cloudflare-production
