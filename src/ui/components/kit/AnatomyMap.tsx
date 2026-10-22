@@ -80,6 +80,12 @@ export function fatOf(heightCm: number | undefined, weightKg: number | undefined
   return Math.max(-0.5, Math.min(1.6, (bmi - 22) / 8));
 }
 
+/** Body-fat factor from a logged body-fat percentage, on the same scale as fatOf (male 18%, female 27% draw the standard figure). */
+export function fatFromPercent(sex: 'male' | 'female', percent: number | undefined) {
+  if (percent === undefined || !Number.isFinite(percent)) return undefined;
+  return Math.max(-0.5, Math.min(1.6, (percent - (sex === 'female' ? 27 : 18)) / 10));
+}
+
 function makeMorph(fem: boolean) {
   const fx = (x: number, cat: string) => {
     if (!fem) return x;
@@ -155,7 +161,7 @@ export interface AnatomyModel {
 const transformOf = (view: View, mirror: boolean) => `translate(${OX[view]} 0)${mirror ? ' matrix(-1 0 0 1 200 0)' : ''}`;
 
 /** Pure geometry for the figure (exported for tests and previews). */
-export function buildAnatomy(input: { primary: readonly MuscleGroup[]; secondary: readonly MuscleGroup[]; shape?: FigureShape; labels?: boolean; ghostWeightKg?: number; locale?: KitLocale }): AnatomyModel {
+export function buildAnatomy(input: { primary: readonly MuscleGroup[]; secondary: readonly MuscleGroup[]; shape?: FigureShape; labels?: boolean; ghostWeightKg?: number; ghostBodyFatPercent?: number; locale?: KitLocale }): AnatomyModel {
   const sex = input.shape?.sex === 'female' ? 'female' : 'male';
   const fem = sex === 'female';
   const lang = input.locale === 'en' ? 1 : 0;
@@ -163,8 +169,8 @@ export function buildAnatomy(input: { primary: readonly MuscleGroup[]; secondary
   const { fx, fy, warp, morph } = makeMorph(fem);
   const primary = [...new Set(input.primary)];
   const secondary = [...new Set(input.secondary)].filter(group => !primary.includes(group));
-  const fatNow = fatOf(input.shape?.heightCm, input.shape?.weightKg);
-  const ghostFat = input.ghostWeightKg ? fatOf(input.shape?.heightCm, input.ghostWeightKg) : undefined;
+  const fatNow = fatFromPercent(sex, input.shape?.bodyFatPercent) ?? fatOf(input.shape?.heightCm, input.shape?.weightKg);
+  const ghostFat = fatFromPercent(sex, input.ghostBodyFatPercent) ?? (input.ghostWeightKg ? fatOf(input.shape?.heightCm, input.ghostWeightKg) : undefined);
   const outlinePath = fem ? OUT_F : OUT_M;
   const details: Record<View, readonly (readonly [Cat, string])[]> = {
     front: [['torso', 'M83 158 L98 158 M82 176 L98 176 M83 194 L98 194'], ['none', 'M78 344 L78 396'], ...(fem ? [['torso', 'M60 120 C64 138 82 146 98 140'] as const] : [])],
@@ -225,10 +231,10 @@ export function anatomyLabel(model: Pick<AnatomyModel, 'sex' | 'primary' | 'seco
     + (model.secondary.length ? `${model.primary.length ? '；' : ''}辅助：${names(model.secondary).join('、')}` : '');
 }
 
-export function AnatomyMap({ width, primary, secondary, shape, labels = false, ghostWeightKg, locale: localeProp }: AnatomyMapProps & { locale?: KitLocale }) {
+export function AnatomyMap({ width, primary, secondary, shape, labels = false, ghostWeightKg, ghostBodyFatPercent, locale: localeProp }: AnatomyMapProps & { ghostBodyFatPercent?: number; locale?: KitLocale }) {
   const locale = useKitLocale(localeProp);
   const filterId = `am-${useId().replace(/[^\w-]/g, '')}`;
-  const model = buildAnatomy({ primary, secondary, shape, labels, ghostWeightKg, locale });
+  const model = buildAnatomy({ primary, secondary, shape, labels, ghostWeightKg, ghostBodyFatPercent, locale });
   const height = Math.round(width * model.vbh / model.vbw);
   return <div className="v9-anatomy" data-sex={model.sex} data-labels={labels ? 'on' : 'off'} style={{ inlineSize: width, blockSize: height }}>
     <svg className="v9-anatomy-svg" width={width} height={height} viewBox={model.viewBox} role="img" aria-label={anatomyLabel(model, locale)}>

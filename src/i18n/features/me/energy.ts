@@ -1,7 +1,7 @@
 /** 我的 › 卡路里计算器 / 宏量营养计算器 (V9.15). Numbers are estimates; no body words beyond the facts. */
 export const energyCopy = {
   zh: {
-    group: '饮食工具', back: '返回我的', local: '只在这台设备上计算，不会发送。', estimate: '估算',
+    group: '自测组件', testRow: '俯卧撑、仰卧起坐等，估算身体年龄', testSub: '按 2023 国民体质测定标准估算，只在这台设备上保存。', back: '返回我的', local: '只在这台设备上计算，不会发送。', estimate: '估算',
     calTitle: '卡路里计算器', calRow: '每天大概吃多少', calSub: '按身体数据和训练计划，算出每天的热量目标。',
     sex: '性别', male: '男', female: '女', unspecified: '不填',
     age: '年龄', height: '身高', weight: '体重', years: '岁', cm: '厘米', kg: '公斤',
@@ -24,7 +24,7 @@ export const energyCopy = {
     invalid: '请填 {min}–{max} 之间的数。', kcalInvalid: '请填 800–6000 之间的数。',
   },
   en: {
-    group: 'Food tools', back: 'Back to Me', local: 'Calculated on this device only. Nothing is sent.', estimate: 'Estimate',
+    group: 'Self-check tools', testRow: 'Push-ups, sit-ups and more, with an estimated body age', testSub: 'Estimated from the 2023 national fitness standard and kept on this device only.', back: 'Back to Me', local: 'Calculated on this device only. Nothing is sent.', estimate: 'Estimate',
     calTitle: 'Calorie calculator', calRow: 'How much to eat a day', calSub: 'A daily energy target from your body data and training plan.',
     sex: 'Sex', male: 'Male', female: 'Female', unspecified: 'Skip',
     age: 'Age', height: 'Height', weight: 'Weight', years: 'yrs', cm: 'cm', kg: 'kg',

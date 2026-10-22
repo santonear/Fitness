@@ -1,11 +1,11 @@
 import { expect, test, type Page } from '@playwright/test';
 import { answerTexts, engineSafety, nextButton, startOnboarding, weeklySchedule } from './helpers/onboarding-v9';
 
-/** UIUX20261008 V9.14: 今天 panel → 今天练这里 → start; 我的山路; 训练设置; 现在有点烦. */
+/** UIUX20261008 V9.14/V9.17: 今天 panel → 今天练这里 → start; 给未来的自己 and 体能自测; 训练设置; 现在有点烦. */
 test.setTimeout(150000);
 const flags = (page: Page) => page.route('**/api/v1/features', route => route.fulfill({ json: { version: 1, flags: { trainingEngine: true, bodyProfile: true }, expiresAt: Date.now() + 3600000 } }));
 
-async function toPlan(page: Page) {
+async function toPlan(page: Page, letter?: string) {
   await startOnboarding(page);
   await page.getByRole('radio', { name: '想有些力量，不再容易累', exact: true }).click();
   await nextButton(page).click();
@@ -17,6 +17,11 @@ async function toPlan(page: Page) {
   await engineSafety(page, { planMode: 'local' });
   await page.getByRole('button', { name: '生成计划', exact: true }).click();
   await page.getByRole('button', { name: '就用这份计划', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '给未来的自己', exact: true })).toBeVisible();
+  if (letter) {
+    await page.getByPlaceholder('请给未来完成训练的你留言').fill(letter);
+    await page.getByRole('button', { name: '收好', exact: true }).click();
+  } else await page.getByRole('button', { name: '先不写', exact: true }).click();
   await expect(page.getByRole('heading', { name: '今天', exact: true })).toBeVisible();
 }
 
@@ -55,46 +60,39 @@ test('今天: B plan, fragment scene with the honest line and its evidence fold;
   await expect(page.getByText('周二下班后，客厅', { exact: false })).toBeVisible();
 });
 
-test('我的 › 训练设置: panel style and outline toggle; 我的山路 respects the toggle and logs today’s weight', async ({ page }) => {
+test('我的 › 训练设置: panel style and outline toggle; the outline on 我的 respects the toggle and follows 自记录', async ({ page }) => {
   await flags(page);
   await toPlan(page);
   await page.goto('/settings');
   await page.getByRole('radio', { name: '双表盘' }).click();
-  await page.goto('/journey');
-  await expect(page.getByRole('heading', { name: '我的山路' })).toBeVisible();
-  await expect(page.getByText('轮廓按身高体重估算，仅作示意')).toBeVisible();
-  await page.getByRole('button', { name: '记今天的体重' }).click();
-  await page.getByLabel('今天的体重（kg）').fill('59.5');
+  const summary = page.locator('section.v9-change-summary');
+  await expect(summary.getByText('轮廓按身高、体重和体脂估算，仅作示意')).toBeVisible();
+  await page.getByRole('button', { name: /^自记录/ }).click();
+  await page.getByLabel('体重（公斤）').fill('59.5');
   await page.getByRole('button', { name: '保存', exact: true }).click();
-  await expect(page.getByText('59.5', { exact: true })).toBeVisible();
+  await expect(page.locator('.v9-change-value').first()).toContainText('59.5');
   await expect(page.getByText(/胖|肥|瘦|标准身材/)).toHaveCount(0);
   await page.goto('/settings');
   await page.getByLabel('显示体型轮廓').uncheck();
+  await expect(summary.getByText('轮廓按身高、体重和体脂估算，仅作示意')).toHaveCount(0);
   await page.goto('/journey');
-  await expect(page.getByText('轮廓按身高体重估算，仅作示意')).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: '我的', exact: true })).toBeVisible();
 });
 
-test('我的山路: first meeting saves a journey; mini-test shows an estimated body age; letter is kept', async ({ page }) => {
+test('给未来的自己 is the last step of making a plan; 体能自测 lives in 我的 › 自测组件', async ({ page }) => {
   await flags(page);
-  await toPlan(page);
-  await page.goto('/journey');
-  await page.getByRole('button', { name: '想睡个好觉' }).click();
-  await page.getByRole('button', { name: '下一步' }).click();
-  await page.getByPlaceholder('用你自己的话写').fill('晚上睡得踏实');
-  await page.getByRole('button', { name: '下一步' }).click();
-  await page.getByRole('button', { name: '太忙' }).click();
-  await page.getByRole('button', { name: '下一步' }).click();
-  await page.getByRole('button', { name: '出发' }).click();
-  await expect(page.getByLabel(/晚上睡得踏实/)).toBeVisible();
+  await toPlan(page, '记得今天为什么出发');
+  await page.goto('/settings');
+  await page.getByRole('button', { name: /^体能自测/ }).click();
+  await expect(page.getByRole('heading', { level: 1, name: '体能自测', exact: true })).toBeVisible();
   await page.getByRole('button', { name: '现在测' }).click();
   await expect(page.getByLabel('30 秒坐站')).toHaveCount(0);
   await page.getByLabel('俯卧撑（女性可跪姿）').fill('15');
   await page.getByLabel('1 分钟仰卧起坐').fill('25');
   await page.getByRole('button', { name: '记下成绩' }).click();
   await expect(page.getByText('估算', { exact: true })).toBeVisible();
-  await page.getByLabel('写给半年后的自己').fill('记得今天为什么出发');
-  await page.getByRole('button', { name: '收好' }).click();
-  await expect(page.getByText('收好了，到营地时再打开。')).toBeVisible();
+  await page.goto('/settings/changes');
+  await expect(page.getByText('记得今天为什么出发', { exact: true })).toBeVisible();
 });
 
 test('现在有点烦: breathing runs locally and the low-mood line has no emoji', async ({ page }) => {

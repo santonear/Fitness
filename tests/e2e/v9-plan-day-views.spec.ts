@@ -23,7 +23,7 @@ async function toPlan(page: Page) {
   await answerTexts(page, ['在家，有一对哑铃']);
   await engineSafety(page);
   await page.getByRole('button', { name: '生成计划', exact: true }).click();
-  await page.getByRole('button', { name: '就用这份计划', exact: true }).click();
+  await page.getByRole('button', { name: '就用这份计划', exact: true }).click(); await page.getByRole('button', { name: '先不写', exact: true }).click();
   await expect(page.getByRole('heading', { name: '今天', exact: true })).toBeVisible();
 }
 

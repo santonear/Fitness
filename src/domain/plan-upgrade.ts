@@ -64,6 +64,8 @@ export interface FigureShape {
   heightCm?: number;
   weightKg?: number;
   waistCm?: number;
+  /** Logged body fat; when present it shapes the figure instead of BMI. */
+  bodyFatPercent?: number;
 }
 
 export const HOME_PANEL_STYLES = ['hero', 'ring', 'twin'] as const;
