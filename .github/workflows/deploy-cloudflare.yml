@@ -1,7 +1,7 @@
 name: Publish Fitness to Cloudflare
 
-# Production release. Manual, main only, and every run waits for approval on
-# the cloudflare-production environment before it touches D1 or the Worker.
+# Production release. Manual and main only: Bo starts each run himself (the
+# private repo cannot require an environment reviewer, Bo 2026-10-22).
 on:
   workflow_dispatch:
 
@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
-      - name: Require an approver on cloudflare-production
+      - name: Check the cloudflare-production environment
         env:
           GH_TOKEN: ${{ github.token }}
         run: node tools/release/check-environment.mjs cloudflare-production
@@ -35,7 +35,7 @@ jobs:
           fi
 
   # Bo 2026-10-22: the full browser suites already ran on the pull request for
-  # this exact code, so a release runs only the quick checks before approval;
+  # this exact code, so a release runs only the quick checks before deploying;
   # the smoke test after deploy checks the live site.
   tests:
     needs: preflight
