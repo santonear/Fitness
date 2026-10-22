@@ -81,7 +81,7 @@ test('picked dates reach the model as a fixed constraint and survive an AI plan 
   await expect.poll(planned).toEqual(picked.filter(date => date.slice(0, 7) === picked[0].slice(0, 7)));
 
   // 4. The saved plan keeps the picked dates and start time.
-  await page.getByRole('button', { name: '就用这份计划', exact: true }).click();
+  await page.getByRole('button', { name: '就用这份计划', exact: true }).click(); await page.getByRole('button', { name: '先不写', exact: true }).click();
   await expect(page).not.toHaveURL(/plan-draft/);
   const version = await page.evaluate(async () => { const path = '/src/ui/mainline/context.tsx'; return (await (await import(/* @vite-ignore */ path)).workflow.snapshot()).version; });
   expect(version.trainingDates).toEqual(picked);

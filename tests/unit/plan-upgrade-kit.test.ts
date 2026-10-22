@@ -3,7 +3,7 @@ import { createElement, type ReactElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import { DEFAULT_HOME_PANEL_STYLE, MUSCLE_GROUPS, type HomePanelProps, type MuscleGroup, type NowMinutes } from '../../src/domain/plan-upgrade';
-import { AnatomyMap, FIGURE_OUTLINES, anatomyLabel, buildAnatomy, fatOf } from '../../src/ui/components/kit/AnatomyMap';
+import { AnatomyMap, FIGURE_OUTLINES, anatomyLabel, buildAnatomy, fatFromPercent, fatOf } from '../../src/ui/components/kit/AnatomyMap';
 import { HomePanel, MinutesGroup, heroKnob, ringLevel } from '../../src/ui/components/kit/HomePanel';
 import { JourneyTrail } from '../../src/ui/components/kit/JourneyTrail';
 import * as kit from '../../src/ui/components/kit';
@@ -68,6 +68,18 @@ describe('AnatomyMap', () => {
     expect(buildAnatomy({ primary: [], secondary: [], shape: { heightCm: 180, weightKg: 71.28 } }).outline).toEqual(plain.outline);
     expect(plain.sex).toBe('male');
     expect(plain.ghost).toEqual([]);
+  });
+
+  it('a logged body fat shapes the figure instead of BMI, also without height, and draws its own ghost', () => {
+    const plain = buildAnatomy({ primary: [], secondary: [] });
+    expect(fatFromPercent('male', undefined)).toBeUndefined();
+    expect(fatFromPercent('male', 18)).toBe(0);
+    expect(fatFromPercent('female', 27)).toBe(0);
+    expect(fatFromPercent('male', 90)).toBe(1.6);
+    expect(buildAnatomy({ primary: [], secondary: [], shape: { sex: 'male', bodyFatPercent: 18, heightCm: 170, weightKg: 120 } }).outline).toEqual(plain.outline);
+    const fuller = buildAnatomy({ primary: [], secondary: [], shape: { sex: 'male', bodyFatPercent: 30 }, ghostBodyFatPercent: 18 });
+    expect(fuller.outline).not.toEqual(plain.outline);
+    expect(fuller.ghost.map(part => part.d)).toEqual(plain.outline.map(part => part.d));
   });
 
   it('morphs monotonically: heavier men widen at the waist, heavier women at the hips', () => {

@@ -71,7 +71,7 @@ test('start date: draft picker moves the first week; 计划 can change it as a n
   expect(dates.length).toBeGreaterThan(0);
   for (const date of dates) expect(date >= later).toBe(true);
   await page.screenshot({ path: test.info().outputPath('draft-start-date-390.png'), fullPage: true });
-  await page.getByRole('button', { name: '就用这份计划', exact: true }).click();
+  await page.getByRole('button', { name: '就用这份计划', exact: true }).click(); await page.getByRole('button', { name: '先不写', exact: true }).click();
   await expect(page.getByRole('heading', { name: '今天', exact: true })).toBeVisible();
   await expect(page.getByText(/开始$/).first()).toBeVisible();
   const stored = await page.evaluate(async () => { const path = '/src/ui/mainline/context.tsx'; const data = await (await import(/* @vite-ignore */ path)).workflow.snapshot(); return data.version?.startDate; });
@@ -91,7 +91,7 @@ test('今天: one AI entry (the orb), theme button switches style, 动作怎么�
   await page.setViewportSize({ width: 390, height: 844 });
   await toReady(page);
   await page.getByRole('button', { name: '生成计划', exact: true }).click();
-  await page.getByRole('button', { name: '就用这份计划', exact: true }).click();
+  await page.getByRole('button', { name: '就用这份计划', exact: true }).click(); await page.getByRole('button', { name: '先不写', exact: true }).click();
   await expect(page.getByRole('heading', { name: '今天', exact: true })).toBeVisible();
   const main = page.locator('main.v9-home');
   await expect(main.getByRole('button', { name: '和芽芽聊聊' })).toHaveCount(0);

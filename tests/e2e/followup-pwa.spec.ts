@@ -20,7 +20,7 @@ test('production shell reloads offline and preserves actual recorded training', 
   await answerTexts(page,['每周 2 次，每次 20 分钟']);
   await answerTexts(page,['在家，只有瑜伽垫']);
   await basicSafety(page);await generate(page);
-  await page.getByRole('button', { name: '就用这份计划' }).click();
+  await page.getByRole('button', { name: '就用这份计划' }).click(); await page.getByRole('button', { name: '先不写', exact: true }).click();
   await expect(page.getByRole('heading', { name: '今天', exact: true })).toBeVisible();
   await startToday(page);
   await page.getByRole('button', { name: '完成这一组', exact: true }).click();

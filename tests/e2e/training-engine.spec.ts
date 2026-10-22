@@ -154,11 +154,13 @@ async function openSourceWarmup(page:Page){
 }
 
 test('actual screening UI generates deterministic local drafts and preserves engine fields in backup',async({page,browser},info)=>{
+ // Ten themed screenshot passes; on a shared CI worker this runs past the file-wide four minutes.
+ test.setTimeout(480000);
  await localFeatures(page);const apiRequests:string[]=[];page.on('request',request=>{if(new URL(request.url()).pathname.startsWith('/api/'))apiRequests.push(new URL(request.url()).pathname);});
  const first=await screenAndDraft(page,true);expect(first.length).toBeGreaterThan(0);
  const other=await browser.newContext({viewport:{width:375,height:844}}),otherPage=await other.newPage();
  try{await localFeatures(otherPage);expect(await screenAndDraft(otherPage,true)).toEqual(first);}finally{await other.close();}
- await page.getByRole('button',{name:'就用这份计划',exact:true}).click();await expect(page.getByRole('heading',{name:'今天',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'就用这份计划',exact:true}).click();await page.getByRole('button',{name:'先不写',exact:true}).click();await expect(page.getByRole('heading',{name:'今天',exact:true})).toBeVisible();
  const saved=await page.evaluate(async()=>{const path='/src/ui/mainline/context.tsx';const data=await(await import(/* @vite-ignore */path)).workflow.snapshot();return {screening:data.state.coachProfile?.screening,birth:data.state.coachProfile?.birthYearMonth,engine:!!data.version?.enginePlan};});
  expect(saved.birth).toBe('1991-06');expect(saved.screening?.parqAnswers).toEqual(Array(7).fill(false));expect(saved.screening?.completedAt).toBeTruthy();expect(saved.engine).toBe(true);
  // Explicit synthetic user-recorded loads make percentage ramps meaningful; no plan is fabricated.
@@ -259,7 +261,7 @@ test('actual screening UI generates deterministic local drafts and preserves eng
 
 test('positive pain review blocks further training and survives the downloaded backup',async({page},info)=>{
  await localFeatures(page);const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));
- await screenAndDraft(page);await page.getByRole('button',{name:'就用这份计划',exact:true}).click();
+ await screenAndDraft(page);await page.getByRole('button',{name:'就用这份计划',exact:true}).click();await page.getByRole('button',{name:'先不写',exact:true}).click();
  await startToday(page);await expect(page).toHaveURL(/workout\//);
  await page.getByRole('button',{name:'完成这一组',exact:true}).click();
  const before=await page.evaluate(async()=>{const path='/src/ui/mainline/context.tsx';return (await(await import(/* @vite-ignore */path)).workflow.snapshot()).active;});
@@ -311,7 +313,7 @@ test('pre-training joint danger persists as a minimal pause until fresh screenin
  await page.route('**/api/**',route=>{if(/assistant|coach|chat|completion/i.test(new URL(route.request().url()).pathname))modelAttempts.push(route.request().url());return route.fulfill({status:503,json:{error:'OFFLINE_SAFETY_TEST'}});});
  await page.route('**/api/v1/features',route=>route.fulfill({json:{version:1,flags:{trainingEngine:enabled,aiAssistantV2:false,bodyProfile:false},expiresAt:Date.now()+3600000}}));await page.route('**/api/v1/trial/access-status',route=>route.fulfill({json:{qualification:'none',sessionValid:false,aiEnabled:false}}));
  // A normal flag-off basic plan supplies a saved profile; no engine-ready plan or database seed is needed.
- await startOnboarding(page);await answerTexts(page,['保持健康，规律训练','每周3次，每次30分钟','在家，只有瑜伽垫']);await basicSafety(page);await generate(page);await page.getByRole('button',{name:'就用这份计划',exact:true}).click();
+ await startOnboarding(page);await answerTexts(page,['保持健康，规律训练','每周3次，每次30分钟','在家，只有瑜伽垫']);await basicSafety(page);await generate(page);await page.getByRole('button',{name:'就用这份计划',exact:true}).click();await page.getByRole('button',{name:'先不写',exact:true}).click();
  await expect(page.getByRole('heading',{name:'今天',exact:true})).toBeVisible();
  await page.goto('/manual');await page.getByRole('searchbox').fill('自阻力划船');await page.getByRole('button',{name:'自阻力划船',exact:true}).click();await page.getByRole('button',{name:'开始',exact:true}).click();await page.getByRole('button',{name:'完成这一组',exact:true}).click();await page.getByRole('button',{name:'暂停或结束',exact:true}).click();await page.getByRole('button',{name:'结束并记下',exact:true}).click();await page.getByRole('button',{name:'记下来',exact:true}).click();
  const facts=await page.evaluate(async()=>{const p='/src/persistence/repository.ts';return(await import(/* @vite-ignore */p)).repository.db.v8Workouts.toArray();});expect(facts).toHaveLength(1);expect(facts[0].sets).toHaveLength(1);
@@ -344,7 +346,7 @@ test('home today_adjust intent from 芽芽 becomes a confirmable card for the ne
   await route.fulfill({contentType:'text/event-stream',body:events.map(event=>'data: '+JSON.stringify(event)+'\n\n').join('')});
  });
  await screenAndDraft(page,true);
- await page.getByRole('button',{name:'就用这份计划',exact:true}).click();await expect(page.getByRole('heading',{name:'今天',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'就用这份计划',exact:true}).click();await page.getByRole('button',{name:'先不写',exact:true}).click();await expect(page.getByRole('heading',{name:'今天',exact:true})).toBeVisible();
  const before=await page.evaluate(async()=>{const path='/src/ui/mainline/context.tsx';const data=await(await import(/* @vite-ignore */path)).workflow.snapshot();return {version:JSON.stringify(data.version),override:data.state.nextWorkoutOverride};});
  expect(before.override).toBeUndefined();
  const dialog=await openHomeCoach(page);

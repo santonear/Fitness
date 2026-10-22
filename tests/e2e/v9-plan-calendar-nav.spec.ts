@@ -80,7 +80,7 @@ test('one tapped day makes a one-day plan with a start time; the draft is a mont
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.screenshot({ path: test.info().outputPath('draft-month-pop-1440.png'), fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.getByRole('button', { name: '就用这份计划', exact: true }).click();
+  await page.getByRole('button', { name: '就用这份计划', exact: true }).click(); await page.getByRole('button', { name: '先不写', exact: true }).click();
   await expect(page.getByRole('heading', { name: '今天', exact: true })).toBeVisible();
   const saved = await snapshot(page);
   expect(saved.version.trainingDates).toEqual([day]);
@@ -121,7 +121,7 @@ test('dragging across 30 days keeps a rest day in every 7, says so, and plans th
   await page.getByRole('button', { name: '45 分钟', exact: true }).click();
   await fromScheduleToDraft(page);
   await expect(page.getByTestId('draft-days')).toContainText('共 26 天');
-  await page.getByRole('button', { name: '就用这份计划', exact: true }).click();
+  await page.getByRole('button', { name: '就用这份计划', exact: true }).click(); await page.getByRole('button', { name: '先不写', exact: true }).click();
   await expect(page.getByRole('heading', { name: '今天', exact: true })).toBeVisible();
   const saved = await snapshot(page);
   expect(saved.version.trainingDates).toHaveLength(26);
@@ -211,7 +211,7 @@ test('重新制定计划 asks, then starts every question fresh; finished record
   await toSchedule(page);
   await pickTrainingDays(page, [shanghaiDate(0)], 30);
   await fromScheduleToDraft(page);
-  await page.getByRole('button', { name: '就用这份计划', exact: true }).click();
+  await page.getByRole('button', { name: '就用这份计划', exact: true }).click(); await page.getByRole('button', { name: '先不写', exact: true }).click();
   await expect(page.getByRole('heading', { name: '今天', exact: true })).toBeVisible();
   const before = await snapshot(page);
   await page.getByRole('navigation', { name: '主导航' }).getByRole('button', { name: '计划' }).click();

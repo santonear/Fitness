@@ -12,6 +12,7 @@ import settingsEn from '../../../i18n/features/settings/en.json';
 import { meCopy } from '../../../i18n/features/settings/me';
 import { PageSwitches } from '../../components/PageSwitches';
 import { energyCopy } from '../../../i18n/features/me/energy';
+import { planPagesCopy } from '../../../i18n/features/plan-upgrade/pages';
 import { bodyCopy } from '../../../i18n/features/onboarding/body';
 import { useMainline } from '../../mainline/context';
 import { useEffect, useState, type ReactNode } from 'react';
@@ -68,6 +69,7 @@ export function SettingsPage(){const bodyEnabled=useFeature('bodyProfile');const
  <Group title={energyCopy[locale].group}>
   <Row label={energyCopy[locale].calTitle} hint={energyCopy[locale].calRow} onClick={()=>navigate('/settings/calories')}/>
   <Row label={energyCopy[locale].macroTitle} hint={energyCopy[locale].macroRow} onClick={()=>navigate('/settings/macros')}/>
+  <Row label={planPagesCopy[locale].testTitle} hint={energyCopy[locale].testRow} onClick={()=>navigate('/settings/fitness-test')}/>
  </Group>
  <Group title={me.training}>
   {remindersEnabled&&<Row label={copy.settingsPage0} expanded={section==='reminders'} onClick={()=>toggle('reminders')}><ReminderSettings locale={locale}/></Row>}

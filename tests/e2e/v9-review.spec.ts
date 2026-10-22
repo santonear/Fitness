@@ -8,7 +8,7 @@ const themes = ['pop', 'vivid', 'gentle', 'data', 'fire'] as const;
 
 async function plan(page: Page) {
   await startOnboarding(page); await answerTexts(page, ['保持力量', '每周3次，每次30分钟', '在家，只有瑜伽垫']);
-  await basicSafety(page); await generate(page); await page.getByRole('button', { name: '就用这份计划' }).click();
+  await basicSafety(page); await generate(page); await page.getByRole('button', { name: '就用这份计划' }).click(); await page.getByRole('button', { name: '先不写', exact: true }).click();
   await expect(page.getByRole('heading', { name: '今天', exact: true })).toBeVisible();
 }
 /** Saved workouts on Mon, Wed, Thu this week and one in each of the two weeks before. */
