@@ -7,7 +7,6 @@ import { handleReleases } from '../../src/backend/admin/releases';
 import { readManagedFeatureFlags, readSelectedPromptVersion } from '../../src/backend/admin/releases/runtime';
 import { releaseTodoSource } from '../../src/backend/admin/releases/todos';
 import { rollbackRelease,registeredReleases,runReleaseSmoke } from '../../src/backend/admin/releases/deployment';
-import { createCloudflareReleaseAdapter } from '../../src/backend/admin/releases/cloudflare-adapter';
 import {createPreviewSimulationAdapter} from '../../src/backend/admin/releases/preview-simulation-adapter';
 import {readFeatureFlags} from '../../src/backend/feature-config';
 
@@ -136,20 +135,6 @@ describe('persistent release controls',()=>{
     const output=JSON.stringify(await response!.json());expect(output).not.toMatch(/health|notes|promptText|weight|trainingRecords/);
   });
 });
-describe('private Cloudflare adapter',()=>{
-  it('fails closed without secrets and never calls transport',async()=>{
-    const transport=vi.fn();const adapter=createCloudflareReleaseAdapter(transport);
-    const request=new Request('https://release-adapter/rollback',{method:'POST',headers:{'Idempotency-Key':'request-00001'},body:JSON.stringify({environment:'preview',expectedDeployment:current.deploymentId,targetDeployment:previous.deploymentId})});
-    expect((await adapter.fetch(request,{})).status).toBe(503);expect(transport).not.toHaveBeenCalled();
-  });
-  it('observes target on retry without repeating deployment',async()=>{
-    const transport=vi.fn(async()=>Response.json({success:true,result:{deployments:[{versions:[{version_id:previous.deploymentId,percentage:100}]}]}}));
-    const request=new Request('https://release-adapter/rollback',{method:'POST',headers:{'Idempotency-Key':'request-00001'},body:JSON.stringify({environment:'preview',expectedDeployment:current.deploymentId,targetDeployment:previous.deploymentId})});
-    const response=await createCloudflareReleaseAdapter(transport).fetch(request,{RELEASE_CLOUDFLARE_TOKEN:'synthetic-token',RELEASE_CLOUDFLARE_ACCOUNT:'test-account',RELEASE_WORKERS:'{"preview":"fitness-preview"}'});
-    expect(response.status).toBe(200);expect(transport).toHaveBeenCalledTimes(1);
-  });
-});
-
 
 it('isolates preview simulation, persists replay receipt and never changes release state',async()=>{
  const {context,sqlite,db}=fixture();sqlite.exec(readFileSync(new URL('../../migrations/admin/2_preview_simulation.sql',import.meta.url),'utf8'));

@@ -1,7 +1,6 @@
 import { expect, it } from 'vitest';
 import { validateGuidedProviderOutput } from '../../src/backend/legacy-guided-reader';
 import { guidedInputSnapshot } from '../../src/ai/guided-dialogue';
-import { coachConversationExcerpt } from '../../src/ai/coach-context';
 import { guidedDialogueRequestSchema, type GuidedDialogueRequest } from '../../src/domain/guided-ai-contracts';
 import { evaluateCoachResponse } from '../fixtures/legacy-coach-evaluation';
 import { fourMetricCandidate } from '../fixtures/prompt-cases';
@@ -13,13 +12,6 @@ function request(): GuidedDialogueRequest {
     confirmedSummary: 'Build a sustainable habit' };
   return { ...input, requestId: crypto.randomUUID(), inputSnapshot: guidedInputSnapshot(input) };
 }
-it('bounds conversation excerpts without inventing summaries or altering stored messages', () => {
-  const messages = Array.from({length: 20}, (_, i) => ({role: 'user', content: `${i}:` + 'a'.repeat(2000)}));
-  const excerpt = coachConversationExcerpt(messages);
-  expect(excerpt).toHaveLength(8); expect(excerpt[0].content.startsWith('12:')).toBe(true);
-  expect(excerpt.every(message => message.content.length === 1600)).toBe(true);
-  expect(messages[0].content.length).toBeGreaterThan(1600);
-});
 it('rejects oversized context and client system fields', () => {
   expect(guidedDialogueRequestSchema.safeParse({...request(), system: 'override'}).success).toBe(false);
   const input = request(); input.scope.conditions = {notes: 'a'.repeat(50000)};

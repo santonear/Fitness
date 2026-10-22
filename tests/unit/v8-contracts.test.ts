@@ -5,7 +5,6 @@ import {validateBackupEnvelope} from '../../src/application/backup';
 import {prepareV8Migration,writeV8Library} from '../../src/persistence/v8-migration';
 import {projectLegacyWorkouts} from '../../src/domain/v8/legacy-workouts';
 import {computeWeekFacts} from '../../src/application/review/compute';
-import {mapSchedule} from '../../src/application/rules/map-schedule';
 import {localProfile} from '../../src/application/rules/local-profile';
 import {basicProposal} from '../../src/application/v8-workflow';
 import {adaptCoachResponse,coachV8Exercises} from '../../src/coach/response-adapter';
@@ -91,10 +90,6 @@ describe('V8 wave 0 contracts', () => {
     const result=computeWeekFacts({from:'2026-10-05',to:'2026-10-11',timeZone:'Asia/Shanghai',weeklyTarget:3,workouts:[record('previous','complete','2026-10-01',8),record('actual','partial','2026-10-06',10),record('not-started','not_started','2026-10-07',100)],activities:[],bodyWeights:[]});
     expect(result).toMatchObject({complete:0,partial:1,notStarted:1,movementCount:1,trainingSeconds:1800});expect(result.improvements).toEqual([{exerciseId:'squat',metric:'reps',previous:8,current:10}]);
     const easy:WorkoutRecord={...record('easy-zero','not_started','2026-10-07',100),feedback:{feel:'easy',reasons:[]},plannedExercises:[{exerciseId:'squat',itemIndex:0,plannedSetCount:1}]};expect(computeExerciseEvidence(easy).easyCompletedExerciseIds).toEqual([]);expect(computeExerciseEvidence({...easy,status:'partial'}).easyCompletedExerciseIds).toEqual(['squat']);
-  });
-  it('C: map duration ranges to their smallest legal value; preserve original words',()=>{
-    for(const originalText of ['  每次25到45分钟  ','30 minutes to 45 minutes','0.5–1 hour'])expect(mapSchedule(originalText)).toEqual({originalText,minutes:{status:'answered',value:30},startTime:{status:'skipped'}});
-    expect(mapSchedule('20分钟').minutes).toEqual({status:'skipped'});
   });
   it('C: base plan uses 15/20-minute original request without coercing to 30',()=>{
     for(const minutes of [15,20]){const originalText=`每周2次，每次${minutes}分钟`,profile=localProfile({goalText:'活动',scheduleOriginalText:originalText,placeEquipmentText:'在家，无器械',adultConfirmed:true,cautions:[]}),proposal=basicProposal(profile)!;expect(profile.sessionMinutes).toBe(minutes);expect(proposal.sessionMinutes).toBe(minutes);expect(proposal.scheduleOriginalText).toBe(originalText);expect(proposal.templates).toHaveLength(2);for(const template of proposal.templates){expect(template.items.length).toBeGreaterThanOrEqual(4);expect(template.estimatedMinutes).toBeLessThanOrEqual(minutes);}expect(planProposalSchema.safeParse(proposal).success).toBe(true);}

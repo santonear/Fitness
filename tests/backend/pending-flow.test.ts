@@ -1,11 +1,9 @@
 import { expect, it } from 'vitest';
 import { createDeepSeekWorker } from '../../src/backend/deepseek-worker';
 import { SqliteControlStore } from '../../src/backend/sqlite-store';
-import { createFetchAiClient } from '../../src/ai/client';
-import { sendCoach } from '../../src/coach/transport';
 import { currentCoachEnvelope, currentCoachRefusal } from '../fixtures/current-coach-envelope';
 
-it.each(['en', 'zh'] as const)('%s connects Worker, codec and V8 client through manual reconciliation without real network', async locale => {
+it.each(['en', 'zh'] as const)('%s connects Worker and codec through manual reconciliation without real network', async locale => {
   const store = new SqliteControlStore(':memory:'); let supplierCalls = 0, browserCookie = '';
   const env = { CONTROL_MODE: 'external', SUPPLIER_PROVIDER: 'deepseek', DEEPSEEK_API_KEY: 'd'.repeat(40),
     CONTROL_ADMIN_SECRET: 'a'.repeat(40), CONTROL_DIGEST_SECRET: 'b'.repeat(40), CONTROL_ORIGINS: '["https://preview.test"]',
@@ -26,19 +24,20 @@ it.each(['en', 'zh'] as const)('%s connects Worker, codec and V8 client through 
     if (response.headers.has('set-cookie')) browserCookie = response.headers.get('set-cookie')!.split(';')[0];
     return response;
   };
-  const client = createFetchAiClient(transport);
+  const post = (path: string, body: unknown) => transport(`/api/v1/${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const status = async () => (await transport('/api/v1/trial/status')).json() as Promise<{ reconciliationRequired?: boolean }>;
   try {
     const issue = await admin('invites', {}); const { code } = await issue.json() as { code: string };
-    await client.redeem(code); expect((await admin('supplier', { enabled: true })).status).toBe(200);
+    expect((await post('trial/redeem', { code })).status).toBe(200); expect((await admin('supplier', { enabled: true })).status).toBe(200);
     const first = await currentCoachEnvelope(locale);
-    const result = await sendCoach(first.coach,new AbortController().signal,transport);
-    expect(result.accounting).toBe('pending'); expect(result.response).toEqual(currentCoachRefusal);
-    expect((await client.status()).reconciliationRequired).toBe(true);
-    await expect(sendCoach(first.coach,new AbortController().signal,transport)).rejects.toThrow(); expect(supplierCalls).toBe(1);
+    const result = await (await post('plans/generate', first)).json() as { accounting: string; result: unknown };
+    expect(result.accounting).toBe('pending'); expect(result.result).toEqual(currentCoachRefusal);
+    expect((await status()).reconciliationRequired).toBe(true);
+    expect((await post('plans/generate', first)).ok).toBe(false); expect(supplierCalls).toBe(1);
     const report = await (await admin('report', {})).json() as { requests: { subjectId: string; requestId: string; status: string }[] };
     expect(report.requests).toHaveLength(1); expect(report.requests[0].status).toBe('pending');
     expect((await admin('settle', { subjectId: report.requests[0].subjectId, requestId: first.requestId, actualCost: 10 })).status).toBe(200);
-    expect((await client.status()).reconciliationRequired).toBe(false);
+    expect((await status()).reconciliationRequired).toBe(false);
     const state = await store.read(); expect(Object.values(state.budgets)[0]).toEqual({ spent: 10, reserved: 0 });
     const serialized = JSON.stringify(state); for (const value of ['synthetic goal', 'synthetic understanding', 'isolated synthetic candidate', env.DEEPSEEK_API_KEY]) expect(serialized).not.toContain(value);
   } finally { store.close(); }

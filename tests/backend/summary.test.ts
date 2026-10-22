@@ -1,5 +1,4 @@
 import { expect, it } from 'vitest';
-import { buildStageSummary } from '../../src/application/stage-summary-core';
 import { confirmationFor, validateCandidate, validateRequest } from '../../src/backend/contracts';
 import { validateSummaryStage, summaryStageSchema } from '../../src/backend/summary-contract';
 import { buildStageSummaryPrompt as buildAiPrompt } from '../../src/backend/summary-provider';
@@ -10,16 +9,17 @@ import { readWorkerConfig, createWorker } from '../../src/backend/worker';
 import { createHandler } from '../../src/backend/http';
 import { exercises } from '../../src/catalog/exercises';
 import { exerciseIdSchema } from '../../src/domain/schemas';
-import { createSummaryClient, summaryEligible } from '../../src/ai/summary-client';
 
 const at = '2026-10-07T12:00:00Z';
 const entity = { createdAt: at, updatedAt: at, revision: 0 };
 const id = (suffix: string) => `11111111-1111-4111-8111-${suffix.padStart(12, '0')}`;
 async function request() {
-  const result = buildStageSummary({ capturedAt: at, dataRevision: 3, restoreGeneration: 2, plans: [], planVersions: [], sessions: [], sets: [],
-    scheduledWorkouts: [], bodyWeights: [{ ...entity, id: id('1'), localDate: '2026-10-06', timeZone: 'UTC', weightGrams: 70000 }] },
-    { kind: 'dateRange', from: '2026-10-06', to: '2026-10-06', timeZone: 'UTC' });
-  if (!result.ok) throw new Error(result.code);
+  // One recorded body weight on 2026-10-06, as the local stage builder produced it.
+  const result = { selection: { kind: 'dateRange', from: '2026-10-06', to: '2026-10-06', timeZone: 'UTC' }, range: { from: '2026-10-06', to: '2026-10-06', timeZone: 'UTC' },
+    payload: { bodyWeights: [{ ...entity, id: id('1'), localDate: '2026-10-06', timeZone: 'UTC', weightGrams: 70000 }], capturedAt: at, dataRevision: 3,
+      format: 'fitness-history-context', planVersions: [], plans: [], range: { from: '2026-10-06', scheduleDate: 'original', sessionDate: 'actual', to: '2026-10-06' },
+      restoreGeneration: 2, scheduledWorkouts: [], sessions: [], sets: [], sources: ['bodyWeights', 'scheduledWorkouts', 'sessions'], version: 1 },
+    goals: [], completionLinks: [] };
   const base = { contractVersion: 1, requestId: crypto.randomUUID(), operation: 'summary', locale: 'zh', restoreGeneration: 2,
     stage: { selection: result.selection, range: result.range, sourceRevision: 3, capturedAt: at,
       payload: result.payload, goals: result.goals, completionLinks: result.completionLinks } };
@@ -101,16 +101,17 @@ it('real summary status permits first use and old usage without writing or reset
     const session = await service.redeem((await service.issue(testConfig.adminSecret)).code);
     await service.enableMock(testConfig.adminSecret, true);
     const handler = createHandler(service, { origins: ['https://preview.test'], maxBodyBytes: 65536 });
-    const client = createSummaryClient(async () => handler(new Request('https://preview.test/api/v1/trial/status',
-      { headers: { Cookie: `__Host-fitness_trial=${session.token}` } })));
-    const before = await store.read(); const first = await client.status();
-    expect(first.used.summary).toBe(0); expect(summaryEligible(first)).toBe(true); expect(await store.read()).toEqual(before);
+    const status = async () => (await handler(new Request('https://preview.test/api/v1/trial/status',
+      { headers: { Origin: 'https://preview.test', Cookie: `__Host-fitness_trial=${session.token}` } }))).json() as Promise<{ period: string; used: Record<string, number>; limits: Record<string, number>; aiEnabled: boolean; summaryAvailable?: boolean }>;
+    const available = { aiEnabled: true, summaryAvailable: true };
+    const before = await store.read(); const first = await status();
+    expect(first.used.summary).toBe(0); expect(first).toMatchObject(available); expect(first.used.summary).toBeLessThan(first.limits.summary); expect(await store.read()).toEqual(before);
     await store.transact(state => { state.usages[`${session.subjectId}:${first.period}`] = { understand: 3, generate: 2 }; });
-    const old = await store.read(); const status = await client.status();
-    expect(status.used).toEqual({ understand: 3, generate: 2, summary: 0 }); expect(summaryEligible(status)).toBe(true); expect(await store.read()).toEqual(old);
+    const old = await store.read(); const second = await status();
+    expect(second.used).toEqual({ understand: 3, generate: 2, summary: 0 }); expect(second).toMatchObject(available); expect(await store.read()).toEqual(old);
     const disabled = new ControlService(store, { ...testConfig, quotas: { understand: 8, generate: 4 }, requestBounds: { understand: 100, generate: 300 } },
       { kind: 'local-mock', call: async () => { throw new Error('no supplier calls'); } });
-    expect(summaryEligible(await disabled.status(session.token))).toBe(false);
+    expect((await disabled.status(session.token)).summaryAvailable).not.toBe(true);
   } finally { store.close(); }
 });
 

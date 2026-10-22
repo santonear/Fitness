@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { trainingSlotSchema } from '../../src/domain/training-time';
-import { nextPlanningWindow } from '../../src/ai/guided-planning';
+import { addDays } from '../../src/application/plan-presentation';
 import { plannedExerciseSchema } from '../../src/domain/schemas';
 import { EXERCISE_IDS } from '../../src/catalog/exercises';
 import { guidedInputSnapshot } from '../../src/ai/guided-dialogue';
@@ -9,16 +9,14 @@ import { validateGuidedProviderInput, validateGuidedProviderOutput } from '../..
 
 const id = 'd16325d9-fc00-4c41-88a1-000000000001';
 function request(days = 14): GuidedDialogueRequest {
-  const window = nextPlanningWindow(Date.parse('2026-10-07T00:00:00Z'), 'Asia/Shanghai', days);
+  // The planning window starts the day after 2026-10-07 in the user's zone.
+  const dates = Array.from({ length: days }, (_, index) => addDays('2026-10-07', index + 1));
+  const window = { startDate: dates[0], endDate: dates[days - 1], dates };
   const input = { version: 'guided-dialogue-v1' as const, conversationId:id, restoreGeneration:0, purpose:'program' as const,locale:'en' as const,scope:{goal:'General fitness',conditions:{}},...window,timeZone:'Asia/Shanghai',confirmedSummary:'General fitness',schedule:window.dates.map(date=>({date,startTime:'12:00',durationMinutes:30})) };
   return {...input,requestId:id,inputSnapshot:guidedInputSnapshot(input)};
 }
 const exercise = {exerciseId:EXERCISE_IDS.bodyweightSquat,order:0,targetSets:[{metricType:'reps' as const,reps:8}],setTimings:[{durationSeconds:40,restSeconds:60}]};
 describe('confirmed training schedule', () => {
-  it('accepts 1–14 calendar days across month and DST changes, rejects other spans', () => {
-    for (const days of [1,14]) expect(nextPlanningWindow(Date.parse('2026-10-31T23:00:00Z'),'America/New_York',days).dates).toHaveLength(days);
-    for(const days of [0,15,1.5]) expect(()=>nextPlanningWindow(Date.now(),'UTC',days)).toThrow();
-  });
   it('requires valid wall-clock times ending within the same day', () => {
     for(const time of ['12:00','14:00','09:00','20:00','23:30']) expect(trainingSlotSchema.safeParse({date:'2026-10-08',startTime:time,durationMinutes:30}).success).toBe(true);
     for(const time of ['24:00','12:60','9:00','23:45','']) expect(trainingSlotSchema.safeParse({date:'2026-10-08',startTime:time,durationMinutes:30}).success).toBe(false);

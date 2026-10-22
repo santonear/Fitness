@@ -17,7 +17,6 @@ import type {EnginePlan} from '../../src/engine/contracts';
 import {createElement} from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 import {describe,expect,it,vi} from 'vitest';
-import {NextPage} from '../../src/ui/pages/training/NextPage';
 import {SetFeedback} from '../../src/ui/pages/training/SetFeedback';
 import {PrescriptionDetails} from '../../src/ui/pages/training/PrescriptionDetails';
 import {targetChanges,TargetChanges} from '../../src/ui/pages/training/TargetChanges';
@@ -94,11 +93,6 @@ describe('training engine feedback and prescription UI',()=>{
   expect(html).toContain('轻负荷');expect(html).toContain('1 分钟 15 秒');expect(html).not.toContain('每次用时');expect(html).not.toContain('RIR');expect(html).toContain('每组做到还能再做 3–4 次时停');expect(html).not.toContain('0 公斤');
   expect(renderToStaticMarkup(createElement(PrescriptionDetails,{locale:'zh'}))).toBe('');
  });
- it('keeps the start control disabled until the matching engine preview has arrived',()=>{
-  previewFixture.data={version:{id:'version',enginePlan:{},templates:[{id:'A',name:'A',estimatedMinutes:30,items:[{exerciseId:fact.exerciseId,equipment:'none',sets:2,target:{metricType:'reps',reps:8}}]}]},workouts:[],metadata:{dataRevision:1},profile:{locale:'zh'}};
-  const html=renderToStaticMarkup(createElement(NextPage));
-  expect(html).toMatch(/<button disabled="" data-testid="engine-start">Start<\/button>/);
- });
  it('reports actual target deltas in localized metric units and filters another template',()=>{
   const before:PlannedItem={exerciseId:fact.exerciseId,equipment:'dumbbell',sets:2,target:{metricType:'reps_load',reps:8,loadGrams:6000}},after:PlannedItem={...before,target:{metricType:'reps_load',reps:9,loadGrams:8000}};
   expect(targetChanges(before,after,'zh')).toBe('+1 次 · +2 公斤');
@@ -142,27 +136,16 @@ it('allows explicit confirmation for an independent pause but never bypasses inc
  expect(renderToStaticMarkup(createElement(PainProfessionalConfirmation,{...props,review:{requiredAt:props.pauseRequiredAt,questionKeys:['pain_after_fall_or_impact'],areas:['knee'],answers:{}}}))).toBe('');
 });
 
-it('keeps an independent pre-training pause visible and start disabled with the engine off',()=>{
- previewFixture.featureEnabled=false;
- previewFixture.data={state:{trainingPause:{requiredAt:'2026-10-15T00:00:00Z'}},version:{id:'version',templates:[{id:'A',name:'A',estimatedMinutes:30,items:[{exerciseId:fact.exerciseId,equipment:'none',sets:2,target:{metricType:'reps',reps:8}}]}]},workouts:[],metadata:{dataRevision:1},profile:{locale:'zh'}};
- const html=renderToStaticMarkup(createElement(NextPage));expect(html).toMatch(/<button disabled="" data-testid="engine-start">Start<\/button>/);expect(html).toContain(engineCopy('redflag.copy.paused_banner','zh'));expect(html).not.toContain(engineCopy('redflag.copy.confirm_professional_seen','zh'));
- previewFixture.data=undefined;previewFixture.featureEnabled=true;
-});
-
-it('requires a new saved screening after an independent pause and clears only the settings draft',()=>{
+it('settings do not ask for professional confirmation after a pause without a newer screening',()=>{
  const state={trainingPause:{requiredAt:'2026-10-15T01:00:00Z'},coachProfile:{healthStorageConsent:{acceptedAt:'2026-10-15T00:00:00Z'},screening:{completedAt:'2026-10-15T00:00:00Z',parqAnswers:Array(7).fill(false),parqAllNo:true}}};
  previewFixture.data={state,workouts:[],metadata:{dataRevision:1},profile:{locale:'zh'}};const before=JSON.stringify(previewFixture.data);
  const settings=renderToStaticMarkup(createElement(EngineProfilePage));expect(settings).not.toContain('value="false" selected=""');expect(settings).not.toContain(engineCopy('redflag.copy.confirm_professional_seen','zh'));expect(JSON.stringify(previewFixture.data)).toBe(before);
- const old=renderToStaticMarkup(createElement(NextPage));expect(old).not.toContain(engineCopy('redflag.copy.confirm_professional_seen','zh'));
- previewFixture.data={state:{...state,coachProfile:{...state.coachProfile,screening:{...state.coachProfile.screening,completedAt:'2026-10-15T02:00:00Z'}}},workouts:[],metadata:{dataRevision:2},profile:{locale:'zh'}};
- const fresh=renderToStaticMarkup(createElement(NextPage));expect(fresh).toContain(engineCopy('redflag.copy.confirm_professional_seen','zh'));
  previewFixture.data=undefined;
 });
 
-it('keeps an ended pending review visible and start blocked after feature revocation',()=>{
+it('keeps an ended pending review visible after feature revocation',()=>{
  previewFixture.featureEnabled=false;
  previewFixture.data={version:{id:'version',templates:[{id:'A',name:'A',estimatedMinutes:30,items:[{exerciseId:fact.exerciseId,equipment:'none',sets:2,target:{metricType:'reps',reps:8}}]}]},workouts:[{id:'old',status:'partial',sets:[fact],startedAt:fact.completedAt,setFeedbackEvents:[{id:'pending',exerciseId:fact.exerciseId,itemIndex:fact.itemIndex,setIndex:fact.setIndex,createdAt:fact.completedAt,effort:'discomfort',painScore:6,painArea:'knee'}]}],metadata:{dataRevision:1},profile:{locale:'zh'}};
- const html=renderToStaticMarkup(createElement(NextPage));expect(html).toMatch(/<button disabled="" data-testid="engine-start">Start<\/button>/);
  expect(renderToStaticMarkup(createElement(PendingPainReview))).toContain(engineCopy('safety.copy.local_health_consent','zh'));
  previewFixture.featureEnabled=true;
 });

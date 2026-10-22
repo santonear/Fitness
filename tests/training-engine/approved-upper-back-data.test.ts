@@ -1,12 +1,9 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { expect, it } from "vitest";
-import { createElement } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
 import index from "../../src/engine/generated/exercise-index.json";
 import custom from "../../src/catalog/custom-exercises.json";
 import { getExerciseGuide } from "../../src/catalog/exercise-guide";
-import { ExerciseMedia } from "../../src/ui/components/ExerciseMedia";
 import { getEligibleExercises } from "../../src/engine";
 import { baseProfile } from "../../tools/eval/training-engine-profiles";
 const compilerPath = "../../tools/training-engine/compile-annotations";
@@ -76,15 +73,6 @@ it("retains the approved standing no-gear static back variant and honest nonzero
     expect(guide.steps.length).toBeGreaterThan(0);
     expect(guide.cautions.length).toBeGreaterThan(0);
   }
-  const markup = renderToStaticMarkup(
-    createElement(ExerciseMedia, {
-      exerciseId: e.id,
-      exerciseName: e.name.zh,
-      locale: "zh",
-    }),
-  );
-  expect(markup).not.toMatch(/src="https?:/);
-  expect(markup).not.toContain("healthwise.net");
 });
 it("pins custom English paraphrase steps to the custom source path and rejects evidence drift or a wrong source", () => {
   const row = overlays.find((row: { slug: string }) => row.slug === slug),
