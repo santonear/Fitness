@@ -13,7 +13,9 @@ import { activeBuckets, groupSets, regionShares, shortDate } from './visuals';
 import { ReviewChart } from './ReviewChart';
 import './review.css';
 import { chartSeries, dayBuckets, weekBuckets, weeklyRemaining, weekStreak, PATTERN_MIN_COUNT, PATTERN_MIN_SESSIONS } from '../../../application/review/charts';
-import { useMainline,format } from '../../mainline/context';
+import { useMainline,format,workflow } from '../../mainline/context';
+import { DayActual } from '../home/DayTimeline';
+import { sessionNames } from '../../../application/plan-presentation';
 import { recurringDiscomfort, suggestChange } from '../../../application/review/suggest';
 import { activityDate } from '../../../application/v8-activity';
 import { createReviewService } from '../../../application/v8-review';
@@ -62,6 +64,10 @@ export function ReviewPage(){
  const periodActivities=data?.activities.filter(a=>a.localDate>=facts.from&&a.localDate<=facts.to)??[];
  const empty=facts.movementCount===0&&savedSessions===0&&periodRows.length===0&&periodActivities.length===0;
  const today=activityDate(timeZone),streak=weekStreak(history,today,timeZone),active=activeBuckets(points);
+ // 今天练过的: real start/end per session and the time correction (appended; the record itself stays unchanged).
+ const trainedToday=(data?.workouts??[]).filter(w=>w.localDate===today&&(w.status==='complete'||w.status==='partial')).sort((a,b)=>b.startedAt.localeCompare(a.startedAt));
+ const templates=data?.version?.templates??[],sessions=sessionNames(templates,c.locale);
+ const correctTimes=async(workout:{id:string},startedAt:string,endedAt:string)=>{let saved=false;await c.run(async()=>{if(!data)return;await workflow.correctWorkoutTimes({workoutId:workout.id,startedAt,endedAt,expectedRevision:data.metadata.dataRevision});saved=true;});return saved;};
  const shares=regionShares(periodRows.filter(row=>row.status==='complete'||row.status==='partial'));
  // Ring: week with a plan = sessions done vs weekly target; month = weeks with training; no plan = days with training.
  const ring=monthly?{value:points.length?active/points.length:0,center:`${active}/${points.length}`,caption:r.ringMonth}:hasCurrentPlan?{value:target>0?week.done/target:0,center:`${week.done}/${target}`,caption:r.ringWeek}:{value:active/7,center:`${active}/7`,caption:r.ringDays};
@@ -96,6 +102,7 @@ export function ReviewPage(){
   {noPlanActions}
  </div>}
  </c.slots.FeatureCard>
+ {!monthly&&<DayActual workouts={trainedToday} templates={templates} locale={c.locale} name={name} sessionName={id=>id?sessions.get(id)??'':''} busy={c.busy} onCorrect={correctTimes}/>}
  {!empty&&<dl className="rv-tiles rv-facts">
   <FactTile icon="run" label={r.tileMoves} value={facts.movementCount}/>
   <FactTile icon="clock" label={r.tileMinutes} value={trainingMinutes(facts.trainingSeconds)}/>

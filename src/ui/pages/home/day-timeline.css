@@ -25,6 +25,7 @@
 .v9-day-name { font-size: var(--t3); font-weight: var(--w-strong); color: var(--c-ink); }
 .v9-day-meta { font-size: var(--t1); color: var(--c-ink-muted); }
 .v9-day-actual .v9-day-record { display: grid; gap: var(--s2); }
+.v9-day-actual h2 { margin: 0; font-size: var(--t3); font-weight: var(--w-strong); }
 .v9-day-actual h3 { margin: 0; font-size: var(--t3); }
 .v9-day-actual-line { margin: 0; font-size: var(--t3); color: var(--c-accent-text); }
 .v9-day-adjust { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s3); margin-block: var(--s3); }

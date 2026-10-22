@@ -9,7 +9,7 @@ export const dayViewCopy = {
     finishedAt: '{time} 做完', notDone: '这次没做', setsDone: '做了 {done} / {planned} 组',
     corrected: '时间改过 · 原记录 {start}–{end}', adjust: '改开始和结束时间', adjustTitle: '改这次的开始和结束时间',
     adjustHint: '只改显示的时间，组数和每组记录不变；原来的时间会一起保留。', start: '开始', end: '结束', save: '保存时间', cancel: '取消',
-    invalid: '结束要晚于开始，且不能晚于现在。', inProgress: '训练进行中 · {start} 开始',
+    invalid: '结束要晚于开始，且不能晚于现在。', inProgress: '训练进行中 · {start} 开始', doneToday: '今天已练 · 查看',
   },
   en: {
     title: 'Order and timing', startAt: 'Start at', startHint: 'Each step is estimated from this time. Change it any time.', ends: 'Ends about {time} · about {minutes} min',
@@ -20,6 +20,6 @@ export const dayViewCopy = {
     finishedAt: 'Done at {time}', notDone: 'Not done this time', setsDone: '{done} / {planned} sets done',
     corrected: 'Time changed · recorded {start}–{end}', adjust: 'Change start and end time', adjustTitle: 'Change start and end time',
     adjustHint: 'Only the shown times change. Sets and every set record stay the same, and the original times are kept.', start: 'Start', end: 'End', save: 'Save times', cancel: 'Cancel',
-    invalid: 'The end must be after the start and not later than now.', inProgress: 'In progress · started {start}',
+    invalid: 'The end must be after the start and not later than now.', inProgress: 'In progress · started {start}', doneToday: 'Trained today · View',
   },
 } as const;

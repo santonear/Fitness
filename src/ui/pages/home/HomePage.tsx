@@ -41,7 +41,8 @@ function ItemPrescription({item,locale}:{item:PlannedItem;locale:'zh'|'en'}){
  const p=item.prescription;if(!p)return null;const t=engineTrainingCopy[locale],strength=['main','accessory'].includes(p.block);
  return <dl>{p.safetyCue&&<dd>{p.safetyCue[locale]}</dd>}{p.loadDescription&&<><dt>{t.load}</dt><dd>{p.loadDescription[locale]}</dd></>}{strength&&<><dt>{t.rest}</dt><dd>{durationText(p.restSeconds,locale,true)}</dd></>}<PrescriptionTempo prescription={p} locale={locale}/>{strength&&<dd>{effortWords(p.rir,locale)}</dd>}</dl>;
 }
-import {DayActual,DayTimeline} from './DayTimeline';
+import {DayTimeline} from './DayTimeline';
+import {dayViewCopy} from '../../../i18n/features/home/day-view';
 import {NowPanel,type FocusState} from './NowPanel';
 import './home.css';
 
@@ -53,7 +54,7 @@ export function HomePage(){
  const remindersEnabled=useFeature('trainingReminders');
  const location=useLocation(),applied=(location.state as {applied?:boolean}|null)?.applied===true;
  const [preview,setPreview]=useState<{revision:number;versionId:string;templateId:string;value:Awaited<ReturnType<typeof workflow.nextTargetPreview>>}>();
- const {data,facts,t,slots,name,start,navigate,busy,run,locale,restartPlanning,setHomeTemplateId}=useMainline(); const [choice,setChoice]=useState<string>();
+ const {data,facts,t,slots,name,start,navigate,busy,run,locale,restartPlanning,setHomeTemplateId,setReviewKind}=useMainline(); const [choice,setChoice]=useState<string>();
  const legacyDates=remindersEnabled&&!!data?.hasFutureLegacyDates;
  const h=homeCopy[locale],pv=planViewCopy[locale],sd=startDateCopy[locale];
  const tools=useExerciseTools('today',{swapBlocked:data?.active?exerciseToolsCopy[locale].blocked:undefined});
@@ -91,11 +92,10 @@ export function HomePage(){
  const following=templates.length&&selected?templates[(templates.findIndex(item=>item.id===selected.id)+1)%templates.length]:undefined;
  const parts=selected?regionLabels(selected,locale):[];
  const dateText=new Intl.DateTimeFormat(locale==='zh'?'zh-CN':'en',{timeZone,month:'long',day:'numeric',weekday:'short'}).format(now);
- // Finished sessions of today (日视图): real start/end, corrections kept beside the unchanged record.
- const trainedToday=(data?.workouts??[]).filter(w=>w.localDate===todayDate&&(w.status==='complete'||w.status==='partial')).sort((a,b)=>b.startedAt.localeCompare(a.startedAt));
+ // Finished sessions live in 回顾 (Bo 2026-10-22); 今天 keeps its panel and only links there.
+ const trainedToday=(data?.workouts??[]).some(w=>w.localDate===todayDate&&(w.status==='complete'||w.status==='partial'));
  // 今天练这里 comes before every start from the panel (V9.14).
  const startNow=(state:FocusState)=>navigate('/today-focus',{state});
- const correctTimes=async(workout:{id:string},startedAt:string,endedAt:string)=>{let saved=false;await run(async()=>{if(!data)return;await workflow.correctWorkoutTimes({workoutId:workout.id,startedAt,endedAt,expectedRevision:data.metadata.dataRevision});saved=true;});return saved;};
  const strip=weekdays.map((day,index)=>{const pickedId=picked?sessionForDate(version!,weekDates[index]):undefined;const planned=picked?(pickedId?{day,templateId:pickedId}:undefined):beforeStart(index)?undefined:schedule.sessions.find(session=>session.day===day);return {key:day,label:weekdayLabel(day,locale,true),state:doneDays[day]??(planned?'planned':'rest'),today:index===todayIndex,description:`${weekdayLabel(day,locale)} · ${doneDays[day]==='done'?pv.done:doneDays[day]==='partial'?pv.partial:planned?shown(templates.find(item=>item.id===planned.templateId)):pv.rest}`} as const;});
  return <main className="v9-home">
  <header className="v9-home-head"><div><span className="v9-home-date">{dateText}</span><h1 className="v9-display">{h.title}</h1></div><div className="v9-home-head-side"><PageSwitches/><span className="v9-num v9-home-day" aria-hidden="true">{localDay(timeZone,now).slice(8)}</span></div></header>
@@ -109,7 +109,7 @@ export function HomePage(){
  <PrimaryButton tone="quiet" size="sm" onClick={()=>acknowledge()}>{legacyDates?t.dismissMigration:t.understood}</PrimaryButton></Card>}
  {data?.active&&<PrimaryButton tone="quiet" onClick={()=>navigate(`/workout/${data.active!.id}`)}>{t.ongoing}</PrimaryButton>}
  {engineEnabled&&currentPreview&&<PlanStops plan={currentPreview} locale={locale}/>}
- <DayActual workouts={trainedToday} templates={templates} locale={locale} name={name} sessionName={id=>id?names.get(id)??'':''} busy={busy} onCorrect={correctTimes}/>
+ {trainedToday&&<p className="v9-home-reason"><PrimaryButton tone="text" size="sm" onClick={()=>{setReviewKind('week');navigate('/review');}}>{dayViewCopy[locale].doneToday}</PrimaryButton></p>}
  {selected?<><section className="v9-home-now" aria-label={h.today}>
   <p className="v9-home-reason">{notStarted&&startDate?fill(sd.startsOn,{date:startDateLabel(startDate,todayDate,locale)}):scheduledToday||!nextSession?h.today:picked?pickedNext?fill(h.nextOn,{day:startDateLabel(pickedNext,todayDate,locale)}):h.today:fill(h.nextOn,{day:`${schedule.chosen?'':h.suggested}${weekdayLabel(nextSession.day,locale)}`})} · {shown(selected)}</p>
   <NowPanel template={selected} weekDates={weekDates} today={todayDate} blocked={busy||!!data?.active||previewBlocked||previewPending} onStart={startNow}/>

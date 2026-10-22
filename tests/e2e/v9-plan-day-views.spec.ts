@@ -72,7 +72,12 @@ test('今天 day view: numbered steps with times from the chosen start; actual t
   const trained = await trainShownSession(page);
   expect(trained.status).toBe('partial');
   await page.reload();
-  const actual = main.locator('section.v9-day-actual');
+  // 今天 keeps its panel after training (Bo 2026-10-22); the finished session lives in 回顾, reached by one link.
+  await expect(main.locator('section.v9-home-panel[data-style]')).toBeVisible();
+  await expect(main.locator('section.v9-day-actual')).toHaveCount(0);
+  await main.getByRole('button', { name: '今天已练 · 查看', exact: true }).click();
+  await expect(page).toHaveURL(/\/review$/);
+  const actual = page.locator('main.rv-page section.v9-day-actual');
   await expect(actual.getByRole('heading', { name: '今天练过的' })).toBeVisible();
   await expect(actual.getByTestId('day-actual-line')).toContainText('开始');
   await expect(actual.locator('.v9-day-done .v9-day-step[data-done="true"]')).toHaveCount(1);
