@@ -1,5 +1,7 @@
 import type {EngineProfileFields} from '../../../application/engine-profile';
 import {BodyConversation} from './BodyConversation';
+import { TEXT_LIMITS, textIssue } from '../../../domain/input-guard';
+import { FieldIssue } from '../../components/common/FieldIssue';
 import {bodyCopy} from '../../../i18n/features/onboarding/body';
 import {bodyComplete,type BodyValues} from '../../../domain/body-profile';
 import { useId, useState } from 'react';
@@ -61,10 +63,10 @@ export function parseComposedSchedule(text: string): { weekly?: number; minutes?
 
 /** Free text stays possible behind “自己写一句”; the tapped option is the stored answer, never a placeholder. */
 function CustomAnswer({ locale, value, onChange, disabled, open, onToggle }: { locale: V8Locale; value: string; onChange: (text: string) => void; disabled: boolean; open: boolean; onToggle: () => void }) {
-  const t = entryCopy[locale], id = useId();
+  const t = entryCopy[locale], id = useId(), issue = textIssue(value, TEXT_LIMITS.long);
   return <div className="v9-custom">
     <ChoiceChip size="sm" selected={open} aria-expanded={open} disabled={disabled} onClick={onToggle}>{open ? t.customHide : t.custom}</ChoiceChip>
-    {open && <div className="v9-field"><label htmlFor={id}>{t.answer}</label><textarea id={id} value={value} disabled={disabled} maxLength={8000} rows={3} onChange={event => onChange(event.target.value)} /></div>}
+    {open && <div className="v9-field"><label htmlFor={id}>{t.answer}</label><textarea id={id} value={value} disabled={disabled} maxLength={TEXT_LIMITS.long} rows={3} aria-invalid={issue ? true : undefined} aria-describedby={issue ? `${id}-issue` : undefined} onChange={event => onChange(event.target.value)} /><FieldIssue id={`${id}-issue`} issue={issue} locale={locale} max={TEXT_LIMITS.long} /></div>}
   </div>;
 }
 
@@ -99,7 +101,7 @@ export function OnboardingPage({ engineEnabled=false, locale, step, answers, mod
   if (step === lastStep) return <HealthCheckWizard locale={locale} answers={answers} engineEnabled={engineEnabled} bodyEnabled={bodyEnabled} mode={mode} busy={busy} error={error}
     aiAvailable={aiAvailable} missingOuter={missingOuter} onOuterStep={next => onStep(next as 0 | 1 | 2 | 3 | 4)}
     step={step + 1} total={total} complete={complete} sendFields={sendFields} onChange={onChange} onExit={() => onStep((step - 1) as 0 | 1 | 2 | 3)} onGenerate={() => onGenerate(answers)} onManual={onManual} initialScreen={initialSafetyScreen} onHome={onHome} />;
-  const next = <PrimaryButton disabled={busy || (bodyStep ? !bodyComplete(answers.body ?? {}) : !value.trim())} onClick={advance}>{t.next}</PrimaryButton>;
+  const next = <PrimaryButton disabled={busy || (bodyStep ? !bodyComplete(answers.body ?? {}) || !!textIssue(answers.bodyText, TEXT_LIMITS.note) : !value.trim() || !!textIssue(value, TEXT_LIMITS.long))} onClick={advance}>{t.next}</PrimaryButton>;
   const frame = { locale, step: step + 1, total, screenKey: `step-${step}`, onBack: step > 0 || onExit ? back : undefined, backDisabled: busy, busy, onHome, homeDirty: fields.some(field => answers[field].trim().length > 0) || !!answers.trainingDates?.length, footer: <>{error && <p role="alert">{error}</p>}{next}</> };
   if (bodyStep) return <OnboardingFrame {...frame} title={bt.title} sub={bt.why}>
     <BodyConversation locale={locale} values={answers.body??{}} text={answers.bodyText??''} onChange={(body,bodyText)=>onChange({...answers,body,...(bodyText!==undefined?{bodyText}:{})})} busy={busy}/>

@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { TEXT_LIMITS, textIssue } from '../../../domain/input-guard';
+import { FieldIssue } from '../../components/common/FieldIssue';
 import { createPregnancyReconfirmationDraft, pregnancyPopulationFromDraft } from '../../../application/pregnancy-safety';
 import { painQuestionKeys } from '../../../application/pain-events';
 import type { EngineProfileFields } from '../../../application/engine-profile';
@@ -214,12 +216,13 @@ export function HealthCheckWizard(props: HealthCheckWizardProps) {
     }
     case screen.id === 'preg:week' || screen.id === 'pp:week': {
       const weeks = d.populationDraft.weeks;
-      const set = (value: number | undefined) => d.updatePopulation({ ...d.populationDraft, weeks: value });
+      const limit = screen.id === 'preg:week' ? 42 : 104;
+      const set = (value: number | undefined) => d.updatePopulation({ ...d.populationDraft, weeks: value === undefined || !Number.isFinite(value) ? undefined : Math.min(limit, Math.max(0, Math.round(value))) });
       return frame(screen.id === 'preg:week' ? t.pregnancyWeek : t.postpartumWeek, <div className="v9-stepper">
         <button type="button" className="v9-round v8-press" aria-label={t.fewer} disabled={busy || !weeks} onClick={() => set(Math.max(0, (weeks ?? 1) - 1))}>−</button>
-        <input className="v9-num" type="number" min="0" inputMode="numeric" aria-label={screen.id === 'preg:week' ? t.pregnancyWeek : t.postpartumWeek} value={weeks ?? ''} disabled={busy}
+        <input className="v9-num" type="number" min="0" max={limit} step="1" inputMode="numeric" aria-label={screen.id === 'preg:week' ? t.pregnancyWeek : t.postpartumWeek} value={weeks ?? ''} disabled={busy}
           onChange={event => set(event.target.value === '' ? undefined : Number(event.target.value))} />
-        <button type="button" className="v9-round v8-press" aria-label={t.more} disabled={busy} onClick={() => set((weeks ?? 0) + 1)}>+</button>
+        <button type="button" className="v9-round v8-press" aria-label={t.more} disabled={busy || (weeks ?? 0) >= limit} onClick={() => set((weeks ?? 0) + 1)}>+</button>
       </div>, nextButton(weeks !== undefined));
     }
     case screen.id === 'preg:prenatal':
@@ -260,11 +263,12 @@ export function HealthCheckWizard(props: HealthCheckWizardProps) {
           onClick={() => { const next = answers.cautions.includes(part) ? answers.cautions.filter(value => value !== part) : [...answers.cautions, part]; onChange({ ...answers, cautions: next, safetyAnswered: next.length > 0 }); }}>{legacy.parts[part]}</ChoiceChip>)}</div>}
         {cautionMode === 'some' && answers.cautions.includes('other') && <label className="v9-field">
           <span>{t.cautions.otherLabel}</span>
-          <input type="text" maxLength={60} value={answers.cautionNote ?? ''} placeholder={t.cautions.otherPlaceholder} disabled={busy}
+          <input type="text" maxLength={TEXT_LIMITS.name} value={answers.cautionNote ?? ''} placeholder={t.cautions.otherPlaceholder} disabled={busy} aria-invalid={textIssue(answers.cautionNote, TEXT_LIMITS.name) ? true : undefined}
             onChange={event => onChange({ ...answers, cautionNote: event.target.value || undefined })} />
+          <FieldIssue issue={textIssue(answers.cautionNote, TEXT_LIMITS.name)} locale={locale} max={TEXT_LIMITS.name} />
           <small>{t.cautions.otherHint}</small>
         </label>}
-      </div>, <PrimaryButton disabled={busy || !(cautionMode === 'none' ? answers.cautions.length === 0 : cautionMode === 'some' && answers.cautions.length > 0 && (!answers.cautions.includes('other') || !!answers.cautionNote?.trim()))}
+      </div>, <PrimaryButton disabled={busy || !(cautionMode === 'none' ? answers.cautions.length === 0 : cautionMode === 'some' && answers.cautions.length > 0 && (!answers.cautions.includes('other') || (!!answers.cautionNote?.trim() && !textIssue(answers.cautionNote, TEXT_LIMITS.name))))}
         onClick={() => { if (answers.safetyAnswered !== true) onChange({ ...answers, safetyAnswered: true }); go(1); }}>{t.next}</PrimaryButton>, t.cautions.sub);
     case screen.id === 'prefs': {
       const constraints = { noJump: false, quiet: false, space: 'small' as const, ...answers.constraints };

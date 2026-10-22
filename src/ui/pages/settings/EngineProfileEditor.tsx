@@ -454,14 +454,16 @@ export function EngineProfileEditor(props: EngineProfileDraftProps) {
                 <input
                   type="number"
                   min="0"
+                  max={populationKind === "pregnant" ? 42 : 104}
+                  step="1"
                   value={populationDraft.weeks ?? ""}
                   onChange={(event) =>
                     updatePopulation({
                       ...populationDraft,
                       weeks:
-                        event.target.value === ""
+                        event.target.value === "" || !Number.isFinite(Number(event.target.value))
                           ? undefined
-                          : Number(event.target.value),
+                          : Math.min(populationKind === "pregnant" ? 42 : 104, Math.max(0, Math.round(Number(event.target.value)))),
                     })
                   }
                 />

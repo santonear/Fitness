@@ -25,7 +25,7 @@ export function ExerciseBrowser({locale,query,setQuery,filters,setFilters,select
  function clearFilters(){setFilters({allowedIds:filters.allowedIds});setQuery('');setLimit(36)}
  const label=(key:string)=>copy[key as keyof typeof copy]??equipmentLabel(key,locale);
  function filterGroup(title:string,key:'places'|'equipment'|'bodyParts'|'goals',values:readonly string[]){return <fieldset className="manual-filter-group"><legend>{title}</legend><div className="manual-chips">{values.map(value=><button type="button" key={value} aria-pressed={(filters[key] as readonly string[]|undefined)?.includes(value)??false} onClick={()=>{setFilters({...filters,[key]:toggleSelection(filters[key]??[],value)});setLimit(36)}}>{label(value)}</button>)}</div></fieldset>}
- return <><label className="manual-search">{copy.search}<input type="search" value={query} placeholder={copy.searchHint} onChange={event=>{setQuery(event.target.value);setLimit(36)}}/></label>
+ return <><label className="manual-search">{copy.search}<input type="search" maxLength={40} value={query} placeholder={copy.searchHint} onChange={event=>{setQuery(event.target.value);setLimit(36)}}/></label>
     <details className="manual-filters" open><summary>{copy.filters}</summary>
       {prefilled && <p>{copy.prefill}</p>}
       {filterGroup(copy.place, 'places', places)}

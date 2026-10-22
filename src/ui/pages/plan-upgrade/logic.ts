@@ -146,6 +146,19 @@ export function bodyChangeLine(event: BodyChangeEvent, locale: Locale, names: { 
   }
 }
 
+/** Plausible results per item; anything outside is a typo, not a record. Sit and reach can be negative. */
+export const TEST_RANGES: Record<FitnessTestItem, readonly [number, number]> = {
+  pushup: [0, 200], situp60s: [0, 100], sitAndReachCm: [-30, 60], singleLegStandEyesClosedS: [0, 300], chairStand30s: [0, 60],
+};
+/** Empty → undefined; a number in range → that number; anything else → 'invalid'. */
+export function parseTestValue(item: FitnessTestItem, text: string | undefined): number | 'invalid' | undefined {
+  const value = text?.trim() ?? '';
+  if (!value) return undefined;
+  if (!/^-?\d{1,3}(?:\.\d)?$/.test(value)) return 'invalid';
+  const number = Number(value), [min, max] = TEST_RANGES[item];
+  return number >= min && number <= max ? number : 'invalid';
+}
+
 export const testValueText = (item: FitnessTestItem, value: number, locale: Locale) => {
   const unit = planPagesCopy[locale].testUnits[item];
   return unit ? `${value} ${unit}` : String(value);

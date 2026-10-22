@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { textIssue } from '../domain/input-guard';
 import { ControlService, ControlError } from './control';
 import { assertCurrentAiExecution } from './retired-ai';
 
@@ -68,7 +69,7 @@ export function createHandler(service: ControlService, options: { origins: strin
       }
       if (path === '/api/v1/trial/apply') {
         const value = parse(z.strictObject({ receipt: z.string().regex(/^[a-f0-9]{64}$/), id: z.uuid(), kind: z.enum(['new','extend','replace']),
-          name: z.string().trim().min(1).max(60), note: z.string().trim().max(300), proof: z.string().max(2048) }), data);
+          name: z.string().trim().min(1).max(60).refine(text => !textIssue(text)), note: z.string().trim().max(300).refine(text => !textIssue(text)), proof: z.string().max(2048) }), data);
         if (!options.verifyApplication) throw new ControlError('APPLICATIONS_UNAVAILABLE', 503);
         if (!await options.verifyApplication(value.proof)) throw new ControlError('VERIFICATION_REQUIRED', 403);
         let session: string | undefined; try { session = sessionToken(request); } catch { /* Receipt can identify an expired trial for extension. */ }

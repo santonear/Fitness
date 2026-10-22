@@ -1,11 +1,13 @@
 import { useState } from 'react';
+import { TEXT_LIMITS, textIssue } from '../../../domain/input-guard';
+import { FieldIssue } from '../../components/common/FieldIssue';
 import { BigChoice, Card, ChoiceChip, PrimaryButton } from '../../components/kit';
 import { ROUTES, type FitnessTestItem, type FitnessTestRecord, type FutureLetter, type Route } from '../../../domain/plan-upgrade';
 import { addFitnessTest, markLetterOpened, saveFutureLetter, saveJourneyVersion } from '../../../persistence/plan-upgrade-store';
 import { bodyAge } from '../../../application/rules/plan-upgrade';
 import { planPagesCopy } from '../../../i18n/features/plan-upgrade/pages';
 import { fillLine, yayaV5 } from '../../../i18n/features/coach/yaya-v5';
-import { suggestedRoute, testItemsFor, testValueText } from './logic';
+import { parseTestValue, suggestedRoute, TEST_RANGES, testItemsFor, testValueText } from './logic';
 
 type Locale = 'zh' | 'en';
 
@@ -27,19 +29,20 @@ export function MeetFlow({ locale, busy, postpartumChecked, onCheck, onSaved }: 
     } finally { setSaving(false); }
   };
   const blocked = route === 'postpartum' && !postpartumChecked;
+  const changeIssue = textIssue(change, TEXT_LIMITS.short);
   return <Card variant="raised" padding="md" as="section" className="pu-card" aria-labelledby="pu-meet">
     <h2 id="pu-meet">{c.meetTitle}</h2>
     <p className="pu-line">{y.meetIntro}</p>
     {step === 0 && <><p>{y.meetWhy}</p><div className="pu-row">{y.meetWhyOptions.map((label, index) => <ChoiceChip key={label} selected={why === index} onClick={() => { setWhy(index); setRoute(suggestedRoute(index)); }}>{label}</ChoiceChip>)}</div></>}
-    {step === 1 && <label className="pu-field"><span>{y.meetChange}</span><input value={change} maxLength={80} placeholder={c.yourWords} onChange={event => setChange(event.target.value)}/></label>}
+    {step === 1 && <label className="pu-field"><span>{y.meetChange}</span><input value={change} maxLength={TEXT_LIMITS.short} placeholder={c.yourWords} aria-invalid={changeIssue ? true : undefined} onChange={event => setChange(event.target.value)}/><FieldIssue issue={changeIssue} locale={locale} max={TEXT_LIMITS.short}/></label>}
     {step === 2 && <><p>{y.meetBefore}</p><div className="pu-row">{y.meetBeforeOptions.map((label, index) => <ChoiceChip key={label} selected={before === index} onClick={() => setBefore(index)}>{label}</ChoiceChip>)}</div></>}
     {step === 3 && <div role="radiogroup" aria-label={c.routeLabel} className="pu-card">
       {ROUTES.map(value => <BigChoice key={value} selected={route === value} label={c.routes[value]} onClick={() => setRoute(value)}/>)}
       {route === 'postpartum' && !postpartumChecked && <p className="pu-line">{c.postpartumCheck} <PrimaryButton tone="text" size="sm" onClick={onCheck}>{c.postpartumCheckGo}</PrimaryButton></p>}
     </div>}
     {step < 3
-      ? <PrimaryButton disabled={step === 0 && why === undefined} onClick={() => setStep(step + 1)}>{c.next}</PrimaryButton>
-      : <PrimaryButton disabled={busy || saving || blocked} onClick={() => void save()}>{c.meetSave}</PrimaryButton>}
+      ? <PrimaryButton disabled={(step === 0 && why === undefined) || !!changeIssue} onClick={() => setStep(step + 1)}>{c.next}</PrimaryButton>
+      : <PrimaryButton disabled={busy || saving || blocked || !!changeIssue} onClick={() => void save()}>{c.meetSave}</PrimaryButton>}
   </Card>;
 }
 
@@ -58,9 +61,10 @@ export function FitnessTestCard({ locale, today, age, sex, tests, onSaved }: { l
       ? fillLine(y.testUp, { item: c.testItems[improved].replace(/（.*）|\s*\(.*\)/, ''), from: testValueText(improved, previous.results[improved]!, locale), to: testValueText(improved, latest.results[improved]!, locale), age: estimate.years, younger: age - estimate.years })
       : fillLine(y.testAge, { age: estimate.years })
     : undefined;
+  const parsed = items.map(item => parseTestValue(item, values[item])), canSave = parsed.some(value => typeof value === 'number') && !parsed.includes('invalid');
   const save = async () => {
     const results: Partial<Record<FitnessTestItem, number>> = {};
-    for (const item of items) { const value = Number(values[item]); if (values[item] !== undefined && values[item] !== '' && Number.isFinite(value) && value >= 0 && value < 1000) results[item] = value; }
+    for (const item of items) { const value = parseTestValue(item, values[item]); if (value === 'invalid') return; if (value !== undefined) results[item] = value; }
     if (!Object.keys(results).length) return;
     await addFitnessTest({ localDate: today, results });
     setOpen(false); setValues({}); onSaved();
@@ -70,8 +74,8 @@ export function FitnessTestCard({ locale, today, age, sex, tests, onSaved }: { l
     {estimate && <div className="pu-age"><span>{c.bodyAge}</span><strong className="v9-num">{fillLine(c.years, { years: estimate.years })}</strong><small>{c.estimated}</small></div>}
     {line && <p className="pu-line">{line}</p>}
     {!open ? <><p className="pu-line">{y.testAsk}</p><PrimaryButton tone="quiet" size="sm" onClick={() => setOpen(true)}>{y.testNow}</PrimaryButton></>
-      : <>{items.map(item => <label key={item} className="pu-field"><span>{c.testItems[item]}</span><input inputMode="decimal" value={values[item] ?? ''} onChange={event => setValues({ ...values, [item]: event.target.value })}/></label>)}
-        <div className="pu-row"><PrimaryButton size="sm" onClick={() => void save()}>{c.testSave}</PrimaryButton><PrimaryButton tone="quiet" size="sm" onClick={() => setOpen(false)}>{y.testLater}</PrimaryButton></div></>}
+      : <>{items.map(item => <label key={item} className="pu-field"><span>{c.testItems[item]}</span><input inputMode="decimal" maxLength={5} value={values[item] ?? ''} aria-invalid={parseTestValue(item, values[item]) === 'invalid' ? true : undefined} onChange={event => setValues({ ...values, [item]: event.target.value })}/>{parseTestValue(item, values[item]) === 'invalid' && <small role="alert">{fillLine(c.testInvalid, { min: TEST_RANGES[item][0], max: TEST_RANGES[item][1] })}</small>}</label>)}
+        <div className="pu-row"><PrimaryButton size="sm" disabled={!canSave} onClick={() => void save()}>{c.testSave}</PrimaryButton><PrimaryButton tone="quiet" size="sm" onClick={() => setOpen(false)}>{y.testLater}</PrimaryButton></div></>}
   </Card>;
 }
 
@@ -81,14 +85,14 @@ export function LetterCard({ locale, openable, nextCampId, onSaved }: { locale: 
   const [text, setText] = useState('');
   const [saved, setSaved] = useState(false);
   const [shown, setShown] = useState<FutureLetter>();
-  const letter = openable[0];
+  const letter = openable[0], issue = textIssue(text, TEXT_LIMITS.long);
   return <Card variant="raised" padding="md" as="section" className="pu-card" aria-labelledby="pu-letter">
     <h2 id="pu-letter">{c.letterTitle}</h2>
     {shown ? <><p className="pu-line">{y.letterOpen}</p><p className="pu-letter">{shown.text}</p></>
       : letter ? <><p className="pu-line">{y.letterOpen}</p><PrimaryButton tone="quiet" size="sm" onClick={() => void markLetterOpened(letter.id).then(() => { setShown(letter); onSaved(); })}>{c.letterOpenButton}</PrimaryButton></>
         : saved ? <p className="pu-line" role="status">{c.letterSaved}</p>
           : <><p className="pu-line">{y.letterAsk}</p>
-            <label className="pu-field"><textarea aria-label={c.letterPlaceholder} rows={3} maxLength={500} placeholder={c.letterPlaceholder} value={text} onChange={event => setText(event.target.value)}/></label>
-            <PrimaryButton size="sm" disabled={!text.trim()} onClick={() => void saveFutureLetter(text.trim(), nextCampId).then(() => { setSaved(true); setText(''); onSaved(); })}>{c.letterSave}</PrimaryButton></>}
+            <label className="pu-field"><textarea aria-label={c.letterPlaceholder} rows={3} maxLength={TEXT_LIMITS.long} placeholder={c.letterPlaceholder} value={text} aria-invalid={issue ? true : undefined} onChange={event => setText(event.target.value)}/><FieldIssue issue={issue} locale={locale} max={TEXT_LIMITS.long}/></label>
+            <PrimaryButton size="sm" disabled={!text.trim() || !!issue} onClick={() => void saveFutureLetter(text.trim(), nextCampId).then(() => { setSaved(true); setText(''); onSaved(); })}>{c.letterSave}</PrimaryButton></>}
   </Card>;
 }

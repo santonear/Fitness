@@ -1,4 +1,6 @@
 import { useId, useState } from 'react';
+import { textIssue } from '../../../domain/input-guard';
+import { FieldIssue } from '../../components/common/FieldIssue';
 import { feedbackCopy } from '../../../i18n/features/settings/feedback';
 import { FEEDBACK_CONTACT_MAX, FEEDBACK_MESSAGE_MAX, FeedbackSendError, sendFeedback, sentFeedback, type SentFeedback } from '../../../application/feedback';
 import { PrimaryButton } from '../../components/kit';
@@ -13,9 +15,9 @@ export function FeedbackPanel({ locale }: { locale: 'zh' | 'en' }) {
   const [requestId, setRequestId] = useState(() => crypto.randomUUID());
   const [busy, setBusy] = useState(false), [status, setStatus] = useState(''), [history, setHistory] = useState<SentFeedback[]>(sentFeedback);
   const edit = (apply: () => void) => { apply(); setRequestId(crypto.randomUUID()); setStatus(''); };
-  const trimmed = message.trim();
+  const trimmed = message.trim(), messageIssue = textIssue(message, FEEDBACK_MESSAGE_MAX), contactIssue = textIssue(contact, FEEDBACK_CONTACT_MAX);
   async function submit() {
-    if (!trimmed || busy) return;
+    if (!trimmed || busy || messageIssue || contactIssue) return;
     setBusy(true); setStatus('');
     try {
       await sendFeedback({ id: requestId, message, contact, locale });
@@ -32,14 +34,16 @@ export function FeedbackPanel({ locale }: { locale: 'zh' | 'en' }) {
     <p className="v9-feedback-muted">{t.privacy}</p>
     <form className="v9-feedback-form" onSubmit={event => { event.preventDefault(); void submit(); }}>
       <label className="v9-feedback-field">{t.message}
-        <textarea value={message} rows={5} maxLength={FEEDBACK_MESSAGE_MAX} placeholder={t.placeholder} aria-describedby={`${ids}-count`} onChange={event => edit(() => setMessage(event.target.value))} />
+        <textarea value={message} rows={5} maxLength={FEEDBACK_MESSAGE_MAX} placeholder={t.placeholder} aria-invalid={messageIssue ? true : undefined} aria-describedby={`${ids}-count`} onChange={event => edit(() => setMessage(event.target.value))} />
       </label>
+      <FieldIssue issue={messageIssue} locale={locale} max={FEEDBACK_MESSAGE_MAX} />
       <span id={`${ids}-count`} className="v9-feedback-count v9-num" aria-live="off">{fill(t.count, { count: message.length, max: FEEDBACK_MESSAGE_MAX })}</span>
       <label className="v9-feedback-field">{t.contact}
-        <input value={contact} maxLength={FEEDBACK_CONTACT_MAX} autoComplete="email" aria-describedby={`${ids}-contact`} onChange={event => edit(() => setContact(event.target.value))} />
+        <input value={contact} maxLength={FEEDBACK_CONTACT_MAX} autoComplete="email" aria-invalid={contactIssue ? true : undefined} aria-describedby={`${ids}-contact`} onChange={event => edit(() => setContact(event.target.value))} />
       </label>
+      <FieldIssue issue={contactIssue} locale={locale} max={FEEDBACK_CONTACT_MAX} />
       <small id={`${ids}-contact`} className="v9-feedback-muted">{t.contactHint}</small>
-      <PrimaryButton type="submit" size="md" disabled={!trimmed || busy}>{busy ? t.sending : t.send}</PrimaryButton>
+      <PrimaryButton type="submit" size="md" disabled={!trimmed || busy || !!messageIssue || !!contactIssue}>{busy ? t.sending : t.send}</PrimaryButton>
     </form>
     <p role="status" className="v9-feedback-status">{status}</p>
     {history.length > 0 && <section className="v9-feedback-history" aria-labelledby={`${ids}-history`}>
