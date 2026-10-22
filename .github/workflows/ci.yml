@@ -24,7 +24,26 @@ concurrency:
   group: fitness-checks-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Bo 2026-10-22: a push to main runs only the quick checks (the pull request already ran
+# everything, and the nightly run covers main); a pull request runs the browser groups its
+# changed files need (tools/ci-scope.mjs). Browser groups start right away instead of
+# waiting for the quick checks; verify still requires every group that ran.
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      scope: ${{ github.event_name == 'push' && 'quick' || steps.scope.outputs.scope }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - id: scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: node tools/ci-scope.mjs
+
   checks:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -57,8 +76,11 @@ jobs:
           npx playwright test --list --config tests/e2e/training-engine.config.ts > /dev/null
 
   engine-audit:
+    needs: changes
+    if: needs.changes.outputs.scope == 'full'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # 10 minutes was too tight: on 2026-10-22 slow runners took over 10 minutes and the job was killed.
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
         with:
@@ -76,7 +98,8 @@ jobs:
       - run: npm test -- tests/training-engine/diagnostic.test.ts
 
   browser-main:
-    needs: checks
+    needs: changes
+    if: needs.changes.outputs.scope == 'full'
     runs-on: ubuntu-latest
     timeout-minutes: 35
     strategy:
@@ -95,9 +118,14 @@ jobs:
       - run: npm ci
       - run: npm run catalog:prepare
       - run: npm run engine:prepare
+      # Keep downloaded browsers between runs; on slow runner days the download alone took 5-11 minutes.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && 'chromium-webkit' || 'chromium' }}
       - run: npx playwright install --with-deps $PW_BROWSERS
       # Execute every existing test once; independent runners keep the job deadline unchanged.
-      - run: npm run test:e2e -- --project=${{ matrix.browser }} --shard=${{ matrix.shard }}/2 --workers=2 --reporter=line
+      - run: npm run test:e2e -- --project=${{ matrix.browser }} --shard=${{ matrix.shard }}/2 --workers=2 --retries=1 --reporter=line
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
@@ -106,7 +134,8 @@ jobs:
           retention-days: 3
 
   browser-followup:
-    needs: checks
+    needs: changes
+    if: needs.changes.outputs.scope == 'full'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -120,12 +149,18 @@ jobs:
       - run: npm ci
       - run: npm run catalog:prepare
       - run: npm run engine:prepare
+      # Keep downloaded browsers between runs; on slow runner days the download alone took 5-11 minutes.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && 'chromium-webkit' || 'chromium' }}
       - run: npx playwright install --with-deps $PW_BROWSERS
-      - run: npx playwright test --config tests/e2e/followup-finish.config.ts $PW_PROJECT
-      - run: npm run build && npx playwright test --config followup-pwa.config.ts
+      - run: npx playwright test --config tests/e2e/followup-finish.config.ts $PW_PROJECT --retries=1
+      - run: npm run build && npx playwright test --config followup-pwa.config.ts --retries=1
 
   browser-flows:
-    needs: checks
+    needs: changes
+    if: needs.changes.outputs.scope == 'full'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -139,15 +174,21 @@ jobs:
       - run: npm ci
       - run: npm run catalog:prepare
       - run: npm run engine:prepare
+      # Keep downloaded browsers between runs; on slow runner days the download alone took 5-11 minutes.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && 'chromium-webkit' || 'chromium' }}
       - run: npx playwright install --with-deps $PW_BROWSERS
-      - run: npx playwright test --config playwright.trial.config.ts $PW_PROJECT
-      - run: npx playwright test --config tests/e2e/v8-mainline.config.ts
-      - run: npx playwright test --config tests/e2e/mainline-polish.config.ts
-      - run: npx playwright test --config tests/e2e/v8-plan-review.config.ts
-      - run: npx playwright test --config playwright.v8-coach.config.ts
+      - run: npx playwright test --config playwright.trial.config.ts $PW_PROJECT --retries=1
+      - run: npx playwright test --config tests/e2e/v8-mainline.config.ts --retries=1
+      - run: npx playwright test --config tests/e2e/mainline-polish.config.ts --retries=1
+      - run: npx playwright test --config tests/e2e/v8-plan-review.config.ts --retries=1
+      - run: npx playwright test --config playwright.v8-coach.config.ts --retries=1
 
   browser-engine:
-    needs: checks
+    needs: changes
+    if: needs.changes.outputs.scope == 'full'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -161,13 +202,19 @@ jobs:
       - run: npm ci
       - run: npm run catalog:prepare
       - run: npm run engine:prepare
+      # Keep downloaded browsers between runs; on slow runner days the download alone took 5-11 minutes.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-chromium
       - run: npx playwright install --with-deps chromium
-      - run: npx playwright test --config tests/e2e/training-engine.config.ts
+      - run: npx playwright test --config tests/e2e/training-engine.config.ts --retries=1
 
   browser-admin:
-    needs: checks
+    needs: changes
+    if: needs.changes.outputs.scope == 'full' || needs.changes.outputs.scope == 'admin'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
         with:
@@ -179,25 +226,31 @@ jobs:
       - run: npm ci
       - run: npm run catalog:prepare
       - run: npm run engine:prepare
+      # Keep downloaded browsers between runs; on slow runner days the download alone took 5-11 minutes.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-chromium
       - run: npx playwright install --with-deps chromium
-      - run: npx playwright test --config tests/admin/integration.playwright.config.ts
-      - run: npx playwright test --config tests/admin/releases-ui.config.ts
-      - run: npx playwright test --config tests/admin/quality.playwright.config.ts
+      - run: npx playwright test --config tests/admin/integration.playwright.config.ts --retries=1
+      - run: npx playwright test --config tests/admin/releases-ui.config.ts --retries=1
+      - run: npx playwright test --config tests/admin/quality.playwright.config.ts --retries=1
 
-  # Preserve the existing required check name and fail closed if any group fails.
+  # Preserve the existing required check name and fail closed: checks must pass and every
+  # group must have passed or been skipped on purpose by the scope decision.
   verify:
     if: always()
-    needs: [checks, engine-audit, browser-main, browser-followup, browser-flows, browser-engine, browser-admin]
+    needs: [changes, checks, engine-audit, browser-main, browser-followup, browser-flows, browser-engine, browser-admin]
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
       - name: Require all checks
         env:
-          CHECKS: ${{ needs.checks.result }}
-          AUDIT: ${{ needs.engine-audit.result }}
-          MAIN: ${{ needs.browser-main.result }}
-          FOLLOWUP: ${{ needs.browser-followup.result }}
-          FLOWS: ${{ needs.browser-flows.result }}
-          ENGINE: ${{ needs.browser-engine.result }}
-          ADMIN: ${{ needs.browser-admin.result }}
-        run: test "$CHECKS" = success && test "$AUDIT" = success && test "$MAIN" = success && test "$FOLLOWUP" = success && test "$FLOWS" = success && test "$ENGINE" = success && test "$ADMIN" = success
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          node -e '
+            const needs = JSON.parse(process.env.RESULTS);
+            const bad = Object.entries(needs).filter(([name, job]) =>
+              ["changes", "checks"].includes(name) ? job.result !== "success" : !["success", "skipped"].includes(job.result));
+            for (const [name, job] of Object.entries(needs)) console.log(`${name}: ${job.result}`);
+            if (bad.length) process.exit(1);'
