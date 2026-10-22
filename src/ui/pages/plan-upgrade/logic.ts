@@ -6,15 +6,14 @@ import { FITNESS_TEST_ITEMS, MUSCLE_GROUP_NAMES } from '../../../domain/plan-upg
 import { addDays, daysBetween } from '../../../domain/local-date';
 import { fillLine, yayaV5 } from '../../../i18n/features/coach/yaya-v5';
 import { planPagesCopy } from '../../../i18n/features/plan-upgrade/pages';
+import { binarySex, type BodyValues } from '../../../domain/body-profile';
 
 type Locale = 'zh' | 'en';
 type Sex = 'male' | 'female';
 
 /** 资料性别优先；“不愿透露”或未填时用上次的男 / 女切换，初始男。 */
-export function figureSex(biologicalSex: string | undefined, lastToggle: Sex | undefined): Sex {
-  if (biologicalSex === '男性') return 'male';
-  if (biologicalSex === '女性') return 'female';
-  return lastToggle ?? 'male';
+export function figureSex(biologicalSex: BodyValues['biologicalSex'], lastToggle: Sex | undefined): Sex {
+  return binarySex(biologicalSex) ?? lastToggle ?? 'male';
 }
 
 export function figureShape(values: { heightCm?: number; weightKg?: number; waistCm?: number } | undefined, sex: Sex, latestWeightKg?: number): FigureShape {

@@ -1,6 +1,6 @@
 import { DomainError } from '../domain/errors';
 import type { BodyWeightInput, BodyWeightObservation } from '../domain/models';
-import { bodyWeightObservationSchema } from '../domain/schemas';
+import { bodyWeightInputSchema } from '../domain/schemas';
 import { repository, type Repository } from '../persistence/repository';
 export function createBodyWeightService(repo: Repository) {
   async function listBodyWeights(): Promise<BodyWeightObservation[]> { return repo.db.bodyWeights.orderBy('localDate').reverse().toArray(); }
@@ -11,7 +11,7 @@ export function createBodyWeightService(repo: Repository) {
       const sameDate = await repo.db.bodyWeights.where('localDate').equals(input.localDate).first();
       if (sameDate && sameDate.id !== input.id) throw new DomainError('CONFLICT', 'This date already has an observation. Choose Edit.');
       const timestamp = new Date().toISOString();
-      const parsed = bodyWeightObservationSchema.safeParse({ ...input, id: existing?.id ?? crypto.randomUUID(), createdAt: existing?.createdAt ?? timestamp, updatedAt: timestamp, revision: existing ? existing.revision + 1 : 0 });
+      const parsed = bodyWeightInputSchema.safeParse({ ...input, id: existing?.id ?? crypto.randomUUID(), createdAt: existing?.createdAt ?? timestamp, updatedAt: timestamp, revision: existing ? existing.revision + 1 : 0 });
       if (!parsed.success) throw new DomainError('INVALID', parsed.error.message);
       await repo.db.bodyWeights.put(parsed.data);
       return parsed.data;

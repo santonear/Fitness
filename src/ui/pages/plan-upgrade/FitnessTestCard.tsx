@@ -15,8 +15,7 @@ export function FitnessTestCard({ locale, today, age, sex, tests, onSaved }: { l
   const [open, setOpen] = useState(false);
   const [values, setValues] = useState<Partial<Record<FitnessTestItem, string>>>({});
   const items = testItemsFor(age);
-  const latest = [...tests].sort((a, b) => a.localDate.localeCompare(b.localDate)).at(-1);
-  const previous = [...tests].sort((a, b) => a.localDate.localeCompare(b.localDate)).at(-2);
+  const byDate = [...tests].sort((a, b) => a.localDate.localeCompare(b.localDate)), latest = byDate.at(-1), previous = byDate.at(-2);
   const estimate = latest && sex && age !== undefined ? bodyAge(sex, age, latest.results) : undefined;
   const improved = latest && previous ? items.find(item => (latest.results[item] ?? 0) > (previous.results[item] ?? Infinity)) : undefined;
   const line = estimate

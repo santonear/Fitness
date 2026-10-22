@@ -18,6 +18,7 @@ import { listFutureLetters } from '../../../persistence/plan-upgrade-store';
 import '../plan-upgrade/plan-upgrade.css';
 import './my-changes.css';
 import { DEFAULT_TIME_ZONE } from '../../../domain/local-date';
+import { bodyWeightInputSchema } from '../../../domain/schemas';
 
 type Locale = 'zh' | 'en';
 const listSeparator=(locale:'zh'|'en')=>locale==='zh'?'，':', ';
@@ -59,11 +60,12 @@ export function MyChangesPage() {
   const existing = form ? body.rows.find(row => row.localDate === form.date) : undefined;
   const save = async () => {
     if (!form) return;
-    const kg = Number(form.weight), percent = form.fat.trim() === '' ? undefined : Number(form.fat);
-    if (form.weight.trim() === '' || !Number.isFinite(kg) || kg < 20 || kg > 300 || (percent !== undefined && (!Number.isFinite(percent) || percent < 3 || percent > 70)) || !form.date || form.date > today || form.date < '2000-01-01') return setForm({ ...form, error: true, saved: false });
+    const percent = form.fat.trim() === '' ? undefined : Number(form.fat);
+    const values = { weightGrams: form.weight.trim() === '' ? NaN : Math.round(Number(form.weight) * 1000), ...(percent !== undefined ? { bodyFatPercent: Math.round(percent * 10) / 10 } : {}) };
+    if (!bodyWeightInputSchema.pick({ weightGrams: true, bodyFatPercent: true }).safeParse(values).success || !form.date || form.date > today || form.date < '2000-01-01') return setForm({ ...form, error: true, saved: false });
     let saved = false;
     await c.run(async () => {
-      await bodyWeightService.saveBodyWeight({ ...(existing ? { id: existing.id } : {}), localDate: form.date, timeZone: zone, weightGrams: Math.round(kg * 1000), ...(percent !== undefined ? { bodyFatPercent: Math.round(percent * 10) / 10 } : {}) }, existing?.revision);
+      await bodyWeightService.saveBodyWeight({ ...(existing ? { id: existing.id } : {}), localDate: form.date, timeZone: zone, ...values }, existing?.revision);
       saved = true;
     });
     if (saved) { await body.reload(); setForm({ ...form, fat: '', error: false, saved: true }); }
