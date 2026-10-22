@@ -52,7 +52,7 @@ for (const theme of ['pop', 'vivid', 'gentle', 'data', 'fire']) for (const width
     await expect(page.getByRole('heading', { name: '为什么这样排' })).toBeVisible();
     await page.screenshot({ path: info.outputPath(`${theme}-${width}-draft.png`), fullPage: true });
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
-    await page.getByRole('button', { name: '就用这份计划', exact: true }).click(); await page.getByRole('button', { name: '先不写', exact: true }).click();
+    await page.getByRole('button', { name: '就用这份计划', exact: true }).click();
     await expect(page.getByLabel('confirm calls')).toHaveText('1');
   });
 }
