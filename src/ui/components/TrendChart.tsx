@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react';
 import type { TrendPoint } from '../../application/my-changes';
 import './trend-chart.css';
 
-export interface TrendChartProps {
+interface TrendChartProps {
   points: readonly TrendPoint[];
   /** Accessible summary of the chart (the numbers are also shown as text next to it). */
   label: string;

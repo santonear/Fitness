@@ -1,7 +1,7 @@
 import {AdminError,adminJson,requireAdminDb,type AdminContext,type AdminEnvironment} from './contracts';
 import {administratorIdentity,requireFreshAccess} from '../../management-auth';
 import {ZodError} from 'zod';
-export type AdminHandler=(request:Request,context:AdminContext)=>Promise<Response|undefined>;
+type AdminHandler=(request:Request,context:AdminContext)=>Promise<Response|undefined>;
 export function createAdminContext(request:Request,env:AdminEnvironment):AdminContext {const identity=administratorIdentity(request);if(!identity)throw new AdminError('ADMIN_REQUIRED',403);const now=Date.now();return {env,actor:identity.actor,now,fresh:requireFreshAccess(request),requestId:request.headers.get('x-request-id')??'',audit:async(action,objectId,result)=>{if(!env.ADMIN_DB)throw new AdminError('ADMIN_UNAVAILABLE',503);await env.ADMIN_DB.prepare('INSERT INTO admin_audit(id,actor,at,object_id,action,result) VALUES(?,?,?,?,?,?)').bind(crypto.randomUUID(),identity.actor,now,objectId.slice(0,80),action,result).run();}}}
 export async function adminBoundary(request:Request,context:AdminContext,handle:AdminHandler):Promise<Response> {
  try {

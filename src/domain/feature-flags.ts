@@ -10,4 +10,3 @@ export function parseFeatureFlags(value: unknown): FeatureFlags {
   for (const name of featureNames) flags[name] = Object.hasOwn(value, name) && (value as Record<string, unknown>)[name] === true;
   return flags;
 }
-export interface FeatureConfig { version: 1; flags: FeatureFlags; expiresAt: number }

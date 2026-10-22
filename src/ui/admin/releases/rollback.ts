@@ -1,7 +1,7 @@
 import type {ReleaseOverview} from './types';
 type Entry=ReleaseOverview['registered'][number];
 type State=ReleaseOverview['releases'][number]|undefined;
-export type RollbackBlock='no_previous'|'same_deployment'|'data_unknown'|'data_incompatible'|'state_changed'|'busy'|'adapter';
+type RollbackBlock='no_previous'|'same_deployment'|'data_unknown'|'data_incompatible'|'state_changed'|'busy'|'adapter';
 /** The first reason that makes rollback unsafe; undefined means the button may be used. */
 export function rollbackBlock(entry:Entry,state:State,adapterAvailable:boolean):RollbackBlock|undefined{
  const current=state?.current_id??entry.current.id,previous=state?.previous_id??entry.previous?.id;

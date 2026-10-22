@@ -3,7 +3,7 @@ import {DomainError} from '../domain/errors';
 import {repository,type Repository} from '../persistence/repository';
 import {synchronizeTrainingMemo} from './training-memory';
 import {activityDate} from './v8-activity';
-export function createBodyProfileService(repo:Repository){return {
+function createBodyProfileService(repo:Repository){return {
  async read(){return (await repo.db.profiles.toCollection().first())?.bodyDetails},
  async validateSending(body:Record<string,unknown>){const details=await this.read();if(!details?.confirmedAt||Object.entries(body).some(([key,value])=>!Object.hasOwn(details.values,key)||details.values[key as keyof BodyValues]!==value))throw Error('BODY_DETAILS_CHANGED')},
  async save(input:BodyValues,expectedRevision:number){const values=bodyValuesSchema.parse(input);return repo.write(async()=>{

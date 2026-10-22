@@ -13,7 +13,7 @@ export async function aiSwitchState(state:Pick<ControlState,'aiEnabled'>,env:Fea
 }
 export interface UsersContext extends AdminContext {forward:(operation:string,data:unknown)=>Promise<Response>}
 const short=shortId;
-export async function readUserState(c:AdminContext){if(!c.env.CONTROL_DB)throw new AdminError('CONTROL_UNAVAILABLE',503);return new D1ControlStore(c.env.CONTROL_DB).read()}
+async function readUserState(c:AdminContext){if(!c.env.CONTROL_DB)throw new AdminError('CONTROL_UNAVAILABLE',503);return new D1ControlStore(c.env.CONTROL_DB).read()}
 const previewUsers:Record<string,string>={'91000000-0001-4000-8000-000000000001':'normal','92000000-0002-4000-8000-000000000002':'expiring','93000000-0003-4000-8000-000000000003':'quota-unknown'};
 export function userProjection(state:ControlState,now:number,environment?:string,policy='{}'){return Object.entries(state.subjects).filter(([,v])=>!v.deletedAt).map(([id,s])=>({id:short(id),displayName:Object.values(state.applications??{}).filter(a=>a.subjectId===id).sort((a,b)=>b.createdAt-a.createdAt)[0]?.name,...(environment==='preview'&&(Object.hasOwn(previewUsers,id)||state.audit.some(a=>a.subjectId===id&&a.event==='preview-synthetic-finance'))?{previewLabel:previewUsers[id]??'finance'}:{}),expiresAt:s.expiresAt,remainingDays:Math.max(0,Math.ceil((s.expiresAt-now)/86400000)),currentQuota:currentQuota(state,id,now,policy),revoked:s.revoked,expired:s.expiresAt<=now,usage:Object.entries(state.usages).filter(([key])=>key.startsWith(id+':')).map(([key,u])=>({period:key.slice(id.length+1),understand:u.understand,generate:u.generate,summary:u.summary??0}))}))}
 function currentQuota(state:ControlState,id:string,now:number,policy:string){

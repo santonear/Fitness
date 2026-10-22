@@ -12,13 +12,13 @@ import type {AdminDatabase} from './admin/core/contracts';
  * subject short ID so the operator can match an account; otherwise the
  * message is anonymous. Message text is never logged.
  */
-export interface FeedbackEnv { ADMIN_DB?: AdminDatabase; CONTROL_DB?: D1Binding; CONTROL_DIGEST_SECRET?: string }
+interface FeedbackEnv { ADMIN_DB?: AdminDatabase; CONTROL_DB?: D1Binding; CONTROL_DIGEST_SECRET?: string }
 export const FEEDBACK_MESSAGE_MAX = 1000;
 export const FEEDBACK_CONTACT_MAX = 100;
 /** Per sender (trial subject, or a keyed digest of the connecting address) and per hour. */
 export const FEEDBACK_HOURLY_LIMIT = 5;
 /** All senders together per UTC day: protects the admin database from floods. */
-export const FEEDBACK_DAILY_LIMIT = 500;
+const FEEDBACK_DAILY_LIMIT = 500;
 const MAX_BODY = 8192;
 export const feedbackInputSchema = z.strictObject({
   id: z.uuid(),
@@ -43,7 +43,7 @@ async function readBody(request: Request): Promise<unknown> {
 class FeedbackError extends Error { constructor(public code: string, public status: number) { super(code); } }
 
 /** Identity is optional: an invalid, expired or unreadable trial cookie simply means anonymous. */
-export async function feedbackSubject(request: Request, env: FeedbackEnv): Promise<string | undefined> {
+async function feedbackSubject(request: Request, env: FeedbackEnv): Promise<string | undefined> {
   try {
     if (!env.CONTROL_DB || !env.CONTROL_DIGEST_SECRET) return;
     const cookies = (request.headers.get('cookie') ?? '').split(';').map(s => s.trim()).filter(s => s.startsWith('__Host-fitness_trial='));

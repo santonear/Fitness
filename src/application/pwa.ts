@@ -1,12 +1,11 @@
-export interface PwaFlags { offlineEnabled: boolean; notificationsEnabled: boolean }
-export type NotificationStatus = NotificationPermission | 'unsupported' | 'home-screen-required' | 'disabled' | 'unavailable';
+interface PwaFlags { offlineEnabled: boolean; notificationsEnabled: boolean }
+type NotificationStatus = NotificationPermission | 'unsupported' | 'home-screen-required' | 'disabled' | 'unavailable';
 const OPT_IN = 'fitness.system-notifications';
 let flags: PwaFlags = { offlineEnabled: false, notificationsEnabled: false };
 let registration: ServiceWorkerRegistration | undefined;
 let configuration = Promise.resolve();
 const supported = () => typeof window !== 'undefined' && window.isSecureContext && 'serviceWorker' in navigator;
 const optedIn = () => { try { return localStorage.getItem(OPT_IN) === 'true'; } catch { return false; } };
-export function systemNotificationsEnabled() { return optedIn(); }
 export function pwaRegistration() { return registration; }
 /** Revoke notification capability immediately without touching offline registration/cache. */
 export function suspendSystemNotifications() { flags = { ...flags, notificationsEnabled: false }; }

@@ -1,6 +1,6 @@
 import type { ControlState, Operation, RequestStatus } from './store';
 
-export interface AdminReport {
+interface AdminReport {
   format: 'fitness-control-admin-report';
   version: 1;
   capturedAt: string;

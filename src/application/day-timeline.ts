@@ -6,7 +6,7 @@ import type { PlannedItem, SessionTemplate, WorkoutRecord } from '../domain/v8/c
  * timeline never disagrees with the minutes shown elsewhere. Nothing here is stored.
  */
 export type TimelinePhase = 'warmup' | 'main' | 'cooldown';
-export interface TimelineStep {
+interface TimelineStep {
   /** 1-based order shown to the user. */
   number: number;
   /** Index into template.items; absent for the light prepare/stretch steps of plans without warm-up or cool-down items. */
@@ -17,14 +17,14 @@ export interface TimelineStep {
   startOffset: number;
   durationSeconds: number;
 }
-export interface SessionTimeline { steps: TimelineStep[]; totalSeconds: number }
+interface SessionTimeline { steps: TimelineStep[]; totalSeconds: number }
 
 const TRANSITION_SECONDS = 60, DEFAULT_REST_SECONDS = 90, PREPARE_SECONDS = 300;
-export const itemPhase = (item: Pick<PlannedItem, 'prescription'>): TimelinePhase =>
+const itemPhase = (item: Pick<PlannedItem, 'prescription'>): TimelinePhase =>
   item.prescription?.block === 'warmup' ? 'warmup' : item.prescription?.block === 'cooldown' ? 'cooldown' : 'main';
 
 /** Raw seconds of one item: same model as the plan duration estimate (reps ×3 s, at least 20 s a set; 90 s rest). */
-export function itemSeconds(item: Pick<PlannedItem, 'sets' | 'target' | 'prescription'>): number {
+function itemSeconds(item: Pick<PlannedItem, 'sets' | 'target' | 'prescription'>): number {
   const p = item.prescription, target = item.target, sides = p?.perSide ? 2 : 1;
   const work = target.metricType === 'duration' || target.metricType === 'duration_distance'
     ? target.durationSeconds
@@ -60,7 +60,7 @@ export function sessionTimeline(template: Pick<SessionTemplate, 'items' | 'estim
 /* ---------- Clock helpers (wall time in the user's time zone) ---------- */
 const pad = (value: number) => String(value).padStart(2, '0');
 export const clockMinutes = (clock: string) => { const [h, m] = clock.split(':').map(Number); return h * 60 + m; };
-export const minutesClock = (minutes: number) => { const value = ((Math.round(minutes) % 1440) + 1440) % 1440; return `${pad(Math.floor(value / 60))}:${pad(value % 60)}`; };
+const minutesClock = (minutes: number) => { const value = ((Math.round(minutes) % 1440) + 1440) % 1440; return `${pad(Math.floor(value / 60))}:${pad(value % 60)}`; };
 export const validClock = (clock: string) => /^([01]\d|2[0-3]):[0-5]\d$/.test(clock);
 /** HH:MM of an instant in a time zone. */
 export function clockIn(timeZone: string, at: Date | string | number): string {
@@ -87,7 +87,7 @@ export function zonedInstant(date: string, clock: string, timeZone: string): str
 }
 
 /* ---------- Actual times of a finished workout ---------- */
-export interface WorkoutTimes { startedAt: string; endedAt?: string; corrected: boolean; recorded: { startedAt: string; endedAt?: string } }
+interface WorkoutTimes { startedAt: string; endedAt?: string; corrected: boolean; recorded: { startedAt: string; endedAt?: string } }
 /** Recorded start/end, or the latest user correction (kept beside the record, which stays unchanged). */
 export function workoutTimes(workout: Pick<WorkoutRecord, 'startedAt' | 'endedAt' | 'timeCorrections'>): WorkoutTimes {
   const latest = workout.timeCorrections?.at(-1);

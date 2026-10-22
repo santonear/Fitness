@@ -10,7 +10,7 @@ import { exerciseBodyPart } from '../catalog/registry';
 export type Weekday = NonNullable<SessionTemplate['weekday']>;
 export const weekdays: readonly Weekday[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 export type BodyRegion = 'legs' | 'glutes' | 'chest' | 'back' | 'shoulders' | 'arms' | 'core' | 'cardio' | 'mobility' | 'balance' | 'full';
-export type SessionKind = 'full' | 'lower' | 'upper' | 'core' | 'cardio' | 'mobility' | 'balance';
+type SessionKind = 'full' | 'lower' | 'upper' | 'core' | 'cardio' | 'mobility' | 'balance';
 
 let rules: Rules | undefined;
 const engineRules = () => (rules ??= new Rules());
@@ -36,7 +36,7 @@ export function itemRegion(item: Pick<PlannedItem, 'exerciseId' | 'prescription'
 const warmupOrCooldown = (item: PlannedItem) => item.prescription?.block === 'warmup' || item.prescription?.block === 'cooldown';
 
 /** Main regions in order of how many working items train them (warm-up and cool-down excluded when others exist). */
-export function sessionRegions(template: Pick<SessionTemplate, 'items'>): BodyRegion[] {
+function sessionRegions(template: Pick<SessionTemplate, 'items'>): BodyRegion[] {
   const working = template.items.filter(item => !warmupOrCooldown(item));
   const items = working.length ? working : template.items;
   const counts = new Map<BodyRegion, number>();
@@ -111,8 +111,8 @@ const spread: Record<number, readonly Weekday[]> = {
   1: ['wed'], 2: ['mon', 'thu'], 3: ['mon', 'wed', 'fri'], 4: ['mon', 'tue', 'thu', 'fri'],
   5: ['mon', 'tue', 'wed', 'fri', 'sat'], 6: ['mon', 'tue', 'wed', 'thu', 'fri', 'sat'], 7: weekdays,
 };
-export interface ScheduledSession { day: Weekday; templateId: string }
-export interface WeekSchedule { sessions: ScheduledSession[]; chosen: boolean }
+interface ScheduledSession { day: Weekday; templateId: string }
+interface WeekSchedule { sessions: ScheduledSession[]; chosen: boolean }
 export function weekSchedule(plan: Pick<PlanVersion, 'weeklyTarget' | 'preferredDays' | 'templates'>): WeekSchedule {
   const templates = plan.templates;
   if (!templates.length) return { sessions: [], chosen: false };
@@ -178,7 +178,7 @@ export function startDateLabel(date: string, today: string | undefined, locale: 
   const full = withWeekday ? `${calendar} ${day}` : calendar;
   return relative ? `${relative} · ${full}` : full;
 }
-export interface PlanWeekDay { date: string; day: Weekday }
+interface PlanWeekDay { date: string; day: Weekday }
 /**
  * Dated days for a plan that has not started yet: the first plan week, from the start date. Once the plan
  * has started (or without dates) the view stays the plain Monday-to-Sunday week, so every session is listed.

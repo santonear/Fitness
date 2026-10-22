@@ -11,7 +11,7 @@ export interface TrialApplication {
   accountingClosedAt?: number;
   directlyActivated?: boolean;
 }
-export const applicationView = (a: TrialApplication) => ({ id: a.id, kind: a.kind, state: a.state,
+const applicationView = (a: TrialApplication) => ({ id: a.id, kind: a.kind, state: a.state,
   createdAt: a.createdAt, decidedAt: a.decidedAt, reason: a.reason, claimUntil: a.claimUntil, expiresAt: a.expiresAt, directlyActivated: a.directlyActivated });
 export const applicationAdminView = (a: TrialApplication) => ({ ...applicationView(a), name: a.name, note: a.note, subjectId: a.subjectId, actor: a.actor });
 

@@ -12,7 +12,7 @@ export function requestedPostpartumPhase(population:EngineProfile['population'])
  const source=DATA.rules.find(row=>row.id==='postpartum.phase.boundaries')!.value!,buffer=population.delivery==='cesarean'||population.delivery==='assisted_or_tear'||population.perinealTrauma?source.buffer_weeks_if.default:0;
  return !population.cleared?1:population.weeksSinceBirth>=source.base_weeks.phase3_from+buffer?3:population.weeksSinceBirth>=source.base_weeks.phase2[0]+buffer?2:1;
 }
-export interface ReferralChecks {each_phase_transition?:{answeredAt:string;phase?:1|2|3};running_readiness_check?:{answeredAt:string};weekly_checkin?:{answeredAt:string}}
+interface ReferralChecks {each_phase_transition?:{answeredAt:string;phase?:1|2|3};running_readiness_check?:{answeredAt:string};weekly_checkin?:{answeredAt:string}}
 const invalid=(message:string):never=>{throw new DomainError('INVALID',message);};
 export const postpartumReferralSchema=z.strictObject({occasion:z.enum(referralOccasions),answers:z.record(z.string(),z.boolean()),phase:z.union([z.literal(1),z.literal(2),z.literal(3)]).optional()}).superRefine((input,ctx)=>{
  if(Object.keys(input.answers).some(key=>!postpartumReferralKeys.includes(key))||!Object.values(input.answers).some(Boolean)&&!postpartumReferralKeys.every(key=>typeof input.answers[key]==='boolean'))ctx.addIssue({code:'custom',path:['answers'],message:'Every source referral sign requires an explicit answer'});

@@ -9,13 +9,13 @@ import { ThemePicker } from './ThemePicker';
 import './theme-sheet.css';
 
 /** Built-in V9 themes; switching applies at once (same store as 我的 › 界面风格). */
-export function useThemeChoices() {
+function useThemeChoices() {
   const discovery = useSyncExternalStore(subscribeFeatureFlags, () => isFeatureEnabled('themeDiscovery'), () => false);
   const builtin = new Set(getAvailableThemes(false).map(theme => theme.id));
   return getAvailableThemes(discovery).filter(theme => builtin.has(theme.id));
 }
 
-export interface LanguageChoice { onChange: (next: 'zh' | 'en') => void; busy?: boolean }
+interface LanguageChoice { onChange: (next: 'zh' | 'en') => void; busy?: boolean }
 /**
  * Its own button next to 换风格 on 今天 and the welcome page (Bo 2026-10-21: language and style were hard to find
  * together). One tap switches to the other language; the visible text is that language's own name.

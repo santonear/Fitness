@@ -10,7 +10,7 @@ import {EXERCISE_IDS} from '../../catalog/exercise-ids';
 import {ExerciseGuideContent} from './ExerciseGuide';
 import {pickedDaysReplaced} from '../../application/picked-schedule';
 const indoorWalk=(id:string,name:string)=>id===EXERCISE_IDS.walking&&/室内|indoor/i.test(name);
-export function AssistantTemplate({template,locale,minutes}:{template:SessionTemplate;locale:'zh'|'en';minutes?:CoachPanelProps['templateMinutes']}){return <div><h4>{template.name}</h4><p>{minutes?.(template)??template.estimatedMinutes} {locale==='zh'?'分钟':'min'}</p><ul>{template.items.map((item,index)=><li key={index}>{exercises.find(e=>e.id===item.exerciseId)?.name[locale]??(locale==='zh'?'动作':'Exercise')} · {item.sets} {locale==='zh'?'组':'sets'} · {targetText(item.target,locale,indoorWalk(item.exerciseId,template.name))}</li>)}</ul></div>;}
+function AssistantTemplate({template,locale,minutes}:{template:SessionTemplate;locale:'zh'|'en';minutes?:CoachPanelProps['templateMinutes']}){return <div><h4>{template.name}</h4><p>{minutes?.(template)??template.estimatedMinutes} {locale==='zh'?'分钟':'min'}</p><ul>{template.items.map((item,index)=><li key={index}>{exercises.find(e=>e.id===item.exerciseId)?.name[locale]??(locale==='zh'?'动作':'Exercise')} · {item.sets} {locale==='zh'?'组':'sets'} · {targetText(item.target,locale,indoorWalk(item.exerciseId,template.name))}</li>)}</ul></div>;}
 /** Show the immutable input alongside the proposed output; neither is a recorded workout. */
 export function AssistantAttachment({candidate,locale,minutes}:{candidate:CoachApplication;locale:'zh'|'en';minutes?:CoachPanelProps['templateMinutes']}){
  const {request,response}=candidate,zh=locale==='zh';

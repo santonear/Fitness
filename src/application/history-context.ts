@@ -18,7 +18,7 @@ export interface HistoryScope {
   sources: readonly HistorySource[];
   maxUtf8Bytes: number;
 }
-export interface HistoryPayload {
+interface HistoryPayload {
   format: 'fitness-history-context';
   version: 1;
   capturedAt: string;
@@ -33,8 +33,8 @@ export interface HistoryPayload {
   scheduledWorkouts: ScheduledWorkout[];
   bodyWeights: BodyWeightObservation[];
 }
-export type HistoryPlanVersion = PlanVersion extends infer V ? V extends PlanVersion ? Omit<V, 'goalSnapshot' | 'generationMetadata'> : never : never;
-export interface HistoryManifest {
+type HistoryPlanVersion = PlanVersion extends infer V ? V extends PlanVersion ? Omit<V, 'goalSnapshot' | 'generationMetadata'> : never : never;
+interface HistoryManifest {
   source: 'committed-entity-snapshot';
   version: 1;
   capturedAt: string;
@@ -51,7 +51,7 @@ export interface HistoryManifest {
   utf8Bytes: number;
   byteContract: 'UTF8(JSON.stringify(canonicalPayload)); manifest excluded';
 }
-export type HistoryContextResult =
+type HistoryContextResult =
   | { ok: true; payload: HistoryPayload; json: string; manifest: HistoryManifest }
   | { ok: false; reason: 'invalid_snapshot'; detail: string }
   | { ok: false; reason: 'over_budget'; requiredUtf8Bytes: number; maxUtf8Bytes: number; action: 'revise_scope' };

@@ -24,5 +24,5 @@ export function createTimerService(repo: Repository) {
  }
  return {saveTimer,listTimers:(sessionId:string)=>repo.db.timers.where('sessionId').equals(sessionId).toArray()};
 }
-export const timerService=createTimerService(repository);
+const timerService=createTimerService(repository);
 export const saveTimer=timerService.saveTimer;

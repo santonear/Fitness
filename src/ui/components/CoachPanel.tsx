@@ -22,22 +22,3 @@ export function CoachPanel(props:CoachPanelProps){
  return <AssistantPanel {...props} onActivate={enabled&&invalid&&!props.unavailableReason?props.onActivate:undefined} unavailableReason={reason} localOnly={props.localOnly||!enabled||!!invalid||disabled}/>;
 }
 
-import {EQUIPMENT,equipmentLabel} from '../../catalog/taxonomy';
-import {exercises} from '../../catalog/exercises';
-import {lifestyleCopy} from '../../i18n/features/settings/lifestyle';
-import {displayTimeZone,instructionRepeatsLatestMessage} from '../../coach/disclosure-format';
-import {coachScopeFields} from '../../coach/consent';
-import zh from '../../i18n/features/coach/zh.json';
-import en from '../../i18n/features/coach/en.json';
-function readable(value:unknown,copy:typeof zh,locale:'zh'|'en'):string{
- if(value===true)return copy.yes;if(value===false)return copy.no;if(value===null||value===undefined)return copy.empty;
- if(Array.isArray(value))return value.length?value.map(v=>readable(v,copy,locale)).join(locale==='zh'?'；':'; '):copy.empty;
- if(typeof value==='object')return Object.entries(value).filter(([key,v])=>(key!=='loadGrams'||(typeof v==='number'&&v>0))&&!['id','metricType','requestId','conversationId','planVersionId','workoutId','restoreGeneration','inputSnapshot','planId','versionId','templateId','basedOnVersionId','revision'].includes(key)).map(([key,v])=>`${copy.detailLabels[key as keyof typeof copy.detailLabels]??copy.fields[key as keyof typeof copy.fields]??''}${key in copy.detailLabels||key in copy.fields?(locale==='zh'?'：':': '):''}${readable(key==='loadGrams'&&typeof v==='number'?v/1000:v,copy,locale)}`).join('；');
- if(typeof value==='string'&&(EQUIPMENT as readonly string[]).includes(value))return equipmentLabel(value,locale);
- if(typeof value==='string')return exercises.find(e=>e.id===value)?.name[locale]??copy.values[value as keyof typeof copy.values]??value;
- return String(value);
-}
-export function CoachScopeDisclosure({request,locale}:{request:CoachRequest;locale:'zh'|'en'}){
- const t=locale==='en'?en:zh,lang=locale==='en'?1:0;
- return <details><summary>{t.scope}</summary><p>{t.consent}</p><p>{t.taskNames[request.task]}</p><dl>{Object.entries(request).filter(([key])=>['locale','timeZone','adultConfirmed','profile','body','history','nutrition','messages','template','instruction','plan','kind','facts'].includes(key)).map(([key,value])=><div key={key}><dt>{key==='nutrition'?lifestyleCopy[locale].nutrition:t.fields[key as keyof typeof t.fields]}</dt><dd>{key==='timeZone'?displayTimeZone(String(value),locale):key==='instruction'&&instructionRepeatsLatestMessage(request)?t.sameAsMessage:readable(value,t,lang?'en':'zh')}</dd></div>)}</dl><details><summary>{t.technical}</summary><dl>{coachScopeFields(request).map(field=><div key={field.key}><dt>{t.fields[field.key as keyof typeof t.fields]??field.key}</dt><dd>{field.value}</dd></div>)}</dl></details></details>;
-}

@@ -10,7 +10,7 @@ import { usePlanView } from './WeekPlan';
 import { monthTitle } from '../../components/TrainingCalendar';
 import './week-plan.css';
 
-export interface MonthPlanProps {
+interface MonthPlanProps {
   plan: Pick<PlanVersion, 'weeklyTarget' | 'preferredDays' | 'templates'> & Partial<Pick<PlanVersion, 'trainingDates'>>;
   workouts: readonly WorkoutRecord[];
   /** Day selected (and month shown) first; defaults to today. */

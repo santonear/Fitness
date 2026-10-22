@@ -1,8 +1,8 @@
 import { pushSubscription, capabilityHash } from '../../push-service';
 import { z } from 'zod';
-import { adminJson, requireAdminDb, type AdminContext, type TodoSource } from '../core/contracts';
+import { adminJson, requireAdminDb, type AdminContext } from '../core/contracts';
 import { notificationSettings, type QualityEnv } from './contracts';
-import { errorCollectionEnabled, errorSummary, qualityTodos, saveEvaluation } from './service';
+import { errorCollectionEnabled, errorSummary, saveEvaluation } from './service';
 import { appPushUnavailableReason, dispatchAdminPush, enqueueNotification, pushAvailable, pushUnavailableReason, readSettings } from './notifications';
 export * from './service';
 export * from './notifications';
@@ -64,4 +64,3 @@ export async function handleQuality(request: Request, context: AdminContext<Qual
   }
   return undefined;
 }
-export const qualityTodoSource: TodoSource = { id: 'quality', evaluate: context => context.env.ADMIN_DB ? qualityTodos(context.env.ADMIN_DB, context.now) : [] };

@@ -6,11 +6,11 @@ import { addDays, weekSchedule, weekdayOf } from './plan-presentation';
  * weekly count. Pure helpers only; nothing here reads or writes storage.
  */
 /** At most this many days from the first to the last chosen date (inclusive), so 1–30 days. */
-export const TRAINING_SPAN_DAYS = 30;
+const TRAINING_SPAN_DAYS = 30;
 /** The first training day falls within today and the next two weeks (same rule as the start date). */
-export const TRAINING_START_WINDOW_DAYS = 14;
+const TRAINING_START_WINDOW_DAYS = 14;
 /** Engine limit (daysPerWeek ≤ 6): any 7 consecutive days keep at least one rest day. */
-export const TRAINING_MAX_PER_7_DAYS = 6;
+const TRAINING_MAX_PER_7_DAYS = 6;
 
 const datePattern = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
 export const isLocalDate = (value: string) => datePattern.test(value) && new Date(`${value}T00:00:00Z`).toISOString().slice(0, 10) === value;

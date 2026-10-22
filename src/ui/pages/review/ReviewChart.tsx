@@ -3,7 +3,7 @@ import { SegmentedTabs } from '../../components/kit';
 import type { ChartMetric, ChartPoint } from '../../../application/review/charts';
 import './review.css';
 
-export interface ReviewChartCopy { metric: string; sessions: string; volume: string; minutesMetric: string; sessionsUnit: string; volumeUnit: string; minutesUnit: string; chartTotal: string; chartEmpty: string }
+interface ReviewChartCopy { metric: string; sessions: string; volume: string; minutesMetric: string; sessionsUnit: string; volumeUnit: string; minutesUnit: string; chartTotal: string; chartEmpty: string }
 const series: Record<ChartMetric, 1 | 2 | 3> = { sessions: 1, volumeKg: 2, minutes: 3 };
 const round = (value: number) => Math.round(value * 10) / 10;
 

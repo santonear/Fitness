@@ -3,7 +3,7 @@ import { v8WorkoutSchema } from '../domain/schemas';
 import type { Repository } from '../persistence/repository';
 
 /** Longest session a correction may describe; anything longer is almost certainly a typo. */
-export const MAX_CORRECTED_MS = 12 * 3600000;
+const MAX_CORRECTED_MS = 12 * 3600000;
 
 /**
  * Appends a user correction of a finished workout's start/end time. The recorded startedAt/endedAt,

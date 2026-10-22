@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { categories } from './contracts';
 
 const incidentInput = z.array(z.object({ id: z.string().regex(/^[a-zA-Z0-9][a-zA-Z0-9:._-]{0,159}$/), category: z.enum(categories), count: z.number().int().positive().max(Number.MAX_SAFE_INTEGER) }).strict()).max(100);
-export interface ActiveNotificationIncident { id: string; category: Category; count: number }
+interface ActiveNotificationIncident { id: string; category: Category; count: number }
 /** Complete active snapshot, scoped to this source. One atomic D1 batch protects transitions,
  * queue creation, and cancellation. A stale or equal-time snapshot cannot overwrite a newer one.
  * Pass finance/release incidents together; quality error/application queues remain independent. */

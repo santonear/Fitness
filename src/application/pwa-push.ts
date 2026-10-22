@@ -1,7 +1,7 @@
 import { notificationStatus, pwaRegistration } from './pwa';
 import type { PushConfigResponse } from '../domain/push-status';
 // Structural, device-only preference. No training/profile fields are accepted.
-export interface BackgroundSchedule { weekdays: number[]; time: string; timeZone: string; quietStart: string; quietEnd: string; dailyLimit: number }
+interface BackgroundSchedule { weekdays: number[]; time: string; timeZone: string; quietStart: string; quietEnd: string; dailyLimit: number }
 const CAPABILITY = 'fitness.push-capability';
 const ENABLED = 'fitness.background-push';
 let allowed = false;

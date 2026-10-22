@@ -14,5 +14,5 @@ export function createTrainingMemoryService(repo:Repository) {
  async function readTrainingMemo(){return await repo.db.trainingMemo.get(1)??await rebuildTrainingMemo();}
  return {readTrainingMemo,rebuildTrainingMemo};
 }
-export const trainingMemoryService=createTrainingMemoryService(repository);
+const trainingMemoryService=createTrainingMemoryService(repository);
 export const {readTrainingMemo,rebuildTrainingMemo}=trainingMemoryService;

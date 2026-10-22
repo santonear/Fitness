@@ -18,23 +18,23 @@ import type { NutritionRecord } from '../domain/lifestyle';
  * confirmation; records stay local unless the user consents per message; additions to stored data
  * are new optional fields or tables with idempotent, tested migrations.
  */
-export interface NutritionModuleEntry {
+interface NutritionModuleEntry {
   id: string;
   title: { zh: string; en: string };
   description?: { zh: string; en: string };
   /** In-app route the card opens. */
   route: string;
 }
-export interface NutritionChatContext {
+interface NutritionChatContext {
   /** Shown to the user before sending; plain words, no identifiers. */
   label: { zh: string; en: string };
   /** Structured facts only (no free text), sent only with explicit consent. */
   facts: Record<string, number | string | boolean>;
 }
-export interface NutritionRecordSource {
+interface NutritionRecordSource {
   list(): Promise<NutritionRecord[]>;
 }
-export interface DietModule {
+interface DietModule {
   id: string;
   entries(): NutritionModuleEntry[];
   chatContext?(records: NutritionRecordSource): Promise<NutritionChatContext | undefined>;

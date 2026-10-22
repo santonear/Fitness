@@ -6,7 +6,7 @@ import { projectDay } from '../domain/day-date-projection';
 import { expandSchedule } from '../domain/calendar';
 import { legacyPlanVersionSchema } from '../domain/schemas';
 import { DomainError } from '../domain/errors';
-export type LegacyOperation = { type: 'reschedule'; id: string; date: string } | { type: 'activate'; id: string } | { type: 'start'; versionId: string; dayId: string } | { type: 'save'; input: PlanInput };
+type LegacyOperation = { type: 'reschedule'; id: string; date: string } | { type: 'activate'; id: string } | { type: 'start'; versionId: string; dayId: string } | { type: 'save'; input: PlanInput };
 import type { LegacyConfirmation } from '../domain/day-plan-contracts';
 export type { LegacyConfirmation } from '../domain/day-plan-contracts';
 export async function prepareLegacyOperation(operation: LegacyOperation, repo: Repository = repository) {

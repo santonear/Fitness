@@ -1,4 +1,4 @@
-export interface UsageObservation { day: string; calls: number; costFen?: number; reservedFen: number }
+interface UsageObservation { day: string; calls: number; costFen?: number; reservedFen: number }
 /** Read-only projection: never enables budgets or changes the billing ledger. */
 export function assessDailyUsage(value: UsageObservation, limits: { calls: number; costFen: number }, enabled = false) {
   const valid = /^\d{4}-\d{2}-\d{2}$/.test(value.day) &&

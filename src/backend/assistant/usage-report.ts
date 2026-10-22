@@ -1,7 +1,7 @@
 import type { AdminDatabase } from '../admin/core/contracts';
 import type { ControlState } from '../store';
 import {localDay} from './admission';
-export interface UsageRow {at:number;subject_short_id:string;task:string;stage:string;input_tokens:number|null;output_tokens:number|null;estimated_fen:number|null;result:string;pricing_version:string}
+interface UsageRow {at:number;subject_short_id:string;task:string;stage:string;input_tokens:number|null;output_tokens:number|null;estimated_fen:number|null;result:string;pricing_version:string}
 /** Sidecar archive: never rewrites historic status, spent cost or reservations. */
 export async function archiveLegacyUsage(db:AdminDatabase,state:ControlState,now:number){
  const entries=Object.entries(state.requests).filter(([,r])=>['reserved','submitted','pending'].includes(r.status));

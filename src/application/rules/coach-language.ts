@@ -10,7 +10,7 @@ const rules: readonly [CoachLanguageViolation, RegExp][] = [
 ];
 
 /** Wording v5 (V9.14): at most one emoji per message, only from this fixed list. */
-export const COACH_EMOJI = ['🎯', '📈', '⚡', '📊', '🧠', '🌱', '😌', '💌', '☕', '💪', '🏔', '🔥'] as const;
+const COACH_EMOJI = ['🎯', '📈', '⚡', '📊', '🧠', '🌱', '😌', '💌', '☕', '💪', '🏔', '🔥'] as const;
 const emojiPattern = /\p{Extended_Pictographic}|\p{Regional_Indicator}|⃣/gu;
 
 function emojiViolation(text: string, context?: 'safety'): boolean {

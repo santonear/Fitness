@@ -18,7 +18,7 @@ const proposal = z.strictObject({ kind: z.literal('proposal'), summary: text,
 const program = z.strictObject({ kind: z.literal('program'), name: text, explanation: text,
   days: z.array(z.strictObject({ date: localDateSchema, exercises: z.array(plannedExerciseSchema).min(1).max(8) })).min(1).max(14) });
 const changeProposal = program.extend({kind: z.literal('change_proposal'), targetPlanRef: coachTargetPlanSchema});
-export const coachProviderResponseSchema = z.discriminatedUnion('kind', [refusal, understanding, clarification, proposal, program, changeProposal]);
+const coachProviderResponseSchema = z.discriminatedUnion('kind', [refusal, understanding, clarification, proposal, program, changeProposal]);
 
 export function validateGuidedProviderInput(request: GuidedDialogueRequest, k: number) {
   const age = request.scope.body?.age;

@@ -28,4 +28,3 @@ export function createBodyWeightService(repo: Repository) {
 }
 export const bodyWeightService = createBodyWeightService(repository);
 export const saveBodyWeight = bodyWeightService.saveBodyWeight;
-export const deleteBodyWeight = bodyWeightService.deleteBodyWeight;

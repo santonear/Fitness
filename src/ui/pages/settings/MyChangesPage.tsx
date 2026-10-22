@@ -25,7 +25,7 @@ const dateText = (date: string, locale: Locale) => { const [, m, d] = date.split
 const monthText = (month: string, locale: Locale) => new Intl.DateTimeFormat(locale === 'zh' ? 'zh-CN' : 'en', { timeZone: 'UTC', month: 'short' }).format(new Date(`${month}-01T00:00:00Z`));
 
 /** Loads the device's body measurements; refreshes after a save. */
-export function useBodyMeasurements() {
+function useBodyMeasurements() {
   const [rows, setRows] = useState<BodyWeightObservation[]>([]), [loaded, setLoaded] = useState(false);
   const reload = useCallback(async () => { try { setRows(await bodyWeightService.listBodyWeights()); } catch { setRows([]); } finally { setLoaded(true); } }, []);
   useEffect(() => { void reload(); }, [reload]);

@@ -33,7 +33,6 @@ function loadCache() {
   } catch { /* Missing or unavailable cache leaves first-use defaults unchanged. */ }
 }
 export function isFeatureEnabled(name: FeatureName): boolean { loadCache(); return flags[name]; }
-export function getFeatureFlags(): FeatureFlags { loadCache(); return { ...flags }; }
 /** Last validated configuration, not a grant of AI access or external-data consent. */
 export const hasValidRemoteConfig = () => { loadCache(); return confirmed; };
 function publish(next: FeatureFlags) {

@@ -18,7 +18,7 @@ import { ExerciseGuidePanel } from './ExerciseGuide';
 import { BigChoice, PrimaryButton } from './kit';
 import './exercise-tools.css';
 
-export type ExerciseToolScope = 'today' | 'plan';
+type ExerciseToolScope = 'today' | 'plan';
 interface SwapTarget { templateId: string; itemIndex: number; exerciseId: string }
 
 /** A new planned target for the replacement: keep the old target when the metric matches, otherwise a gentle default. */
@@ -42,7 +42,7 @@ const withItem = (template: SessionTemplate, itemIndex: number, item: PlannedIte
  * 换动作 outside the chat (今天 / 计划). The user picks the replacement and confirms; the change goes through the
  * same validated apply path as assistant candidates (today: a one-time adjustment; plan: a new plan version).
  */
-export function ExerciseSwapSheet({ scope, target, onClose, triggerRef }: { scope: ExerciseToolScope; target?: SwapTarget; onClose: () => void; triggerRef: React.RefObject<HTMLElement | null> }) {
+function ExerciseSwapSheet({ scope, target, onClose, triggerRef }: { scope: ExerciseToolScope; target?: SwapTarget; onClose: () => void; triggerRef: React.RefObject<HTMLElement | null> }) {
   const { data, locale, run, busy, name } = useMainline();
   const t = exerciseToolsCopy[locale];
   const [allowed, setAllowed] = useState<string[]>();

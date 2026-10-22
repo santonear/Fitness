@@ -4,7 +4,7 @@ import {painQuestionKeys} from '../../../application/pain-events';
 import {DATA} from '../../../engine/data';
 import {engineCopy} from '../../../coach/engine-copy';
 import {Button} from '../../components/common';
-export interface CautionSettingsPanelProps {
+interface CautionSettingsPanelProps {
  locale:'zh'|'en';busy?:boolean;levels:CautionLevels;activeJoints?:readonly CautionJoint[];
  onReview:(input:{joint:CautionJoint;level:0|1;answers:Record<string,boolean>;requestedAt:string})=>unknown;
 }
