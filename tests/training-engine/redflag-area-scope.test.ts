@@ -13,7 +13,16 @@ it('screens actual pain areas without asserting symptoms at other caution areas'
     questionKeys: keys,
     answers: Object.fromEntries(keys.map(key => [key, false])),
   };
-  expect(safety(p, r).blocked).toBe(false);
+  // back is still unreviewed, so the caution activation gate pauses training until it is answered.
+  expect(
+    safety(p, r)
+      .gates.filter(g => g.status === 'blocked')
+      .map(g => g.ruleId),
+  ).toEqual(['caution.activation']);
   p.screening.redFlagReview.areas = [];
-  expect(safety(p, r).blocked).toBe(true);
+  expect(
+    safety(p, r)
+      .gates.filter(g => g.status === 'blocked')
+      .map(g => g.ruleId),
+  ).toContain('redflag.screen');
 });
