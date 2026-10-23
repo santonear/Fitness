@@ -35,7 +35,7 @@ export const entryCopy = {
     yes: '是',
     no: '否',
     none: '以上都没有',
-    some: '有其中一项，逐个确认',
+    some: '有其中一项或多项，逐个确认',
     answered: '已回答',
     intro: {
       title: '开始前，确认几件事',
@@ -145,7 +145,7 @@ export const entryCopy = {
     yes: 'Yes',
     no: 'No',
     none: 'None of these',
-    some: 'One of these applies',
+    some: 'One or more of these applies',
     answered: 'Answered',
     intro: {
       title: 'A few checks before we start',
