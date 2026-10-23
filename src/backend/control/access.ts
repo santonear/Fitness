@@ -100,7 +100,7 @@ export class ControlAccess extends ControlCore {
       if (existing?.deletedAt !== undefined || existing?.revoked) throw new ControlError('QUALIFICATION_REQUIRED', 401);
       // Repeated activation never extends time, resets usage, or revives revoked access.
       if (application.directlyActivated || (existing && existing.expiresAt > this.now()))
-        return applicationAdminView(application);
+        return applicationAdminView(application, this.now());
       if (application.kind !== 'new' || !['pending', 'approved'].includes(application.state))
         throw new ControlError('APPLICATION_CONFLICT');
       const expiresAt = this.now() + 30 * DAY;
@@ -115,7 +115,7 @@ export class ControlAccess extends ControlCore {
         claimUntil: expiresAt,
       });
       this.audit(state, 'subject-directly-activated', newSubjectId);
-      return applicationAdminView(application);
+      return applicationAdminView(application, this.now());
     });
   }
   async reissue(admin: string, subjectId: string) {
@@ -154,7 +154,7 @@ export class ControlAccess extends ControlCore {
       report,
       applications: Object.values(state.applications ?? {})
         .filter(a => !a.subjectId || state.subjects[a.subjectId]?.deletedAt === undefined)
-        .map(applicationAdminView),
+        .map(a => applicationAdminView(a, this.now())),
       invites: Object.entries(state.invites)
         .filter(([, invite]) => !invite.redeemed && invite.expiresAt > this.now())
         .map(([inviteId, invite]) => ({ inviteId, expiresAt: invite.expiresAt })),

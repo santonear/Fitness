@@ -41,7 +41,6 @@ export function ActivityPage() {
           onLeave={() => c.navigate('/')}
         />
       </nav>
-      <Button onClick={() => c.navigate('/')}>{c.t.back}</Button>
       <h1>{t.title}</h1>
       <fieldset>
         <legend>{t.type}</legend>

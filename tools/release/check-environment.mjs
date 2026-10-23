@@ -1,6 +1,7 @@
 // Fail closed unless the GitHub environment exists and deploys only from main.
-// Bo 2026-10-22: the repo is private, where GitHub offers required reviewers only
-// on Enterprise; a production run therefore starts only when Bo runs it by hand.
+// A production run starts only when Bo runs it by hand (Bo 2026-10-22, decided while
+// the repo was private). The repo is now public, so GitHub also allows a required
+// reviewer on this environment; until Bo adds one, the log below says there is none.
 // Usage (in Actions): GH_TOKEN=... node tools/release/check-environment.mjs cloudflare-production
 const name = process.argv[2];
 const { GITHUB_REPOSITORY: repo, GITHUB_API_URL: api = 'https://api.github.com', GH_TOKEN: token } = process.env;

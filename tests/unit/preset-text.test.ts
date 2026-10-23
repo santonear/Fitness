@@ -24,6 +24,18 @@ describe('stored preset answers follow the current language', () => {
       '我自己的备注',
     ]);
   });
+  it('re-renders stored start-date and budget summaries in the current language', () => {
+    const version = { startDate: '2026-10-24', changeSummary: ['开始日期改为 10月24日 周六'] } as PlanVersion;
+    expect(versionSummary(version, 'en')[0]).toMatch(/^Start date changed to Oct 24/);
+    expect(
+      versionSummary({ ...version, changeSummary: ['Start date changed to Oct 24 Sat'] } as PlanVersion, 'zh')[0],
+    ).toMatch(/^开始日期改为 10月24日/);
+    expect(storedSummaryText('Switched to a weekly budget', 'zh')).toBe('改为每周预算');
+    expect(storedSummaryText('改为按天安排', 'en')).toBe('Switched to day-by-day');
+    expect(versionSummary({ changeSummary: ['开始日期改为 某天'] } as PlanVersion, 'en')).toEqual([
+      '开始日期改为 某天',
+    ]);
+  });
 });
 
 describe('session names written by the app follow the current language', () => {

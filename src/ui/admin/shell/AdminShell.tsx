@@ -7,6 +7,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { adminRequest, reverifyAdmin } from '../shared/api';
 import { AdminDialog, AdminToast } from '../shared/components';
 import type { AdminTodo } from '../../../backend/admin/core/contracts';
+import { todoInLanguage } from '../todos/copy';
 import { ApplicationsPage, UsersPage, AuditPage, ReviewTemplates } from '../users/UsersPages';
 import { FinanceLedger, FinanceSettings, FinanceCosts } from '../finance/FinancePages';
 import { AdminQualityPage, AdminErrorsPage, AdminNotificationSettings } from '../quality/pages';
@@ -143,34 +144,36 @@ export function AdminShell() {
           {!error && !todos.length && (
             <p className="admin-empty">{zh ? '当前没有需要处理的待办' : 'No current tasks'}</p>
           )}
-          {todos.map(t => (
-            <article key={t.id} className="admin-todo" data-level={t.level}>
-              <span className="admin-dot" aria-hidden="true" />
-              <div>
-                <h3>{t.title}</h3>
-                <p>{t.text}</p>
-              </div>
-              <div className="admin-actions">
-                {t.actions.map(a => (
-                  <a
-                    key={a.href}
-                    className="admin-chip-link"
-                    href={a.href}
-                    onClick={e => {
-                      const target = a.href.match(/^\/admin\/([\w-]+)$/)?.[1];
-                      if (target) {
-                        e.preventDefault();
-                        go(target);
-                      }
-                    }}
-                  >
-                    {a.label}
-                  </a>
-                ))}
-                <BudgetDismissButton todo={t} language={language} onDismissed={() => setRefresh(n => n + 1)} />
-              </div>
-            </article>
-          ))}
+          {todos
+            .map(todo => todoInLanguage(todo, language))
+            .map(t => (
+              <article key={t.id} className="admin-todo" data-level={t.level}>
+                <span className="admin-dot" aria-hidden="true" />
+                <div>
+                  <h3>{t.title}</h3>
+                  <p>{t.text}</p>
+                </div>
+                <div className="admin-actions">
+                  {t.actions.map(a => (
+                    <a
+                      key={a.href}
+                      className="admin-chip-link"
+                      href={a.href}
+                      onClick={e => {
+                        const target = a.href.match(/^\/admin\/([\w-]+)$/)?.[1];
+                        if (target) {
+                          e.preventDefault();
+                          go(target);
+                        }
+                      }}
+                    >
+                      {a.label}
+                    </a>
+                  ))}
+                  <BudgetDismissButton todo={t} language={language} onDismissed={() => setRefresh(n => n + 1)} />
+                </div>
+              </article>
+            ))}
         </section>
         <div>
           <StatusOverview language={language} />

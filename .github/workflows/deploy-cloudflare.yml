@@ -1,7 +1,7 @@
 name: Publish Fitness to Cloudflare
 
-# Production release. Manual and main only: Bo starts each run himself (the
-# private repo cannot require an environment reviewer, Bo 2026-10-22).
+# Production release. Manual and main only: Bo starts each run himself (Bo
+# 2026-10-22; see tools/release/check-environment.mjs about required reviewers).
 on:
   workflow_dispatch:
 

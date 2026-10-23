@@ -1,7 +1,13 @@
-import { genericSessionName, presetSessionName, sessionNames } from '../../../application/plan-presentation';
+import {
+  genericSessionName,
+  presetSessionName,
+  sessionNames,
+  startDateLabel,
+} from '../../../application/plan-presentation';
 import { storedSummaryText } from '../../../application/preset-text';
 import type { PlanVersion, SessionTemplate } from '../../../domain/v8/contracts';
 import { planMessages } from './messages';
+import { startDateCopy } from './start-date';
 export function estimatedDurationLabel(templates: Pick<SessionTemplate, 'estimatedMinutes'>[], locale: 'zh' | 'en') {
   const values = templates.map(template => template.estimatedMinutes);
   if (!values.length) return planMessages[locale].minutes(0);
@@ -32,11 +38,21 @@ export function templateLabel(
   }
   return presetSessionName(template.name, locale) ?? template.name;
 }
+/** "开始日期改为 {date}" / "Start date changed to {date}" as saved in either language. */
+const startDateSummary = (['zh', 'en'] as const).map(
+  key => new RegExp(`^${startDateCopy[key].summary.replace('{date}', '.+')}$`),
+);
+/** A start-date change saved in one language, re-rendered from the version's own start date. */
+function storedLine(line: string, version: PlanVersion, locale: 'zh' | 'en'): string {
+  if (version.startDate && startDateSummary.some(pattern => pattern.test(line.trim())))
+    return startDateCopy[locale].summary.replace('{date}', startDateLabel(version.startDate, undefined, locale));
+  return storedSummaryText(line, locale);
+}
 export function versionSummary(version: PlanVersion, locale: 'zh' | 'en'): string[] {
   const rule = version.reviewRule;
   if (!rule)
     return version.changeSummary.map(line =>
-      storedSummaryText(line, locale).replace(
+      storedLine(line, version, locale).replace(
         /(\d+)\s*(分钟|min(?:utes)?)/g,
         (_, n) => `${n} ${locale === 'zh' ? '分钟' : 'min'}`,
       ),

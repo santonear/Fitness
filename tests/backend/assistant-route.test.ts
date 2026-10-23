@@ -247,7 +247,7 @@ it('daily limit returns local resetAt before generation', async () => {
   expect(await response.json()).toEqual({ error: 'DAILY_MESSAGE_LIMIT', resetAt: new Date(reset).toISOString() });
   expect(calls).toBe(0);
 });
-it('disconnect aborts generation, releases lease and does not consume daily message', async () => {
+it('disconnect aborts generation, releases lease and still consumes the daily message', async () => {
   const { db, env, request } = await setup();
   const runner: Runner = async function* (_input, options) {
     yield { type: 'text_delta', delta: 'Partial.' };
@@ -263,7 +263,7 @@ it('disconnect aborts generation, releases lease and does not consume daily mess
   await reader.cancel();
   await vi.waitFor(() =>
     expect(db.prepare('SELECT used,active_request,lease_until FROM assistant_daily').get()).toMatchObject({
-      used: 0,
+      used: 1,
       active_request: null,
       lease_until: 0,
     }),

@@ -83,6 +83,9 @@ function setup() {
       v8PlanVersions: {
         get: async (id: string) => versions.find(v => v.id === id),
         toArray: async () => versions,
+        where: () => ({
+          equals: (planId: string) => ({ toArray: async () => versions.filter(v => v.planId === planId) }),
+        }),
         add: async (value: PlanVersion) => versions.push(value),
       },
       v8Workouts: {
@@ -297,4 +300,37 @@ it('restores pregnancy balance through the real workflow after enabling househol
   expect(balance.length).toBeGreaterThan(0);
   expect(balance.every(i => i.prescription?.safetyCue?.zh === '扶墙或扶椅')).toBe(true);
   expect(JSON.stringify(db.versions[0])).toBe(original);
+});
+
+it('adopts a review suggestion through the engine path: days and engine baseline carried, unsafe items refused', async () => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date('2026-10-16T10:00:00Z'));
+  vi.spyOn(flags, 'isFeatureEnabled').mockReturnValue(true);
+  const db = setup(),
+    version = await db.workflow.adopt(await db.workflow.propose(profile, 'zh', { trainingEngine: true }));
+  const suggestion = (templates = structuredClone(version.templates)) => ({
+    id: 's',
+    rule: 'frequency' as const,
+    summary: 'frequency',
+    basedOnVersionId: version.id,
+    proposal: {
+      goalText: version.goalText,
+      weeklyTarget: Math.min(6, version.weeklyTarget + 1),
+      sessionMinutes: version.sessionMinutes,
+      scheduleOriginalText: version.scheduleOriginalText,
+      templates,
+      reasons: ['', '', ''] as [string, string, string],
+    },
+  });
+  const equipped = new Rules().data.exercises.find(e => e.equipment_required.some(x => x !== 'none'))!;
+  const unsafe = structuredClone(version.templates);
+  unsafe[0].items[0] = { ...unsafe[0].items[0], exerciseId: equipped.id };
+  await expect(db.workflow.adoptReviewSuggestion(suggestion(unsafe), 1, 0, 'x')).rejects.toMatchObject({
+    message: 'ENGINE_PLAN_UNAVAILABLE',
+  });
+  expect(db.versions).toHaveLength(1);
+  const next = await db.workflow.adoptReviewSuggestion(suggestion(), 1, 0, 'one extra session');
+  expect(next).toMatchObject({ versionNumber: 2, origin: 'review_suggestion', preferredDays: version.preferredDays });
+  expect(next.enginePlan).toMatchObject({ weeklyTarget: next.weeklyTarget, templates: next.templates });
+  expect(await db.workflow.nextTargetPreview(next.templates[0].id)).toMatchObject({ blocked: false });
 });

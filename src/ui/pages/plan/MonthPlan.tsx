@@ -4,6 +4,7 @@ import { monthCalendar, monthCounts, monthOf, shiftMonth, type CalendarDay } fro
 import { startDateLabel, weekdayLabel, weekdays } from '../../../application/plan-presentation';
 import { clockIn, workoutTimes } from '../../../application/day-timeline';
 import { planCalendarCopy } from '../../../i18n/features/plan/calendar';
+import { templateLabel } from '../../../i18n/features/plan/labels';
 import { fill } from '../../../i18n/features/onboarding/entry';
 import { Card, PrimaryButton } from '../../components/kit';
 import { usePlanView } from './WeekPlan';
@@ -174,7 +175,9 @@ function MonthDayDetail({
                 name =
                   workout.templateId && view.byId.get(workout.templateId)
                     ? view.name(view.byId.get(workout.templateId)!)
-                    : (workout.templateSnapshot?.name ?? '');
+                    : workout.templateSnapshot
+                      ? templateLabel(workout.templateSnapshot, locale)
+                      : '';
               return (
                 <li key={workout.id}>
                   {name && <strong>{name}</strong>}

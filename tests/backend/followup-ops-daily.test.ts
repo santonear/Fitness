@@ -2,7 +2,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { expect, it, vi } from 'vitest';
 import { DailyUsageStore, dailyUsageDDL, withDailyUsage } from '../../src/backend/daily-usage-store';
 import type { D1Binding, D1Statement } from '../../src/backend/d1-store';
-import { TelemetryStore, telemetryDDL } from '../../src/backend/telemetry-store';
+import { TELEMETRY_DAILY_BUCKET_CAP, TelemetryStore, telemetryDDL } from '../../src/backend/telemetry-store';
 
 function memoryStore() {
   const db = new DatabaseSync(':memory:');
@@ -36,6 +36,9 @@ it('aggregates batched anonymous counts by UTC day and rejects extra sensitive d
     await telemetry.count('2026-10-11', { optedIn: true, event: 'workout_completed', count: 3 }, 'counts');
     await telemetry.count('2026-10-11', { optedIn: true, event: 'workout_completed' }, 'counts');
     expect((await telemetry.usage('2026-10-11')).counts.workout_completed).toBe(4);
+    for (let i = 0; i < 101; i++)
+      await telemetry.count('2026-10-12', { optedIn: true, event: 'review_opened', count: 1000 }, 'counts');
+    expect((await telemetry.usage('2026-10-12')).counts.review_opened).toBe(TELEMETRY_DAILY_BUCKET_CAP);
     await expect(
       telemetry.count('2026-10-11', { optedIn: true, event: 'workout_completed', count: 1001 }, 'counts'),
     ).rejects.toThrow();

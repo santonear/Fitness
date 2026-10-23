@@ -1,3 +1,4 @@
+import { answerText } from '../../../application/preset-text';
 import { PelvicFloorDailyNotice } from '../training/PelvicFloorDailyNotice';
 import { CautionMorningControls } from '../training/CautionMorningControls';
 import { PregnancySafetyControls } from '../training/PregnancySafetyControls';
@@ -296,7 +297,7 @@ export function HomePage() {
             <p>
               {format(t.migrationPlans, {
                 count: data.state.notice.planCount,
-                name: data.state.notice.currentPlanName ?? data.plan?.name ?? '',
+                name: answerText(data.state.notice.currentPlanName ?? data.plan?.name ?? '', locale),
               })}
             </p>
           )}

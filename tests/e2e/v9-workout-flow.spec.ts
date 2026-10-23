@@ -50,6 +50,13 @@ test('timed countdown, rest countdown with +15 s and skip, finish summary and re
   await page.clock.runFor(5000);
   await expect(timer).toHaveText(paused!);
   await page.getByRole('button', { name: '继续计时', exact: true }).click();
+  // 暂停或结束 holds the countdown like 身体不适？; the user resumes it.
+  await page.getByRole('button', { name: '暂停或结束', exact: true }).click();
+  const held = await timer.textContent();
+  await page.clock.runFor(5000);
+  await page.getByRole('dialog').getByRole('button', { name: '继续训练', exact: true }).click();
+  await expect(timer).toHaveText(held!);
+  await page.getByRole('button', { name: '继续计时', exact: true }).click();
   await page.clock.runFor(seconds * 1000);
   await expect(timer).toHaveText('0:00');
   await expect(page.getByText('时间到，点“完成这一组”记下来。', { exact: true })).toBeVisible();
@@ -60,7 +67,7 @@ test('timed countdown, rest countdown with +15 s and skip, finish summary and re
   expect((await sets(page))[0].durationSeconds).toBe(seconds);
 
   // Rest: counts down from the saved set, +15 s, reminder at the end, waits for a tap.
-  await expect(page.getByRole('heading', { name: '休息一下', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '休息一下', exact: true })).toBeFocused();
   const rest = page.getByRole('timer', { name: '休息剩余时间' });
   await expect(rest).toHaveText('1:00');
   await expect(page.getByText('第 2 组，共 2 组', { exact: true })).toBeVisible();
@@ -75,7 +82,7 @@ test('timed countdown, rest countdown with +15 s and skip, finish summary and re
   await page.clock.runFor(30_000);
   await expect(page.getByRole('heading', { name: '休息一下', exact: true })).toBeVisible();
   await page.getByRole('button', { name: '开始下一组', exact: true }).click();
-  await expect(page.getByRole('heading', { name: '平板支撑', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '平板支撑', exact: true })).toBeFocused();
   await expect(page.getByText('第 2 组，共 2 组', { exact: true })).toBeVisible();
 
   // Second set untouched records the target; skipping rest moves to the next exercise.
@@ -116,6 +123,40 @@ test('timed countdown, rest countdown with +15 s and skip, finish summary and re
   await expect(page.getByRole('img', { name: /本周每天.*分钟/ })).toBeVisible();
   await expect(page.getByText(/没练完/)).toHaveCount(0);
   await expect(page.getByText(/如实记下来/)).toHaveCount(1);
+});
+
+test('0 sets: finish offers 放弃这次 and 继续训练; closing 修改数值 with an empty value keeps the last one', async ({
+  page,
+}) => {
+  await startManual(page, ['臀桥']);
+  await page.getByRole('button', { name: '修改数值', exact: true }).click();
+  const reps = page.getByRole('dialog').getByRole('spinbutton');
+  const before = await reps.inputValue();
+  await reps.fill('');
+  await expect(reps).toHaveValue('');
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).not.toBeVisible();
+  await page.getByRole('button', { name: '修改数值', exact: true }).click();
+  await expect(reps).toHaveValue(before);
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).not.toBeVisible();
+  await page.getByRole('button', { name: '暂停或结束', exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: '结束并记下', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '这次先到这里', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '继续训练', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '臀桥', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '暂停或结束', exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: '结束并记下', exact: true }).click();
+  await page.getByRole('button', { name: '放弃这次', exact: true }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect
+    .poll(() =>
+      page.evaluate(async () => {
+        const p = '/src/persistence/db.ts';
+        return (await (await import(/* @vite-ignore */ p)).database.v8Workouts.toArray())[0]?.status;
+      }),
+    )
+    .toBe('abandoned');
 });
 
 test('390px screenshots of player, rest, finish and review in all five themes @screens', async ({ page }) => {

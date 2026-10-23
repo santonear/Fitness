@@ -1,7 +1,8 @@
 name: Publish a Fitness preview
 
-# Preview deploys need no approval. They may run from any branch, but only to
-# a preview config that shares no Worker, D1 or KV with production.
+# Preview deploys need no approval. They run only from main and the working
+# branch families (codex/, claude/, v8/), and only to a preview config that
+# shares no Worker, D1 or KV with production.
 on:
   workflow_dispatch:
     inputs:
@@ -26,6 +27,11 @@ concurrency:
 
 jobs:
   publish:
+    if: >-
+      github.ref == 'refs/heads/main' ||
+      startsWith(github.ref, 'refs/heads/codex/') ||
+      startsWith(github.ref, 'refs/heads/claude/') ||
+      startsWith(github.ref, 'refs/heads/v8/')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: cloudflare-preview

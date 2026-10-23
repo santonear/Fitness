@@ -5,19 +5,32 @@ import { DomainError } from '../../domain/errors';
 import { v8PlanVersionSchema, v8WorkoutSchema } from '../../domain/schemas';
 import type { CoachResponse, CoachRequest } from '../../coach/contracts';
 import { adaptCoachResponse } from '../../coach/response-adapter';
-import type { EnginePlan } from '../../engine/contracts';
+import { enginePlanSchema, type EnginePlan } from '../../engine/contracts';
+import type { PlanVersion } from '../../domain/v8/contracts';
+import type { V8Library } from '../../persistence/v8-migration';
+import type { ReviewSuggestion } from '../review/contracts';
 import { isFeatureEnabled } from '../feature-flags';
 import { shiftTrainingDates } from '../training-dates';
-import { carriedBudget, carriedSchedule, invalid, localDate, START_DATE_WINDOW_DAYS } from './shared';
+import {
+  type LocalCandidate,
+  carriedBudget,
+  carriedSchedule,
+  invalid,
+  localDate,
+  START_DATE_WINDOW_DAYS,
+} from './shared';
 import type { WorkflowContext } from './context';
 import type { createPlanSetup } from './plan-setup';
 import { DEFAULT_TIME_ZONE, addDays } from '../../domain/local-date';
+import { nextVersionNumber } from '../../persistence/plan-version-numbers';
+
+type PlanChangeProposal = LocalCandidate['proposal'];
 
 export function createPlanVersions(
   ctx: WorkflowContext,
   depsIn: { adopt: ReturnType<typeof createPlanSetup>['adopt'] },
 ) {
-  const { repo, db, assertHealthItems, checkedEnginePlan, mappedEngineProfile } = ctx;
+  const { repo, db, assertHealthItems, assertPlanChangeAllowed, checkedEnginePlan, mappedEngineProfile } = ctx;
   const { adopt } = depsIn;
   /** Explicit acceptance only. A response alone never writes any training data. */
   async function applyCoachCandidate({
@@ -147,43 +160,133 @@ export function createPlanVersions(
             : undefined;
       if (!proposal) return invalid('NO_PLAN_CANDIDATE');
       if (request.trainingEngine && !enginePlan) throw new DomainError('CONFLICT', 'STALE_CANDIDATE');
-      const acceptedEnginePlan = checkedEnginePlan(enginePlan, proposal);
-      if (acceptedEnginePlan) {
-        const mapped = state.coachProfile
-          ? await mappedEngineProfile({
-              ...state.coachProfile,
-              weeklyTarget: proposal.weeklyTarget,
-              sessionMinutes: proposal.sessionMinutes,
-              preferredDays: proposal.preferredDays,
-            })
-          : undefined;
-        if (!mapped || !applicableEnginePlan(acceptedEnginePlan, mapped)) return invalid('ENGINE_PLAN_UNAVAILABLE');
-      }
-      const { reasons: _reasons, ...content } = proposal;
-      const next = v8PlanVersionSchema.parse({
-        ...content,
-        scheduleOriginalText: version.scheduleOriginalText,
-        id: crypto.randomUUID(),
-        planId: plan.id,
-        versionNumber: version.versionNumber + 1,
-        createdAt: new Date().toISOString(),
-        source: 'ai',
-        origin: response.type === 'review_summary' ? 'review_suggestion' : 'coach_change',
-        basedOnVersionId: version.id,
-        ...(acceptedEnginePlan ? { enginePlan: acceptedEnginePlan } : {}),
+      return savePlanChange({
+        state,
+        plan,
+        version,
+        proposal,
+        enginePlan,
         // Picked calendar days stay unless the user explicitly asked to change days in this conversation.
-        ...scheduleAfterProposal(carriedSchedule(version), request, version, proposal),
-        ...carriedBudget(version),
-        changeSummary:
-          response.type === 'change_proposal'
-            ? response.changes
-            : [response.type === 'review_summary' ? response.suggestion!.summary : ''],
+        schedule: scheduleAfterProposal(carriedSchedule(version), request, version, proposal),
+        fields: {
+          source: 'ai',
+          origin: response.type === 'review_summary' ? 'review_suggestion' : 'coach_change',
+          changeSummary:
+            response.type === 'change_proposal'
+              ? response.changes
+              : [response.type === 'review_summary' ? response.suggestion!.summary : ''],
+        },
       });
-      await db.v8PlanVersions.add(next);
-      await db.v8Plans.put({ ...plan, currentVersionId: next.id });
-      const { nextWorkoutOverride: _stale, ...rest } = state;
-      await db.v8State.put(rest);
-      return next;
+    }, expectedRevision);
+  }
+  /**
+   * The one validated path from an accepted proposal to a new plan version (coach change and review suggestion):
+   * safety holds, health limits, engine applicability, max+1 numbering, carried budget. Runs inside repo.write.
+   */
+  async function savePlanChange({
+    state,
+    plan,
+    version,
+    proposal,
+    enginePlan,
+    schedule,
+    fields,
+  }: {
+    state: V8Library['state'];
+    plan: V8Library['plans'][number];
+    version: V8Library['planVersions'][number];
+    proposal: PlanChangeProposal;
+    enginePlan?: EnginePlan;
+    schedule: ReturnType<typeof carriedSchedule>;
+    fields: Pick<PlanVersion, 'source' | 'origin' | 'changeSummary' | 'reviewRule'>;
+  }) {
+    await assertPlanChangeAllowed(state);
+    await assertHealthItems(
+      proposal.templates.flatMap(t => t.items),
+      state,
+    );
+    const acceptedEnginePlan = checkedEnginePlan(enginePlan, proposal);
+    if (acceptedEnginePlan) {
+      const mapped = state.coachProfile
+        ? await mappedEngineProfile({
+            ...state.coachProfile,
+            weeklyTarget: proposal.weeklyTarget,
+            sessionMinutes: proposal.sessionMinutes,
+            preferredDays: proposal.preferredDays,
+          })
+        : undefined;
+      if (!mapped || !applicableEnginePlan(acceptedEnginePlan, mapped)) return invalid('ENGINE_PLAN_UNAVAILABLE');
+    }
+    const { reasons: _reasons, ...content } = proposal;
+    const next = v8PlanVersionSchema.parse({
+      ...content,
+      scheduleOriginalText: version.scheduleOriginalText,
+      id: crypto.randomUUID(),
+      planId: plan.id,
+      versionNumber: await nextVersionNumber(db, plan.id),
+      createdAt: new Date().toISOString(),
+      basedOnVersionId: version.id,
+      ...(acceptedEnginePlan ? { enginePlan: acceptedEnginePlan } : {}),
+      ...schedule,
+      ...carriedBudget(version),
+      ...fields,
+    });
+    await db.v8PlanVersions.add(next);
+    await db.v8Plans.put({ ...plan, currentVersionId: next.id });
+    const { nextWorkoutOverride: _stale, ...rest } = state;
+    await db.v8State.put(rest);
+    return next;
+  }
+  /** Weekly review "adopt": same validated path as a coach change; days and engine baseline follow the plan. */
+  async function adoptReviewSuggestion(
+    suggestion: ReviewSuggestion,
+    expectedRevision: number,
+    generation: number,
+    summary: string,
+  ) {
+    return repo.write(async () => {
+      const meta = await repo.readMetadata(),
+        state = await db.v8State.get('v8');
+      const plan = state?.currentPlanId ? await db.v8Plans.get(state.currentPlanId) : undefined;
+      if (
+        (meta.restoreGeneration ?? 0) !== generation ||
+        !state ||
+        !plan ||
+        plan.readOnly ||
+        plan.deletedAt ||
+        plan.currentVersionId !== suggestion.basedOnVersionId
+      )
+        throw new DomainError('CONFLICT', 'STALE_REVIEW');
+      const version = await db.v8PlanVersions.get(plan.currentVersionId);
+      if (!version) throw new DomainError('INVALID', 'MISSING_VERSION');
+      const proposal = { ...suggestion.proposal, preferredDays: version.preferredDays };
+      // The suggestion changes templates or frequency only; the engine baseline follows so previews stay engine-checked.
+      let enginePlan: EnginePlan | undefined;
+      if (version.enginePlan && isFeatureEnabled('trainingEngine')) {
+        const candidate = enginePlanSchema.safeParse({
+          ...version.enginePlan,
+          weeklyTarget: proposal.weeklyTarget,
+          sessionMinutes: proposal.sessionMinutes,
+          preferredDays: proposal.preferredDays,
+          templates: proposal.templates,
+        });
+        if (!candidate.success) return invalid('ENGINE_PLAN_UNAVAILABLE');
+        enginePlan = candidate.data;
+      }
+      return savePlanChange({
+        state,
+        plan,
+        version,
+        proposal,
+        enginePlan,
+        schedule: carriedSchedule(version),
+        fields: {
+          source: 'local',
+          origin: 'review_suggestion',
+          reviewRule: suggestion.rule,
+          changeSummary: [summary],
+        },
+      });
     }, expectedRevision);
   }
   async function undoAppliedCoachVersion({
@@ -243,7 +346,7 @@ export function createPlanVersions(
       const next = v8PlanVersionSchema.parse({
         ...version,
         id: crypto.randomUUID(),
-        versionNumber: version.versionNumber + 1,
+        versionNumber: await nextVersionNumber(db, plan.id),
         createdAt: new Date().toISOString(),
         origin: 'manual',
         basedOnVersionId: version.id,
@@ -266,5 +369,5 @@ export function createPlanVersions(
       return next;
     }, expectedRevision);
   }
-  return { applyCoachCandidate, undoAppliedCoachVersion, changeStartDate };
+  return { applyCoachCandidate, adoptReviewSuggestion, undoAppliedCoachVersion, changeStartDate };
 }

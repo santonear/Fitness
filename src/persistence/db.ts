@@ -3,6 +3,7 @@ import { DATABASE_VERSION } from '../domain/storage-version';
 import type { AssistantConversation } from '../domain/assistant-conversation';
 import { recoverAssistantSchedule, recoverLegacyPlanSchedules } from './assistant-schedule-migration';
 import { migrateBodyProfile } from './body-profile-migration';
+import { renumberDuplicateVersions } from './plan-version-numbers';
 import type { CoachLedger } from '../domain/coach-reminders';
 import { legacyExerciseFavorites } from './exercise-favorites';
 import Dexie, { type Table } from 'dexie';
@@ -82,6 +83,11 @@ export class FitnessDatabase extends Dexie {
           ...row,
           assistantScheduleRecoveryV2At: recoveredAt,
         });
+      });
+      // Idempotent: duplicated version numbers from undo + edit get the plan's next free numbers, all or nothing.
+      await vipDb.transaction('rw', versions, async () => {
+        const repaired = renumberDuplicateVersions(await versions.toArray());
+        if (repaired.length) await versions.bulkPut(repaired);
       });
     });
     this.version(DATABASE_VERSION)

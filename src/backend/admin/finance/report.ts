@@ -75,7 +75,9 @@ export function reconciliationTodos(state: ControlState): AdminTodo[] {
           text: pending
             ? `有 ${pending} 笔调用等待按供应商账单核算。调用是否可用以当前准入状态为准。`
             : '账本标记为需要核对。请检查供应商账单和现有费用记录。',
-          actions: [{ label: '逐笔核对', href: '/admin/ledger' }],
+          actions: [{ label: '逐笔核对', href: '/admin/ledger', key: 'reconcile' }],
+          key: pending ? 'ledgerPending' : 'ledgerFlagged',
+          params: { count: pending },
         },
       ]
     : [];
@@ -206,7 +208,13 @@ export function financeTodos(spent: number, pending: number, budget: number, mon
           level: threshold === 100 ? 'alert' : threshold === 80 ? 'warn' : 'info',
           title: `本月预算已用 ${Math.round(ratio * 100)}%（¥${((spent + pending) / 100).toFixed(2)} / ¥${(budget / 100).toFixed(2)}）`,
           text: '包含已核算费用与待核算预留；不改变当前调用准入规则。',
-          actions: [{ label: '查看费用', href: '/admin/ledger' }],
+          actions: [{ label: '查看费用', href: '/admin/ledger', key: 'viewCosts' }],
+          key: 'budgetUsed',
+          params: {
+            percent: Math.round(ratio * 100),
+            spent: ((spent + pending) / 100).toFixed(2),
+            budget: (budget / 100).toFixed(2),
+          },
         },
       ]
     : [];

@@ -6,7 +6,7 @@ import { Button } from '../../../components/common';
 import { PrimaryButton, CountdownRing, Yaya } from '../../../components/kit';
 import { format } from '../../../mainline/context';
 import { holdStart, holdPause, holdRemaining, restRemaining, restDone, restExtend, restTotal } from '../timer-logic';
-import { ExerciseMediaHero } from './workout-parts';
+import { ExerciseMediaHero, focusIfLost } from './workout-parts';
 import type { WorkoutModel } from './workout-model';
 
 /** The rest countdown or the current exercise, below the player header. */
@@ -74,7 +74,7 @@ export function workoutBody(m: WorkoutModel) {
         <div className="wk-rest-head">
           <Yaya pose="cheer" size={56} mode="disc" alt="" float={false} />
           <div>
-            <h1 id="wk-rest-title" className="v9-display">
+            <h1 id="wk-rest-title" className="v9-display" tabIndex={-1} ref={focusIfLost}>
               {p.restTitle}
             </h1>
             <p className="wk-muted">{p.restHint}</p>
@@ -149,7 +149,9 @@ export function workoutBody(m: WorkoutModel) {
               <p className="wk-muted">
                 {format(t.setCount, { current: Math.min(done + 1, item.plannedSetCount), total: item.plannedSetCount })}
               </p>
-              <h1 className="v9-display">{name(effectiveId)}</h1>
+              <h1 className="v9-display" tabIndex={-1} ref={focusIfLost}>
+                {name(effectiveId)}
+              </h1>
             </div>
             {timer && !thisDone ? (
               <div className="wk-timer">

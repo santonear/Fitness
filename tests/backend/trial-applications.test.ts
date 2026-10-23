@@ -1,6 +1,6 @@
 import { afterEach, expect, it } from 'vitest';
 import { SqliteControlStore } from '../support/backend/sqlite-store';
-import { TrialApplications } from '../../src/backend/trial-applications';
+import { PENDING_EXPIRY_DAYS, TrialApplications } from '../../src/backend/trial-applications';
 import { ControlService, testConfig } from '../../src/backend/control';
 import { createHandler } from '../../src/backend/http';
 const DAY = 86400000;
@@ -38,6 +38,28 @@ it('a full application queue rejects new records without changing qualification 
   expect(await f.store.read()).toEqual(before);
   // A lost response remains recoverable even when the queue has since filled.
   expect((await f.service.apply(f.input)).id).toBe(f.input.id);
+});
+it('pending applications older than the expiry stop counting toward capacity and are reported, never deleted', async () => {
+  const f = fixture();
+  await f.service.apply(f.input);
+  await f.store.transact(state => {
+    const original = state.applications![f.input.id];
+    for (let n = 1; n < 200; n++) {
+      const id = crypto.randomUUID();
+      state.applications![id] = { ...original, id, ownerDigest: `other-${n}` };
+    }
+  });
+  const fresh = { ...f.input, receipt: 'b'.repeat(64), id: crypto.randomUUID() };
+  await expect(f.service.apply(fresh)).rejects.toMatchObject({ code: 'APPLICATION_CAPACITY' });
+  f.advance(PENDING_EXPIRY_DAYS);
+  expect((await f.service.apply(fresh)).id).toBe(fresh.id);
+  expect(Object.keys((await f.store.read()).applications!)).toHaveLength(201);
+  expect(await f.service.list(f.receipt)).toEqual([
+    expect.objectContaining({ state: 'pending', pendingExpired: true }),
+  ]);
+  expect((await f.service.report()).filter(a => a.pendingExpired)).toHaveLength(200);
+  // The expired request no longer blocks its owner from asking again.
+  expect((await f.service.apply({ ...f.input, id: crypto.randomUUID() })).state).toBe('pending');
 });
 it('ledger size rejection rolls back the application and its audit entry together', async () => {
   const store = new SqliteControlStore(':memory:', 512);
@@ -205,6 +227,23 @@ it('HTTP admission fails closed without anti-abuse configuration, admin stays pr
     }),
   );
   expect(response.status).toBe(200);
+  let verified = 0;
+  const limited = createHandler(control, {
+    origins: ['https://fitness.test'],
+    maxBodyBytes: 4096,
+    verifyApplication: async () => (verified++, true),
+    limitApplication: async () => true,
+  });
+  const refused = await limited(
+    new Request('https://fitness.test/api/v1/trial/apply', {
+      method: 'POST',
+      headers: { origin: 'https://fitness.test', 'content-type': 'application/json' },
+      body: JSON.stringify({ ...f.input, id: crypto.randomUUID(), proof: 'valid' }),
+    }),
+  );
+  expect(refused.status).toBe(429);
+  expect(await refused.json()).toMatchObject({ error: 'APPLICATION_BUSY' });
+  expect(verified).toBe(0);
 });
 it('HTTP application, administrator approval, atomic claim and status use the same ledger', async () => {
   const f = fixture();

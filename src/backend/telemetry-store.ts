@@ -7,6 +7,8 @@ export const anonymousBatchSchema = z.strictObject({
   event: z.enum(['plan_confirmed', 'workout_started', 'workout_completed', 'review_opened']),
   count: z.number().int().min(1).max(1000).default(1),
 });
+/** A bucket stops growing at this daily count, so a flood cannot push the aggregates arbitrarily high. */
+export const TELEMETRY_DAILY_BUCKET_CAP = 100000;
 /** Only aggregate enum buckets are retained. No user IDs, raw records or timestamps. */
 export const telemetryDDL =
   'CREATE TABLE IF NOT EXISTS ops_telemetry_counts (day TEXT NOT NULL, bucket TEXT NOT NULL, count INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(day,bucket))';
@@ -28,9 +30,9 @@ export class TelemetryStore {
     const result = await this.db
       .withSession('first-primary')
       .prepare(
-        'INSERT INTO ops_telemetry_counts(day,bucket,count) VALUES(?,?,?) ON CONFLICT(day,bucket) DO UPDATE SET count=count+excluded.count',
+        'INSERT INTO ops_telemetry_counts(day,bucket,count) VALUES(?,?,?) ON CONFLICT(day,bucket) DO UPDATE SET count=MIN(count+excluded.count,?)',
       )
-      .bind(day, bucket, count)
+      .bind(day, bucket, count, TELEMETRY_DAILY_BUCKET_CAP)
       .run();
     if (!result.success || result.meta.changes !== 1) throw new Error('TELEMETRY_UNAVAILABLE');
   }

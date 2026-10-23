@@ -43,12 +43,19 @@ self.addEventListener('notificationclick', event => {
     await self.clients.openWindow('/');
   }));
 });
+// The page saves the user's language in this cache (src/i18n/index.ts); Chinese when none is saved.
+const savedLanguage = () =>
+  (typeof caches === 'undefined'
+    ? Promise.resolve('zh')
+    : caches.open('fitness-settings').then(cache => cache.match('/__fitness-language')).then(saved => (saved ? saved.text() : 'zh'))
+  ).then(value => (value === 'en' ? 'en' : 'zh'), () => 'zh');
 self.addEventListener('push', event => {
   // Server sends no body. No health data or user text reaches a push provider.
-  event.waitUntil(self.registration.pushManager.getSubscription().then(subscription => {
+  event.waitUntil(self.registration.pushManager.getSubscription().then(async subscription => {
     if (!subscription) return;
+    const language = await savedLanguage();
     return self.registration.showNotification('Fitness', {
-      body: '只是提醒，不代表那天必须练 / A reminder does not mean you have to train that day.',
+      body: language === 'en' ? 'A reminder does not mean you have to train that day.' : '只是提醒，不代表那天必须练',
       tag: 'fitness-scheduled-reminder', icon: '/pwa/icon-192.png', silent: true,
     });
   }));

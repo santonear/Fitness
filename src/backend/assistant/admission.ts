@@ -37,7 +37,10 @@ function admissionWindow(previous: DailyState | null, now: number, timeZone: str
     throw new AssistantAccessError('CONCURRENT_REQUEST', 409);
   if (previous && now < previous.reset_at)
     return { day: previous.day, timeZone: previous.time_zone, resetAt: previous.reset_at, used: previous.used };
-  return { day: localDay(now, timeZone), timeZone, resetAt: nextMidnight(now, timeZone), used: 0 };
+  // The first admitted zone stays with the subject: switching to a zone whose midnight is near would open extra windows.
+  // shortcut: a user who moves zones keeps the old reset time; allow a rate-limited zone change if anyone asks.
+  const zone = previous?.time_zone ?? timeZone;
+  return { day: localDay(now, zone), timeZone: zone, resetAt: nextMidnight(now, zone), used: 0 };
 }
 export interface UsageCall {
   inputTokens?: number;
@@ -77,10 +80,11 @@ export class AssistantUsageStore {
       .prepare('INSERT OR IGNORE INTO assistant_daily(subject_id,day,time_zone,reset_at,used) VALUES(?,?,?,?,0)')
       .bind(subjectId, w.day, w.timeZone, w.resetAt)
       .run();
-    // A single conditional write serializes all isolates. Leases exceed the hard request timeout.
+    // A single conditional write serializes all isolates and reserves the message, so a reply whose stream is
+    // dropped before finish() still counts. Leases exceed the hard request timeout.
     const changed = await this.db
       .prepare(
-        'UPDATE assistant_daily SET day=?,time_zone=?,reset_at=?,used=CASE WHEN reset_at<=? THEN 0 ELSE used END,active_request=?,lease_until=? WHERE subject_id=? AND lease_until<=? AND (reset_at<=? OR used<?) AND NOT EXISTS(SELECT 1 FROM assistant_requests WHERE subject_id=? AND request_id=?)',
+        'UPDATE assistant_daily SET day=?,time_zone=?,reset_at=?,used=CASE WHEN reset_at<=? THEN 1 ELSE used+1 END,active_request=?,lease_until=? WHERE subject_id=? AND lease_until<=? AND (reset_at<=? OR used<?) AND NOT EXISTS(SELECT 1 FROM assistant_requests WHERE subject_id=? AND request_id=?)',
       )
       .bind(
         w.day,
@@ -109,11 +113,12 @@ export class AssistantUsageStore {
       .run();
     return w;
   }
+  /** `consumed` keeps the message reserved at admission; false refunds it (server-side failure only). */
   async finish(
     subjectId: string,
     requestId: string,
     task: string,
-    success: boolean,
+    consumed: boolean,
     calls: UsageCall[],
     price: UsagePrice,
     now: number,
@@ -125,9 +130,9 @@ export class AssistantUsageStore {
         .bind(result, subjectId, requestId),
       this.db
         .prepare(
-          'UPDATE assistant_daily SET used=used+?,active_request=NULL,lease_until=0 WHERE subject_id=? AND active_request=?',
+          'UPDATE assistant_daily SET used=CASE WHEN ? THEN used ELSE MAX(used-1,0) END,active_request=NULL,lease_until=0 WHERE subject_id=? AND active_request=?',
         )
-        .bind(success ? 1 : 0, subjectId, requestId),
+        .bind(consumed ? 1 : 0, subjectId, requestId),
     ];
     for (const [index, call] of calls.entries())
       statements.push(

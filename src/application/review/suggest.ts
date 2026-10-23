@@ -1,13 +1,14 @@
 import type { SessionTemplate } from '../../domain/v8/contracts';
 import type { SuggestionInput, ReviewSuggestion, PlanProposal } from './contracts';
 import { computeExerciseEvidence } from './evidence';
+import { dayOf } from './charts';
 import { estimatePlannedMinutes } from '../../domain/duration-estimate';
 import { discomfortReplacement } from '../rules/basic-items';
-import { addDays, todayIn } from '../../domain/local-date';
+import { DEFAULT_TIME_ZONE, addDays, todayIn } from '../../domain/local-date';
 
 function reviewDate(input: SuggestionInput, workout: SuggestionInput['workouts'][number]): string {
   if (!input.timeZone) return workout.localDate;
-  return todayIn(input.timeZone, workout.startedAt);
+  return dayOf(workout, input.timeZone);
 }
 function shortTemplate(source: SessionTemplate): SessionTemplate {
   const items = source.items.slice(0, 3).map(item => ({ ...structuredClone(item), sets: 2 }));
@@ -154,7 +155,7 @@ export function suggestChange(input: SuggestionInput): ReviewSuggestion | null {
     input.todayLocalDate &&
     completed.every(w => w.to < input.todayLocalDate! && w.complete === 0) &&
     addDays(completed[0].to, 1) === completed[1].from &&
-    plan.createdAt.slice(0, 10) < completed[0].from &&
+    todayIn(input.timeZone ?? DEFAULT_TIME_ZONE, plan.createdAt) < completed[0].from &&
     current.complete === 0 &&
     plan.weeklyTarget > 2
   ) {

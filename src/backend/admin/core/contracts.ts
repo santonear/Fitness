@@ -33,9 +33,12 @@ export type TodoLevel = 'alert' | 'warn' | 'info';
 export interface AdminTodo {
   id: string;
   level: TodoLevel;
+  /** Chinese fallback text; clients translate by `key` + `params` when they know the key. */
   title: string;
   text: string;
-  actions: { label: string; href: string }[];
+  actions: { label: string; href: string; key?: string }[];
+  key?: string;
+  params?: Record<string, string | number>;
 }
 export interface TodoSource<C = AdminContext> {
   id: string;

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
 import { adminRequest, reverifyAdmin, useAdminAction } from '../shared/api';
 import { AdminDialog, AdminToast } from '../shared/components';
-import { adminDate, adminMoney } from '../shared/format';
+import { adminDate, adminLocale, adminMoney } from '../shared/format';
 import { DAY_MS } from '../../../domain/local-date';
 type User = {
   id: string;
@@ -540,7 +540,7 @@ export function AuditPage({ language = 'zh' }: { language?: string }) {
         .filter(i => userLabel('action', String(i.action), language).toLowerCase().includes(q.toLowerCase()))
         .map((i, n) => (
           <p key={n}>
-            {new Date(Number(i.at)).toLocaleString()} · {String(i.actor)} · {String(i.object_id)} ·{' '}
+            {new Date(Number(i.at)).toLocaleString(adminLocale(zh))} · {String(i.actor)} · {String(i.object_id)} ·{' '}
             {userLabel('action', String(i.action), language)} · {userLabel('result', String(i.result), language)}
           </p>
         ))}

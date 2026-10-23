@@ -1,3 +1,4 @@
+import { useAdminLocale } from '../shared/format';
 import { pushStatusCopy, type PushUnavailableReason } from '../../../domain/push-status';
 import { qualityLabel } from './copy';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -35,6 +36,7 @@ interface Group {
 }
 export function AdminErrorsPage() {
   const t = useWords();
+  const locale = useAdminLocale();
   const { data, error } = useQualityData<{ groups: Group[]; collecting?: boolean }>('errors');
   return (
     <section className="admin-quality">
@@ -68,7 +70,7 @@ export function AdminErrorsPage() {
               {group.currentHour}
             </p>
             <p>
-              {new Date(group.first).toLocaleString()} — {new Date(group.last).toLocaleString()}
+              {new Date(group.first).toLocaleString(locale)} — {new Date(group.last).toLocaleString(locale)}
             </p>
             <p>
               {t('涉及版本', 'Versions')}：{group.versions.join(', ')}
@@ -92,7 +94,7 @@ export function AdminErrorsPage() {
                   <tbody>
                     {group.trend.map(point => (
                       <tr key={point.time}>
-                        <td>{new Date(point.time).toLocaleTimeString()}</td>
+                        <td>{new Date(point.time).toLocaleTimeString(locale)}</td>
                         <td>{point.count}</td>
                       </tr>
                     ))}
@@ -117,6 +119,7 @@ interface Report {
 }
 export function AdminQualityPage() {
   const t = useWords();
+  const locale = useAdminLocale();
   const { data, error } = useQualityData<{
     reports: Report[];
     blocks: { day: string; category: string; count: number }[];
@@ -140,7 +143,7 @@ export function AdminQualityPage() {
           {data.reports.length === 0 && <p>{t('暂无评测报告。', 'No evaluation reports.')}</p>}
           {data.reports.map(report => (
             <article className="admin-quality-report" key={report.id}>
-              <h4>{new Date(report.time).toLocaleString()}</h4>
+              <h4>{new Date(report.time).toLocaleString(locale)}</h4>
               <p>
                 {t('提示词版本', 'Prompt version')}：{report.promptVersion} · {report.model}
               </p>

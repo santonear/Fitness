@@ -1,11 +1,14 @@
 import { workoutSeconds } from '../workout-duration';
-import { addDays, todayIn, weekStart } from '../../domain/local-date';
+import { workoutTimes } from '../day-timeline';
+import type { WorkoutRecord } from '../../domain/v8/contracts';
+import { addDays, isLocalDate, todayIn, weekStart } from '../../domain/local-date';
 
 /** Read-only chart projection for the V9 review and finish screens. Never writes or infers facts. */
 export interface ChartWorkout {
   id: string;
   startedAt: string;
   endedAt?: string;
+  timeCorrections?: WorkoutRecord['timeCorrections'];
   localDate?: string;
   status: string;
   sets: readonly { reps?: number; loadGrams?: number | null; durationSeconds?: number }[];
@@ -25,9 +28,10 @@ export type ChartMetric = 'sessions' | 'volumeKg' | 'minutes';
 const moved = (row: ChartWorkout) => row.status === 'complete' || row.status === 'partial';
 export { addDays as shiftDate, weekStart };
 
+/** Review day of a workout: its (latest corrected) start in the viewing time zone; saved local date as fallback. */
 export function dayOf(row: ChartWorkout, timeZone: string): string {
-  const value = todayIn(timeZone, row.startedAt);
-  return /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : (row.localDate ?? '');
+  const value = todayIn(timeZone, workoutTimes(row).startedAt);
+  return isLocalDate(value) ? value : (row.localDate ?? '');
 }
 /** Total lifted in kilograms: reps × load for loaded sets only. Bodyweight and timed sets add nothing. */
 export function volumeKg(row: ChartWorkout): number {
@@ -41,7 +45,11 @@ export function volumeKg(row: ChartWorkout): number {
   );
   return Math.round(grams / 100) / 10;
 }
-export const sessionMinutes = (row: ChartWorkout) => Math.round(workoutSeconds(row.startedAt, row.endedAt) / 60);
+/** Uses the latest user time correction, like the calendar. */
+export const sessionMinutes = (row: ChartWorkout) => {
+  const times = workoutTimes(row);
+  return Math.round(workoutSeconds(times.startedAt, times.endedAt) / 60);
+};
 
 /** Seven days starting at `from`. */
 export const dayBuckets = (from: string): ChartBucket[] =>

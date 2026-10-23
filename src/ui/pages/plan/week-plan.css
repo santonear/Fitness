@@ -471,8 +471,8 @@
   border-radius: var(--s1);
   background: linear-gradient(90deg, var(--cal-today-from), var(--cal-today-to));
   box-shadow:
-    0 0 0 1.5px var(--cal-today-halo),
-    0 0 10px 1px var(--cal-today-glow);
+    0 0 0 calc(var(--s1) * 0.375) var(--cal-today-halo),
+    0 0 calc(var(--s2) + var(--s1) / 2) calc(var(--s1) / 4) var(--cal-today-glow);
 }
 .v9-month-day[aria-current='date']:is([data-state='done'], [data-state='partial']) > .v9-month-mark {
   background: var(--cal-done-ink);
@@ -531,7 +531,7 @@
   border: 0;
   border-radius: var(--s1);
   background: linear-gradient(90deg, var(--cal-today-from), var(--cal-today-to));
-  box-shadow: 0 0 6px var(--cal-today-glow);
+  box-shadow: 0 0 calc(var(--s1) * 1.5) var(--cal-today-glow);
 }
 .v9-month-legend [data-state='done'] .v9-month-mark {
   background: var(--cal-done-bg);

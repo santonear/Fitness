@@ -87,7 +87,7 @@ describe('assistant admission SQLite integration', () => {
       resetAt: reset,
     });
     await store.admit('subject', 'new-day', 'Asia/Shanghai', 30, reset);
-    expect((await store.read('subject'))?.used).toBe(0);
+    expect((await store.read('subject'))?.used).toBe(1);
   });
   it('atomically admits one of two concurrent store instances', async () => {
     const { store, other } = setup();
@@ -97,7 +97,7 @@ describe('assistant admission SQLite integration', () => {
     ]);
     expect(result.filter(item => item.status === 'fulfilled')).toHaveLength(1);
     expect(result.filter(item => item.status === 'rejected')).toHaveLength(1);
-    expect((await store.read('subject'))?.used).toBe(0);
+    expect((await store.read('subject'))?.used).toBe(1);
   });
   it('failure releases the lease without consuming a daily message', async () => {
     const { store, sql } = setup();
@@ -137,12 +137,29 @@ describe('assistant admission SQLite integration', () => {
       code: 'CONCURRENT_REQUEST',
     });
     await store.admit('subject', 'recovery', 'Asia/Shanghai', 30, now + 180001);
-    await finish(store, 'stale', true, now + 180002);
-    expect(await store.read('subject')).toMatchObject({ used: 0, active_request: 'recovery' });
+    await finish(store, 'stale', false, now + 180002);
+    // The stale request never finished in time, so its reservation stays counted.
+    expect(await store.read('subject')).toMatchObject({ used: 2, active_request: 'recovery' });
     await finish(store, 'recovery', true, now + 180003);
     await expect(store.admit('subject', 'stale', 'Asia/Shanghai', 30, now + 180004)).rejects.toMatchObject({
       code: 'REQUEST_ALREADY_HANDLED',
     });
-    expect((await store.read('subject'))?.used).toBe(1);
+    expect((await store.read('subject'))?.used).toBe(2);
+  });
+  it('keeps the first time zone after the window resets so a near-midnight zone cannot open extra windows', async () => {
+    const { store } = setup();
+    await store.admit('subject', 'one', 'Asia/Shanghai', 30, now);
+    await finish(store, 'one');
+    const reset = nextMidnight(now, 'Asia/Shanghai');
+    const next = await store.admit('subject', 'two', 'Pacific/Kiritimati', 30, reset);
+    expect(next).toMatchObject({ timeZone: 'Asia/Shanghai', resetAt: nextMidnight(reset, 'Asia/Shanghai'), used: 0 });
+  });
+  it('reserves the message at admission, so a request that never finishes still counts', async () => {
+    const { store } = setup();
+    for (let i = 0; i < 30; i++) await store.admit('subject', String(i), 'Asia/Shanghai', 30, now + i * 180001);
+    expect((await store.read('subject'))?.used).toBe(30);
+    await expect(store.admit('subject', 'over', 'Asia/Shanghai', 30, now + 30 * 180001)).rejects.toMatchObject({
+      code: 'DAILY_MESSAGE_LIMIT',
+    });
   });
 });

@@ -29,6 +29,8 @@ export function answerText(text: string, locale: 'zh' | 'en'): string {
 /** Fixed summaries the app wrote into stored plan versions, shown in the current language. */
 const summaries: Record<string, readonly [string, string]> = {
   部分时长按动作估算: ['部分时长按动作估算', 'Some durations are estimated from the exercises'],
+  改为每周预算: ['改为每周预算', 'Switched to a weekly budget'],
+  改为按天安排: ['改为按天安排', 'Switched to day-by-day'],
 };
 export function storedSummaryText(text: string, locale: 'zh' | 'en'): string {
   const pair = summaries[text.trim()] ?? Object.values(summaries).find(([, en]) => en === text.trim());

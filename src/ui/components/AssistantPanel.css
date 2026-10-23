@@ -230,7 +230,7 @@
 .assistant-input .v8-composer:focus-within {
   box-shadow:
     var(--el-inset),
-    0 0 0 2px var(--c-focus);
+    0 0 0 calc(var(--s1) / 2) var(--c-focus);
 }
 .assistant-input .v8-composer button {
   border-radius: var(--r-chip);

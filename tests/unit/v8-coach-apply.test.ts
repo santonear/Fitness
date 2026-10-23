@@ -97,6 +97,9 @@ function setup(active = false) {
     },
     v8PlanVersions: {
       get: async (k: string) => versions.get(k),
+      where: () => ({
+        equals: (planId: string) => ({ toArray: async () => [...versions.values()].filter(v => v.planId === planId) }),
+      }),
       add: async (v: any) => {
         versions.set(v.id, v);
       },
@@ -107,6 +110,7 @@ function setup(active = false) {
         workout = v;
       },
       where: () => ({ equals: () => ({ count: async () => (workout?.status === 'in_progress' ? 1 : 0) }) }),
+      toArray: async () => (workout ? [workout] : []),
     },
   } as unknown as FitnessDatabase;
   const target = { planId: id, versionId: vid, revision: 4 };

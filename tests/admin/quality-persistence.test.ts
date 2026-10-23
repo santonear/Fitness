@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AdminDatabase, AdminStatement } from '../../src/backend/admin/core/contracts';
 import {
   collectError,
+  ERROR_REPORT_LIMITS,
   errorSummary,
   recordBlockedCategory,
   saveEvaluation,
@@ -26,6 +27,7 @@ function database(extra: string[] = []): AdminDatabase {
   const incidents = readFileSync('migrations/admin/4_quality_incidents.sql', 'utf8');
   sqlite.exec(incidents);
   sqlite.exec(incidents);
+  sqlite.exec(readFileSync('migrations/admin/6_user_feedback.sql', 'utf8'));
   let batches: Promise<unknown> = Promise.resolve();
   return {
     prepare(sql) {
@@ -121,6 +123,25 @@ describe('quality SQLite persistence and retry', () => {
       ).status,
     ).toBe(400);
     expect((await errorSummary(db, now))[0].count).toBe(10);
+  });
+  it('rate-limits anonymous error reports per sender per hour without storing the address', async () => {
+    const event = { type: 'network', route: '/plan', version: '1.0.0', browser: 'Chrome', os: 'Android', time: now };
+    const send = (ip: string) =>
+      collectError(
+        new Request('https://test', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'cf-connecting-ip': ip },
+          body: JSON.stringify(event),
+        }),
+        { ADMIN_DB: db, ADMIN_ERROR_COLLECTION_ENABLED: 'true', CONTROL_DIGEST_SECRET: 'f'.repeat(64) },
+        now,
+      );
+    for (let i = 0; i < ERROR_REPORT_LIMITS.hourly; i++) expect((await send('203.0.113.7')).status).toBe(202);
+    expect((await send('203.0.113.7')).status).toBe(429);
+    expect((await send('198.51.100.2')).status).toBe(202);
+    expect((await errorSummary(db, now))[0].count).toBe(ERROR_REPORT_LIMITS.hourly + 1);
+    const keys = await db.prepare('SELECT key FROM user_feedback_rate').all<{ key: string }>();
+    expect(JSON.stringify(keys.results)).not.toContain('203.0.113.7');
   });
   it('deduplicates synthetic reports and detects conflicting same IDs', async () => {
     const report = {

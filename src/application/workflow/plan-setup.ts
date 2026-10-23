@@ -3,7 +3,6 @@ import { requestedPostpartumPhase, needsPostpartumReferralCheck } from '../postp
 import { hasHouseholdSupport } from '../../engine/equipment';
 import { applicableEnginePlan } from '../../engine/environment';
 import { type EngineCoachProfile, toEngineProfile } from '../engine-profile';
-import { pendingPainReviews, historyDangerReview } from '../pain-events';
 import { PLAN_RETENTION_MS } from '../plan-lifecycle';
 import { DomainError } from '../../domain/errors';
 import { v8CoachProfileSchema, v8PlanVersionSchema } from '../../domain/schemas';
@@ -19,10 +18,10 @@ import { isFeatureEnabled } from '../feature-flags';
 import { stableString, DATA } from '../../engine/data';
 import { EnginePlanUnavailableError } from '../engine-error';
 import { timePattern, validTrainingDates } from '../training-dates';
-import { unresolvedReview } from '../training-pain';
 import { type LocalCandidate, carriedBudget, carriedSchedule, invalid, localDate } from './shared';
 import type { WorkflowContext } from './context';
 import { DEFAULT_TIME_ZONE } from '../../domain/local-date';
+import { nextVersionNumber } from '../../persistence/plan-version-numbers';
 
 /** Basic rules are local and conservative; no model call or inferred medical suitability. */
 export function basicProposal(profile: CoachProfile, locale = 'zh') {
@@ -79,7 +78,8 @@ export function basicProposal(profile: CoachProfile, locale = 'zh') {
 }
 
 export function createPlanSetup(ctx: WorkflowContext) {
-  const { repo, db, postpartum, assertHealthItems, checkedEnginePlan, mappedEngineProfile } = ctx;
+  const { repo, db, postpartum, assertHealthItems, assertPlanChangeAllowed, checkedEnginePlan, mappedEngineProfile } =
+    ctx;
   async function saveEngineSettings(profile: EngineCoachProfile, expectedRevision: number, requestedAt?: string) {
     return repo.write(async () => {
       const state = await db.v8State.get('v8');
@@ -153,7 +153,7 @@ export function createPlanSetup(ctx: WorkflowContext) {
           ...content,
           id: crypto.randomUUID(),
           planId: plan.id,
-          versionNumber: version.versionNumber + 1,
+          versionNumber: await nextVersionNumber(db, plan.id),
           createdAt: new Date().toISOString(),
           origin: 'manual',
           source: 'local',
@@ -263,17 +263,8 @@ export function createPlanSetup(ctx: WorkflowContext) {
     localeOverride?: 'zh' | 'en',
     options?: { trainingEngine?: boolean },
   ): Promise<LocalCandidate> {
-    const painHistory = await db.v8Workouts.toArray();
     const painState = await db.v8State.get('v8');
-    if (painState?.cardiacPause) return invalid('CARDIAC_CLEARANCE_REQUIRED');
-    if (painState?.olderSafety?.reviewRequiredAt) return invalid('FALL_PROFESSIONAL_REQUIRED');
-    if (painState?.postpartumSafety?.urgentAt) return invalid('POSTPARTUM_PROFESSIONAL_REQUIRED');
-    if (
-      painState?.trainingPause ||
-      pendingPainReviews(painHistory).length ||
-      unresolvedReview(historyDangerReview(painHistory, painState?.coachProfile?.screening?.redFlagReview))
-    )
-      return invalid('PAIN_REVIEW_REQUIRED');
+    await assertPlanChangeAllowed(painState);
     const local = await db.profiles.toCollection().first(),
       locale = localeOverride ?? local?.locale;
     if (local?.bodyDetails?.values.age !== undefined && local.bodyDetails.values.age < 18)

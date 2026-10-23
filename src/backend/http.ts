@@ -39,6 +39,8 @@ export function createHandler(
     supplierMode?: 'external-transport';
     nutritionEnabled?: boolean;
     verifyApplication?: (proof: string) => Promise<boolean>;
+    /** True refuses one more application from this sender (counted before Turnstile verification). */
+    limitApplication?: (request: Request) => Promise<boolean>;
     turnstileSiteKey?: string;
   },
 ) {
@@ -173,6 +175,7 @@ export function createHandler(
           data,
         );
         if (!options.verifyApplication) throw new ControlError('APPLICATIONS_UNAVAILABLE', 503);
+        if (await options.limitApplication?.(request)) throw new ControlError('APPLICATION_BUSY', 429);
         if (!(await options.verifyApplication(value.proof))) throw new ControlError('VERIFICATION_REQUIRED', 403);
         let session: string | undefined;
         try {

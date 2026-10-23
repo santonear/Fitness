@@ -9,6 +9,7 @@ import { BodyProfilePage } from '../pages/settings/BodyProfilePanel';
 import { bodyCopy } from '../../i18n/features/onboarding/body';
 import { MaintenanceBanner } from '../admin/finance/MaintenanceBanner';
 import { planLifecycleCopy } from '../../i18n/features/plan/lifecycle';
+import { fill } from '../../i18n/features/onboarding/entry';
 import { Toast } from '../components/common/Toast';
 import { RestoreBoundary } from './RestoreBoundary';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
@@ -230,18 +231,14 @@ function Shell() {
       <Toast
         key={versionUndo?.expiresAt}
         message={
-          versionUndo
-            ? c.locale === 'zh'
-              ? `已更新到第 ${versionUndo.versionNumber} 版`
-              : `Updated to version ${versionUndo.versionNumber}`
-            : null
+          versionUndo ? fill(planLifecycleCopy[c.locale].versionUpdated, { version: versionUndo.versionNumber }) : null
         }
         duration={versionUndo ? Math.max(0, versionUndo.expiresAt - Date.now()) : 10000}
         onDismiss={() => setVersionUndo(undefined)}
         action={
           versionUndo
             ? {
-                label: c.locale === 'zh' ? '撤销' : 'Undo',
+                label: planLifecycleCopy[c.locale].undo,
                 onClick: () => {
                   if (!versionUndo || Date.now() >= versionUndo.expiresAt) return;
                   void workflow

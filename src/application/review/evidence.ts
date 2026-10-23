@@ -1,9 +1,11 @@
 import type { WorkoutRecord } from '../../domain/v8/contracts';
 import type { IncompleteTiming, ReviewDayType, ReviewTimeBand } from './contracts';
+import { latestSetFeedback } from '../pain-events';
+import { workoutTimes } from '../day-timeline';
 
 /** The caller selects the review period; instants use the viewing timezone, with the saved timezone as a compatibility fallback. */
 export function computeIncompleteTiming(
-  workouts: readonly Pick<WorkoutRecord, 'status' | 'startedAt' | 'timeZone'>[],
+  workouts: readonly Pick<WorkoutRecord, 'status' | 'startedAt' | 'timeZone' | 'timeCorrections'>[],
   timeZone?: string,
 ): IncompleteTiming {
   const counts = () => ({ partial: 0, notStarted: 0 });
@@ -16,7 +18,7 @@ export function computeIncompleteTiming(
       weekday: 'short',
       hour: '2-digit',
       hourCycle: 'h23',
-    }).formatToParts(new Date(workout.startedAt));
+    }).formatToParts(new Date(workoutTimes(workout).startedAt));
     const weekday = parts.find(part => part.type === 'weekday')!.value;
     const hour = Number(parts.find(part => part.type === 'hour')!.value);
     const day: ReviewDayType = weekday === 'Sat' || weekday === 'Sun' ? 'weekend' : 'weekday';
@@ -42,6 +44,8 @@ export function computeExerciseEvidence(workout: WorkoutRecord): {
       if (performed.has(id)) discomfort.add(id);
     }
   }
+  // Discomfort reported on a single set counts too; a later answer for the same set replaces the earlier one.
+  for (const event of latestSetFeedback(workout)) if (event.effort === 'discomfort') discomfort.add(event.exerciseId);
   for (const substitution of workout.substitutions ?? []) {
     if (substitution.reason === 'discomfort') discomfort.add(substitution.fromExerciseId);
   }

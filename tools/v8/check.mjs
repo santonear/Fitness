@@ -4,6 +4,21 @@ import { fileURLToPath } from 'node:url';
 import { coachCopyViolations } from './coach-language.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
+/** AGENTS.md §2.1: radius, shadow and font size come from var(--…); 0, %, inherit and none stay allowed. */
+export function literalSizes(css) {
+  for (const [, value] of css.matchAll(
+    /(?:^|[;{\s])(?:border(?:-[a-z]+)*-radius|box-shadow|font-size)\s*:\s*([^;}]*)/g,
+  )) {
+    let rest = value,
+      prior;
+    do {
+      prior = rest;
+      rest = rest.replace(/var\([^()]*\)/g, 'V');
+    } while (rest !== prior);
+    if (/\d(px|r?em)\b/.test(rest)) return true;
+  }
+  return false;
+}
 export function violations(file, source) {
   const found = [];
   const ui = /src\/(ui|themes|i18n|admin)\//.test(file);
@@ -13,6 +28,7 @@ export function violations(file, source) {
   if (/^src\/ui\/(pages|components)\//.test(file)) {
     if (/#[\da-f]{3,8}\b|\brgba?\(/i.test(source)) found.push('literal-color');
     if (/font-family|fontFamily/.test(source)) found.push('font-family');
+    if (file.endsWith('.css') && literalSizes(source)) found.push('literal-size');
   }
   // Admin console: colors live only in the admin token file (approved V9 admin design).
   if (/^src\/ui\/admin\//.test(file) && file !== 'src/ui/admin/tokens.ts' && /#[\da-f]{3,8}\b|\brgba?\(/i.test(source))

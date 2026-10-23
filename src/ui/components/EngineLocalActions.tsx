@@ -5,6 +5,7 @@ import type { SubstituteReason } from '../../engine/contracts';
 import { exercises } from '../../catalog/exercises';
 import { Button } from './common';
 import { getEligibleExercises } from '../../engine';
+import { templateLabel } from '../../i18n/features/plan/labels';
 import coachZh from '../../i18n/features/coach/zh.json';
 import coachEn from '../../i18n/features/coach/en.json';
 
@@ -56,7 +57,7 @@ export function EngineLocalActions({
           >
             {request.plan.templates.map((row, index) => (
               <option key={row.id} value={index}>
-                {row.name}
+                {templateLabel(row, locale, request.plan.templates)}
               </option>
             ))}
           </select>

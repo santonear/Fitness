@@ -21,5 +21,6 @@
   "dayDone": "{day}: done",
   "dayPartial": "{day}: partly done",
   "dayRest": "{day}: no workout",
-  "today": "Today"
+  "today": "Today",
+  "abandon": "Discard this workout"
 }

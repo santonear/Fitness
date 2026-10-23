@@ -6,7 +6,7 @@ import { type ExerciseSearchFilters } from '../../../../catalog/catalog-service'
 import { useState, useEffect, useRef } from 'react';
 import { useMainline, workflow } from '../../../mainline/context';
 import { useTrainingWakeLock } from '../useTrainingWakeLock';
-import { recommendedRestSeconds, type HoldTimer, type RestPlan } from '../timer-logic';
+import { recommendedRestSeconds, restVisible, type HoldTimer, type RestPlan } from '../timer-logic';
 import guideZh from '../../../../i18n/features/training/guide.zh.json';
 import guideEn from '../../../../i18n/features/training/guide.en.json';
 import playerZh from '../../../../i18n/features/training/player.zh.json';
@@ -79,9 +79,12 @@ export function useWorkoutState() {
   const panelTrigger = useRef<HTMLElement | null>(null),
     guideTrigger = useRef<HTMLElement | null>(null),
     safetyInline = useRef<HTMLElement | null>(null),
-    [guideOpen, setGuideOpen] = useState(false);
+    [guideOpen, setGuideOpen] = useState(false),
+    editStart = useRef(values);
   const showPanel = (next: Panel, trigger?: HTMLElement) => {
     if (trigger) panelTrigger.current = trigger;
+    // Closing the edit panel with an invalid value goes back to what was there when it opened.
+    if (next === 'edit') editStart.current = values;
     setPanel(next);
   };
   const copy = locale === 'zh' ? guideZh : guideEn,
@@ -104,9 +107,6 @@ export function useWorkoutState() {
   const latestSet = active?.sets.at(-1);
   const restKey =
     active && latestSet ? `${active.id}:${latestSet.itemIndex}:${latestSet.setIndex}:${latestSet.completedAt}` : '';
-  const anyHoldRunning = Object.values(holds).some(hold => hold.startedAt !== undefined);
-  const now = useNow(!!active && (anyHoldRunning || (!!restKey && !restClosed.includes(restKey))));
-  useTrainingWakeLock(!!active && !panel);
   const cardiacPanel = data ? (
     <CardiacStopPanel
       locale={locale}
@@ -135,6 +135,10 @@ export function useWorkoutState() {
           extraSeconds: 0,
         })
       : undefined;
+  const anyHoldRunning = Object.values(holds).some(hold => hold.startedAt !== undefined);
+  // Ticks only while a countdown runs or the rest screen can still show; the last tick re-checks and stops.
+  const now = useNow(!!active && (anyHoldRunning || restVisible(restPlan, Date.now(), restClosed.includes(restKey))));
+  useTrainingWakeLock(!!active && !panel);
   return {
     engineEnabled,
     data,
@@ -176,6 +180,7 @@ export function useWorkoutState() {
     guideOpen,
     setGuideOpen,
     showPanel,
+    editStart,
     copy,
     p,
     engineCopyText,

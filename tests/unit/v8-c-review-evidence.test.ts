@@ -244,3 +244,31 @@ describe('exercise evidence from one workout', () => {
     });
   });
 });
+describe('per-set discomfort evidence', () => {
+  const event = (id: string, effort: 'discomfort' | 'right', createdAt: string) => ({
+    id,
+    itemIndex: 0,
+    setIndex: 0,
+    exerciseId: 'squat',
+    createdAt,
+    effort,
+  });
+  it('counts discomfort reported on a single set even without whole-workout feedback', () => {
+    const result = computeExerciseEvidence(
+      workout({ sets: [set('squat')], setFeedbackEvents: [event('e1', 'discomfort', '2026-10-09T06:11:00Z')] }),
+    );
+    expect(result.discomfortExerciseIds).toEqual(['squat']);
+  });
+  it('uses the latest answer for the same set', () => {
+    const result = computeExerciseEvidence(
+      workout({
+        sets: [set('squat')],
+        setFeedbackEvents: [
+          event('e1', 'discomfort', '2026-10-09T06:11:00Z'),
+          event('e2', 'right', '2026-10-09T06:12:00Z'),
+        ],
+      }),
+    );
+    expect(result.discomfortExerciseIds).toEqual([]);
+  });
+});

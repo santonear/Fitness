@@ -16,7 +16,7 @@ import { normalizeTrainingDates } from '../../application/training-dates';
 import { DEFAULT_TIME_ZONE, addDays, todayIn, weekStart } from '../../domain/local-date';
 import { monthOf, shiftMonth } from '../../application/plan-calendar';
 import type { CoachProfile } from '../../domain/v8/contracts';
-import i18n from '../../i18n';
+import i18n, { languageKey } from '../../i18n';
 import { profileService } from '../../application/profile';
 import { repository } from '../../persistence/repository';
 import { createV8DataService } from '../../persistence/v8-access';
@@ -26,6 +26,14 @@ import type { OnboardingAnswers } from '../pages/onboarding/OnboardingPage';
 import type { MonthFacts, WeekFacts } from '../../application/review/contracts';
 import zh from '../../i18n/features/training/zh.json';
 import en from '../../i18n/features/training/en.json';
+/** The language saved on this device; Chinese when none is saved or storage is unavailable. */
+function savedLocale(): 'zh' | 'en' {
+  try {
+    return localStorage.getItem(languageKey) === 'en' ? 'en' : 'zh';
+  } catch {
+    return 'zh';
+  }
+}
 export const workflow = createV8Workflow(repository);
 const blank: OnboardingAnswers = {
   goalText: '',
@@ -167,7 +175,8 @@ function useController() {
   const [ready, setReady] = useState(false);
   const draftKey = useRef(''),
     lock = useRef(false);
-  const locale: 'zh' | 'en' = data?.profile?.locale === 'en' ? 'en' : 'zh',
+  // Before local data loads, boot and error copy follow the saved language.
+  const locale: 'zh' | 'en' = (data ? data.profile?.locale : savedLocale()) === 'en' ? 'en' : 'zh',
     t = locale === 'zh' ? zh : en;
   const observedCounts = useRef<{ plans: number; started: number; completed: number } | undefined>(undefined);
   async function reload() {
@@ -242,13 +251,7 @@ function useController() {
   useEffect(() => {
     let alive = true;
     void (async () => {
-      let initialLocale: 'zh' | 'en' = 'zh';
-      try {
-        if (localStorage.getItem('fitness.language') === 'en') initialLocale = 'en';
-      } catch {
-        /* Use the default when storage is unavailable. */
-      }
-      await profileService.initialize(initialLocale);
+      await profileService.initialize(savedLocale());
       const next = await reload();
       if (!alive) return;
       if (next.profile) await i18n.changeLanguage(next.profile.locale);

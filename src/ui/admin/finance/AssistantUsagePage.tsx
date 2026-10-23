@@ -1,3 +1,4 @@
+import { adminLocale } from '../shared/format';
 import { useEffect, useState } from 'react';
 import { useFeature } from '../../useFeature';
 import { adminRequest } from '../shared/api';
@@ -102,8 +103,8 @@ function useUsage(month: string, previous = month) {
 }
 const fen = (value: number, unknown: boolean, t: typeof copy.zh) =>
   `¥${(value / 100).toFixed(2)}${unknown ? ` + ${t.unknown}` : ''}`;
-const tokens = (value: number, unknown: boolean, t: typeof copy.zh) =>
-  `${value.toLocaleString()}${unknown ? ` + ${t.unknown}` : ''}`;
+const tokens = (value: number, unknown: boolean, t: typeof copy.zh, language: Language) =>
+  `${value.toLocaleString(adminLocale(language === 'zh'))}${unknown ? ` + ${t.unknown}` : ''}`;
 
 /** 用量 page: the one place the per-day usage table appears. */
 export function AssistantUsagePage({ language = 'zh' }: { language?: Language }) {
@@ -217,8 +218,8 @@ export function AssistantUsagePage({ language = 'zh' }: { language?: Language })
                     <td className="admin-id">{g.user}</td>
                     <td>{taskLabel(g.task, language)}</td>
                     <td className="admin-num">{g.calls}</td>
-                    <td className="admin-num">{tokens(g.input, g.unknownInput, t)}</td>
-                    <td className="admin-num">{tokens(g.output, g.unknownOutput, t)}</td>
+                    <td className="admin-num">{tokens(g.input, g.unknownInput, t, language)}</td>
+                    <td className="admin-num">{tokens(g.output, g.unknownOutput, t, language)}</td>
                     <td className="admin-num">{fen(g.cost, g.unknown, t)}</td>
                     <td>{usageResultLabel(g.result, language)}</td>
                   </tr>
@@ -287,7 +288,7 @@ export function AssistantSummary({ language = 'zh' }: { language?: Language }) {
           <div className="admin-figures">
             <div>
               <span>{t.calls}</span>
-              <strong>{total.calls.toLocaleString()}</strong>
+              <strong>{total.calls.toLocaleString(adminLocale(language === 'zh'))}</strong>
             </div>
             <div>
               <span>{t.success}</span>
@@ -375,7 +376,7 @@ function AssistantToday({ language }: { language: Language }) {
           <div className="admin-figures">
             <div>
               <span>{t.calls}</span>
-              <strong>{usage.today.calls.toLocaleString()}</strong>
+              <strong>{usage.today.calls.toLocaleString(adminLocale(language === 'zh'))}</strong>
             </div>
             <div>
               <span>{t.cost}</span>

@@ -143,7 +143,8 @@ export async function handleAssistant(
               subjectId,
               input.requestId,
               input.context?.task ?? 'CHAT',
-              success && !signal.aborted,
+              // A client that disconnects keeps the reservation; only server-side failures are refunded.
+              (success && !signal.aborted) || disconnected || request.signal.aborted,
               calls,
               assistantPrice,
               Date.now(),

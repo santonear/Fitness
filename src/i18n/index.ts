@@ -20,10 +20,27 @@ void i18n.use(initReactI18next).init({
   interpolation: { escapeValue: false },
   initAsync: false,
 });
+/** Service workers read the language here to word notifications (public/pwa/sw-template.js, public/admin-sw.js). */
+function shareWithServiceWorker(language: Language) {
+  const unavailable = () => {
+    /* Notifications fall back to Chinese when the cache is unavailable. */
+  };
+  try {
+    if (typeof caches === 'undefined') return;
+    caches
+      .open('fitness-settings')
+      .then(cache => cache.put('/__fitness-language', new Response(language)))
+      .catch(unavailable);
+  } catch {
+    unavailable();
+  }
+}
 document.documentElement.lang = i18n.language;
+shareWithServiceWorker(i18n.language === 'zh' ? 'zh' : 'en');
 i18n.on('languageChanged', language => {
   const supported = language === 'zh' ? 'zh' : 'en';
   document.documentElement.lang = supported;
+  shareWithServiceWorker(supported);
   try {
     localStorage.setItem(languageKey, supported);
   } catch {

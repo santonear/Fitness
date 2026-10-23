@@ -33,7 +33,8 @@ export function notificationPayload(category: Category, count: number) {
     applications: '申请等待超过两天',
     test: '测试提醒',
   };
-  return { title: 'Fitness 管理提醒', body: `${labels[category]}：${count} 项`, url: '/admin' };
+  // category + count let the service worker show the subscriber's language; body stays as the Chinese fallback.
+  return { title: 'Fitness 管理提醒', body: `${labels[category]}：${count} 项`, url: '/admin', category, count };
 }
 /** RFC 8291 encryption; VAPID signing and endpoint restrictions reuse push-service. */
 export async function encryptPayload(keys: { p256dh: string; auth: string }, payload: unknown): Promise<Uint8Array> {

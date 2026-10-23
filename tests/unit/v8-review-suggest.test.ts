@@ -51,6 +51,18 @@ describe('review suggestions remain optional and evidence based', () => {
   });
   it('does not treat a newly created plan as two missed weeks', () =>
     expect(suggestChange({ ...input, plan: { ...plan, createdAt: '2026-10-06T00:00:00Z' } })).toBeNull());
+  it('dates the plan creation in the user time zone, not UTC', () => {
+    // 2026-09-27 17:00 UTC is already 2026-09-28 in Shanghai, the first day of the reviewed weeks.
+    const created = { ...plan, createdAt: '2026-09-27T17:00:00Z' },
+      restart = {
+        ...input,
+        plan: created,
+        todayLocalDate: '2026-10-12',
+        completedWeeks: [input.previous, facts] as const,
+      };
+    expect(suggestChange({ ...restart, timeZone: 'Asia/Shanghai' })).toBeNull();
+    expect(suggestChange({ ...restart, timeZone: 'UTC' })?.rule).toBe('restart');
+  });
   it('offers frequency increase only when both weeks reach target', () => {
     expect(
       suggestChange({ ...input, current: { ...facts, complete: 3 }, previous: { ...input.previous, complete: 3 } })

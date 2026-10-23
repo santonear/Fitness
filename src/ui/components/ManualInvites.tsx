@@ -1,3 +1,4 @@
+import { adminLocale } from '../admin/shared/format';
 import { AppIcon } from './AppIcon';
 import { useState } from 'react';
 import { trialApi } from './TrialAccess';
@@ -52,7 +53,7 @@ export function ManualInvites({
           </label>
           <p>
             {zh ? '兑换截止：' : 'Redeem by: '}
-            {new Date(issued.expiresAt).toLocaleString()}
+            {new Date(issued.expiresAt).toLocaleString(adminLocale(zh))}
           </p>
           <button
             onClick={() => {
@@ -93,7 +94,7 @@ export function ManualInvites({
         <div key={invite.inviteId}>
           <p>
             {zh ? '编号：' : 'ID: '}
-            {invite.inviteId.slice(0, 12)} · {new Date(invite.expiresAt).toLocaleString()}
+            {invite.inviteId.slice(0, 12)} · {new Date(invite.expiresAt).toLocaleString(adminLocale(zh))}
           </p>
           <button
             disabled={busy}

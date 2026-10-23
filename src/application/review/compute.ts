@@ -1,12 +1,13 @@
 import type { WorkoutRecord, LegacyWorkoutProjection } from '../../domain/v8/contracts';
 import type { ReviewInput, ReviewFacts, ComputeWeekFacts, ComputeMonthFacts } from './contracts';
 import { workoutSeconds } from '../workout-duration';
+import { workoutTimes } from '../day-timeline';
+import { dayOf } from './charts';
 import { computeIncompleteTiming } from './evidence';
 import { addDays, isLocalDate, todayIn, weekStart, utcDay } from '../../domain/local-date';
 
 type Record = WorkoutRecord | LegacyWorkoutProjection;
 const within = (date: string, from: string, to: string) => date >= from && date <= to;
-const dateAt = (value: string, timeZone: string) => todayIn(timeZone, value);
 function records(input: ReviewInput): Record[] {
   // One identity counts once. Native V8 facts win if a caller also supplies an old projection.
   return [...new Map([...(input.legacyWorkouts ?? []), ...input.workouts].map(row => [row.id, row])).values()];
@@ -45,7 +46,7 @@ function maxima(rows: readonly Record[]) {
 function facts(input: ReviewInput, comparisonFrom: string, patternFrom = input.from): ReviewFacts {
   check(input);
   const all = records(input);
-  const inRange = (row: Record) => within(dateAt(row.startedAt, input.timeZone), input.from, input.to);
+  const inRange = (row: Record) => within(dayOf(row, input.timeZone), input.from, input.to);
   const current = all.filter(row => saved(row) && inRange(row));
   const planned = current.filter(row => row.planVersionId !== undefined);
   const activities = [...new Map(input.activities.map(row => [row.id, row])).values()].filter(row =>
@@ -56,7 +57,7 @@ function facts(input: ReviewInput, comparisonFrom: string, patternFrom = input.f
   const patterns = all.filter(
     row =>
       row.planVersionId &&
-      within(dateAt(row.startedAt, input.timeZone), patternFrom, input.to) &&
+      within(dayOf(row, input.timeZone), patternFrom, input.to) &&
       (row.status === 'partial' || row.status === 'not_started'),
   );
   const reasonCounts = { time: 0, fatigue: 0, discomfort: 0, equipment_busy: 0, not_today: 0, other: 0 };
@@ -65,7 +66,7 @@ function facts(input: ReviewInput, comparisonFrom: string, patternFrom = input.f
   for (const row of activities) activityCounts[row.type]++;
   const currentMax = maxima(current);
   const previousMax = maxima(
-    all.filter(row => within(dateAt(row.startedAt, input.timeZone), comparisonFrom, addDays(input.from, -1))),
+    all.filter(row => within(dayOf(row, input.timeZone), comparisonFrom, addDays(input.from, -1))),
   );
   const candidates = [...currentMax]
     .flatMap(([key, value]) => {
@@ -95,7 +96,10 @@ function facts(input: ReviewInput, comparisonFrom: string, patternFrom = input.f
     activityMinutes: activities.reduce((sum, row) => sum + row.minutes, 0),
     activityCounts,
     reasonCounts,
-    trainingSeconds: current.filter(moved).reduce((sum, row) => sum + workoutSeconds(row.startedAt, row.endedAt), 0),
+    trainingSeconds: current.filter(moved).reduce((sum, row) => {
+      const times = workoutTimes(row);
+      return sum + workoutSeconds(times.startedAt, times.endedAt);
+    }, 0),
     hasBodyWeight: input.bodyWeights.some(row => within(row.localDate, input.from, input.to)),
     incompleteTiming: computeIncompleteTiming(patterns, input.timeZone),
     improvements,
@@ -112,10 +116,10 @@ export const computeMonthFacts: ComputeMonthFacts = input => {
   const priorMonth = utcDay(Date.UTC(first.getUTCFullYear(), first.getUTCMonth() - 1, 1));
   const weeks: { from: string; complete: number; partial: number }[] = [];
   const all = records(input).filter(
-    row => row.planVersionId && within(dateAt(row.startedAt, input.timeZone), input.from, input.to),
+    row => row.planVersionId && within(dayOf(row, input.timeZone), input.from, input.to),
   );
   for (let from = weekStart(input.from); from <= input.to; from = addDays(from, 7)) {
-    const rows = all.filter(row => within(dateAt(row.startedAt, input.timeZone), from, addDays(from, 6)));
+    const rows = all.filter(row => within(dayOf(row, input.timeZone), from, addDays(from, 6)));
     weeks.push({
       from,
       complete: rows.filter(row => row.status === 'complete').length,
@@ -123,9 +127,14 @@ export const computeMonthFacts: ComputeMonthFacts = input => {
     });
   }
   const result = facts(input, priorMonth, input.from);
+  // Only weeks that lie wholly in the month and have already ended can be short; partial or future weeks cannot.
+  const today = input.today ?? todayIn(input.timeZone);
+  const elapsed = weeks.filter(
+    week => week.from >= input.from && addDays(week.from, 6) <= input.to && addDays(week.from, 6) < today,
+  );
   return {
     ...result,
-    missingCount: weeks.reduce((sum, week) => sum + Math.max(0, input.weeklyTarget - week.complete), 0),
+    missingCount: elapsed.reduce((sum, week) => sum + Math.max(0, input.weeklyTarget - week.complete), 0),
     weeks,
   };
 };

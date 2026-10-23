@@ -1,6 +1,6 @@
 import { answerText } from '../../application/preset-text';
 import { EnginePlanNotices } from './EnginePlanNotices';
-import { estimatedDurationLabel } from '../../i18n/features/plan/labels';
+import { estimatedDurationLabel, templateLabel } from '../../i18n/features/plan/labels';
 import { diffTemplates, unchangedTemplates } from '../../assistant/template-diff';
 import type { CoachApplication, CoachPanelProps } from './CoachPanel';
 import type { SessionTemplate } from '../../domain/v8/contracts';
@@ -21,7 +21,7 @@ function AssistantTemplate({
 }) {
   return (
     <div>
-      <h4>{template.name}</h4>
+      <h4>{templateLabel(template, locale)}</h4>
       <p>
         {minutes?.(template) ?? template.estimatedMinutes} {locale === 'zh' ? '分钟' : 'min'}
       </p>
