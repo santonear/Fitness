@@ -1,13 +1,7 @@
 import type { EngineProfile, GateState, GateResult } from '../contracts';
 import { Rules } from '../data';
 type Gate = (id: string, status: GateResult['status'], reason: string, copy?: string) => void;
-export function applyPopulationLimits(
-  profile: EngineProfile,
-  rules: Rules,
-  state: GateState,
-  gate: Gate,
-  legacyScoring = false,
-) {
+export function applyPopulationLimits(profile: EngineProfile, rules: Rules, state: GateState, gate: Gate) {
   const population = state.population,
     pop = profile.population;
   state.rirMin = Math.max(0, 10 - state.maxRpe);
@@ -64,13 +58,9 @@ export function applyPopulationLimits(
         : pop.weeksSinceBirth >= boundaries.base_weeks.phase2[0] + buffer
           ? 2
           : 1;
-    state.phase = legacyScoring
-      ? pop.cleared
-        ? phase
-        : 1
-      : Math.min(pop.cleared ? phase : 1, profile.postpartumSafety?.regressedPhase ?? phase);
+    state.phase = Math.min(pop.cleared ? phase : 1, profile.postpartumSafety?.regressedPhase ?? phase);
 
-    if (!legacyScoring && state.phase === 1) {
+    if (state.phase === 1) {
       const ref = rules.get('postpartum.phase1').walking_intensity_ref;
       state.maxRpe = Math.min(state.maxRpe, rules.get(ref.rule_id)[ref.field]);
       state.rirMin = Math.max(state.rirMin, 10 - state.maxRpe);

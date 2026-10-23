@@ -19,7 +19,7 @@ export function hardEligible(e: Exercise, ctx: SelectionContext): boolean {
   if (ctx.excluded?.has(e.id)) return false;
   const cached = ctx.safety.eligibility.get(e.id);
   if (cached !== undefined) return cached;
-  const result = sharedEligibility(e, ctx, true);
+  const result = sharedEligibility(e, ctx);
   ctx.safety.eligibility.set(e.id, result);
   return result;
 }

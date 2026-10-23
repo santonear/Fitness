@@ -2,13 +2,7 @@ import { cautionSchema } from '../contracts';
 import type { EngineProfile, GateState, GateResult } from '../contracts';
 import { Rules, calendarDay, addCalendarMonths } from '../data';
 type Gate = (id: string, status: GateResult['status'], reason: string, copy?: string) => void;
-export function reviewRedFlags(
-  profile: EngineProfile,
-  rules: Rules,
-  state: GateState,
-  gate: Gate,
-  legacyScoring = false,
-) {
+export function reviewRedFlags(profile: EngineProfile, rules: Rules, state: GateState, gate: Gate) {
   const screening = profile.screening;
   const screenDate = screening?.completedAt ?? screening?.lastScreenedAt;
   const timeZone = (profile as EngineProfile & { timeZone?: string }).timeZone ?? 'UTC';
@@ -28,11 +22,9 @@ export function reviewRedFlags(
   let professionalSeen = false;
   let redFlagCautions: string[] = [];
   let resumedCautionLevel = 0;
-  const unreviewed = legacyScoring
-    ? []
-    : profile.cautions.filter(
-        joint => joint !== 'other' && !(profile.cautionLevels?.[joint] ?? 0) && !review?.areas.includes(joint),
-      );
+  const unreviewed = profile.cautions.filter(
+    joint => joint !== 'other' && !(profile.cautionLevels?.[joint] ?? 0) && !review?.areas.includes(joint),
+  );
   if (unreviewed.length)
     gate('caution.activation', 'blocked', 'explicit_joint_redflag_answers_required', 'redflag.copy.paused_banner');
   const repeatReferral = profile.painState?.some(

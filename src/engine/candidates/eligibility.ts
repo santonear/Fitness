@@ -104,18 +104,10 @@ function computeEligibility(e: Exercise, ctx: SelectionContext): boolean {
   if (s.excludeFlags.some(f => e.flags.includes(f)) || s.excludePositions.some(v => e.position.includes(v)))
     return false;
   if (r.get('ladder.gate.barbell').gated_flags.some((f: string) => e.flags.includes(f))) return false;
-  return sharedEligibility(e, ctx, false);
+  return sharedEligibility(e, ctx);
 }
-/**
- * Checks shared with the legacy source-target pool (progression/legacy-candidates).
- * `legacySource` keeps that pool's older rules: noJump does not exclude running, and caution
- * levels ignore the profile's own levels and pain-driven level increases.
- */
-export function sharedEligibility(
-  e: Exercise,
-  ctx: Omit<SelectionContext, 'safety'> & { safety: GateState },
-  legacySource: boolean,
-): boolean {
+/** Checks shared with the legacy source-target pool (progression/legacy-candidates). */
+export function sharedEligibility(e: Exercise, ctx: Omit<SelectionContext, 'safety'> & { safety: GateState }): boolean {
   const { profile: p, rules: r, safety: s } = ctx;
   const pop = p.population;
   if (e.stretch_hold_s && !stretchHoldRange(e, r, s.population)) return false;
@@ -129,7 +121,7 @@ export function sharedEligibility(
   if (
     (p.constraints.noJump || p.preferences.cannotDo.includes('jumping')) &&
     (e.flags.includes('jumping') ||
-      (!legacySource && e.flags.includes('running')) ||
+      e.flags.includes('running') ||
       e.modality === 'plyometric' ||
       e.primary_pattern === 'jump_land')
   )
@@ -174,13 +166,11 @@ export function sharedEligibility(
     return false;
   for (const joint of new Set([...p.cautions, ...(s.user.redflag_cautions ?? [])])) {
     if (joint === 'other') continue;
-    const level = legacySource
-      ? Math.max(s.user.redflag_caution_level ?? 1, p.painState?.some(x => (x.score ?? 0) > 5) ? 2 : 1)
-      : Math.max(
-          p.cautionLevels?.[joint as 'knee' | 'back' | 'shoulder' | 'wrist'] ?? 1,
-          s.user.redflag_caution_level ?? 1,
-          p.painState?.some(x => (x.score ?? 0) > 5 || (x.cautionLevelDelta ?? 0) > 0) ? 2 : 1,
-        );
+    const level = Math.max(
+      p.cautionLevels?.[joint as 'knee' | 'back' | 'shoulder' | 'wrist'] ?? 1,
+      s.user.redflag_caution_level ?? 1,
+      p.painState?.some(x => (x.score ?? 0) > 5 || (x.cautionLevelDelta ?? 0) > 0) ? 2 : 1,
+    );
     const v = r.get(`caution.${joint}.filter`)[`level_${level}`];
     if (condition(v.exclude_if, e, s.user)) return false;
   }

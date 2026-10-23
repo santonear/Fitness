@@ -1720,63 +1720,33 @@ describe('A source weekly structure', () => {
   });
 });
 describe('A medical gate migration', () => {
-  it.each(typicalProfiles)('retains every existing medical decision', p => {
+  it.each(typicalProfiles)('legacy source scoring reads the same medical decisions as the live gate', p => {
     const before = safety(p, rules),
-      after = runGates(p, rules); // Every legacy decision, notice and user fact remains individually enforced; new evidence gates are audited separately.
-    expect(after.reasons).toEqual(expect.arrayContaining(before.gates));
-    expect(after.notices).toEqual(expect.arrayContaining(before.notices));
-    expect(Object.fromEntries(Object.keys(before.user).map(key => [key, after.restrictions.user[key]]))).toEqual(
-      before.user,
-    );
-    expect(after.restrictions.maxRpe).toBeLessThanOrEqual(before.maxRpe);
-    expect(after.restrictions.rirMin).toBeGreaterThanOrEqual(before.rirMin);
+      after = runGates(p, rules); // Bo 2026-10-23: warm-up/cool-down targets use every new safety rule too.
+    expect(after.reasons).toEqual(before.gates);
+    expect(after.notices).toEqual(before.notices);
+    expect(after.restrictions.user).toEqual(before.user);
+    expect(after.restrictions.maxRpe).toBe(before.maxRpe);
+    expect(after.restrictions.rirMin).toBe(before.rirMin);
     expect(after.restrictions.population).toBe(before.population);
     expect(after.restrictions.phase).toBe(before.phase);
     const advisory = rules.get('safety.age45.vigorous_advisory'),
       required =
         (age(p) ?? 0) >= advisory.age_min_years &&
-        (p.screening.activityStatus === 'inactive' || p.screening.rarelyVigorous !== false),
-      legacyIds = new Set(before.gates.map(row => row.ruleId));
-    const addedIds = [
-      'safety.screen.cmr_symptoms',
-      'hiit.gate.unlock',
-      ...(required ? ['safety.age45.vigorous_advisory'] : []),
-      ...(p.screening.activityStatus === 'inactive' ? ['safety.unlock.vigorous'] : []),
-    ];
-    expect(
-      after.reasons
-        .filter(row => !legacyIds.has(row.ruleId))
-        .map(row => row.ruleId)
-        .sort(),
-    ).toEqual(addedIds.sort());
-    expect(after.reasons).toContainEqual({
+        (p.screening.activityStatus === 'inactive' || p.screening.rarelyVigorous !== false);
+    expect(before.gates).toContainEqual({
       ruleId: 'safety.screen.cmr_symptoms',
       status: 'pass',
       reason: 'cmr_answers_complete',
     });
-    expect(after.reasons).toContainEqual({
+    expect(before.gates).toContainEqual({
       ruleId: 'hiit.gate.unlock',
       status: 'restricted',
       reason: 'source_unlock_evidence_missing',
     });
-    expect(after.restrictions.user.hiit_unlocked).toBe(false);
-    expect(after.restrictions.user.age45_advisory_required).toBe(required);
-    expect(after.restrictions.user.age45_advisory_acked).toBe(!required);
-    expect(after.restrictions.user.balance_stage).toBe(rules.get('older.balance.progression').stages[0].stage);
-    expect(Object.keys(after.restrictions.user).sort()).toEqual(
-      [
-        ...Object.keys(before.user),
-        'hiit_unlocked',
-        'age45_advisory_required',
-        'age45_advisory_acked',
-        'balance_stage',
-      ].sort(),
-    );
-    expect(after.notices.map(row => row.code).sort()).toEqual(
-      [...new Set([...before.notices.map(row => row.code), ...(required ? [advisory.show_copy] : [])])].sort(),
-    );
+    expect(before.user.age45_advisory_required).toBe(required);
     if (required)
-      expect(after.reasons).toContainEqual(
+      expect(before.gates).toContainEqual(
         expect.objectContaining({ ruleId: 'safety.age45.vigorous_advisory', status: 'restricted' }),
       );
   });
