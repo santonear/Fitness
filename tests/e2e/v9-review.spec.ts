@@ -80,7 +80,8 @@ test('empty review shows 芽芽 and no zero grid; with records it shows ring, ba
   await expect(page.getByText('连续 3 周', { exact: true })).toBeVisible();
   await expect(page.getByRole('img', { name: /本周每天/ })).toBeVisible();
   await expect(page.getByRole('region', { name: '练到的部位' })).toBeVisible();
-  await expect(page.getByText(/如实记下来/)).toHaveCount(1);
+  await expect(page.getByText('你一开始说：「保持力量」。这周练了 3 次，每次都在往那儿靠近一点。')).toBeVisible();
+  await expect(page.getByText(/如实记下来/)).toHaveCount(0);
   await page.getByRole('radio', { name: '本月', exact: true }).click();
   await expect(page.getByRole('heading', { name: '本月回顾', exact: true })).toBeVisible();
   await expect(page.getByRole('img', { name: /本月每周/ })).toBeVisible();
