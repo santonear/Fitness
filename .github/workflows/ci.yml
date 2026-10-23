@@ -127,8 +127,7 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ matrix.browser }}
       # Each shard installs only its own browser (both Chrome shards stalled in this step on the 2026-10-22 full runs).
-      # A normal install takes ~20 s; a stalled apt step is cut off and retried instead of holding the job for minutes.
-      - run: for i in 1 2 3; do timeout 150 npx playwright install --with-deps ${{ matrix.browser }} && exit 0; echo "playwright install attempt $i did not finish, retrying"; done; exit 1
+      - run: npx playwright install --with-deps ${{ matrix.browser }}
       # Execute every existing test once; independent runners keep the job deadline unchanged.
       - run: npm run test:e2e -- --project=${{ matrix.browser }} --shard=${{ matrix.shard }}/2 --workers=2 --retries=1 $PW_SCREENS --reporter=line
       - uses: actions/upload-artifact@v4
@@ -159,8 +158,7 @@ jobs:
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && 'chromium-webkit' || 'chromium' }}
-      # A normal install takes ~20 s; a stalled apt step is cut off and retried instead of holding the job for minutes.
-      - run: for i in 1 2 3; do timeout 150 npx playwright install --with-deps $PW_BROWSERS && exit 0; echo "playwright install attempt $i did not finish, retrying"; done; exit 1
+      - run: npx playwright install --with-deps $PW_BROWSERS
       - run: npx playwright test --config tests/e2e/followup-finish.config.ts $PW_PROJECT --retries=1 $PW_SCREENS
       - run: npm run build && npx playwright test --config followup-pwa.config.ts --retries=1
 
@@ -185,8 +183,7 @@ jobs:
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && 'chromium-webkit' || 'chromium' }}
-      # A normal install takes ~20 s; a stalled apt step is cut off and retried instead of holding the job for minutes.
-      - run: for i in 1 2 3; do timeout 150 npx playwright install --with-deps $PW_BROWSERS && exit 0; echo "playwright install attempt $i did not finish, retrying"; done; exit 1
+      - run: npx playwright install --with-deps $PW_BROWSERS
       - run: npx playwright test --config playwright.trial.config.ts $PW_PROJECT --retries=1 $PW_SCREENS
       - run: npx playwright test --config tests/e2e/v8-mainline.config.ts --retries=1 $PW_SCREENS
       - run: npx playwright test --config tests/e2e/mainline-polish.config.ts --retries=1 $PW_SCREENS
@@ -214,8 +211,7 @@ jobs:
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-chromium
-      # A normal install takes ~20 s; a stalled apt step is cut off and retried instead of holding the job for minutes.
-      - run: for i in 1 2 3; do timeout 150 npx playwright install --with-deps chromium && exit 0; echo "playwright install attempt $i did not finish, retrying"; done; exit 1
+      - run: npx playwright install --with-deps chromium
       - run: npx playwright test --config tests/e2e/training-engine.config.ts --retries=1 $PW_SCREENS
 
   browser-admin:
@@ -239,8 +235,7 @@ jobs:
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-chromium
-      # A normal install takes ~20 s; a stalled apt step is cut off and retried instead of holding the job for minutes.
-      - run: for i in 1 2 3; do timeout 150 npx playwright install --with-deps chromium && exit 0; echo "playwright install attempt $i did not finish, retrying"; done; exit 1
+      - run: npx playwright install --with-deps chromium
       - run: npx playwright test --config tests/admin/integration.playwright.config.ts --retries=1
       - run: npx playwright test --config tests/admin/releases-ui.config.ts --retries=1
       - run: npx playwright test --config tests/admin/quality.playwright.config.ts --retries=1
