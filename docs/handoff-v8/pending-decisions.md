@@ -558,3 +558,13 @@ Bo 已定版 V9 设计并授权推进；计时规则按 Bo 当日决定改写（
 - 决定：66 张全部用图像生成按同一人物与画风重画（参考图仅为 Fitness 自己生成的自阻力划船图），文件名、512×512 WebP、署名“Fitness 原创示意图”不变；Bo 评审后批准提交、PR 与公网发布。
 - 理由：与已有写实人物配图一致；不使用任何 RepDB 图片作参考，符合其许可。
 - 涉及文件：public/exercise-media/fitness/*.webp、src/catalog/custom-exercise-media.json、tools/catalog/fitness-illustrations-v2/、public/media/NOTICE.md、规范 V9.0.11。
+
+## 2026-10-23 · 基础计划时长贴合所选时长；待办页接上真实 AI 用量
+
+- 情况（时长，体检 P1 #8 遗留）：引擎计划已按第 13 章拟合到所选时长 ±10%；未开启引擎时的基础计划（`basicItems`）把减脂步行固定为 5 分钟，15 分钟课估算为 20 分钟（+33%），长课在动作与组数用完后也不再补时。
+- 决定：容差取第 13 章 `duration.fit.tolerance`（±10%）。步行先在课太长时按 1 分钟缩短（最少 1 分钟），再在加组、加动作之后按 1 分钟补足（第 13 章 `duration.fit.algorithm` 第 4 步），单条上限 600 秒（`duration.cardio.cap`）；不新增动作、不突破每动作 4 组。安全动作池用尽仍不足时保留短课，沿用已有的“比所选时长短”说明。只影响新生成的计划，已有计划与记录不改。
+- 理由：只用规则书已有的补时顺序与上限；非减脂目标不加有氧（规则书只允许减脂/健康/开始动起来目标用有氧补时），不自行扩大基础动作池。
+- 情况（后台）：规范“待办（首页）附近 7 天 AI 费用图”；原近 7 天图（RecentCosts）读旧账本且已删除，芽芽 V2 下待办页没有任何 AI 用量。
+- 决定：待办页在系统状态下方加“今天的 AI 用量”（今天调用次数、估算费用、使用人数）与近 7 天估算费用柱图，数据来自已有 `GET finance/usage`（assistant_usage 表，只含次数与估算费用），复用 `CostChart`（新增可选的单序列标签与每日次数提示）。近 7 天没有记录时显示“近 7 天还没有 AI 调用记录。”。只在 `aiAssistantV2` 开启时出现。与 V9 设计稿的差异：不显示“/ 8,000 次”上限与“单个用户每天最多 60 次”，后端没有这个全站每日上限的数据来源。
+- 涉及文件：src/application/rules/basic-items.ts、tests/unit/v8-basic-plan.test.ts、src/ui/admin/finance/{AssistantUsagePage,CostChart}.tsx、src/ui/admin/shell/AdminShell.tsx、tests/admin/finance-ui.test.ts。
+- 待 Bo 确认：后台新增两句文案；是否需要全站每日调用上限及其显示。

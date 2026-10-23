@@ -1,5 +1,6 @@
 import { BudgetDismissButton } from '../todos/BudgetDismissButton';
 import { StatusOverview } from '../finance/StatusOverview';
+import { TodayUsage } from '../finance/AssistantUsagePage';
 import { useEffect, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -171,7 +172,10 @@ export function AdminShell() {
             </article>
           ))}
         </section>
-        <StatusOverview language={language} />
+        <div>
+          <StatusOverview language={language} />
+          <TodayUsage language={language} />
+        </div>
       </div>
     );
   else if (page === 'applications') content = <ApplicationsPage language={language} />;

@@ -24,6 +24,27 @@ describe('local basic plan', () => {
     }
     expect(p.sessionMinutes).toBe(minutes);
   });
+  // ch13 duration.fit.tolerance: estimate within ±10% of the chosen length whenever the safe pool can fill it.
+  it.each([15, 20, 30, 45, 60, 75, 90])('fits a %s minute fat-loss session within ±10%%', minutes => {
+    const p = basicProposal({ ...profile, goalText: '减脂', equipment: ['哑铃', '弹力带'], sessionMinutes: minutes })!;
+    for (const t of p.templates) {
+      expect(t.estimatedMinutes).toBeGreaterThanOrEqual(minutes * 0.9);
+      expect(t.estimatedMinutes).toBeLessThanOrEqual(minutes * 1.1);
+      const walk = t.items.find(item => item.target.metricType === 'duration_distance')!;
+      expect(walk.target).toMatchObject({ durationSeconds: expect.any(Number) });
+      expect((walk.target as { durationSeconds: number }).durationSeconds).toBeLessThanOrEqual(600);
+    }
+  });
+  it('keeps the walk capped and discloses a shorter session once the safe pool is exhausted', () => {
+    const p = basicProposal({ ...profile, goalText: '减脂', sessionMinutes: 120 })!;
+    for (const t of p.templates) {
+      expect(t.estimatedMinutes).toBeLessThan(120);
+      expect(t.items.filter(item => item.target.metricType === 'duration_distance')).toEqual([
+        expect.objectContaining({ target: expect.objectContaining({ durationSeconds: 600 }) }),
+      ]);
+    }
+    expect(p.reasons[1]).toContain(String(p.templates[0].estimatedMinutes));
+  });
   it('keeps short words and maps ranges to smallest legal slot', () => {
     const a = {
       goalText: '活动',
