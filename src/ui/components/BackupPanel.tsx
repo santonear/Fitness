@@ -5,17 +5,10 @@ import { useTranslation } from 'react-i18next';
 import { backupService, MAX_BACKUP_BYTES } from '../../application/backup';
 import { DomainError } from '../../domain/errors';
 import type { ValidatedBackup } from '../../domain/models';
+import { downloadBlob } from './download';
 
-function download(blob: Blob): void {
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = `fitness-backup-${new Date().toISOString().replaceAll(':', '-')}.json`;
-  document.body.append(anchor);
-  anchor.click();
-  anchor.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 60_000);
-}
+const download = (blob: Blob) =>
+  downloadBlob(blob, `fitness-backup-${new Date().toISOString().replaceAll(':', '-')}.json`);
 
 export function BackupPanel({ restored = false }: { restored?: boolean }) {
   const { i18n } = useTranslation();

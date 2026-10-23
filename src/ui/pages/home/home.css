@@ -249,3 +249,29 @@
   font: inherit;
   font-size: var(--t3);
 }
+/* 上周一张图: ring (or 芽芽 when nothing was trained), two short lines, 看回顾, close. */
+.v9-home-lastweek {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: start;
+  gap: var(--s3);
+}
+.v9-home-lastweek > div {
+  display: grid;
+  justify-items: start;
+  gap: var(--s1);
+}
+.v9-home-lastweek h2 {
+  margin: 0;
+  font-size: var(--t2);
+  color: var(--c-ink-muted);
+}
+.v9-home-lastweek p {
+  margin: 0;
+  font-size: var(--t3);
+  line-height: var(--lh-body);
+}
+.v9-home-lastweek .v9-home-lastweek-note {
+  font-size: var(--t2);
+  color: var(--c-ink-muted);
+}

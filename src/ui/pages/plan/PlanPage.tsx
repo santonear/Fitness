@@ -5,6 +5,7 @@ import type { PlannedItem, PlanVersion, WorkoutRecord } from '../../../domain/v8
 import { planMessages, type PlanLanguage } from '../../../i18n/features/plan/messages';
 import { PrimaryButton, SegmentedTabs } from '../../components/kit';
 import { MonthPlan } from './MonthPlan';
+import { CalendarExport } from './CalendarExport';
 import { planCalendarCopy } from '../../../i18n/features/plan/calendar';
 import { WeekPlan, PlanReasons, SessionItems, type WeekPlanProps } from './WeekPlan';
 import { planViewCopy } from '../../../i18n/features/plan/view';
@@ -195,6 +196,9 @@ export function PlanPage({
           </dd>
           <dd className="plan-muted">{estimatedDurationLabel(version.templates, language)}</dd>
         </dl>
+        {current && todayDate && (
+          <CalendarExport plan={version} todayDate={todayDate} startDate={startDate} locale={language} />
+        )}
       </header>
       {workouts && todayDate && timeZone && (
         <SegmentedTabs

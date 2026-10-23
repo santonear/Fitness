@@ -103,3 +103,14 @@
   flex-basis: 100%;
   font-size: var(--t1);
 }
+/* 添加到手机日历: a quiet button with one small line under it. */
+.v9-plan-calendar-export {
+  display: grid;
+  justify-items: start;
+  gap: var(--s1);
+}
+.v9-plan-calendar-export p {
+  margin: 0;
+  font-size: var(--t1);
+  color: var(--c-ink-muted);
+}
