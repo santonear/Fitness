@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
+import { useFeature } from '../../useFeature';
 import { adminRequest } from '../shared/api';
 import type { assistantUsageReport } from '../../../backend/assistant/usage-report';
+import { addDays, todayIn } from '../../../domain/local-date';
+import { CostChart } from './CostChart';
 import { financeLabel, usageResultLabel, usageResultOutcome } from './copy';
 type Report = Awaited<ReturnType<typeof assistantUsageReport>>;
 type Language = 'zh' | 'en';
@@ -30,6 +33,10 @@ const copy = {
     failed: '失败',
     total: '合计',
     detail: '逐日明细在「用量」页。',
+    today: '今天的 AI 用量',
+    todayNote: '只统计调用次数和估算费用，不包含对话内容。',
+    week: '近 7 天估算费用',
+    weekEmpty: '近 7 天还没有 AI 调用记录。',
   },
   en: {
     month: 'Month',
@@ -56,22 +63,33 @@ const copy = {
     failed: 'Failed',
     total: 'Total',
     detail: 'Daily details are on the Usage page.',
+    today: 'AI usage today',
+    todayNote: 'Call counts and estimated cost only, never conversation content.',
+    week: 'Estimated cost, last 7 days',
+    weekEmpty: 'No AI calls recorded in the last 7 days.',
   },
 };
 const taskLabel = (task: string, language: Language) =>
   task === 'CHAT' ? (language === 'zh' ? '对话' : 'Chat') : financeLabel(task, language);
 const currentMonth = () => new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit' }).format(Date.now());
-function useUsage(month: string) {
+const browserTimeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
+/** `previous` adds an earlier month's rows, for a 7-day window that crosses a month end. */
+function useUsage(month: string, previous = month) {
   const [report, setReport] = useState<Report>(),
     [failed, setFailed] = useState(false);
-  const query = `month=${month}&timeZone=${encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone)}`;
+  const zone = encodeURIComponent(browserTimeZone()),
+    query = `month=${month}&timeZone=${zone}`;
   useEffect(() => {
     let live = true;
     setFailed(false);
     setReport(undefined);
-    adminRequest<Report>(`finance/usage?${query}`)
-      .then(v => {
-        if (live) setReport(v);
+    Promise.all(
+      [month, ...(previous === month ? [] : [previous])].map(m =>
+        adminRequest<Report>(`finance/usage?month=${m}&timeZone=${zone}`),
+      ),
+    )
+      .then(([first, earlier]) => {
+        if (live) setReport(earlier ? { ...first, rows: [...first.rows, ...earlier.rows] } : first);
       })
       .catch(() => {
         if (live) setFailed(true);
@@ -79,7 +97,7 @@ function useUsage(month: string) {
     return () => {
       live = false;
     };
-  }, [query]);
+  }, [month, previous, zone]);
   return { report, failed, query };
 }
 const fen = (value: number, unknown: boolean, t: typeof copy.zh) =>
@@ -311,6 +329,78 @@ export function AssistantSummary({ language = 'zh' }: { language?: Language }) {
             </table>
           </div>
           <p className="admin-muted">{t.detail}</p>
+        </>
+      )}
+    </section>
+  );
+}
+
+/** Aggregate calls and estimated cost per local day for the 7 days ending `today`; never user content. */
+export function recentUsage(
+  rows: readonly Pick<Report['rows'][number], 'day' | 'subject_short_id' | 'estimated_fen'>[],
+  today: string,
+) {
+  const days = Array.from({ length: 7 }, (_, i) => addDays(today, i - 6)).map(day => {
+    const own = rows.filter(r => r.day === day);
+    return {
+      day,
+      calls: own.length,
+      fen: own.reduce((sum, r) => sum + (r.estimated_fen ?? 0), 0),
+      unknown: own.some(r => r.estimated_fen === null),
+      users: new Set(own.map(r => r.subject_short_id)).size,
+    };
+  });
+  return { days, today: days[6], empty: days.every(d => !d.calls) };
+}
+
+/** 待办 page: today's figures and the 7-day estimated-cost chart (UIUX 后台 3、5.3). */
+export function TodayUsage({ language = 'zh' }: { language?: Language }) {
+  return useFeature('aiAssistantV2') ? <AssistantToday language={language} /> : null;
+}
+function AssistantToday({ language }: { language: Language }) {
+  const t = copy[language],
+    today = todayIn(browserTimeZone()),
+    { report, failed } = useUsage(today.slice(0, 7), addDays(today, -6).slice(0, 7)),
+    usage = report && recentUsage(report.rows, today);
+  return (
+    <section className="admin-card" aria-label={t.today}>
+      <h2>{t.today}</h2>
+      <p className="admin-muted">{t.todayNote}</p>
+      {failed ? (
+        <p role="alert">{t.error}</p>
+      ) : !usage ? (
+        <p role="status">{t.loading}</p>
+      ) : (
+        <>
+          <div className="admin-figures">
+            <div>
+              <span>{t.calls}</span>
+              <strong>{usage.today.calls.toLocaleString()}</strong>
+            </div>
+            <div>
+              <span>{t.cost}</span>
+              <strong>{fen(usage.today.fen, false, t)}</strong>
+              {usage.today.unknown && <small className="admin-muted">{t.unknown}</small>}
+            </div>
+            <div>
+              <span>{t.users}</span>
+              <strong>{usage.today.users}</strong>
+            </div>
+          </div>
+          {usage.empty ? (
+            <p className="admin-empty">{t.weekEmpty}</p>
+          ) : (
+            <CostChart
+              language={language}
+              series={{ settled: t.week }}
+              rows={usage.days.map(d => ({
+                day: d.day,
+                settledFen: d.fen,
+                pendingFen: 0,
+                detail: `${t.calls} ${d.calls}${d.unknown ? ` + ${t.unknown}` : ''}`,
+              }))}
+            />
+          )}
         </>
       )}
     </section>
