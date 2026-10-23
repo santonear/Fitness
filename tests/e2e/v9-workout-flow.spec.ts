@@ -143,6 +143,7 @@ test('0 sets: finish offers 放弃这次 and 继续训练; closing 修改数值 
   await page.getByRole('button', { name: '暂停或结束', exact: true }).click();
   await page.getByRole('dialog').getByRole('button', { name: '结束并记下', exact: true }).click();
   await expect(page.getByRole('heading', { name: '这次先到这里', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '记下这次（0 组）', exact: true })).toBeVisible();
   await page.getByRole('button', { name: '继续训练', exact: true }).click();
   await expect(page.getByRole('heading', { name: '臀桥', exact: true })).toBeVisible();
   await page.getByRole('button', { name: '暂停或结束', exact: true }).click();

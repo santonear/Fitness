@@ -39,7 +39,7 @@ it('a full application queue rejects new records without changing qualification 
   // A lost response remains recoverable even when the queue has since filled.
   expect((await f.service.apply(f.input)).id).toBe(f.input.id);
 });
-it('pending applications older than the expiry stop counting toward capacity and are reported, never deleted', async () => {
+it('pending applications older than the expiry stop counting toward capacity and are reported until the weekly purge', async () => {
   const f = fixture();
   await f.service.apply(f.input);
   await f.store.transact(state => {
@@ -52,6 +52,10 @@ it('pending applications older than the expiry stop counting toward capacity and
   const fresh = { ...f.input, receipt: 'b'.repeat(64), id: crypto.randomUUID() };
   await expect(f.service.apply(fresh)).rejects.toMatchObject({ code: 'APPLICATION_CAPACITY' });
   f.advance(PENDING_EXPIRY_DAYS);
+  // The weekly purge ran a day ago, so the expired records are still kept for now.
+  await f.store.transact(state => {
+    state.applicationPurgeAt = f.now() - DAY;
+  });
   expect((await f.service.apply(fresh)).id).toBe(fresh.id);
   expect(Object.keys((await f.store.read()).applications!)).toHaveLength(201);
   expect(await f.service.list(f.receipt)).toEqual([
@@ -60,6 +64,24 @@ it('pending applications older than the expiry stop counting toward capacity and
   expect((await f.service.report()).filter(a => a.pendingExpired)).toHaveLength(200);
   // The expired request no longer blocks its owner from asking again.
   expect((await f.service.apply({ ...f.input, id: crypto.randomUUID() })).state).toBe('pending');
+});
+it('expired pending applications are removed at most once every 7 days; others stay', async () => {
+  const f = fixture();
+  await f.service.apply(f.input);
+  f.advance(PENDING_EXPIRY_DAYS - 1);
+  const later = { ...f.input, receipt: 'b'.repeat(64), id: crypto.randomUUID() };
+  await f.service.apply(later);
+  expect(Object.keys((await f.store.read()).applications!)).toHaveLength(2);
+  f.advance(1);
+  // The previous purge ran with the last apply, so the newly expired one waits for the next week.
+  await f.service.apply({ ...f.input, receipt: 'c'.repeat(64), id: crypto.randomUUID() });
+  expect(Object.keys((await f.store.read()).applications!)).toHaveLength(3);
+  f.advance(6);
+  await f.service.apply({ ...f.input, receipt: 'd'.repeat(64), id: crypto.randomUUID() });
+  const ids = Object.keys((await f.store.read()).applications!);
+  expect(ids).toHaveLength(3);
+  expect(ids).not.toContain(f.input.id);
+  expect(ids).toContain(later.id);
 });
 it('ledger size rejection rolls back the application and its audit entry together', async () => {
   const store = new SqliteControlStore(':memory:', 512);

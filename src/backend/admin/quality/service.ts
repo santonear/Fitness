@@ -9,11 +9,12 @@ import {
 } from './contracts';
 import { adminJson, type AdminTodo } from '../core/contracts';
 import { overRateLimit, readJsonBody, senderKey } from '../../request';
-import { utcDay } from '../../../domain/local-date';
+import { DAY_MS, utcDay } from '../../../domain/local-date';
 
 const HOUR = 3600000;
 /** Anonymous error reports per sender per hour, and from everyone per UTC day (bounds the 8-day summary scan). */
 export const ERROR_REPORT_LIMITS = { hourly: 30, daily: 2000 };
+export const ERROR_RETENTION_DAYS = 30;
 /** Collection needs both the deployment switch and the errorReports flag; the admin page says which. */
 export async function errorCollectionEnabled(env: QualityEnv & FeatureConfigEnv): Promise<boolean> {
   return (
@@ -50,6 +51,10 @@ export async function collectError(
     return adminJson({ error: 'RATE_LIMITED' }, 429);
   await env.ADMIN_DB.prepare('INSERT INTO admin_quality_errors(type,route,version,browser,os,time) VALUES(?,?,?,?,?,?)')
     .bind(type, route, version, browser, os, time)
+    .run();
+  // Error reports are kept 30 days (Bo 2026-10-23); the summary reads only the last 8.
+  await env.ADMIN_DB.prepare('DELETE FROM admin_quality_errors WHERE time<?')
+    .bind(now - ERROR_RETENTION_DAYS * DAY_MS)
     .run();
   return adminJson({ accepted: true }, 202);
 }

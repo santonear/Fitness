@@ -23,13 +23,26 @@ export interface TrialApplication {
   directlyActivated?: boolean;
 }
 /** A pending application unanswered this long no longer blocks its owner nor counts toward the capacity.
- * The record is kept (never deleted here) and reported with `pendingExpired: true`. */
+ * It is reported with `pendingExpired: true` until the weekly purge removes it (Bo 2026-10-23). */
 export const PENDING_EXPIRY_DAYS = 14;
+const PURGE_EVERY_DAYS = 7;
 /** Active applications allowed at once, and the hard ceiling on stored ones (keeps the control state small). */
 const APPLICATION_CAPACITY = 200,
   APPLICATION_CEILING = 1000;
 const pendingExpired = (a: TrialApplication, now: number) =>
   a.state === 'pending' && a.createdAt <= now - PENDING_EXPIRY_DAYS * DAY;
+/** Removes expired pending applications at most once every 7 days; runs inside the caller's transaction. */
+function purgeExpired(state: ControlState, now: number) {
+  if ((state.applicationPurgeAt ?? 0) > now - PURGE_EVERY_DAYS * DAY) return 0;
+  let removed = 0;
+  for (const [id, a] of Object.entries(state.applications ?? {}))
+    if (pendingExpired(a, now)) {
+      delete state.applications![id];
+      removed++;
+    }
+  state.applicationPurgeAt = now;
+  return removed;
+}
 const applicationView = (a: TrialApplication, now = Date.now()) => ({
   ...(pendingExpired(a, now) ? { pendingExpired: true } : {}),
   id: a.id,
@@ -84,6 +97,8 @@ export class TrialApplications {
     const ownerDigest = await this.owner(input.receipt);
     const sessionDigest = session ? await digest(session, this.secret) : undefined;
     return this.store.transact(state => {
+      const purged = purgeExpired(state, this.now());
+      if (purged) this.audit(state, 'application-expired-purge', String(purged));
       const apps = (state.applications ??= {});
       const previous = apps[input.id];
       if (previous) {
@@ -222,7 +237,7 @@ export class TrialApplications {
   }
   async retain() {
     return this.store.transact(state => {
-      let removed = 0;
+      let removed = purgeExpired(state, this.now());
       for (const [id, a] of Object.entries(state.applications ?? {})) {
         const subject = a.subjectId ? state.subjects[a.subjectId] : undefined;
         const unresolved =

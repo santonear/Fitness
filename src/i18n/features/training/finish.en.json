@@ -22,5 +22,6 @@
   "dayPartial": "{day}: partly done",
   "dayRest": "{day}: no workout",
   "today": "Today",
+  "saveZero": "Save this workout (0 sets)",
   "abandon": "Discard this workout"
 }

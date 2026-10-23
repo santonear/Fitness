@@ -238,7 +238,7 @@ export function FinishPage() {
           })
         }
       >
-        {t.save}
+        {done === 0 ? copy.saveZero : t.save}
       </PrimaryButton>
       {done === 0 && (
         <PrimaryButton

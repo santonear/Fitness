@@ -124,6 +124,30 @@ describe('quality SQLite persistence and retry', () => {
     ).toBe(400);
     expect((await errorSummary(db, now))[0].count).toBe(10);
   });
+  it('drops error reports older than 30 days when a new one arrives', async () => {
+    const insert = 'INSERT INTO admin_quality_errors(type,route,version,browser,os,time) VALUES(?,?,?,?,?,?)';
+    await db
+      .prepare(insert)
+      .bind('storage', '/', '1.0.0', 'Safari', 'iOS', now - 31 * 86400000)
+      .run();
+    await db
+      .prepare(insert)
+      .bind('storage', '/', '1.0.0', 'Safari', 'iOS', now - 29 * 86400000)
+      .run();
+    const event = { type: 'storage', route: '/', version: '1.0.0', browser: 'Safari', os: 'iOS', time: now };
+    const response = await collectError(
+      new Request('https://test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(event),
+      }),
+      { ADMIN_DB: db, ADMIN_ERROR_COLLECTION_ENABLED: 'true' },
+      now,
+    );
+    expect(response.status).toBe(202);
+    const rows = await db.prepare('SELECT time FROM admin_quality_errors ORDER BY time').all<{ time: number }>();
+    expect(rows.results.map(r => r.time)).toEqual([now - 29 * 86400000, now]);
+  });
   it('rate-limits anonymous error reports per sender per hour without storing the address', async () => {
     const event = { type: 'network', route: '/plan', version: '1.0.0', browser: 'Chrome', os: 'Android', time: now };
     const send = (ip: string) =>
