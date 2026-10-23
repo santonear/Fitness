@@ -567,4 +567,4 @@ Bo 已定版 V9 设计并授权推进；计时规则按 Bo 当日决定改写（
 - 情况（后台）：规范“待办（首页）附近 7 天 AI 费用图”；原近 7 天图（RecentCosts）读旧账本且已删除，芽芽 V2 下待办页没有任何 AI 用量。
 - 决定：待办页在系统状态下方加“今天的 AI 用量”（今天调用次数、估算费用、使用人数）与近 7 天估算费用柱图，数据来自已有 `GET finance/usage`（assistant_usage 表，只含次数与估算费用），复用 `CostChart`（新增可选的单序列标签与每日次数提示）。近 7 天没有记录时显示“近 7 天还没有 AI 调用记录。”。只在 `aiAssistantV2` 开启时出现。与 V9 设计稿的差异：不显示“/ 8,000 次”上限与“单个用户每天最多 60 次”，后端没有这个全站每日上限的数据来源。
 - 涉及文件：src/application/rules/basic-items.ts、tests/unit/v8-basic-plan.test.ts、src/ui/admin/finance/{AssistantUsagePage,CostChart}.tsx、src/ui/admin/shell/AdminShell.tsx、tests/admin/finance-ui.test.ts。
-- 待 Bo 确认：后台新增两句文案；是否需要全站每日调用上限及其显示。
+- Bo 2026-10-23 确认：后台新增两句文案（中英）批准；时长容差 ±10% 批准；全站每日调用上限及其显示暂缓。
