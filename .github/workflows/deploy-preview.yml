@@ -61,4 +61,7 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: npx wrangler deploy --config "$CONFIG" --message "preview ${GITHUB_REF_NAME} ${GITHUB_SHA::7}"
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+        run: |
+          test -n "$ADMIN_EMAIL" || { echo "Add ADMIN_EMAIL to the cloudflare-preview environment secrets."; exit 1; }
+          npx wrangler deploy --config "$CONFIG" --message "preview ${GITHUB_REF_NAME} ${GITHUB_SHA::7}" --var "ADMIN_EMAIL:$ADMIN_EMAIL"

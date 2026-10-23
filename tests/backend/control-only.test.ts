@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 import { createWorker } from '../../src/backend/worker';
-import { SqliteControlStore } from '../../src/backend/sqlite-store';
+import { SqliteControlStore } from '../support/backend/sqlite-store';
 
 const env = {
   CONTROL_MODE: 'control-only',

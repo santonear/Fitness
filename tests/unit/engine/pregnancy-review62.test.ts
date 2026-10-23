@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 import { Rules } from '../../../src/engine/data';
-import { independentPregnancyIssues } from '../../../src/engine/validation/pregnancy';
+import { independentPregnancyIssues } from '../../support/engine/independent-pregnancy';
 import { generatePlan, validatePlan } from '../../../src/engine';
 import { prescribe } from '../../../src/engine/dose';
 import { runGates } from '../../../src/engine/gates';

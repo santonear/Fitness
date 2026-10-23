@@ -1,7 +1,7 @@
 import { afterAll, expect, it } from 'vitest';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { coachEvaluationPlan, evaluateCoachV8Response } from '../../src/backend/coach-v8-evaluation';
-import { coachEvaluationFixture } from '../../src/backend/coach-evaluation-fixtures';
+import { coachEvaluationFixture } from '../support/backend/coach-evaluation-fixtures';
 import { coachV8ProviderPrompt } from '../../src/backend/coach-v8-provider';
 
 // Explicit opt-in only; CI and ordinary test runs never spend money.

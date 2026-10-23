@@ -1,0 +1,16 @@
+Copyright (c) 2026 santonear. All rights reserved.
+
+本仓库的源代码、提示词、训练规则、文案、设计与其他自有内容均保留所有权利。
+仓库公开仅供查看；未经版权人书面许可，不得复制、修改、分发、再许可、商用，
+也不得用于训练或评测机器学习模型。
+
+The source code, prompts, training rules, copy, designs and all other original
+content in this repository are proprietary. The repository is public for viewing
+only. No permission is granted to copy, modify, distribute, sublicense, use
+commercially, or use for training or evaluating machine-learning models without
+the copyright holder's prior written permission.
+
+Third-party material keeps its own license and is not covered by this notice,
+including RepDB exercise data and images under third_party/repdb/
+(see third_party/repdb/LICENSE.md) and the npm dependencies listed in
+package.json.

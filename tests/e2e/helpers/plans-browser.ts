@@ -2,7 +2,7 @@ import Dexie from 'dexie';
 import { createDatabase } from '../../../src/persistence/db';
 import { createRepository } from '../../../src/persistence/repository';
 import { createProfileService } from '../../../src/application/profile';
-import { createPlanService } from '../../../src/application/plans';
+import { createPlanService } from '../../support/legacy/plans';
 import type { PlanInput } from '../../../src/domain/models';
 function closeTestConnections(name: string) {
   // Dexie's runtime connection registry is intentionally not part of production APIs.

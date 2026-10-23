@@ -4,7 +4,7 @@ import { createRepository } from '../../src/persistence/repository';
 import { createProfileService } from '../../src/application/profile';
 import { createGuidedService } from '../../src/application/guided';
 import { createBackupService } from '../../src/application/backup';
-import { createWorkoutService } from '../../src/application/workouts';
+import { createWorkoutService } from '../support/legacy/workouts';
 import { EXERCISE_IDS } from '../../src/catalog/exercises';
 import type { ProgramCandidate } from '../../src/domain/guided-contracts';
 

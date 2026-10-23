@@ -9,8 +9,8 @@ test('rename rejects stale revisions and ongoing active edits without partial wr
   const result = await page.evaluate(async () => {
     const profilePath = '/src/application/profile.ts';
     await (await import(/* @vite-ignore */ profilePath)).profileService.initialize('en');
-    const { planService } = await import(String('/src/application/plans.ts'));
-    const { workoutService } = await import(String('/src/application/workouts.ts'));
+    const { planService } = await import(String('/tests/support/legacy/plans.ts'));
+    const { workoutService } = await import(String('/tests/support/legacy/workouts.ts'));
     const { database } = await import(String('/src/persistence/db.ts'));
     const plan = await planService.savePlan({
       name: 'Original',

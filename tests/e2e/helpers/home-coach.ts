@@ -7,13 +7,13 @@ export async function openHomeCoach(page: Page) {
   const chat = page
     .getByRole('dialog', { name: '芽芽快捷助手' })
     .getByRole('button', { name: '打开对话', exact: true });
+  // The click retries too: if the panel closes mid-animation the button detaches and a plain click waits forever.
+  const dialog = page.getByRole('dialog', { name: '芽芽', exact: true });
   await expect(async () => {
     if (!(await chat.isVisible())) await page.getByRole('button', { name: '芽芽助手，按住可上下拖动' }).click();
-    await expect(chat).toBeVisible({ timeout: 2000 });
-  }).toPass({ timeout: 20000 });
-  await chat.click();
-  const dialog = page.getByRole('dialog', { name: '芽芽', exact: true });
-  await expect(dialog).toBeVisible();
+    await chat.click({ timeout: 2000 });
+    await expect(dialog).toBeVisible({ timeout: 2000 });
+  }).toPass({ timeout: 30000 });
   return dialog;
 }
 /** Local adjustment controls live in their own sheet (快速调整) instead of inside the chat. */

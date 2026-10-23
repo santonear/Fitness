@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { ControlService, testConfig } from '../../src/backend/control';
-import { SqliteControlStore } from '../../src/backend/sqlite-store';
+import { SqliteControlStore } from '../support/backend/sqlite-store';
 import { digest, confirmationFor, goalConfirmationFor } from '../../src/backend/contracts';
 import { createHandler } from '../../src/backend/http';
 import { EXERCISE_IDS } from '../../src/catalog/exercise-ids';

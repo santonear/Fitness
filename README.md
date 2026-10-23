@@ -55,3 +55,7 @@ npm run test:e2e
 Exercise data by [RepDB](https://repdb.co/).
 
 RepDB 数据和图片适用独立的 [Free Tier License v1.0](third_party/repdb/LICENSE.md)，不属于 Fitness 自有素材。集成范围、来源校验和分发限制见 [来源说明](third_party/repdb/README.md)。
+
+## 版权
+
+本仓库自有内容保留所有权利，公开仅供查看，详见 [LICENSE](LICENSE)。第三方素材按各自许可证。

@@ -2,7 +2,7 @@ import { createDatabase } from '../../../src/persistence/db';
 import { createRepository } from '../../../src/persistence/repository';
 import { createProfileService } from '../../../src/application/profile';
 import { createGuidedService } from '../../../src/application/guided';
-import { createWorkoutService } from '../../../src/application/workouts';
+import { createWorkoutService } from '../../support/legacy/workouts';
 import { createCoachReminderService } from '../../../src/application/coach-reminders';
 import { createBackupService } from '../../../src/application/backup';
 import { createDayPlanService } from '../../../src/application/day-plans';

@@ -1,5 +1,5 @@
 import { independentCardioDurationIssues } from '../../src/engine/validation/cardio-duration';
-import { independentPregnancyIssues } from '../../src/engine/validation/pregnancy';
+import { independentPregnancyIssues } from '../../tests/support/engine/independent-pregnancy';
 import { independentlyPossibleIds } from './training-engine-quality';
 import {
   enginePlanSchema,

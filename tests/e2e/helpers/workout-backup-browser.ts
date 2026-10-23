@@ -2,10 +2,10 @@ import Dexie from 'dexie';
 import { createDatabase } from '../../../src/persistence/db';
 import { createRepository } from '../../../src/persistence/repository';
 import { createProfileService } from '../../../src/application/profile';
-import { createWorkoutService } from '../../../src/application/workouts';
-import { createTimerService } from '../../../src/application/timers';
+import { createWorkoutService } from '../../support/legacy/workouts';
+import { createTimerService } from '../../support/legacy/timers';
 import { createBackupService } from '../../../src/application/backup';
-import { createPlanService } from '../../../src/application/plans';
+import { createPlanService } from '../../support/legacy/plans';
 import { exercises } from '../../../src/catalog/exercises';
 
 export async function verifyWorkoutBackup(kind: 'timers' | 'order' | 'skip') {

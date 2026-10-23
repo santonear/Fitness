@@ -2,7 +2,7 @@ import Dexie from 'dexie';
 import { createDatabase } from '../../../src/persistence/db';
 import { createRepository } from '../../../src/persistence/repository';
 import { createProfileService } from '../../../src/application/profile';
-import { createWorkoutService } from '../../../src/application/workouts';
+import { createWorkoutService } from '../../support/legacy/workouts';
 import { exercises } from '../../../src/catalog/exercises';
 import { createTrainingMemoryService } from '../../../src/application/training-memory';
 export async function verifyWorkoutTransactions(name: string) {

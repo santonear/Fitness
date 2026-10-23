@@ -1,4 +1,4 @@
-import { repository, type Repository } from '../persistence/repository';
+import { repository, type Repository } from '../../../src/persistence/repository';
 import type {
   StartWorkoutInput,
   SetInput,
@@ -6,14 +6,14 @@ import type {
   WorkoutSession,
   ExerciseSnapshot,
   SetRecord,
-} from '../domain/models';
-import { workoutSessionSchema, exerciseSnapshotSchema, setRecordSchema } from '../domain/schemas';
-import { DomainError } from '../domain/errors';
-import { exercises } from '../catalog/exercises';
-import { synchronizeTrainingMemo } from './training-memory';
-import { authorizeLegacyOperation } from './legacy-collisions';
-import { emptyGuidedState, guidedStateSchema } from '../domain/guided-contracts';
-import { assertLegacyPlanEditable } from '../persistence/v8-access';
+} from '../../../src/domain/models';
+import { workoutSessionSchema, exerciseSnapshotSchema, setRecordSchema } from '../../../src/domain/schemas';
+import { DomainError } from '../../../src/domain/errors';
+import { exercises } from '../../../src/catalog/exercises';
+import { synchronizeTrainingMemo } from '../../../src/application/training-memory';
+import { authorizeLegacyOperation } from '../../../src/application/legacy-collisions';
+import { emptyGuidedState, guidedStateSchema } from '../../../src/domain/guided-contracts';
+import { assertLegacyPlanEditable } from '../../../src/persistence/v8-access';
 
 function invalid(message: string): never {
   throw new DomainError('INVALID', message);

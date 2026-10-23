@@ -86,7 +86,7 @@ test('ambiguous legacy days require review only for overlapping dates', async ({
       const profile = await repository.db.profiles.toCollection().first();
       await repository.db.profiles.put({ ...profile, timeZone: 'UTC' });
     });
-    const { planService } = await load('/src/application/plans.ts');
+    const { planService } = await load('/tests/support/legacy/plans.ts');
     const { dayPlanService } = await load('/src/application/day-plans.ts');
     const item = {
       exerciseId: 'd16325d9-fc00-4c41-88a1-000000000003',

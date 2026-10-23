@@ -1,5 +1,5 @@
 import { afterEach, expect, it } from 'vitest';
-import { SqliteControlStore } from '../../src/backend/sqlite-store';
+import { SqliteControlStore } from '../support/backend/sqlite-store';
 import { ControlService, testConfig } from '../../src/backend/control';
 import { createHandler } from '../../src/backend/http';
 const stores: SqliteControlStore[] = [];

@@ -2,10 +2,10 @@ import Dexie from 'dexie';
 import { createDatabase } from '../../../src/persistence/db';
 import { createRepository } from '../../../src/persistence/repository';
 import { createProfileService } from '../../../src/application/profile';
-import { createWorkoutService } from '../../../src/application/workouts';
+import { createWorkoutService } from '../../support/legacy/workouts';
 import { createBackupService, MAX_BACKUP_BYTES } from '../../../src/application/backup';
 import { exercises } from '../../../src/catalog/exercises';
-import { createPlanService } from '../../../src/application/plans';
+import { createPlanService } from '../../support/legacy/plans';
 
 function closeTestConnections(name: string): void {
   const connections = (Dexie as unknown as { connections: Dexie[] }).connections;

@@ -8,7 +8,6 @@
   "vars": {
     "ADMIN_ENVIRONMENT": "preview",
     "ADMIN_CONSOLE_ENABLED": "true",
-    "ADMIN_EMAIL": "xxgospel@hotmail.com",
     "ADMIN_ACCESS_ISSUER": "https://tiny-firefly-ed38.cloudflareaccess.com",
     "ADMIN_ACCESS_AUD": "03f0dd3d25ccc9d54e15b8d2c1a65c09071a51873034fd42cbfa7cbdfa5a8ec0",
     "ADMIN_PUSH_ENABLED": "false",

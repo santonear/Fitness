@@ -73,7 +73,7 @@ test('coach lifecycle rejects stale confirmation and retains scheduled task fact
   const result = await page.evaluate(async () => {
     const r = '/src/persistence/repository.ts',
       d = '/src/application/day-plans.ts',
-      c = '/src/application/coach-plans.ts',
+      c = '/tests/support/legacy/coach-plans.ts',
       g = '/src/application/guided.ts',
       e = '/src/catalog/exercises.ts';
     const { repository } = await import(/* @vite-ignore */ r),

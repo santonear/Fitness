@@ -4,7 +4,7 @@ import { createRepository } from '../../../src/persistence/repository';
 import { createProfileService } from '../../../src/application/profile';
 import { createBackupService } from '../../../src/application/backup';
 import { createV8DataService } from '../../../src/persistence/v8-access';
-import { createPlanService } from '../../../src/application/plans';
+import { createPlanService } from '../../support/legacy/plans';
 import type { BackupEnvelope } from '../../../src/domain/models';
 import { v8WorkoutSchema } from '../../../src/domain/schemas';
 

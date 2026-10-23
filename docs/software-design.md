@@ -637,7 +637,7 @@ AI 公共契约从现有 v1 单日能力演进为显式版本化的理解／追�
 
 ## 20. Warm Nordic Editorial UI 视觉规范（2026-10-07 修订）
 
-完整规范为 [ui-ux-max-design.md](../ui-ux-max-design.md)，入口为 [DESIGN.md](../DESIGN.md)，机器可读摘要为 [design-model.yaml](../design-model.yaml)。主维护文件位于 D:/Project/xxgospel/Fitness/ui-ux-max-design.md，产品工作区保留同内容镜像。
+（历史记录）本节视觉已被唯一规范 [UIUX20261008.md](uiux/UIUX20261008.md) 取代；原 ui-ux-max-design.md 与 design-model.yaml 已于 2026-10-23 删除。
 
 该规范替代本节此前的固定 200/300 字重、2px 圆角、禁止阴影、500/700ms 过渡、英文标签小写及旧禁止项优先规则。玻璃外壳、纸内容层、结构性描边、橙色功能态和黄色手帐强调构成现行视觉语言。具体边框、圆角、密度和动效按组件与页面职责分层，不固定混合比例。
 

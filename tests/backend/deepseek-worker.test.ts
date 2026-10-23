@@ -1,7 +1,7 @@
 import { currentCoachEnvelope, currentCoachRefusal } from '../fixtures/current-coach-envelope';
 import { expect, it, vi } from 'vitest';
 import { createDeepSeekWorker, type DeepSeekWorkerEnv } from '../../src/backend/deepseek-worker';
-import { SqliteControlStore } from '../../src/backend/sqlite-store';
+import { SqliteControlStore } from '../support/backend/sqlite-store';
 import { confirmationFor } from '../../src/backend/contracts';
 
 const env = (): DeepSeekWorkerEnv => ({

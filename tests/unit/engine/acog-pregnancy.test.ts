@@ -9,7 +9,7 @@ import { Rules } from '../../../src/engine/data';
 import { prescribe } from '../../../src/engine/dose';
 import { buildNotices } from '../../../src/engine/notices';
 import { estimatedSeconds } from '../../../src/engine/fit/elapsed-time';
-import { independentPregnancyIssues } from '../../../src/engine/validation/pregnancy';
+import { independentPregnancyIssues } from '../../support/engine/independent-pregnancy';
 import { baseProfile } from '../../../tools/eval/training-engine-profiles';
 import { toEngineProfile } from '../../../src/application/engine-profile';
 import {
