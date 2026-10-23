@@ -29,6 +29,8 @@
   "weekOpening": "You moved {count} times this week.",
   "monthOpening": "You moved {count} times this month.",
   "encouragement": "Recording what happened helps us decide what to adjust.",
+  "goalWeek": "At the start you said: “{goal}”. Sessions this week: {done}. Each one gets you a little closer.",
+  "goalMonth": "At the start you said: “{goal}”. Sessions this month: {done}. Each one gets you a little closer.",
   "gap": "You completed {complete} sessions and partially completed {partial}; {missing} remain toward your target.",
   "continuePlan": "You can continue with your current plan for now.",
   "pattern": "{count} sessions were unfinished on {day} {band}.",

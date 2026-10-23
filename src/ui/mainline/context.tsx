@@ -1,7 +1,7 @@
 import { equipmentLabel, EXERCISE_PLACES } from '../../catalog/taxonomy';
 import { useFeature } from '../useFeature';
 import { isFeatureEnabled } from '../../application/feature-flags';
-import { countUsage, reportSafeError } from '../../application/monitoring-client';
+import { countRetention, countUsage, reportSafeError } from '../../application/monitoring-client';
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../themes/ThemeProvider';
@@ -201,6 +201,12 @@ function useController() {
     const review = await createV8DataService(repository).getReviewWorkouts();
     const zone = next.profile?.timeZone ?? DEFAULT_TIME_ZONE,
       today = todayIn(zone);
+    const firstPlan = next.versions.map(v => v.createdAt).sort()[0];
+    countRetention(
+      firstPlan && todayIn(zone, firstPlan),
+      next.workouts.filter(w => w.status === 'complete' || w.status === 'partial').map(w => w.localDate),
+      today,
+    );
     setOptionalCoach({
       body: optionalCoachBody(next.profile),
       history: optionalCoachHistory(

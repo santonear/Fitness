@@ -29,6 +29,8 @@
   "weekOpening": "这周你动了 {count} 次。",
   "monthOpening": "这个月你动了 {count} 次。",
   "encouragement": "如实记下来，之后才知道怎么调。",
+  "goalWeek": "你一开始说：「{goal}」。这周练了 {done} 次，每次都在往那儿靠近一点。",
+  "goalMonth": "你一开始说：「{goal}」。这个月练了 {done} 次，每次都在往那儿靠近一点。",
   "gap": "完成了 {complete} 次，部分完成 {partial} 次，还差 {missing} 次。",
   "continuePlan": "可以先按现在的计划继续。",
   "pattern": "{day}{band}有 {count} 次没练完。",

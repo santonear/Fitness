@@ -1,5 +1,11 @@
 import { isFeatureEnabled } from './feature-flags';
-import { monitoringError, type AnonymousEvent, type SafeErrorEvent } from './monitoring';
+import {
+  monitoringError,
+  retentionDue,
+  type AnonymousEvent,
+  type RetentionEvent,
+  type SafeErrorEvent,
+} from './monitoring';
 import { version as packageVersion } from '../../package.json';
 const optKey = 'fitness.anonymous-usage';
 let counts: Partial<Record<AnonymousEvent, number>> = {};
@@ -19,6 +25,21 @@ export function countUsage(event: AnonymousEvent, count = 1) {
   if (!isFeatureEnabled('anonymousUsage') || !anonymousUsageEnabled() || !Number.isSafeInteger(count) || count < 1)
     return;
   counts[event] = Math.min(1000, (counts[event] ?? 0) + count);
+}
+const retentionKey = 'fitness.retention-sent';
+/** Counts each due retention milestone once per device; nothing is recorded while not opted in. */
+export function countRetention(start: string | undefined, trainedDates: readonly string[], today: string) {
+  if (!isFeatureEnabled('anonymousUsage') || !anonymousUsageEnabled()) return;
+  try {
+    const stored: unknown = JSON.parse(localStorage.getItem(retentionKey) ?? '[]');
+    const sent = Array.isArray(stored) ? (stored.filter(value => typeof value === 'string') as RetentionEvent[]) : [];
+    const due = retentionDue(start, trainedDates, today, sent);
+    if (!due.length) return;
+    localStorage.setItem(retentionKey, JSON.stringify([...sent, ...due]));
+    for (const event of due) countUsage(event);
+  } catch {
+    /* optional aggregate */
+  }
 }
 export async function flushUsage() {
   if (!isFeatureEnabled('anonymousUsage') || !anonymousUsageEnabled()) {

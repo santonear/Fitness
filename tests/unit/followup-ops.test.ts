@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { monitoringError, incrementAnonymousCount } from '../../src/application/monitoring';
+import { monitoringError, incrementAnonymousCount, retentionDue } from '../../src/application/monitoring';
 import { assessDailyUsage } from '../../src/backend/daily-usage-monitor';
 import { coachEvaluationPlan, estimateEvaluationBound } from '../../src/backend/coach-v8-evaluation';
 import {
@@ -142,6 +142,19 @@ describe('follow-up operations boundaries', () => {
     expect(incrementAnonymousCount({}, 'workout_completed', false, true)).toEqual({});
     expect(incrementAnonymousCount({}, 'workout_completed', true, true)).toEqual({ workout_completed: 1 });
     expect(incrementAnonymousCount({}, id, true, true)).toEqual({});
+  });
+  it('opens a retention cohort only for a recent first plan and sends each milestone once', () => {
+    expect(retentionDue(undefined, [], '2026-10-20', [])).toEqual([]);
+    expect(retentionDue('2026-10-01', ['2026-10-02'], '2026-10-20', [])).toEqual([]);
+    expect(retentionDue('2026-10-15', [], '2026-10-20', [])).toEqual(['retention_start']);
+    expect(retentionDue('2026-10-15', ['2026-10-16'], '2026-10-20', [])).toEqual([
+      'retention_start',
+      'retention_week1',
+    ]);
+    const sent = ['retention_start', 'retention_week1'] as const;
+    expect(retentionDue('2026-10-15', ['2026-10-16', '2026-10-30'], '2026-11-08', sent)).toEqual([]);
+    expect(retentionDue('2026-10-15', ['2026-11-06'], '2026-11-08', sent)).toEqual(['retention_week4']);
+    expect(retentionDue('2026-10-15', ['2026-11-06'], '2026-11-08', [...sent, 'retention_week4'])).toEqual([]);
   });
   it('keeps accounting read-only and fallback disabled unless explicitly enabled', () => {
     const observation = { day: '2026-10-11', calls: 3, reservedFen: 20 };

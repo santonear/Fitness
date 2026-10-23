@@ -24,6 +24,7 @@ import {
 import { useMainline, format, workflow } from '../../mainline/context';
 import { DayActual } from '../home/DayTimeline';
 import { sessionNames } from '../../../application/plan-presentation';
+import { answerText } from '../../../application/preset-text';
 import { recurringDiscomfort, suggestChange } from '../../../application/review/suggest';
 import { activityDate } from '../../../application/v8-activity';
 import { createReviewService } from '../../../application/v8-review';
@@ -191,6 +192,15 @@ export function ReviewPage() {
       ? { value: target > 0 ? week.done / target : 0, center: `${week.done}/${target}`, caption: r.ringWeek }
       : { value: active / 7, center: `${active}/7`, caption: r.ringDays };
   const met = !monthly && hasCurrentPlan && target > 0 && week.left === 0;
+  // Goal salience: echo the person's own first answer once something was done this period (V9.18).
+  const goal = data?.version?.goalText.trim() ? answerText(data.version.goalText.trim(), c.locale) : '',
+    yayaLine =
+      goal && week.done > 0
+        ? format(monthly ? r.goalMonth : r.goalWeek, {
+            goal: goal.length > 40 ? `${goal.slice(0, 39)}…` : goal,
+            done: week.done,
+          })
+        : r.encouragement;
   const setText = (s: ReviewHistoryRow['sets'][number]) =>
     [
       s.reps !== undefined ? `${s.reps} ${t.reps}` : undefined,
@@ -287,7 +297,7 @@ export function ReviewPage() {
             )}
             <p className="rv-yaya-line">
               <Yaya pose="think" size={36} alt="" />
-              <span>{r.encouragement}</span>
+              <span>{yayaLine}</span>
             </p>
             {noPlanActions}
           </div>

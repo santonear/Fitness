@@ -36,6 +36,16 @@ it('aggregates batched anonymous counts by UTC day and rejects extra sensitive d
     await telemetry.count('2026-10-11', { optedIn: true, event: 'workout_completed', count: 3 }, 'counts');
     await telemetry.count('2026-10-11', { optedIn: true, event: 'workout_completed' }, 'counts');
     expect((await telemetry.usage('2026-10-11')).counts.workout_completed).toBe(4);
+    await telemetry.count('2026-09-10', { optedIn: true, event: 'retention_start', count: 4 }, 'counts');
+    await telemetry.count('2026-09-11', { optedIn: true, event: 'retention_week1', count: 3 }, 'counts');
+    await telemetry.count('2026-10-05', { optedIn: true, event: 'retention_week4', count: 1 }, 'counts');
+    expect((await telemetry.usage('2026-10-11')).retention).toEqual({
+      from: '2026-08-17',
+      to: '2026-09-13',
+      start: 4,
+      week1: 3,
+      week4: 1,
+    });
     for (let i = 0; i < 101; i++)
       await telemetry.count('2026-10-12', { optedIn: true, event: 'review_opened', count: 1000 }, 'counts');
     expect((await telemetry.usage('2026-10-12')).counts.review_opened).toBe(TELEMETRY_DAILY_BUCKET_CAP);

@@ -1,6 +1,7 @@
 import { BudgetDismissButton } from '../todos/BudgetDismissButton';
 import { StatusOverview } from '../finance/StatusOverview';
 import { TodayUsage } from '../finance/AssistantUsagePage';
+import { RetentionCard } from '../users/RetentionCard';
 import { useEffect, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -178,6 +179,7 @@ export function AdminShell() {
         <div>
           <StatusOverview language={language} />
           <TodayUsage language={language} />
+          <RetentionCard language={language} />
         </div>
       </div>
     );
