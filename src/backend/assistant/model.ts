@@ -3,15 +3,20 @@ import {
   sanitizeAssistantRequest,
   type AssistantCall,
   type AssistantEvent,
-  type AssistantUsage,
 } from '../../assistant/contracts';
-import {
-  assistantPrompt,
-  ASSISTANT_PROMPT_VERSION,
-  ENGINE_ASSISTANT_PROMPT_VERSION,
-  type AssistantPromptMessage,
-} from './prompts';
+import { ASSISTANT_PROMPT_VERSION, ENGINE_ASSISTANT_PROMPT_VERSION } from './prompts';
 import { repairAssistantAttachment, AttachmentValidationError } from './repair';
+import {
+  AssistantProviderError,
+  buildPrompt,
+  estimatedUsage,
+  failureCode,
+  failureDetail,
+  localEnglishReply,
+  publicFailure,
+  type AssistantModelOptions,
+  type AssistantProviderFailureCode,
+} from './model/failure';
 import { checkCoachLanguage } from '../../application/rules/coach-language';
 import { prohibitedTrainingClaims } from '../../application/rules/training-claims';
 import { assembleAssistantIntent } from './assemble';
@@ -20,112 +25,8 @@ import { applicableAssistantCandidates, lowerBodyAddition } from './applicable-c
 import { adaptCoachResponse } from '../../coach/response-adapter';
 import { getExerciseGuide } from '../../catalog/exercise-guide';
 import { exercises } from '../../catalog/exercises';
-import { ZodError } from 'zod';
-
-export interface AssistantProvider {
-  streamText(
-    messages: AssistantPromptMessage[],
-    signal?: AbortSignal,
-  ): AsyncIterable<{ delta?: string; usage?: AssistantUsage }>;
-  generateAttachment(
-    messages: AssistantPromptMessage[],
-    signal?: AbortSignal,
-  ): Promise<{ content: unknown; usage?: AssistantUsage }>;
-}
-type AssistantModelOptions = { provider: AssistantProvider; promptVersion?: string; signal?: AbortSignal };
-type AssistantProviderFailureCode =
-  | 'HTTP_400'
-  | 'HTTP_401'
-  | 'HTTP_403'
-  | 'HTTP_404'
-  | 'HTTP_408'
-  | 'HTTP_422'
-  | 'HTTP_429'
-  | 'HTTP_5XX'
-  | 'HTTP_OTHER'
-  | 'NETWORK_ERROR'
-  | 'TIMEOUT'
-  | 'INVALID_STREAM'
-  | 'INVALID_OUTPUT'
-  | 'ABORTED'
-  | 'VALIDATION_FAILED'
-  | 'COACH_LANGUAGE'
-  | 'EMPTY_TEXT'
-  | 'TEXT_LIMIT'
-  | 'PROMPT_BUILD_FAILED'
-  | 'INVALID_PROMPT_VERSION'
-  | AttachmentValidationError['code'];
-class AssistantProviderError extends Error {
-  constructor(public readonly code: AssistantProviderFailureCode) {
-    super(code);
-  }
-}
-function failureCode(error: unknown, signal?: AbortSignal): AssistantProviderFailureCode {
-  if (signal?.aborted)
-    return signal.reason instanceof DOMException && signal.reason.name === 'TimeoutError' ? 'TIMEOUT' : 'ABORTED';
-  return error instanceof AssistantProviderError || error instanceof AttachmentValidationError
-    ? error.code
-    : 'VALIDATION_FAILED';
-}
-function publicFailure(code: AssistantProviderFailureCode) {
-  return code === 'NETWORK_ERROR'
-    ? 'NETWORK_ERROR'
-    : code === 'TIMEOUT'
-      ? 'TIMEOUT'
-      : code === 'ABORTED'
-        ? 'ABORTED'
-        : 'MODEL_UNAVAILABLE';
-}
-function failureDetail(error: unknown): string | undefined {
-  if (error instanceof ZodError)
-    return error.issues
-      .slice(0, 5)
-      .map(issue => `${issue.path.map(String).join('.') || 'root'}:${issue.code}`)
-      .join(';')
-      .slice(0, 300);
-  if (error instanceof AttachmentValidationError) {
-    const paths = [
-      ...error.feedback.matchAll(
-        /([A-Za-z0-9_.?]+):\s*(invalid_type|too_small|too_big|invalid_value|invalid_union|unrecognized_keys)/g,
-      ),
-    ]
-      .slice(0, 5)
-      .map(match => `${match[1]}:${match[2]}`);
-    return paths.join(';') || `attachment:${error.code}`;
-  }
-  if (error instanceof Error && ['NO_APPLICABLE_CHANGE', 'NO_SAFE_PLAN'].includes(error.message))
-    return `attachment:${error.message}`;
-  return undefined;
-}
-function buildPrompt(...args: Parameters<typeof assistantPrompt>) {
-  try {
-    return assistantPrompt(...args);
-  } catch (error) {
-    throw new AssistantProviderError(
-      error instanceof Error && error.message === 'INVALID_PROMPT_VERSION'
-        ? 'INVALID_PROMPT_VERSION'
-        : 'PROMPT_BUILD_FAILED',
-    );
-  }
-}
-function localEnglishReply(message: string) {
-  if (/pain|hurt|discomfort|chest/i.test(message))
-    return 'Stop the movement that hurts. If the pain is severe or persists, seek professional care.';
-  if (/secret|system prompt|ignore|bypass|overwrite/i.test(message))
-    return 'I cannot bypass confirmation or reveal private instructions. I can help you review a safe plan.';
-  if (/history|height|weight|body data/i.test(message))
-    return 'We can discuss training without those details. What would you like to focus on?';
-  if (/plan|workout|training|exercise/i.test(message)) return 'I can prepare a training suggestion for you to review.';
-  return 'I can help with your training question. Tell me what you would like to focus on.';
-}
-function estimatedUsage(messages: AssistantPromptMessage[], output: string): AssistantUsage {
-  // A disclosed estimate when the supplier omits usage, never an asserted bill.
-  return {
-    inputTokens: Math.ceil(new TextEncoder().encode(JSON.stringify(messages)).byteLength / 2),
-    outputTokens: Math.ceil(new TextEncoder().encode(output).byteLength / 2),
-    usageEstimated: true,
-  };
-}
+export type { AssistantProvider } from './model/failure';
+export { createAssistantProvider } from './model/provider';
 
 /** No persistence. Admission, charging and local confirmation belong to callers. */
 export async function* runAssistantModel(
@@ -596,168 +497,5 @@ export async function* runAssistantModel(
     calls,
     promptVersion: version,
     result: noChange ? 'no_change' : 'attachment_failed',
-  };
-}
-
-/** OpenAI-compatible provider. Credential never appears in prompts, events or logs. */
-export function createAssistantProvider(options: {
-  apiKey: string;
-  baseUrl: string;
-  model?: string;
-  maxTokens?: number;
-  maxAttachmentTokens?: number;
-  maxInputBytes?: number;
-  fetch?: typeof fetch;
-}): AssistantProvider {
-  const send = async (messages: AssistantPromptMessage[], stream: boolean, signal?: AbortSignal) => {
-    if (new TextEncoder().encode(JSON.stringify(messages)).byteLength > (options.maxInputBytes ?? 131072))
-      throw new AssistantProviderError('INVALID_OUTPUT');
-    let response: Response;
-    try {
-      response = await (options.fetch ?? fetch)(`${options.baseUrl.replace(/\/$/, '')}/chat/completions`, {
-        method: 'POST',
-        signal,
-        headers: { Authorization: `Bearer ${options.apiKey}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: options.model ?? 'deepseek-flash',
-          messages,
-          stream,
-          thinking: { type: 'disabled' },
-          max_tokens: Math.max(
-            1,
-            Math.min(
-              (stream ? options.maxTokens : (options.maxAttachmentTokens ?? options.maxTokens)) ??
-                (stream ? 1600 : 3000),
-              3000,
-            ),
-          ),
-          ...(stream
-            ? { stream_options: { include_usage: true } }
-            : { temperature: 0.1, response_format: { type: 'json_object' } }),
-        }),
-      });
-    } catch {
-      throw new AssistantProviderError(
-        signal?.aborted
-          ? signal.reason instanceof DOMException && signal.reason.name === 'TimeoutError'
-            ? 'TIMEOUT'
-            : 'ABORTED'
-          : 'NETWORK_ERROR',
-      );
-    }
-    if (!response.ok) {
-      await response.body?.cancel().catch(() => {});
-      const known = [400, 401, 403, 404, 408, 422, 429].includes(response.status);
-      throw new AssistantProviderError(
-        response.status >= 500
-          ? 'HTTP_5XX'
-          : known
-            ? (`HTTP_${response.status}` as AssistantProviderFailureCode)
-            : 'HTTP_OTHER',
-      );
-    }
-    return response;
-  };
-  const usage = (raw?: { prompt_tokens?: number; completion_tokens?: number }): AssistantUsage | undefined =>
-    raw &&
-    Number.isSafeInteger(raw.prompt_tokens) &&
-    Number.isSafeInteger(raw.completion_tokens) &&
-    raw.prompt_tokens! >= 0 &&
-    raw.completion_tokens! >= 0
-      ? { inputTokens: raw.prompt_tokens!, outputTokens: raw.completion_tokens! }
-      : undefined;
-  return {
-    async *streamText(messages, signal) {
-      const response = await send(messages, true, signal);
-      if (!response.body) throw new AssistantProviderError('INVALID_STREAM');
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '',
-        complete = false;
-      try {
-        while (!complete) {
-          const part = await reader.read();
-          buffer += decoder.decode(part.value, { stream: !part.done });
-          if (buffer.length > 65536) throw new AssistantProviderError('INVALID_STREAM');
-          const lines = buffer.split(/\r?\n/);
-          buffer = lines.pop() ?? '';
-          if (part.done && buffer) {
-            lines.push(buffer);
-            buffer = '';
-          }
-          for (const line of lines) {
-            if (!line.startsWith('data:')) continue;
-            const data = line.slice(5).trim();
-            if (data === '[DONE]') {
-              complete = true;
-              break;
-            }
-            if (!data) continue;
-            let parsed: {
-              choices?: { delta?: { content?: string } }[];
-              usage?: { prompt_tokens?: number; completion_tokens?: number };
-            };
-            try {
-              parsed = JSON.parse(data);
-            } catch {
-              throw new AssistantProviderError('INVALID_STREAM');
-            }
-            yield {
-              ...(parsed.choices?.[0]?.delta?.content ? { delta: parsed.choices[0].delta.content } : {}),
-              ...(parsed.usage ? { usage: usage(parsed.usage) } : {}),
-            };
-          }
-          if (part.done) {
-            if (!complete) throw new AssistantProviderError('INVALID_STREAM');
-            break;
-          }
-        }
-      } catch (error) {
-        if (error instanceof AssistantProviderError) throw error;
-        throw new AssistantProviderError(
-          signal?.aborted ? 'TIMEOUT' : error instanceof TypeError ? 'NETWORK_ERROR' : 'INVALID_STREAM',
-        );
-      } finally {
-        await reader.cancel().catch(() => {});
-        reader.releaseLock();
-      }
-    },
-    async generateAttachment(messages, signal) {
-      const response = await send(messages, false, signal);
-      const reader = response.body?.getReader();
-      if (!reader) throw new AssistantProviderError('INVALID_OUTPUT');
-      const decoder = new TextDecoder();
-      let body = '',
-        bytes = 0;
-      try {
-        while (true) {
-          const part = await reader.read();
-          if (part.done) break;
-          bytes += part.value.byteLength;
-          if (bytes > 65536) throw new AssistantProviderError('INVALID_OUTPUT');
-          body += decoder.decode(part.value, { stream: true });
-        }
-        body += decoder.decode();
-      } catch (error) {
-        if (error instanceof AssistantProviderError) throw error;
-        throw new AssistantProviderError(signal?.aborted ? 'TIMEOUT' : 'NETWORK_ERROR');
-      } finally {
-        await reader.cancel().catch(() => {});
-        reader.releaseLock();
-      }
-      let parsed: {
-        choices?: { message?: { content?: string } }[];
-        usage?: { prompt_tokens?: number; completion_tokens?: number };
-      };
-      try {
-        parsed = JSON.parse(body);
-      } catch {
-        throw new AssistantProviderError('INVALID_OUTPUT');
-      }
-      return {
-        content: parsed.choices?.[0]?.message?.content,
-        ...(parsed.usage ? { usage: usage(parsed.usage) } : {}),
-      };
-    },
   };
 }
