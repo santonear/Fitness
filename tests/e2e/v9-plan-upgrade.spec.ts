@@ -148,7 +148,9 @@ test('给未来的自己 is the last step of making a plan; 体能自测 lives i
   await page.getByRole('button', { name: '记下成绩' }).click();
   await expect(page.getByText('估算', { exact: true })).toBeVisible();
   await page.goto('/settings/changes');
-  await expect(page.getByText('记得今天为什么出发', { exact: true })).toBeVisible();
+  // A new letter is sealed (7 days by default): only its opening date shows until then.
+  await expect(page.getByText(/^\d+ 月 \d+ 日开启$/)).toBeVisible();
+  await expect(page.getByText('记得今天为什么出发', { exact: true })).toHaveCount(0);
 });
 
 test('现在有点烦: breathing runs locally and the low-mood line has no emoji', async ({ page }) => {
