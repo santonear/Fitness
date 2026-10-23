@@ -89,7 +89,7 @@ export async function engineSafety(page: Page, options: EngineSafetyOptions = {}
     if (options.falls.every(answer => !answer))
       await page.getByRole('button', { name: '以上都没有', exact: true }).click();
     else {
-      await page.getByRole('button', { name: '有其中一项，逐个确认' }).click();
+      await page.getByRole('button', { name: '有其中一项或多项，逐个确认' }).click();
       for (const answer of options.falls)
         await page.getByRole('radio', { name: answer ? '是' : '否', exact: true }).click();
     }
