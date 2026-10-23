@@ -43,6 +43,11 @@
   --orb-size: 68px;
   --orb-safe: 92px;
   --tabbar-h: 72px;
+  --f-letter-zh: "LXGW WenKai", "Kaiti SC", "STKaiti", "KaiTi", serif;
+  --f-letter-en: "Dancing Script", "Segoe Script", cursive;
+  --letter-size-zh: 18px;
+  --letter-size-en: 20px;
+  --letter-line: 30px;
 }
 .v9-scene[data-scene="dawn"] {
   --scene-sky: #EFCFB3;

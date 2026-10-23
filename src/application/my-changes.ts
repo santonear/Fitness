@@ -1,5 +1,5 @@
 import type { BodyWeightObservation } from '../domain/models';
-import type { WorkoutRecord } from '../domain/v8/contracts';
+import type { SetFact, WorkoutRecord } from '../domain/v8/contracts';
 
 /**
  * 我的变化: read-only trends from data already on this device (body measurements, finished
@@ -76,6 +76,53 @@ export function strengthTrends(workouts: readonly WorkoutRecord[], limit = 3): S
       sets: row.sets,
       ...trend([...row.best.entries()].map(([date, value]) => ({ date, value }))),
     }));
+}
+
+/** Finish page 进步时刻: one exercise of this workout that beat the best of every earlier finished workout. */
+export interface ProgressMoment {
+  exerciseId: string;
+  /** Weighted sets compare top load (kg), bodyweight sets reps, timed sets seconds. */
+  metric: 'load' | 'reps' | 'seconds';
+  value: number;
+  /** For `load`: the most reps done at that load. */
+  reps?: number;
+  gain: number;
+}
+type MomentMetric = ProgressMoment['metric'];
+const loaded = (set: SetFact) => (set.loadGrams ?? 0) > 0;
+function bestOf(sets: readonly SetFact[], metric: MomentMetric): { value: number; reps?: number } | undefined {
+  if (metric === 'load') {
+    const top = Math.max(0, ...sets.filter(loaded).map(set => set.loadGrams!));
+    if (!top) return undefined;
+    const reps = Math.max(0, ...sets.filter(set => set.loadGrams === top).map(set => set.reps ?? 0));
+    return { value: Math.round(top / 100) / 10, ...(reps ? { reps } : {}) };
+  }
+  const field = metric === 'reps' ? 'reps' : 'durationSeconds';
+  const value = Math.max(0, ...sets.filter(set => !loaded(set)).map(set => set[field] ?? 0));
+  return value > 0 ? { value } : undefined;
+}
+/** Most notable first (relative gain); nothing when there is no earlier record of the same kind. */
+export function progressMoments(
+  earlier: readonly WorkoutRecord[],
+  current: Pick<WorkoutRecord, 'id' | 'sets'>,
+  limit = 2,
+): ProgressMoment[] {
+  const history = earlier.filter(workout => workout.id !== current.id && finished(workout)).flatMap(w => w.sets);
+  const moments: ProgressMoment[] = [];
+  for (const exerciseId of new Set(current.sets.map(set => set.exerciseId))) {
+    const sets = current.sets.filter(set => set.exerciseId === exerciseId),
+      before = history.filter(set => set.exerciseId === exerciseId);
+    const metric = (['load', 'reps', 'seconds'] as const).find(kind => bestOf(sets, kind));
+    const now = metric && bestOf(sets, metric),
+      previous = metric && bestOf(before, metric);
+    if (!metric || !now || !previous || now.value <= previous.value) continue;
+    moments.push({ exerciseId, metric, ...now, gain: Math.round((now.value - previous.value) * 10) / 10 });
+  }
+  return moments
+    .sort(
+      (a, b) => b.gain / (b.value - b.gain) - a.gain / (a.value - a.gain) || a.exerciseId.localeCompare(b.exerciseId),
+    )
+    .slice(0, limit);
 }
 
 export const monthKey = (date: string) => date.slice(0, 7);

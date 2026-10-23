@@ -20,6 +20,12 @@ export const planCalendarCopy = {
     planned: '这天的计划',
     minutes: '约 {count} 分钟',
     otherSession: '这天练的不是计划里的训练。',
+    // 添加到手机日历: the .ics file is built on the device.
+    add: '添加到手机日历',
+    addHint: '没弹出日历的话，打开刚下载的文件。',
+    wechat: '微信里不能下载文件，请点右上角，在浏览器中打开。',
+    eventTitle: 'Fitness 训练',
+    eventNote: '只是提醒，不代表那天必须练。',
   },
   en: {
     view: 'Plan view',
@@ -41,5 +47,10 @@ export const planCalendarCopy = {
     planned: 'Planned for this day',
     minutes: 'About {count} min',
     otherSession: 'The training this day was not from the plan.',
+    add: 'Add to phone calendar',
+    addHint: 'If no calendar opens, open the file you just downloaded.',
+    wechat: "WeChat can't download files. Tap ··· at the top right and open this page in your browser.",
+    eventTitle: 'Fitness workout',
+    eventNote: "Just a reminder. You don't have to train that day.",
   },
 } as const;

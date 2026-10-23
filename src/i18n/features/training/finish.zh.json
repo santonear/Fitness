@@ -23,5 +23,15 @@
   "dayRest": "{day}：没有训练",
   "today": "今天",
   "saveZero": "记下这次（0 组）",
-  "abandon": "放弃这次"
+  "abandon": "放弃这次",
+  "workoutNumber": "第 {count} 次训练",
+  "bestLoad": "{name} {kg} kg × {reps}，比之前最好多 {gain} kg 📈",
+  "bestLoadOnly": "{name} {kg} kg，比之前最好多 {gain} kg 📈",
+  "bestReps": "{name} {reps} 次，比之前最好多 {gain} 次 📈",
+  "bestSeconds": "{name} {seconds} 秒，比之前最好多 {gain} 秒 📈",
+  "installTitle": "把 Fitness 加到主屏幕，下次一点就能开始。",
+  "installButton": "加到主屏幕",
+  "installIos": "点分享按钮，再选“添加到主屏幕”",
+  "installMenu": "在浏览器菜单里选“添加到主屏幕”或“安装应用”",
+  "installDismiss": "知道了"
 }

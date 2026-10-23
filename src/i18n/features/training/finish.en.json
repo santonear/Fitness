@@ -23,5 +23,15 @@
   "dayRest": "{day}: no workout",
   "today": "Today",
   "saveZero": "Save this workout (0 sets)",
-  "abandon": "Discard this workout"
+  "abandon": "Discard this workout",
+  "workoutNumber": "Workout #{count}",
+  "bestLoad": "{name} {kg} kg × {reps}, {gain} kg more than your best 📈",
+  "bestLoadOnly": "{name} {kg} kg, {gain} kg more than your best 📈",
+  "bestReps": "{name} {reps} reps, {gain} more than your best 📈",
+  "bestSeconds": "{name} {seconds} sec, {gain} sec more than your best 📈",
+  "installTitle": "Add Fitness to your home screen to start with one tap next time.",
+  "installButton": "Add to home screen",
+  "installIos": "Tap the Share button, then choose “Add to Home Screen”",
+  "installMenu": "In your browser menu, choose “Add to Home Screen” or “Install app”",
+  "installDismiss": "Got it"
 }

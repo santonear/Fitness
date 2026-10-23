@@ -30,6 +30,7 @@ import { ExercisesPage } from '../pages/plan/ExercisesPage';
 import { PlanRoute } from '../pages/plan/PlanRoute';
 import { FocusPage } from '../pages/plan-upgrade/FocusPage';
 import { LetterStep } from '../pages/onboarding/LetterStep';
+import { DueLetter } from './DueLetter';
 import { FitnessTestPage } from '../pages/settings/FitnessTestPage';
 import { CalmPage } from '../pages/plan-upgrade/CalmPage';
 import { ActivityPage } from '../pages/training/ActivityPage';
@@ -183,7 +184,13 @@ function Shell() {
         <Route path={path('journey')} element={<Navigate to="/settings" replace />} />
         <Route
           path="/letter"
-          element={<LetterStep locale={c.locale} onDone={() => navigate('/', { state: { applied: true } })} />}
+          element={
+            <LetterStep
+              locale={c.locale}
+              timeZone={data.profile?.timeZone}
+              onDone={() => navigate('/', { state: { applied: true } })}
+            />
+          }
         />
         <Route path="/settings/fitness-test" element={<FitnessTestPage />} />
         <Route path={path('calm')} element={<CalmPage />} />
@@ -195,6 +202,7 @@ function Shell() {
         <Route path={path('appearance')} element={<AppearancePage />} />
         <Route path="*" element={<HomePage />} />
       </Routes>
+      <DueLetter />
       {!immersive && location.pathname !== '/activity' && location.pathname !== '/manual' && (
         <V8Reminder chatOpen={c.coachOpen} locale={c.locale} onStart={() => navigate('/')} />
       )}

@@ -11,6 +11,8 @@ export function pwaBuild(): Plugin {
     async generateBundle(_options, bundle) {
       const assets = Object.keys(bundle)
         .filter(name => /\.(?:js|css|woff2?)$/.test(name))
+        // Letter handwriting faces ship as hundreds of unicode-range chunks; the browser fetches only those it needs.
+        .filter(name => !/(?:^|\/)(?:lxgwwenkai|dancing-script)-/.test(name))
         .map(name => `/${name}`)
         .sort();
       const revision = createHash('sha256');

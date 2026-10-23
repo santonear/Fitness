@@ -7,3 +7,4 @@ export { ThemePicker, ThemePreview } from '../ThemePicker';
 export { AnatomyMap } from './AnatomyMap';
 export { HomePanel } from './HomePanel';
 export { JourneyTrail } from './JourneyTrail';
+export { LetterDialog } from './LetterDialog';

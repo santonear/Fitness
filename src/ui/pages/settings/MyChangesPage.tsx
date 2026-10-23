@@ -14,7 +14,7 @@ import { bodyWeightService } from '../../../application/body-weight';
 import { activityDate } from '../../../application/v8-activity';
 import { changesCopy } from '../../../i18n/features/me/changes';
 import { fill } from '../../../i18n/features/onboarding/entry';
-import { AnatomyMap, Card, PrimaryButton, StatTile } from '../../components/kit';
+import { AnatomyMap, Card, LetterDialog, PrimaryButton, StatTile } from '../../components/kit';
 import { TrendChart } from '../../components/TrendChart';
 import { useMainline } from '../../mainline/context';
 import { figureSex, figureShape, ghostWeight, monthLabel } from '../plan-upgrade/logic';
@@ -23,7 +23,8 @@ import { useWidth } from '../plan-upgrade/useWidth';
 import { planPagesCopy } from '../../../i18n/features/plan-upgrade/pages';
 import { fillLine } from '../../../i18n/features/coach/yaya-v5';
 import type { FutureLetter } from '../../../domain/plan-upgrade';
-import { listFutureLetters } from '../../../persistence/plan-upgrade-store';
+import { listFutureLetters, markLetterOpened } from '../../../persistence/plan-upgrade-store';
+import { letterDateParts, letterDue, letterReadable } from '../../../domain/future-letter';
 import '../plan-upgrade/plan-upgrade.css';
 import './my-changes.css';
 import { DEFAULT_TIME_ZONE } from '../../../domain/local-date';
@@ -104,6 +105,7 @@ export function MyChangesPage() {
   const perMonth = sessionsByMonth(workouts, month);
   const [form, setForm] = useState<{ date: string; weight: string; fat: string; error?: boolean; saved?: boolean }>();
   const [letters, setLetters] = useState<FutureLetter[]>([]);
+  const [reading, setReading] = useState<FutureLetter>();
   useEffect(() => {
     void listFutureLetters()
       .then(setLetters)
@@ -316,12 +318,40 @@ export function MyChangesPage() {
           <h2 id="v9-change-letter">{planPagesCopy[locale].letterTitle}</h2>
           {[...letters]
             .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-            .map(letter => (
-              <p key={letter.id} className="pu-letter">
-                {letter.text}
-              </p>
-            ))}
+            .map(letter =>
+              letterReadable(letter, today) ? (
+                <button
+                  key={letter.id}
+                  type="button"
+                  className="pu-letter v9-change-letter v8-press"
+                  onClick={() => setReading(letter)}
+                >
+                  {letter.text}
+                </button>
+              ) : (
+                <p key={letter.id} className="pu-letter v9-change-note">
+                  {fill(planPagesCopy[locale].letterOpensOn, letterDateParts(letter.openOn!, locale))}
+                </p>
+              ),
+            )}
         </Card>
+      )}
+      {reading && (
+        <LetterDialog
+          letter={reading}
+          locale={locale}
+          today={today}
+          timeZone={zone}
+          mode={letterDue(reading, today) ? 'open' : 'read'}
+          onKeep={() =>
+            void markLetterOpened(reading.id)
+              .then(listFutureLetters)
+              .then(setLetters)
+              .catch(() => undefined)
+              .finally(() => setReading(undefined))
+          }
+          onClose={() => setReading(undefined)}
+        />
       )}
     </main>
   );

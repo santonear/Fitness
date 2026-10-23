@@ -15,6 +15,54 @@ const optedIn = () => {
     return false;
   }
 };
+const ios = () =>
+  /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const standalone = () =>
+  window.matchMedia('(display-mode: standalone)').matches ||
+  !!(navigator as Navigator & { standalone?: boolean }).standalone;
+interface InstallPromptEvent extends Event {
+  prompt(): Promise<unknown>;
+}
+let installPrompt: InstallPromptEvent | undefined;
+// Kept from page load so the finish page can offer it later; the browser's own banner is left alone.
+if (typeof window !== 'undefined') {
+  window.addEventListener?.('beforeinstallprompt', event => (installPrompt = event as InstallPromptEvent));
+  window.addEventListener?.('appinstalled', () => (installPrompt = undefined));
+}
+export type InstallRoute = 'installed' | 'prompt' | 'ios' | 'menu';
+export function installRoute(): InstallRoute {
+  if (standalone()) return 'installed';
+  if (installPrompt) return 'prompt';
+  return ios() ? 'ios' : 'menu';
+}
+/** Must be called from the user's tap. False when the browser no longer offers it. */
+export async function promptInstall(): Promise<boolean> {
+  const event = installPrompt;
+  installPrompt = undefined;
+  if (!event) return false;
+  try {
+    await event.prompt();
+    return true;
+  } catch {
+    return false;
+  }
+}
+const INSTALL_HINT = 'fitness.installHint';
+/** The home-screen hint appears once per device; storage failures keep it hidden. */
+export function installHintDue() {
+  try {
+    return localStorage.getItem(INSTALL_HINT) === null;
+  } catch {
+    return false;
+  }
+}
+export function markInstallHintShown() {
+  try {
+    localStorage.setItem(INSTALL_HINT, 'shown');
+  } catch {
+    /* Storage may be unavailable. */
+  }
+}
 export function pwaRegistration() {
   return registration;
 }
@@ -24,14 +72,7 @@ export function suspendSystemNotifications() {
 }
 export function notificationStatus(): NotificationStatus {
   if (!flags.offlineEnabled || !flags.notificationsEnabled) return 'disabled';
-  const ios =
-    /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  if (
-    ios &&
-    !window.matchMedia('(display-mode: standalone)').matches &&
-    !(navigator as Navigator & { standalone?: boolean }).standalone
-  )
-    return 'home-screen-required';
+  if (ios() && !standalone()) return 'home-screen-required';
   if (!supported() || !('Notification' in window)) return 'unsupported';
   return Notification.permission;
 }

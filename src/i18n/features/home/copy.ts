@@ -13,6 +13,17 @@ export const homeCopy = {
     afterLine: '{day} · {name} · {minutes} 分钟',
     chat: '跟芽芽说说今天的情况',
     guide: '看动作示范',
+    // 上周一张图: shown once per new week until closed; never counts against the person.
+    lastWeek: {
+      title: '上周',
+      done: '上周练了 {done} 次，目标 {target} 次 🎯',
+      none: '上周没练上，没关系。这周挑一天动一动就好 🌱',
+      load: '{name}比之前多了 {value} kg',
+      reps: '{name}比之前多做了 {value} 次',
+      duration: '{name}比之前多保持了 {value} 秒',
+      review: '看回顾',
+      close: '关闭上周小结',
+    },
   },
   en: {
     title: 'Today',
@@ -27,5 +38,15 @@ export const homeCopy = {
     afterLine: '{day} · {name} · {minutes} min',
     chat: 'Tell Yaya how today is going',
     guide: 'See how to do it',
+    lastWeek: {
+      title: 'Last week',
+      done: 'Last week: {done} sessions, goal {target} 🎯',
+      none: "No sessions last week, and that's okay. Pick one day this week to move a little 🌱",
+      load: '{name}: {value} kg more than before',
+      reps: '{name}: {value} more reps than before',
+      duration: '{name}: held {value} s longer than before',
+      review: 'See review',
+      close: 'Close last week summary',
+    },
   },
 } as const;
