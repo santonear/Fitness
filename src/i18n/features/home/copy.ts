@@ -20,7 +20,7 @@ export const homeCopy = {
       none: '上周没练上，没关系。这周挑一天动一动就好 🌱',
       load: '{name}比之前多了 {value} kg',
       reps: '{name}比之前多做了 {value} 次',
-      duration: '{name}比之前多坚持了 {value} 秒',
+      duration: '{name}比之前多保持了 {value} 秒',
       review: '看回顾',
       close: '关闭上周小结',
     },
