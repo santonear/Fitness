@@ -103,6 +103,10 @@ test('start date: draft picker moves the first week; 计划 can change it as a n
   await page.getByRole('button', { name: '先不写', exact: true }).click();
   await expect(page.getByRole('heading', { name: '今天', exact: true })).toBeVisible();
   await expect(page.getByText(/开始$/).first()).toBeVisible();
+  // Before the start date 今天 offers no start button, only 手动训练 (Bo 2026-10-23).
+  await expect(page.getByText('还没到开始的日子。想先练一练，可以用下面的“手动训练”。', { exact: true })).toBeVisible();
+  await expect(page.locator('.v9-home-now').getByRole('button', { name: /^开\s*始$/ })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '手动训练', exact: true })).toBeVisible();
   const stored = await page.evaluate(async () => {
     const path = '/src/ui/mainline/context.tsx';
     const data = await (await import(/* @vite-ignore */ path)).workflow.snapshot();

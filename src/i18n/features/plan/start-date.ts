@@ -13,7 +13,7 @@ export const startDateCopy = {
     saved: '开始日期已更新',
     summary: '开始日期改为 {date}',
     busyWorkout: '训练进行中，练完再改。',
-    notStarted: '还没到开始的日子，想提前练也可以。',
+    notStarted: '还没到开始的日子。想先练一练，可以用下面的“手动训练”。',
   },
   en: {
     label: 'Start date',
@@ -28,6 +28,6 @@ export const startDateCopy = {
     saved: 'Start date updated',
     summary: 'Start date changed to {date}',
     busyWorkout: 'A workout is in progress. Change it after you finish.',
-    notStarted: 'The plan has not started yet. You can still train early if you like.',
+    notStarted: 'The plan has not started yet. To train before then, use Manual training below.',
   },
 } as const;

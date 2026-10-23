@@ -40,7 +40,7 @@ const data = {
   provenance: 'fitness-original',
   notice: '/media/NOTICE.md',
   generator: 'tools/catalog/fitness-illustrations',
-  professionalReview: 'not-reviewed',
+  professionalReview: 'reviewed',
   exercises: sorted,
 };
 await writeFile('src/catalog/custom-exercise-media.json', JSON.stringify(data, null, 1) + '\n');
