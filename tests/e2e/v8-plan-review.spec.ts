@@ -255,6 +255,6 @@ test('all retained plan versions remain readable and library filters retain attr
   await page.getByRole('button', { name: 'No equipment', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Self-resisted Row', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'No equipment', exact: true }).click();
-  await page.getByRole('button', { name: 'dumbbell', exact: true }).click();
+  await page.getByRole('button', { name: 'Dumbbells', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Self-resisted Row', exact: true })).toHaveCount(0);
 });
