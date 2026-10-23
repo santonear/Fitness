@@ -113,7 +113,7 @@ jobs:
       fail-fast: false
       matrix:
         browser: ${{ fromJSON((github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && '["chromium","webkit"]' || '["chromium"]') }}
-        shard: [1, 2]
+        shard: [1, 2, 3]
     steps:
       - uses: actions/checkout@v7
         with:
@@ -126,7 +126,7 @@ jobs:
       - run: npm run catalog:prepare
       - run: npm run engine:prepare
       # Execute every existing test once; independent runners keep the job deadline unchanged.
-      - run: npm run test:e2e -- --project=${{ matrix.browser }} --shard=${{ matrix.shard }}/2 --workers=2 --retries=1 $PW_SCREENS --reporter=line
+      - run: npm run test:e2e -- --project=${{ matrix.browser }} --shard=${{ matrix.shard }}/3 --workers=2 --retries=1 $PW_SCREENS --reporter=line
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
@@ -168,6 +168,16 @@ jobs:
       image: mcr.microsoft.com/playwright:v1.63.0-noble
       options: --ipc=host
     timeout-minutes: 30
+    # Each suite gets its own runner so the five run side by side instead of one after another.
+    strategy:
+      fail-fast: false
+      matrix:
+        suite:
+          - playwright.trial.config.ts $PW_PROJECT
+          - playwright.v8-coach.config.ts
+          - tests/e2e/v8-mainline.config.ts
+          - tests/e2e/mainline-polish.config.ts
+          - tests/e2e/v8-plan-review.config.ts
     steps:
       - uses: actions/checkout@v7
         with:
@@ -179,11 +189,7 @@ jobs:
       - run: npm ci
       - run: npm run catalog:prepare
       - run: npm run engine:prepare
-      - run: npx playwright test --config playwright.trial.config.ts $PW_PROJECT --retries=1 $PW_SCREENS
-      - run: npx playwright test --config tests/e2e/v8-mainline.config.ts --retries=1 $PW_SCREENS
-      - run: npx playwright test --config tests/e2e/mainline-polish.config.ts --retries=1 $PW_SCREENS
-      - run: npx playwright test --config tests/e2e/v8-plan-review.config.ts --retries=1 $PW_SCREENS
-      - run: npx playwright test --config playwright.v8-coach.config.ts --retries=1 $PW_SCREENS
+      - run: npx playwright test --config ${{ matrix.suite }} --retries=1 $PW_SCREENS
 
   browser-engine:
     needs: changes
