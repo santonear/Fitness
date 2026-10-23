@@ -8,7 +8,7 @@ import {
   writeCoachRequestEnvelope,
 } from '../../src/coach/wire-versions';
 import { coachRequestSchema } from '../../src/coach/contracts';
-import { coachEvaluationFixture } from '../../src/backend/coach-evaluation-fixtures';
+import { coachEvaluationFixture } from '../support/backend/coach-evaluation-fixtures';
 import { evaluateCoachV8Response } from '../../src/backend/coach-v8-evaluation';
 import { coachScope, coachMessageScope } from '../../src/coach/consent';
 import { validateCandidate, type CoachEnvelope } from '../../src/backend/contracts';

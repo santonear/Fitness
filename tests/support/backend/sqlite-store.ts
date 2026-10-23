@@ -1,6 +1,6 @@
 import { DatabaseSync } from 'node:sqlite';
-import { initialState, type ControlState, type ControlStore } from './store';
-import { serializeLedger, MAX_LEDGER_JSON_BYTES } from './ledger-capacity';
+import { initialState, type ControlState, type ControlStore } from '../../../src/backend/store';
+import { serializeLedger, MAX_LEDGER_JSON_BYTES } from '../../../src/backend/ledger-capacity';
 
 /** Local executable adapter. BEGIN IMMEDIATE serializes writers, including separate connections. */
 export class SqliteControlStore implements ControlStore {

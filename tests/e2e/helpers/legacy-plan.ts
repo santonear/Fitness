@@ -5,7 +5,7 @@ export async function seedLegacyPlan(page: Page, name: string, status: 'active' 
   return page.evaluate(
     async ({ name, status }) => {
       const { profileService } = await import(String('/src/application/profile.ts'));
-      const { planService } = await import(String('/src/application/plans.ts'));
+      const { planService } = await import(String('/tests/support/legacy/plans.ts'));
       await profileService.initialize('en');
       return planService.savePlan({
         name,

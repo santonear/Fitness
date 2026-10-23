@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 import { ControlService, testConfig } from '../../src/backend/control';
-import { SqliteControlStore } from '../../src/backend/sqlite-store';
+import { SqliteControlStore } from '../support/backend/sqlite-store';
 import { confirmationFor } from '../../src/backend/contracts';
 import type { ControlState, ControlStore } from '../../src/backend/store';
 

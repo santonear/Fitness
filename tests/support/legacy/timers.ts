@@ -1,7 +1,7 @@
-import type { TimerState } from '../domain/models';
-import { repository, type Repository } from '../persistence/repository';
-import { timerStateSchema } from '../domain/schemas';
-import { DomainError } from '../domain/errors';
+import type { TimerState } from '../../../src/domain/models';
+import { repository, type Repository } from '../../../src/persistence/repository';
+import { timerStateSchema } from '../../../src/domain/schemas';
+import { DomainError } from '../../../src/domain/errors';
 export function createTimerService(repo: Repository) {
   async function saveTimer(input: TimerState): Promise<void> {
     const parsed = timerStateSchema.safeParse(input);

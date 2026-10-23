@@ -1,6 +1,6 @@
-import type { EnginePlan, EngineProfile, ValidationIssue } from '../contracts';
-import { Rules, condition } from '../data';
-import { independentElapsedSeconds } from './cardio-duration';
+import type { EnginePlan, EngineProfile, ValidationIssue } from '../../../src/engine/contracts';
+import { Rules, condition } from '../../../src/engine/data';
+import { independentElapsedSeconds } from '../../../src/engine/validation/cardio-duration';
 
 /** Recalculate from source data and items; never trust a producer marker or its clock. */
 export function independentPregnancyIssues(plan: EnginePlan, p: EngineProfile, r = new Rules()): ValidationIssue[] {

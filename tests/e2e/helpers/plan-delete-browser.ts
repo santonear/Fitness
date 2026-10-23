@@ -2,8 +2,8 @@ import Dexie from 'dexie';
 import { createDatabase } from '../../../src/persistence/db';
 import { createRepository } from '../../../src/persistence/repository';
 import { createProfileService } from '../../../src/application/profile';
-import { createPlanService } from '../../../src/application/plans';
-import { createWorkoutService } from '../../../src/application/workouts';
+import { createPlanService } from '../../support/legacy/plans';
+import { createWorkoutService } from '../../support/legacy/workouts';
 import { createBackupService } from '../../../src/application/backup';
 import type { PlanInput } from '../../../src/domain/models';
 

@@ -1,6 +1,6 @@
-import { EXERCISE_IDS } from '../catalog/exercises';
-import type { CoachRequest } from '../coach/contracts';
-import type { CoachEvaluationScenario } from './coach-v8-evaluation';
+import { EXERCISE_IDS } from '../../../src/catalog/exercises';
+import type { CoachRequest } from '../../../src/coach/contracts';
+import type { CoachEvaluationScenario } from '../../../src/backend/coach-v8-evaluation';
 
 /** Synthetic inputs only. Never load profiles, backups or real notes for evaluations. */
 export function coachEvaluationFixture(scenario: CoachEvaluationScenario, locale: 'zh' | 'en'): CoachRequest {

@@ -1,8 +1,8 @@
-import { repository, type Repository } from '../persistence/repository';
-import { createGuidedService } from './guided';
-import { createDayPlanService } from './day-plans';
-import { type ProgramCandidate } from '../domain/guided-contracts';
-import { DomainError } from '../domain/errors';
+import { repository, type Repository } from '../../../src/persistence/repository';
+import { createGuidedService } from '../../../src/application/guided';
+import { createDayPlanService } from '../../../src/application/day-plans';
+import { type ProgramCandidate } from '../../../src/domain/guided-contracts';
+import { DomainError } from '../../../src/domain/errors';
 
 export function createCoachPlanService(repo: Repository) {
   const guided = createGuidedService(repo);

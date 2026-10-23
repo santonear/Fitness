@@ -4,7 +4,7 @@ import { guidedTransportEnvelope } from '../fixtures/legacy-guided-envelope';
 import { validateRequest, validateCandidate, confirmationFor } from '../../src/backend/contracts';
 import { createDeepSeekCodec } from '../../src/backend/deepseek';
 import { ControlService, testConfig } from '../../src/backend/control';
-import { SqliteControlStore } from '../../src/backend/sqlite-store';
+import { SqliteControlStore } from '../support/backend/sqlite-store';
 import { fourMetricCandidate } from '../fixtures/prompt-cases';
 import type { GuidedDialogueRequest } from '../../src/domain/guided-ai-contracts';
 

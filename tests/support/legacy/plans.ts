@@ -1,11 +1,11 @@
-import { authorizeLegacyOperation, type LegacyConfirmation } from './legacy-collisions';
-import type { Plan, PlanInput, LocalDate } from '../domain/models';
-import { repository, type Repository } from '../persistence/repository';
-import { DomainError } from '../domain/errors';
-import { planSchema, legacyPlanVersionSchema, localDateSchema } from '../domain/schemas';
-import { expandSchedule } from '../domain/calendar';
-import { exercises } from '../catalog/exercises';
-import { assertLegacyPlanEditable } from '../persistence/v8-access';
+import { authorizeLegacyOperation, type LegacyConfirmation } from '../../../src/application/legacy-collisions';
+import type { Plan, PlanInput, LocalDate } from '../../../src/domain/models';
+import { repository, type Repository } from '../../../src/persistence/repository';
+import { DomainError } from '../../../src/domain/errors';
+import { planSchema, legacyPlanVersionSchema, localDateSchema } from '../../../src/domain/schemas';
+import { expandSchedule } from '../../../src/domain/calendar';
+import { exercises } from '../../../src/catalog/exercises';
+import { assertLegacyPlanEditable } from '../../../src/persistence/v8-access';
 export function createPlanService(repo: Repository) {
   const db = repo.db;
   async function requireUnmanaged(id: string) {

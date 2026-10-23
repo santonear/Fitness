@@ -7,7 +7,7 @@ test('day schedule coexistence and completed-hidden slot preserve facts and memo
     const profile = await profileService.initialize('en');
     const d = '/src/application/day-plans.ts';
     const { dayPlanService } = await import(/* @vite-ignore */ d);
-    const w = '/src/application/workouts.ts';
+    const w = '/tests/support/legacy/workouts.ts';
     const { workoutService } = await import(/* @vite-ignore */ w);
     const r = '/src/persistence/repository.ts';
     const { repository } = await import(/* @vite-ignore */ r);

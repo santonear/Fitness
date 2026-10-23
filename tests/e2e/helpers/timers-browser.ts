@@ -2,8 +2,8 @@ import Dexie from 'dexie';
 import { createDatabase } from '../../../src/persistence/db';
 import { createRepository } from '../../../src/persistence/repository';
 import { createProfileService } from '../../../src/application/profile';
-import { createWorkoutService } from '../../../src/application/workouts';
-import { createTimerService } from '../../../src/application/timers';
+import { createWorkoutService } from '../../support/legacy/workouts';
+import { createTimerService } from '../../support/legacy/timers';
 import { exercises } from '../../../src/catalog/exercises';
 export async function verifyTimerWrites(name: string) {
   const db = createDatabase(name),

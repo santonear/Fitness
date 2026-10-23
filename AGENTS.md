@@ -23,7 +23,7 @@
 - 设计变量：`docs/handoff-v8/02-design-tokens.json`（V9.0.0，取值的唯一来源，与规范 V9.2 节同步；改值后用 `src/themes/token-css.ts` 重新生成各 `tokens.css`）
 - 参照设计稿：`docs/design/v9/`（V9 定版，参照，不是规范；冲突时以规范为准）。`docs/handoff-v8/Fitness_UX_V8_Prototype.html` 只作交互历史参照，视觉已被 V9 取代。
 
-以下文件已作废，不得引用：`ui-ux-max-design.md`、`design-model.yaml`、`docs/design/主题系统规范.md`、`docs/handoff-v8/01-*.md` 与 `03-*.md`（已并入规范）、`UIUX20261008.md` 附录 A 中未被第 3 部分提炼的内容。`DESIGN.md` 只保留一句指向规范的话。
+旧设计文件 `ui-ux-max-design.md`、`design-model.yaml`、`docs/design/主题系统规范.md`、`docs/handoff-v8/01-*.md` 与 `03-*.md` 已删除（2026-10-23，内容已并入规范），文档里残留的引用不得再沿用；`UIUX20261008.md` 附录 A 中未被第 3 部分提炼的内容同样作废，不得引用。`DESIGN.md` 只保留一句指向规范的话。
 
 ## 2. 样式
 

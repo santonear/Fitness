@@ -4,7 +4,7 @@ import { validateSummaryStage, summaryStageSchema } from '../../src/backend/summ
 import { buildStageSummaryPrompt as buildAiPrompt } from '../../src/backend/summary-provider';
 import { createDeepSeekCodec } from '../../src/backend/deepseek';
 import { ControlService, testConfig } from '../../src/backend/control';
-import { SqliteControlStore } from '../../src/backend/sqlite-store';
+import { SqliteControlStore } from '../support/backend/sqlite-store';
 import { readWorkerConfig, createWorker } from '../../src/backend/worker';
 import { createHandler } from '../../src/backend/http';
 import { exercises } from '../../src/catalog/exercises';

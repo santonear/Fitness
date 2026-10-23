@@ -2,7 +2,7 @@ import { expect, it } from 'vitest';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { SqliteControlStore } from '../../src/backend/sqlite-store';
+import { SqliteControlStore } from '../support/backend/sqlite-store';
 import { D1ControlStore, type D1Binding, type D1Statement } from '../../src/backend/d1-store';
 import { initialState } from '../../src/backend/store';
 import { ControlService, testConfig } from '../../src/backend/control';

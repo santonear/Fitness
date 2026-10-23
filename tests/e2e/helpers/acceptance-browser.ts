@@ -2,10 +2,10 @@ import Dexie from 'dexie';
 import { createDatabase } from '../../../src/persistence/db';
 import { createRepository } from '../../../src/persistence/repository';
 import { createProfileService } from '../../../src/application/profile';
-import { createPlanService } from '../../../src/application/plans';
+import { createPlanService } from '../../support/legacy/plans';
 import { createProgressService } from '../../../src/application/progress';
 import { createBackupService } from '../../../src/application/backup';
-import { createWorkoutService } from '../../../src/application/workouts';
+import { createWorkoutService } from '../../support/legacy/workouts';
 import { synchronizeTrainingMemo } from '../../../src/application/training-memory';
 import type { PlanInput } from '../../../src/domain/models';
 

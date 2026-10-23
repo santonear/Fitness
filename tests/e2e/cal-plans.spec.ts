@@ -77,7 +77,7 @@ test('legacy collision requires a current explicit confirmation and preserves bo
     const profile = await profileService.initialize('en');
     const d = '/src/application/day-plans.ts';
     const { dayPlanService } = await import(/* @vite-ignore */ d);
-    const p = '/src/application/plans.ts';
+    const p = '/tests/support/legacy/plans.ts';
     const { planService } = await import(/* @vite-ignore */ p);
     const r = '/src/persistence/repository.ts';
     const { repository } = await import(/* @vite-ignore */ r);

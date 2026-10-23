@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 import { createDeepSeekWorker } from '../../src/backend/deepseek-worker';
-import { SqliteControlStore } from '../../src/backend/sqlite-store';
+import { SqliteControlStore } from '../support/backend/sqlite-store';
 import { currentCoachEnvelope, currentCoachRefusal } from '../fixtures/current-coach-envelope';
 
 it.each(['en', 'zh'] as const)(
