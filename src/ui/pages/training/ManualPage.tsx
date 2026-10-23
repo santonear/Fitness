@@ -19,6 +19,7 @@ import type { ManualSelection } from '../../../application/v8-workflow';
 import { repository } from '../../../persistence/repository';
 import { targetText } from '../../components/ExerciseTargets';
 import { Button } from '../../components/common';
+import { ChoiceChip } from '../../components/kit';
 import { ExerciseBrowser } from '../../components/ExerciseBrowser';
 import { format, useMainline, workflow } from '../../mainline/context';
 import { initialFilters, recentExerciseIds, toggleSelection } from './manual/selection';
@@ -255,9 +256,9 @@ export function ManualPage() {
       {selected.length > 0 && (
         <section aria-label={format(copy.selected, { count: selected.length })} className="manual-chips">
           {selected.map(id => (
-            <button type="button" key={id} aria-pressed="true" onClick={() => toggleExercise(id)}>
+            <ChoiceChip key={id} size="sm" selected onClick={() => toggleExercise(id)}>
               {exercises.find(exercise => exercise.id === id)!.name[locale]} ×
-            </button>
+            </ChoiceChip>
           ))}
         </section>
       )}

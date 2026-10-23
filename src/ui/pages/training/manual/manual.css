@@ -49,22 +49,6 @@
   font-size: var(--t2);
   color: var(--c-ink-muted);
 }
-.manual-chips button {
-  font: inherit;
-  font-size: var(--t2);
-  border: var(--bw) solid var(--c-line);
-  color: var(--c-ink);
-  background: var(--c-surface);
-  border-radius: var(--r-chip);
-  min-height: var(--touch-min);
-  padding: var(--s2) var(--s3);
-  cursor: pointer;
-}
-.manual-chips button[aria-pressed='true'] {
-  color: var(--c-primary);
-  border-color: var(--c-primary);
-  background: color-mix(in srgb, var(--c-primary) 12%, var(--c-surface));
-}
 .manual-results-heading {
   display: flex;
   align-items: center;
