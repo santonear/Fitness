@@ -114,7 +114,8 @@ test('English UI shows no Chinese across the main flow', async ({ page }) => {
   await check(page, 'schedule');
   const calendar = page.getByRole('region', { name: /training days$/ });
   const days = calendar.locator('[data-date]:not([aria-disabled="true"])');
-  for (const index of [1, 3, 5]) await days.nth(index).click();
+  // Today is a training day: before the first picked day 今天 has no start button (Bo 2026-10-23).
+  for (const index of [0, 2, 4]) await days.nth(index).click();
   await page.getByRole('button', { name: '30 min', exact: true }).click();
   await check(page, 'schedule picked');
   await page.getByRole('button', { name: 'Next', exact: true }).click();
@@ -289,7 +290,7 @@ test('plan made in Chinese with preset choices reads fully in English after swit
   await page.getByLabel('说说你的身体情况').fill('女，34岁，165厘米，60公斤');
   await nextButton(page).click();
   const open = page.getByRole('region', { name: /训练日$/ }).locator('[data-date]:not([aria-disabled="true"])');
-  for (const index of [1, 3, 5]) await open.nth(index).click();
+  for (const index of [0, 2, 4]) await open.nth(index).click();
   await page.getByRole('button', { name: '45 分钟', exact: true }).click();
   await nextButton(page).click();
   await answerText(page, '去健身房');
