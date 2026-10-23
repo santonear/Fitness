@@ -134,4 +134,14 @@
   --map-ring: #EDECEA;
   --map-text: #3C3C40;
   --map-scan: rgba(255,138,0,.28);
+  --letter-paper: #F6F2EA;
+  --letter-paper-hi: #FBF8F2;
+  --letter-paper-lo: #EEE7DA;
+  --letter-ornament: #D2933A;
+  --letter-dash: rgba(210,147,58,.5);
+  --letter-ink: #46392D;
+  --letter-shadow: 9px 9px 20px #CFCDC8, -7px -7px 18px #FFFFFF;
+  --letter-grain: 0.35;
+  --letter-glow: drop-shadow(0 1px 0 rgba(255,255,255,.9));
+  --letter-r: 10px;
 }

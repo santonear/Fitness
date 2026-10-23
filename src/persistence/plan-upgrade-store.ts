@@ -72,12 +72,14 @@ export function createPlanUpgradeStore(repo: Repository) {
     async listFutureLetters(): Promise<FutureLetter[]> {
       return await db.futureLetters.orderBy('createdAt').toArray();
     },
-    async saveFutureLetter(text: string, openAtCampId?: string): Promise<FutureLetter | undefined> {
+    /** `openOn` (local date) makes the letter open on 今天 from that day; without it the letter stays on 自记录 only. */
+    async saveFutureLetter(text: string, openAtCampId?: string, openOn?: string): Promise<FutureLetter | undefined> {
       const row = parse<FutureLetter>(futureLetterSchema, {
         id: crypto.randomUUID(),
         text: text.trim(),
         createdAt: now(),
         ...(openAtCampId ? { openAtCampId } : {}),
+        ...(openOn ? { openOn } : {}),
       });
       return repo.write(async () => {
         await db.futureLetters.add(row);
@@ -167,8 +169,11 @@ export const saveJourneyVersion = (
   journey: Omit<Journey, 'id' | 'version' | 'createdAt'>,
 ): Promise<Journey | undefined> => store.saveJourneyVersion(journey);
 export const listFutureLetters = (): Promise<FutureLetter[]> => store.listFutureLetters();
-export const saveFutureLetter = (text: string, openAtCampId?: string): Promise<FutureLetter | undefined> =>
-  store.saveFutureLetter(text, openAtCampId);
+export const saveFutureLetter = (
+  text: string,
+  openAtCampId?: string,
+  openOn?: string,
+): Promise<FutureLetter | undefined> => store.saveFutureLetter(text, openAtCampId, openOn);
 export const markLetterOpened = (id: string): Promise<void> => store.markLetterOpened(id);
 export const homePanelStyle = (): Promise<HomePanelStyle> => store.homePanelStyle();
 export const setHomePanelStyle = (style: HomePanelStyle): Promise<void> => store.setHomePanelStyle(style);

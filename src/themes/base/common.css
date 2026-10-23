@@ -328,3 +328,17 @@ input[type='number'] {
   font-weight: var(--w-body);
   letter-spacing: var(--tr-body);
 }
+/* 未来来信 handwriting: 霞鹜文楷 Light for Chinese, Dancing Script for other text (faces arrive with the lazy letter). */
+.v9-hand {
+  font-family: var(--f-letter-zh);
+  font-size: var(--letter-size-zh);
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  line-height: var(--letter-line);
+}
+.v9-hand[data-script='en'] {
+  font-family: var(--f-letter-en);
+  font-size: var(--letter-size-en);
+  font-weight: 400;
+  letter-spacing: 0;
+}

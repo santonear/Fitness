@@ -245,7 +245,17 @@ export type ThemeTokenName =
   | '--map-sec-ink'
   | '--map-ring'
   | '--map-text'
-  | '--map-scan';
+  | '--map-scan'
+  | '--letter-paper'
+  | '--letter-paper-hi'
+  | '--letter-paper-lo'
+  | '--letter-ornament'
+  | '--letter-dash'
+  | '--letter-ink'
+  | '--letter-shadow'
+  | '--letter-grain'
+  | '--letter-glow'
+  | '--letter-r';
 
 /** Shared layout keys (V8.0.3, V9 adds orb and tab bar). */
 export type SharedLayoutTokenName =
@@ -253,6 +263,11 @@ export type SharedLayoutTokenName =
   | '--orb-size'
   | '--orb-safe'
   | '--tabbar-h'
+  | '--f-letter-zh'
+  | '--f-letter-en'
+  | '--letter-size-zh'
+  | '--letter-size-en'
+  | '--letter-line'
   | '--touch-min'
   | '--touch-primary'
   | '--touch-workout'
