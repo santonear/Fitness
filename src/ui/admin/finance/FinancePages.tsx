@@ -1,3 +1,4 @@
+import { adminLocale } from '../shared/format';
 import { useFeature } from '../../useFeature';
 import { AssistantUsagePage, AssistantSummary } from './AssistantUsagePage';
 import { formatAdminTimeZone } from '../time-zone';
@@ -440,7 +441,7 @@ export function FinanceSettings({ language = 'zh' }: { language?: FinanceLanguag
             <h3>{t.history}</h3>
             {data.value?.history.map(v => (
               <p key={v.version}>
-                {t.version} {v.version} · {new Date(v.at).toLocaleString()}{' '}
+                {t.version} {v.version} · {new Date(v.at).toLocaleString(adminLocale(language === 'zh'))}{' '}
                 <button
                   disabled={!!mutation.pending}
                   onClick={() =>

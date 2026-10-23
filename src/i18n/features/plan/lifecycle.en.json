@@ -6,6 +6,7 @@
   "confirmTitle": "Delete this plan?",
   "confirmHint": "The plan will be hidden. Your workout records, review statistics and progress records are kept. Undo within 10 seconds, or restore it in Settings within 30 days. After 30 days the plan itself is removed; workout records remain.",
   "deleted": "Plan deleted",
+  "versionUpdated": "Updated to version {version}",
   "undo": "Undo",
   "previous": "Previous plans",
   "view": "View",

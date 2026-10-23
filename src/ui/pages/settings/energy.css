@@ -353,7 +353,7 @@
   border-color: var(--c-signature);
   box-shadow:
     var(--el-inset),
-    0 0 0 3px color-mix(in srgb, var(--c-signature) 30%, transparent),
+    0 0 0 calc(var(--s1) * 0.75) color-mix(in srgb, var(--c-signature) 30%, transparent),
     0 0 var(--glow-blur) var(--glow);
 }
 /* Beats the shell's generic full-width field style. */
@@ -402,7 +402,7 @@
 }
 .v9-energy-range::-webkit-slider-runnable-track {
   block-size: 6px;
-  border-radius: 3px;
+  border-radius: var(--r-chip);
   background:
     linear-gradient(90deg, var(--meter-from), var(--meter-to)) 0 0 / var(--pct, 0%) 100% no-repeat,
     var(--chart-track);
@@ -422,12 +422,12 @@
 }
 .v9-energy-range::-moz-range-track {
   block-size: 6px;
-  border-radius: 3px;
+  border-radius: var(--r-chip);
   background: var(--chart-track);
 }
 .v9-energy-range::-moz-range-progress {
   block-size: 6px;
-  border-radius: 3px;
+  border-radius: var(--r-chip);
   background: var(--grad-accent);
 }
 .v9-energy-range::-moz-range-thumb {
@@ -509,7 +509,7 @@
   block-size: 10px;
   margin-block-start: var(--s1);
   overflow: hidden;
-  border-radius: 5px;
+  border-radius: var(--r-chip);
   background: var(--chart-track);
   box-shadow: var(--el-inset);
 }
@@ -676,7 +676,7 @@
   font-style: italic;
 }
 .v9-energy[data-look='vivid'] .v9-energy-bar {
-  border-radius: 1px;
+  border-radius: calc(var(--s1) / 4);
 }
 .v9-energy[data-look='vivid'] .v9-energy-bar i {
   box-shadow: none;
@@ -712,7 +712,7 @@
 }
 .v9-energy[data-look='gentle'] .v9-energy-bar {
   block-size: 14px;
-  border-radius: 7px;
+  border-radius: var(--r-chip);
 }
 .v9-energy[data-look='gentle'] .v9-energy-bar i {
   transition-timing-function: cubic-bezier(0.18, 1.36, 0.3, 1);

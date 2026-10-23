@@ -1,11 +1,17 @@
 import { z } from 'zod';
 import { textIssue } from '../domain/input-guard';
-import { digest } from './contracts';
 import { D1ControlStore, type D1Binding } from './d1-store';
 import { shortId } from './admin/core/short-id';
 import type { AdminDatabase } from './admin/core/contracts';
-import { DAY_MS, utcDay } from '../domain/local-date';
-import { activeTrialSubject, noStoreJson, readJsonBody, sameOrigin, trialToken } from './request';
+import {
+  activeTrialSubject,
+  noStoreJson,
+  overRateLimit,
+  readJsonBody,
+  sameOrigin,
+  senderKey,
+  trialToken,
+} from './request';
 
 /**
  * 我的 → 给我们留言. The user types a message (and optionally a contact) and
@@ -71,37 +77,6 @@ async function feedbackSubject(request: Request, env: FeedbackEnv): Promise<stri
     return;
   }
 }
-const hourBucket = (now: number) => new Date(now).toISOString().slice(0, 13);
-const dayBucket = (now: number) => utcDay(now);
-
-/** Counts first, then refuses: a refused attempt still counts so retries cannot bypass the limit. */
-async function admit(db: AdminDatabase, key: string, now: number) {
-  const hour = hourBucket(now),
-    day = dayBucket(now);
-  // Old buckets carry no meaning after a day; keep the table small.
-  await db
-    .prepare('DELETE FROM user_feedback_rate WHERE bucket < ?')
-    .bind(dayBucket(now - DAY_MS))
-    .run();
-  const bump = (k: string, bucket: string) =>
-    db
-      .prepare(
-        'INSERT INTO user_feedback_rate(key,bucket,count) VALUES(?,?,1) ON CONFLICT(key,bucket) DO UPDATE SET count=count+1',
-      )
-      .bind(k, bucket);
-  await db.batch([bump(key, hour), bump('*', day)]);
-  const own = await db
-    .prepare('SELECT count FROM user_feedback_rate WHERE key=? AND bucket=?')
-    .bind(key, hour)
-    .first<{ count: number }>();
-  const all = await db
-    .prepare('SELECT count FROM user_feedback_rate WHERE key=? AND bucket=?')
-    .bind('*', day)
-    .first<{ count: number }>();
-  if ((own?.count ?? 0) > FEEDBACK_HOURLY_LIMIT || (all?.count ?? 0) > FEEDBACK_DAILY_LIMIT)
-    throw new FeedbackError('RATE_LIMITED', 429);
-}
-
 export async function handleFeedback(request: Request, env: FeedbackEnv, now = Date.now()): Promise<Response> {
   try {
     if (request.method !== 'POST') return json({ error: 'METHOD_NOT_ALLOWED' }, 405);
@@ -115,13 +90,9 @@ export async function handleFeedback(request: Request, env: FeedbackEnv, now = D
     if (await db.prepare('SELECT id FROM user_feedback WHERE id=?').bind(input.id).first())
       return json({ ok: true, id: input.id });
     const subject = await feedbackSubject(request, env);
-    const address = request.headers.get('cf-connecting-ip') ?? '';
-    const key = subject
-      ? `s:${subject}`
-      : address && env.CONTROL_DIGEST_SECRET
-        ? `a:${(await digest(`feedback:${address}`, env.CONTROL_DIGEST_SECRET)).slice(0, 32)}`
-        : 'anonymous';
-    await admit(db, key, now);
+    const key = await senderKey(request, 'feedback', env.CONTROL_DIGEST_SECRET, subject);
+    if (await overRateLimit(db, '', key, { hourly: FEEDBACK_HOURLY_LIMIT, daily: FEEDBACK_DAILY_LIMIT }, now))
+      throw new FeedbackError('RATE_LIMITED', 429);
     await db
       .prepare(
         'INSERT OR IGNORE INTO user_feedback(id,created_at,subject_short_id,message,contact,locale,status) VALUES(?,?,?,?,?,?,?)',

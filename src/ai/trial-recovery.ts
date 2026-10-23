@@ -11,6 +11,7 @@ export const applicationSchema = z.object({
   claimUntil: z.number().optional(),
   expiresAt: z.number().optional(),
   directlyActivated: z.boolean().optional(),
+  pendingExpired: z.boolean().optional(),
 });
 export function readTrialReceipt(): string {
   try {

@@ -127,7 +127,9 @@ export const usersTodoSource = {
             level: 'info' as const,
             title: '新申请',
             text: `${pending.length} 份申请等待审核`,
-            actions: [{ label: '逐个审核', href: '/admin/applications' }],
+            actions: [{ label: '逐个审核', href: '/admin/applications', key: 'reviewEach' }],
+            key: 'applicationsPending',
+            params: { count: pending.length },
           },
         ]
       : [];

@@ -1,3 +1,4 @@
+import { adminLocale } from '../admin/shared/format';
 import { useFeature } from '../useFeature';
 import { ApplicationsTable } from '../admin/ApplicationsTable';
 import { AdminShell } from '../admin/shell/AdminShell';
@@ -233,7 +234,7 @@ function LegacyManagementPage() {
         {data && (
           <p>
             {zh ? '最后读取：' : 'Last read: '}
-            {new Date(data.report.capturedAt).toLocaleString()} · {data.policy.timeZone}
+            {new Date(data.report.capturedAt).toLocaleString(adminLocale(zh))} · {data.policy.timeZone}
             {data.service.reconciliationRequired && (
               <strong role="alert">
                 {' '}
@@ -261,14 +262,14 @@ function LegacyManagementPage() {
             <ul>
               {data?.audit.map((item, index) => (
                 <li key={index}>
-                  {new Date(item.at).toLocaleString()} · {item.event} {item.subjectId}
+                  {new Date(item.at).toLocaleString(adminLocale(zh))} · {item.event} {item.subjectId}
                 </li>
               ))}
             </ul>
             <h3>{zh ? '额度恢复记录' : 'Quota restorations'}</h3>
             {data?.quotaRestorations?.map(item => (
               <p key={item.id}>
-                {new Date(item.at).toLocaleString()} · {item.subjectId} · {item.period} · {item.reason}
+                {new Date(item.at).toLocaleString(adminLocale(zh))} · {item.subjectId} · {item.period} · {item.reason}
               </p>
             ))}
           </section>
@@ -303,7 +304,7 @@ function LegacyManagementPage() {
               <article className="management-item" key={s.subjectId}>
                 <strong>{s.subjectId}</strong>
                 <p>
-                  {new Date(s.expiresAt).toLocaleString()} ·{' '}
+                  {new Date(s.expiresAt).toLocaleString(adminLocale(zh))} ·{' '}
                   {s.revoked
                     ? zh
                       ? '已撤销'

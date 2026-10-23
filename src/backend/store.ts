@@ -8,6 +8,8 @@ export interface ControlState {
     { subjectId: string; period: string; reason: string; at: number; credits: { understand: number; generate: number } }
   >;
   applications?: Record<string, import('./trial-applications').TrialApplication>;
+  /** Last weekly removal of expired pending applications (Bo 2026-10-23). */
+  applicationPurgeAt?: number;
   version: 1;
   aiEnabled: boolean;
   recoveryRequired: boolean;

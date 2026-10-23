@@ -568,3 +568,37 @@ Bo 已定版 V9 设计并授权推进；计时规则按 Bo 当日决定改写（
 - 决定：待办页在系统状态下方加“今天的 AI 用量”（今天调用次数、估算费用、使用人数）与近 7 天估算费用柱图，数据来自已有 `GET finance/usage`（assistant_usage 表，只含次数与估算费用），复用 `CostChart`（新增可选的单序列标签与每日次数提示）。近 7 天没有记录时显示“近 7 天还没有 AI 调用记录。”。只在 `aiAssistantV2` 开启时出现。与 V9 设计稿的差异：不显示“/ 8,000 次”上限与“单个用户每天最多 60 次”，后端没有这个全站每日上限的数据来源。
 - 涉及文件：src/application/rules/basic-items.ts、tests/unit/v8-basic-plan.test.ts、src/ui/admin/finance/{AssistantUsagePage,CostChart}.tsx、src/ui/admin/shell/AdminShell.tsx、tests/admin/finance-ui.test.ts。
 - Bo 2026-10-23 确认：后台新增两句文案（中英）批准；时长容差 ±10% 批准；全站每日调用上限及其显示暂缓。
+
+## 2026-10-23 · 训练页与练完页修正（体检第 2 轮 #10–14）
+
+- 情况：练完页只有“记下来”，0 组时没有规范第 5 部分第 1 条要求的“放弃这次”，也没有回到训练的入口；打开“暂停或结束”时计时动作的倒计时继续走。
+- 决定：0 组时在“记下来”下方加“放弃这次”（英文 Discard this workout，与暂停面板的“放弃这次（不计入回顾）”走同一结束逻辑，状态为 abandoned，不删任何完成记录，回首页）；所有情况都加“继续训练”（复用暂停面板已有文案，回到播放器）。“记下来”按钮不改成规范里的“记下这次（0 组）”，沿用第 3.5 节的“记下来”，避免一个页面两种叫法。打开“暂停或结束”与“身体不适？”一样先暂停计时，关闭后由用户点“继续计时”。修改数值面板关闭时若数值无效，回到打开面板时的值；清空输入框显示为空，不再显示 0。
+- 理由：只复用已有文案与已有放弃逻辑，不新增数据含义；计时规则遵守 AGENTS §3.1（不自动开始）。
+- 涉及文件：src/ui/pages/training/FinishPage.tsx、src/i18n/features/training/finish.{zh,en}.json、src/ui/pages/training/workout/{useWorkoutState,workout-model,workout-screen,workout-body,workout-parts}.tsx。
+- Bo 2026-10-23 确认：0 组时保存按钮改为规范的“记下这次（0 组）”（英文 Save this workout (0 sets)），有组数时仍是“记下来”；“放弃这次 / Discard this workout”批准。
+
+## 2026-10-23 · 中英文混排修正（体检第 2 轮 #3–9）
+
+- 情况：英文界面出现中文、中文界面出现英文：月计划“做了什么”、芽芽卡片与本地调整下拉框直接显示保存时的训练单名；部分页面计划名没套 `answerText`；版本记录“开始日期改为…”按保存时语言存下；器械标签英文显示原始 key、中文缺 6 个；冷启动加载/读取失败固定中文；后台日期与数字不带语言、待办与推送只有中文。
+- 决定：显示时翻译，已存数据一律不改写。训练单名走 `templateLabel`；计划名走 `answerText`；版本记录在显示时识别“开始日期改为 {date}”/“Start date changed to {date}”（用该版本自己的 startDate 重排日期），以及“改为每周预算”“改为按天安排”两句固定句；器械改为按 key 的中英标签表，未知 key 是用户自定义器械，按原文显示（不擅自翻译）。冷启动文案读本机保存的语言（`fitness.language`）。后台日期/数字传所选语言的 locale（`adminLocale`）。待办接口新增可选字段 `key`、`params`、`actions[].key`，原 `title`/`text`/`label` 不变（仍是中文），客户端按 key 翻译，未知 key 显示原文。推送：页面把当前语言写入 Cache API（`fitness-settings` → `/__fitness-language`），两个 Service Worker 读取后选中文或英文；管理推送负载新增可选 `category`、`count`（只有类别与数量，不含健康自由文本），`body` 保持中文兜底。“已更新到第 N 版 / 撤销”移入 `lifecycle.{zh,en}.json`（`versionUpdated`，“撤销”复用 `undo`）。
+- 新增文案（规范未定义；Bo 2026-10-23 批准）：
+  - 器械中文：可调节凳、迷你双杠（parallettes）、稳固立柱、固定锚点、背包、水瓶；器械英文全表（如 No equipment、Pull-up bar、Dumbbells…，见 `src/catalog/taxonomy.ts`）。
+  - 后台待办英文（中文与服务端原文一致）：Production errors increased / {count} {type} errors in the last hour.；Applications waiting over two days / {count} applications are waiting for review.；New applications；Ledger needs reconciling（两种说明）；Monthly budget {percent}% used (¥{spent} / ¥{budget})；Sensitive switch awaiting confirmation / {name} is not on yet. Check its impact.；Release checks need attention / {count} checks in preview|production failed or are unavailable.；按钮 View errors、Review one by one、Reconcile each、View costs、Review and confirm、View releases。
+  - 管理推送英文：标题 Fitness console alert；正文“{类别}: {数量}”（Ledger needs reconciling、Release checks need a look、Production errors increased、Budget 80% used、Budget 100% used、Applications waiting over two days、Test alert），兜底 There is something to check in the console.
+  - 训练提醒推送：原来中英拼在一句，改为按语言二选一（沿用 `pwa.ts` 已有两句）。
+- 理由：不改写完成事实与已存版本；新增字段均为可选，不删除、不改变原字段含义；推送负载不新增用户内容。
+- 涉及文件：src/ui/pages/plan/{MonthPlan,PlanRoute}.tsx、src/ui/components/{AssistantAttachment,EngineLocalActions,ManualInvites}.tsx、src/ui/pages/settings/DeletedPlans.tsx、src/ui/pages/home/HomePage.tsx、src/i18n/features/plan/{labels.ts,lifecycle.zh.json,lifecycle.en.json}、src/application/preset-text.ts、src/catalog/taxonomy.ts、src/ui/mainline/{context,MainlineApp}.tsx、src/ui/admin/shared/format.ts、src/ui/admin/{quality/pages,users/UsersPages,finance/FinancePages,finance/AssistantUsagePage,releases/ReleasesPage,shell/AdminShell}.tsx、src/ui/admin/todos/copy.ts、src/ui/pages/ManagementPage.tsx、src/backend/admin/{core/contracts,quality/service,quality/push-payload,users/handler,finance/report,releases/todos}.ts、src/i18n/index.ts、public/admin-sw.js、public/pwa/sw-template.js；测试 tests/unit/{preset-text,equipment-label,admin-todo-copy}.test.ts、tests/admin/quality-push-encryption.test.ts。
+
+## 2026-10-23 · 计划版本与回顾修正（体检第 2 轮 #1、2、15–17）
+
+- 情况：撤销后再改计划会生成重复的版本号，备份导出因此失败；周回顾“采用建议”丢掉 enginePlan 与训练日，并跳过安全检查；回顾时长没有算时长更正；回顾依据漏掉每组的不适；月度缺少次数把没过完的周也算进去。
+- 决定：新版本号一律取该计划已有最大号 + 1（`nextVersionNumber`）。打开本地库时幂等修复已重复的版本号：最早创建的保留原号，后来的依次取下一个空号，其余数据不动，在一个事务内完成。“采用建议”改走与芽芽改计划同一条带校验的保存路径（`savePlanChange`），引擎拒绝时什么都不写。芽芽改计划也因此在训练暂停、待处理的疼痛回访期间拒绝修改，并对新动作检查健康限制。回顾时长、图表、时段规律改用最新的时长更正；回顾依据计入单组不适，同一组以后一次回答为准。月度缺少次数只统计整周都在本月内、且已经结束的周。
+- 理由：不删除、不改写完成记录；版本修复只改重复的版本号，不改内容；安全规则只会更严，不会放松。
+- 涉及文件：src/persistence/{plan-version-numbers,db}.ts、src/application/workflow/{plan-versions,context}.ts、src/application/{v8-review,v8-workflow,plan-setup,plan-upgrade-store}.ts、src/application/review/{compute,charts,history,suggest,evidence}.ts、postpartum-safety.ts。
+- Bo 2026-10-23：暂时维持现状。日历按训练保存的 localDate 归日，回顾按开始时间在当前时区的日期归日（#56 决定、规范第 1074 行），两者只在用户换时区后才不一致。本次没有改，维持现状。
+
+## 2026-10-23 · 后端限额与滥用防护（体检第 2 轮 #18–21）
+
+- 决定：芽芽每日次数窗口固定按用户第一次使用时的时区计算，客户端改时区不再重置（shortcut：长期换时区的用户仍按旧时区重置）。次数在接受请求时就预扣，只有服务端失败时退回，客户端中途断开照样计数。匿名报错接口每个来源每小时 30 条、全站每天 2000 条；遥测计数每类每天最多 100,000。试用申请每个地址每小时 6 次、全站每天 300 次；待审超过 14 天的申请不再占 200 个名额，也不再挡住本人重新申请；数据保留，接口返回新增可选字段 `pendingExpired`；另设总量上限 1000 条。deploy-preview 只允许从 main、codex/**、claude/**、v8/** 分支运行。
+- Bo 2026-10-23 决定：报错记录只保留 30 天（每收到一条新报错时删除 30 天前的记录）；过期（超过 14 天）的待审试用申请每 7 天清理一次（在申请或后台保留操作时顺带执行，记录 `applicationPurgeAt`）；`/api/v1/admin/*` 加 Access、拆分预览与生产的 Access AUD 暂时不需要。没有用定时任务，因为生产配置里没有 cron 触发器。
+- 原待决事项：报错记录的保留期限（建议后台定时删除 30 天前的记录）；是否删除已过期的待审申请；过期申请在用户页仍显示“等待审核”，后台 48 小时提醒也仍把它们算进去；`/api/v1/admin/*` 是否加 Access（需要为 control-admin 脚本配置 Cloudflare 服务令牌）；预览和生产拆成两个 Access AUD；生产环境的必需审批人（仓库设置）。

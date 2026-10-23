@@ -78,4 +78,15 @@ describe('V9 review charts', () => {
     expect(weekStreak(rows, '2026-10-21', tz)).toBe(2);
     expect(weekStreak([], '2026-10-21', tz)).toBe(0);
   });
+  it('uses the latest time correction for minutes and day, like the calendar', () => {
+    const corrected: ChartWorkout = {
+      ...row('c', '2026-10-20T01:00:00Z', 'complete', 90),
+      timeCorrections: [
+        { startedAt: '2026-10-20T16:30:00Z', endedAt: '2026-10-20T17:00:00Z', createdAt: '2026-10-21T00:00:00Z' },
+      ],
+    };
+    const [tue, wed] = chartSeries([corrected], dayBuckets('2026-10-20').slice(0, 2), tz);
+    expect(tue).toMatchObject({ sessions: 0, minutes: 0 });
+    expect(wed).toMatchObject({ sessions: 1, minutes: 30 });
+  });
 });

@@ -3,6 +3,7 @@ import { DomainError } from '../domain/errors';
 import { v8StateSchema, v8WorkoutSchema } from '../domain/schemas';
 import type { PostpartumSafetyState, PlannedItem, CoachProfile } from '../domain/v8/contracts';
 import type { Repository } from '../persistence/repository';
+import { endActiveWorkouts } from './training-stop';
 import { DATA, calendarDay, condition } from '../engine/data';
 import { DEFAULT_TIME_ZONE, addDays } from '../domain/local-date';
 const urgentKeys = DATA.rules.find(r => r.id === 'postpartum.urgent')!.value!.items as string[];
@@ -130,11 +131,7 @@ export function createPostpartumSafety(repo: Repository) {
           }),
         );
       }
-      if (urgent.length)
-        for (const active of await repo.db.v8Workouts.where('status').equals('in_progress').toArray())
-          await repo.db.v8Workouts.put(
-            v8WorkoutSchema.parse({ ...active, status: active.sets.length ? 'partial' : 'not_started', endedAt: at }),
-          );
+      if (urgent.length) await endActiveWorkouts(repo, at);
       const { nextWorkoutOverride: _, ...retained } = state;
       await repo.db.v8State.put(
         v8StateSchema.parse({

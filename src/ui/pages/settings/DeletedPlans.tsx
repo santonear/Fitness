@@ -1,3 +1,4 @@
+import { answerText } from '../../../application/preset-text';
 import { isFeatureEnabled } from '../../../application/feature-flags';
 import { useState } from 'react';
 import { useMainline, workflow } from '../../mainline/context';
@@ -15,7 +16,7 @@ export function DeletedPlans() {
       {!c.data?.deletedPlans.length && <p>{copy.trashEmpty}</p>}
       {c.data?.deletedPlans.map(plan => (
         <Sheet key={plan.id}>
-          <h3>{plan.name}</h3>
+          <h3>{answerText(plan.name, c.locale)}</h3>
           <p>
             {copy.deletedOn}{' '}
             <time dateTime={plan.deletedAt}>

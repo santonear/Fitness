@@ -1,5 +1,7 @@
 import type { ControlState } from './store';
+import type { AdminDatabase } from './admin/core/contracts';
 import { digest } from './contracts';
+import { DAY_MS, utcDay } from '../domain/local-date';
 
 /** Shared request plumbing for the Worker endpoints. Each caller keeps its own limits and error codes. */
 
@@ -94,4 +96,45 @@ export async function activeTrialSubject(
   if (!session || session.revoked || !subject || subject.revoked || subject.deletedAt || subject.expiresAt <= now)
     return undefined;
   return session.subjectId;
+}
+
+/** Rate-limit key for one sender: the trial subject, else a keyed digest of the connecting address (never the raw address). */
+export async function senderKey(request: Request, purpose: string, secret?: string, subject?: string) {
+  if (subject) return `s:${subject}`;
+  const address = request.headers.get('cf-connecting-ip') ?? '';
+  return address && secret ? `a:${(await digest(`${purpose}:${address}`, secret)).slice(0, 32)}` : 'anonymous';
+}
+/**
+ * Counts first, then answers whether to refuse: a refused attempt still counts so retries cannot bypass the limit.
+ * Every limiter shares the admin table `user_feedback_rate` (migrations/admin/6); `scope` keeps their keys apart
+ * (feedback uses the empty scope). Buckets older than a day are cleared, they carry no user content.
+ */
+export async function overRateLimit(
+  db: AdminDatabase,
+  scope: string,
+  sender: string,
+  limits: { hourly: number; daily: number },
+  now: number,
+): Promise<boolean> {
+  const hour = new Date(now).toISOString().slice(0, 13),
+    day = utcDay(now);
+  await db
+    .prepare('DELETE FROM user_feedback_rate WHERE bucket < ?')
+    .bind(utcDay(now - DAY_MS))
+    .run();
+  const bump = (key: string, bucket: string) =>
+    db
+      .prepare(
+        'INSERT INTO user_feedback_rate(key,bucket,count) VALUES(?,?,1) ON CONFLICT(key,bucket) DO UPDATE SET count=count+1',
+      )
+      .bind(key, bucket);
+  const own = `${scope}${sender}`,
+    all = `${scope}*`;
+  await db.batch([bump(own, hour), bump(all, day)]);
+  const read = (key: string, bucket: string) =>
+    db
+      .prepare('SELECT count FROM user_feedback_rate WHERE key=? AND bucket=?')
+      .bind(key, bucket)
+      .first<{ count: number }>();
+  return ((await read(own, hour))?.count ?? 0) > limits.hourly || ((await read(all, day))?.count ?? 0) > limits.daily;
 }

@@ -54,6 +54,7 @@ export function workoutScreen(m: WorkoutModel, body: ReactNode) {
     guideOpen,
     setGuideOpen,
     showPanel,
+    editStart,
     copy,
     p,
     engineCopyText,
@@ -85,6 +86,15 @@ export function workoutScreen(m: WorkoutModel, body: ReactNode) {
     progressLabel,
     top,
   } = m;
+  const editInvalid =
+    !(value > 0) ||
+    !Number.isInteger(value) ||
+    value > (timed ? SET_LIMITS.seconds : SET_LIMITS.reps) ||
+    (needsLoad && !hasLoad) ||
+    (hasLoad && load > SET_LIMITS.kg) ||
+    (distance !== undefined &&
+      !Number.isNaN(distance) &&
+      (!Number.isInteger(distance) || distance < 0 || distance > SET_LIMITS.meters));
   return (
     <main className="wk-page" data-training-active="true" data-screen={restShown ? 'rest' : 'player'}>
       {top}
@@ -211,7 +221,10 @@ export function workoutScreen(m: WorkoutModel, body: ReactNode) {
         }
         closeLabel={t.close}
         triggerRef={panelTrigger}
-        onClose={() => setPanel(undefined)}
+        onClose={() => {
+          if (panel === 'edit' && editInvalid) setValues(editStart.current);
+          setPanel(undefined);
+        }}
       >
         <div className="v8-pause-actions">
           {panel === 'safety' ? (
@@ -281,8 +294,8 @@ export function workoutScreen(m: WorkoutModel, body: ReactNode) {
                   min="1"
                   max={timed ? SET_LIMITS.seconds : SET_LIMITS.reps}
                   step="1"
-                  value={value}
-                  onChange={e => setValues({ ...values, [key]: Number(e.target.value) })}
+                  value={Number.isNaN(value) ? '' : value}
+                  onChange={e => setValues({ ...values, [key]: e.target.valueAsNumber })}
                 />
               </label>
               {exercise.metricType === 'duration_distance' && (
@@ -312,19 +325,7 @@ export function workoutScreen(m: WorkoutModel, body: ReactNode) {
                   />
                 </label>
               )}
-              <Button
-                disabled={
-                  !(value > 0) ||
-                  !Number.isInteger(value) ||
-                  value > (timed ? SET_LIMITS.seconds : SET_LIMITS.reps) ||
-                  (needsLoad && !hasLoad) ||
-                  (hasLoad && load > SET_LIMITS.kg) ||
-                  (distance !== undefined &&
-                    !Number.isNaN(distance) &&
-                    (!Number.isInteger(distance) || distance < 0 || distance > SET_LIMITS.meters))
-                }
-                onClick={() => setPanel(undefined)}
-              >
+              <Button disabled={editInvalid} onClick={() => setPanel(undefined)}>
                 {t.confirm}
               </Button>
             </>

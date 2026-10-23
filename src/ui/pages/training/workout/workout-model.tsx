@@ -240,10 +240,12 @@ export function workoutModel(w: WorkoutReady) {
       )}
     </>
   );
-  const openSafety = (trigger: HTMLElement) => {
+  // A panel over the player holds the countdown; the user resumes it with 继续计时.
+  const openPaused = (next: 'safety' | 'pause', trigger: HTMLElement) => {
     if (timer && timerStatus === 'running') setHold(holdPause(timer, Date.now()));
-    showPanel('safety', trigger);
+    showPanel(next, trigger);
   };
+  const openSafety = (trigger: HTMLElement) => openPaused('safety', trigger);
   // Rest between sets: counts down from the saved set; the next set never starts by itself.
   const restItem = latestSet ? items.find(row => row.itemIndex === latestSet.itemIndex) : undefined;
   const restShown =
@@ -279,7 +281,7 @@ export function workoutModel(w: WorkoutReady) {
         type="button"
         className="wk-round v8-press"
         aria-label={t.pause}
-        onClick={event => showPanel('pause', event.currentTarget)}
+        onClick={event => openPaused('pause', event.currentTarget)}
       >
         <Icon d="M6 6l12 12M18 6L6 18" />
       </button>

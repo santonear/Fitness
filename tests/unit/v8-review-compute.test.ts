@@ -193,4 +193,29 @@ describe('V8 review facts', () => {
     expect(() => computeWeekFacts({ ...input(), from: '2026-02-30' })).toThrow();
     expect(() => computeWeekFacts({ ...input(), weeklyTarget: 0 })).toThrow();
   });
+  it('uses the latest time correction for training time and the review day, like the calendar', () => {
+    const corrected = row('fixed', 'complete', '2026-10-06', {
+      timeCorrections: [
+        { startedAt: '2026-10-06T06:00:00Z', endedAt: '2026-10-06T07:00:00Z', createdAt: '2026-10-06T08:00:00Z' },
+        { startedAt: '2026-10-06T05:00:00Z', endedAt: '2026-10-06T05:45:00Z', createdAt: '2026-10-06T09:00:00Z' },
+      ],
+    });
+    expect(computeWeekFacts(input([corrected])).trainingSeconds).toBe(45 * 60);
+    // Recorded on Sunday late evening, corrected to Monday morning in the user's time zone: it counts on Monday.
+    const moved = row('moved', 'complete', '2026-10-05', {
+      startedAt: '2026-10-04T15:50:00Z',
+      endedAt: '2026-10-04T16:20:00Z',
+      timeCorrections: [
+        { startedAt: '2026-10-04T16:10:00Z', endedAt: '2026-10-04T16:40:00Z', createdAt: '2026-10-05T01:00:00Z' },
+      ],
+    });
+    expect(computeWeekFacts(input([moved])).complete).toBe(1);
+  });
+  it('counts monthly missing records only for whole weeks of the month that have ended', () => {
+    const data = { ...input([row('w2', 'complete', '2026-10-06')]), from: '2026-10-01', to: '2026-10-31' };
+    // Whole weeks inside October 2026: 10-05, 10-12, 10-19 (10-26 runs into November). On 10-20 two have ended.
+    expect(computeMonthFacts({ ...data, today: '2026-10-20' }).missingCount).toBe(2 + 3);
+    expect(computeMonthFacts({ ...data, today: '2026-11-01' }).missingCount).toBe(2 + 3 + 3);
+    expect(computeMonthFacts({ ...data, today: '2026-10-11' }).missingCount).toBe(0);
+  });
 });

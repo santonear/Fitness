@@ -159,7 +159,9 @@ export function TrialAccess({
       await refresh(receipt, true);
     });
   }
-  const pending = apps.some(a => a.state === 'pending' || (a.state === 'approved' && (a.claimUntil ?? 0) > Date.now()));
+  const pending = apps.some(
+    a => (a.state === 'pending' && !a.pendingExpired) || (a.state === 'approved' && (a.claimUntil ?? 0) > Date.now()),
+  );
   const hasTrial = Boolean(status || apps.some(a => a.state === 'claimed'));
   const active = qualificationState === 'active' && sessionValid;
   const quotaExhausted =

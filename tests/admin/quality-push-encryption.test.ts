@@ -28,5 +28,11 @@ it('round trips encrypted Web Push payload using receiver key and contains only 
   const clear = new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: nonce }, key, encrypted.slice(86)));
   expect(clear.at(-1)).toBe(2);
   expect(JSON.parse(new TextDecoder().decode(clear.slice(0, -1)))).toEqual(payload);
-  expect(payload).toEqual({ title: 'Fitness 管理提醒', body: '申请等待超过两天：3 项', url: '/admin' });
+  expect(payload).toEqual({
+    title: 'Fitness 管理提醒',
+    body: '申请等待超过两天：3 项',
+    url: '/admin',
+    category: 'applications',
+    count: 3,
+  });
 });

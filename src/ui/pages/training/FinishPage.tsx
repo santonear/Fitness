@@ -238,7 +238,24 @@ export function FinishPage() {
           })
         }
       >
-        {t.save}
+        {done === 0 ? copy.saveZero : t.save}
+      </PrimaryButton>
+      {done === 0 && (
+        <PrimaryButton
+          tone="quiet"
+          disabled={busy}
+          onClick={() =>
+            void run(async () => {
+              await workflow.finish(active.id, { reasons: [] }, true);
+              navigate('/');
+            })
+          }
+        >
+          {copy.abandon}
+        </PrimaryButton>
+      )}
+      <PrimaryButton tone="text" onClick={() => navigate(`/workout/${active.id}`)}>
+        {t.resume}
       </PrimaryButton>
     </main>
   );

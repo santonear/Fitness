@@ -18,6 +18,7 @@ import { readFeatureFlags, type FeatureConfigEnv } from './feature-config';
 import { supplierDiagnostics } from './supplier-diagnostics';
 import { idempotentAdminStore } from './admin/core/idempotent-store';
 import { sha256Hex } from '../domain/hex';
+import { overRateLimit, senderKey } from './request';
 
 export interface WorkerEnv extends FeatureConfigEnv {
   TURNSTILE_SECRET_KEY?: string;
@@ -38,6 +39,8 @@ export interface WorkerEnv extends FeatureConfigEnv {
   APPLICATION_RETENTION_DAYS?: string;
   FITNESS_COACH_PROMPT_RELEASE?: string;
 }
+/** Trial applications per connecting address per hour (room for a few failed verifications), and from everyone per UTC day. */
+const APPLICATION_SENDER_LIMITS = { hourly: 6, daily: 300 };
 const count = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 const policy = z.strictObject({
   timeZone: z.string().min(1),
@@ -214,6 +217,20 @@ export function createWorker(
                 turnstileSiteKey: env.TURNSTILE_SITE_KEY,
                 verifyApplication: (proof: string) =>
                   verifyApplicationProof(proof, env.TURNSTILE_SECRET_KEY!, new URL(request.url).hostname),
+                // shortcut: only limited where the admin database is bound (preview and production); without it the
+                // per-receipt and global throttles in TrialApplications still apply.
+                ...(env.ADMIN_DB
+                  ? {
+                      limitApplication: async (incoming: Request) =>
+                        overRateLimit(
+                          env.ADMIN_DB!,
+                          'application:',
+                          await senderKey(incoming, 'application', env.CONTROL_DIGEST_SECRET),
+                          APPLICATION_SENDER_LIMITS,
+                          Date.now(),
+                        ),
+                    }
+                  : {}),
               }
             : {}),
           supplierMode: 'external-transport',

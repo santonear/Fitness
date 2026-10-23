@@ -8,10 +8,13 @@ import {
   type QualityDatabase,
 } from './contracts';
 import { adminJson, type AdminTodo } from '../core/contracts';
-import { readJsonBody } from '../../request';
-import { utcDay } from '../../../domain/local-date';
+import { overRateLimit, readJsonBody, senderKey } from '../../request';
+import { DAY_MS, utcDay } from '../../../domain/local-date';
 
 const HOUR = 3600000;
+/** Anonymous error reports per sender per hour, and from everyone per UTC day (bounds the 8-day summary scan). */
+export const ERROR_REPORT_LIMITS = { hourly: 30, daily: 2000 };
+export const ERROR_RETENTION_DAYS = 30;
 /** Collection needs both the deployment switch and the errorReports flag; the admin page says which. */
 export async function errorCollectionEnabled(env: QualityEnv & FeatureConfigEnv): Promise<boolean> {
   return (
@@ -20,7 +23,11 @@ export async function errorCollectionEnabled(env: QualityEnv & FeatureConfigEnv)
     (await readFeatureFlags(env).catch(() => ({ errorReports: false }))).errorReports === true
   );
 }
-export async function collectError(request: Request, env: QualityEnv, now = Date.now()): Promise<Response> {
+export async function collectError(
+  request: Request,
+  env: QualityEnv & { CONTROL_DIGEST_SECRET?: string },
+  now = Date.now(),
+): Promise<Response> {
   if (env.ADMIN_ERROR_COLLECTION_ENABLED !== 'true' || !env.ADMIN_DB)
     return adminJson({ error: 'ERROR_COLLECTION_DISABLED' }, 503);
   if (request.method !== 'POST') return adminJson({ error: 'METHOD_NOT_ALLOWED' }, 405);
@@ -39,8 +46,15 @@ export async function collectError(request: Request, env: QualityEnv, now = Date
   const parsed = errorEvent.safeParse(raw);
   if (!parsed.success || Math.abs(parsed.data.time - now) > 300000) return adminJson({ error: 'INVALID_EVENT' }, 400);
   const { type, route, version, browser, os, time } = parsed.data;
+  const sender = await senderKey(request, 'quality-error', env.CONTROL_DIGEST_SECRET);
+  if (await overRateLimit(env.ADMIN_DB, 'quality-error:', sender, ERROR_REPORT_LIMITS, now))
+    return adminJson({ error: 'RATE_LIMITED' }, 429);
   await env.ADMIN_DB.prepare('INSERT INTO admin_quality_errors(type,route,version,browser,os,time) VALUES(?,?,?,?,?,?)')
     .bind(type, route, version, browser, os, time)
+    .run();
+  // Error reports are kept 30 days (Bo 2026-10-23); the summary reads only the last 8.
+  await env.ADMIN_DB.prepare('DELETE FROM admin_quality_errors WHERE time<?')
+    .bind(now - ERROR_RETENTION_DAYS * DAY_MS)
     .run();
   return adminJson({ accepted: true }, 202);
 }
@@ -123,7 +137,9 @@ export async function qualityTodos(db: QualityDatabase, now: number, pendingOver
     level: 'alert',
     title: '生产错误增加',
     text: `最近一小时出现 ${group.currentHour} 次 ${group.type} 错误。`,
-    actions: [{ label: '查看错误', href: '/admin/errors' }],
+    actions: [{ label: '查看错误', href: '/admin/errors', key: 'viewErrors' }],
+    key: 'errorSpike',
+    params: { count: group.currentHour, type: group.type },
   }));
   if (pendingOver48h > 0)
     todos.push({
@@ -131,7 +147,9 @@ export async function qualityTodos(db: QualityDatabase, now: number, pendingOver
       level: 'warn',
       title: '申请等待超过两天',
       text: `${pendingOver48h} 份申请等待审核。`,
-      actions: [{ label: '逐个审核', href: '/admin/applications' }],
+      actions: [{ label: '逐个审核', href: '/admin/applications', key: 'reviewEach' }],
+      key: 'applicationsOverdue',
+      params: { count: pendingOver48h },
     });
   return todos;
 }

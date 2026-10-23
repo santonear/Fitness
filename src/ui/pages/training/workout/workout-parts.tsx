@@ -27,6 +27,10 @@ export function readClosedRests(): string[] {
     return [];
   }
 }
+/** Stable ref callback: when the screen swaps (rest ⇄ player) and focus fell to <body>, it lands on the new heading. */
+export function focusIfLost(element: HTMLElement | null) {
+  if (element && (!document.activeElement || document.activeElement === document.body)) element.focus();
+}
 /** Fires the end cue for one countdown; rendered only while that countdown is on screen. */
 export function CueAt({ dueAt, active }: { dueAt?: number; active: boolean }) {
   useTimerCue(dueAt, active);

@@ -1,6 +1,6 @@
 import type { WorkoutRecord, LegacyWorkoutProjection } from '../../domain/v8/contracts';
 import type { createV8DataService } from '../../persistence/v8-access';
-import { activityDate } from '../v8-activity';
+import { dayOf } from './charts';
 type LegacyHistory = Awaited<ReturnType<ReturnType<typeof createV8DataService>['getLegacyHistory']>>;
 export type ReviewHistoryRow = (WorkoutRecord | LegacyWorkoutProjection) & {
   originalNotes?: string;
@@ -35,7 +35,7 @@ export function reviewHistory(
 export function historyInPeriod(rows: readonly ReviewHistoryRow[], from: string, to: string, timeZone: string) {
   return rows.filter(row => {
     if (['in_progress', 'abandoned'].includes(row.status)) return false;
-    const date = activityDate(timeZone, 0, new Date(row.startedAt));
+    const date = dayOf(row, timeZone);
     return date >= from && date <= to;
   });
 }

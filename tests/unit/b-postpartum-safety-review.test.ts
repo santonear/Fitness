@@ -56,6 +56,7 @@ function fixture() {
     },
     v8Workouts: {
       get: async () => structuredClone(record),
+      toArray: async () => [structuredClone(record)],
       put: async (next: typeof record) => {
         record = v8WorkoutSchema.parse(next);
       },

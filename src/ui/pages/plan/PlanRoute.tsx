@@ -1,3 +1,4 @@
+import { answerText } from '../../../application/preset-text';
 import { engineCopy } from '../../../coach/engine-copy';
 import { PlanStops, PlanTip } from './WeekPlan';
 import { weekDoneDays } from '../../../application/plan-calendar';
@@ -191,7 +192,7 @@ export function PlanRoute({ versions = false }: { versions?: boolean }) {
             const created = creationDate(plan.id);
             return (
               <Card key={plan.id} variant="raised" padding="md">
-                <h3>{plan.name}</h3>
+                <h3>{answerText(plan.name, c.locale)}</h3>
                 <p>
                   {created ? (
                     <>
@@ -286,7 +287,7 @@ export function PlanRoute({ versions = false }: { versions?: boolean }) {
         }}
         triggerRef={deleteTrigger}
       >
-        <p>{target?.name}</p>
+        <p>{target && answerText(target.name, c.locale)}</p>
         <p>{life.confirmHint}</p>
         <Button
           disabled={c.busy}
@@ -312,7 +313,7 @@ export function PlanRoute({ versions = false }: { versions?: boolean }) {
         }}
         triggerRef={activateTrigger}
       >
-        <p>{plans.find(p => p.id === activating?.id)?.name}</p>
+        <p>{answerText(plans.find(p => p.id === activating?.id)?.name ?? '', c.locale)}</p>
         <p>{life.activateHint}</p>
         <Button
           disabled={c.busy || !!c.data?.active}

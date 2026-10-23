@@ -21,5 +21,7 @@
   "dayDone": "{day}：练完了",
   "dayPartial": "{day}：练了一部分",
   "dayRest": "{day}：没有训练",
-  "today": "今天"
+  "today": "今天",
+  "saveZero": "记下这次（0 组）",
+  "abandon": "放弃这次"
 }

@@ -8,6 +8,7 @@ import { currentPlan as fixture } from '../fixtures/v8-plan-data';
 import { exercises } from '../../src/catalog/exercises';
 const currentPlan: PlanVersion = {
   ...fixture,
+  preferredDays: ['mon', 'thu'],
   id: '10000000-0000-4000-8000-000000000001',
   planId: '10000000-0000-4000-8000-000000000002',
   templates: fixture.templates.map(t => ({
@@ -29,6 +30,8 @@ function setup() {
     currentPlanId: string;
     notice: { acknowledged: boolean };
     nextWorkoutOverride?: { planVersionId: string; templateId: string };
+    cardiacPause?: { reportedAt: string };
+    trainingPause?: { requiredAt: string };
   } = {
     currentPlanId: plan.id,
     notice: { acknowledged: true },
@@ -58,10 +61,14 @@ function setup() {
     },
     v8PlanVersions: {
       get: async (id: string) => versions.get(id),
+      where: () => ({
+        equals: (planId: string) => ({ toArray: async () => [...versions.values()].filter(v => v.planId === planId) }),
+      }),
       add: async (v: PlanVersion) => {
         versions.set(v.id, v);
       },
     },
+    v8Workouts: { toArray: async () => [] },
   } as unknown as FitnessDatabase;
   const suggestion: ReviewSuggestion = {
     id: 's',
@@ -83,6 +90,9 @@ function setup() {
     versions,
     getPlan: () => plan,
     getState: () => state,
+    setState: (patch: Partial<typeof state>) => {
+      state = { ...state, ...patch };
+    },
     makeReadOnly: () => {
       plan.readOnly = true;
     },
@@ -135,5 +145,26 @@ describe('review adoption guards', () => {
     s.makeReadOnly();
     await expect(s.service.adopt(s.suggestion, 4, 2, 'change')).rejects.toMatchObject({ code: 'CONFLICT' });
     expect(s.versions.size).toBe(1);
+  });
+  it('keeps the picked weekdays and numbers after the highest existing version', async () => {
+    const s = setup();
+    s.versions.set('later', {
+      ...structuredClone(currentPlan),
+      id: 'later',
+      versionNumber: currentPlan.versionNumber + 3,
+    });
+    const next = await s.service.adopt(s.suggestion, 4, 2, 'one extra session');
+    expect(next.preferredDays).toEqual(['mon', 'thu']);
+    expect(next.versionNumber).toBe(currentPlan.versionNumber + 4);
+  });
+  it.each([
+    [{ cardiacPause: { reportedAt: '2026-10-20T00:00:00Z' } }, 'CARDIAC_CLEARANCE_REQUIRED'],
+    [{ trainingPause: { requiredAt: '2026-10-20T00:00:00Z' } }, 'PAIN_REVIEW_REQUIRED'],
+  ])('refuses while a safety hold is active (%o)', async (hold, message) => {
+    const s = setup();
+    s.setState(hold);
+    await expect(s.service.adopt(s.suggestion, 4, 2, 'change')).rejects.toMatchObject({ message });
+    expect(s.versions.size).toBe(1);
+    expect(s.getPlan().currentVersionId).toBe(currentPlan.id);
   });
 });

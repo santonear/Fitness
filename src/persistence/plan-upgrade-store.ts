@@ -11,6 +11,7 @@ import {
 } from '../domain/schemas';
 import { DomainError } from '../domain/errors';
 import { repository, type Repository } from './repository';
+import { nextVersionNumber } from './plan-version-numbers';
 
 const now = () => new Date().toISOString();
 function parse<T>(
@@ -130,7 +131,7 @@ export function createPlanUpgradeStore(repo: Repository) {
         const created = v8PlanVersionSchema.parse({
           ...version,
           id: crypto.randomUUID(),
-          versionNumber: version.versionNumber + 1,
+          versionNumber: await nextVersionNumber(db, plan.id),
           createdAt: now(),
           origin: 'manual',
           source: 'local',

@@ -11,6 +11,8 @@ export interface ReviewInput {
   from: string;
   to: string;
   timeZone: string;
+  /** Today's local date; defaults to today in `timeZone`. Only weeks ended before it count as missing. */
+  today?: string;
   weeklyTarget: number;
   workouts: readonly WorkoutRecord[];
   activities: readonly ActivityRecord[];

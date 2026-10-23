@@ -22,7 +22,29 @@ export interface TrialApplication {
   accountingClosedAt?: number;
   directlyActivated?: boolean;
 }
-const applicationView = (a: TrialApplication) => ({
+/** A pending application unanswered this long no longer blocks its owner nor counts toward the capacity.
+ * It is reported with `pendingExpired: true` until the weekly purge removes it (Bo 2026-10-23). */
+export const PENDING_EXPIRY_DAYS = 14;
+const PURGE_EVERY_DAYS = 7;
+/** Active applications allowed at once, and the hard ceiling on stored ones (keeps the control state small). */
+const APPLICATION_CAPACITY = 200,
+  APPLICATION_CEILING = 1000;
+const pendingExpired = (a: TrialApplication, now: number) =>
+  a.state === 'pending' && a.createdAt <= now - PENDING_EXPIRY_DAYS * DAY;
+/** Removes expired pending applications at most once every 7 days; runs inside the caller's transaction. */
+function purgeExpired(state: ControlState, now: number) {
+  if ((state.applicationPurgeAt ?? 0) > now - PURGE_EVERY_DAYS * DAY) return 0;
+  let removed = 0;
+  for (const [id, a] of Object.entries(state.applications ?? {}))
+    if (pendingExpired(a, now)) {
+      delete state.applications![id];
+      removed++;
+    }
+  state.applicationPurgeAt = now;
+  return removed;
+}
+const applicationView = (a: TrialApplication, now = Date.now()) => ({
+  ...(pendingExpired(a, now) ? { pendingExpired: true } : {}),
   id: a.id,
   kind: a.kind,
   state: a.state,
@@ -33,8 +55,8 @@ const applicationView = (a: TrialApplication) => ({
   expiresAt: a.expiresAt,
   directlyActivated: a.directlyActivated,
 });
-export const applicationAdminView = (a: TrialApplication) => ({
-  ...applicationView(a),
+export const applicationAdminView = (a: TrialApplication, now = Date.now()) => ({
+  ...applicationView(a, now),
   name: a.name,
   note: a.note,
   subjectId: a.subjectId,
@@ -66,7 +88,7 @@ export class TrialApplications {
       state = await this.store.read();
     return Object.values(state.applications ?? {})
       .filter(a => a.ownerDigest === owner)
-      .map(applicationView);
+      .map(a => applicationView(a, this.now()));
   }
   async apply(
     input: { receipt: string; id: string; kind: ApplicationKind; name: string; note: string },
@@ -75,6 +97,8 @@ export class TrialApplications {
     const ownerDigest = await this.owner(input.receipt);
     const sessionDigest = session ? await digest(session, this.secret) : undefined;
     return this.store.transact(state => {
+      const purged = purgeExpired(state, this.now());
+      if (purged) this.audit(state, 'application-expired-purge', String(purged));
       const apps = (state.applications ??= {});
       const previous = apps[input.id];
       if (previous) {
@@ -85,7 +109,7 @@ export class TrialApplications {
           previous.note !== input.note
         )
           throw new ControlError('APPLICATION_CONFLICT');
-        return applicationView(previous);
+        return applicationView(previous, this.now());
       }
       const owned = Object.values(apps).filter(a => a.ownerDigest === ownerDigest);
       const currentSession = sessionDigest ? state.sessions[sessionDigest] : undefined;
@@ -102,12 +126,17 @@ export class TrialApplications {
         Object.values(apps).some(
           a =>
             (a.ownerDigest === ownerDigest || (subjectId && a.subjectId === subjectId)) &&
-            (a.state === 'pending' || (a.state === 'approved' && (a.claimUntil ?? Infinity) > this.now())),
+            ((a.state === 'pending' && !pendingExpired(a, this.now())) ||
+              (a.state === 'approved' && (a.claimUntil ?? Infinity) > this.now())),
         )
       )
         throw new ControlError('APPLICATION_PENDING');
       if (owned.some(a => a.createdAt > this.now() - DAY)) throw new ControlError('APPLICATION_RATE_LIMIT', 429);
-      if (Object.keys(apps).length >= 200) throw new ControlError('APPLICATION_CAPACITY', 503);
+      if (
+        Object.values(apps).filter(a => !pendingExpired(a, this.now())).length >= APPLICATION_CAPACITY ||
+        Object.keys(apps).length >= APPLICATION_CEILING
+      )
+        throw new ControlError('APPLICATION_CAPACITY', 503);
       // Receipt rotation must not bypass the admission throttle. This is a small-trial
       // global ceiling, applied atomically after retry lookup and before record creation.
       if (
@@ -127,7 +156,7 @@ export class TrialApplications {
       };
       apps[a.id] = a;
       this.audit(state, 'application-created', a.id);
-      return applicationView(a);
+      return applicationView(a, this.now());
     });
   }
   async review(id: string, decision: 'approve' | 'reject', reason: string, actor: string) {
@@ -136,7 +165,7 @@ export class TrialApplications {
       if (!a) throw new ControlError('APPLICATION_NOT_FOUND', 404);
       if (a.state !== 'pending') {
         if ((decision === 'reject') !== (a.state === 'rejected')) throw new ControlError('APPLICATION_CONFLICT');
-        return applicationView(a);
+        return applicationView(a, this.now());
       }
       a.decidedAt = this.now();
       a.reason = reason;
@@ -159,7 +188,7 @@ export class TrialApplications {
         a.claimUntil = this.now() + 7 * DAY;
       }
       this.audit(state, `application-${decision}`, id);
-      return applicationView(a);
+      return applicationView(a, this.now());
     });
   }
   async claim(receipt: string, id: string) {
@@ -204,11 +233,11 @@ export class TrialApplications {
   }
   async report() {
     const state = await this.store.read();
-    return Object.values(state.applications ?? {}).map(applicationAdminView);
+    return Object.values(state.applications ?? {}).map(a => applicationAdminView(a, this.now()));
   }
   async retain() {
     return this.store.transact(state => {
-      let removed = 0;
+      let removed = purgeExpired(state, this.now());
       for (const [id, a] of Object.entries(state.applications ?? {})) {
         const subject = a.subjectId ? state.subjects[a.subjectId] : undefined;
         const unresolved =

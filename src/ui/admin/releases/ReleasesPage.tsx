@@ -1,3 +1,4 @@
+import { adminLocale } from '../shared/format';
 import { smokeReason } from './smoke-copy';
 import { featureCopy } from './copy';
 import { useReleases } from './use-releases';
@@ -95,7 +96,7 @@ export function ReleasesPage({ language = 'zh' }: { language?: string }) {
                               </div>
                               {state.changedAt && (
                                 <small>
-                                  {state.changedBy} · {new Date(state.changedAt).toLocaleString()}
+                                  {state.changedBy} · {new Date(state.changedAt).toLocaleString(adminLocale(zh))}
                                 </small>
                               )}
                             </div>
@@ -136,7 +137,7 @@ export function ReleasesPage({ language = 'zh' }: { language?: string }) {
                   <dt>{zh ? '上一版本' : 'Previous version'}</dt>
                   <dd>{previous ?? (zh ? '未登记' : 'Not registered')}</dd>
                   <dt>{zh ? '发布时间' : 'Published'}</dt>
-                  <dd>{new Date(state?.changed_at ?? entry.current.publishedAt).toLocaleString()}</dd>
+                  <dd>{new Date(state?.changed_at ?? entry.current.publishedAt).toLocaleString(adminLocale(zh))}</dd>
                   {shown?.commit && (
                     <>
                       <dt>{zh ? '提交' : 'Commit'}</dt>
@@ -259,8 +260,8 @@ export function ReleasesPage({ language = 'zh' }: { language?: string }) {
               <ul>
                 {data.history.map(item => (
                   <li key={item.request_id}>
-                    {new Date(item.created_at).toLocaleString()} · {item.object_id} · {item.before_value ?? '—'} →{' '}
-                    {item.after_value} · {item.actor}
+                    {new Date(item.created_at).toLocaleString(adminLocale(zh))} · {item.object_id} ·{' '}
+                    {item.before_value ?? '—'} → {item.after_value} · {item.actor}
                   </li>
                 ))}
               </ul>

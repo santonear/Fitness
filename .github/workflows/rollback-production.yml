@@ -1,7 +1,7 @@
 name: Roll back Fitness production
 
-# One-click rollback of the production Worker, started by Bo by hand (the
-# private repo cannot require an environment reviewer). D1 migrations are not reverted.
+# One-click rollback of the production Worker, started by Bo by hand (see
+# tools/release/check-environment.mjs about required reviewers). D1 migrations are not reverted.
 on:
   workflow_dispatch:
     inputs:

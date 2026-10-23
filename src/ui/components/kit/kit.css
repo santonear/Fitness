@@ -710,7 +710,7 @@
   text-shadow: var(--hero-text-shadow);
 }
 .v9-home-num small {
-  font-size: 0.38em;
+  font-size: var(--t3);
 }
 .v9-home-arc {
   position: relative;

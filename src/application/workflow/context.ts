@@ -12,7 +12,10 @@ import {
   toEngineProfile,
 } from '../engine-profile';
 import { createPlanLifecycle } from '../plan-lifecycle';
+import { pendingPainReviews, historyDangerReview } from '../pain-events';
+import { unresolvedReview } from '../training-pain';
 import type { Repository } from '../../persistence/repository';
+import type { V8Library } from '../../persistence/v8-migration';
 import { DomainError } from '../../domain/errors';
 import type { CoachProfile } from '../../domain/v8/contracts';
 import { createTrainingCheckin } from '../training-checkin';
@@ -55,6 +58,19 @@ export function createWorkflowContext(repo: Repository) {
         return invalid('PAIN_PATTERN_EXCLUDED');
     }
   };
+  /** Safety holds that block every new plan or plan version: onboarding, coach change and review suggestion. */
+  async function assertPlanChangeAllowed(state: V8Library['state'] | undefined) {
+    if (state?.cardiacPause) return invalid('CARDIAC_CLEARANCE_REQUIRED');
+    if (state?.olderSafety?.reviewRequiredAt) return invalid('FALL_PROFESSIONAL_REQUIRED');
+    if (state?.postpartumSafety?.urgentAt) return invalid('POSTPARTUM_PROFESSIONAL_REQUIRED');
+    const history = await db.v8Workouts.toArray();
+    if (
+      state?.trainingPause ||
+      pendingPainReviews(history).length ||
+      unresolvedReview(historyDangerReview(history, state?.coachProfile?.screening?.redFlagReview))
+    )
+      return invalid('PAIN_REVIEW_REQUIRED');
+  }
   const cardiac = createTrainingStop(repo);
   const checkins = createTrainingCheckin(repo);
   const lifecycle = createPlanLifecycle(repo);
@@ -98,6 +114,7 @@ export function createWorkflowContext(repo: Repository) {
     postpartumReferral,
     birth,
     assertHealthItems,
+    assertPlanChangeAllowed,
     cardiac,
     checkins,
     lifecycle,
