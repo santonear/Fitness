@@ -76,6 +76,8 @@ function ItemPrescription({ item, locale }: { item: PlannedItem; locale: 'zh' | 
 import { DayTimeline } from './DayTimeline';
 import { dayViewCopy } from '../../../i18n/features/home/day-view';
 import { NowPanel, type FocusState } from './NowPanel';
+import { LastWeekCard } from './LastWeekCard';
+import { lastWeekSummary } from '../../../application/last-week';
 import './home.css';
 import { utcDay, DAY_MS } from '../../../domain/local-date';
 
@@ -97,6 +99,7 @@ export function HomePage() {
   const {
     data,
     facts,
+    previousFacts,
     t,
     slots,
     name,
@@ -226,6 +229,23 @@ export function HomePage() {
   const trainedToday = (data?.workouts ?? []).some(
     w => w.localDate === todayDate && (w.status === 'complete' || w.status === 'partial'),
   );
+  // 上周一张图: only with a plan that already ran last week, and someone who has trained before.
+  const planStarts = (data?.versions ?? [])
+    .filter(v => v.planId === data?.plan?.id)
+    .map(v => planStartDate(v, timeZone))
+    .filter((date): date is string => !!date)
+    .sort();
+  const lastWeek = lastWeekSummary({
+    today: todayDate,
+    facts: previousFacts,
+    weeklyTarget: version?.weeklyTarget ?? 0,
+    planFirstStart: version ? planStarts[0] : undefined,
+    currentStart: startDate,
+    hasRecord:
+      (data?.workouts ?? []).some(w => w.status === 'complete' || w.status === 'partial') ||
+      (data?.activities.length ?? 0) > 0,
+    active: !!data?.active,
+  });
   // 今天练这里 comes before every start from the panel (V9.14).
   const startNow = (state: FocusState) => navigate('/today-focus', { state });
   const strip = weekdays.map((day, index) => {
@@ -320,6 +340,19 @@ export function HomePage() {
         </PrimaryButton>
       )}
       {engineEnabled && currentPreview && <PlanStops plan={currentPreview} locale={locale} />}
+      {lastWeek && data && (
+        <LastWeekCard
+          key={lastWeek.week}
+          summary={lastWeek}
+          profileId={data.metadata.localProfileId}
+          locale={locale}
+          name={name}
+          onReview={() => {
+            setReviewKind('week');
+            navigate('/review');
+          }}
+        />
+      )}
       {trainedToday && (
         <p className="v9-home-reason">
           <PrimaryButton
