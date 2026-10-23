@@ -1,5 +1,6 @@
 import { conversationSchema } from './assistant-conversation';
 import { z } from 'zod';
+import { isLocalDate } from './local-date';
 import { nutritionRecordSchema, activityImportReceiptSchema } from './lifestyle';
 import { guidedStateSchema } from './guided-contracts';
 import { FITNESS_TEST_ITEMS, ROUTES } from './plan-upgrade';
@@ -101,6 +102,7 @@ export const futureLetterSchema = z.strictObject({
   text: z.string().min(1).max(5000),
   createdAt: utcTimestampSchema,
   openAtCampId: z.string().min(1).max(80).optional(),
+  openOn: localDateSchema.refine(isLocalDate).optional(),
   openedAt: utcTimestampSchema.optional(),
 });
 export const backupDataSchema = z.strictObject({

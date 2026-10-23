@@ -21,6 +21,7 @@ export function themeTokens(id: BuiltinThemeId): Partial<Record<ThemeTokenName, 
     hero: h,
     calendar: cal,
     anatomy: am,
+    letter: l,
   } = source.themes[id];
   const pressScale = e.pressScale ?? source.shared.motion.pressScale;
   return {
@@ -164,11 +165,22 @@ export function themeTokens(id: BuiltinThemeId): Partial<Record<ThemeTokenName, 
     '--map-ring': am.ring,
     '--map-text': am.text,
     '--map-scan': am.scan,
+    // 给未来的自己 letter paper (approved 2026-10-23): paper gradient stops, ornaments, ruled lines, ink, grain.
+    '--letter-paper': l.paper,
+    '--letter-paper-hi': l.paperHi,
+    '--letter-paper-lo': l.paperLo,
+    '--letter-ornament': l.ornament,
+    '--letter-dash': l.dash,
+    '--letter-ink': l.ink,
+    '--letter-shadow': l.shadow,
+    '--letter-grain': l.grain,
+    '--letter-glow': l.ornamentGlow,
+    '--letter-r': l.radius,
   };
 }
 
 export function sharedTokens(): Partial<Record<ThemeTokenName, string | number>> {
-  const { space, type, motion: m, touch, lineHeight: lh, layout } = source.shared;
+  const { space, type, motion: m, touch, lineHeight: lh, layout, letter } = source.shared;
   return {
     ...Object.fromEntries(Object.entries(space).map(([key, value]) => [`--${key}`, value])),
     ...Object.fromEntries(Object.entries(type).map(([key, value]) => [`--${key}`, value])),
@@ -199,6 +211,11 @@ export function sharedTokens(): Partial<Record<ThemeTokenName, string | number>>
     '--orb-size': layout.orbSize,
     '--orb-safe': layout.orbSafe,
     '--tabbar-h': layout.tabbarHeight,
+    '--f-letter-zh': letter.fontZh,
+    '--f-letter-en': letter.fontEn,
+    '--letter-size-zh': letter.sizeZh,
+    '--letter-size-en': letter.sizeEn,
+    '--letter-line': letter.line,
   };
 }
 

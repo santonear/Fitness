@@ -248,4 +248,23 @@ describe('DB 21 plan upgrade (V9.14)', () => {
     const letters = exported.data.futureLetters.map((row: object) => ({ ...row, openAtCampId: 'missing' }));
     expect(() => validateBackupEnvelope({ ...exported, data: { ...exported.data, futureLetters: letters } })).toThrow();
   });
+
+  it('keeps a letter open date through backup; letters with or without it both validate', async () => {
+    const source = await freshService();
+    await restore(source, fixture('v8-main-pre-engine.json'));
+    const dated = (await source.store.saveFutureLetter('七天后见', undefined, '2026-10-30'))!;
+    const legacy = (await source.store.saveFutureLetter('没有日期的信'))!;
+    expect(dated.openOn).toBe('2026-10-30');
+    expect(legacy).not.toHaveProperty('openOn');
+    await expect(source.store.saveFutureLetter('坏日期', undefined, '2026-02-30')).rejects.toThrow();
+    const exported = JSON.parse(await (await source.backup.exportBackup()).text());
+    expect(exported.data.futureLetters).toHaveLength(2);
+    expect(() => validateBackupEnvelope(exported)).not.toThrow();
+    const target = await freshService();
+    await restore(target, exported);
+    expect(await target.db.futureLetters.get(dated.id)).toEqual(dated);
+    expect(await target.db.futureLetters.get(legacy.id)).toEqual(legacy);
+    const bad = exported.data.futureLetters.map((row: object) => ({ ...row, openOn: '2026-13-01' }));
+    expect(() => validateBackupEnvelope({ ...exported, data: { ...exported.data, futureLetters: bad } })).toThrow();
+  });
 });

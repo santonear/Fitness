@@ -607,3 +607,10 @@ Bo 已定版 V9 设计并授权推进；计时规则按 Bo 当日决定改写（
 
 - 41 个自定义动作示意图：Bo 已逐一审核完毕，`src/catalog/custom-exercise-media.json` 的 `professionalReview` 改为 `reviewed`（生成脚本同步）。
 - Bo 原话“1.暂时不开 2.暂时不换 3.先继续用worker.dev 5.暂时保持我来批准”：暂不开启（第 1 项），DeepSeek 密钥暂不轮换，域名继续用 workers.dev，生产发布继续由 Bo 在 GitHub 点批准。均不改代码。
+
+## 2026-10-23 · 未来来信（给未来的自己 · 几天后打开）
+
+- 决定：信的可选字段 `openOn`（本地日期）只在写信时新增；旧信没有它，永不弹出，只留在自记录。到期（`openOn` ≤ 今天，按资料时区）且未收好的信，在今天页（已有计划、不在训练中、芽芽对话未打开）全屏打开最早写的一封。“稍后再看”和 Esc 只在内存里记下，重新打开应用会再出现；“收好这封信”写入 `openedAt`，写入失败时按“稍后再看”处理，不挡住今天页。自记录里已到期但还没收好的信也可以点开，按钮同样是“收好这封信 / 稍后再看”；已收好的信和旧信点开只有“关上”；未到期的信只显示开启日期，不显示内容。两种模式都显示“{N} 天前的你 · 写给现在的你”，N 按写信那天的本地日期计算。
+- 理由：不丢数据、不改旧信、不打扰（只在今天页、每封只弹到收好为止）。
+- 新依赖：`lxgw-wenkai-webfont`（霞鹜文楷 Light，OFL）和 `@fontsource/dancing-script`（OFL），只由懒加载的信纸组件引入，不进首屏，也不进离线预缓存（`tools/pwa-build.ts` 过滤），浏览器按 unicode-range 只取用到的分片。
+- 涉及文件：src/domain/{future-letter,plan-upgrade,schemas}.ts、src/persistence/plan-upgrade-store.ts、src/ui/components/kit/{LetterDialog,LetterPaper,letter-ornaments}.ts(x)、letter.css、src/ui/mainline/{DueLetter,MainlineApp}.tsx、src/ui/pages/onboarding/LetterStep.tsx、src/ui/pages/settings/MyChangesPage.tsx、02-design-tokens.json 的 `letter` 组与 `shared.letter`。

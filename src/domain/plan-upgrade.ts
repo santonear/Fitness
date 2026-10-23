@@ -175,6 +175,8 @@ export interface FutureLetter {
   text: string;
   createdAt: string;
   openAtCampId?: string;
+  /** Local date (YYYY-MM-DD, profile time zone) from which the letter opens on 今天; letters without it never pop up. */
+  openOn?: string;
   openedAt?: string;
 }
 

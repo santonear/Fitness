@@ -1,0 +1,185 @@
+/* 未来来信 (Bo 2026-10-23, approved letter design): every value comes from --letter-* and shared tokens. */
+.v9-letter-dialog {
+  box-sizing: border-box;
+  position: fixed;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  max-inline-size: none;
+  max-block-size: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: var(--c-bg-grad);
+  color: var(--c-ink);
+  opacity: 0;
+}
+.v9-letter-dialog::backdrop {
+  background: var(--c-bg);
+}
+.v9-letter-dialog:focus {
+  outline: none;
+}
+.v9-letter-dialog[data-ready='true'] {
+  opacity: 1;
+  transition: opacity 480ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .v9-letter-dialog[data-ready='true'] {
+    transition: none;
+  }
+}
+.v9-letter-frame {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--s4);
+  block-size: 100%;
+  inline-size: 100%;
+  max-inline-size: var(--layout-mobile-max);
+  margin-inline: auto;
+  padding: max(var(--s6), env(safe-area-inset-top)) max(var(--s4), env(safe-area-inset-right))
+    max(var(--s4), env(safe-area-inset-bottom)) max(var(--s4), env(safe-area-inset-left));
+}
+.v9-letter-dialog .v9-letter-eyebrow {
+  margin: 0;
+  text-align: center;
+  font-size: var(--t2);
+  font-weight: var(--w-body);
+  letter-spacing: 0.18em;
+  line-height: var(--lh-body);
+  color: var(--c-ink-muted);
+}
+.v9-letter-actions {
+  display: grid;
+  justify-items: center;
+  gap: var(--s1);
+}
+
+.v9-letter-paper {
+  position: relative;
+  flex: 1 1 auto;
+  min-block-size: 320px;
+  max-block-size: 680px;
+  overflow: hidden;
+  border-radius: var(--letter-r);
+  background: radial-gradient(
+    120% 90% at 50% 40%,
+    var(--letter-paper-hi) 0%,
+    var(--letter-paper) 60%,
+    var(--letter-paper-lo) 100%
+  );
+  box-shadow: var(--letter-shadow);
+  color: var(--letter-ornament);
+}
+/* Fine grain and soft mottling, as in the design (opacity per theme; none on 专业数据). */
+.v9-letter-paper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: var(--letter-grain);
+  mix-blend-mode: multiply;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.6' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .38 0 0 0 0 .3 0 0 0 .22 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012 .02' numOctaves='3' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .42 0 0 0 0 .32 0 0 0 .14 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)'/%3E%3C/svg%3E");
+}
+.v9-letter-defs {
+  position: absolute;
+  inline-size: 0;
+  block-size: 0;
+  overflow: hidden;
+}
+.v9-letter-border {
+  position: absolute;
+  inset: 10px;
+  border: 2.4px solid var(--letter-ornament);
+  border-radius: calc(var(--letter-r) - var(--s1) / 2);
+  pointer-events: none;
+}
+.v9-letter-border[data-line='inner'] {
+  inset: 15px;
+  border-width: 0.8px;
+  border-radius: calc(var(--letter-r) - var(--s1));
+  opacity: 0.8;
+}
+.v9-letter-corner,
+.v9-letter-side {
+  position: absolute;
+  fill: currentColor;
+  filter: var(--letter-glow);
+  pointer-events: none;
+}
+.v9-letter-corner {
+  inline-size: 74px;
+  block-size: 74px;
+}
+.v9-letter-corner[data-at='tl'] {
+  inset: 18px auto auto 18px;
+}
+.v9-letter-corner[data-at='tr'] {
+  inset: 18px 18px auto auto;
+  transform: scaleX(-1);
+}
+.v9-letter-corner[data-at='bl'] {
+  inset: auto auto 18px 18px;
+  transform: scaleY(-1);
+}
+.v9-letter-corner[data-at='br'] {
+  inset: auto 18px 18px auto;
+  transform: scale(-1, -1);
+}
+.v9-letter-side {
+  inline-size: 15px;
+  block-size: 45px;
+  inset-block-start: calc(50% - 22px);
+  inset-inline-start: 16px;
+}
+.v9-letter-side[data-at='r'] {
+  inset-inline: auto 16px;
+  transform: scaleX(-1);
+}
+/* Writing area between the ornaments; long letters scroll with their ruled lines. */
+.v9-letter-scroll {
+  position: absolute;
+  inset: 76px 40px 60px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--letter-dash) transparent;
+}
+.v9-letter-scroll:focus-visible {
+  outline: var(--ring-w) solid var(--c-focus);
+  outline-offset: var(--s1);
+}
+.v9-letter-sheet {
+  position: relative;
+  box-sizing: border-box;
+  min-block-size: 100%;
+  padding-block-start: var(--s1);
+  color: var(--letter-ink);
+}
+/* Dashed rule under every writing line: a dash pattern masked to one pixel per line. */
+.v9-letter-sheet::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(to right, var(--letter-dash) 0 3px, transparent 3px 6px);
+  mask-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 calc(var(--letter-line) - 1px),
+    black calc(var(--letter-line) - 1px) var(--letter-line)
+  );
+}
+.v9-letter-text,
+.v9-letter-sign {
+  position: relative;
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.v9-letter-sign {
+  text-align: end;
+}
