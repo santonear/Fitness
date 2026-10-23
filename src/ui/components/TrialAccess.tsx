@@ -19,6 +19,7 @@ import {
   accessError,
 } from './trial/trial-api';
 import { TrialApplicationForm } from './trial/TrialApplicationForm';
+import { ChoiceChip, PrimaryButton } from './kit';
 
 export { trialApi } from './trial/trial-api';
 
@@ -237,9 +238,9 @@ export function TrialAccess({
             {zh ? '有效期至：' : 'Valid until: '}
             {new Date(status.expiresAt).toLocaleString(zh ? 'zh-CN' : 'en')}
           </p>
-          <button className="trial-primary" disabled={busy} onClick={() => navigate('/')}>
+          <PrimaryButton size="md" disabled={busy} onClick={() => navigate('/')}>
             {zh ? '返回训练' : 'Return to training'}
-          </button>
+          </PrimaryButton>
           {quotaExhausted && (
             <p role="status">
               <AppIcon name="info" />
@@ -280,7 +281,9 @@ export function TrialAccess({
             </strong>
             {a.reason && <p>{a.reason}</p>}
             {a.state === 'approved' && (
-              <button
+              <PrimaryButton
+                tone="quiet"
+                size="md"
                 disabled={busy || (a.claimUntil ?? 0) <= Date.now()}
                 onClick={() =>
                   void run(async () => {
@@ -296,10 +299,12 @@ export function TrialAccess({
                   : zh
                     ? '领取并启用'
                     : 'Claim and activate'}
-              </button>
+              </PrimaryButton>
             )}
             {a.state === 'claimed' && !active && qualificationState === 'active' && (
-              <button
+              <PrimaryButton
+                tone="quiet"
+                size="md"
                 disabled={busy}
                 onClick={() =>
                   void run(async () => {
@@ -309,19 +314,19 @@ export function TrialAccess({
                 }
               >
                 {zh ? '恢复领取结果' : 'Recover claim result'}
-              </button>
+              </PrimaryButton>
             )}
           </li>
         ))}
       </ul>
       <div className="trial-actions">
         {!active && (
-          <button aria-pressed={!form} disabled={busy} onClick={() => setForm(false)}>
+          <ChoiceChip selected={!form} disabled={busy} onClick={() => setForm(false)}>
             {zh ? '已有邀请码，开始使用' : 'Use an invitation'}
-          </button>
+          </ChoiceChip>
         )}
-        <button
-          className="trial-primary"
+        <PrimaryButton
+          size="md"
           disabled={busy || pending || !config?.available || qualificationState === 'revoked'}
           onClick={() => {
             setKind(hasTrial ? 'extend' : 'new');
@@ -329,9 +334,11 @@ export function TrialAccess({
           }}
         >
           {hasTrial ? (zh ? '申请延期 30 天' : 'Request 30-day extension') : zh ? '申请 AI 试用' : 'Apply for AI trial'}
-        </button>
+        </PrimaryButton>
         {hasTrial && qualificationState !== 'expired' && qualificationState !== 'revoked' && (
-          <button
+          <PrimaryButton
+            tone="quiet"
+            size="md"
             disabled={busy || pending || !config?.available}
             onClick={() => {
               setKind('replace');
@@ -339,7 +346,7 @@ export function TrialAccess({
             }}
           >
             {zh ? '申请补发／更换设备' : 'Request replacement / change device'}
-          </button>
+          </PrimaryButton>
         )}
       </div>
       {!active && !form && (
@@ -375,13 +382,9 @@ export function TrialAccess({
                 onChange={e => setCode(e.target.value)}
               />
             </label>
-            <button
-              type="submit"
-              className="trial-primary"
-              disabled={!loaded || !name.trim() || !code.trim() || !!nameIssue}
-            >
+            <PrimaryButton type="submit" size="md" disabled={!loaded || !name.trim() || !code.trim() || !!nameIssue}>
               {busy ? (zh ? '正在启用…' : 'Activating…') : zh ? '启用并开始制定计划' : 'Activate and start planning'}
-            </button>
+            </PrimaryButton>
             <p className="trial-entry-note">
               {zh
                 ? '称呼仅保存在此设备。邀请码用于启用试用，训练记录也保存在本机。'
@@ -420,14 +423,19 @@ export function TrialAccess({
         />
       )}
 
-      <button disabled={busy} onClick={() => void run(() => refresh())}>
+      <PrimaryButton tone="quiet" size="md" disabled={busy} onClick={() => void run(() => refresh())}>
         {zh ? '刷新状态' : 'Refresh status'}
-      </button>
+      </PrimaryButton>
       {receipt && (
         <>
-          <button disabled={busy} onClick={() => setLink(`${location.origin}/trial#trial=${receipt}`)}>
+          <PrimaryButton
+            tone="quiet"
+            size="md"
+            disabled={busy}
+            onClick={() => setLink(`${location.origin}/trial#trial=${receipt}`)}
+          >
             {zh ? '查看私密领取链接' : 'Show private claim link'}
-          </button>
+          </PrimaryButton>
           {link && (
             <label>
               {zh ? '请自行保管，不要公开分享' : 'Keep this private; do not share publicly'}
@@ -437,9 +445,9 @@ export function TrialAccess({
         </>
       )}
       {onSkip && (
-        <button className="trial-skip" onClick={onSkip}>
+        <PrimaryButton tone="text" size="sm" onClick={onSkip}>
           {zh ? '先看看应用' : 'Explore the app first'}
-        </button>
+        </PrimaryButton>
       )}
     </section>
   );

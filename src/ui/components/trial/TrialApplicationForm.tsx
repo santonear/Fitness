@@ -3,6 +3,7 @@ import { TEXT_LIMITS, type TextIssue } from '../../../domain/input-guard';
 import type { ApplicationKind } from '../../../backend/trial-applications';
 import { FieldIssue } from '../common/FieldIssue';
 import { SecurityCheck } from './SecurityCheck';
+import { PrimaryButton } from '../kit';
 
 /** The trial application form (new, extension or replacement), shown after 申请 is tapped. */
 export function TrialApplicationForm({
@@ -123,12 +124,12 @@ export function TrialApplicationForm({
           </p>
         </details>
         {config?.siteKey && <SecurityCheck key={challenge} siteKey={config.siteKey} onProof={setProof} />}
-        <button type="submit" disabled={!proof || !!nameIssue || !!noteIssue}>
+        <PrimaryButton size="md" type="submit" disabled={!proof || !!nameIssue || !!noteIssue}>
           {zh ? '提交申请' : 'Submit application'}
-        </button>
-        <button type="button" onClick={() => setForm(false)}>
+        </PrimaryButton>
+        <PrimaryButton tone="quiet" size="md" type="button" onClick={() => setForm(false)}>
           {zh ? '返回' : 'Back'}
-        </button>
+        </PrimaryButton>
       </fieldset>
     </form>
   );

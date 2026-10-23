@@ -4,6 +4,7 @@ import { exerciseCautionAreas, getExerciseGuide } from '../../catalog/exercise-g
 import { exerciseBodyPart } from '../../catalog/registry';
 import { BODY_PARTS, equipmentLabel } from '../../catalog/taxonomy';
 import { Button } from './common';
+import { ChoiceChip } from './kit';
 import {
   bodyParts,
   goals,
@@ -66,17 +67,17 @@ export function ExerciseBrowser({
         <legend>{title}</legend>
         <div className="manual-chips">
           {values.map(value => (
-            <button
-              type="button"
+            <ChoiceChip
               key={value}
-              aria-pressed={(filters[key] as readonly string[] | undefined)?.includes(value) ?? false}
+              size="sm"
+              selected={(filters[key] as readonly string[] | undefined)?.includes(value) ?? false}
               onClick={() => {
                 setFilters({ ...filters, [key]: toggleSelection(filters[key] ?? [], value) });
                 setLimit(36);
               }}
             >
               {label(value)}
-            </button>
+            </ChoiceChip>
           ))}
         </div>
       </fieldset>

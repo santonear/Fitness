@@ -36,6 +36,13 @@ textarea {
   border-radius: var(--r-control);
   background: var(--c-surface);
 }
+/* Themes without borders (--bw: 0, surface = page) need depth to show bare controls; admin tokens fall back to none. */
+input:not([type='checkbox']),
+select,
+textarea {
+  background: var(--c-inset, var(--c-surface));
+  box-shadow: var(--el-inset, none);
+}
 button {
   cursor: pointer;
 }
