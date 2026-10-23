@@ -364,6 +364,15 @@
   margin: 0;
   line-height: var(--lh-body);
 }
+.wk-install {
+  display: grid;
+  gap: var(--s2);
+  justify-items: start;
+}
+.wk-install p {
+  margin: 0;
+  line-height: var(--lh-body);
+}
 .wk-voice {
   display: inline-flex;
   align-items: center;

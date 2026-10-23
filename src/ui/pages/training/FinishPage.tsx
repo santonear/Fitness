@@ -2,7 +2,7 @@ import { workoutSeconds, trainingMinutes } from '../../../application/workout-du
 import { TEXT_LIMITS, cleanText, textIssue } from '../../../domain/input-guard';
 import { FieldIssue } from '../../components/common/FieldIssue';
 import { fillLine, yayaThemeTone, yayaV5 } from '../../../i18n/features/coach/yaya-v5';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Feedback } from '../../../domain/v8/contracts';
 import { Button } from '../../components/common';
 import {
@@ -17,6 +17,14 @@ import {
 } from '../../components/kit';
 import { useMainline, workflow, format } from '../../mainline/context';
 import { activityDate } from '../../../application/v8-activity';
+import { progressMoments, type ProgressMoment } from '../../../application/my-changes';
+import {
+  installHintDue,
+  installRoute,
+  markInstallHintShown,
+  promptInstall,
+  type InstallRoute,
+} from '../../../application/pwa';
 import { dayOf, shiftDate, volumeKg, weekStart, weekStreak, weeklyRemaining } from '../../../application/review/charts';
 import { templateLabel } from '../../../i18n/features/plan/labels';
 import zh from '../../../i18n/features/training/finish.zh.json';
@@ -24,6 +32,45 @@ import en from '../../../i18n/features/training/finish.en.json';
 import './player.css';
 const feels = ['easy', 'right', 'tired', 'very_tired'] as const;
 const reasons = ['time', 'fatigue', 'discomfort', 'equipment_busy', 'not_today', 'other'] as const;
+type Copy = typeof zh;
+const momentLine = (copy: Copy, name: string, m: ProgressMoment) =>
+  m.metric === 'load'
+    ? format(m.reps ? copy.bestLoad : copy.bestLoadOnly, { name, kg: m.value, reps: m.reps ?? 0, gain: m.gain })
+    : format(m.metric === 'reps' ? copy.bestReps : copy.bestSeconds, {
+        name,
+        reps: m.value,
+        seconds: m.value,
+        gain: m.gain,
+      });
+/** Shown once per device: marked as shown when it appears, so it never returns after this page. */
+function InstallHint({ copy }: { copy: Copy }) {
+  const [route, setRoute] = useState<InstallRoute | undefined>(() => {
+    const next = installHintDue() ? installRoute() : 'installed';
+    return next === 'installed' ? undefined : next;
+  });
+  useEffect(() => {
+    if (route) markInstallHintShown();
+  }, [route]);
+  if (!route) return null;
+  return (
+    <Card padding="sm" className="wk-install">
+      <p>{copy.installTitle}</p>
+      {route === 'prompt' ? (
+        <PrimaryButton
+          size="md"
+          onClick={() => void promptInstall().then(shown => setRoute(shown ? undefined : 'menu'))}
+        >
+          {copy.installButton}
+        </PrimaryButton>
+      ) : (
+        <p className="wk-muted">{route === 'ios' ? copy.installIos : copy.installMenu}</p>
+      )}
+      <PrimaryButton tone="text" size="sm" onClick={() => setRoute(undefined)}>
+        {copy.installDismiss}
+      </PrimaryButton>
+    </Card>
+  );
+}
 export function FinishPage() {
   const { data, facts, t, name, run, navigate, busy, locale, appearance } = useMainline();
   const [feedback, setFeedback] = useState<Feedback>({ reasons: [] });
@@ -62,6 +109,10 @@ export function FinishPage() {
     thisWeek.filter(row => row.status === 'partial').length,
   );
   const streak = weekStreak(rows, today, timeZone);
+  // Every finished workout on this device, this one included; it only grows.
+  // shortcut: pre-V8 legacy history is not counted, add it if the finish page ever loads review workouts.
+  const total = rows.length;
+  const moments = done > 0 ? progressMoments(data.workouts, active) : [];
   // 芽芽话术 v5 §18 (theme voice) and §2 (partial); unknown themes keep the earlier sentence.
   const tones = yayaThemeTone[locale].done,
     tone = tones[appearance.theme as keyof typeof tones],
@@ -136,6 +187,15 @@ export function FinishPage() {
           </Card>
         )}
       </div>
+      {done > 0 && (
+        <div className="wk-finish-message">
+          {moments.map(m => (
+            <p key={m.exerciseId}>{momentLine(copy, name(m.exerciseId), m)}</p>
+          ))}
+          <p className="wk-muted">{format(copy.workoutNumber, { count: total })}</p>
+        </div>
+      )}
+      {done > 0 && total >= 2 && <InstallHint copy={copy} />}
       <Card as="section" className="wk-week" aria-label={copy.thisWeek}>
         <div className="wk-week-head">
           <p>
