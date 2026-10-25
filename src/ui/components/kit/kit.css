@@ -434,14 +434,9 @@
 }
 .v9-am-base {
   fill: var(--map-base);
-  stroke: var(--map-base);
-  stroke-width: 1.4;
 }
 .v9-am-muscle {
-  fill: var(--map-base);
-  stroke: var(--map-line);
-  stroke-width: 1;
-  stroke-linejoin: round;
+  fill: none;
 }
 .v9-am-muscle[data-role='primary'] {
   fill: var(--map-hot);
@@ -453,23 +448,9 @@
   fill: var(--map-hot);
   animation: v9-am-glow 1.6s ease-in-out infinite;
 }
-.v9-am-detail {
-  fill: none;
-  stroke: var(--map-line);
-  stroke-width: 1;
-  stroke-linecap: round;
-}
-.v9-am-hair {
+.v9-am-lines {
   fill: var(--map-line);
-  fill-opacity: 0.28;
-  stroke: var(--map-line);
-  stroke-width: 1;
-}
-.v9-am-outline {
-  fill: none;
-  stroke: var(--map-line);
-  stroke-width: 1.5;
-  stroke-linejoin: round;
+  fill-rule: evenodd;
 }
 .v9-am-ghost {
   fill: none;
@@ -981,4 +962,179 @@
   .v9-anatomy-scan {
     display: none;
   }
+}
+
+/* Pain picker (UIUX20261008 I): the body in map colours, the picked spot in the safety colour. */
+.v9-pain-map {
+  display: grid;
+  gap: var(--s1);
+  inline-size: 100%;
+  max-inline-size: calc(var(--layout-mobile-max) - var(--s6));
+  margin-inline: auto;
+}
+.v9-pain-figure {
+  position: relative;
+}
+.v9-pain-figure svg {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+}
+.v9-pain-body {
+  fill: var(--map-base);
+}
+.v9-pain-lines {
+  fill: var(--map-line);
+  fill-rule: evenodd;
+}
+.v9-pain-dot {
+  fill: none;
+  stroke: var(--map-line);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 3;
+}
+.v9-pain-picked circle {
+  fill: var(--c-warn);
+}
+.v9-pain-picked .v9-pain-halo {
+  opacity: 0.18;
+}
+.v9-pain-picked line {
+  stroke: var(--c-warn);
+  stroke-width: 1.4;
+}
+.v9-pain-hit {
+  position: absolute;
+  inline-size: var(--touch-min);
+  block-size: var(--touch-min);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  transform: translate(-50%, -50%);
+}
+.v9-pain-hit:focus-visible {
+  outline: var(--ring-w) solid var(--c-focus);
+  outline-offset: calc(var(--s1) * -1);
+}
+.v9-pain-tag {
+  position: absolute;
+  transform: translateY(-50%);
+  padding: var(--s1) var(--s3);
+  border-radius: var(--r-chip);
+  background: var(--c-warn);
+  color: var(--c-bg);
+  font-size: var(--t2);
+  font-weight: var(--w-strong);
+  line-height: var(--lh-tight);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.v9-pain-views {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  text-align: center;
+  color: var(--c-ink-muted);
+  font-size: var(--t1);
+}
+
+/* Pain check-in steps: one thing per screen. */
+.v9-pain-panel {
+  display: grid;
+  gap: var(--s3);
+  min-inline-size: 0;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+.v9-pain-progress {
+  display: flex;
+  gap: var(--s1);
+}
+.v9-pain-progress span {
+  flex: 1;
+  block-size: var(--s1);
+  border-radius: var(--s1);
+  background: var(--c-line);
+}
+.v9-pain-progress span[data-done='true'] {
+  background: var(--c-warn);
+}
+.v9-pain-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s3);
+}
+.v9-pain-head .v9-segmented {
+  flex: none;
+}
+.v9-pain-title {
+  margin: 0;
+  font-size: var(--t5);
+  font-weight: var(--w-strong);
+  line-height: var(--lh-tight);
+}
+.v9-pain-hint {
+  margin: 0;
+  color: var(--c-ink-muted);
+  font-size: var(--t2);
+}
+.v9-pain-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+}
+.v9-pain-score {
+  margin: 0;
+  text-align: center;
+  color: var(--c-warn);
+  font-size: var(--t7);
+  line-height: var(--lh-tight);
+}
+.v9-pain-scale {
+  display: grid;
+  grid-template-columns: repeat(11, minmax(0, 1fr));
+  gap: var(--s1);
+}
+.v9-pain-scale button {
+  min-inline-size: 0;
+  min-block-size: var(--touch-min);
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-chip);
+  background: var(--c-inset);
+  box-shadow: var(--el-inset);
+  color: var(--c-ink);
+  font-size: var(--t3);
+}
+.v9-pain-scale button[aria-checked='true'] {
+  background: var(--c-warn);
+  color: var(--c-bg);
+  box-shadow: none;
+  font-weight: var(--w-strong);
+}
+.v9-pain-ends {
+  display: flex;
+  justify-content: space-between;
+  color: var(--c-ink-muted);
+  font-size: var(--t1);
+}
+.v9-pain-yesno {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s3);
+}
+.v9-pain-yesno .v9-chip {
+  min-block-size: calc(var(--touch-primary) + var(--s3));
+  font-size: var(--t4);
+}
+.v9-pain-warn {
+  margin: 0;
+  padding: var(--s3) var(--s4);
+  border-radius: var(--r-control);
+  background: var(--c-warn-soft);
+  color: var(--c-ink);
+  font-size: var(--t2);
+  line-height: var(--lh-body);
 }

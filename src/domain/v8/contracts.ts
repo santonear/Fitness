@@ -164,6 +164,8 @@ export interface SetFeedbackEvent {
   rir?: number;
   painScore?: number;
   painArea?: EngineProfile['cautions'][number];
+  /** Which side of a paired area (display and follow-up questions only). */
+  painSide?: 'left' | 'right';
 }
 /** Read projection only. Old sets have update times, not exact completion times. */
 export interface LegacyWorkoutProjection extends Omit<WorkoutRecord, 'sets'> {
@@ -210,7 +212,7 @@ export interface CoachProfile {
   equipment: string[];
   adultConfirmed: boolean;
   placeEquipmentOriginalText?: string;
-  cautions: ('knee' | 'back' | 'shoulder' | 'wrist' | 'other')[];
+  cautions: EngineProfile['cautions'];
   cautionNote?: string;
   confirmedAt: string;
 }

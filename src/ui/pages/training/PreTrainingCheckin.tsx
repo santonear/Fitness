@@ -4,7 +4,9 @@ import { engineTrainingCopy } from '../../../i18n/features/training/engine';
 import type { PainFollowupInput } from '../../../application/pain-followup';
 import { useEffect, useState } from 'react';
 import type { TrainingCheckinInput } from '../../../application/training-checkin';
-import { JointPainCheckinFields } from './JointPainCheckinFields';
+import { JointPainCheckinFields, type JointPainCheckinDraft } from './JointPainCheckinFields';
+import { PainAreaPicker } from './PainCheckinPanel';
+import { binarySex } from '../../../domain/body-profile';
 import { engineCopy } from '../../../coach/engine-copy';
 import { useMainline, workflow } from '../../mainline/context';
 import { useFeature } from '../../useFeature';
@@ -16,18 +18,21 @@ export function PainFollowupFields({
   onChange,
   locale,
   workouts = [],
+  sex,
 }: {
-  answers: PainFollowupInput;
-  onChange: (answers: PainFollowupInput) => void;
+  answers: PainFollowupInput & { jointPain?: JointPainCheckinDraft };
+  onChange: (answers: PainFollowupInput & { jointPain?: JointPainCheckinDraft }) => void;
   locale: 'zh' | 'en';
   workouts?: WorkoutRecord[];
+  sex?: 'male' | 'female';
 }) {
   const t = engineTrainingCopy[locale],
     zh = locale === 'zh';
   const [selection, setSelection] = useState(
       answers.painFollowup ? JSON.stringify([answers.painFollowup.workoutId, answers.painFollowup.itemIndex]) : '',
     ),
-    [area, setArea] = useState(answers.painFollowup?.painArea);
+    [area, setArea] = useState(answers.painFollowup?.painArea),
+    [side, setSide] = useState(answers.jointPain?.painSide);
   const choices = workouts
     .filter(w => ['complete', 'partial'].includes(w.status) && w.endedAt)
     .flatMap(w =>
@@ -37,13 +42,26 @@ export function PainFollowupFields({
         return e ? [{ value: JSON.stringify([w.id, index]), name: `${w.localDate} · ${e.name[locale]}` }] : [];
       }),
     );
-  function link(value: string, nextArea: typeof area) {
+  function link(value: string, nextArea: typeof area, nextSide = side) {
     setSelection(value);
     setArea(nextArea);
+    setSide(nextSide);
     const pair = value ? (JSON.parse(value) as [string, number]) : undefined;
+    // The side only labels the joint check below (右膝); the follow-up itself keeps the area.
+    const jointPain = { ...answers.jointPain };
+    delete jointPain.painSide;
     onChange({
       ...answers,
       painFollowup: pair && nextArea ? { workoutId: pair[0], itemIndex: pair[1], painArea: nextArea } : undefined,
+      ...(answers.jointPain || nextSide
+        ? {
+            jointPain: {
+              ...jointPain,
+              ...(nextSide ? { painSide: nextSide } : {}),
+              ...(nextArea !== area ? { redFlagAnswers: undefined } : {}),
+            },
+          }
+        : {}),
     });
   }
   return (
@@ -80,20 +98,12 @@ export function PainFollowupFields({
               </option>
             ))}
           </select>
-          <label>
-            {t.area}
-            <select
-              value={area ?? ''}
-              onChange={event => link(selection, (event.target.value as typeof area) || undefined)}
-            >
-              <option value="">{t.choose}</option>
-              {(['knee', 'back', 'shoulder', 'wrist', 'other'] as const).map((value, index) => (
-                <option key={value} value={value}>
-                  {t.areas[index]}
-                </option>
-              ))}
-            </select>
-          </label>
+          <PainAreaPicker
+            locale={locale}
+            sex={sex}
+            value={{ painArea: area, ...(side ? { painSide: side } : {}) }}
+            onChange={next => link(selection, next.painArea, next.painSide)}
+          />
         </>
       )}
     </>
@@ -105,12 +115,15 @@ export function TrainingCheckinFields({
   locale,
   disabled,
   workouts = [],
+  sex,
 }: {
   answers: TrainingCheckinInput;
   onChange: (answers: TrainingCheckinInput) => void;
   locale: 'zh' | 'en';
   disabled: boolean;
   workouts?: WorkoutRecord[];
+  /** Figure for the pain picker, from the profile. */
+  sex?: 'male' | 'female';
 }) {
   const zh = locale === 'zh',
     hasPreviousTraining = workouts.some(
@@ -124,6 +137,7 @@ export function TrainingCheckinFields({
           onChange={next => onChange({ ...answers, ...next })}
           locale={locale}
           workouts={workouts}
+          sex={sex}
         />
       )}
       <label>
@@ -192,6 +206,8 @@ export function TrainingCheckinFields({
             onChange={jointPain => onChange({ ...answers, jointPain })}
             locale={locale}
             disabled={disabled}
+            sex={sex}
+            areaLocked={!!answers.painFollowup}
           />
         </>
       )}
@@ -225,6 +241,7 @@ function ConsentedCheckin() {
         locale={c.locale}
         disabled={c.busy || !ready}
         workouts={c.data?.workouts ?? []}
+        sex={binarySex(c.data?.profile?.bodyDetails?.values?.biologicalSex)}
       />
       <Button
         disabled={c.busy || !ready}

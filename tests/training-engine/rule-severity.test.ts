@@ -95,8 +95,9 @@ it('pins all original351 grading rows and only the explicitly approved deferred 
     meta: 3,
   });
   const additions = doc.rules.filter((rule: { id: string }) => !ids.has(rule.id));
-  expect(additions).toHaveLength(26);
-  expect(new Set(doc.rules.map((rule: { id: string }) => rule.id)).size).toBe(377);
+  // 2026-10-25 Bo approved hip, ankle and neck: 6 caution rules, 3 red-flag gates and 6 question copies.
+  expect(additions).toHaveLength(41);
+  expect(new Set(doc.rules.map((rule: { id: string }) => rule.id)).size).toBe(392);
   expect(
     additions.filter((rule: { id: string }) =>
       ['duration.cardio.cap', 'session.copy.intentional_short'].includes(rule.id),
@@ -106,6 +107,15 @@ it('pins all original351 grading rows and only the explicitly approved deferred 
     { id: 'session.copy.intentional_short', type: 'copy', severity: 'copy' },
   ]);
   expect(additions.filter((rule: { severity: string }) => rule.severity === 'hard')).toEqual([
+    { id: 'caution.hip.filter', type: 'exclude', severity: 'hard' },
+    { id: 'caution.hip.substitute', type: 'substitute', severity: 'hard' },
+    { id: 'caution.ankle.filter', type: 'exclude', severity: 'hard' },
+    { id: 'caution.ankle.substitute', type: 'substitute', severity: 'hard' },
+    { id: 'caution.neck.filter', type: 'exclude', severity: 'hard' },
+    { id: 'caution.neck.substitute', type: 'substitute', severity: 'hard' },
+    { id: 'redflag.hip', type: 'gate', severity: 'hard' },
+    { id: 'redflag.ankle', type: 'gate', severity: 'hard' },
+    { id: 'redflag.neck', type: 'gate', severity: 'hard' },
     { id: 'caution.progression_gate', type: 'limit', severity: 'hard' },
     { id: 'pregnancy.inactive.ramp', type: 'limit', severity: 'hard' },
   ]);
@@ -114,7 +124,7 @@ it('pins all original351 grading rows and only the explicitly approved deferred 
 it('retains grading in both compiled artifacts and stores hard/target duration separately', async () => {
   const full = JSON.parse(await readFile('src/engine/generated/rules.json', 'utf8')),
     runtime = JSON.parse(await readFile('src/engine/generated/rules-runtime.json', 'utf8'));
-  expect(full.rules).toHaveLength(377);
+  expect(full.rules).toHaveLength(392);
   expect(runtime.rulesVersion).toBe(full.rulesVersion);
   for (const rule of full.rules) {
     expect(rule.severity).toBeTruthy();

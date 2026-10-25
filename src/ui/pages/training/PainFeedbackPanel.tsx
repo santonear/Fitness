@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import type { PainFeedbackPreview } from '../../../application/training-pain';
 import { engineCopy } from '../../../coach/engine-copy';
-import { Button, Chip } from '../../components/common';
+import { Button } from '../../components/common';
+import { RedFlagSteps } from './PainCheckinPanel';
 import { PrescriptionDetails } from './PrescriptionDetails';
 
 export function PainFeedbackPanel({
@@ -48,28 +49,22 @@ export function PainFeedbackPanel({
       )}
       {!preview.applied && preview.action !== 'none' && (
         <>
-          <fieldset disabled={busy}>
-            {preview.questions.map(question => (
-              <fieldset key={question.key}>
-                <legend>{engineCopy(question.copyKey, locale)}</legend>
-                {([true, false] as const).map(answer => (
-                  <Chip
-                    key={String(answer)}
-                    selected={answers[question.key] === answer}
-                    onClick={() => {
-                      const next = { ...answers };
-                      if (next[question.key] === answer) delete next[question.key];
-                      else next[question.key] = answer;
-                      setAnswers(next);
-                      onAnswersChange?.(next);
-                    }}
-                  >
-                    {locale === 'zh' ? (answer ? '是' : '否') : answer ? 'Yes' : 'No'}
-                  </Chip>
-                ))}
-              </fieldset>
-            ))}
-          </fieldset>
+          <RedFlagSteps
+            locale={locale}
+            disabled={busy}
+            questions={preview.questions.map(question => ({
+              key: question.key,
+              label: engineCopy(question.copyKey, locale),
+            }))}
+            answers={answers}
+            onAnswer={(key, answer) => {
+              const next = { ...answers };
+              if (answer === undefined) delete next[key];
+              else next[key] = answer;
+              setAnswers(next);
+              onAnswersChange?.(next);
+            }}
+          />
           {!reviewOnly &&
             complete &&
             preview.action === 'substitute' &&

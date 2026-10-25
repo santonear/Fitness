@@ -38,6 +38,9 @@
     "back": "Lower back",
     "shoulder": "Shoulders",
     "wrist": "Wrists",
+    "hip": "Hips",
+    "ankle": "Ankles",
+    "neck": "Neck",
     "other": "Other"
   },
   "minor": "If you’re under 18, train with guidance from a parent or a qualified professional.",

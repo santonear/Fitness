@@ -14,6 +14,7 @@ import { buildNowSession, sessionMuscleFocus, weeklyMuscleLoad } from '../../../
 import { homePanelStyle, setHomePanelStyle } from '../../../persistence/plan-upgrade-store';
 import { coachReminderService } from '../../../application/coach-reminders';
 import type { SessionTemplate, WorkoutRecord } from '../../../domain/v8/contracts';
+import type { CautionJoint } from '../../../engine/contracts';
 import { yayaV5 } from '../../../i18n/features/coach/yaya-v5';
 import { planPagesCopy } from '../../../i18n/features/plan-upgrade/pages';
 import {
@@ -60,7 +61,7 @@ export function useNowSession(
   options: {
     planId?: string;
     candidateIds?: readonly string[];
-    avoidJoints?: readonly ('knee' | 'back' | 'shoulder' | 'wrist')[];
+    avoidJoints?: readonly CautionJoint[];
     preferTemplate?: boolean;
   },
 ) {
@@ -180,7 +181,7 @@ export function NowPanel({
     [data?.version?.id],
   );
   const avoidJoints = (data?.state?.coachProfile?.cautions ?? []).filter(
-    (joint): joint is 'knee' | 'back' | 'shoulder' | 'wrist' => joint !== 'other',
+    (joint): joint is CautionJoint => joint !== 'other',
   );
   const { session, weekLoads } = useNowSession(request, template, data?.workouts ?? [], weekDates, {
     ...(data?.plan?.id ? { planId: data.plan.id } : {}),

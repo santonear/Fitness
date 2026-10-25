@@ -9,6 +9,7 @@ import { toEngineProfile } from './engine-profile';
 import { setMetricsSchema } from '../domain/schemas';
 import { latestSetFeedback, painQuestionKeys, pendingPainReviews, historyDangerReview } from './pain-events';
 import { DEFAULT_TIME_ZONE } from '../domain/local-date';
+import { redFlagRoute } from '../engine/gates/redflag-items';
 export { latestSetFeedback, painQuestionKeys } from './pain-events';
 
 export interface PainFeedbackPreview {
@@ -142,15 +143,7 @@ export function createTrainingPain(repo: Repository) {
             : []),
         ]),
       ],
-      back = rules.get('redflag.back'),
-      shoulder = rules.get('redflag.shoulder');
-    const tier = positives.some(key => back.emergency_items.includes(key))
-      ? 'redflag.copy.emergency_back'
-      : positives.some(key => shoulder.cardiac_route_items.includes(key))
-        ? 'redflag.copy.cardiac'
-        : positives.length
-          ? 'redflag.copy.prompt_medical'
-          : undefined;
+      tier = redFlagRoute(rules, positives)?.copyId;
     const dropped = history
       .flatMap(row =>
         (row.painActions ?? []).filter(item => item.kind === 'exclude').map(item => ({ record: row, action: item })),

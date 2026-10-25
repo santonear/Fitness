@@ -4,11 +4,12 @@ import type { Repository } from '../persistence/repository';
 import type { WorkoutRecord } from '../domain/v8/contracts';
 import type { TrainingCheckinRow } from './training-checkin';
 import { Rules, calendarDay } from '../engine/data';
+import { cautionJointSchema } from '../engine/contracts';
 import { v8StateSchema } from '../domain/schemas';
 import { historyDangerReview, painQuestionKeys } from './pain-events';
 import { unresolvedReview } from './training-pain';
 import { DAY_MS, DEFAULT_TIME_ZONE, addDays } from '../domain/local-date';
-export const cautionJoints = ['knee', 'back', 'shoulder', 'wrist'] as const;
+export const cautionJoints = cautionJointSchema.options;
 export type CautionJoint = (typeof cautionJoints)[number];
 export type CautionLevels = Partial<Record<CautionJoint, { level: 0 | 1 | 2; changedAt: string }>>;
 export interface CautionMorning {
