@@ -24,7 +24,7 @@ const template = (id: string, patterns: string[], name = '训练', minutes = 30)
 });
 
 describe('plan presentation (read only)', () => {
-  it('names sessions from their content and letters repeated kinds', () => {
+  it('names sessions from their content and tells repeated kinds apart by their main parts', () => {
     const templates = [
       template('a', ['squat', 'push_horizontal', 'pull_horizontal']),
       template('b', ['lunge', 'hinge']),
@@ -33,8 +33,16 @@ describe('plan presentation (read only)', () => {
     ];
     expect(templates.map(t => sessionKind(t))).toEqual(['full', 'lower', 'full', 'cardio']);
     const names = sessionNames(templates, 'zh');
-    expect([...names.values()]).toEqual(['全身 A', '下肢', '全身 B', '有氧']);
-    expect([...sessionNames(templates, 'en').values()]).toEqual(['Full body A', 'Lower body', 'Full body B', 'Cardio']);
+    expect([...names.values()]).toEqual(['腿·胸', '下肢', '臀·背', '有氧']);
+    expect([...sessionNames(templates, 'en').values()]).toEqual([
+      'Legs · Chest',
+      'Lower body',
+      'Glutes · Back',
+      'Cardio',
+    ]);
+    // Same main parts: letters still tell them apart.
+    const twins = [template('a', ['squat', 'push_horizontal']), template('b', ['squat', 'push_horizontal'])];
+    expect([...sessionNames(twins, 'zh').values()]).toEqual(['全身 A', '全身 B']);
   });
   it('keeps a real stored name verbatim and replaces only placeholders', () => {
     expect(genericSessionName('训练')).toBe(true);
