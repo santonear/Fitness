@@ -60,6 +60,9 @@ it.each([
   ['back', 'hinge', ['kettlebell-deadlift', 'glute-bridge']],
   ['shoulder', 'push_horizontal', ['incline-db-press', 'db-bench-press']],
   ['wrist', 'isolation_upper', ['hammer-curl', 'ez-bar-curl']],
+  ['hip', 'lunge', ['glute-bridge', 'split-squat']],
+  ['ankle', 'cardio_cyclic', ['stationary-bike', 'air-bike']],
+  ['neck', 'push_horizontal', ['landmine-press', 'incline-db-press']],
 ] as [Caution, Pattern, string[]][])(
   'uses authored first passing %s substitution, independent of UUID order',
   (joint, pattern, slugs) => {
