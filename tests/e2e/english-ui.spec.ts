@@ -141,6 +141,8 @@ test('English UI shows no Chinese across the main flow', async ({ page }) => {
   await page.getByRole('radio', { name: 'Yes', exact: true }).click();
   await check(page, 'blood pressure');
   await page.getByRole('radio', { name: 'Below 160/90', exact: true }).click();
+  await check(page, 'route');
+  await page.getByRole('radio', { name: 'Health', exact: true }).click();
   await check(page, 'population');
   await page.getByRole('radio', { name: 'Neither', exact: true }).click();
   const intensity = page.getByRole('heading', { name: 'About intensity' }),

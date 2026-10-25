@@ -1,6 +1,14 @@
 // Data line owns this file (UIUX20261008 V9.14). Signatures are frozen.
-import type { FitnessTestRecord, FutureLetter, HomePanelStyle, Journey, WeeklyBudget } from '../domain/plan-upgrade';
-import { DEFAULT_HOME_PANEL_STYLE, HOME_PANEL_STYLES } from '../domain/plan-upgrade';
+import type {
+  FitnessTestRecord,
+  FutureLetter,
+  HomePanelStyle,
+  Journey,
+  StarterProgram,
+  WeeklyBudget,
+} from '../domain/plan-upgrade';
+import { DEFAULT_HOME_PANEL_STYLE, HOME_PANEL_STYLES, STARTER_PROGRAM_ID } from '../domain/plan-upgrade';
+import { isLocalDate } from '../domain/local-date';
 import {
   fitnessTestRecordSchema,
   futureLetterSchema,
@@ -30,6 +38,15 @@ const sameBudget = (a: WeeklyBudget | undefined, b: WeeklyBudget | undefined) =>
 
 export function createPlanUpgradeStore(repo: Repository) {
   const { db } = repo;
+  // A today-only adjustment of the same plan stays attached to the new version.
+  const keepOverride = async (fromVersionId: string, toVersionId: string) => {
+    const state = await db.v8State.get('v8');
+    if (state?.nextWorkoutOverride?.planVersionId === fromVersionId)
+      await db.v8State.put({
+        ...state,
+        nextWorkoutOverride: { ...state.nextWorkoutOverride, planVersionId: toVersionId },
+      });
+  };
   return {
     async listFitnessTests(): Promise<FitnessTestRecord[]> {
       return (await db.fitnessTests.toArray()).sort(
@@ -130,8 +147,11 @@ export function createPlanUpgradeStore(repo: Repository) {
             : locale === 'zh'
               ? '改为按天安排'
               : 'Switched to day-by-day';
+        const { starterProgram, ...rest } = version;
         const created = v8PlanVersionSchema.parse({
-          ...version,
+          ...rest,
+          // 新手 4 周 only runs on a by-day plan.
+          ...(starterProgram && next.mode === 'by-day' ? { starterProgram } : {}),
           id: crypto.randomUUID(),
           versionNumber: await nextVersionNumber(db, plan.id),
           createdAt: now(),
@@ -144,13 +164,40 @@ export function createPlanUpgradeStore(repo: Repository) {
         });
         await db.v8PlanVersions.add(created);
         await db.v8Plans.put({ ...plan, currentVersionId: created.id });
-        // A today-only adjustment of the same plan stays attached to the new version.
-        const state = await db.v8State.get('v8');
-        if (state?.nextWorkoutOverride?.planVersionId === version.id)
-          await db.v8State.put({
-            ...state,
-            nextWorkoutOverride: { ...state.nextWorkoutOverride, planVersionId: created.id },
-          });
+        await keepOverride(version.id, created.id);
+      });
+    },
+    /**
+     * 新手 4 周 on or off (Bo 2026-10-25). Like every plan change this adds a new version; workouts stay as they are.
+     * `startDate` starts the program; undefined leaves it (quit or finished) and the plan goes on by day.
+     */
+    async setStarterProgram(planId: string, startDate: string | undefined, summary: string): Promise<void> {
+      if (startDate !== undefined && !isLocalDate(startDate)) throw new DomainError('INVALID', 'INVALID_DATE');
+      await repo.write(async () => {
+        const plan = await db.v8Plans.get(planId);
+        const version = plan ? await db.v8PlanVersions.get(plan.currentVersionId) : undefined;
+        if (!plan || !version || plan.readOnly || plan.deletedAt) throw new DomainError('INVALID', 'PLAN_UNAVAILABLE');
+        if (startDate && version.weeklyBudget?.mode === 'budget') throw new DomainError('INVALID', 'PLAN_NOT_BY_DAY');
+        if (version.starterProgram?.startDate === startDate) return;
+        if (await db.v8Workouts.where('status').equals('in_progress').count())
+          throw new DomainError('CONFLICT', 'TRAINING_CHANGED');
+        const { starterProgram: _previous, ...rest } = version;
+        const program: StarterProgram | undefined = startDate ? { id: STARTER_PROGRAM_ID, startDate } : undefined;
+        const created = v8PlanVersionSchema.parse({
+          ...rest,
+          ...(program ? { starterProgram: program } : {}),
+          id: crypto.randomUUID(),
+          versionNumber: await nextVersionNumber(db, plan.id),
+          createdAt: now(),
+          origin: 'manual',
+          source: 'local',
+          basedOnVersionId: version.id,
+          reviewRule: undefined,
+          changeSummary: [summary],
+        });
+        await db.v8PlanVersions.add(created);
+        await db.v8Plans.put({ ...plan, currentVersionId: created.id });
+        await keepOverride(version.id, created.id);
       });
     },
   };
@@ -181,3 +228,6 @@ export const weeklyBudget = (planId: string): Promise<WeeklyBudget | undefined> 
 /** Plan changes always create a new plan version. */
 export const setWeeklyBudget = (planId: string, budget: WeeklyBudget): Promise<void> =>
   store.setWeeklyBudget(planId, budget);
+/** 新手 4 周 on (start date) or off (undefined); always a new plan version. */
+export const setStarterProgram = (planId: string, startDate: string | undefined, summary: string): Promise<void> =>
+  store.setStarterProgram(planId, startDate, summary);

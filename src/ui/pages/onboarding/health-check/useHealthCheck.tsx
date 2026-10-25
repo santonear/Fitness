@@ -14,6 +14,8 @@ import { useEngineProfileDraft, engineFallKeys, engineOlderAge } from '../../set
 import { OnboardingFrame } from '../OnboardingFrame';
 import { useAiReadiness } from '../PlanModeChoice';
 import { planModeCopy } from '../../../../i18n/features/onboarding/plan-mode';
+import { steadyStarterCopy } from '../../../../i18n/features/coach/yaya-steady-starter';
+import type { Route } from '../../../../domain/plan-upgrade';
 import { cmrKeys, age45, type Group, type Item, type Screen, type HealthCheckWizardProps } from './health-check-parts';
 
 /** State and answer helpers of the health self-check; the wizard renders one screen from them. */
@@ -94,13 +96,14 @@ export function useHealthCheck(props: HealthCheckWizardProps) {
       },
     });
   };
-  function choosePopulation(next: string) {
+  function choosePopulation(next: string, extra: EngineProfileFields = {}) {
     d.setPopulationKind(next);
     d.setPopulationDraft({});
     d.setPregnancyDraft(createPregnancyReconfirmationDraft());
     d.setFallsAnswers(Array.from({ length: engineFallKeys.length }, () => undefined));
     engineChange({
       ...answers,
+      ...extra,
       population:
         next === 'pregnant'
           ? pregnancyPopulationFromDraft(createPregnancyReconfirmationDraft())
@@ -198,8 +201,18 @@ export function useHealthCheck(props: HealthCheckWizardProps) {
   };
 
   const age = d.currentAge;
+  const olderAge = age !== undefined && age >= engineOlderAge;
+  // 稳健 (Bo 2026-10-25) is preselected from 60 and opts into the older-adult module at any age.
+  const route = answers.route ?? (olderAge ? ('steady' as const) : undefined);
+  function chooseRoute(next: Route) {
+    if (next === 'steady' && kind !== 'older_adult') choosePopulation('older_adult', { route: next });
+    else if (next === 'postpartum' && kind !== 'postpartum') choosePopulation('postpartum', { route: next });
+    else if (next !== 'steady' && kind === 'older_adult' && !olderAge) choosePopulation('general', { route: next });
+    else engineChange({ ...answers, route: next });
+  }
   const showFalls =
-    engine && (kind === 'general' || kind === 'older_adult') && age !== undefined && age >= engineOlderAge;
+    engine &&
+    ((kind === 'general' && olderAge) || (kind === 'older_adult' && (olderAge || answers.route === 'steady')));
   const screens = (() => {
     const list: Screen[] = [{ id: 'intro' }];
     const group = (name: Group) => {
@@ -214,7 +227,7 @@ export function useHealthCheck(props: HealthCheckWizardProps) {
       group('parq');
       group('cmr');
       group('other');
-      list.push({ id: 'activity' }, { id: 'bp' });
+      list.push({ id: 'activity' }, { id: 'bp' }, { id: 'route' });
       if (!male || (kind !== 'general' && kind !== 'older_adult')) list.push({ id: 'population' });
       if (kind === 'pregnant') {
         list.push({ id: 'preg:week' }, { id: 'preg:prenatal' }, { id: 'preg:provider' });
@@ -282,7 +295,12 @@ export function useHealthCheck(props: HealthCheckWizardProps) {
     cmr: t.cmr,
     other: { title: t.other.title },
     preg: { title: t.pregnancyList, sub: engineCopy('pregnancy.gate.copy.intro', locale) },
-    falls: { title: engineCopy('older.screen.copy.intro', locale) },
+    falls: {
+      title:
+        answers.route === 'steady'
+          ? steadyStarterCopy[locale].steadyFalls
+          : engineCopy('older.screen.copy.intro', locale),
+    },
     redflag: t.redflag,
   };
 
@@ -328,6 +346,8 @@ export function useHealthCheck(props: HealthCheckWizardProps) {
     redKeys,
     setRedflag,
     choosePopulation,
+    route,
+    chooseRoute,
     setFalls,
     groups,
     allNo,

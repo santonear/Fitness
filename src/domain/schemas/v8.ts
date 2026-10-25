@@ -7,7 +7,7 @@ import {
   patternSchema,
   engineItemSchema,
 } from '../../engine/contracts';
-import { HOME_PANEL_STYLES } from '../plan-upgrade';
+import { HOME_PANEL_STYLES, ROUTES, STARTER_PROGRAM_ID } from '../plan-upgrade';
 import {
   uuidSchema,
   exerciseIdSchema,
@@ -65,6 +65,8 @@ export const v8PlanVersionSchema = z.strictObject({
     .optional(),
   scheduleRecovery: z.strictObject({ raw: z.string(), recoveredAt: utcTimestampSchema }).optional(),
   weeklyBudget: weeklyBudgetSchema.optional(),
+  /** 新手 4 周 (Bo 2026-10-25); absent on older versions and on plans that never used it. */
+  starterProgram: z.strictObject({ id: z.literal(STARTER_PROGRAM_ID), startDate: localDateSchema }).optional(),
   templates: z
     .array(
       z
@@ -322,6 +324,8 @@ export const v8CoachProfileSchema = z
       })
       .partial().shape,
     healthStorageConsent: z.strictObject({ acceptedAt: utcTimestampSchema }).optional(),
+    /** Route picked in onboarding (Bo 2026-10-25); absent on older profiles. */
+    route: z.enum(ROUTES).optional(),
     goalText: z.string(),
     weeklyTarget: positive.max(7),
     sessionMinutes: v8Minutes,

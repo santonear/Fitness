@@ -5,7 +5,7 @@ import { addFitnessTest } from '../../../persistence/plan-upgrade-store';
 import { bodyAge } from '../../../application/rules/plan-upgrade';
 import { planPagesCopy } from '../../../i18n/features/plan-upgrade/pages';
 import { fillLine, yayaV5 } from '../../../i18n/features/coach/yaya-v5';
-import { parseTestValue, TEST_RANGES, testItemsFor, testValueText } from './logic';
+import { parseTestValue, steadyTestLines, TEST_RANGES, testItemsFor, testValueText } from './logic';
 
 type Locale = 'zh' | 'en';
 
@@ -15,6 +15,7 @@ export function FitnessTestCard({
   today,
   age,
   sex,
+  steady = false,
   tests,
   onSaved,
 }: {
@@ -22,6 +23,8 @@ export function FitnessTestCard({
   today: string;
   age?: number;
   sex?: 'male' | 'female';
+  /** 稳健 route: the 60+ items and its progress lines. */
+  steady?: boolean;
   tests: readonly FitnessTestRecord[];
   onSaved: () => void;
 }) {
@@ -29,7 +32,7 @@ export function FitnessTestCard({
     y = yayaV5[locale];
   const [open, setOpen] = useState(false);
   const [values, setValues] = useState<Partial<Record<FitnessTestItem, string>>>({});
-  const items = testItemsFor(age);
+  const items = testItemsFor(age, steady);
   const byDate = [...tests].sort((a, b) => a.localDate.localeCompare(b.localDate)),
     latest = byDate.at(-1),
     previous = byDate.at(-2);
@@ -75,6 +78,12 @@ export function FitnessTestCard({
         </div>
       )}
       {line && <p className="pu-line">{line}</p>}
+      {steady &&
+        steadyTestLines(tests, locale).map(text => (
+          <p key={text} className="pu-line">
+            {text}
+          </p>
+        ))}
       {!open ? (
         <>
           <p className="pu-line">{y.testAsk}</p>

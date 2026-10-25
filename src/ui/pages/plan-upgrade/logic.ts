@@ -3,6 +3,7 @@ import type {
   BodyChangeEvent,
   FigureShape,
   FitnessTestItem,
+  FitnessTestRecord,
   FutureLetter,
   Journey,
   JourneyStop,
@@ -15,6 +16,7 @@ import type {
 import { FITNESS_TEST_ITEMS, MUSCLE_GROUP_NAMES } from '../../../domain/plan-upgrade';
 import { addDays, daysBetween } from '../../../domain/local-date';
 import { fillLine, yayaV5 } from '../../../i18n/features/coach/yaya-v5';
+import { steadyStarterCopy } from '../../../i18n/features/coach/yaya-steady-starter';
 import { planPagesCopy } from '../../../i18n/features/plan-upgrade/pages';
 import { binarySex, type BodyValues } from '../../../domain/body-profile';
 
@@ -132,9 +134,52 @@ export function shownFocus(
   };
 }
 
-/** 60 岁以上加 30 秒坐站。 */
-export const testItemsFor = (age: number | undefined): FitnessTestItem[] =>
-  FITNESS_TEST_ITEMS.filter(item => item !== 'chairStand30s' || (age ?? 0) >= 60);
+/** 60 岁以上或稳健路线：加 30 秒坐站，闭眼单脚站换成睁眼扶椅单脚站（Bo 2026-10-25）。 */
+export const testItemsFor = (age: number | undefined, steady = false): FitnessTestItem[] => {
+  const older = steady || (age ?? 0) >= 60;
+  return FITNESS_TEST_ITEMS.filter(item =>
+    item === 'chairStand30s' || item === 'singleLegStandChairS'
+      ? older
+      : item === 'singleLegStandEyesClosedS'
+        ? !older
+        : true,
+  );
+};
+
+/** 稳健 lines on 体能自测: chair stands against the last test, the chair-supported stand against the first one. */
+export function steadyTestLines(tests: readonly Pick<FitnessTestRecord, 'localDate' | 'results'>[], locale: Locale) {
+  const y = steadyStarterCopy[locale],
+    byDate = [...tests].sort((a, b) => a.localDate.localeCompare(b.localDate));
+  const stands = byDate.flatMap(test => (test.results.chairStand30s === undefined ? [] : [test.results.chairStand30s])),
+    balance = byDate.flatMap(test =>
+      test.results.singleLegStandChairS === undefined ? [] : [test.results.singleLegStandChairS],
+    );
+  const [previous, latest] = stands.slice(-2),
+    first = balance[0],
+    last = balance.at(-1);
+  return [
+    ...(latest !== undefined && previous !== undefined && latest > previous
+      ? [fillLine(y.steadyChairStand, { n: latest, d: latest - previous })]
+      : []),
+    ...(first !== undefined && last !== undefined && balance.length > 1 && last > first
+      ? [fillLine(y.steadyBalance, { a: first, b: last })]
+      : []),
+  ];
+}
+
+/** 稳健 milestones (weeks 4 and 12, and 8 once balance work has moved past stage 1): only in that week and after a workout. */
+export function steadyLine(
+  input: { planStart?: string; today: string; trained: boolean; balanceStage?: number; minutes: number },
+  locale: Locale,
+): string {
+  const y = steadyStarterCopy[locale],
+    days = input.planStart ? daysBetween(input.planStart, input.today) : -1;
+  const week = input.trained ? [4, 8, 12].find(n => days >= n * 7 && days < n * 7 + 7) : undefined;
+  if (week === 4) return y.steadyWeek4;
+  if (week === 8 && (input.balanceStage ?? 1) > 1) return fillLine(y.steadyWeek8, { stage: input.balanceStage! });
+  if (week === 12) return y.steadyWeek12;
+  return fillLine(y.steadyToday, { minutes: input.minutes });
+}
 
 /** 起点 → 已到营地 → 现在 → 下一站 → 终点. */
 export function journeyStops(
@@ -239,6 +284,7 @@ export const TEST_RANGES: Record<FitnessTestItem, readonly [number, number]> = {
   sitAndReachCm: [-30, 60],
   singleLegStandEyesClosedS: [0, 300],
   chairStand30s: [0, 60],
+  singleLegStandChairS: [0, 300],
 };
 /** Empty → undefined; a number in range → that number; anything else → 'invalid'. */
 export function parseTestValue(item: FitnessTestItem, text: string | undefined): number | 'invalid' | undefined {

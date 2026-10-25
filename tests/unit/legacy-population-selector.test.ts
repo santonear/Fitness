@@ -8,8 +8,9 @@ it('projects an old older-adult selector by birth month without rewriting the so
   const original = { kind: 'older_adult' as const, fallsAnswers: [false, false, false, false] };
   const before = JSON.stringify(original);
   expect(legacyAgePopulation(original, '1990-06', '2026-10-18')).toEqual({ kind: 'general' });
-  expect(legacyAgePopulation(original, '1961-11', '2026-10-18')).toEqual({ kind: 'general' });
-  expect(legacyAgePopulation(original, '1961-10', '2026-10-18')).toEqual(original);
+  // older.activation starts at 60 (Bo 2026-10-25, 稳健).
+  expect(legacyAgePopulation(original, '1966-11', '2026-10-18')).toEqual({ kind: 'general' });
+  expect(legacyAgePopulation(original, '1966-10', '2026-10-18')).toEqual(original);
   expect(JSON.stringify(original)).toBe(before);
   expect(legacyAgePopulation(original, undefined, '2026-10-18')).toBe(original);
 });

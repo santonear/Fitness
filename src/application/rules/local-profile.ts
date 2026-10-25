@@ -169,6 +169,7 @@ export function localProfile(
     equipmentLoadsKg,
     painState,
     healthStorageConsent,
+    route,
   } = answers;
   return {
     ...Object.fromEntries(
@@ -183,6 +184,7 @@ export function localProfile(
         equipmentLoadsKg,
         painState,
         healthStorageConsent,
+        route,
       }).filter(([, value]) => value !== undefined),
     ),
     goalText: answers.goalText,

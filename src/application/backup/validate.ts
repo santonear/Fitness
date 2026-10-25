@@ -175,7 +175,7 @@ export function validateBackupEnvelope(value: unknown): BackupEnvelope {
   } else if (
     planUpgradeRows.some(rows => rows !== undefined) ||
     data.v8?.state.homePanelStyle !== undefined ||
-    data.v8?.planVersions.some(version => version.weeklyBudget !== undefined)
+    data.v8?.planVersions.some(version => version.weeklyBudget !== undefined || version.starterProgram !== undefined)
   ) {
     invalid('Plan upgrade data requires backup version 19');
   }

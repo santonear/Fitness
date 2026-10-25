@@ -5,6 +5,7 @@ import { sessionMuscleFocus } from '../../../application/rules/plan-upgrade';
 import { exercises } from '../../../catalog/exercises';
 import { planPagesCopy } from '../../../i18n/features/plan-upgrade/pages';
 import { fillLine } from '../../../i18n/features/coach/yaya-v5';
+import { steadyStarterCopy } from '../../../i18n/features/coach/yaya-steady-starter';
 import { useMainline } from '../../mainline/context';
 import type { FocusState } from '../home/NowPanel';
 import { figureSex, figureShape, shownFocus } from './logic';
@@ -83,6 +84,10 @@ export function FocusPage() {
           </li>
         ))}
       </ol>
+      {/* 稳健 safety line before every start (no emoji). */}
+      {data?.state?.coachProfile?.route === 'steady' && (
+        <p className="pu-line">{steadyStarterCopy[locale].steadyChair}</p>
+      )}
       <PrimaryButton block disabled={busy || !!data?.active} onClick={go}>
         {fillLine(c.start, { minutes: state.minutes })}
       </PrimaryButton>

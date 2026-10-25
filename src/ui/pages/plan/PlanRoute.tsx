@@ -15,6 +15,7 @@ import { useFeature } from '../../useFeature';
 import { useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { PlanPage } from './PlanPage';
+import { StarterProgramCard } from './StarterProgramCard';
 import { VersionsPage } from './VersionsPage';
 import { useMainline, workflow } from '../../mainline/context';
 import { Button, MorphPanel, Sheet } from '../../components/common';
@@ -124,6 +125,7 @@ export function PlanRoute({ versions = false }: { versions?: boolean }) {
       <PageSwitches />
       {prenatalPrompt}
       {engineEnabled && selected?.enginePlan && <PlanStops plan={selected.enginePlan} locale={c.locale} />}
+      {selected && selected.id === c.data?.version?.id && !query.has('version') && <StarterProgramCard />}
       {selected ? (
         <PlanPage
           version={selected}

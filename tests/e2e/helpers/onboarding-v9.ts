@@ -65,6 +65,8 @@ export async function generate(page: Page) {
 export interface EngineSafetyOptions {
   planMode?: PlanModeChoice;
   birth?: string;
+  /** 选一条路线; 稳健 carries its subtitle in the accessible name. */
+  route?: '健康' | '塑形' | '产后恢复' | RegExp;
   population?: '都不是' | '在孕期' | '在产后';
   activity?: '是' | '没有或不确定';
   bp?: '低于 160/90' | '160/90 或更高' | '不知道';
@@ -83,6 +85,7 @@ export async function engineSafety(page: Page, options: EngineSafetyOptions = {}
   for (let group = 0; group < 3; group++) await page.getByRole('button', { name: '以上都没有', exact: true }).click();
   await page.getByRole('radio', { name: options.activity ?? '是', exact: true }).click();
   await page.getByRole('radio', { name: options.bp ?? '低于 160/90', exact: true }).click();
+  await page.getByRole('radio', { name: options.route ?? '健康', exact: typeof options.route !== 'object' }).click();
   if (!options.skipPopulation)
     await page.getByRole('radio', { name: options.population ?? '都不是', exact: true }).click();
   if (options.falls) {
