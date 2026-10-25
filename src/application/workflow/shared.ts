@@ -1,5 +1,5 @@
 // Helpers shared by the training workflow modules (see ../v8-workflow.ts).
-import type { WeeklyBudget } from '../../domain/plan-upgrade';
+import type { StarterProgram, WeeklyBudget } from '../../domain/plan-upgrade';
 import { DomainError } from '../../domain/errors';
 import type { CoachProfile, SessionTemplate } from '../../domain/v8/contracts';
 import type { CoachResponse } from '../../coach/contracts';
@@ -18,9 +18,11 @@ export type LocalCandidate = Extract<CoachResponse, { type: 'plan_proposal' }> &
   startTime?: string;
 };
 /** Calendar days and time carried unchanged into every later version of the same plan. */
-// The optional weekly budget (V9.14) follows the plan into every new version, like the picked days.
-export const carriedBudget = (version: { weeklyBudget?: WeeklyBudget }) =>
-  version.weeklyBudget ? { weeklyBudget: { ...version.weeklyBudget } } : {};
+// The optional weekly budget (V9.14) and 新手 4 周 follow the plan into every new version, like the picked days.
+export const carriedBudget = (version: { weeklyBudget?: WeeklyBudget; starterProgram?: StarterProgram }) => ({
+  ...(version.weeklyBudget ? { weeklyBudget: { ...version.weeklyBudget } } : {}),
+  ...(version.starterProgram ? { starterProgram: { ...version.starterProgram } } : {}),
+});
 export const carriedSchedule = (version: { startDate?: string; trainingDates?: string[]; startTime?: string }) => ({
   ...(version.startDate ? { startDate: version.startDate } : {}),
   ...(version.trainingDates?.length ? { trainingDates: [...version.trainingDates] } : {}),

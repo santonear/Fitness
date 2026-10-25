@@ -2,6 +2,9 @@ import type { EngineProfile } from '../../../../engine/contracts';
 import { engineCopy } from '../../../../coach/engine-copy';
 import { BigChoice, PrimaryButton, Card } from '../../../components/kit';
 import type { HealthCheck } from './useHealthCheck';
+import { ROUTES } from '../../../../domain/plan-upgrade';
+import { planPagesCopy } from '../../../../i18n/features/plan-upgrade/pages';
+import { steadyStarterCopy } from '../../../../i18n/features/coach/yaya-steady-starter';
 
 /** Adult confirmation and local health-data consent. */
 export function introScreen(h: HealthCheck) {
@@ -147,6 +150,42 @@ export function bpScreen(h: HealthCheck) {
     </div>,
     d.extra.restingBp ? nextButton(true) : undefined,
     t.bp.sub,
+  );
+}
+
+/** 选一条路线 (Bo 2026-10-25): four routes; 稳健 is preselected from 60 and explains its safety rules. */
+export function routeScreen(h: HealthCheck) {
+  const { busy, locale, answers, route, chooseRoute, answerThen, frame, t } = h;
+  const c = planPagesCopy[locale],
+    y = steadyStarterCopy[locale];
+  return frame(
+    c.routeLabel,
+    <>
+      <div className="v9-choices" role="radiogroup">
+        {ROUTES.map(value => (
+          <BigChoice
+            key={value}
+            label={c.routes[value]}
+            {...(value === 'steady' ? { description: y.routeSub } : {})}
+            selected={route === value}
+            disabled={busy}
+            onClick={() => answerThen(() => chooseRoute(value))}
+          />
+        ))}
+      </div>
+      {route === 'steady' && <p className="v9-onboarding-note">{y.steadyIntro}</p>}
+    </>,
+    <PrimaryButton
+      disabled={busy}
+      onClick={() =>
+        answerThen(() => {
+          // The preselected 稳健 is kept as an answer once the person moves on.
+          if (route && !answers.route) chooseRoute(route);
+        })
+      }
+    >
+      {t.next}
+    </PrimaryButton>,
   );
 }
 

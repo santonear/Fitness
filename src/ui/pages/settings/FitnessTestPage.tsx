@@ -37,6 +37,7 @@ export function FitnessTestPage() {
         today={today}
         {...(values?.age !== undefined ? { age: values.age } : {})}
         {...(sex ? { sex } : {})}
+        steady={data?.state?.coachProfile?.route === 'steady'}
         tests={tests}
         onSaved={() => void reload()}
       />

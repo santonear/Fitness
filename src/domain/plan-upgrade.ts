@@ -136,6 +136,8 @@ export const FITNESS_TEST_ITEMS = [
   'sitAndReachCm',
   'singleLegStandEyesClosedS',
   'chairStand30s',
+  /** 稳健 / 60+ (Bo 2026-10-25): eyes-open single-leg stand holding a chair, in place of eyes closed. */
+  'singleLegStandChairS',
 ] as const;
 export type FitnessTestItem = (typeof FITNESS_TEST_ITEMS)[number];
 
@@ -147,8 +149,18 @@ export interface FitnessTestRecord {
   createdAt: string;
 }
 
-export const ROUTES = ['health', 'shape', 'postpartum'] as const;
+/** `steady` 稳健 (Bo 2026-10-25): healthy-ageing route, chosen in onboarding and preselected at 60+. */
+export const ROUTES = ['health', 'shape', 'postpartum', 'steady'] as const;
 export type Route = (typeof ROUTES)[number];
+
+/** 新手 4 周 (Bo 2026-10-25): optional on a by-day plan version; the current week is computed, never stored. */
+export const STARTER_PROGRAM_ID = 'starter-4w';
+export const STARTER_PROGRAM_WEEKS = 4;
+export interface StarterProgram {
+  id: typeof STARTER_PROGRAM_ID;
+  /** Local date (YYYY-MM-DD) the program started. */
+  startDate: string;
+}
 
 export interface Camp {
   id: string;

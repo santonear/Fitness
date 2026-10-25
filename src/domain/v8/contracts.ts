@@ -1,4 +1,5 @@
 import type { SetMetrics } from '../models';
+import type { Route, StarterProgram, WeeklyBudget } from '../plan-upgrade';
 import type { EngineProfile, EnginePrescription, EnginePlan, Pattern } from '../../engine/contracts';
 /** Wave 0: declarations only; no database registration or business implementation. */
 export type OnboardingMinutes = 30 | 40 | 50 | 60 | 70 | 80 | 90 | 100 | 110 | 120;
@@ -79,6 +80,8 @@ export interface PlanVersion {
   basedOnVersionId?: string;
   /** Explicit creation source; absent on older versions means unknown. */
   source?: 'local' | 'ai';
+  weeklyBudget?: WeeklyBudget;
+  starterProgram?: StarterProgram;
 }
 export interface SetFact {
   exerciseId: string;
@@ -197,6 +200,7 @@ export interface CoachProfile {
   availableLoadsKg?: EngineProfile['availableLoadsKg'];
   powerOneRm?: EngineProfile['powerOneRm'];
   healthStorageConsent?: { acceptedAt: string };
+  route?: Route;
   goalText: string;
   weeklyTarget: number;
   sessionMinutes: number;
