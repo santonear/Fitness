@@ -157,7 +157,7 @@ test('legacy body migration requires confirmation and sending remains per field'
     });
   }, backup);
   await page.goto('/settings');
-  await page.getByRole('combobox').selectOption('zh');
+  await page.getByRole('combobox', { name: /^(语言|Language)/ }).selectOption('zh');
   await expect(page.getByText('找到了你以前填写的身体资料，请核对后确认。', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: '身体资料', exact: true }).last().click();
   await expect(page.getByRole('heading', { name: '身体资料', exact: true })).toBeVisible();

@@ -79,14 +79,17 @@ test('60+ gets 稳健 preselected, its 芽芽 lines, and 新手 4 周 can start 
   await dialog.getByRole('button', { name: '退出', exact: true }).click();
   await expect(page.getByText(/好，已经退出了。想再试的时候，在计划页可以重新开始/)).toBeVisible();
   await expect(page.getByRole('button', { name: '用新手 4 周', exact: true })).toBeVisible();
-  const versions = await page.evaluate(async () => {
-    const path = '/src/ui/mainline/context.tsx',
-      c = await import(/* @vite-ignore */ path),
-      s = await c.workflow.snapshot();
-    return s.versions.map((v: { starterProgram?: unknown }) => !!v.starterProgram);
-  });
-  // Start and leave each added a version; the first one is untouched.
-  expect(versions).toEqual([false, true, false]);
+  // Start and leave each added a version; the first one is untouched. Poll: the leave save can land after its toast.
+  await expect
+    .poll(() =>
+      page.evaluate(async () => {
+        const path = '/src/ui/mainline/context.tsx',
+          c = await import(/* @vite-ignore */ path),
+          s = await c.workflow.snapshot();
+        return s.versions.map((v: { starterProgram?: unknown }) => !!v.starterProgram);
+      }),
+    )
+    .toEqual([false, true, false]);
   await page.getByRole('button', { name: '自己排', exact: true }).click();
   await expect(page.getByRole('button', { name: '用新手 4 周', exact: true })).toHaveCount(0);
 
