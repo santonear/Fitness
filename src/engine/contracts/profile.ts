@@ -25,8 +25,14 @@ export const patternSchema = z.enum([
   'isolation_lower',
 ]);
 export type Pattern = z.infer<typeof patternSchema>;
-export const cautionSchema = z.enum(['knee', 'back', 'shoulder', 'wrist', 'other']);
+export const cautionSchema = z.enum(['knee', 'back', 'shoulder', 'wrist', 'hip', 'ankle', 'neck', 'other']);
 export type Caution = z.infer<typeof cautionSchema>;
+/** Areas with their own engine filters and levels ('other' is recorded only). */
+export const cautionJointSchema = cautionSchema.exclude(['other']);
+export type CautionJoint = z.infer<typeof cautionJointSchema>;
+/** Which side of a paired area; display and follow-up questions only, never an engine input. */
+export const painSideSchema = z.enum(['left', 'right']);
+export type PainSide = z.infer<typeof painSideSchema>;
 export const weekdaySchema = z.enum(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']);
 export type Weekday = z.infer<typeof weekdaySchema>;
 export const equipmentItemSchema = z.enum([
@@ -181,9 +187,7 @@ export const enginePreferencesSchema = z.strictObject({
   liked: z.array(z.string()).optional(),
 });
 export const engineProfileSchema = z.strictObject({
-  cautionLevels: z
-    .partialRecord(z.enum(['knee', 'back', 'shoulder', 'wrist']), z.union([z.literal(0), z.literal(1), z.literal(2)]))
-    .optional(),
+  cautionLevels: z.partialRecord(cautionJointSchema, z.union([z.literal(0), z.literal(1), z.literal(2)])).optional(),
   postpartumRisk: z
     .strictObject({
       under_3_months_postpartum: z.boolean().optional(),

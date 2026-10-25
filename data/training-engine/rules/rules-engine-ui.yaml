@@ -397,6 +397,66 @@
   professional_review: true
   note: 用户2026-10-15批准的原规则条件双语问题；不改变处置规则，临床内容仍待专业核验。
 
+- id: redflag.copy.question_calf_swollen_warm_red_or_tender
+  chapter: 9
+  type: copy
+  zh: "小腿肚是否同时肿胀、发热、发红，或按着疼？"
+  en: "Is your calf also swollen, warm, red or tender to touch?"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  professional_review: true
+  note: Bo 2026-10-25 批准的髋踝颈红旗问题双语原文；临床内容上线前请康复师或医生核对。
+
+- id: redflag.copy.question_neck_pain_with_dizziness_vision_speech_swallowing_or_face_numbness
+  chapter: 9
+  type: copy
+  zh: "脖子疼的同时，有没有头晕、看东西重影、说话或吞咽困难，或脸发麻？"
+  en: "Along with neck pain, any dizziness, double vision, trouble speaking or swallowing, or a numb face?"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  professional_review: true
+  note: Bo 2026-10-25 批准的髋踝颈红旗问题双语原文；临床内容上线前请康复师或医生核对。
+
+- id: redflag.copy.question_both_hands_numb_or_clumsy_or_unsteady_walking
+  chapter: 9
+  type: copy
+  zh: "两只手都发麻、手变笨，或者走路不稳？"
+  en: "Both hands numb or clumsy, or unsteady when walking?"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  professional_review: true
+  note: Bo 2026-10-25 批准的髋踝颈红旗问题双语原文；临床内容上线前请康复师或医生核对。
+
+- id: redflag.copy.question_fever_with_stiff_neck_or_light_sensitivity
+  chapter: 9
+  type: copy
+  zh: "有没有发烧，同时脖子发硬、低头困难或怕光？"
+  en: "A fever with a stiff neck, trouble bending your head forward, or light hurting your eyes?"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  professional_review: true
+  note: Bo 2026-10-25 批准的髋踝颈红旗问题双语原文；临床内容上线前请康复师或医生核对。
+
+- id: redflag.copy.question_neck_pain_after_head_or_neck_knock_or_fall
+  chapter: 9
+  type: copy
+  zh: "是不是头颈部被撞到或摔倒后开始疼的？"
+  en: "Did the pain start after a knock to the head or neck, or a fall?"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  professional_review: true
+  note: Bo 2026-10-25 批准的髋踝颈红旗问题双语原文；临床内容上线前请康复师或医生核对。
+
+- id: redflag.copy.question_neck_or_jaw_pain_with_chest_discomfort_or_breathlessness
+  chapter: 9
+  type: copy
+  zh: "脖子或下巴疼，同时胸口不舒服或气喘？"
+  en: "Neck or jaw pain together with chest discomfort or breathlessness?"
+  evidence: C
+  sources: [INTERNAL:codex-prompt-training-engine]
+  professional_review: true
+  note: Bo 2026-10-25 批准的髋踝颈红旗问题双语原文；临床内容上线前请康复师或医生核对。
+
 - id: session.copy.short_stretch_target
   chapter: 4
   type: copy

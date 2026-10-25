@@ -67,7 +67,17 @@ export function ManualPage() {
   }, [source]);
   const cautions = saved?.cautions ?? answers.cautions;
   const cautionAreas = cautions.map(
-    area => ({ knee: 'knees', shoulder: 'shoulders', wrist: 'wrists', back: 'back', other: 'other' })[area],
+    area =>
+      ({
+        knee: 'knees',
+        shoulder: 'shoulders',
+        wrist: 'wrists',
+        back: 'back',
+        hip: 'hips',
+        ankle: 'ankles',
+        neck: 'neck',
+        other: 'other',
+      })[area],
   );
   function choose(ids: string[], message = '') {
     setManualSelection(undefined);

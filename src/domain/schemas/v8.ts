@@ -4,6 +4,8 @@ import {
   prescriptionSchema,
   enginePlanSchema,
   cautionSchema,
+  cautionJointSchema,
+  painSideSchema,
   patternSchema,
   engineItemSchema,
 } from '../../engine/contracts';
@@ -126,6 +128,7 @@ export const setFeedbackEventSchema = z
     rir: z.number().min(0).max(10).optional(),
     painScore: z.number().int().min(0).max(10).optional(),
     painArea: cautionSchema.optional(),
+    painSide: painSideSchema.optional(),
   })
   .superRefine((event, ctx) => {
     if (event.effort === 'discomfort' && (event.painScore === undefined || !event.painArea))
@@ -331,7 +334,7 @@ export const v8CoachProfileSchema = z
     equipment: z.array(z.string()),
     adultConfirmed: z.boolean(),
     placeEquipmentOriginalText: z.string().optional(),
-    cautions: z.array(z.enum(['knee', 'back', 'shoulder', 'wrist', 'other'])),
+    cautions: z.array(cautionSchema),
     cautionNote: z.string().optional(),
     confirmedAt: utcTimestampSchema,
   })
@@ -346,7 +349,7 @@ export const v8CoachProfileSchema = z
 export const v8StateSchema = z.strictObject({
   cautionLevels: z
     .partialRecord(
-      z.enum(['knee', 'back', 'shoulder', 'wrist']),
+      cautionJointSchema,
       z.strictObject({ level: z.union([z.literal(0), z.literal(1), z.literal(2)]), changedAt: utcTimestampSchema }),
     )
     .optional(),

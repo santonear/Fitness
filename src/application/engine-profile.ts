@@ -2,7 +2,7 @@ import { effectiveCautionLevels } from './caution-safety';
 import type { PregnancySafetyState } from './pregnancy-safety';
 import { deriveActivityEvidence } from './engine-activity-evidence';
 import type { CoachProfile, WorkoutRecord, PostpartumSafetyState, OlderSafetyState } from '../domain/v8/contracts';
-import { engineProfileSchema, type EngineProfile, type Pattern } from '../engine/contracts';
+import { engineProfileSchema, type CautionJoint, type EngineProfile, type Pattern } from '../engine/contracts';
 import { hasHouseholdSupport } from '../engine/equipment';
 import { DATA, calendarDay } from '../engine/data';
 import { pendingPainReviews, painQuestionKeys, historyDangerReview } from './pain-events';
@@ -135,7 +135,7 @@ export function enginePreferences(
 export function toEngineProfile(
   profile: EngineCoachProfile,
   options: {
-    cautionLevels?: Partial<Record<'knee' | 'back' | 'shoulder' | 'wrist', { level: 0 | 1 | 2; changedAt: string }>>;
+    cautionLevels?: Partial<Record<CautionJoint, { level: 0 | 1 | 2; changedAt: string }>>;
     painFollowupRestrictions?: readonly PainFollowupRestriction[];
     pregnancySafety?: PregnancySafetyState;
     olderSafety?: OlderSafetyState;

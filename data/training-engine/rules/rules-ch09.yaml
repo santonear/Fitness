@@ -1,4 +1,4 @@
-# rules-ch09.yaml — 第 9 章 关节注意时的替换与疼痛规则（膝 / 腰 / 肩 / 腕）
+# rules-ch09.yaml — 第 9 章 关节注意时的替换与疼痛规则（膝 / 腰 / 肩 / 腕 / 髋 / 踝 / 颈）
 # 与 ch09-joint-cautions.md 一一对应（id 相同）。
 #
 # ── 条件表达式约定（第 9–12 章通用，详见 ch09 第 0 节）────────────────────
@@ -20,13 +20,13 @@
   chapter: 9
   type: gate
   value:
-    trigger: {user: caution_selfreport, contains_any: [knee, back, shoulder, wrist]}
+    trigger: {user: caution_selfreport, contains_any: [knee, back, shoulder, wrist, hip, ankle, neck]}
     on_activate:
       set_level: 1
       level_range: {min: 0, max: 2}
       run_in_order: [redflag.screen, caution.<joint>.filter, caution.<joint>.substitute, pain.rule]
-    ui_label_zh: {knee: 膝盖需要注意, back: 腰背需要注意, shoulder: 肩部需要注意, wrist: 手腕需要注意}
-    ui_label_en: {knee: Go easy on knees, back: Go easy on lower back, shoulder: Go easy on shoulders, wrist: Go easy on wrists}
+    ui_label_zh: {knee: 膝盖需要注意, back: 腰背需要注意, shoulder: 肩部需要注意, wrist: 手腕需要注意, hip: 髋部需要注意, ankle: 脚踝需要注意, neck: 颈部需要注意}
+    ui_label_en: {knee: Go easy on knees, back: Go easy on lower back, shoulder: Go easy on shoulders, wrist: Go easy on wrists, hip: Go easy on hips, ankle: Go easy on ankles, neck: Go easy on neck}
   evidence: C
   sources: [E05:Bannuru2019, E05:NICE_NG59]
   unverified: [E05:NICE_NG59]
@@ -279,6 +279,144 @@
   sources: [E05:Polovinets2018]
   note: 目录中 plank 为前臂支撑（腕负荷 0）；握拳俯卧撑目录缺失
 
+- id: caution.hip.filter
+  chapter: 9
+  type: exclude
+  applies: {caution: [hip]}
+  value:
+    level_1:
+      exclude_if:
+        any:
+          - {field: joint_load.hip, gte: 3}
+          - {flag: [jumping, running]}
+          - {field: impact, gte: 2}
+      deprioritize_if: {field: joint_load.hip, eq: 2}
+      score_multiplier: 0.5
+    level_2:
+      exclude_if:
+        any:
+          - {field: joint_load.hip, gte: 2}
+          - {flag: [jumping, running]}
+          - {field: impact, gte: 1}
+      deprioritize_if: {field: joint_load.hip, eq: 1}
+      score_multiplier: 0.5
+  evidence: C
+  professional_review: true
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: Bo 2026-10-25 批准（髋含腹股沟）；阈值仿膝部，2 级收紧一档为工程选择，上线前请康复师核对
+
+- id: caution.hip.substitute
+  chapter: 9
+  type: substitute
+  applies: {caution: [hip]}
+  value:
+    pick: first_available_passing_all_filters
+    by_pattern:
+      lunge:
+        - {slug: glute-bridge}
+        - {slug: split-squat}
+      squat:
+        - {slug: box-squat, cue: comfortable_box_height}
+      hinge:
+        - {slug: glute-bridge}
+  evidence: C
+  professional_review: true
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: Bo 2026-10-25 批准：弓步换臀桥或扶椅半程分腿蹲，深蹲换高箱坐站，硬拉类换臀桥
+
+- id: caution.ankle.filter
+  chapter: 9
+  type: exclude
+  applies: {caution: [ankle]}
+  value:
+    level_1:
+      exclude_if:
+        any:
+          - {field: joint_load.ankle, gte: 3}
+          - {flag: [jumping, running, balance_demand, unstable_surface]}
+          - {field: impact, gte: 2}
+      deprioritize_if: {field: joint_load.ankle, eq: 2}
+      score_multiplier: 0.5
+    level_2:
+      exclude_if:
+        any:
+          - {field: joint_load.ankle, gte: 2}
+          - {flag: [jumping, running, balance_demand, unstable_surface]}
+          - {field: impact, gte: 1}
+      deprioritize_if: {field: joint_load.ankle, eq: 1}
+      score_multiplier: 0.5
+  evidence: C
+  professional_review: true
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: Bo 2026-10-25 批准（踝含脚）；平衡要求高、不稳定支撑面一并排除；2 级收紧一档为工程选择，上线前请康复师核对
+
+- id: caution.ankle.substitute
+  chapter: 9
+  type: substitute
+  applies: {caution: [ankle]}
+  value:
+    pick: first_available_passing_all_filters
+    by_pattern:
+      isolation_lower:
+        - {slug: seated-calf-raise}
+      lunge:
+        - {slug: glute-bridge}
+      cardio_cyclic:
+        - {slug: stationary-bike}
+        - {slug: air-bike}
+  evidence: C
+  professional_review: true
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: Bo 2026-10-25 批准：站姿提踵换坐姿提踵，弓步换臀桥，有氧换坐姿或上肢为主的动作
+
+# shortcut: neck uses proxy flags, add neck annotations later（动作库没有颈部负荷标注，先用头顶负重、脊柱轴向重压、倒立、负重卷腹、跳跃跑步近似）
+- id: caution.neck.filter
+  chapter: 9
+  type: exclude
+  applies: {caution: [neck]}
+  value:
+    level_1:
+      exclude_if:
+        any:
+          - {flag: [overhead_load, heavy_axial_load, loaded_spinal_flexion, jumping, running]}
+          - {position: inverted}
+      deprioritize_if: {field: joint_load.shoulder, gte: 2}
+      score_multiplier: 0.5
+    level_2:
+      exclude_if:
+        any:
+          - {flag: [overhead_load, heavy_axial_load, loaded_spinal_flexion, jumping, running]}
+          - {position: [inverted, hanging]}
+          - {field: impact, gte: 1}
+      deprioritize_if: {field: joint_load.shoulder, gte: 1}
+      score_multiplier: 0.5
+  evidence: C
+  professional_review: true
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: Bo 2026-10-25 批准；颈部无标注，用已有标签近似；2 级收紧一档为工程选择，上线前请康复师核对
+
+- id: caution.neck.substitute
+  chapter: 9
+  type: substitute
+  applies: {caution: [neck]}
+  value:
+    pick: first_available_passing_all_filters
+    by_pattern:
+      push_vertical:
+        - {slug: landmine-press}
+        - {slug: incline-db-press}
+      push_horizontal:
+        - {slug: landmine-press}
+        - {slug: incline-db-press}
+        - {slug: db-bench-press, cue: neutral_grip}
+        - {slug: dumbbell-floor-press}
+        - {slug: kettlebell-floor-press}
+        - {slug: incline-push-ups, cue: reduced_depth}
+  evidence: C
+  professional_review: true
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: Bo 2026-10-25 批准：替代沿用肩部替代表
+
 - id: caution.substitute.priority
   chapter: 9
   type: formula
@@ -313,7 +451,7 @@
 - id: pain.prompt
   chapter: 9
   type: trigger
-  applies: {caution: [knee, back, shoulder, wrist]}
+  applies: {caution: [knee, back, shoulder, wrist, hip, ankle, neck]}
   value:
     ask_after_each_set_if: {field: joint_load.<flagged_joint>, gte: 1}
     scale: {min: 0, max: 10, unit: pain_nrs}
@@ -326,7 +464,7 @@
 - id: pain.rule
   chapter: 9
   type: trigger
-  applies: {caution: [knee, back, shoulder, wrist]}
+  applies: {caution: [knee, back, shoulder, wrist, hip, ankle, neck]}
   value:
     bands:
       - when: {all: [{user: pain.current, lte: 3}, {user: pain.settles_after_set, is: true}]}
@@ -350,7 +488,7 @@
 - id: pain.repeat_referral
   chapter: 9
   type: trigger
-  applies: {caution: [knee, back, shoulder, wrist]}
+  applies: {caution: [knee, back, shoulder, wrist, hip, ankle, neck]}
   value:
     when: {user: pain.drop_pattern_events_same_joint, gte: 2}
     action: [show_copy_pain.copy.referral, run_redflag.screen]
@@ -386,7 +524,7 @@
   deferred: true
   chapter: 9
   type: limit
-  applies: {caution: [knee, back, shoulder, wrist]}
+  applies: {caution: [knee, back, shoulder, wrist, hip, ankle, neck]}
   value:
     hold_load_until: {user: pain.consecutive_sessions_lte_3, gte: 2}
     progression_order: [volume, load]
@@ -400,7 +538,7 @@
 - id: caution.level_down
   chapter: 9
   type: trigger
-  applies: {caution: [knee, back, shoulder, wrist]}
+  applies: {caution: [knee, back, shoulder, wrist, hip, ankle, neck]}
   value:
     from_level: 2
     to_level: 1
@@ -417,7 +555,7 @@
   value:
     ask_when: [caution_activation, pain_rule_drop_pattern, in_session_something_wrong_button, rescreen_12_months, user_updates_health]
     rescreen_interval_months: 12
-    lists: [redflag.joint_any, redflag.back, redflag.shoulder]
+    lists: [redflag.joint_any, redflag.back, redflag.shoulder, redflag.hip, redflag.ankle, redflag.neck]
     any_yes: block_training_and_route_by_tier
   evidence: C
   professional_review: true
@@ -428,7 +566,7 @@
 - id: redflag.joint_any
   chapter: 9
   type: gate
-  applies: {caution: [knee, back, shoulder, wrist]}
+  applies: {caution: [knee, back, shoulder, wrist, hip, ankle]}
   value:
     items:
       - pain_after_fall_or_impact
@@ -487,6 +625,55 @@
   unverified: [E01:Healthline]
   note: 肩痛伴胸痛或气促按心脏警示处理
 
+- id: redflag.hip
+  chapter: 9
+  type: gate
+  applies: {caution: [hip]}
+  value:
+    emergency_items:
+      - numbness_groin_or_buttocks
+      - new_bladder_or_bowel_problem
+      - progressive_leg_weakness
+    emergency_action: [end_session, block_all_training, show_copy_redflag.copy.emergency_back]
+    unlock: user_confirms_professional_seen
+  evidence: C
+  professional_review: true
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: Bo 2026-10-25 批准；髋部疼痛可能来自腰椎，沿用腰背急诊 3 题，另加关节通用 7 题；上线前请康复师或医生核对
+
+- id: redflag.ankle
+  chapter: 9
+  type: gate
+  applies: {caution: [ankle]}
+  value:
+    prompt_medical_items: [calf_swollen_warm_red_or_tender]
+    prompt_medical_action: [end_session, block_all_training, show_copy_redflag.copy.prompt_medical_calf]
+    unlock: user_confirms_professional_seen
+  evidence: C
+  professional_review: true
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: Bo 2026-10-25 批准；另加关节通用 7 题（不能承重已覆盖扭伤后走不了四步）；上线前请康复师或医生核对
+
+- id: redflag.neck
+  chapter: 9
+  type: gate
+  applies: {caution: [neck]}
+  value:
+    joint_items: [unexplained_night_or_rest_pain, numbness_tingling_or_weakness_spreading_into_limb]
+    emergency_items:
+      - neck_pain_with_dizziness_vision_speech_swallowing_or_face_numbness
+      - both_hands_numb_or_clumsy_or_unsteady_walking
+      - fever_with_stiff_neck_or_light_sensitivity
+      - neck_pain_after_head_or_neck_knock_or_fall
+    emergency_action: [end_session, block_all_training, show_copy_redflag.copy.emergency_neck]
+    cardiac_route_items: [neck_or_jaw_pain_with_chest_discomfort_or_breathlessness]
+    cardiac_action: [end_session, block_all_training, show_copy_redflag.copy.cardiac]
+    unlock: user_confirms_professional_seen
+  evidence: C
+  professional_review: true
+  sources: [INTERNAL:codex-prompt-training-engine]
+  note: Bo 2026-10-25 批准；颈部只沿用关节通用题中的夜间/休息痛和麻木刺痛两题（joint_items）；上线前请康复师或医生核对
+
 - id: redflag.copy
   chapter: 9
   type: copy
@@ -500,6 +687,12 @@
     cardiac:
       zh: 请立即停止运动并坐下休息。如果胸口不适或呼吸困难在休息后几分钟内没有缓解，请马上拨打当地急救电话。
       en: Stop now and sit down. If chest discomfort or breathlessness doesn't ease within a few minutes of rest, call emergency services.
+    prompt_medical_calf:
+      zh: 小腿肿、发热、按着疼，需要尽快请医生看看，最好当天。训练计划先暂停，看过医生后回到这里确认。
+      en: A swollen, warm, tender calf needs a doctor soon, ideally today. Your plan is paused until you confirm you've been checked.
+    emergency_neck:
+      zh: 这些情况需要立即去急诊，请不要等待。训练计划已暂停，看过医生后回到这里确认。
+      en: These need emergency care now. Please don't wait. Your plan is paused until you confirm you've been checked.
     paused_banner:
       zh: 训练计划已暂停，等你确认看过医生后再继续。
       en: Your plan is paused until you confirm you've seen a health professional.

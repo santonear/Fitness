@@ -25,6 +25,7 @@ import {
 import { addDays, daysBetween } from '../../domain/local-date';
 import { catalogMetadata } from '../../catalog/registry';
 import { DATA, type Exercise as EngineExercise } from '../../engine/data';
+import type { CautionJoint } from '../../engine/contracts';
 import { FITNESS_NORMS_2023, bandMiddleAge, type NormBand } from './fitness-norms-2023';
 
 // ---------------------------------------------------------------- muscle groups
@@ -129,7 +130,7 @@ export function personalRecordsAsOf(history: readonly LiftEntry[], localDate: st
 export interface NowSessionOptions {
   candidateIds?: readonly string[];
   /** Joints with an active caution: exercises loading them at level 2 or more are skipped. */
-  avoidJoints?: readonly ('knee' | 'back' | 'shoulder' | 'wrist')[];
+  avoidJoints?: readonly CautionJoint[];
 }
 
 const RISKY_FLAGS = new Set([
