@@ -76,8 +76,12 @@ test('fresh user: welcome → tap onboarding → one-question health check → p
   const nav = page.getByRole('navigation', { name: '主导航' });
   for (const tab of ['今天', '计划', '回顾', '我的']) {
     await nav.getByRole('button', { name: tab }).click();
-    const switches = page.getByRole('group', { name: '语言和风格' });
+    const switches = page.getByRole('group', { name: '语言、字号和风格' });
     await expect(switches.getByRole('button', { name: '语言：中文。切换到 English' })).toBeVisible();
+    await expect(switches.getByRole('button', { name: '大字号', exact: true })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
     await expect(switches.getByRole('button', { name: '换风格', exact: true })).toBeVisible();
   }
   expect(modelCalls).toBe(0);

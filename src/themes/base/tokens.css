@@ -50,6 +50,16 @@
   --letter-size-en: 20px;
   --letter-line: 30px;
 }
+:root[data-text-size="large"] {
+  --t1: 14px;
+  --t2: 15px;
+  --t3: 17px;
+  --t4: 19px;
+  --t5: 24px;
+  --t6: 31px;
+  --t7: 44px;
+  --t8: 76px;
+}
 .v9-scene[data-scene="dawn"] {
   --scene-sky: #EFCFB3;
   --scene-haze: #F4DEC9;

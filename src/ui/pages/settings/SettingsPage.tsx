@@ -12,6 +12,7 @@ import settingsEn from '../../../i18n/features/settings/en.json';
 import { meCopy } from '../../../i18n/features/settings/me';
 import { entryCopy } from '../../../i18n/features/onboarding/entry';
 import { PageSwitches } from '../../components/PageSwitches';
+import { themeEntryCopy } from '../../../i18n/features/home/theme';
 import { energyCopy } from '../../../i18n/features/me/energy';
 import { planPagesCopy } from '../../../i18n/features/plan-upgrade/pages';
 import { bodyCopy } from '../../../i18n/features/onboarding/body';
@@ -81,7 +82,7 @@ export function SettingsPage() {
   const bodyEnabled = useFeature('bodyProfile');
   const engineEnabled = useFeature('trainingEngine');
   const remindersEnabled = useFeature('trainingReminders');
-  const { data, navigate, locale, run, busy, restartPlanning } = useMainline();
+  const { data, navigate, locale, run, busy, restartPlanning, appearance } = useMainline();
   const location = useLocation();
   const [section, setSection] = useState<Section>(
     location.hash === '#reminders'
@@ -336,6 +337,19 @@ export function SettingsPage() {
                 >
                   <option value="zh">{copy.chinese}</option>
                   <option value="en">{copy.english}</option>
+                </select>
+              </label>
+            </li>
+            {/* 大字号 beside 语言 (Bo 2026-10-25); same per-device choice as the switch at the top. */}
+            <li>
+              <label className="v9-row v9-row-select">
+                <span>{themeEntryCopy[locale].textSize}</span>
+                <select
+                  value={appearance.textSize}
+                  onChange={event => appearance.changeTextSize(event.target.value === 'large' ? 'large' : 'standard')}
+                >
+                  <option value="standard">{themeEntryCopy[locale].textStandard}</option>
+                  <option value="large">{themeEntryCopy[locale].textLarge}</option>
                 </select>
               </label>
             </li>

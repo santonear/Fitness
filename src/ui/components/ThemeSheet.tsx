@@ -48,6 +48,27 @@ export function LanguageButton({ locale, onChange, busy }: { locale: 'zh' | 'en'
   );
 }
 
+/** 大字号 toggle beside the language button (Bo 2026-10-25); the same per-device choice as 我的 › 外观 › 字号. */
+export function TextSizeButton({ locale }: { locale: 'zh' | 'en' }) {
+  const t = themeEntryCopy[locale],
+    appearance = useOptionalTheme();
+  if (!appearance) return null;
+  const large = appearance.textSize === 'large';
+  return (
+    <button
+      type="button"
+      className="v9-theme-button v9-text-size-button v8-press"
+      aria-pressed={large}
+      onClick={() => appearance.changeTextSize(large ? 'standard' : 'large')}
+    >
+      <span aria-hidden="true" className="v9-text-size-glyph">
+        A<span>A</span>
+      </span>
+      <span>{t.largeText}</span>
+    </button>
+  );
+}
+
 /** Small, always-visible 换风格 button that opens the theme picker with live previews in a sheet. */
 export function ThemeButton({
   locale,

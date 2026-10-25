@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { entryCopy } from '../../../i18n/features/onboarding/entry';
 import { PrimaryButton, ProgressRing, Scene, Yaya } from '../../components/kit';
 import { useOptionalTheme } from '../../../themes/ThemeProvider';
-import { LanguageButton, ThemeButton } from '../../components/ThemeSheet';
+import { LanguageButton, TextSizeButton, ThemeButton } from '../../components/ThemeSheet';
 import { useMainline } from '../../mainline/context';
 import { themeEntryCopy } from '../../../i18n/features/home/theme';
 import './onboarding.css';
@@ -50,6 +50,7 @@ export function WelcomePage({
       <div className="v9-welcome-theme">
         <ThemeButton locale={locale} label={themeEntryCopy[locale].welcome} />
         <LanguageButton locale={locale} onChange={setLanguage} busy={busy} />
+        <TextSizeButton locale={locale} />
       </div>
       <footer className="v9-welcome-actions" data-orb-avoid="">
         <PrimaryButton onClick={onStart}>{t.start}</PrimaryButton>

@@ -4,9 +4,12 @@ import { defaultThemeId, getAvailableThemes, getTheme, isThemeId, themes } from 
 import {
   legacyThemeKey,
   migrateTheme,
+  readTextSize,
   readTheme,
   resolveTheme,
+  saveTextSize,
   saveTheme,
+  textSizeKey,
   themeKey,
   type ThemeStorage,
 } from '../../src/themes/preference';
@@ -151,5 +154,33 @@ describe('V9 browser preference', () => {
       expect(saveTheme(store, id)).toBe(true);
       expect(readTheme(store)).toBe(id);
     }
+  });
+});
+
+describe('大字号 preference', () => {
+  it('defaults to standard, keeps large per device and clears the key when switched back', () => {
+    const store = storage({ [textSizeKey]: 'huge' });
+    expect(readTextSize(store)).toBe('standard');
+    expect(saveTextSize(store, 'large')).toBe(true);
+    expect(store.values.get(textSizeKey)).toBe('large');
+    expect(readTextSize(store)).toBe('large');
+    expect(saveTextSize(store, 'standard')).toBe(true);
+    expect(store.values.has(textSizeKey)).toBe(false);
+    expect(readTextSize(store)).toBe('standard');
+  });
+  it('falls back without throwing when storage is blocked', () => {
+    const blocked: ThemeStorage = {
+      getItem: () => {
+        throw new Error('blocked');
+      },
+      setItem: () => {
+        throw new Error('blocked');
+      },
+      removeItem: () => {
+        throw new Error('blocked');
+      },
+    };
+    expect(readTextSize(blocked)).toBe('standard');
+    expect(saveTextSize(blocked, 'large')).toBe(false);
   });
 });

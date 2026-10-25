@@ -52,6 +52,26 @@ export function migrateTheme(storage: ThemeStorage): boolean {
   }
 }
 
+/** 大字 (Bo 2026-10-25): a per-device choice next to the language switch; never set from age. */
+export const textSizeKey = 'fitness-text-size';
+export type TextSize = 'standard' | 'large';
+export function readTextSize(storage: ThemeStorage): TextSize {
+  try {
+    return storage.getItem(textSizeKey) === 'large' ? 'large' : 'standard';
+  } catch {
+    return 'standard';
+  }
+}
+export function saveTextSize(storage: ThemeStorage, size: TextSize): boolean {
+  try {
+    if (size === 'large') storage.setItem(textSizeKey, size);
+    else storage.removeItem(textSizeKey);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function saveTheme(storage: ThemeStorage, theme: ThemeId): boolean {
   try {
     storage.setItem(themeKey, theme);

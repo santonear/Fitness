@@ -220,6 +220,12 @@ export function sharedTokens(): Partial<Record<ThemeTokenName, string | number>>
   };
 }
 
+/** 大字 (Bo 2026-10-25): the device-wide larger text size swaps the shared type scale only; themes keep their own look. */
+export const largeTextSelector = ':root[data-text-size="large"]';
+export function largeTypeTokens(): Record<string, string> {
+  return Object.fromEntries(Object.entries(source.shared.typeLarge).map(([key, value]) => [`--${key}`, value]));
+}
+
 /** Theme-independent landscape artwork palettes for the vivid Scene illustration. */
 export function sceneTokens(variant: SceneVariant): Record<string, string> {
   return Object.fromEntries(
@@ -241,6 +247,7 @@ export function tokenBlock(selector: string, values: Record<string, string | num
 export function baseTokenCss() {
   return (
     tokenBlock(':root', sharedTokens()) +
+    tokenBlock(largeTextSelector, largeTypeTokens()) +
     sceneVariants.map(variant => tokenBlock(`.v9-scene[data-scene="${variant}"]`, sceneTokens(variant))).join('')
   );
 }

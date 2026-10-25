@@ -41,10 +41,36 @@
   justify-content: flex-end;
   gap: var(--s2);
 }
+.v9-text-size-button[aria-pressed='true'] {
+  border-color: var(--c-primary);
+  color: var(--c-accent-text);
+  font-weight: var(--w-strong);
+}
+.v9-text-size-glyph {
+  font-size: var(--t1);
+  font-weight: var(--w-strong);
+  line-height: 1;
+}
+.v9-text-size-glyph > span {
+  font-size: var(--t4);
+}
 .v9-language-button:disabled {
   opacity: 0.5;
   cursor: progress;
 }
 .v9-welcome-theme .v9-language-button {
   justify-self: center;
+}
+/* Welcome: 大字号 sits on the same row as the language button, right beside it. */
+.v9-welcome-theme:has(.v9-text-size-button) {
+  grid-template-columns: 1fr 1fr;
+}
+.v9-welcome-theme:has(.v9-text-size-button) > :first-child {
+  grid-column: 1 / -1;
+}
+.v9-welcome-theme:has(.v9-text-size-button) .v9-language-button {
+  justify-self: end;
+}
+.v9-welcome-theme .v9-text-size-button {
+  justify-self: start;
 }
