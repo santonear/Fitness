@@ -10,9 +10,10 @@ import { EXERCISE_IDS } from '../../../catalog/exercise-ids';
 import type { V8Locale } from '../../../i18n/namespaces.contract';
 import type { ThemeSlots } from '../../../themes/contract';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { enter, grow } from '../../motion';
+import { enter, grow, reducedMotion } from '../../motion';
 import { ExerciseGuidePanel } from '../../components/ExerciseGuide';
-import { PrimaryButton, SegmentedTabs } from '../../components/kit';
+import { PrimaryButton, SegmentedTabs, Yaya } from '../../components/kit';
+import { equipmentLabel } from '../../../catalog/taxonomy';
 import { HomeExit } from '../../components/HomeExit';
 import { MonthPlan } from '../plan/MonthPlan';
 import { planCalendarCopy } from '../../../i18n/features/plan/calendar';
@@ -25,7 +26,7 @@ export type OnboardingProposal = Extract<CoachResponse, { type: 'plan_proposal' 
 interface PlanDraftPageProps {
   locale: V8Locale;
   candidate: OnboardingProposal & {
-    profile?: { place?: string };
+    profile?: { place?: string; equipment?: readonly string[]; cautions?: readonly unknown[] };
     enginePlan?: EnginePlan;
     startDate?: string;
     trainingDates?: string[];
@@ -37,6 +38,8 @@ interface PlanDraftPageProps {
   onEditDays?: () => void;
   /** 回到今天: clears the unconfirmed draft and answers (after confirming). */
   onHome?: () => void;
+  /** Fresh from 生成计划: show 芽芽排课 first (about 1.5 s, tap to skip, never under reduced motion). */
+  building?: boolean;
   /** Kept for callers; the draft no longer labels local plans (P1 #9/#14). */
   basic?: boolean;
   busy?: boolean;
@@ -65,6 +68,7 @@ export function PlanDraftPage({
   onStartDate,
   onEditDays,
   onHome,
+  building = false,
 }: PlanDraftPageProps) {
   const t = planViewCopy[locale],
     plan = candidate.proposal;
@@ -126,6 +130,10 @@ export function PlanDraftPage({
           {t.draftTitle}
         </h1>
       </header>
+      <p className="v9-plan-line v9-plan-ready">
+        <Yaya pose="head" size={30} mode="disc" alt="" float={false} />
+        <span>{t.building.ready}</span>
+      </p>
       <PlanStops plan={candidate.enginePlan} locale={locale} />
       {days.length > 0 ? (
         <p className="v9-plan-line" data-testid="draft-days">
@@ -214,6 +222,7 @@ export function PlanDraftPage({
           </PrimaryButton>
         )}
       </footer>
+      {building && <PlanBuilding locale={locale} candidate={candidate} />}
       <ExerciseGuidePanel
         id={detail}
         locale={locale}
@@ -222,5 +231,43 @@ export function PlanDraftPage({
         triggerRef={trigger}
       />
     </main>
+  );
+}
+
+const buildingMs = 1500;
+/** 芽芽排课: four lines about what was just weighed, from the answers and the draft itself (V9.20). */
+function PlanBuilding({ locale, candidate }: Pick<PlanDraftPageProps, 'locale' | 'candidate'>) {
+  const [open, setOpen] = useState(() => !reducedMotion());
+  useEffect(() => {
+    if (!open) return;
+    const timer = window.setTimeout(() => setOpen(false), buildingMs);
+    return () => window.clearTimeout(timer);
+  }, [open]);
+  if (!open) return null;
+  const t = planViewCopy[locale].building,
+    { profile, proposal } = candidate,
+    count = proposal.weeklyTarget,
+    minutes = proposal.templates.map(template => template.estimatedMinutes),
+    low = Math.min(...minutes),
+    high = Math.max(...minutes),
+    equipment = profile?.equipment?.map(key => equipmentLabel(key, locale)).join(locale === 'zh' ? '、' : ', ');
+  const lines = [
+    t.read,
+    count > 1 ? fill(t.week, { count }) : t.weekOne,
+    (equipment ? fill(t.equipment, { equipment }) : t.place) + (profile?.cautions?.length ? t.cautions : ''),
+    ...(minutes.length ? [fill(t.minutes, { range: low === high ? `${low}` : `${low}–${high}` })] : []),
+  ];
+  return (
+    <div className="v9-plan-building" role="status" onClick={() => setOpen(false)}>
+      <Yaya pose="think" size={120} alt="" float={false} />
+      <ol>
+        {lines.map(line => (
+          <li key={line}>{line}</li>
+        ))}
+      </ol>
+      <PrimaryButton tone="text" size="sm" onClick={() => setOpen(false)}>
+        {t.skip}
+      </PrimaryButton>
+    </div>
   );
 }

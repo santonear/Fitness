@@ -494,3 +494,57 @@ h1.v9-welcome-title {
   font-size: var(--t2);
   color: var(--c-ink-muted);
 }
+
+/* 芽芽排课 (V9.20): lines arrive one by one over the fresh draft, then the layer fades away. */
+.v9-plan-building {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s4);
+  padding: var(--s6) var(--s5);
+  background: var(--c-bg-grad, var(--c-bg));
+  animation: v9-building-out 0.3s ease-in 1.2s both;
+}
+.v9-plan-building ol {
+  display: grid;
+  gap: var(--s3);
+  margin: 0;
+  padding: 0;
+  max-inline-size: var(--layout-mobile-max);
+  list-style: none;
+  color: var(--c-ink);
+  font-size: var(--t3);
+  line-height: var(--lh-body);
+}
+.v9-plan-building li {
+  animation: v9-building-in 0.28s var(--snap-ease) both;
+}
+.v9-plan-building li:nth-child(2) {
+  animation-delay: 0.25s;
+}
+.v9-plan-building li:nth-child(3) {
+  animation-delay: 0.5s;
+}
+.v9-plan-building li:nth-child(4) {
+  animation-delay: 0.75s;
+}
+@keyframes v9-building-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--s2));
+  }
+}
+@keyframes v9-building-out {
+  to {
+    opacity: 0;
+  }
+}
+.v9-plan-ready {
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  color: var(--c-ink);
+}

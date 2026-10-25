@@ -36,6 +36,18 @@ export const planViewCopy = {
     library: '动作库',
     versionLine: '第 {number} 版 · {date}',
     readOnly: '只读',
+    // 芽芽排课: shown one by one while the fresh draft appears (V9.20, Bo 2026-10-25).
+    building: {
+      read: '正在读你的回答：目标、时间和场地 🧠',
+      week: '每周排 {count} 次，训练日之间留出恢复时间',
+      weekOne: '每周排 1 次，留足恢复时间',
+      equipment: '按“{equipment}”挑动作',
+      place: '按你的场地挑动作',
+      cautions: '，绕开需要照顾的部位',
+      minutes: '估算每次的时长，控制在 {range} 分钟 📊',
+      ready: '计划排好了，看看合不合适。点“就用这份计划”就开始；想调整，问我就行。',
+      skip: '跳过',
+    },
   },
   en: {
     week: 'Week plan',
@@ -77,6 +89,17 @@ export const planViewCopy = {
     library: 'Exercise library',
     versionLine: 'Version {number} · {date}',
     readOnly: 'Read only',
+    building: {
+      read: 'Reading your answers: goal, time and place 🧠',
+      week: '{count} sessions a week, with recovery time between training days',
+      weekOne: 'One session a week, with plenty of recovery time',
+      equipment: 'Picking exercises for “{equipment}”',
+      place: 'Picking exercises for your space',
+      cautions: ', working around the areas to protect',
+      minutes: 'Estimating each session: {range} minutes 📊',
+      ready: 'Your plan is ready. See if it suits you: tap “Use this plan” to start, or ask me to adjust it.',
+      skip: 'Skip',
+    },
   },
 } as const;
 

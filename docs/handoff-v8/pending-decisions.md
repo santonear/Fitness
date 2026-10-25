@@ -622,6 +622,6 @@ Bo 已定版 V9 设计并授权推进；计时规则按 Bo 当日决定改写（
   - 部分完成计入本周次数：Bo 2026-10-25 确认。
   - 本地计划只叫“A / B”的训练单按内容命名（“下肢”“有氧”）；同类训练单有多个时按主练两个部位命名（“腿·胸”“臀·背”，Bo 2026-10-25 在决定卡中选定），部位相同才退回“全身 A / B”；用户自己起的名字不变。
   - 今天页面板“本周 n/目标”把部分完成也算进去，与回顾一致。
-- 待 Bo 定：生成计划时约 1 秒的“芽芽排课”过场需要新的芽芽话术（按规则先问），本次只做了计划逐张浮入与柱状条长出。
+- 已定（Bo 2026-10-25）：“芽芽排课”过场话术五句，前四句约 1.5 秒内依次出现、可跳过，第五句（请确认是否使用或调整）常驻草案页；见规范 V9.20。
 - 理由：不改数据、不改已存名称（只改显示），不新增依赖；减少动态效果时全部关闭。
 - 涉及文件：src/ui/motion.ts（新，复用原 EnergyPages 的数字滚动）、src/ui/components/{Orb.tsx,orb.css,kit/HomePanel.tsx,kit/kit.css}、src/ui/pages/{home,onboarding,training,settings}/…、src/application/{plan-presentation.ts,workflow/plan-setup.ts}、docs/handoff-v8/02-design-tokens.json（`pressInDuration`）、src/themes/{token-css.ts,contract.ts,base/tokens.css,base/common.css,pop/slots/slots.css}。
