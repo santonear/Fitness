@@ -5,6 +5,7 @@ export { Scene, sceneVariantList, type SceneVariant } from '../Scene';
 export { Orb, orbContexts, type OrbAction, type OrbProps, type OrbContext } from '../Orb';
 export { ThemePicker, ThemePreview } from '../ThemePicker';
 export { AnatomyMap } from './AnatomyMap';
+export { PainBodyPicker, type PainSpot } from './PainBodyPicker';
 export { HomePanel } from './HomePanel';
 export { JourneyTrail } from './JourneyTrail';
 export { LetterDialog } from './LetterDialog';

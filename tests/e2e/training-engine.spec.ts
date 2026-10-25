@@ -782,17 +782,23 @@ test('positive pain review blocks further training and survives the downloaded b
     return (await (await import(/* @vite-ignore */ path)).workflow.snapshot()).active;
   });
   await page.getByRole('button', { name: '不舒服', exact: true }).click();
-  await page.getByLabel('疼痛评分（0–10）', { exact: true }).fill('6');
-  await page.getByLabel('部位', { exact: true }).selectOption('knee');
+  await page.getByRole('button', { name: '右膝', exact: true }).click();
+  await expect(page.getByRole('button', { name: '右膝', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await page.getByRole('button', { name: '下一步', exact: true }).click();
+  await expect(page.getByText('右膝，有多不舒服？', { exact: true })).toBeVisible();
+  await page.getByRole('radio', { name: '6', exact: true }).click();
   await page.getByRole('button', { name: '记录', exact: true }).click();
   const no = page.getByRole('button', { name: '否', exact: true }),
     yes = page.getByRole('button', { name: '是', exact: true }),
     confirm = page.getByRole('button', { name: '确定', exact: true });
-  await expect(no).toHaveCount(7);
+  // One red-flag question per screen.
+  await expect(page.getByText('再确认几件事 · 1 / 7', { exact: true })).toBeVisible();
+  await expect(no).toHaveCount(1);
   await expect(confirm).toBeDisabled();
   await expect(page.locator('.wk-complete')).toBeDisabled();
-  await yes.first().click();
-  for (let index = 1; index < 7; index++) await no.nth(index).click();
+  await yes.click();
+  for (let index = 1; index < 7; index++) await no.click();
+  await expect(page.getByText('再确认几件事 · 7 / 7', { exact: true })).toBeVisible();
   await expect(confirm).toBeEnabled();
   await confirm.click();
   await expect(page.locator('.wk-complete')).toBeDisabled();
@@ -939,7 +945,8 @@ test('ended pain remains reviewable with the engine flag off and preserves compl
   );
   for (const path of ['/settings/engine', '/']) {
     await page.goto(path);
-    await expect(page.getByRole('button', { name: '否', exact: true })).toHaveCount(7);
+    await expect(page.getByRole('button', { name: '否', exact: true })).toHaveCount(1);
+    await expect(page.getByText('再确认几件事 · 1 / 7', { exact: true })).toBeVisible();
   }
   const rejected = await page.evaluate(async () => {
     const paths = ['/src/persistence/repository.ts', '/src/application/v8-workflow.ts', '/src/catalog/exercise-ids.ts'];
@@ -955,11 +962,11 @@ test('ended pain remains reviewable with the engine flag off and preserves compl
   const no = page.getByRole('button', { name: '否', exact: true }),
     confirm = page.getByRole('button', { name: '确定', exact: true });
   await expect(confirm).toBeDisabled();
-  for (let i = 0; i < 7; i++) await no.nth(i).click();
+  for (let i = 0; i < 7; i++) await no.click();
   await expect(confirm).toBeEnabled();
-  await no.first().click();
+  await no.click();
   await expect(confirm).toBeDisabled();
-  await no.first().click();
+  await no.click();
   await expect(confirm).toBeEnabled();
   await confirm.click();
   await expect
@@ -1057,17 +1064,19 @@ test('pre-training joint danger persists as a minimal pause until fresh screenin
   await expect(page.getByRole('button', { name: '刷新资格', exact: true })).toBeEnabled();
   await page.goto('/manual');
   await page.clock.setFixedTime(new Date('2026-10-15T03:01:00.000Z'));
-  const checkin = page.locator('section').filter({ has: page.getByLabel('疼痛评分（0–10）', { exact: true }) });
   const jointSelect = page.getByRole('combobox', { name: '有没有新出现或变得更重的关节疼痛？', exact: true });
+  const checkin = page.locator('section').filter({ has: jointSelect });
   await expect(jointSelect).toHaveCount(1);
   await jointSelect.selectOption('true');
-  await page.getByLabel('疼痛评分（0–10）', { exact: true }).fill('4');
-  await page.getByRole('combobox', { name: '部位', exact: true }).selectOption('knee');
+  await page.getByRole('button', { name: '右膝', exact: true }).click();
+  await page.getByRole('button', { name: '下一步', exact: true }).click();
+  await page.getByRole('radio', { name: '4', exact: true }).click();
+  await page.getByRole('button', { name: '下一步', exact: true }).click();
   const no = page.getByRole('button', { name: '否', exact: true }),
     yes = page.getByRole('button', { name: '是', exact: true });
-  await expect(no).toHaveCount(7);
-  await yes.first().click();
-  for (let i = 1; i < 7; i++) await no.nth(i).click();
+  await expect(page.getByText('再确认几件事 · 1 / 7', { exact: true })).toBeVisible();
+  await yes.click();
+  for (let i = 1; i < 7; i++) await no.click();
   await checkin.getByRole('button', { name: '确定', exact: true }).click();
   await expect
     .poll(() =>

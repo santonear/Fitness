@@ -12,6 +12,7 @@ import { JointPainCheckinFields } from '../../src/ui/pages/training/JointPainChe
 import { painQuestionKeys } from '../../src/application/pain-events';
 import type { CoachRequest } from '../../src/coach/contracts';
 import { PainFeedbackPanel } from '../../src/ui/pages/training/PainFeedbackPanel';
+import { RedFlagSteps } from '../../src/ui/pages/training/PainCheckinPanel';
 import { engineCopy } from '../../src/coach/engine-copy';
 import type { EnginePlan } from '../../src/engine/contracts';
 import { createElement } from 'react';
@@ -101,16 +102,39 @@ describe('training engine feedback and prescription UI', () => {
   it('collects pre-training pain explicitly and asks only source questions for the selected area', () => {
     const props = { locale: 'zh' as const, disabled: false, onChange: () => {} };
     const empty = renderToStaticMarkup(createElement(JointPainCheckinFields, { ...props, value: {} }));
-    expect(empty).toContain('value=""');
+    expect(empty).toContain('哪里不舒服？');
+    expect(empty).toContain('aria-label="右膝"');
     expect(empty).not.toContain('aria-pressed="true"');
-    const knee = renderToStaticMarkup(createElement(JointPainCheckinFields, { ...props, value: { painArea: 'knee' } }));
-    for (const key of painQuestionKeys(['knee']))
-      expect(knee).toContain(engineCopy(`redflag.copy.question_${key}`, 'zh'));
-    expect(knee).not.toContain(engineCopy('redflag.copy.question_back_pain_with_cancer_history', 'zh'));
-    const back = renderToStaticMarkup(createElement(JointPainCheckinFields, { ...props, value: { painArea: 'back' } }));
-    for (const key of painQuestionKeys(['back']))
-      expect(back).toContain(engineCopy(`redflag.copy.question_${key}`, 'zh'));
-    expect(back).not.toContain('aria-pressed="true"');
+    expect(empty).toMatch(/<button[^>]*disabled=""[^>]*>下一步/);
+    const knee = renderToStaticMarkup(
+      createElement(JointPainCheckinFields, { ...props, value: { painArea: 'knee', painSide: 'right' } }),
+    );
+    expect(knee).toContain('aria-label="男性人体图，右膝已标出"');
+    expect(knee).toMatch(/aria-label="右膝" aria-pressed="true"/);
+    expect(knee).toContain('>右膝</span>');
+    // A follow-up area starts at the score row; nothing is pre-selected.
+    const score = renderToStaticMarkup(
+      createElement(JointPainCheckinFields, { ...props, areaLocked: true, value: { painArea: 'knee' } }),
+    );
+    expect(score).toContain('膝，有多不舒服？');
+    expect(score.match(/role="radio" aria-checked="false"/g)?.length).toBeGreaterThanOrEqual(11);
+    expect(score).not.toContain('上一步');
+    for (const area of ['knee', 'back'] as const) {
+      const keys = painQuestionKeys([area]),
+        html = renderToStaticMarkup(
+          createElement(RedFlagSteps, {
+            locale: 'zh',
+            questions: keys.map(key => ({ key, label: engineCopy(`redflag.copy.question_${key}`, 'zh') })),
+            answers: {},
+            onAnswer: () => {},
+          }),
+        );
+      expect(html).toContain(`再确认几件事 · 1 / ${keys.length}`);
+      expect(html).toContain(engineCopy(`redflag.copy.question_${keys[0]}`, 'zh'));
+      expect(html).toContain('如果疼痛明显或持续，先休息，并请专业人士看看。');
+      expect(html).not.toContain('aria-pressed="true"');
+    }
+    expect(painQuestionKeys(['knee'])).not.toContain('back_pain_with_cancer_history');
   });
   it('keeps all optional pre-training and source pain follow-up answers unknown', () => {
     const html = renderToStaticMarkup(
