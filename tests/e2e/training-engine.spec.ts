@@ -6,7 +6,7 @@ import { baseProfile } from '../../tools/eval/training-engine-profiles';
 import { expect, test, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import type { SetFact, SetFeedbackEvent } from '../../src/domain/v8/contracts';
-import { homeStart, startToday } from './helpers/home-start';
+import { homeStart, openDayView, startToday } from './helpers/home-start';
 
 // This file is also discovered by the shared suite: retain the dedicated
 // suite's budget for real IndexedDB histories and multi-theme screenshots.
@@ -363,6 +363,7 @@ test('synthetic source30 preferred-squat Next renders fixed tempo and preserves 
     await offlineTempoPage(page, '/settings/appearance');
     await page.getByRole('radio', { name: label, exact: true }).click();
     await offlineTempoPage(page, '/');
+    await openDayView(page);
     const detail = page
       .locator('details')
       .filter({ has: page.locator('summary').filter({ hasText: identity.name }) })
@@ -480,9 +481,11 @@ async function openSourceWarmup(page: Page) {
     const path = '/src/ui/mainline/context.tsx';
     return (await (await import(/* @vite-ignore */ path)).workflow.snapshot()).version.templates.length;
   });
+  await openDayView(page);
   for (let attempt = 0; attempt < templateCount && (await region.count()) === 0; attempt++) {
     await page.getByRole('button', { name: '换一份', exact: true }).click();
     await expect(homeStart(page)).toBeEnabled();
+    await openDayView(page);
   }
   await expect(details).toHaveCount(1);
   if ((await details.getAttribute('open')) === null) await details.locator('summary').click();
