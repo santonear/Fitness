@@ -68,6 +68,8 @@ export function DayTimeline({
   const t = dayViewCopy[locale],
     pv = planViewCopy[locale];
   const [chosen, setChosen] = useState(() => readStart(todayDate) ?? planStart ?? defaultStartClock(timeZone));
+  // Folded to one line so the session list never crowds 今天 (Bo 2026-10-25); open while training.
+  const [open, setOpen] = useState(!!active);
   const startClock = active ? clockIn(timeZone, active.startedAt) : chosen;
   const timeline = sessionTimeline(template),
     total = Math.round(timeline.totalSeconds / 60);
@@ -84,83 +86,98 @@ export function DayTimeline({
         <h2 id="v9-home-items-title" className="v9-home-items-title">
           {t.title} · {fill(pv.exercises, { count: template.items.length })}
         </h2>
-        {active ? (
-          <p className="v9-day-hint" role="status">
-            {fill(t.inProgress, { start: startClock })}
-          </p>
-        ) : (
-          <label className="v9-day-start">
-            <span>{t.startAt}</span>
-            <input
-              type="time"
-              className="v9-num"
-              value={chosen}
-              step={300}
-              onChange={event => {
-                const value = event.currentTarget.value;
-                if (validClock(value)) {
-                  setChosen(value);
-                  writeStart(todayDate, value);
-                }
-              }}
-            />
-          </label>
-        )}
+        <PrimaryButton
+          tone="text"
+          size="sm"
+          aria-expanded={open}
+          aria-controls="v9-day-steps"
+          onClick={() => setOpen(value => !value)}
+        >
+          {open ? t.collapse : t.expand}
+        </PrimaryButton>
       </div>
-      <p className="v9-day-hint">
-        {fill(t.ends, { time: stepClock(startClock, timeline.totalSeconds), minutes: total })}
-        {active ? '' : ` · ${t.startHint}`}
-      </p>
-      <ol className="v9-home-items v9-day-steps">
-        {timeline.steps.map(step => {
-          const phaseLabel = step.phase !== previous ? t.phases[step.phase] : undefined;
-          previous = step.phase;
-          const clock = stepClock(startClock, step.startOffset),
-            minutes = Math.max(1, Math.round(step.durationSeconds / 60));
-          const item = step.itemIndex === undefined ? undefined : template.items[step.itemIndex];
-          const marker = (
-            <span className="v9-day-marker" aria-hidden="true">
-              <span className="v9-num v9-day-number">{step.number}</span>
-            </span>
-          );
-          const time = (
-            <time className="v9-num v9-day-time" aria-label={`${fill(t.step, { number: step.number })} · ${clock}`}>
-              {clock}
-            </time>
-          );
-          return (
-            <li
-              key={`${step.kind}-${step.itemIndex ?? step.number}`}
-              className="v9-day-step"
-              data-phase={step.phase}
-              data-kind={step.kind}
-            >
-              {phaseLabel && <span className="v9-day-phase">{phaseLabel}</span>}
-              <div className="v9-day-row">
-                {time}
-                {marker}
-                {item ? (
-                  <details className="v9-day-body">
-                    <summary>
-                      <span className="v9-day-name">
-                        {name(item.exerciseId)} · {fill(t.sets, { count: item.sets })}
-                      </span>
-                      <span className="v9-day-meta v9-num">{fill(t.estimate, { minutes })}</span>
-                    </summary>
-                    {details?.(item, step.itemIndex!)}
-                  </details>
-                ) : (
-                  <div className="v9-day-body v9-day-frame">
-                    <span className="v9-day-name">{step.kind === 'prepare' ? t.prepare : t.stretch}</span>
-                    <span className="v9-day-meta v9-num">{fill(t.estimate, { minutes })}</span>
-                    <p>{step.kind === 'prepare' ? t.prepareHint : t.stretchHint}</p>
+      {open && (
+        <>
+          <div className="v9-day-head">
+            {active ? (
+              <p className="v9-day-hint" role="status">
+                {fill(t.inProgress, { start: startClock })}
+              </p>
+            ) : (
+              <label className="v9-day-start">
+                <span>{t.startAt}</span>
+                <input
+                  type="time"
+                  className="v9-num"
+                  value={chosen}
+                  step={300}
+                  onChange={event => {
+                    const value = event.currentTarget.value;
+                    if (validClock(value)) {
+                      setChosen(value);
+                      writeStart(todayDate, value);
+                    }
+                  }}
+                />
+              </label>
+            )}
+          </div>
+          <p className="v9-day-hint">
+            {fill(t.ends, { time: stepClock(startClock, timeline.totalSeconds), minutes: total })}
+            {active ? '' : ` · ${t.startHint}`}
+          </p>
+          <ol id="v9-day-steps" className="v9-home-items v9-day-steps">
+            {timeline.steps.map(step => {
+              const phaseLabel = step.phase !== previous ? t.phases[step.phase] : undefined;
+              previous = step.phase;
+              const clock = stepClock(startClock, step.startOffset),
+                minutes = Math.max(1, Math.round(step.durationSeconds / 60));
+              const item = step.itemIndex === undefined ? undefined : template.items[step.itemIndex];
+              const marker = (
+                <span className="v9-day-marker" aria-hidden="true">
+                  <span className="v9-num v9-day-number">{step.number}</span>
+                </span>
+              );
+              const time = (
+                <time className="v9-num v9-day-time" aria-label={`${fill(t.step, { number: step.number })} · ${clock}`}>
+                  {clock}
+                </time>
+              );
+              return (
+                <li
+                  key={`${step.kind}-${step.itemIndex ?? step.number}`}
+                  className="v9-day-step"
+                  data-phase={step.phase}
+                  data-kind={step.kind}
+                >
+                  {phaseLabel && <span className="v9-day-phase">{phaseLabel}</span>}
+                  <div className="v9-day-row">
+                    {time}
+                    {marker}
+                    {item ? (
+                      <details className="v9-day-body">
+                        <summary>
+                          <span className="v9-day-name">
+                            {name(item.exerciseId)} · {fill(t.sets, { count: item.sets })}
+                          </span>
+                          <span className="v9-day-meta v9-num">{fill(t.estimate, { minutes })}</span>
+                        </summary>
+                        {details?.(item, step.itemIndex!)}
+                      </details>
+                    ) : (
+                      <div className="v9-day-body v9-day-frame">
+                        <span className="v9-day-name">{step.kind === 'prepare' ? t.prepare : t.stretch}</span>
+                        <span className="v9-day-meta v9-num">{fill(t.estimate, { minutes })}</span>
+                        <p>{step.kind === 'prepare' ? t.prepareHint : t.stretchHint}</p>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            </li>
-          );
-        })}
-      </ol>
+                </li>
+              );
+            })}
+          </ol>
+        </>
+      )}
     </Card>
   );
 }

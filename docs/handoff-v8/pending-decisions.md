@@ -625,3 +625,4 @@ Bo 已定版 V9 设计并授权推进；计时规则按 Bo 当日决定改写（
 - 已定（Bo 2026-10-25）：“芽芽排课”过场话术五句，前四句约 1.5 秒内依次出现、可跳过，第五句（请确认是否使用或调整）常驻草案页；见规范 V9.20。
 - 理由：不改数据、不改已存名称（只改显示），不新增依赖；减少动态效果时全部关闭。
 - 涉及文件：src/ui/motion.ts（新，复用原 EnergyPages 的数字滚动）、src/ui/components/{Orb.tsx,orb.css,kit/HomePanel.tsx,kit/kit.css}、src/ui/pages/{home,onboarding,training,settings}/…、src/application/{plan-presentation.ts,workflow/plan-setup.ts}、docs/handoff-v8/02-design-tokens.json（`pressInDuration`）、src/themes/{token-css.ts,contract.ts,base/tokens.css,base/common.css,pop/slots/slots.css}。
+- 更正（Bo 2026-10-25）：10-23 只要求开始日之前不显示开始按钮，PR #104 却把整个首页面板（仪表）藏掉。现在面板照常显示，只去掉开始按钮、时长选择与“更多方式”；开始日之前不显示“顺序和时间”；训练日的“顺序和时间”默认收起成一行，训练中展开。

@@ -285,7 +285,7 @@ export function HomePanel({
       locale={locale}
     />
   );
-  const actions = (
+  const actions = onStart && (
     <>
       <MinutesGroup minutes={minutes} onMinutes={onMinutes} locale={locale} />
       {/* Stays reachable above the tab bar while the panel scrolls (V9.20). */}

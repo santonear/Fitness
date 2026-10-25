@@ -102,8 +102,10 @@ test('start date: draft picker moves the first week; 计划 can change it as a n
   await page.getByRole('button', { name: '就用这份计划', exact: true }).click();
   await page.getByRole('button', { name: '先不写', exact: true }).click();
   await expect(page.getByRole('heading', { name: '今天', exact: true })).toBeVisible();
-  await expect(page.getByText(/开始$/).first()).toBeVisible();
-  // Before the start date 今天 offers no start button, only 手动训练 (Bo 2026-10-23).
+  await expect(page.locator('.v9-home-now .v9-home-reason').first()).toContainText('开始 ·');
+  // Before the start date 今天 keeps the panel but offers no start button, only 手动训练 (Bo 2026-10-23, 10-25).
+  await expect(page.locator('.v9-home-now .v9-home-panel').first()).toBeVisible();
+  await expect(page.getByRole('heading', { name: /^顺序和时间/ })).toHaveCount(0);
   await expect(page.getByText('还没到开始的日子。想先练一练，可以用下面的“手动训练”。', { exact: true })).toBeVisible();
   await expect(page.locator('.v9-home-now').getByRole('button', { name: /^开\s*始$/ })).toHaveCount(0);
   await expect(page.getByRole('button', { name: '手动训练', exact: true })).toBeVisible();
@@ -156,6 +158,7 @@ test('今天: one AI entry (the orb), theme button switches style, 动作怎么�
   await themes.getByRole('button', { name: '好了', exact: true }).first().click();
   await expect(themes).toBeHidden();
   // 动作怎么做 opens the guide with points.
+  await main.locator('section.v9-day').getByRole('button', { name: '展开', exact: true }).click();
   const first = main.locator('.v9-home-items details').first();
   await first.locator('summary').click();
   await first.getByRole('button', { name: '动作怎么做', exact: true }).click();
