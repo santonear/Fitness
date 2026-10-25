@@ -278,6 +278,17 @@
   font-size: var(--t2);
   color: var(--c-ink-muted);
 }
+/* 芽芽's plan tip (今天 v5 §14, 上周 “下周怎么调”): one compact line and two small buttons. */
+.v9-home-tip {
+  display: grid;
+  gap: var(--s2);
+}
+.v9-home-tip p {
+  margin: 0;
+  font-size: var(--t2);
+  line-height: var(--lh-body);
+  color: var(--c-ink);
+}
 /* Wide desktop: today's session and start on the left, the day's steps and the week on the right (V9.20). */
 @media (min-width: 1200px) {
   .v8-shell main.v9-home {

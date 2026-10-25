@@ -493,8 +493,7 @@
   fill: var(--map-sec-ink);
 }
 .v9-am-tag[data-role='primary'] .v9-am-badge,
-.v9-badge[data-role='primary'],
-.v9-trail-stop[data-state='now'] .v9-trail-dot {
+.v9-badge[data-role='primary'] {
   animation: v9-am-beat 1.6s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: center;
@@ -882,73 +881,12 @@
   font: var(--w-body) var(--t3) / 1 var(--f-num);
 }
 
-/* Journey trail (我的山路) ------------------------------------------------ */
-.v9-trail {
-  display: flex;
-  align-items: flex-start;
-  margin: 0;
-  padding: 0 calc(var(--s1) + var(--s1) / 2);
-  list-style: none;
-}
-.v9-trail-stop {
-  position: relative;
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  align-items: center;
-  gap: calc(var(--s1) + var(--s1) / 2);
-  min-inline-size: 0;
-}
-.v9-trail-stop + .v9-trail-stop::before {
-  content: '';
-  position: absolute;
-  inset-block-start: calc(var(--s2) + var(--s1) / 4);
-  inset-inline: calc(-50% + var(--s3)) calc(50% + var(--s3));
-  border-block-start: 2px solid var(--map-hot);
-}
-.v9-trail-stop[data-state='next']::before {
-  border-block-start-style: dashed;
-  border-color: var(--c-ink-muted);
-}
-.v9-trail-dot {
-  box-sizing: border-box;
-  inline-size: var(--s3);
-  block-size: var(--s3);
-  margin-block: calc(var(--s1) / 2 + var(--s1) / 4);
-  border-radius: 50%;
-  background: var(--map-hot);
-  border: 2px solid var(--map-hot);
-}
-.v9-trail-stop[data-state='now'] .v9-trail-dot {
-  inline-size: calc(var(--s4) + var(--s1) / 2);
-  block-size: calc(var(--s4) + var(--s1) / 2);
-  margin-block: 0;
-  box-shadow: 0 0 var(--s3) var(--map-hot);
-}
-.v9-trail-stop[data-state='next'] .v9-trail-dot {
-  background: transparent;
-  border-color: var(--c-ink-muted);
-}
-.v9-trail-label {
-  max-inline-size: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: var(--t1);
-  color: var(--c-ink-muted);
-}
-.v9-trail-stop[data-state='now'] .v9-trail-label {
-  color: var(--c-ink);
-  font-weight: var(--w-strong);
-}
-
 /* V9.14 information motion stops under reduced motion and keeps the lit end state. */
 @media (prefers-reduced-motion: reduce) {
   .v9-am-glow,
   .v9-am-leader,
   .v9-am-badge,
   .v9-badge,
-  .v9-trail-dot,
   .v9-home-seg,
   .v9-anatomy-scan {
     animation: none !important;

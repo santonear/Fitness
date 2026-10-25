@@ -7,5 +7,4 @@ export { ThemePicker, ThemePreview } from '../ThemePicker';
 export { AnatomyMap } from './AnatomyMap';
 export { PainBodyPicker, type PainSpot } from './PainBodyPicker';
 export { HomePanel } from './HomePanel';
-export { JourneyTrail } from './JourneyTrail';
 export { LetterDialog } from './LetterDialog';

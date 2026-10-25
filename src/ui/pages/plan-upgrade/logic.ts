@@ -1,12 +1,11 @@
 /** Page logic for the training-plan upgrade (UIUX20261008 V9.14). Pure functions; everything stays on this device. */
 import type {
   BodyChangeEvent,
+  BodyChangeKind,
+  Route,
   FigureShape,
   FitnessTestItem,
   FitnessTestRecord,
-  FutureLetter,
-  Journey,
-  JourneyStop,
   LiftEntry,
   MuscleLoad,
   NowMinutes,
@@ -181,45 +180,6 @@ export function steadyLine(
   return fillLine(y.steadyToday, { minutes: input.minutes });
 }
 
-/** 起点 → 已到营地 → 现在 → 下一站 → 终点. */
-export function journeyStops(
-  journey: Pick<Journey, 'camps' | 'destination'> | undefined,
-  locale: Locale,
-): JourneyStop[] {
-  const c = planPagesCopy[locale];
-  if (!journey)
-    return [
-      { label: c.stopStart, state: 'done' },
-      { label: c.stopNow, state: 'now' },
-    ];
-  const reached = journey.camps.filter(camp => camp.reachedAt),
-    open = journey.camps.filter(camp => !camp.reachedAt);
-  return [
-    { label: c.stopStart, state: 'done' },
-    ...reached.map(camp => ({ label: camp.title, state: 'done' as const })),
-    { label: c.stopNow, state: 'now' },
-    ...open.map(camp => ({ label: camp.title, state: 'next' as const })),
-    ...(journey.destination ? [{ label: journey.destination, state: 'next' as const }] : []),
-  ];
-}
-
-/** A letter opens once its camp is reached; a letter without a camp opens when any camp is reached after it was written. */
-export function openableLetters(
-  letters: readonly FutureLetter[],
-  journey: Pick<Journey, 'camps'> | undefined,
-): FutureLetter[] {
-  const camps = journey?.camps ?? [];
-  return letters.filter(
-    letter =>
-      !letter.openedAt &&
-      camps.some(
-        camp =>
-          camp.reachedAt &&
-          (letter.openAtCampId ? camp.id === letter.openAtCampId : camp.reachedAt >= letter.createdAt),
-      ),
-  );
-}
-
 /** v5 §15: the last three workout reminders all went unused. Only asked when reminders are on. */
 export function remindersUnused(
   enabled: boolean,
@@ -248,6 +208,25 @@ export function breathingCycles(minutes: number) {
 }
 export const breathingPhase = (elapsedSeconds: number) =>
   elapsedSeconds % 10 < 4 ? ('inhale' as const) : ('exhale' as const);
+
+/**
+ * Which body-change lines fit the person (v5 §19): postpartum never hears “lighter”; weight lines only for a
+ * shape goal in the person's own words or the preset they tapped.
+ */
+export function bodyRoute(goalText: string | undefined, population: { kind: string } | undefined): Route {
+  if (population?.kind === 'postpartum') return 'postpartum';
+  return /瘦|减脂|减重|体重|身材|塑形|lose weight|lighter|weight|fat|shape/i.test(goalText ?? '') ? 'shape' : 'health';
+}
+
+/** Kinds spoken today stay on screen for the rest of the day; earlier ones count toward the once-a-week rule. */
+export const spokenBefore = (spoken: Record<string, string>, today: string): Partial<Record<BodyChangeKind, string>> =>
+  Object.fromEntries(Object.entries(spoken).filter(([, date]) => date !== today));
+
+/** Care lines replace praise: with a fast drop or a low BMI nothing else is said. */
+export const shownBodyChanges = (events: readonly BodyChangeEvent[]) => {
+  const care = events.filter(event => event.kind === 'care-fast-loss' || event.kind === 'care-low-bmi');
+  return care.length ? care : events.filter(event => event.kind === 'stronger' || event.kind === 'lighter');
+};
 
 /** v5 §19: only events from bodyChangeEvents() are spoken; safety kinds carry no emoji. */
 export function bodyChangeLine(

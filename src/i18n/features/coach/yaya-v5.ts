@@ -53,12 +53,6 @@ export const yayaV5 = {
     testAge: '按这个成绩估算，你的身体年龄大概是 {age} 岁 📈',
     testWeak: '我看了下五边形，{item}是现在的短板，这周帮你加了 2 次拉伸 ⚡',
     testDown: '这次少了 {count} 个，可能最近没睡好，波动很正常。下周再测一次，看趋势就好 📊',
-    // §11 我的山路
-    campReached: '你到第{n}个营地了：{camp}。出发时你才 {start} 📈',
-    campNear: '离下个营地完成度 {percent}%，还差 {left} 🎯',
-    campHard: '按现在的进度，这个营地要很久才能到。要不先定个近一点的？',
-    campHardNear: '近一点',
-    campHardTry: '我想试试',
     // §12 给未来的自己
     letterAsk: '给半年后的自己留句话吧，等你到营地的时候，我再拿出来给你看 💌',
     letterOpen: '还记得出发那天你写的这句话吗？💌',
@@ -70,7 +64,7 @@ export const yayaV5 = {
     calmStill: '还是很烦',
     calmStillLine: '那今天就别勉强了，好好休息。要是一直这样，找个信得过的人聊聊会好受些。',
     // §14 放弃规律
-    skipDay: '我看了下记录，最近 3 个{weekday}你都忙不过来。{weekday}改成 10 分钟短练？🧠',
+    skipDay: '我看了下记录，最近 3 个{weekday}你都没练上。{weekday}改成 10 分钟短练？🧠',
     skipDayYes: '改吧',
     skipDayNo: '不用',
     // §15 提醒自我收敛
@@ -89,8 +83,7 @@ export const yayaV5 = {
     // §19 身体变化
     strongerLift: '我看了下，{exercise}比一个月前多了 {kg}kg。你是真的变强了 💪',
     strongerTest: '{item}从 {from}到 {to}，这可不是运气 📊',
-    lighter: '这两周平均轻了 {kg}kg，轮廓也收了一点。在“我的山路”能看到对比 🎯',
-    lighterGo: '去看看',
+    lighter: '这两周平均轻了 {kg}kg，轮廓也收了一点 🎯',
     waist: '腰围比 {month} 少了 {cm}cm，你的努力看得见 📊',
     feelSleep: '你说最近睡得更好了，这比体重上的任何数字都重要 🌱',
     careFast: '最近体重掉得有点快，吃饱睡好了吗？慢一点更稳，也更不容易反弹。',
@@ -139,11 +132,6 @@ export const yayaV5 = {
     testWeak: 'Looking at the pentagon, {item} is your weak spot now, so I added 2 stretching sessions this week ⚡',
     testDown:
       '{count} fewer this time, maybe sleep was short lately. Ups and downs are normal; test again next week and watch the trend 📊',
-    campReached: 'You reached camp {n}: {camp}. When you set out it was {start} 📈',
-    campNear: 'Next camp is {percent}% done, {left} to go 🎯',
-    campHard: 'At this pace this camp is a long way off. Set a nearer one first?',
-    campHardNear: 'A nearer one',
-    campHardTry: "I'll try",
     letterAsk: 'Leave a note for yourself six months from now. When you reach the camp, I will show it to you 💌',
     letterOpen: 'Remember what you wrote on the day you set out? 💌',
     calmStart: 'Forget training for now. Breathe in slowly with me, then out slowly, just 3 minutes 😌',
@@ -153,7 +141,7 @@ export const yayaV5 = {
     calmStill: 'Still upset',
     calmStillLine:
       "Then don't push it today; rest well. If it keeps feeling like this, talking to someone you trust can help.",
-    skipDay: 'I checked: the last 3 {weekday}s were too busy. Make {weekday} a 10-minute short session? 🧠',
+    skipDay: 'I checked: you missed the last 3 {weekday}s. Make {weekday} a 10-minute short session? 🧠',
     skipDayYes: 'Change it',
     skipDayNo: 'No thanks',
     reminderUnused:
@@ -171,9 +159,7 @@ export const yayaV5 = {
       'If it hurts, switch to a lighter move. If the pain keeps up or is clear, rest first and have a professional take a look.',
     strongerLift: 'I had a look: {exercise} is up {kg} kg on a month ago. You really have got stronger 💪',
     strongerTest: '{item} from {from} to {to}. That is not luck 📊',
-    lighter:
-      'Over the last two weeks your average is {kg} kg lower and the outline eased a little. See the comparison in My trail 🎯',
-    lighterGo: 'Take a look',
+    lighter: 'Over the last two weeks your average is {kg} kg lower and the outline eased a little 🎯',
     waist: 'Waist {cm} cm smaller than in {month}. Your work shows 📊',
     feelSleep: 'You said you sleep better lately. That matters more than any number on the scale 🌱',
     careFast:

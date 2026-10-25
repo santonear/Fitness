@@ -12,6 +12,7 @@ import { backfillOnboarding } from '../../application/v8-onboarding-backfill';
 import { buildCoachRequest } from '../../coach/request-builder';
 import type { CoachRequest, PickedSchedule } from '../../coach/contracts';
 import { pickedSchedule } from '../../application/picked-schedule';
+import { planTipCandidate } from '../../application/plan-tip-candidate';
 import { normalizeTrainingDates } from '../../application/training-dates';
 import { DEFAULT_TIME_ZONE, addDays, todayIn, weekStart } from '../../domain/local-date';
 import { monthOf, shiftMonth } from '../../application/plan-calendar';
@@ -42,6 +43,14 @@ const blank: OnboardingAnswers = {
   adultConfirmed: false,
   cautions: [],
 };
+export interface VersionUndo {
+  planId: string;
+  appliedVersionId: string;
+  priorVersionId: string;
+  expectedRevision: number;
+  versionNumber: number;
+  expiresAt: number;
+}
 function week(today: string) {
   const from = weekStart(today);
   return { from, to: addDays(from, 6) };
@@ -62,6 +71,8 @@ function useController() {
   const [reviewKind, setReviewKind] = useState<'week' | 'month'>('week');
   const [draftDiscarded, setDraftDiscarded] = useState(false);
   const [deletedNotice, setDeletedNotice] = useState<{ planId: string; expiresAt: number }>();
+  /** The 10-second “撤销” toast after a new plan version (芽芽 chat or a local tip). */
+  const [versionUndo, setVersionUndo] = useState<VersionUndo>();
   const [candidate, setCandidate] = useState<LocalCandidate>(),
     [busy, setBusy] = useState(false),
     [error, setError] = useState('');
@@ -237,6 +248,32 @@ function useController() {
     // Publish the snapshot only when its assistant/review context is ready.
     setData(next);
     return next;
+  }
+  /**
+   * 芽芽's plan tip the user tapped (今天 / 上周 / 今天练这里): the same apply path as a 芽芽 plan edit (new version,
+   * old one kept), then the same 10-second undo. Resolves to the new version when one was saved.
+   */
+  async function applyPlanCandidate(tip: Parameters<typeof planTipCandidate>[1]) {
+    let saved: NonNullable<typeof data>['version'];
+    await run(async () => {
+      const previous = data?.version;
+      const candidate = data && previous && planTipCandidate(data, tip);
+      if (!candidate) return;
+      await workflow.applyCoachCandidate(candidate);
+      const updated = await reload();
+      if (updated.version && updated.version.id !== previous.id && updated.plan) {
+        saved = updated.version;
+        setVersionUndo({
+          planId: updated.plan.id,
+          appliedVersionId: updated.version.id,
+          priorVersionId: previous.id,
+          expectedRevision: updated.metadata.dataRevision,
+          versionNumber: updated.version.versionNumber,
+          expiresAt: Date.now() + 10000,
+        });
+      }
+    });
+    return saved;
   }
   async function run(action: () => Promise<void>) {
     if (lock.current) return;
@@ -427,6 +464,9 @@ function useController() {
     setDraftDiscarded,
     deletedNotice,
     setDeletedNotice,
+    versionUndo,
+    setVersionUndo,
+    applyPlanCandidate,
     deletePlan,
     undoPlan,
     coachInitialSend,

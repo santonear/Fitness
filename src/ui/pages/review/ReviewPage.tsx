@@ -11,6 +11,7 @@ import { PrimaryButton, ProgressRing, SegmentedTabs, Yaya } from '../../componen
 import { BodyParts, FactTile, PatternProgress, TimingGrid, type TimingCell } from './ReviewVisuals';
 import { activeBuckets, groupSets, regionShares, shortDate } from './visuals';
 import { ReviewChart } from './ReviewChart';
+import { GoalCheck } from './GoalCheck';
 import './review.css';
 import {
   chartSeries,
@@ -345,6 +346,7 @@ export function ReviewPage() {
             <TimingGrid title={r.patterns} cells={timing} labels={r} description={patternLines.join(' ')} />
           )
         ))}
+      {hasCurrentPlan && <GoalCheck />}
       {notes.length > 0 && (
         <ul className="rv-notes">
           {notes.map(note => (

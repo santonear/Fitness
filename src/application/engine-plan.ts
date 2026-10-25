@@ -51,8 +51,10 @@ export function existingEnginePlan(plan: {
   sessionMinutes: number;
   templates: SessionTemplate[];
 }): EnginePlan {
+  // Only the plan's engine fields: a saved version's goalText, reasons and the like would fail the strict plan schema.
   return {
-    ...plan,
+    ...(plan.preferredDays ? { preferredDays: plan.preferredDays } : {}),
+    templates: plan.templates,
     weeklyTarget: Math.min(6, plan.weeklyTarget),
     sessionMinutes: Math.min(90, Math.max(10, plan.sessionMinutes)),
     meta: { engineVersion: 'existing', rulesVersion: 'existing', seed: '' },
