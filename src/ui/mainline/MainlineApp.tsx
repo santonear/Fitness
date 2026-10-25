@@ -66,14 +66,7 @@ function Shell() {
   const c = useMainline();
   const { data, t, slots, navigate, error } = c,
     location = useLocation();
-  const [versionUndo, setVersionUndo] = useState<{
-    planId: string;
-    appliedVersionId: string;
-    priorVersionId: string;
-    expectedRevision: number;
-    versionNumber: number;
-    expiresAt: number;
-  }>();
+  const { versionUndo, setVersionUndo } = c;
   const immersive =
     ['/onboarding', '/plan-draft', '/letter'].includes(location.pathname) || location.pathname.startsWith('/workout/');
   const engineEnabled = useFeature('trainingEngine' as Parameters<typeof useFeature>[0]);

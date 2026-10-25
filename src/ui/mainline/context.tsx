@@ -42,6 +42,14 @@ const blank: OnboardingAnswers = {
   adultConfirmed: false,
   cautions: [],
 };
+export interface VersionUndo {
+  planId: string;
+  appliedVersionId: string;
+  priorVersionId: string;
+  expectedRevision: number;
+  versionNumber: number;
+  expiresAt: number;
+}
 function week(today: string) {
   const from = weekStart(today);
   return { from, to: addDays(from, 6) };
@@ -62,6 +70,8 @@ function useController() {
   const [reviewKind, setReviewKind] = useState<'week' | 'month'>('week');
   const [draftDiscarded, setDraftDiscarded] = useState(false);
   const [deletedNotice, setDeletedNotice] = useState<{ planId: string; expiresAt: number }>();
+  /** The 10-second “撤销” toast after a new plan version (芽芽 chat or a local tip). */
+  const [versionUndo, setVersionUndo] = useState<VersionUndo>();
   const [candidate, setCandidate] = useState<LocalCandidate>(),
     [busy, setBusy] = useState(false),
     [error, setError] = useState('');
@@ -237,6 +247,40 @@ function useController() {
     // Publish the snapshot only when its assistant/review context is ready.
     setData(next);
     return next;
+  }
+  /**
+   * A local tip the user tapped (今天 / 上周 / 今天练这里 / 回顾): saved as a new plan version through the
+   * validated path, then offered for undo like a 芽芽 change. Resolves true when the version was saved.
+   */
+  async function applyLocalChange(change: {
+    proposal: Parameters<typeof workflow.adoptLocalChange>[0]['proposal'];
+    summary: string;
+    rule?: Parameters<typeof workflow.adoptLocalChange>[0]['rule'];
+  }) {
+    let saved = false;
+    await run(async () => {
+      const previous = data?.version;
+      if (!data || !previous) return;
+      await workflow.adoptLocalChange({
+        ...change,
+        basedOnVersionId: previous.id,
+        expectedRevision: data.metadata.dataRevision,
+        generation: data.metadata.restoreGeneration ?? 0,
+      });
+      const updated = await reload();
+      if (updated.version && updated.version.id !== previous.id && updated.plan) {
+        saved = true;
+        setVersionUndo({
+          planId: updated.plan.id,
+          appliedVersionId: updated.version.id,
+          priorVersionId: previous.id,
+          expectedRevision: updated.metadata.dataRevision,
+          versionNumber: updated.version.versionNumber,
+          expiresAt: Date.now() + 10000,
+        });
+      }
+    });
+    return saved;
   }
   async function run(action: () => Promise<void>) {
     if (lock.current) return;
@@ -427,6 +471,9 @@ function useController() {
     setDraftDiscarded,
     deletedNotice,
     setDeletedNotice,
+    versionUndo,
+    setVersionUndo,
+    applyLocalChange,
     deletePlan,
     undoPlan,
     coachInitialSend,

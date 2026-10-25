@@ -237,13 +237,25 @@ export function createPlanVersions(
     await db.v8State.put(rest);
     return next;
   }
-  /** Weekly review "adopt": same validated path as a coach change; days and engine baseline follow the plan. */
-  async function adoptReviewSuggestion(
-    suggestion: ReviewSuggestion,
-    expectedRevision: number,
-    generation: number,
-    summary: string,
-  ) {
+  /**
+   * A local, rule-built change the user tapped (weekly review, 芽芽's tips on 今天 / 上周 / 今天练这里): same validated
+   * path as a coach change; days and engine baseline follow the plan, and the new version can be undone.
+   */
+  async function adoptLocalChange({
+    proposal: input,
+    basedOnVersionId,
+    expectedRevision,
+    generation,
+    summary,
+    rule,
+  }: {
+    proposal: ReviewSuggestion['proposal'];
+    basedOnVersionId: string;
+    expectedRevision: number;
+    generation: number;
+    summary: string;
+    rule?: ReviewSuggestion['rule'];
+  }) {
     return repo.write(async () => {
       const meta = await repo.readMetadata(),
         state = await db.v8State.get('v8');
@@ -254,13 +266,13 @@ export function createPlanVersions(
         !plan ||
         plan.readOnly ||
         plan.deletedAt ||
-        plan.currentVersionId !== suggestion.basedOnVersionId
+        plan.currentVersionId !== basedOnVersionId
       )
         throw new DomainError('CONFLICT', 'STALE_REVIEW');
       const version = await db.v8PlanVersions.get(plan.currentVersionId);
       if (!version) throw new DomainError('INVALID', 'MISSING_VERSION');
-      const proposal = { ...suggestion.proposal, preferredDays: version.preferredDays };
-      // The suggestion changes templates or frequency only; the engine baseline follows so previews stay engine-checked.
+      const proposal = { ...input, preferredDays: version.preferredDays };
+      // The change touches templates or frequency only; the engine baseline follows so previews stay engine-checked.
       let enginePlan: EnginePlan | undefined;
       if (version.enginePlan && isFeatureEnabled('trainingEngine')) {
         const candidate = enginePlanSchema.safeParse({
@@ -283,12 +295,27 @@ export function createPlanVersions(
         fields: {
           source: 'local',
           origin: 'review_suggestion',
-          reviewRule: suggestion.rule,
+          ...(rule ? { reviewRule: rule } : {}),
           changeSummary: [summary],
         },
       });
     }, expectedRevision);
   }
+  /** Weekly review "adopt". */
+  const adoptReviewSuggestion = (
+    suggestion: ReviewSuggestion,
+    expectedRevision: number,
+    generation: number,
+    summary: string,
+  ) =>
+    adoptLocalChange({
+      proposal: suggestion.proposal,
+      basedOnVersionId: suggestion.basedOnVersionId,
+      expectedRevision,
+      generation,
+      summary,
+      rule: suggestion.rule,
+    });
   async function undoAppliedCoachVersion({
     planId,
     appliedVersionId,
@@ -369,5 +396,5 @@ export function createPlanVersions(
       return next;
     }, expectedRevision);
   }
-  return { applyCoachCandidate, adoptReviewSuggestion, undoAppliedCoachVersion, changeStartDate };
+  return { applyCoachCandidate, adoptReviewSuggestion, adoptLocalChange, undoAppliedCoachVersion, changeStartDate };
 }
