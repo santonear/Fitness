@@ -1,4 +1,4 @@
-# rules-ch10.yaml — 第 10 章 老年人（65 岁及以上）
+# rules-ch10.yaml — 第 10 章 老年人（60 岁及以上）
 # 与 ch10-older-adults.md 一一对应。条件表达式约定见 rules-ch09.yaml 文件头 / ch09 第 0 节。
 # 本章叠加在通用规则之上；与第 9 章同时命中时排除条件取并集。
 
@@ -6,11 +6,11 @@
   chapter: 10
   type: gate
   value:
-    trigger: {any: [{user: age, gte: 65}, {user: older_module_opt_in, is: true}]}
+    trigger: {any: [{user: age, gte: 60}, {user: older_module_opt_in, is: true}]}
     set_population: older_adult
   evidence: A
   sources: [E05:WHO2020, E01:WHO20]
-  note: 年满 65 岁自动启用，也可由用户主动开启
+  note: 年满 60 岁自动启用（Bo 2026-10-25：稳健路线），也可由用户主动开启；只影响新生成的计划
 
 - id: older.screen.general
   chapter: 10
