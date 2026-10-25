@@ -1,6 +1,6 @@
 {
-  "reviewedOn": "2026-10-18",
-  "rulesVersion": "3ab0c8844434d12f5de7044e103c638bc66d6f12ce32c0bc633b55ed1c15c35e",
+  "reviewedOn": "2026-10-25",
+  "rulesVersion": "befe6725e157284f0c3ab627944d3a971c26438d30f9f2235a0551e52c3f84e1",
   "activeRuleIds": [
     "safety.scope.age_min",
     "safety.screen.parq",
@@ -96,7 +96,16 @@
     "postpartum.urgent",
     "postpartum.pelvic_floor",
     "postpartum.never",
-    "duration.fit.bounds"
+    "duration.fit.bounds",
+    "caution.hip.filter",
+    "caution.hip.substitute",
+    "caution.ankle.filter",
+    "caution.ankle.substitute",
+    "caution.neck.filter",
+    "caution.neck.substitute",
+    "redflag.hip",
+    "redflag.ankle",
+    "redflag.neck"
   ],
   "deferredRuleIds": [
     "pregnancy.hiit",

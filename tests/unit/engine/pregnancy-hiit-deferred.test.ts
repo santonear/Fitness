@@ -11,7 +11,14 @@ it('retains the historical95 entries with exactly one explicitly deferred mechan
   };
   expect(deferred.deferred).toBe(true);
   expect(deferred.severity).toBe('mechanic');
-  expect(r.data.rules.filter(rule => rule.severity === 'hard')).toHaveLength(95);
+  // 95 = original93 + 2 earlier additions; 2026-10-25 adds 9 hip/ankle/neck hard rules (not part of the historical95).
+  const areaRules = ['hip', 'ankle', 'neck'].flatMap(area => [
+    `caution.${area}.filter`,
+    `caution.${area}.substitute`,
+    `redflag.${area}`,
+  ]);
+  expect(r.data.rules.filter(rule => rule.severity === 'hard' && !areaRules.includes(rule.id))).toHaveLength(95);
+  expect(r.data.rules.filter(rule => rule.severity === 'hard')).toHaveLength(104);
   expect(r.byId.get('hiit.gate.unlock')?.severity).toBe('hard');
 });
 it('rejects an explicitly HIIT-marked plan for a pregnant profile even with general clearance and week evidence', () => {
