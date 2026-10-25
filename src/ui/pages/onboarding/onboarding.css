@@ -543,7 +543,7 @@ h1.v9-welcome-title {
     opacity: 0;
   }
 }
-.v9-plan-ready {
+.v9-plan-line.v9-plan-ready {
   flex-wrap: nowrap;
   align-items: flex-start;
   color: var(--c-ink);

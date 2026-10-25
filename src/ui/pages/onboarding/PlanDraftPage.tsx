@@ -118,119 +118,129 @@ export function PlanDraftPage({
     />
   );
   return (
-    <main className="v9-plan-screen" lang={locale} aria-busy={busy}>
-      {onHome && (
-        <nav className="v9-plan-nav" aria-label={d.draftCalendar}>
-          <HomeExit locale={locale} dirty disabled={busy} onLeave={onHome} />
-        </nav>
-      )}
-      <header className="v9-plan-head">
-        <span className="v9-plan-kicker">{answerText(plan.goalText, locale)}</span>
-        <h1 ref={heading} tabIndex={-1} className="v9-display">
-          {t.draftTitle}
-        </h1>
-      </header>
-      <p className="v9-plan-line v9-plan-ready">
-        <Yaya pose="head" size={30} mode="disc" alt="" float={false} />
-        <span>{t.building.ready}</span>
-      </p>
-      <PlanStops plan={candidate.enginePlan} locale={locale} />
-      {days.length > 0 ? (
-        <p className="v9-plan-line" data-testid="draft-days">
-          {fill(days.length === 1 ? d.daysOne : d.days, {
-            count: days.length,
-            from: startDateLabel(days[0], todayDate, locale, false),
-            to: startDateLabel(days.at(-1)!, todayDate, locale, false),
-          })}
-          {candidate.startTime && <> · {fill(d.startsAt, { time: candidate.startTime })}</>}
-          {onEditDays && (
-            <>
-              {' '}
-              <PrimaryButton tone="text" size="sm" disabled={busy} onClick={onEditDays}>
-                {d.editDays}
-              </PrimaryButton>
-            </>
-          )}
-        </p>
-      ) : (
-        onStartDate && (
-          <StartDatePicker value={startDate} today={todayDate} locale={locale} disabled={busy} onChange={onStartDate} />
-        )
-      )}
-      <SegmentedTabs
-        label={cal.view}
-        value={view}
-        onChange={value => setView(value === 'month' ? 'month' : 'week')}
-        options={[
-          { value: 'week', label: cal.week },
-          { value: 'month', label: cal.month },
-        ]}
-      />
-      {view === 'month' ? (
-        <MonthPlan
-          key={startDate}
-          plan={datedPlan}
-          workouts={[]}
-          locale={locale}
-          todayDate={todayDate}
-          startDate={startDate}
-          timeZone={zone}
-          initialDate={startDate}
-          details={details}
-        />
-      ) : (
-        <WeekPlan
-          plan={datedPlan}
-          locale={locale}
-          today={today}
-          startDate={startDate}
-          todayDate={todayDate}
-          details={details}
-        />
-      )}
-      <PlanReasons reasons={reasons} locale={locale} />
-      {onEditCautions && (
-        <p className="v9-plan-line">
-          {t.cautionsExcluded}{' '}
-          <PrimaryButton tone="text" size="sm" onClick={onEditCautions}>
-            {t.editCautions}
-          </PrimaryButton>
-        </p>
-      )}
-      <PlanTip
-        plan={candidate.enginePlan}
-        locale={locale}
-        onEditEnvironment={() => window.location.assign('/settings/engine#environment')}
-      />
-      {error && <p role="alert">{error}</p>}
-      <footer className="v9-plan-actions" data-orb-avoid="">
-        <PrimaryButton
-          disabled={busy || !plan.templates.length}
-          onClick={() => {
-            if (!busy && plan.templates.length)
-              onConfirm(onStartDate && !days.length ? ({ ...candidate, startDate } as OnboardingProposal) : candidate);
-          }}
-        >
-          {busy ? t.saving : t.accept}
-        </PrimaryButton>
-        <PrimaryButton tone="quiet" disabled={busy} onClick={onDiscuss}>
-          {t.discuss}
-        </PrimaryButton>
-        {onDiscard && (
-          <PrimaryButton tone="text" size="md" disabled={busy} onClick={onDiscard}>
-            {planLifecycleCopy[locale].discard}
-          </PrimaryButton>
+    <>
+      <main className="v9-plan-screen" lang={locale} aria-busy={busy}>
+        {onHome && (
+          <nav className="v9-plan-nav" aria-label={d.draftCalendar}>
+            <HomeExit locale={locale} dirty disabled={busy} onLeave={onHome} />
+          </nav>
         )}
-      </footer>
+        <header className="v9-plan-head">
+          <span className="v9-plan-kicker">{answerText(plan.goalText, locale)}</span>
+          <h1 ref={heading} tabIndex={-1} className="v9-display">
+            {t.draftTitle}
+          </h1>
+        </header>
+        <p className="v9-plan-line v9-plan-ready">
+          <Yaya pose="head" size={30} mode="disc" alt="" float={false} />
+          <span>{t.building.ready}</span>
+        </p>
+        <PlanStops plan={candidate.enginePlan} locale={locale} />
+        {days.length > 0 ? (
+          <p className="v9-plan-line" data-testid="draft-days">
+            {fill(days.length === 1 ? d.daysOne : d.days, {
+              count: days.length,
+              from: startDateLabel(days[0], todayDate, locale, false),
+              to: startDateLabel(days.at(-1)!, todayDate, locale, false),
+            })}
+            {candidate.startTime && <> · {fill(d.startsAt, { time: candidate.startTime })}</>}
+            {onEditDays && (
+              <>
+                {' '}
+                <PrimaryButton tone="text" size="sm" disabled={busy} onClick={onEditDays}>
+                  {d.editDays}
+                </PrimaryButton>
+              </>
+            )}
+          </p>
+        ) : (
+          onStartDate && (
+            <StartDatePicker
+              value={startDate}
+              today={todayDate}
+              locale={locale}
+              disabled={busy}
+              onChange={onStartDate}
+            />
+          )
+        )}
+        <SegmentedTabs
+          label={cal.view}
+          value={view}
+          onChange={value => setView(value === 'month' ? 'month' : 'week')}
+          options={[
+            { value: 'week', label: cal.week },
+            { value: 'month', label: cal.month },
+          ]}
+        />
+        {view === 'month' ? (
+          <MonthPlan
+            key={startDate}
+            plan={datedPlan}
+            workouts={[]}
+            locale={locale}
+            todayDate={todayDate}
+            startDate={startDate}
+            timeZone={zone}
+            initialDate={startDate}
+            details={details}
+          />
+        ) : (
+          <WeekPlan
+            plan={datedPlan}
+            locale={locale}
+            today={today}
+            startDate={startDate}
+            todayDate={todayDate}
+            details={details}
+          />
+        )}
+        <PlanReasons reasons={reasons} locale={locale} />
+        {onEditCautions && (
+          <p className="v9-plan-line">
+            {t.cautionsExcluded}{' '}
+            <PrimaryButton tone="text" size="sm" onClick={onEditCautions}>
+              {t.editCautions}
+            </PrimaryButton>
+          </p>
+        )}
+        <PlanTip
+          plan={candidate.enginePlan}
+          locale={locale}
+          onEditEnvironment={() => window.location.assign('/settings/engine#environment')}
+        />
+        {error && <p role="alert">{error}</p>}
+        <footer className="v9-plan-actions" data-orb-avoid="">
+          <PrimaryButton
+            disabled={busy || !plan.templates.length}
+            onClick={() => {
+              if (!busy && plan.templates.length)
+                onConfirm(
+                  onStartDate && !days.length ? ({ ...candidate, startDate } as OnboardingProposal) : candidate,
+                );
+            }}
+          >
+            {busy ? t.saving : t.accept}
+          </PrimaryButton>
+          <PrimaryButton tone="quiet" disabled={busy} onClick={onDiscuss}>
+            {t.discuss}
+          </PrimaryButton>
+          {onDiscard && (
+            <PrimaryButton tone="text" size="md" disabled={busy} onClick={onDiscard}>
+              {planLifecycleCopy[locale].discard}
+            </PrimaryButton>
+          )}
+        </footer>
+        <ExerciseGuidePanel
+          id={detail}
+          locale={locale}
+          open={!!detail}
+          onClose={() => setDetail(undefined)}
+          triggerRef={trigger}
+        />
+      </main>
       {building && <PlanBuilding locale={locale} candidate={candidate} />}
-      <ExerciseGuidePanel
-        id={detail}
-        locale={locale}
-        open={!!detail}
-        onClose={() => setDetail(undefined)}
-        triggerRef={trigger}
-      />
-    </main>
+    </>
   );
 }
 
