@@ -10,6 +10,7 @@ import { restVibrationKey, timerSoundKey } from '../training/useRestVibration';
 import settingsZh from '../../../i18n/features/settings/zh.json';
 import settingsEn from '../../../i18n/features/settings/en.json';
 import { meCopy } from '../../../i18n/features/settings/me';
+import { entryCopy } from '../../../i18n/features/onboarding/entry';
 import { PageSwitches } from '../../components/PageSwitches';
 import { energyCopy } from '../../../i18n/features/me/energy';
 import { planPagesCopy } from '../../../i18n/features/plan-upgrade/pages';
@@ -132,7 +133,7 @@ export function SettingsPage() {
       <PageSwitches />
       <header className="v9-settings-head">
         <span className="v9-settings-kicker" aria-hidden="true">
-          me
+          {entryCopy[locale].welcome.kicker}
         </span>
         <h1 className="v9-display">{me.title}</h1>
         <i className="v9-brand-dash" aria-hidden="true" />

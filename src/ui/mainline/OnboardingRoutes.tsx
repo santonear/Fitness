@@ -173,7 +173,7 @@ export function OnboardingRoute() {
                 ...schedule,
               };
               c.setCandidate(proposed);
-              c.navigate(path('draft'));
+              c.navigate(path('draft'), { state: { building: true } });
               // Engine plans stay local and safety-checked; with AI chosen, the chat opens with a ready-to-send request (nothing is sent until the user taps 发送).
               if (engineEnabled && eligible && c.answers.planMode === 'ai')
                 c.openCoachWithDraft(
@@ -204,7 +204,8 @@ export function OnboardingRoute() {
 }
 export function DraftRoute() {
   const c = useMainline(),
-    bodyEnabled = useFeature('bodyProfile');
+    bodyEnabled = useFeature('bodyProfile'),
+    location = useLocation();
   if (!c.candidate) return <Navigate to={c.draftDiscarded ? '/' : path('onboarding')} replace />;
   return (
     <PlanDraftPage
@@ -221,6 +222,7 @@ export function DraftRoute() {
         c.resetOnboarding();
         c.navigate('/');
       }}
+      building={(location.state as { building?: boolean } | null)?.building === true}
       basic={c.candidate.source !== 'ai'}
       onEditCautions={
         c.candidate.profile.cautions.length

@@ -175,6 +175,7 @@ export type ThemeTokenName =
   | '--orb-cta'
   | '--orb-cta-ink'
   | '--press-scale'
+  | '--press-in'
   | '--press-dur'
   | '--spring'
   | '--morph-dur'

@@ -630,6 +630,18 @@
 .v9-home-panel-head > .v9-home-week {
   margin-inline-start: auto;
 }
+/* 开始 sticks above the floating tab bar (left rail on desktop), so it is on the first screen (V9.20). */
+.v9-home-start {
+  position: sticky;
+  inset-block-end: calc(var(--tabbar-h) + var(--s4) + var(--s3) + env(safe-area-inset-bottom));
+  z-index: 4;
+  display: grid;
+}
+@media (min-width: 960px) {
+  .v9-home-start {
+    inset-block-end: calc(var(--s4) + env(safe-area-inset-bottom));
+  }
+}
 /* Style knob (‹ • • • ›) and touch swipe switch the panel style in place (Bo 2026-10-22). */
 .v9-home-panel[data-swipe='true'] {
   touch-action: pan-y;

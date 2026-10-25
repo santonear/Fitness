@@ -282,7 +282,11 @@ export function HomePage() {
       {applied && version && (
         <Card variant="raised" padding="md" className="v9-home-applied" role="status">
           <Yaya pose="cheer" size={52} alt="" />
-          <p>{h.applied}</p>
+          <p>
+            {notStarted && startDate
+              ? fill(h.appliedLater, { date: startDateLabel(startDate, todayDate, locale) })
+              : h.applied}
+          </p>
         </Card>
       )}
       <PelvicFloorDailyNotice />
@@ -384,18 +388,7 @@ export function HomePage() {
                       })}{' '}
               · {shown(selected)}
             </p>
-            {/* Before the chosen start date there is no start button (Bo 2026-10-23); 手动训练 stays below. */}
-            {notStarted ? (
-              <p className="v9-home-reason">{sd.notStarted}</p>
-            ) : (
-              <NowPanel
-                template={selected}
-                weekDates={weekDates}
-                today={todayDate}
-                blocked={busy || !!data?.active || previewBlocked || previewPending}
-                onStart={startNow}
-              />
-            )}
+            {/* What today trains comes before how long (V9.20). */}
             {parts.length > 0 && (
               <div className="v9-home-parts" role="group" aria-label={h.parts}>
                 {parts.map(part => (
@@ -403,6 +396,15 @@ export function HomePage() {
                 ))}
               </div>
             )}
+            {/* Before the chosen start date the panel stays but has no start button (Bo 2026-10-23, 10-25); 手动训练 stays below. */}
+            <NowPanel
+              template={selected}
+              weekDates={weekDates}
+              today={todayDate}
+              blocked={busy || !!data?.active || previewBlocked || previewPending}
+              {...(notStarted ? {} : { onStart: startNow })}
+            />
+            {notStarted && <p className="v9-home-reason">{sd.notStarted}</p>}
             <p className="v9-home-reason">
               {!last
                 ? t.firstWorkoutReason
@@ -431,27 +433,30 @@ export function HomePage() {
               />
             </>
           )}
-          <DayTimeline
-            planStart={version?.startTime}
-            template={selected}
-            locale={locale}
-            timeZone={timeZone}
-            todayDate={todayDate}
-            name={name}
-            active={data?.active}
-            details={(item, index) => (
-              <>
-                <p>{exercises.find(e => e.id === item.exerciseId)?.steps[locale].join(' ')}</p>
-                {engineEnabled && (
-                  <>
-                    <SourceWarmupSteps template={selected} itemIndex={index} />
-                    <ItemPrescription item={item} locale={locale} />
-                  </>
-                )}
-                <div className="v9-item-actions">{tools.buttons(selected.id, index, item.exerciseId)}</div>
-              </>
-            )}
-          />
+          {/* Order and timing belongs to a session that can start today (Bo 2026-10-25). */}
+          {!notStarted && (
+            <DayTimeline
+              planStart={version?.startTime}
+              template={selected}
+              locale={locale}
+              timeZone={timeZone}
+              todayDate={todayDate}
+              name={name}
+              active={data?.active}
+              details={(item, index) => (
+                <>
+                  <p>{exercises.find(e => e.id === item.exerciseId)?.steps[locale].join(' ')}</p>
+                  {engineEnabled && (
+                    <>
+                      <SourceWarmupSteps template={selected} itemIndex={index} />
+                      <ItemPrescription item={item} locale={locale} />
+                    </>
+                  )}
+                  <div className="v9-item-actions">{tools.buttons(selected.id, index, item.exerciseId)}</div>
+                </>
+              )}
+            />
+          )}
           <div className="v9-home-row">
             <PrimaryButton
               tone="quiet"

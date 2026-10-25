@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react';
 import {
   ENERGY_LIMITS,
   MACRO_PRESETS,
@@ -17,6 +17,7 @@ import { BigChoice, Card, PrimaryButton, SegmentedTabs, StatTile } from '../../c
 import { useMainline } from '../../mainline/context';
 import { useOptionalTheme } from '../../../themes/ThemeProvider';
 import './energy.css';
+import { useCountUp } from '../../motion';
 import { binarySex } from '../../../domain/body-profile';
 
 /** Calculator inputs and the last daily target stay on this device (localStorage), never sent. */
@@ -48,35 +49,6 @@ const save = (patch: Saved) => {
 };
 const clamp = (value: number, [min, max]: readonly [number, number]) => Math.min(max, Math.max(min, value));
 const num = (value: number) => value.toLocaleString('en-US');
-const reducedMotion = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-/** Rolls a number from its last value to the new one (ease-out, 600 ms); instant with reduced motion. */
-function useCountUp(target: number) {
-  const [shown, setShown] = useState(target);
-  const from = useRef(target);
-  useEffect(() => {
-    const start = from.current;
-    if (start === target || reducedMotion() || typeof requestAnimationFrame !== 'function') {
-      from.current = target;
-      setShown(target);
-      return;
-    }
-    let frame = 0;
-    const began = performance.now();
-    const step = (now: number) => {
-      const p = Math.min(1, (now - began) / 600),
-        eased = 1 - (1 - p) ** 3;
-      const value = Math.round(start + (target - start) * eased);
-      from.current = value;
-      setShown(value);
-      if (p < 1) frame = requestAnimationFrame(step);
-    };
-    frame = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(frame);
-  }, [target]);
-  return shown;
-}
-
 /** Decorative layers each theme paints its own way (grid, scan line, rays, sparks); hidden from screen readers. */
 const Fx = () => (
   <span className="v9-energy-fx" aria-hidden="true">

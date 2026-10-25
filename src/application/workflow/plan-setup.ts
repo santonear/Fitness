@@ -10,6 +10,7 @@ import type { CoachProfile } from '../../domain/v8/contracts';
 import { planProposalSchema } from '../../coach/contracts';
 import { estimatePlannedMinutes } from '../../domain/duration-estimate';
 import { basicItems } from '../rules/basic-items';
+import { equipmentLabel } from '../../catalog/taxonomy';
 import basicZh from '../../i18n/features/onboarding/basic.zh.json';
 import basicEn from '../../i18n/features/onboarding/basic.en.json';
 import { enginePlanProposal } from '../engine-plan';
@@ -71,8 +72,8 @@ export function basicProposal(profile: CoachProfile, locale = 'zh') {
         : missing
           ? copy.missing.replace('{types}', missing)
           : locale === 'en'
-            ? `Uses your stated equipment: ${profile.equipment.join(' / ')}. ${/瘦|减脂|减重|lose weight|fat loss|weight loss/i.test(profile.goalText) ? 'Combines strength work with walking where your selected cautions allow.' : 'Alternates basic strength movements across sessions.'}`
-            : `使用你说明的器械：${profile.equipment.join(' / ')}。${/瘦|减脂|减重|lose weight|fat loss|weight loss/i.test(profile.goalText) ? '在已选注意部位允许的范围内，结合力量动作和步行。' : '两份训练单交替安排基础力量动作。'}`,
+            ? `Uses your stated equipment: ${profile.equipment.map(key => equipmentLabel(key, 'en')).join(' / ')}. ${/瘦|减脂|减重|lose weight|fat loss|weight loss/i.test(profile.goalText) ? 'Combines strength work with walking where your selected cautions allow.' : 'Alternates basic strength movements across sessions.'}`
+            : `使用你说明的器械：${profile.equipment.map(key => equipmentLabel(key, 'zh')).join(' / ')}。${/瘦|减脂|减重|lose weight|fat loss|weight loss/i.test(profile.goalText) ? '在已选注意部位允许的范围内，结合力量动作和步行。' : '两份训练单交替安排基础力量动作。'}`,
     ] as [string, string, string],
   };
 }

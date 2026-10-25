@@ -9,6 +9,7 @@ import {
   type PointerEvent,
 } from 'react';
 import { orbContextCopy, orbCopy, type OrbContextId } from '../../i18n/features/coach/orb';
+import { todayIn } from '../../domain/local-date';
 import { Yaya } from './Yaya';
 import './orb.css';
 
@@ -40,6 +41,25 @@ const gap = 8;
 /** Other controls are never covered by the full orb: it tucks to the edge while one is underneath, and the tip hides. */
 const controlSelector =
   'button, a[href], input, select, textarea, summary, [role="button"], [role="radio"], [role="switch"], [role="tab"]';
+/** Each page's tip shows at most once a day and folds away by itself, so it never sits on the content (V9.20). */
+const tipKey = 'fitness-orb-tips',
+  tipMs = 6000;
+const tipDay = () => todayIn(Intl.DateTimeFormat().resolvedOptions().timeZone);
+function tipSeen(context: string): boolean {
+  try {
+    return (JSON.parse(localStorage.getItem(tipKey) ?? '{}') as Record<string, string>)[context] === tipDay();
+  } catch {
+    return false;
+  }
+}
+function markTipSeen(context: string) {
+  try {
+    const seen = JSON.parse(localStorage.getItem(tipKey) ?? '{}') as Record<string, string>;
+    localStorage.setItem(tipKey, JSON.stringify({ ...seen, [context]: tipDay() }));
+  } catch {
+    // Storage blocked: the tip may show again, which is harmless.
+  }
+}
 /** Position survives route changes within the session. */
 const memory: { y?: number; side: 'left' | 'right' } = { side: 'right' };
 
@@ -69,21 +89,22 @@ export function Orb({
   const tipText = tip ?? defaults.tip;
   const list: readonly OrbAction[] = actions ?? defaults.actions.map(label => ({ label }));
   const panelId = useId();
-  const button = useRef<HTMLButtonElement>(null);
+  const button = useRef<HTMLButtonElement>(null),
+    root = useRef<HTMLDivElement>(null);
   const drag = useRef<{ id: number; x: number; y: number; top: number; moved: boolean } | null>(null);
   const suppressClick = useRef(false);
   const [y, setY] = useState<number | undefined>(memory.y);
   const [side, setSide] = useState(memory.side);
   const [open, setOpen] = useState(false);
   const [tucked, setTucked] = useState(autoTuck);
-  const [tipClosed, setTipClosed] = useState(false);
+  const [tipClosed, setTipClosed] = useState(() => tipSeen(context));
   const [dragging, setDragging] = useState(false);
   const [avoid, setAvoid] = useState<{ tuck: boolean; y?: number; tipBlocked?: boolean }>({ tuck: false });
 
   useEffect(() => {
     setTucked(autoTuck);
     setOpen(false);
-    setTipClosed(false);
+    setTipClosed(tipSeen(context));
   }, [autoTuck, context]);
   useLayoutEffect(() => {
     if (y !== undefined) return;
@@ -99,7 +120,12 @@ export function Orb({
   const check = useCallback(() => {
     if (y === undefined || drag.current) return;
     const b = bounds();
-    const left = side === 'right' ? b.width - 12 - b.size : 12;
+    // Read the laid-out edge offset: on desktop the orb sits beside the main column (orb.css).
+    const edge = root.current && getComputedStyle(root.current),
+      left =
+        side === 'right'
+          ? b.width - (parseFloat(edge?.right ?? '') || 12) - b.size
+          : parseFloat(edge?.left ?? '') || 12;
     const home = { left, right: left + b.size, top: y, bottom: y + b.size };
     const shift = b.size * 0.68 * (side === 'right' ? 1 : -1);
     const tipWidth = Math.min(210, b.width - b.size - 48);
@@ -160,6 +186,13 @@ export function Orb({
 
   const isTucked = !open && (tucked || avoid.tuck);
   const shownY = open ? y : (avoid.y ?? y);
+  const tipShown = !open && !tipClosed && !isTucked && !avoid.tipBlocked && !!tipText;
+  useEffect(() => {
+    if (!tipShown) return;
+    markTipSeen(context);
+    const timer = window.setTimeout(() => setTipClosed(true), tipMs);
+    return () => window.clearTimeout(timer);
+  }, [tipShown, context]);
   useEffect(() => {
     document.documentElement.dataset.orb = isTucked ? 'tucked' : 'shown';
     return () => {
@@ -235,6 +268,7 @@ export function Orb({
   const upward = (shownY ?? 0) > window.innerHeight / 2;
   return (
     <div
+      ref={root}
       className="v9-orb"
       data-side={side}
       data-tucked={isTucked ? 'true' : 'false'}
@@ -242,7 +276,7 @@ export function Orb({
       data-direction={upward ? 'up' : 'down'}
       style={upward ? { bottom: `${window.innerHeight - (shownY ?? 0) - bounds().size}px` } : { top: `${shownY}px` }}
     >
-      {!open && !tipClosed && !isTucked && !avoid.tipBlocked && tipText && (
+      {tipShown && (
         <div className="v9-orb-tip">
           <span>{tipText}</span>
           <button type="button" className="v9-orb-icon" aria-label={t.closeTip} onClick={() => setTipClosed(true)}>

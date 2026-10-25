@@ -242,3 +242,35 @@
 [data-training-active='true'] .v9-orb-ring {
   animation: none;
 }
+/* The welcome screen already shows 芽芽 large; the floating one would be a second copy (V9.20). */
+body:has(.v9-welcome) .v9-orb {
+  display: none;
+}
+/* Desktop: 芽芽 sits beside the main column instead of at the far window edge (V9.20). */
+@media (min-width: 960px) {
+  .v9-orb {
+    --orb-column: var(--layout-desktop-main);
+    --orb-edge: max(
+      var(--s3),
+      calc(
+        var(--s5) + (100vw - var(--layout-desktop-rail) - var(--s5) * 2 - var(--orb-column)) / 2 - var(--orb-size) -
+          var(--s4)
+      )
+    );
+    inset-inline-end: var(--orb-edge);
+  }
+  .v8-shell[data-immersive='true'] .v9-orb {
+    --orb-edge: max(var(--s3), calc((100vw - var(--orb-column)) / 2 - var(--orb-size) - var(--s4)));
+  }
+  .v9-orb[data-side='left'] {
+    inset-inline-start: calc(var(--layout-desktop-rail) + var(--orb-edge));
+  }
+  .v8-shell[data-immersive='true'] .v9-orb[data-side='left'] {
+    inset-inline-start: var(--orb-edge);
+  }
+  /* Beside the column nothing is covered, so there is no edge to tuck into. */
+  .v9-orb[data-tucked='true'],
+  .v9-orb[data-side='left'][data-tucked='true'] {
+    transform: none;
+  }
+}

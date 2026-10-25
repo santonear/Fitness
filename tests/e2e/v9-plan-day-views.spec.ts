@@ -77,6 +77,9 @@ test('今天 day view: numbered steps with times from the chosen start; actual t
   const main = page.locator('main.v9-home');
   const day = main.locator('section.v9-day').filter({ has: page.getByRole('heading', { name: /^顺序和时间/ }) });
   await expect(day).toBeVisible();
+  // Folded to one line until opened (Bo 2026-10-25).
+  await expect(day.locator('.v9-day-step')).toHaveCount(0);
+  await day.getByRole('button', { name: '展开', exact: true }).click();
   const steps = day.locator('.v9-day-step');
   expect(await steps.count()).toBeGreaterThan(2);
   await expect(steps.first().locator('.v9-day-number')).toHaveText('1');

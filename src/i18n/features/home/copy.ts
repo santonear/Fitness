@@ -7,6 +7,7 @@ export const homeCopy = {
     suggested: '建议',
     parts: '主要部位',
     applied: '计划已经用上了。第一节随时可以开始，按今天的状态来。',
+    appliedLater: '计划已经用上了，{date}开始第一节。想先动一动，可以用“手动训练”。',
     checkin: '练之前，看看状态',
     week: '本周',
     after: '再下一次',
@@ -32,6 +33,8 @@ export const homeCopy = {
     suggested: 'suggested ',
     parts: 'Main areas',
     applied: 'Your plan is ready. Start the first session whenever you like, at your own pace.',
+    appliedLater:
+      'Your plan is ready. The first session is on {date}. To move a little before then, use Manual training.',
     checkin: 'Before you start, a quick check-in',
     week: 'This week',
     after: 'After that',

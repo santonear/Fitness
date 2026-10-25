@@ -2,6 +2,8 @@
 export const dayViewCopy = {
   zh: {
     title: '顺序和时间',
+    expand: '展开',
+    collapse: '收起',
     startAt: '几点开始',
     startHint: '按这个时间估算每一步，随时可以改。',
     ends: '预计 {time} 结束 · 约 {minutes} 分钟',
@@ -33,6 +35,8 @@ export const dayViewCopy = {
   },
   en: {
     title: 'Order and timing',
+    expand: 'Show',
+    collapse: 'Hide',
     startAt: 'Start at',
     startHint: 'Each step is estimated from this time. Change it any time.',
     ends: 'Ends about {time} · about {minutes} min',

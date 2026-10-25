@@ -128,9 +128,9 @@ export const regionNames: Record<BodyRegion, [string, string]> = {
 const letters = 'ABCDEFG';
 
 /** Real session names ("全身 A", "下肢", "有氧") derived from content; repeated kinds get A/B/C. */
-/** Engine/basic placeholder names ("训练", "Training", "30 分钟"); anything else is a real name and is kept verbatim. */
+/** Engine/basic placeholder names ("训练", "Training", "30 分钟", the basic plan's bare "A"/"B"); anything else is a real name and is kept verbatim. */
 export const genericSessionName = (name: string) =>
-  /^\s*(?:训练|训练单|训练\s*\d+|training|workout|session|\d+\s*(?:分钟|min(?:utes)?))\s*$/i.test(name);
+  /^\s*(?:训练|训练单|训练\s*\d+|training|workout|session|\d+\s*(?:分钟|min(?:utes)?)|[A-G])\s*$/i.test(name);
 /**
  * Names the app itself wrote ("全身 A", "Lower body") follow the current language; a name is only
  * treated this way when it is exactly a kind name with an optional letter, so the user's own names stay verbatim.
@@ -153,6 +153,18 @@ export function sessionNames(
   const totals = new Map<SessionKind, number>(),
     seen = new Map<SessionKind, number>();
   for (const kind of kinds) totals.set(kind, (totals.get(kind) ?? 0) + 1);
+  // Sessions of the same kind are told apart by their two main parts ("腿·胸" / "胸·背", Bo 2026-10-25);
+  // letters remain only when the parts would read the same.
+  const parts = templates.map(template =>
+    sessionRegions(template)
+      .filter(region => region !== 'full')
+      .slice(0, 2)
+      .map(region => (locale === 'zh' ? regionNames[region][0].replace(/部$/, '') : regionNames[region][1]))
+      .join(locale === 'zh' ? '·' : ' · '),
+  );
+  const unique = (index: number) =>
+    parts[index].includes('·') &&
+    !parts.some((other, i) => i !== index && other === parts[index] && kinds[i] === kinds[index]);
   return new Map(
     templates.map((template, index) => {
       const kind = kinds[index],
@@ -161,7 +173,8 @@ export function sessionNames(
       seen.set(kind, order + 1);
       if (template.name && !genericSessionName(template.name))
         return [template.id, presetSessionName(template.name, locale) ?? template.name];
-      return [template.id, (totals.get(kind) ?? 0) > 1 ? `${name} ${letters[order] ?? order + 1}` : name];
+      if ((totals.get(kind) ?? 0) < 2) return [template.id, name];
+      return [template.id, unique(index) ? parts[index] : `${name} ${letters[order] ?? order + 1}`];
     }),
   );
 }

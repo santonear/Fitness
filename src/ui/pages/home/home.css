@@ -275,3 +275,30 @@
   font-size: var(--t2);
   color: var(--c-ink-muted);
 }
+/* Wide desktop: today's session and start on the left, the day's steps and the week on the right (V9.20). */
+@media (min-width: 1200px) {
+  .v8-shell main.v9-home {
+    max-width: calc(var(--layout-desktop-main) * 2 + var(--s6));
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-auto-flow: row dense;
+    align-items: start;
+    column-gap: var(--s6);
+  }
+  .v9-home > * {
+    grid-column: 1 / -1;
+  }
+  .v8-shell:has(> main.v9-home) .v9-orb {
+    --orb-column: calc(var(--layout-desktop-main) * 2 + var(--s6));
+  }
+  .v9-home > .v9-home-now {
+    grid-column: 1;
+    grid-row: span 4;
+  }
+  .v9-home > .v9-day,
+  .v9-home > .v9-day + .v9-home-row,
+  .v9-home > .v9-home-checkin,
+  .v9-home > .v9-home-week {
+    grid-column: 2;
+  }
+}

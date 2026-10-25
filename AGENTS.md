@@ -82,6 +82,7 @@
 - 后端读请求体、同源校验、试用资格用 `src/backend/request.ts`；CSV 导出用 `src/backend/csv.ts` 的 `csvRow`。
 - 结束进行中的训练用 `src/application/training-stop.ts` 的 `endActiveWorkouts`。
 - 界面组件先用 `src/ui/components/kit`。
+- 一次性动效（进场 `enter` / `useEnterMotion`、数字滚动 `useCountUp`、圆环画出 `drawRings`、柱子长出 `grow`、`reducedMotion`）用 `src/ui/motion.ts`。
 
 代码格式由 Prettier 统一：提交前运行 `npm run format`，CI 会检查。
 

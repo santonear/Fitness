@@ -185,6 +185,7 @@ export function sharedTokens(): Partial<Record<ThemeTokenName, string | number>>
     ...Object.fromEntries(Object.entries(space).map(([key, value]) => [`--${key}`, value])),
     ...Object.fromEntries(Object.entries(type).map(([key, value]) => [`--${key}`, value])),
     '--press-scale': m.pressScale,
+    '--press-in': m.pressInDuration,
     '--press-dur': m.pressDuration,
     '--spring': m.springEasing,
     '--morph-dur': m.morphDuration,

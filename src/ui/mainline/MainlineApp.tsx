@@ -9,7 +9,8 @@ import { BodyProfilePage } from '../pages/settings/BodyProfilePanel';
 import { bodyCopy } from '../../i18n/features/onboarding/body';
 import { MaintenanceBanner } from '../admin/finance/MaintenanceBanner';
 import { planLifecycleCopy } from '../../i18n/features/plan/lifecycle';
-import { fill } from '../../i18n/features/onboarding/entry';
+import { entryCopy, fill } from '../../i18n/features/onboarding/entry';
+import { useEnterMotion } from '../motion';
 import { Toast } from '../components/common/Toast';
 import { RestoreBoundary } from './RestoreBoundary';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
@@ -104,6 +105,9 @@ function Shell() {
     if (prompt) c.openCoachWithDraft(prompt, task, profile, templateId);
     else c.openCoach(task, templateId, profile);
   };
+  // Each route change brings its page in with one short entrance instead of a hard cut (V9.20).
+  const shell = useRef<HTMLDivElement>(null);
+  useEnterMotion(() => shell.current?.querySelector(':scope > main'), location.pathname);
   if (!data)
     return (
       <main className="v8-shell">
@@ -123,6 +127,7 @@ function Shell() {
     unresolvedReview(historyDangerReview(data.workouts, data.state?.coachProfile?.screening?.redFlagReview));
   return (
     <div
+      ref={shell}
       className="v8-shell"
       data-immersive={immersive}
       data-training-active={location.pathname.startsWith('/workout/') && !location.pathname.endsWith('/finish')}
@@ -139,7 +144,7 @@ function Shell() {
       <MaintenanceBanner training={location.pathname.startsWith('/workout/')} language={c.locale} />
       {reviewing && (
         <header className={`v8-shell-header${reviewing ? ' v8-review-header' : ''}`}>
-          <slots.BrandMark label={t.brand} />
+          <slots.BrandMark label={entryCopy[c.locale].welcome.kicker} />
           {reviewing && (
             <Button className="v8-review-coach" aria-label={t.askCoach} onClick={() => c.openCoach('PERIOD_REVIEW')}>
               <CoachVisual />

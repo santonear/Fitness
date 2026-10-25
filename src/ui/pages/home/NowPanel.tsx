@@ -115,7 +115,8 @@ export function NowPanel({
   weekDates: readonly string[];
   blocked: boolean;
   today: string;
-  onStart: (state: FocusState) => void;
+  /** Absent before the plan's start date: the panel still shows, without minutes or start (V9.20). */
+  onStart?: (state: FocusState) => void;
 }) {
   const { data, facts, locale, navigate } = useMainline();
   const remindersEnabled = useFeature('trainingReminders');
@@ -189,7 +190,7 @@ export function NowPanel({
   const welcome = returnClosed ? undefined : returnLine(data?.workouts ?? [], today);
   const start = () => {
     if (!blocked && session)
-      onStart({
+      onStart?.({
         exerciseIds: session.exerciseIds,
         minutes: session.templateId ? session.minutes : request.minutes,
         ...(session.templateId ? { templateId: session.templateId } : {}),
@@ -251,22 +252,25 @@ export function NowPanel({
         }}
         focus={focus}
         weekLoads={weekLoads}
-        weekDone={facts?.complete ?? 0}
+        // Counted like 回顾: a partly finished workout is still a workout this week (V9.20).
+        weekDone={(facts?.complete ?? 0) + (facts?.partial ?? 0)}
         weekTarget={data?.version?.weeklyTarget ?? 0}
         {...(shape ? { shape } : {})}
         coachLine={coachLine}
         disabled={blocked || !session}
-        onStart={start}
+        {...(onStart ? { onStart: start } : {})}
       />
       <div className="v9-home-row">
-        <PrimaryButton
-          tone="text"
-          size="sm"
-          aria-expanded={more || !!scene || variant !== 'standard'}
-          onClick={() => setMore(value => !value)}
-        >
-          {c.moreWays}
-        </PrimaryButton>
+        {onStart && (
+          <PrimaryButton
+            tone="text"
+            size="sm"
+            aria-expanded={more || !!scene || variant !== 'standard'}
+            onClick={() => setMore(value => !value)}
+          >
+            {c.moreWays}
+          </PrimaryButton>
+        )}
         {!plan && !editing && (
           <PrimaryButton
             tone="text"
@@ -280,7 +284,7 @@ export function NowPanel({
           </PrimaryButton>
         )}
       </div>
-      {(more || !!scene || variant !== 'standard') && (
+      {onStart && (more || !!scene || variant !== 'standard') && (
         <>
           <div className="v9-home-row" role="group" aria-label={c.variantLabel}>
             {VARIANTS.map(value => (

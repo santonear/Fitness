@@ -216,7 +216,8 @@ export interface HomePanelProps {
   style: HomePanelStyle;
   minutes: NowMinutes;
   onMinutes: (minutes: NowMinutes) => void;
-  onStart: () => void;
+  /** Absent before the plan's start date: no minutes choice and no start button (V9.20). */
+  onStart?: () => void;
   focus: SessionMuscleFocus;
   weekLoads: readonly MuscleLoad[];
   weekDone: number;

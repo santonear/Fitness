@@ -1,6 +1,9 @@
 /* V9 workout player, rest, finish and shared training layout. Token values only (AGENTS §2). No running animation on training screens. */
 .wk-page {
   gap: var(--s3);
+  /* The immersive shell has no padding, so the player and finish screens keep their own gutter and safe areas (V9.20). */
+  padding-block-start: max(var(--s3), env(safe-area-inset-top));
+  padding-inline: max(var(--s5), env(safe-area-inset-left)) max(var(--s5), env(safe-area-inset-right));
 }
 .wk-muted {
   margin: 0;
@@ -281,9 +284,29 @@
   gap: var(--s4);
 }
 .wk-finish-hero {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--s3);
+}
+/* Finish highlight (V9.20): one glow when every set is done, and today's mark on the week pops in. */
+.wk-finish-hero[data-complete='true']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 0 var(--s7) var(--glow);
+  opacity: 0;
+  pointer-events: none;
+  animation: wk-glow 1.6s ease-out 300ms 1;
+}
+.wk-finish .v9-week-day[data-today='true'] .v9-week-mark {
+  animation: wk-pop var(--morph-dur) var(--pop-ease) 500ms both;
+}
+@keyframes wk-glow {
+  40% {
+    opacity: 1;
+  }
 }
 .wk-finish-hero > div:first-child {
   flex: 1;
@@ -356,6 +379,8 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .wk-finish-hero[data-complete='true']::after,
+  .wk-finish .v9-week-day[data-today='true'] .v9-week-mark,
   .wk-finish-yaya {
     animation: none !important;
   }
