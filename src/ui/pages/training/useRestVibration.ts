@@ -35,6 +35,14 @@ export function playTimerCue() {
     /* Device feature unavailable: remain quiet. */
   }
 }
+/** A saved set gets one light tap under the same vibration preference, so finishing it is felt (V9.20). */
+export function playSetCue() {
+  try {
+    if (enabled(restVibrationKey) && typeof navigator.vibrate === 'function') navigator.vibrate(15);
+  } catch {
+    /* Device feature unavailable: remain quiet. */
+  }
+}
 /**
  * Fires the end cue once at `dueAt` (epoch ms) while `active`. A pause clears the pending cue and a
  * due time already in the past never "catches up", so returning to the page never buzzes late.

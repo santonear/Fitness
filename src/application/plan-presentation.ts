@@ -128,9 +128,9 @@ export const regionNames: Record<BodyRegion, [string, string]> = {
 const letters = 'ABCDEFG';
 
 /** Real session names ("全身 A", "下肢", "有氧") derived from content; repeated kinds get A/B/C. */
-/** Engine/basic placeholder names ("训练", "Training", "30 分钟"); anything else is a real name and is kept verbatim. */
+/** Engine/basic placeholder names ("训练", "Training", "30 分钟", the basic plan's bare "A"/"B"); anything else is a real name and is kept verbatim. */
 export const genericSessionName = (name: string) =>
-  /^\s*(?:训练|训练单|训练\s*\d+|training|workout|session|\d+\s*(?:分钟|min(?:utes)?))\s*$/i.test(name);
+  /^\s*(?:训练|训练单|训练\s*\d+|training|workout|session|\d+\s*(?:分钟|min(?:utes)?)|[A-G])\s*$/i.test(name);
 /**
  * Names the app itself wrote ("全身 A", "Lower body") follow the current language; a name is only
  * treated this way when it is exactly a kind name with an optional letter, so the user's own names stay verbatim.

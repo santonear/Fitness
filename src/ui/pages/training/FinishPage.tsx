@@ -2,7 +2,8 @@ import { workoutSeconds, trainingMinutes } from '../../../application/workout-du
 import { TEXT_LIMITS, cleanText, textIssue } from '../../../domain/input-guard';
 import { FieldIssue } from '../../components/common/FieldIssue';
 import { fillLine, yayaThemeTone, yayaV5 } from '../../../i18n/features/coach/yaya-v5';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
+import { drawRings, useCountUp } from '../../motion';
 import type { Feedback } from '../../../domain/v8/contracts';
 import { Button } from '../../components/common';
 import {
@@ -71,11 +72,17 @@ function InstallHint({ copy }: { copy: Copy }) {
     </Card>
   );
 }
+/** The session time rolls up from 0:00 once, then stays (instant with reduced motion). */
+function FinishClock({ seconds }: { seconds: number }) {
+  return <>{formatClock(useCountUp(Math.round(seconds), 0))}</>;
+}
 export function FinishPage() {
   const { data, facts, t, name, run, navigate, busy, locale, appearance } = useMainline();
   const [feedback, setFeedback] = useState<Feedback>({ reasons: [] });
   const active = data?.active;
   const [endedAt] = useState(() => new Date().toISOString());
+  // Finish highlight (V9.20): rings draw in once; the time counts up in FinishClock.
+  useLayoutEffect(() => drawRings(document.querySelector('main.wk-finish')), [active?.id]);
   if (!active)
     return (
       <main>
@@ -152,12 +159,21 @@ export function FinishPage() {
           : t.manual}{' '}
         · {today}
       </p>
-      <Card variant="hero" padding="lg" className="wk-finish-hero" as="section" aria-labelledby="wk-finish-title">
+      <Card
+        variant="hero"
+        padding="lg"
+        className="wk-finish-hero"
+        data-complete={complete ? 'true' : undefined}
+        as="section"
+        aria-labelledby="wk-finish-title"
+      >
         <div>
           <h1 id="wk-finish-title" className="v9-display">
             {done === 0 ? copy.titleZero : complete ? copy.titleComplete : copy.titlePartial}
           </h1>
-          <span className="wk-finish-time v9-num">{formatClock(seconds)}</span>
+          <span className="wk-finish-time v9-num">
+            <FinishClock seconds={seconds} />
+          </span>
           <span className="wk-muted">
             {elapsed > 0 ? format(copy.elapsed, { minutes: elapsed }) : copy.elapsedShort}
           </span>

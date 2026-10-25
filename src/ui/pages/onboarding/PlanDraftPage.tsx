@@ -9,7 +9,8 @@ import type { CoachResponse } from '../../../coach/contracts';
 import { EXERCISE_IDS } from '../../../catalog/exercise-ids';
 import type { V8Locale } from '../../../i18n/namespaces.contract';
 import type { ThemeSlots } from '../../../themes/contract';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { enter, grow } from '../../motion';
 import { ExerciseGuidePanel } from '../../components/ExerciseGuide';
 import { PrimaryButton, SegmentedTabs } from '../../components/kit';
 import { HomeExit } from '../../components/HomeExit';
@@ -72,6 +73,15 @@ export function PlanDraftPage({
     heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     heading.current?.focus();
+  }, []);
+  // The new plan arrives piece by piece and the week's bars grow up, so 芽芽's work is seen (V9.20).
+  useLayoutEffect(() => {
+    const main = heading.current?.closest('main');
+    if (!main) return;
+    [...main.children].forEach((part, i) => enter(part, 'up', i * 70));
+    main
+      .querySelectorAll('.v9-week[data-variant="bars"] .v9-week-mark > span')
+      .forEach((bar, i) => grow(bar, 250 + i * 50));
   }, []);
   const notices = candidate.enginePlan
     ? engineDisplayNotices(candidate.enginePlan).map(notice => notice.message[locale])

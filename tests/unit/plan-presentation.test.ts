@@ -40,6 +40,7 @@ describe('plan presentation (read only)', () => {
     expect(genericSessionName('训练')).toBe(true);
     expect(genericSessionName('30 分钟')).toBe(true);
     expect(genericSessionName('Training')).toBe(true);
+    expect(genericSessionName('B')).toBe(true);
     expect(sessionNames([template('a', ['squat'], '我的腿日')], 'en').get('a')).toBe('我的腿日');
   });
   it('labels engine weekdays as a suggestion unless the user chose days', () => {

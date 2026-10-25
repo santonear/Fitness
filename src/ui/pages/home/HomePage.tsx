@@ -384,6 +384,14 @@ export function HomePage() {
                       })}{' '}
               · {shown(selected)}
             </p>
+            {/* What today trains comes before how long (V9.20). */}
+            {parts.length > 0 && (
+              <div className="v9-home-parts" role="group" aria-label={h.parts}>
+                {parts.map(part => (
+                  <span key={part}>{part}</span>
+                ))}
+              </div>
+            )}
             {/* Before the chosen start date there is no start button (Bo 2026-10-23); 手动训练 stays below. */}
             {notStarted ? (
               <p className="v9-home-reason">{sd.notStarted}</p>
@@ -395,13 +403,6 @@ export function HomePage() {
                 blocked={busy || !!data?.active || previewBlocked || previewPending}
                 onStart={startNow}
               />
-            )}
-            {parts.length > 0 && (
-              <div className="v9-home-parts" role="group" aria-label={h.parts}>
-                {parts.map(part => (
-                  <span key={part}>{part}</span>
-                ))}
-              </div>
             )}
             <p className="v9-home-reason">
               {!last

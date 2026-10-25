@@ -251,7 +251,8 @@ export function NowPanel({
         }}
         focus={focus}
         weekLoads={weekLoads}
-        weekDone={facts?.complete ?? 0}
+        // Counted like 回顾: a partly finished workout is still a workout this week (V9.20).
+        weekDone={(facts?.complete ?? 0) + (facts?.partial ?? 0)}
         weekTarget={data?.version?.weeklyTarget ?? 0}
         {...(shape ? { shape } : {})}
         coachLine={coachLine}

@@ -17,6 +17,7 @@
   --t7: 40px;
   --t8: 72px;
   --press-scale: 0.96;
+  --press-in: 90ms;
   --press-dur: 420ms;
   --spring: cubic-bezier(.18,1.36,.3,1);
   --morph-dur: 520ms;

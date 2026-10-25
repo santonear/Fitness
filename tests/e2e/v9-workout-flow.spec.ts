@@ -78,7 +78,8 @@ test('timed countdown, rest countdown with +15 s and skip, finish summary and re
   await page.clock.runFor(66_000);
   await expect(rest).toHaveText('0:00');
   await expect(page.getByText('休息好了，准备好就开始。', { exact: true })).toBeVisible();
-  expect(await page.evaluate(() => (window as unknown as { vibrations: number[] }).vibrations)).toEqual([30, 30]);
+  // Timer end (30), the saved set's light tap (15, V9.20), rest end (30).
+  expect(await page.evaluate(() => (window as unknown as { vibrations: number[] }).vibrations)).toEqual([30, 15, 30]);
   await page.clock.runFor(30_000);
   await expect(page.getByRole('heading', { name: '休息一下', exact: true })).toBeVisible();
   await page.getByRole('button', { name: '开始下一组', exact: true }).click();

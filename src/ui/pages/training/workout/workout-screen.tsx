@@ -96,7 +96,12 @@ export function workoutScreen(m: WorkoutModel, body: ReactNode) {
       !Number.isNaN(distance) &&
       (!Number.isInteger(distance) || distance < 0 || distance > SET_LIMITS.meters));
   return (
-    <main className="wk-page" data-training-active="true" data-screen={restShown ? 'rest' : 'player'}>
+    <main
+      className="wk-page"
+      data-training-active="true"
+      data-screen={restShown ? 'rest' : 'player'}
+      data-item={`${item.itemIndex}:${active.sets.length}`}
+    >
       {top}
       {timer?.startedAt !== undefined && (
         <CueAt dueAt={timer.startedAt + timer.total * 1000 - timer.accumulatedMs} active={!panel} />

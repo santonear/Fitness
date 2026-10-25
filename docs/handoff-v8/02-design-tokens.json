@@ -48,6 +48,7 @@
       "sinkScale": 0.98,
       "sinkTranslate": "3px",
       "sinkShadow": "none",
+      "pressInDuration": "90ms",
       "pressDuration": "420ms",
       "springEasing": "cubic-bezier(.18,1.36,.3,1)",
       "morphDuration": "520ms",

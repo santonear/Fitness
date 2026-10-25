@@ -10,9 +10,10 @@
   min-block-size: 100dvh;
   max-inline-size: var(--layout-mobile-max);
   margin-inline: auto;
-  padding: calc(var(--s7) + var(--s2)) calc(var(--s5) + var(--s1)) calc(var(--s6) + env(safe-area-inset-bottom));
+  padding: calc(var(--s6) + env(safe-area-inset-top)) calc(var(--s5) + var(--s1)) 0;
   color: var(--c-ink);
-  overflow: hidden;
+  /* clip, not hidden: hidden would make this the scroll container and stop 开始 from sticking. */
+  overflow: clip;
 }
 .v9-welcome > * {
   position: relative;
@@ -20,8 +21,8 @@
 .v9-welcome-scene {
   position: absolute;
   inset: auto 0 0 0;
-  block-size: 40%;
-  opacity: 0.5;
+  block-size: 30%;
+  opacity: 0.35;
   pointer-events: none;
 }
 .v9-welcome-head {
@@ -38,7 +39,7 @@
   margin-block-start: var(--s2);
 }
 h1.v9-welcome-title {
-  margin: calc(var(--s6) + var(--s1)) 0 0;
+  margin: var(--s5) 0 0;
   font-size: var(--t8);
   line-height: var(--lh-tight);
   letter-spacing: var(--tr-display);
@@ -57,7 +58,7 @@ h1.v9-welcome-title {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding-block: var(--s5);
+  padding-block: var(--s3);
 }
 .v9-welcome-figure .v9-ring::after {
   content: '';
@@ -91,9 +92,16 @@ h1.v9-welcome-title {
   box-shadow: 0 0 var(--glow-blur) var(--glow);
 }
 .v9-welcome-actions {
+  /* 开始 stays on the first screen at every height (V9.20). */
+  position: sticky;
+  inset-block-end: 0;
+  z-index: 1;
   display: grid;
   gap: var(--s2);
   justify-items: center;
+  margin-inline: calc(-1 * (var(--s5) + var(--s1)));
+  padding: var(--s4) calc(var(--s5) + var(--s1)) calc(var(--s5) + env(safe-area-inset-bottom));
+  background: linear-gradient(to top, var(--c-bg) 70%, transparent);
 }
 
 /* Onboarding frame ----------------------------------------------------------- */

@@ -614,3 +614,13 @@ Bo 已定版 V9 设计并授权推进；计时规则按 Bo 当日决定改写（
 - 理由：不丢数据、不改旧信、不打扰（只在今天页、每封只弹到收好为止）。
 - 新依赖：`lxgw-wenkai-webfont`（霞鹜文楷 Light，OFL）和 `@fontsource/dancing-script`（OFL），只由懒加载的信纸组件引入，不进首屏，也不进离线预缓存（`tools/pwa-build.ts` 过滤），浏览器按 unicode-range 只取用到的分片。
 - 涉及文件：src/domain/{future-letter,plan-upgrade,schemas}.ts、src/persistence/plan-upgrade-store.ts、src/ui/components/kit/{LetterDialog,LetterPaper,letter-ornaments}.ts(x)、letter.css、src/ui/mainline/{DueLetter,MainlineApp}.tsx、src/ui/pages/onboarding/LetterStep.tsx、src/ui/pages/settings/MyChangesPage.tsx、02-design-tokens.json 的 `letter` 组与 `shared.letter`。
+
+## 2026-10-25 · 操作手感与视觉打磨（规范 V9.20）
+
+- 情况：Bo 看完体验走查后说“做1-14全部”。其中三条报告里写了需要他定，按报告里的建议实施：
+  - 训练页的一次性进场与保存一组的轻震（只在用户开了“轻震”时）：不算持续动画，训练页仍不加持续动画。
+  - 本地计划只叫“A / B”的训练单按内容命名（“全身 A”“下肢”），与引擎计划的命名规则一致；用户自己起的名字不变。
+  - 今天页面板“本周 n/目标”把部分完成也算进去，与回顾一致。
+- 待 Bo 定：生成计划时约 1 秒的“芽芽排课”过场需要新的芽芽话术（按规则先问），本次只做了计划逐张浮入与柱状条长出。
+- 理由：不改数据、不改已存名称（只改显示），不新增依赖；减少动态效果时全部关闭。
+- 涉及文件：src/ui/motion.ts（新，复用原 EnergyPages 的数字滚动）、src/ui/components/{Orb.tsx,orb.css,kit/HomePanel.tsx,kit/kit.css}、src/ui/pages/{home,onboarding,training,settings}/…、src/application/{plan-presentation.ts,workflow/plan-setup.ts}、docs/handoff-v8/02-design-tokens.json（`pressInDuration`）、src/themes/{token-css.ts,contract.ts,base/tokens.css,base/common.css,pop/slots/slots.css}。

@@ -69,7 +69,7 @@
 .v9-pop-dial {
   display: grid;
   place-items: center;
-  inline-size: min(100%, calc(var(--s8) * 2.7));
+  inline-size: min(100%, calc(var(--s8) * 3.2));
   aspect-ratio: 1;
   margin-inline: auto;
   border-radius: 50%;
@@ -84,8 +84,10 @@
   box-shadow: var(--el-2);
 }
 .v9-pop-dial .v8-set-value {
-  color: var(--c-signature-2);
-  font-size: var(--t6);
+  /* The set target is the screen's key fact: strong accent text, one line (V9.20). */
+  color: var(--c-accent-text);
+  font-size: var(--t5);
+  font-weight: var(--w-strong);
 }
 .v9-pop-rest time {
   font-size: var(--t7);

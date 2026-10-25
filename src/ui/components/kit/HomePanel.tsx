@@ -288,9 +288,12 @@ export function HomePanel({
   const actions = (
     <>
       <MinutesGroup minutes={minutes} onMinutes={onMinutes} locale={locale} />
-      <PrimaryButton disabled={disabled} onClick={onStart}>
-        {t.start}
-      </PrimaryButton>
+      {/* Stays reachable above the tab bar while the panel scrolls (V9.20). */}
+      <div className="v9-home-start" data-orb-avoid="">
+        <PrimaryButton disabled={disabled} onClick={onStart}>
+          {t.start}
+        </PrimaryButton>
+      </div>
     </>
   );
 

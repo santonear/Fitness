@@ -1,4 +1,5 @@
-import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, type CSSProperties, type ReactNode } from 'react';
+import { enter } from '../../motion';
 import { entryCopy, fill } from '../../../i18n/features/onboarding/entry';
 import { HomeExit } from '../../components/HomeExit';
 import { PrimaryButton } from '../../components/kit';
@@ -49,6 +50,14 @@ export function OnboardingFrame({
     heading.current?.focus({ preventScroll: true });
   }, [screenKey]);
   const ratio = Math.min(1, Math.max(0, (step - 1 + (within > 0 ? within : 1)) / total));
+  // Each new screen slides in from the side it comes from: forward from the right, 上一步 from the left (V9.20).
+  const body = useRef<HTMLElement>(null),
+    shown = useRef({ key: screenKey, ratio });
+  useLayoutEffect(() => {
+    const previous = shown.current;
+    shown.current = { key: screenKey, ratio };
+    if (previous.key !== screenKey) enter(body.current, ratio < previous.ratio ? 'back' : 'forward');
+  }, [screenKey]);
   return (
     <main className="v9-onboarding" lang={locale} aria-busy={busy}>
       <header className="v9-onboarding-top">
@@ -67,7 +76,7 @@ export function OnboardingFrame({
           {String(step).padStart(2, '0')} / {String(total).padStart(2, '0')}
         </span>
       </header>
-      <section className="v9-onboarding-body">
+      <section ref={body} className="v9-onboarding-body">
         {counter && <p className="v9-onboarding-counter">{counter}</p>}
         <h1 ref={heading} tabIndex={-1} className="v9-display">
           {title}
