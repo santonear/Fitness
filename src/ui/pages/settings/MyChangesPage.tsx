@@ -17,17 +17,30 @@ import { fill } from '../../../i18n/features/onboarding/entry';
 import { AnatomyMap, Card, LetterDialog, PrimaryButton, StatTile } from '../../components/kit';
 import { TrendChart } from '../../components/TrendChart';
 import { useMainline } from '../../mainline/context';
-import { figureSex, figureShape, ghostWeight, monthLabel } from '../plan-upgrade/logic';
-import { lastFigureSex, outlineEvent, outlineShown } from '../plan-upgrade/prefs';
+import {
+  bodyChangeLine,
+  bodyRoute,
+  figureSex,
+  figureShape,
+  ghostWeight,
+  isTestItem,
+  liftHistory,
+  monthLabel,
+  shownBodyChanges,
+  spokenBefore,
+  testValueText,
+} from '../plan-upgrade/logic';
+import { lastFigureSex, lastSpoken, markSpoken, outlineEvent, outlineShown } from '../plan-upgrade/prefs';
+import { bodyChangeEvents, personalRecords, personalRecordsAsOf } from '../../../application/rules/plan-upgrade';
 import { useWidth } from '../plan-upgrade/useWidth';
 import { planPagesCopy } from '../../../i18n/features/plan-upgrade/pages';
 import { fillLine } from '../../../i18n/features/coach/yaya-v5';
-import type { FutureLetter } from '../../../domain/plan-upgrade';
-import { listFutureLetters, markLetterOpened } from '../../../persistence/plan-upgrade-store';
+import type { FitnessTestRecord, FutureLetter } from '../../../domain/plan-upgrade';
+import { listFitnessTests, listFutureLetters, markLetterOpened } from '../../../persistence/plan-upgrade-store';
 import { letterDateParts, letterDue, letterReadable } from '../../../domain/future-letter';
 import '../plan-upgrade/plan-upgrade.css';
 import './my-changes.css';
-import { DEFAULT_TIME_ZONE } from '../../../domain/local-date';
+import { DEFAULT_TIME_ZONE, addDays } from '../../../domain/local-date';
 import { bodyWeightInputSchema } from '../../../domain/schemas';
 
 type Locale = 'zh' | 'en';
@@ -357,6 +370,70 @@ export function MyChangesPage() {
   );
 }
 
+/**
+ * 芽芽's body-change lines beside the outline (v5 §19): stronger lifts or test results, two weeks of steady loss on
+ * a shape goal; a fast drop or a low BMI gets the caring line instead, without emoji. Each kind at most once a
+ * week; weight going up is never mentioned. Waist and sleep lines have no data source yet and are not produced.
+ */
+function BodyChangeLines({ rows, today }: { rows: readonly BodyWeightObservation[]; today: string }) {
+  const c = useMainline(),
+    locale = c.locale;
+  const [tests, setTests] = useState<FitnessTestRecord[]>();
+  useEffect(() => {
+    void listFitnessTests()
+      .then(setTests)
+      .catch(() => setTests([]));
+  }, []);
+  const workouts = c.data?.workouts ?? [],
+    values = c.data?.profile?.bodyDetails?.values;
+  const history = liftHistory(workouts);
+  const events = tests
+    ? shownBodyChanges(
+        bodyChangeEvents({
+          route: bodyRoute(c.data?.version?.goalText, c.data?.state?.coachProfile?.population),
+          ...(values?.heightCm ? { heightCm: values.heightCm } : {}),
+          weights: rows.map(row => ({ localDate: row.localDate, weightKg: row.weightGrams / 1000 })),
+          records: [...personalRecordsAsOf(history, addDays(today, -28)), ...personalRecords(history)],
+          tests,
+          lastSpokenByKind: spokenBefore(lastSpoken(), today),
+          today,
+        }),
+      )
+    : [];
+  const kinds = events.map(event => event.kind).join();
+  useEffect(() => {
+    for (const event of events) if (lastSpoken()[event.kind] !== today) markSpoken(event.kind, today);
+  }, [kinds, today]);
+  const latestTest = (item: string) =>
+    [...(tests ?? [])]
+      .filter(test => test.localDate <= today)
+      .sort((a, b) => a.localDate.localeCompare(b.localDate))
+      .at(-1)?.results[item as keyof FitnessTestRecord['results']];
+  const lines = events.flatMap(event => {
+    if (event.kind === 'stronger' && isTestItem(event.metric)) {
+      const to = latestTest(event.metric);
+      if (to === undefined) return [];
+      const from = Math.round((to - event.delta) * 10) / 10;
+      return [
+        bodyChangeLine(event, locale, {
+          metric: planPagesCopy[locale].testItems[event.metric],
+          from: testValueText(event.metric, from, locale),
+          to: testValueText(event.metric, to, locale),
+        }) ?? [],
+      ].flat();
+    }
+    return [bodyChangeLine(event, locale, { metric: c.name(event.metric) }) ?? []].flat();
+  });
+  if (!lines.length) return null;
+  return (
+    <div className="v9-change-yaya" role="status">
+      {lines.map(line => (
+        <p key={line}>{line}</p>
+      ))}
+    </div>
+  );
+}
+
 /** Summary on 我的: this month vs last month and the body outline drawn from the latest 自记录 weight and body fat (Bo 2026-10-22). */
 export function MyChangesCard() {
   const c = useMainline(),
@@ -439,6 +516,7 @@ export function MyChangesCard() {
         </div>
       )}
       {showFigure && <p className="pu-note">{t.outlineNote}</p>}
+      {body.loaded && <BodyChangeLines rows={body.rows} today={activityDate(zone)} />}
       {body.loaded && !weight.last && <p className="v9-change-note">{t.emptyBody}</p>}
     </Card>
   );

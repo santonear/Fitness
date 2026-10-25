@@ -1,11 +1,11 @@
 /** Page logic for the training-plan upgrade (UIUX20261008 V9.14). Pure functions; everything stays on this device. */
 import type {
   BodyChangeEvent,
+  BodyChangeKind,
+  Route,
   FigureShape,
   FitnessTestItem,
-  FutureLetter,
-  Journey,
-  JourneyStop,
+  FitnessTestRecord,
   LiftEntry,
   MuscleLoad,
   NowMinutes,
@@ -15,6 +15,7 @@ import type {
 import { FITNESS_TEST_ITEMS, MUSCLE_GROUP_NAMES } from '../../../domain/plan-upgrade';
 import { addDays, daysBetween } from '../../../domain/local-date';
 import { fillLine, yayaV5 } from '../../../i18n/features/coach/yaya-v5';
+import { steadyStarterCopy } from '../../../i18n/features/coach/yaya-steady-starter';
 import { planPagesCopy } from '../../../i18n/features/plan-upgrade/pages';
 import { binarySex, type BodyValues } from '../../../domain/body-profile';
 
@@ -132,47 +133,51 @@ export function shownFocus(
   };
 }
 
-/** 60 岁以上加 30 秒坐站。 */
-export const testItemsFor = (age: number | undefined): FitnessTestItem[] =>
-  FITNESS_TEST_ITEMS.filter(item => item !== 'chairStand30s' || (age ?? 0) >= 60);
+/** 60 岁以上或稳健路线：加 30 秒坐站，闭眼单脚站换成睁眼扶椅单脚站（Bo 2026-10-25）。 */
+export const testItemsFor = (age: number | undefined, steady = false): FitnessTestItem[] => {
+  const older = steady || (age ?? 0) >= 60;
+  return FITNESS_TEST_ITEMS.filter(item =>
+    item === 'chairStand30s' || item === 'singleLegStandChairS'
+      ? older
+      : item === 'singleLegStandEyesClosedS'
+        ? !older
+        : true,
+  );
+};
 
-/** 起点 → 已到营地 → 现在 → 下一站 → 终点. */
-export function journeyStops(
-  journey: Pick<Journey, 'camps' | 'destination'> | undefined,
-  locale: Locale,
-): JourneyStop[] {
-  const c = planPagesCopy[locale];
-  if (!journey)
-    return [
-      { label: c.stopStart, state: 'done' },
-      { label: c.stopNow, state: 'now' },
-    ];
-  const reached = journey.camps.filter(camp => camp.reachedAt),
-    open = journey.camps.filter(camp => !camp.reachedAt);
+/** 稳健 lines on 体能自测: chair stands against the last test, the chair-supported stand against the first one. */
+export function steadyTestLines(tests: readonly Pick<FitnessTestRecord, 'localDate' | 'results'>[], locale: Locale) {
+  const y = steadyStarterCopy[locale],
+    byDate = [...tests].sort((a, b) => a.localDate.localeCompare(b.localDate));
+  const stands = byDate.flatMap(test => (test.results.chairStand30s === undefined ? [] : [test.results.chairStand30s])),
+    balance = byDate.flatMap(test =>
+      test.results.singleLegStandChairS === undefined ? [] : [test.results.singleLegStandChairS],
+    );
+  const [previous, latest] = stands.slice(-2),
+    first = balance[0],
+    last = balance.at(-1);
   return [
-    { label: c.stopStart, state: 'done' },
-    ...reached.map(camp => ({ label: camp.title, state: 'done' as const })),
-    { label: c.stopNow, state: 'now' },
-    ...open.map(camp => ({ label: camp.title, state: 'next' as const })),
-    ...(journey.destination ? [{ label: journey.destination, state: 'next' as const }] : []),
+    ...(latest !== undefined && previous !== undefined && latest > previous
+      ? [fillLine(y.steadyChairStand, { n: latest, d: latest - previous })]
+      : []),
+    ...(first !== undefined && last !== undefined && balance.length > 1 && last > first
+      ? [fillLine(y.steadyBalance, { a: first, b: last })]
+      : []),
   ];
 }
 
-/** A letter opens once its camp is reached; a letter without a camp opens when any camp is reached after it was written. */
-export function openableLetters(
-  letters: readonly FutureLetter[],
-  journey: Pick<Journey, 'camps'> | undefined,
-): FutureLetter[] {
-  const camps = journey?.camps ?? [];
-  return letters.filter(
-    letter =>
-      !letter.openedAt &&
-      camps.some(
-        camp =>
-          camp.reachedAt &&
-          (letter.openAtCampId ? camp.id === letter.openAtCampId : camp.reachedAt >= letter.createdAt),
-      ),
-  );
+/** 稳健 milestones (weeks 4 and 12, and 8 once balance work has moved past stage 1): only in that week and after a workout. */
+export function steadyLine(
+  input: { planStart?: string; today: string; trained: boolean; balanceStage?: number; minutes: number },
+  locale: Locale,
+): string {
+  const y = steadyStarterCopy[locale],
+    days = input.planStart ? daysBetween(input.planStart, input.today) : -1;
+  const week = input.trained ? [4, 8, 12].find(n => days >= n * 7 && days < n * 7 + 7) : undefined;
+  if (week === 4) return y.steadyWeek4;
+  if (week === 8 && (input.balanceStage ?? 1) > 1) return fillLine(y.steadyWeek8, { stage: input.balanceStage! });
+  if (week === 12) return y.steadyWeek12;
+  return fillLine(y.steadyToday, { minutes: input.minutes });
 }
 
 /** v5 §15: the last three workout reminders all went unused. Only asked when reminders are on. */
@@ -203,6 +208,25 @@ export function breathingCycles(minutes: number) {
 }
 export const breathingPhase = (elapsedSeconds: number) =>
   elapsedSeconds % 10 < 4 ? ('inhale' as const) : ('exhale' as const);
+
+/**
+ * Which body-change lines fit the person (v5 §19): postpartum never hears “lighter”; weight lines only for a
+ * shape goal in the person's own words or the preset they tapped.
+ */
+export function bodyRoute(goalText: string | undefined, population: { kind: string } | undefined): Route {
+  if (population?.kind === 'postpartum') return 'postpartum';
+  return /瘦|减脂|减重|体重|身材|塑形|lose weight|lighter|weight|fat|shape/i.test(goalText ?? '') ? 'shape' : 'health';
+}
+
+/** Kinds spoken today stay on screen for the rest of the day; earlier ones count toward the once-a-week rule. */
+export const spokenBefore = (spoken: Record<string, string>, today: string): Partial<Record<BodyChangeKind, string>> =>
+  Object.fromEntries(Object.entries(spoken).filter(([, date]) => date !== today));
+
+/** Care lines replace praise: with a fast drop or a low BMI nothing else is said. */
+export const shownBodyChanges = (events: readonly BodyChangeEvent[]) => {
+  const care = events.filter(event => event.kind === 'care-fast-loss' || event.kind === 'care-low-bmi');
+  return care.length ? care : events.filter(event => event.kind === 'stronger' || event.kind === 'lighter');
+};
 
 /** v5 §19: only events from bodyChangeEvents() are spoken; safety kinds carry no emoji. */
 export function bodyChangeLine(
@@ -239,6 +263,7 @@ export const TEST_RANGES: Record<FitnessTestItem, readonly [number, number]> = {
   sitAndReachCm: [-30, 60],
   singleLegStandEyesClosedS: [0, 300],
   chairStand30s: [0, 60],
+  singleLegStandChairS: [0, 300],
 };
 /** Empty → undefined; a number in range → that number; anything else → 'invalid'. */
 export function parseTestValue(item: FitnessTestItem, text: string | undefined): number | 'invalid' | undefined {

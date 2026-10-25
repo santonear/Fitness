@@ -650,6 +650,24 @@ rules:
 - id: caution.wrist.substitute
   type: substitute
   severity: hard
+- id: caution.hip.filter
+  type: exclude
+  severity: hard
+- id: caution.hip.substitute
+  type: substitute
+  severity: hard
+- id: caution.ankle.filter
+  type: exclude
+  severity: hard
+- id: caution.ankle.substitute
+  type: substitute
+  severity: hard
+- id: caution.neck.filter
+  type: exclude
+  severity: hard
+- id: caution.neck.substitute
+  type: substitute
+  severity: hard
 - id: caution.substitute.priority
   type: formula
   severity: mechanic
@@ -684,6 +702,15 @@ rules:
   type: gate
   severity: hard
 - id: redflag.shoulder
+  type: gate
+  severity: hard
+- id: redflag.hip
+  type: gate
+  severity: hard
+- id: redflag.ankle
+  type: gate
+  severity: hard
+- id: redflag.neck
   type: gate
   severity: hard
 - id: redflag.copy
@@ -1106,6 +1133,24 @@ rules:
   type: copy
   severity: copy
 - id: redflag.copy.question_sudden_loss_of_arm_movement_after_injury
+  type: copy
+  severity: copy
+- id: redflag.copy.question_calf_swollen_warm_red_or_tender
+  type: copy
+  severity: copy
+- id: redflag.copy.question_neck_pain_with_dizziness_vision_speech_swallowing_or_face_numbness
+  type: copy
+  severity: copy
+- id: redflag.copy.question_both_hands_numb_or_clumsy_or_unsteady_walking
+  type: copy
+  severity: copy
+- id: redflag.copy.question_fever_with_stiff_neck_or_light_sensitivity
+  type: copy
+  severity: copy
+- id: redflag.copy.question_neck_pain_after_head_or_neck_knock_or_fall
+  type: copy
+  severity: copy
+- id: redflag.copy.question_neck_or_jaw_pain_with_chest_discomfort_or_breathlessness
   type: copy
   severity: copy
 - id: session.copy.short_stretch_target

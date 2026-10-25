@@ -3,6 +3,8 @@ import type { SetFact, SetFeedbackEvent } from '../../../domain/v8/contracts';
 import { setFeedbackEventSchema } from '../../../domain/schemas';
 import { engineTrainingCopy } from '../../../i18n/features/training/engine';
 import { Button, Chip } from '../../components/common';
+import { PrimaryButton } from '../../components/kit';
+import { PainCheckinPanel, type PainCheckinValue } from './PainCheckinPanel';
 
 export function SetFeedback({
   fact,
@@ -13,6 +15,7 @@ export function SetFeedback({
   painAllowed = false,
   onHealthSettings,
   promptPainAreas = [],
+  sex,
 }: {
   fact: SetFact;
   events: SetFeedbackEvent[];
@@ -22,6 +25,8 @@ export function SetFeedback({
   painAllowed?: boolean;
   promptPainAreas?: NonNullable<SetFeedbackEvent['painArea']>[];
   onHealthSettings?: () => void;
+  /** Figure for the pain picker, from the profile. */
+  sex?: 'male' | 'female';
 }) {
   const t = engineTrainingCopy[locale],
     latest = events
@@ -33,8 +38,7 @@ export function SetFeedback({
       )
       .at(-1);
   const [discomfort, setDiscomfort] = useState(false),
-    [score, setScore] = useState<number>(),
-    [area, setArea] = useState<SetFeedbackEvent['painArea']>(),
+    [pain, setPain] = useState<PainCheckinValue>({}),
     [rir, setRir] = useState<number>();
   const validRir = rir === undefined || (Number.isFinite(rir) && rir >= 0 && rir <= 10);
   function append(effort: SetFeedbackEvent['effort']) {
@@ -46,7 +50,9 @@ export function SetFeedback({
       createdAt: new Date().toISOString(),
       effort,
       ...(rir !== undefined ? { rir } : {}),
-      ...(effort === 'discomfort' ? { painScore: score, painArea: area } : {}),
+      ...(effort === 'discomfort'
+        ? { painScore: pain.painScore, painArea: pain.painArea, ...(pain.painSide ? { painSide: pain.painSide } : {}) }
+        : {}),
     });
     if (parsed.success && (effort !== 'discomfort' || painAllowed)) {
       onAppend(parsed.data);
@@ -99,48 +105,29 @@ export function SetFeedback({
           {!painAllowed && onHealthSettings && (
             <Button onClick={onHealthSettings}>{locale === 'zh' ? '设置' : 'Settings'}</Button>
           )}
-          <fieldset disabled={!painAllowed}>
-            <label>
-              {t.painScore}
-              <input
-                type="number"
-                min="0"
-                max="10"
-                step="1"
-                value={Number.isFinite(score) ? score : ''}
-                onChange={event => setScore(event.target.value === '' ? undefined : event.target.valueAsNumber)}
-              />
-            </label>
-            <label>
-              {t.area}
-              <select
-                aria-label={t.area}
-                value={area ?? ''}
-                onChange={event => setArea((event.target.value as SetFeedbackEvent['painArea']) || undefined)}
+          <PainCheckinPanel
+            locale={locale}
+            sex={sex}
+            disabled={!painAllowed}
+            value={pain}
+            onChange={setPain}
+            finish={
+              <PrimaryButton
+                disabled={
+                  !painAllowed ||
+                  !validRir ||
+                  pain.painScore === undefined ||
+                  !Number.isInteger(pain.painScore) ||
+                  pain.painScore < 0 ||
+                  pain.painScore > 10 ||
+                  !pain.painArea
+                }
+                onClick={() => append('discomfort')}
               >
-                <option value="">{t.choose}</option>
-                {(['knee', 'back', 'shoulder', 'wrist', 'other'] as const).map((value, index) => (
-                  <option key={value} value={value}>
-                    {t.areas[index]}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <Button
-              disabled={
-                !painAllowed ||
-                !validRir ||
-                score === undefined ||
-                !Number.isInteger(score) ||
-                score < 0 ||
-                score > 10 ||
-                !area
-              }
-              onClick={() => append('discomfort')}
-            >
-              {t.record}
-            </Button>
-          </fieldset>
+                {t.record}
+              </PrimaryButton>
+            }
+          />
         </div>
       )}
     </fieldset>

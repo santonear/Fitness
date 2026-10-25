@@ -6,6 +6,7 @@ import { type Item } from '../dose';
 import { isHardEligible } from '../candidates';
 
 import { runGates } from '../gates';
+import { knownRedFlagKeys, redFlagQuestionKeys } from '../gates/redflag-items';
 
 export function confirmedPainReplacements(
   history: WorkoutRecord[],
@@ -101,21 +102,8 @@ export function confirmedPainReplacements(
       const gate = runGates(profile, r),
         state = gate.restrictions,
         exercise = r.byExercise.get(replacement.exerciseId);
-      const joint = r.get('redflag.joint_any'),
-        back = r.get('redflag.back'),
-        shoulder = r.get('redflag.shoulder');
-      const known = [
-        ...joint.items,
-        ...back.emergency_items,
-        ...back.urgent_items,
-        ...shoulder.cardiac_route_items,
-        ...shoulder.prompt_medical_items,
-      ];
-      const required = [
-        ...joint.items,
-        ...(event.painArea === 'back' ? [...back.emergency_items, ...back.urgent_items] : []),
-        ...(event.painArea === 'shoulder' ? [...shoulder.cardiac_route_items, ...shoulder.prompt_medical_items] : []),
-      ];
+      const known = knownRedFlagKeys(r),
+        required = redFlagQuestionKeys(r, event.painArea ? [event.painArea] : []);
       const answers = action.redFlagAnswers;
       const confirmedAnswers =
         !!answers &&

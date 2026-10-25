@@ -10,7 +10,6 @@ import {
   type BodyChangeInput,
   type BodyChangeKind,
   type BudgetRequest,
-  type Camp,
   type FitnessTestItem,
   type LiftEntry,
   type MuscleGroup,
@@ -25,6 +24,7 @@ import {
 import { addDays, daysBetween } from '../../domain/local-date';
 import { catalogMetadata } from '../../catalog/registry';
 import { DATA, type Exercise as EngineExercise } from '../../engine/data';
+import type { CautionJoint } from '../../engine/contracts';
 import { FITNESS_NORMS_2023, bandMiddleAge, type NormBand } from './fitness-norms-2023';
 
 // ---------------------------------------------------------------- muscle groups
@@ -129,7 +129,7 @@ export function personalRecordsAsOf(history: readonly LiftEntry[], localDate: st
 export interface NowSessionOptions {
   candidateIds?: readonly string[];
   /** Joints with an active caution: exercises loading them at level 2 or more are skipped. */
-  avoidJoints?: readonly ('knee' | 'back' | 'shoulder' | 'wrist')[];
+  avoidJoints?: readonly CautionJoint[];
 }
 
 const RISKY_FLAGS = new Set([
@@ -436,19 +436,7 @@ export function bodyChangeEvents(input: BodyChangeInput): BodyChangeEvent[] {
   return events.filter(event => !recent(event.kind));
 }
 
-// ---------------------------------------------------------------- journey
-
-const LOWER_IS_BETTER = new Set<Camp['metric']>(['weightKg', 'waistCm']);
-
-/** Share of the way from start to target, 0..1. Works for both directions; weight and waist go down. */
-export function campProgress(camp: Camp, latest: number): number {
-  if (![camp.start, camp.target, latest].every(Number.isFinite)) return 0;
-  if (camp.start === camp.target) {
-    const reached = LOWER_IS_BETTER.has(camp.metric) ? latest <= camp.target : latest >= camp.target;
-    return reached ? 1 : 0;
-  }
-  return Math.min(1, Math.max(0, (latest - camp.start) / (camp.target - camp.start)));
-}
+// ---------------------------------------------------------------- skip pattern
 
 /** ISO weekday 1 (Monday) … 7 (Sunday). */
 export const isoWeekday = (localDate: string) => ((new Date(`${localDate}T00:00:00Z`).getUTCDay() + 6) % 7) + 1;

@@ -6,6 +6,8 @@ import {
   baseTokenCss,
   sceneTokens,
   sceneVariants,
+  largeTextSelector,
+  largeTypeTokens,
   sharedTokens,
   themeSelector,
   themeTokens,
@@ -25,6 +27,11 @@ describe('V9 tokens', () => {
     for (const [key, value] of Object.entries({ ...source.shared.space, ...source.shared.type })) {
       expect(sharedTokens()).toHaveProperty(`--${key}`, value);
     }
+    // 大字号 swaps every step of the shared type scale, each one larger than standard.
+    expect(Object.keys(largeTypeTokens())).toEqual(Object.keys(source.shared.type).map(key => `--${key}`));
+    for (const [key, value] of Object.entries(source.shared.typeLarge))
+      expect(parseFloat(value)).toBeGreaterThan(parseFloat(source.shared.type[key as keyof typeof source.shared.type]));
+    expect(read('src/themes/base/tokens.css')).toContain(tokenBlock(largeTextSelector, largeTypeTokens()));
     expect(sceneVariants).toEqual(['dawn', 'lake', 'dusk', 'mist', 'peak']);
     for (const variant of sceneVariants) expect(Object.keys(sceneTokens(variant))).toHaveLength(14);
   });

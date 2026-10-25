@@ -37,10 +37,9 @@ export function recurringDiscomfort(input: SuggestionInput): string[] {
   });
 }
 
-/** Pure candidates only. No saved plans or facts are mutated here. */
-export function suggestChange(input: SuggestionInput): ReviewSuggestion | null {
-  const { plan, current, previous } = input;
-  const base: PlanProposal = {
+/** The plan as an editable proposal (deep copy); saving it makes a new version. */
+export function planProposal(plan: SuggestionInput['plan']): PlanProposal {
+  return {
     goalText: plan.goalText,
     weeklyTarget: plan.weeklyTarget,
     sessionMinutes: plan.sessionMinutes,
@@ -48,6 +47,12 @@ export function suggestChange(input: SuggestionInput): ReviewSuggestion | null {
     templates: structuredClone(plan.templates),
     reasons: ['', '', ''],
   };
+}
+
+/** Pure candidates only. No saved plans or facts are mutated here. */
+export function suggestChange(input: SuggestionInput): ReviewSuggestion | null {
+  const { plan, current, previous } = input;
+  const base = planProposal(plan);
   const candidate = (rule: ReviewSuggestion['rule'], proposal: PlanProposal, detail = ''): ReviewSuggestion | null => {
     const id = `${current.from}:${plan.id}:${rule}:${detail}`;
     if (input.dismissedIds.includes(id)) return null;

@@ -22,18 +22,32 @@ const document = read('docs/training-engine/hard-rule-coverage.md'),
         .map(cell => cell.trim()),
     ),
   rules = new Rules();
+const addedHard = ['caution.progression_gate', 'pregnancy.inactive.ramp'],
+  // Bo 2026-10-25: hip, ankle and neck pain areas (additions, not part of original93).
+  addedAreas = [
+    'caution.hip.filter',
+    'caution.hip.substitute',
+    'caution.ankle.filter',
+    'caution.ankle.substitute',
+    'caution.neck.filter',
+    'caution.neck.substitute',
+    'redflag.hip',
+    'redflag.ankle',
+    'redflag.neck',
+  ];
 afterEach(() => vi.restoreAllMocks());
 // These are inventory/evidence-link checks, never certification that a source rule is implemented.
 it('retains original95 as original93 hard and two user-deferred rows, separately accounting for the new active hard gate', () => {
   const active = rules.data.rules.filter(rule => rule.severity === 'hard').map(rule => rule.id),
     deferredIds = ['pregnancy.hiit', 'caution.progression'],
-    originalActive = active.filter(id => !['caution.progression_gate', 'pregnancy.inactive.ramp'].includes(id));
-  expect(active).toHaveLength(95);
+    originalActive = active.filter(id => ![...addedHard, ...addedAreas].includes(id));
+  expect(active).toHaveLength(104);
   expect(originalActive).toHaveLength(93);
-  expect(rows).toHaveLength(95);
+  expect(rows).toHaveLength(104);
   const ids = rows.map(row => row[0].replaceAll('`', ''));
-  expect(new Set(ids).size).toBe(95);
-  expect(ids.sort()).toEqual([...originalActive, ...deferredIds].sort());
+  expect(new Set(ids).size).toBe(104);
+  expect(ids.sort()).toEqual([...originalActive, ...deferredIds, ...addedAreas].sort());
+  for (const id of addedAreas) expect(rows.find(row => row[0] === '`' + id + '`')![1]).toContain('新增，非原始93');
   expect(ids).not.toContain('caution.progression_gate');
   for (const id of deferredIds) {
     expect(rules.byId.get(id)).toMatchObject({
@@ -48,6 +62,7 @@ it('retains original95 as original93 hard and two user-deferred rows, separately
   });
   expect(document).toContain('原始93');
   expect(document).toContain('新增2');
+  expect(document).toContain('新增11');
 });
 it('records scope, concrete evidence or an explicit gap for every row without declaring ID registration complete', () => {
   for (const row of rows) {

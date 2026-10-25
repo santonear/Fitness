@@ -14,12 +14,23 @@ import { compactCapable, compactThemeFonts } from './fonts';
 import type { ThemeId, ThemeManifest } from './contract';
 import { defaultThemeId, getTheme, getAvailableThemes, isThemeId } from './registry';
 import { isFeatureEnabled, subscribeFeatureFlags } from '../application/feature-flags';
-import { migrateTheme, readTheme, saveTheme, themeKey } from './preference';
+import {
+  migrateTheme,
+  readTextSize,
+  readTheme,
+  saveTextSize,
+  saveTheme,
+  textSizeKey,
+  themeKey,
+  type TextSize,
+} from './preference';
 
 interface ThemeContextValue {
   theme: ThemeId;
   manifest: ThemeManifest;
   change: (theme: ThemeId) => void;
+  textSize: TextSize;
+  changeTextSize: (size: TextSize) => void;
 }
 const Context = createContext<ThemeContextValue | null>(null);
 function readBrowserTheme(): ThemeId {
@@ -29,10 +40,18 @@ function readBrowserTheme(): ThemeId {
     return defaultThemeId;
   }
 }
+function readBrowserTextSize(): TextSize {
+  try {
+    return readTextSize(window.localStorage);
+  } catch {
+    return 'standard';
+  }
+}
 
 /** Mount once around the routes; never key children by the selected theme. */
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [selectedTheme, setTheme] = useState(readBrowserTheme);
+  const [textSize, setTextSize] = useState(readBrowserTextSize);
   const discovery = useSyncExternalStore(
     subscribeFeatureFlags,
     () => isFeatureEnabled('themeDiscovery'),
@@ -52,6 +71,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
     const sync = (event: StorageEvent) => {
       if (event.key === themeKey || event.key === null) setTheme(readBrowserTheme());
+      if (event.key === textSizeKey || event.key === null) setTextSize(readBrowserTextSize());
     };
     window.addEventListener('storage', sync);
     return () => window.removeEventListener('storage', sync);
@@ -87,6 +107,18 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         ? tokens.themes[theme as keyof typeof tokens.themes].color.bg
         : getComputedStyle(document.documentElement).getPropertyValue('--c-bg').trim());
   }, [theme, compactFonts]);
+  useEffect(() => {
+    if (textSize === 'large') document.documentElement.dataset.textSize = textSize;
+    else delete document.documentElement.dataset.textSize;
+  }, [textSize]);
+  const changeTextSize = useCallback((next: TextSize) => {
+    setTextSize(next);
+    try {
+      saveTextSize(window.localStorage, next);
+    } catch {
+      /* Keep the in-memory choice usable. */
+    }
+  }, []);
   const change = useCallback(
     (next: ThemeId) => {
       if (!isThemeId(next) || !getAvailableThemes(discovery).some(item => item.id === next)) return;
@@ -107,8 +139,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
           ? { ...getTheme(theme), fonts: compactThemeFonts[theme as keyof typeof compactThemeFonts] }
           : getTheme(theme),
       change,
+      textSize,
+      changeTextSize,
     }),
-    [theme, change, compactFonts],
+    [theme, change, compactFonts, textSize, changeTextSize],
   );
   return <Context.Provider value={value}>{children}</Context.Provider>;
 }

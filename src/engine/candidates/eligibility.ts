@@ -1,6 +1,6 @@
 import { pregnancyBalanceSupport } from '../pregnancy-limits';
 import { ownedEquipment } from '../equipment';
-import type { Caution, EngineProfile, GateOutcome, GateState, PipelineContext } from '../contracts';
+import type { Caution, CautionJoint, EngineProfile, GateOutcome, GateState, PipelineContext } from '../contracts';
 import { condition, stretchHoldRange, balanceStageEligible, type Rules, type Exercise } from '../data';
 interface SelectionContext {
   profile: EngineProfile;
@@ -167,7 +167,7 @@ export function sharedEligibility(e: Exercise, ctx: Omit<SelectionContext, 'safe
   for (const joint of new Set([...p.cautions, ...(s.user.redflag_cautions ?? [])])) {
     if (joint === 'other') continue;
     const level = Math.max(
-      p.cautionLevels?.[joint as 'knee' | 'back' | 'shoulder' | 'wrist'] ?? 1,
+      p.cautionLevels?.[joint as CautionJoint] ?? 1,
       s.user.redflag_caution_level ?? 1,
       p.painState?.some(x => (x.score ?? 0) > 5 || (x.cautionLevelDelta ?? 0) > 0) ? 2 : 1,
     );

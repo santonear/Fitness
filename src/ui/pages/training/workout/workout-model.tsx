@@ -1,4 +1,5 @@
 import { durationText } from '../../../components/ExerciseTargets';
+import { binarySex } from '../../../../domain/body-profile';
 import { painPromptAreas } from '../../../../application/pain-followup';
 import { Rules, calendarDay } from '../../../../engine/data';
 import { PregnancySafetyControls } from '../PregnancySafetyControls';
@@ -332,6 +333,7 @@ export function workoutModel(w: WorkoutReady) {
         busy={busy}
         painAllowed={!!data.state?.coachProfile?.healthStorageConsent}
         promptPainAreas={promptedPainAreas}
+        sex={binarySex(data.profile?.bodyDetails?.values?.biologicalSex)}
         onHealthSettings={() => navigate('/settings/engine')}
         onAppend={event =>
           void run(async () => {

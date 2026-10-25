@@ -1,12 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { MUSCLE_GROUPS, type BodyChangeInput, type Camp, type MuscleLoad } from '../../src/domain/plan-upgrade';
+import { MUSCLE_GROUPS, type BodyChangeInput, type MuscleLoad } from '../../src/domain/plan-upgrade';
 import { DATA } from '../../src/engine/data';
 import {
   MUSCLE_LOAD_THRESHOLDS,
   bodyAge,
   bodyChangeEvents,
   buildNowSession,
-  campProgress,
   estimateE1rm,
   exerciseMuscleGroups,
   isoWeekday,
@@ -288,25 +287,7 @@ describe('body change events (wording v5 §19)', () => {
   });
 });
 
-describe('camp progress and skip pattern', () => {
-  const camp = (patch: Partial<Camp>): Camp => ({
-    id: 'c',
-    title: 't',
-    metric: 'pushup',
-    start: 8,
-    target: 16,
-    ...patch,
-  });
-  it('measures progress in both directions and clamps', () => {
-    expect(campProgress(camp({}), 12)).toBe(0.5);
-    expect(campProgress(camp({}), 30)).toBe(1);
-    expect(campProgress(camp({}), 2)).toBe(0);
-    expect(campProgress(camp({ metric: 'weightKg', start: 70, target: 66 }), 68)).toBe(0.5);
-    expect(campProgress(camp({ metric: 'weightKg', start: 70, target: 66 }), 72)).toBe(0);
-    expect(campProgress(camp({ metric: 'waistCm', start: 80, target: 80 }), 79)).toBe(1);
-    expect(campProgress(camp({ metric: 'waistCm', start: 80, target: 80 }), 81)).toBe(0);
-    expect(campProgress(camp({}), Number.NaN)).toBe(0);
-  });
+describe('skip pattern', () => {
   it('finds a weekday skipped in 3 of its last 4 planned occurrences', () => {
     // Wednesdays 2026-09-23 … 2026-10-14.
     const wednesdays = ['2026-09-23', '2026-09-30', '2026-10-07', '2026-10-14'];

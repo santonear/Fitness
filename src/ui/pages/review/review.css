@@ -518,3 +518,18 @@
     block-size: calc(var(--s8) * 2.2);
   }
 }
+/* K · 每月问一次目标 (Bo 2026-10-25): one 芽芽 line, then its choices. */
+.rv-goal-check {
+  display: grid;
+  gap: var(--s3);
+}
+.rv-goal-check .rv-yaya-line {
+  margin: 0;
+  color: var(--c-ink);
+}
+.rv-goal-check .rv-yaya-line > span {
+  flex: 1;
+}
+.rv-goal-check input {
+  flex: 1 1 100%;
+}

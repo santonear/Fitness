@@ -2,7 +2,8 @@ import { effectiveCautionLevels } from './caution-safety';
 import type { PregnancySafetyState } from './pregnancy-safety';
 import { deriveActivityEvidence } from './engine-activity-evidence';
 import type { CoachProfile, WorkoutRecord, PostpartumSafetyState, OlderSafetyState } from '../domain/v8/contracts';
-import { engineProfileSchema, type EngineProfile, type Pattern } from '../engine/contracts';
+import type { Route } from '../domain/plan-upgrade';
+import { engineProfileSchema, type CautionJoint, type EngineProfile, type Pattern } from '../engine/contracts';
 import { hasHouseholdSupport } from '../engine/equipment';
 import { DATA, calendarDay } from '../engine/data';
 import { pendingPainReviews, painQuestionKeys, historyDangerReview } from './pain-events';
@@ -106,7 +107,7 @@ export type EngineProfileFields = Partial<
     | 'painState'
     | 'householdSupport'
   >
-> & { healthStorageConsent?: { acceptedAt: string } };
+> & { healthStorageConsent?: { acceptedAt: string }; route?: Route };
 export type EngineCoachProfile = CoachProfile & EngineProfileFields;
 type StoredPreference = { kind?: string; value?: string | string[] };
 
@@ -135,7 +136,7 @@ export function enginePreferences(
 export function toEngineProfile(
   profile: EngineCoachProfile,
   options: {
-    cautionLevels?: Partial<Record<'knee' | 'back' | 'shoulder' | 'wrist', { level: 0 | 1 | 2; changedAt: string }>>;
+    cautionLevels?: Partial<Record<CautionJoint, { level: 0 | 1 | 2; changedAt: string }>>;
     painFollowupRestrictions?: readonly PainFollowupRestriction[];
     pregnancySafety?: PregnancySafetyState;
     olderSafety?: OlderSafetyState;
@@ -286,7 +287,11 @@ export function toEngineProfile(
       space: 'small',
     },
     cautions: profile.cautions,
-    population: legacyAgePopulation(source.population, source.birthYearMonth, options.asOfDate),
+    // 稳健 is an explicit older-module opt-in (older.activation), so it is kept below the age threshold too.
+    population:
+      source.route === 'steady'
+        ? source.population
+        : legacyAgePopulation(source.population, source.birthYearMonth, options.asOfDate),
     screening,
     preferences: enginePreferences(profile, options.notes),
     birthYearMonth: source.birthYearMonth,

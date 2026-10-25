@@ -14,6 +14,7 @@ import { buildNowSession, sessionMuscleFocus, weeklyMuscleLoad } from '../../../
 import { homePanelStyle, setHomePanelStyle } from '../../../persistence/plan-upgrade-store';
 import { coachReminderService } from '../../../application/coach-reminders';
 import type { SessionTemplate, WorkoutRecord } from '../../../domain/v8/contracts';
+import type { CautionJoint } from '../../../engine/contracts';
 import { yayaV5 } from '../../../i18n/features/coach/yaya-v5';
 import { planPagesCopy } from '../../../i18n/features/plan-upgrade/pages';
 import {
@@ -22,9 +23,13 @@ import {
   nowCoachLine,
   remindersUnused,
   returnLine,
+  steadyLine,
   usedMinutes,
   weekSetEntries,
 } from '../plan-upgrade/logic';
+import { steadyStarterCopy } from '../../../i18n/features/coach/yaya-steady-starter';
+import { planStartDate } from '../../../application/plan-presentation';
+import { DEFAULT_TIME_ZONE } from '../../../domain/local-date';
 import { intention, lastFigureSex, outlineShown, setIntention } from '../plan-upgrade/prefs';
 import { useMainline } from '../../mainline/context';
 import { useFeature } from '../../useFeature';
@@ -56,7 +61,7 @@ export function useNowSession(
   options: {
     planId?: string;
     candidateIds?: readonly string[];
-    avoidJoints?: readonly ('knee' | 'back' | 'shoulder' | 'wrist')[];
+    avoidJoints?: readonly CautionJoint[];
     preferTemplate?: boolean;
   },
 ) {
@@ -176,7 +181,7 @@ export function NowPanel({
     [data?.version?.id],
   );
   const avoidJoints = (data?.state?.coachProfile?.cautions ?? []).filter(
-    (joint): joint is 'knee' | 'back' | 'shoulder' | 'wrist' => joint !== 'other',
+    (joint): joint is CautionJoint => joint !== 'other',
   );
   const { session, weekLoads } = useNowSession(request, template, data?.workouts ?? [], weekDates, {
     ...(data?.plan?.id ? { planId: data.plan.id } : {}),
@@ -184,8 +189,11 @@ export function NowPanel({
     avoidJoints,
     preferTemplate: minutes === planMinutes,
   });
+  // 稳健 (Bo 2026-10-25): legs, balance and walking only; no body outline or weight wording on 今天.
+  const steady = data?.state?.coachProfile?.route === 'steady';
   const values = data?.profile?.bodyDetails?.values;
-  const shape = outlineShown() ? figureShape(values, figureSex(values?.biologicalSex, lastFigureSex())) : undefined;
+  const shape =
+    !steady && outlineShown() ? figureShape(values, figureSex(values?.biologicalSex, lastFigureSex())) : undefined;
   const focus = session?.focus ?? { primary: [], secondary: [], byExercise: {} };
   const welcome = returnClosed ? undefined : returnLine(data?.workouts ?? [], today);
   const start = () => {
@@ -196,18 +204,36 @@ export function NowPanel({
         ...(session.templateId ? { templateId: session.templateId } : {}),
       });
   };
+  const planStart = (data?.versions ?? [])
+    .filter(v => v.planId === data?.plan?.id)
+    .map(v => planStartDate(v, data?.profile?.timeZone ?? DEFAULT_TIME_ZONE))
+    .filter((date): date is string => !!date)
+    .sort()[0];
   const coachLine = scene
     ? scene === 'commute'
       ? y.fragmentStairs
       : y.fragmentHonest
     : variant !== 'standard'
       ? y.bPlan
-      : nowCoachLine(minutes, session?.exerciseIds.length ?? 0, weekLoads, locale);
+      : steady
+        ? steadyLine(
+            {
+              ...(planStart ? { planStart } : {}),
+              today,
+              trained: (data?.workouts ?? []).some(
+                w => (w.status === 'complete' || w.status === 'partial') && (!planStart || w.localDate >= planStart),
+              ),
+              ...(data?.state?.olderSafety?.balanceStage ? { balanceStage: data.state.olderSafety.balanceStage } : {}),
+              minutes: session?.minutes ?? minutes,
+            },
+            locale,
+          )
+        : nowCoachLine(minutes, session?.exerciseIds.length ?? 0, weekLoads, locale);
   return (
     <>
       {welcome && (
         <Card variant="raised" padding="md" as="section" className="v9-home-panel" role="status">
-          <p>{y[welcome]}</p>
+          <p>{steady ? steadyStarterCopy[locale].steadyMissed : y[welcome]}</p>
           <div className="v9-home-row">
             <PrimaryButton
               size="sm"

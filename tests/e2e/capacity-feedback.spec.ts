@@ -7,7 +7,7 @@ for (const locale of ['en-US', 'zh-CN']) {
       const zh = locale === 'zh-CN';
       await page.goto('/settings');
       await expect(page.getByRole('heading', { name: '我的', exact: true })).toBeVisible();
-      await page.getByRole('combobox').selectOption(zh ? 'zh' : 'en');
+      await page.getByRole('combobox', { name: /^(语言|Language)/ }).selectOption(zh ? 'zh' : 'en');
       await page.getByRole('button', { name: zh ? '备份恢复' : 'Backup and restore', exact: true }).click();
 
       await expect(
@@ -99,7 +99,7 @@ for (const locale of ['en', 'zh'])
     const zh = locale === 'zh';
     await page.goto('/settings');
     await expect(page.getByRole('heading', { name: '我的', exact: true })).toBeVisible();
-    await page.getByRole('combobox').selectOption(zh ? 'zh' : 'en');
+    await page.getByRole('combobox', { name: /^(语言|Language)/ }).selectOption(zh ? 'zh' : 'en');
     await page.getByRole('button', { name: zh ? '备份恢复' : 'Backup and restore', exact: true }).click();
 
     const first = page.waitForEvent('download');

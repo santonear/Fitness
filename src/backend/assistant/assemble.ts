@@ -9,6 +9,7 @@ import { assistantMovement } from '../../catalog/ai-catalog';
 import { applicableAssistantCandidates, lowerBodyAddition } from './applicable-candidates';
 import { exercises } from '../../catalog/exercises';
 import { coachResponseSchema } from '../../coach/contracts';
+import { cautionSchema } from '../../engine/contracts';
 import {
   resolveAssistantExercise,
   newItem,
@@ -70,7 +71,7 @@ export function assembleAssistantIntent(
         cautions: [
           ...new Set([
             ...context.profile.cautions,
-            ...(p.cautionAreas ?? []).filter(area => ['knee', 'back', 'shoulder', 'wrist', 'other'].includes(area)),
+            ...(p.cautionAreas ?? []).filter(area => (cautionSchema.options as readonly string[]).includes(area)),
           ]),
         ] as typeof context.profile.cautions,
       };

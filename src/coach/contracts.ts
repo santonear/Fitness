@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { engineProfileSchema, prescriptionSchema } from '../engine/contracts';
+import { cautionSchema, engineProfileSchema, prescriptionSchema } from '../engine/contracts';
 import { exerciseIdSchema, setMetricsSchema, timeZoneSchema, validateTemplateMinutes } from '../domain/schemas';
 
 /** Wave 0 wire contract only. No model calls, authorization or writes. */
@@ -49,7 +49,7 @@ const profile = z.strictObject({
   place: z.enum(['home', 'gym', 'outdoor', 'mixed']),
   equipment: z.array(text),
   adultConfirmed: z.literal(true),
-  cautions: z.array(z.enum(['knee', 'back', 'shoulder', 'wrist', 'other'])),
+  cautions: z.array(cautionSchema),
   cautionNote: text.optional(),
 });
 /** Training days the user picked on the calendar (scheduling only, not health data); fixed unless the user asks to change days. */

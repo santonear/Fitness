@@ -23,7 +23,7 @@ import { engineAction, enginePlanProposal, existingEnginePlan } from '../../src/
 import { assembleEngineIntent } from '../../src/backend/assistant/engine-assemble';
 import * as engine from '../../src/engine';
 import { exercises } from '../../src/catalog/exercises';
-import type { EngineProfile, EngineResult } from '../../src/engine/contracts';
+import { enginePlanSchema, type EngineProfile, type EngineResult } from '../../src/engine/contracts';
 import type { CoachRequest } from '../../src/coach/contracts';
 import type { SessionTemplate } from '../../src/domain/v8/contracts';
 
@@ -150,6 +150,12 @@ describe('training engine local and external boundaries', () => {
       { ...template, id: 'B', targetMinutes: 15, estimatedMinutes: 15 },
     ];
     const plan = existingEnginePlan({ weeklyTarget: 3, sessionMinutes: 63, templates });
+    // A saved version's own fields stay out of the strict engine plan.
+    expect(
+      enginePlanSchema.safeParse(
+        existingEnginePlan({ ...plan, goalText: 'x', scheduleOriginalText: 'x', reasons: ['x', 'x', 'x'] } as never),
+      ).success,
+    ).toBe(true);
     vi.spyOn(engine, 'generatePlan').mockReturnValue(plan);
     vi.spyOn(environment, 'applicableEnginePlan').mockReturnValue(true);
     const result = enginePlanProposal(coach, profile);

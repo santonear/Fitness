@@ -2,6 +2,7 @@ import type { SetFeedbackEvent, WorkoutRecord } from '../domain/v8/contracts';
 import { Rules, condition, type Exercise } from '../engine/data';
 import type { Caution } from '../engine/contracts';
 import type { EngineProfile } from '../engine/contracts';
+import { redFlagQuestionKeys } from '../engine/gates/redflag-items';
 type Review = NonNullable<EngineProfile['screening']['redFlagReview']>;
 /** Derive known danger from retained training facts; withdrawing profile storage cannot declare it resolved. */
 export function historyDangerReview(history: WorkoutRecord[], stored?: Review): Review | undefined {
@@ -31,17 +32,7 @@ export function historyDangerReview(history: WorkoutRecord[], stored?: Review): 
   };
 }
 export function painQuestionKeys(areas: Caution[]) {
-  const rules = new Rules(),
-    joint = rules.get('redflag.joint_any').items as string[],
-    back = rules.get('redflag.back'),
-    shoulder = rules.get('redflag.shoulder');
-  return [
-    ...new Set([
-      ...joint,
-      ...(areas.includes('back') ? [...back.emergency_items, ...back.urgent_items] : []),
-      ...(areas.includes('shoulder') ? [...shoulder.cardiac_route_items, ...shoulder.prompt_medical_items] : []),
-    ]),
-  ] as string[];
+  return redFlagQuestionKeys(new Rules(), areas);
 }
 /** Append order represents an explicit correction; never edit the earlier fact. */
 export function latestSetFeedback(record: WorkoutRecord) {

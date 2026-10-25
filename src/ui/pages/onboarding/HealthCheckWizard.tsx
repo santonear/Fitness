@@ -10,6 +10,7 @@ import {
   groupScreen,
   bpScreen,
   populationScreen,
+  routeScreen,
   weekScreen,
   deliveryScreen,
   age45Screen,
@@ -109,6 +110,8 @@ export function HealthCheckWizard(props: HealthCheckWizardProps) {
       );
     case screen.id === 'bp':
       return bpScreen(h);
+    case screen.id === 'route':
+      return routeScreen(h);
     case screen.id === 'population':
       return populationScreen(h);
     case screen.id === 'preg:week' || screen.id === 'pp:week':

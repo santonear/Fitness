@@ -65,9 +65,10 @@ it('every-set attention opens existing score and area controls without selecting
   };
   const plain = renderToStaticMarkup(createElement(SetFeedback, props)),
     prompted = renderToStaticMarkup(createElement(SetFeedback, { ...props, promptPainAreas: ['knee'] }));
-  expect(plain).not.toContain('max="10" step="1" value=""/></label>');
-  expect(prompted).toContain('type="number" min="0" max="10" step="1" value=""');
-  expect(prompted).toContain('value="" selected=""');
+  expect(plain).not.toContain('哪里不舒服？');
+  expect(prompted).toContain('哪里不舒服？');
+  expect(prompted).toContain('aria-label="右膝"');
+  expect(prompted).not.toContain('aria-pressed="true"');
 });
 it('follow-up questions preserve unknown answers and use the source two questions', () => {
   const html = renderToStaticMarkup(

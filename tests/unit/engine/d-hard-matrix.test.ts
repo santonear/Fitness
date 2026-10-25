@@ -74,11 +74,17 @@ const scenarios: Scenario[] = [
     profile: { trainingAgeWeeks: 0 },
     exercise: { flags: ['jumping'] },
   },
-  ...(['knee', 'back', 'shoulder', 'wrist'] as const).map(joint => ({
+  ...(['knee', 'back', 'shoulder', 'wrist', 'hip', 'ankle'] as const).map(joint => ({
     id: `caution.${joint}.filter`,
     profile: { cautions: [joint] },
     exercise: { joint_load: { [joint]: 3 } },
   })),
+  // shortcut: neck has no joint_load annotation; its filter excludes proxy flags such as overhead load.
+  {
+    id: 'caution.neck.filter',
+    profile: { cautions: ['neck'] },
+    exercise: { flags: ['overhead_load'] },
+  },
   {
     id: 'older.exclude.base',
     profile: { population: older },
@@ -249,14 +255,25 @@ describe('D hard source branch matrix: one positive and negative each', () => {
       expect(inspect(scenario, true).some(issue => issue.ruleId === scenario.id)).toBe(true);
       expect(inspect(scenario, false).some(issue => issue.ruleId === scenario.id)).toBe(false);
     });
-  it('separates original93 hard plus two deferred from the new hard gate, retaining total active95', () => {
+  it('separates original93 hard plus two deferred from the new hard rules, retaining total active104', () => {
     const rows = hardRuleAssessments(source),
       active = source.data.rules.filter(rule => rule.severity === 'hard').map(rule => rule.id),
-      originalActive = active.filter(id => !['caution.progression_gate', 'pregnancy.inactive.ramp'].includes(id)),
+      // Added hard rules: the progression gate, the inactive-pregnancy ramp and (2026-10-25) hip/ankle/neck.
+      added = [
+        'caution.progression_gate',
+        'pregnancy.inactive.ramp',
+        ...['hip', 'ankle', 'neck'].flatMap(area => [
+          `caution.${area}.filter`,
+          `caution.${area}.substitute`,
+          `redflag.${area}`,
+        ]),
+      ],
+      originalActive = active.filter(id => !added.includes(id)),
       deferred = ['pregnancy.hiit', 'caution.progression'];
-    expect(rows).toHaveLength(95);
+    expect(rows).toHaveLength(104);
     expect(originalActive).toHaveLength(93);
-    expect(new Set(rows.map(x => x.ruleId)).size).toBe(95);
+    expect(new Set(rows.map(x => x.ruleId)).size).toBe(104);
+    expect(rows.filter(row => added.includes(row.ruleId)).every(row => row.status !== 'unreviewed')).toBe(true);
     expect(rows.map(row => row.ruleId).sort()).toEqual(active.sort());
     for (const id of deferred) {
       expect(source.byId.get(id)).toMatchObject({

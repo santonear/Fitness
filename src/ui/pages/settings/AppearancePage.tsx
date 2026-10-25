@@ -4,12 +4,15 @@ import { getAvailableThemes } from '../../../themes/registry';
 import { isFeatureEnabled, subscribeFeatureFlags } from '../../../application/feature-flags';
 import { Button } from '../../components/common';
 import { ThemePicker } from '../../components/ThemePicker';
+import { SegmentedTabs } from '../../components/kit';
+import { themeEntryCopy } from '../../../i18n/features/home/theme';
 import './appearance.css';
 import { useMainline } from '../../mainline/context';
 import { useState, useSyncExternalStore } from 'react';
 export function AppearancePage() {
   const { t, locale, appearance, navigate } = useMainline();
-  const copy = locale === 'zh' ? settingsZh : settingsEn;
+  const copy = locale === 'zh' ? settingsZh : settingsEn,
+    entry = themeEntryCopy[locale];
   const [more, setMore] = useState(false);
   const discovery = useSyncExternalStore(
     subscribeFeatureFlags,
@@ -30,6 +33,18 @@ export function AppearancePage() {
           onChange={appearance.change}
           locale={locale}
           label={copy.appearanceStyle}
+        />
+      </section>
+      <section className="v8-appearance" aria-label={entry.textSize}>
+        <h2>{entry.textSize}</h2>
+        <SegmentedTabs
+          label={entry.textSize}
+          options={[
+            { value: 'standard', label: entry.textStandard },
+            { value: 'large', label: entry.textLarge },
+          ]}
+          value={appearance.textSize}
+          onChange={value => appearance.changeTextSize(value === 'large' ? 'large' : 'standard')}
         />
       </section>
       <Button aria-expanded={more} onClick={() => setMore(!more)}>

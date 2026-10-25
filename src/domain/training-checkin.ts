@@ -1,9 +1,16 @@
 import { z } from 'zod';
-import { engineCheckinSchema, type EngineCheckin } from '../engine/contracts';
+import {
+  cautionSchema,
+  engineCheckinSchema,
+  painSideSchema,
+  type CautionJoint,
+  type EngineCheckin,
+} from '../engine/contracts';
 
 export const jointPainSchema = z.strictObject({
   painScore: z.number().int().min(0).max(10).optional(),
-  painArea: z.enum(['knee', 'back', 'shoulder', 'wrist', 'other']).optional(),
+  painArea: cautionSchema.optional(),
+  painSide: painSideSchema.optional(),
   redFlagAnswers: z.record(z.string(), z.boolean()).optional(),
 });
 export const trainingCheckinInputSchema = engineCheckinSchema.extend({
@@ -11,7 +18,7 @@ export const trainingCheckinInputSchema = engineCheckinSchema.extend({
     .strictObject({
       workoutId: z.uuid(),
       itemIndex: z.number().int().nonnegative(),
-      painArea: z.enum(['knee', 'back', 'shoulder', 'wrist', 'other']),
+      painArea: cautionSchema,
     })
     .optional(),
   jointPain: jointPainSchema.optional(),
@@ -26,7 +33,7 @@ export interface TrainingCheckinRow {
   answers: EngineCheckin;
   cautionMorning?: {
     workoutId: string;
-    joint: 'knee' | 'back' | 'shoulder' | 'wrist';
+    joint: CautionJoint;
     painLastedToNextMorning: boolean;
   };
   painFollowup?: TrainingCheckinInput['painFollowup'];

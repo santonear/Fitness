@@ -138,8 +138,8 @@ it('keeps older screening age-derived while the pregnancy selector contains only
           onChange: () => {},
         }),
       );
-  expect(render(64)).not.toContain(engineCopy('older.screen.copy.intro', 'zh'));
-  expect(render(65)).toContain(engineCopy('older.screen.copy.intro', 'zh'));
+  expect(render(59)).not.toContain(engineCopy('older.screen.copy.intro', 'zh'));
+  expect(render(60)).toContain(engineCopy('older.screen.copy.intro', 'zh'));
   const persisted = renderToStaticMarkup(
     createElement(EngineProfileEditor, {
       value: {
@@ -175,7 +175,7 @@ it('asks only current safety and energy questions before a first real completed 
   }
   const currentPain = checkin([], { newOrWorseJointPain: true });
   expect(currentPain).toContain(engineCopy('pain.copy.stop_exercise', 'zh'));
-  expect(currentPain).toContain('疼痛评分');
+  expect(currentPain).toContain('哪里不舒服？');
 });
 it.each(['complete', 'partial'] as const)(
   'preserves unanswered previous-training questions with real %s history',

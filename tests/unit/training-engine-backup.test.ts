@@ -127,6 +127,18 @@ describe('training engine additive backup fields', () => {
           painScore: 4,
           painArea: 'knee' as const,
         },
+        // 2026-10-25: new areas and the optional side survive a backup round trip.
+        {
+          id: crypto.randomUUID(),
+          itemIndex: 0,
+          setIndex: 0,
+          exerciseId,
+          createdAt: at,
+          effort: 'discomfort' as const,
+          painScore: 3,
+          painArea: 'ankle' as const,
+          painSide: 'right' as const,
+        },
       ],
     };
     v8.workouts.push(record);

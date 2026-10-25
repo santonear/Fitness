@@ -199,3 +199,19 @@
   font-size: var(--t1);
   color: var(--c-ink-muted);
 }
+/* 今天练这里 · 芽芽 v5 §8: one line and two small buttons above the exercise cards. */
+.pu-tip {
+  display: grid;
+  gap: var(--s2);
+}
+.pu-tip p {
+  margin: 0;
+  font-size: var(--t2);
+  line-height: var(--lh-body);
+  color: var(--c-ink);
+}
+.pu-tip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+}

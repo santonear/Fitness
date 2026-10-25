@@ -20,6 +20,7 @@ import { type ManualSelection, invalid, localDate } from './shared';
 import type { WorkflowContext } from './context';
 import type { createPlanSetup } from './plan-setup';
 import { DEFAULT_TIME_ZONE } from '../../domain/local-date';
+import { starterProgress, starterTemplate } from '../starter-program';
 
 export function createWorkoutSession(
   ctx: WorkflowContext,
@@ -36,6 +37,12 @@ export function createWorkoutSession(
       override && override.planVersionId === version?.id && override.templateId === templateId
         ? override.template
         : version?.templates.find(item => item.id === templateId);
+    const today = localDate(data.profile?.timeZone ?? DEFAULT_TIME_ZONE);
+    // 新手 4 周: this week's sets over the plan's own session (week computed, never stored).
+    const starter = <T extends NonNullable<typeof selected>>(template: T): T =>
+      version?.starterProgram
+        ? starterTemplate(template, starterProgress(version.starterProgram, data.workouts, today), data.workouts, today)
+        : template;
     const unchanged = {
       template: selected,
       blocked: false,
@@ -55,7 +62,8 @@ export function createWorkoutSession(
       unresolvedReview(historyDangerReview(data.workouts, data.state?.coachProfile?.screening?.redFlagReview))
     )
       return { ...unchanged, template: undefined, blocked: true };
-    if (!isFeatureEnabled('trainingEngine') || !selected || !version?.enginePlan) return unchanged;
+    if (!isFeatureEnabled('trainingEngine') || !selected || !version?.enginePlan)
+      return { ...unchanged, template: selected && starter(selected) };
     if (!profile) return { ...unchanged, template: undefined, blocked: true };
     const mapped = toEngineProfile(profile, {
       cautionLevels: data.state?.cautionLevels,
@@ -64,7 +72,7 @@ export function createWorkoutSession(
       screeningEvidenceEvents: data.state?.screeningEvidenceEvents,
       olderSafety: data.state?.olderSafety,
       postpartumSafety: data.state?.postpartumSafety,
-      asOfDate: localDate(data.profile?.timeZone ?? DEFAULT_TIME_ZONE),
+      asOfDate: today,
       timeZone: data.profile?.timeZone,
       locale: data.profile?.locale,
       history: data.workouts,
@@ -99,23 +107,25 @@ export function createWorkoutSession(
       checkin: checkinContext.checkin,
       templateId,
     });
-    const previewIssues = validatePlan(result.value, mapped, {
+    const baseline = version.enginePlan;
+    const issuesOf = (plan: EnginePlan) =>
+      validatePlan(plan, mapped, {
         progression: {
-          baseline: version.enginePlan,
+          baseline,
           history: checkinContext.history,
           checkin: checkinContext.checkin,
           templateId,
         },
-      }),
+      });
+    const previewIssues = issuesOf(result.value),
       environmentCodes = new Set(
         result.value.quality?.basis === 'environment_constraint'
           ? result.value.quality.environmentConstraints?.flatMap(claim => claim.issueCodes)
           : [],
       );
-    if (
-      !applicableEnginePlan(result.value, mapped) ||
-      previewIssues.some(issue => issue.severity === 'error' && !environmentCodes.has(issue.code))
-    )
+    const unsafe = (issues: typeof previewIssues) =>
+      issues.some(issue => issue.severity === 'error' && !environmentCodes.has(issue.code));
+    if (!applicableEnginePlan(result.value, mapped) || unsafe(previewIssues))
       return {
         ...unchanged,
         template: undefined,
@@ -138,9 +148,30 @@ export function createWorkoutSession(
       await checkins.assertSafeItems(selected.items);
       return { ...unchanged, notices: result.notices };
     }
-    await checkins.assertSafeItems((result.value.templates.find(item => item.id === templateId) ?? selected).items);
+    const engineTemplate = result.value.templates.find(item => item.id === templateId);
+    // 新手 4 周: the week's set changes go in one move at a time and only while every engine check still passes
+    // (safety and the session's time fit); a change that fails is left out and the plan's own sets stay.
+    const weekTemplate = engineTemplate && starter(engineTemplate);
+    let chosen = engineTemplate ?? selected;
+    if (engineTemplate && weekTemplate && weekTemplate !== engineTemplate) {
+      let candidate = engineTemplate;
+      for (const [index, item] of weekTemplate.items.entries()) {
+        if (item.sets === candidate.items[index]!.sets) continue;
+        const next = {
+          ...candidate,
+          items: candidate.items.map((row, at) => (at === index ? { ...row, sets: item.sets } : row)),
+        };
+        const plan = {
+          ...result.value,
+          templates: result.value.templates.map(row => (row.id === templateId ? next : row)),
+        };
+        if (!unsafe(issuesOf(plan))) candidate = next;
+      }
+      chosen = candidate;
+    }
+    await checkins.assertSafeItems(chosen.items);
     return {
-      template: result.value.templates.find(item => item.id === templateId) ?? selected,
+      template: chosen,
       blocked: false,
       suggestions: result.suggestions.filter(item => item.templateId === templateId),
       notices: result.notices,
