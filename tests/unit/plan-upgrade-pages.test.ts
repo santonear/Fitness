@@ -5,6 +5,9 @@ import { planPagesCopy } from '../../src/i18n/features/plan-upgrade/pages';
 import { EVIDENCE } from '../../src/ui/pages/plan-upgrade/Evidence';
 import {
   bodyChangeLine,
+  bodyRoute,
+  shownBodyChanges,
+  spokenBefore,
   breathingCycles,
   breathingPhase,
   figureSex,
@@ -112,6 +115,18 @@ describe('V9.14 page logic', () => {
   it('chair stand only from 60', () => {
     expect(testItemsFor(45)).not.toContain('chairStand30s');
     expect(testItemsFor(62)).toContain('chairStand30s');
+  });
+  it('body-change lines: route from the goal, care replaces praise, today stays on screen', () => {
+    expect(bodyRoute('想瘦下来，身体轻一点', undefined)).toBe('shape');
+    expect(bodyRoute('想有些力量，不再容易累', undefined)).toBe('health');
+    expect(bodyRoute('减脂', { kind: 'postpartum' })).toBe('postpartum');
+    const stronger = { kind: 'stronger' as const, metric: 'x', delta: 5, sinceLocalDate: '2026-09-20' };
+    const care = { kind: 'care-fast-loss' as const, metric: 'weightKg', delta: -1, sinceLocalDate: '2026-10-10' };
+    expect(shownBodyChanges([stronger, care])).toEqual([care]);
+    expect(shownBodyChanges([stronger])).toEqual([stronger]);
+    expect(spokenBefore({ stronger: '2026-10-26', lighter: '2026-10-20' }, '2026-10-26')).toEqual({
+      lighter: '2026-10-20',
+    });
   });
   it('reminders ask to move or stop only when on and three in a row went unused', () => {
     const records = [1, 2, 3].map(shownAt => ({ kind: 'workout', status: 'dismissed', shownAt }));

@@ -298,5 +298,10 @@ export function useExerciseTools(scope: ExerciseToolScope, options: { canSwap?: 
       guideTrigger.current = trigger;
       setGuide(id);
     },
+    /** Opens 换动作 for one item (the 上周 card's “看替代动作”); same sheet and save path as the item buttons. */
+    openSwap: (target: SwapTarget, trigger: HTMLElement | null) => {
+      swapTrigger.current = trigger;
+      setSwap(target);
+    },
   };
 }

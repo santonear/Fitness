@@ -78,8 +78,12 @@ import { dayViewCopy } from '../../../i18n/features/home/day-view';
 import { NowPanel, type FocusState } from './NowPanel';
 import { LastWeekCard } from './LastWeekCard';
 import { lastWeekSummary } from '../../../application/last-week';
+import { nextWeekTip, skipDayTip, type NextWeekTip } from '../../../application/yaya-tips';
+import { painPromptAreas } from '../../../application/pain-followup';
+import { SkipDayLine, markWeekdayAsked, skipDayResting, weekdayAsked } from './plan-tips';
+import { lastWeekClosed, tipSummary } from './LastWeekCard';
 import './home.css';
-import { utcDay, DAY_MS } from '../../../domain/local-date';
+import { utcDay, DAY_MS, weekStart } from '../../../domain/local-date';
 
 const localDay = (timeZone: string, date = new Date()) =>
   new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
@@ -111,6 +115,7 @@ export function HomePage() {
     restartPlanning,
     setHomeTemplateId,
     setReviewKind,
+    applyLocalChange,
   } = useMainline();
   const [choice, setChoice] = useState<string>();
   const legacyDates = remindersEnabled && !!data?.hasFutureLegacyDates;
@@ -246,6 +251,59 @@ export function HomePage() {
       (data?.activities.length ?? 0) > 0,
     active: !!data?.active,
   });
+  // 芽芽's plan tips (v5 §14, 上周 “下周怎么调”): only for an editable plan with nothing in progress.
+  const profileId = data?.metadata.localProfileId ?? '',
+    thisWeek = weekStart(todayDate);
+  const editable = !!version && !!data?.plan && !data.plan.readOnly && !data.active && !notStarted;
+  const planVersions = (data?.versions ?? []).filter(v => v.planId === data?.plan?.id);
+  const asked = profileId ? weekdayAsked(profileId, thisWeek) : undefined;
+  const weekTip: NextWeekTip | undefined =
+    editable && lastWeek && previousFacts
+      ? nextWeekTip({
+          from: previousFacts.from,
+          to: previousFacts.to,
+          done: lastWeek.done,
+          target: lastWeek.target,
+          today: todayDate,
+          timeZone,
+          version: version!,
+          versions: planVersions,
+          workouts: data!.workouts,
+          activities: data!.activities,
+          followedUpWorkoutIds: (data!.state?.painFollowupRestrictions ?? []).map(row => row.sourceWorkoutId),
+          planFirstStart: planStarts[0],
+          weekdayAskedThisWeek: asked === 'today',
+        })
+      : undefined;
+  const cardSaysWeekday = weekTip?.kind === 'weekday' && !!lastWeek && !lastWeekClosed(profileId, lastWeek.week);
+  const skipDay =
+    editable && asked !== 'lastweek' && !cardSaysWeekday && !skipDayResting(profileId, todayDate)
+      ? skipDayTip({
+          version: version!,
+          versions: planVersions,
+          workouts: data!.workouts,
+          activities: data!.activities,
+          timeZone,
+          today: todayDate,
+        })
+      : undefined;
+  useEffect(() => {
+    if (skipDay && profileId) markWeekdayAsked(profileId, thisWeek, 'today');
+  }, [!!skipDay, profileId, thisWeek]);
+  // “看替代动作”: the exercise from last week's note in today's session, else one that loads the same area.
+  const painSwap =
+    weekTip?.kind === 'pain' && selected && !data?.active
+      ? (() => {
+          const index = selected.items.findIndex(item => weekTip.exerciseIds.includes(item.exerciseId));
+          const loaded =
+            index >= 0
+              ? index
+              : selected.items.findIndex(item => painPromptAreas(item.exerciseId, weekTip.areas).length > 0);
+          return loaded >= 0
+            ? { templateId: selected.id, itemIndex: loaded, exerciseId: selected.items[loaded]!.exerciseId }
+            : undefined;
+        })()
+      : undefined;
   // 今天练这里 comes before every start from the panel (V9.14).
   const startNow = (state: FocusState) => navigate('/today-focus', { state });
   const strip = weekdays.map((day, index) => {
@@ -355,6 +413,22 @@ export function HomePage() {
             setReviewKind('week');
             navigate('/review');
           }}
+          tip={weekTip}
+          busy={busy}
+          onAdjust={tip =>
+            'proposal' in tip
+              ? applyLocalChange({ proposal: tip.proposal, summary: tipSummary(tip, locale) })
+              : Promise.resolve(false)
+          }
+          {...(painSwap
+            ? {
+                onSwaps: () =>
+                  tools.openSwap(
+                    painSwap,
+                    document.activeElement instanceof HTMLElement ? document.activeElement : null,
+                  ),
+              }
+            : {})}
         />
       )}
       {trainedToday && (
@@ -405,6 +479,7 @@ export function HomePage() {
               {...(notStarted ? {} : { onStart: startNow })}
             />
             {notStarted && <p className="v9-home-reason">{sd.notStarted}</p>}
+            {skipDay && <SkipDayLine key={skipDay.weekday} change={skipDay} today={todayDate} />}
             <p className="v9-home-reason">
               {!last
                 ? t.firstWorkoutReason

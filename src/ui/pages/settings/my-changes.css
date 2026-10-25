@@ -167,3 +167,17 @@
   outline: var(--ring-w) solid var(--c-focus);
   outline-offset: var(--s1);
 }
+/* 芽芽's body-change line beside the outline (v5 §19). */
+.v9-change-yaya {
+  display: grid;
+  gap: var(--s1);
+  padding: var(--s2) var(--s3);
+  border-radius: var(--r-chip);
+  background: var(--c-surface-2);
+}
+.v9-change-yaya p {
+  margin: 0;
+  font-size: var(--t2);
+  line-height: var(--lh-body);
+  color: var(--c-ink);
+}
