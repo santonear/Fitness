@@ -143,9 +143,12 @@ for (const scope of ['valid', 'stale-version', 'stale-template'] as const)
           },
         }),
       );
+      const { templateLabel } = await load('/src/i18n/features/plan/labels.ts');
       const effective = scope === 'valid' ? adjusted : original;
       return {
         name: effective.name,
+        // Shown name: the basic plan's bare "A" reads as its content name (V9.20).
+        label: templateLabel(effective, 'zh', version.templates),
         ids: effective.items.map((item: { exerciseId: string }) => item.exerciseId),
         minutes: estimatePlannedMinutes(effective.items),
         items: effective.items,
@@ -153,7 +156,7 @@ for (const scope of ['valid', 'stale-version', 'stale-template'] as const)
     }, scope);
     await page.reload();
     await page.getByRole('button', { name: '按计划来一份', exact: true }).click();
-    await page.getByRole('button', { name: expected.name, exact: true }).click();
+    await page.getByRole('button', { name: expected.label, exact: true }).click();
     await expect(page.locator('.manual-start')).toContainText(`已选 ${new Set(expected.ids).size} 个动作`);
     await expect(page.locator('.manual-start')).toContainText(`约 ${expected.minutes} 分钟`);
     await expect(page.locator('section.manual-chips button')).toHaveCount(new Set(expected.ids).size);

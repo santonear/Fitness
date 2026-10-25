@@ -27,7 +27,6 @@ import {
 } from '../timer-logic';
 import { VoiceToggle } from '../../plan-upgrade/VoiceToggle';
 import { Icon } from './workout-parts';
-import { playSetCue } from '../useRestVibration';
 import type { useWorkoutState } from './useWorkoutState';
 
 const painPromptRules = new Rules();
@@ -196,7 +195,6 @@ export function workoutModel(w: WorkoutReady) {
             }
           : { reps: value, ...(needsLoad ? { loadGrams: Math.round(load! * 1000) } : {}) },
       );
-      playSetCue();
       setHolds(prior => {
         const next = { ...prior };
         delete next[holdKey];

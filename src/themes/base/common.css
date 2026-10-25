@@ -9,9 +9,13 @@
 .v8-press:active:not(:disabled) {
   transform: var(--press-transform);
   box-shadow: var(--press-shadow);
-  /* Goes down at once under the finger; the spring is only for the release (V9.20). */
-  transition-duration: var(--press-in);
-  transition-timing-function: ease-out;
+}
+/* Goes down at once under the finger; the spring is only for the release (V9.20). */
+@media (prefers-reduced-motion: no-preference) {
+  .v8-press:active:not(:disabled) {
+    transition-duration: var(--press-in);
+    transition-timing-function: ease-out;
+  }
 }
 .v8-press:focus-visible {
   outline: var(--bw) solid var(--c-focus);
