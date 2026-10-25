@@ -138,8 +138,8 @@ it('keeps older screening age-derived while the pregnancy selector contains only
           onChange: () => {},
         }),
       );
-  expect(render(64)).not.toContain(engineCopy('older.screen.copy.intro', 'zh'));
-  expect(render(65)).toContain(engineCopy('older.screen.copy.intro', 'zh'));
+  expect(render(59)).not.toContain(engineCopy('older.screen.copy.intro', 'zh'));
+  expect(render(60)).toContain(engineCopy('older.screen.copy.intro', 'zh'));
   const persisted = renderToStaticMarkup(
     createElement(EngineProfileEditor, {
       value: {
