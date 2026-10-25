@@ -9,14 +9,8 @@ import {
   type MuscleGroup,
   type NowMinutes,
 } from '../../src/domain/plan-upgrade';
-import {
-  AnatomyMap,
-  FIGURE_OUTLINES,
-  anatomyLabel,
-  buildAnatomy,
-  fatFromPercent,
-  fatOf,
-} from '../../src/ui/components/kit/AnatomyMap';
+import { AnatomyMap, anatomyLabel, buildAnatomy, fatFromPercent, fatOf } from '../../src/ui/components/kit/AnatomyMap';
+import { BODY_ART } from '../../src/ui/components/kit/body-figure';
 import {
   HomePanel,
   MinutesGroup,
@@ -57,13 +51,13 @@ const pairs = (d: string) => {
   const n = (d.match(/-?\d*\.?\d+/g) ?? []).map(Number);
   return n.flatMap((_, i) => (i % 2 ? [] : [[n[i], n[i + 1]] as const]));
 };
-/** x of the morphed outline point that comes from source point (sx, sy); the left half is drawn, so wider → smaller x. */
-function edgeX(sex: 'male' | 'female', d: string, sx: number, sy: number) {
-  const index = pairs(FIGURE_OUTLINES[sex]).findIndex(([x, y]) => x === sx && y === sy);
+/** x of the morphed front outline point that comes from the screen-left trunk edge near height y; wider → smaller x. */
+function edgeX(sex: 'male' | 'female', d: string, y: number) {
+  const index = pairs(BODY_ART[sex].front.outline).findIndex(([px, py]) => Math.abs(py - y) < 3 && px > 52 && px < 72);
   expect(index).toBeGreaterThan(0);
   return pairs(d)[index][0];
 }
-const leftEdge = (d: string, y: number) => (y === 172 ? edgeX('male', d, 68, 198) : edgeX('female', d, 58, 240));
+const leftEdge = (d: string, y: number) => (y === 195 ? edgeX('male', d, 195) : edgeX('female', d, 235));
 
 describe('AnatomyMap', () => {
   it('draws all 15 regions across front and back, each mirrored', () => {
@@ -162,13 +156,13 @@ describe('AnatomyMap', () => {
     const waist = (kg: number) =>
       leftEdge(
         buildAnatomy({ primary: [], secondary: [], shape: { sex: 'male', heightCm: 180, weightKg: kg } }).outline[0].d,
-        172,
+        195,
       );
     const hips = (kg: number) =>
       leftEdge(
         buildAnatomy({ primary: [], secondary: [], shape: { sex: 'female', heightCm: 165, weightKg: kg } }).outline[0]
           .d,
-        222,
+        235,
       );
     const male = [60, 72, 90, 110].map(waist);
     const female = [48, 58, 70, 85].map(hips);
@@ -182,17 +176,17 @@ describe('AnatomyMap', () => {
       shape: { heightCm: 180, weightKg: 90 },
       ghostWeightKg: 100,
     });
-    expect(ghost.ghost).toHaveLength(4);
-    expect(leftEdge(ghost.ghost[0].d, 172)).toBeLessThan(leftEdge(ghost.outline[0].d, 172));
+    expect(ghost.ghost).toHaveLength(2);
+    expect(leftEdge(ghost.ghost[0].d, 195)).toBeLessThan(leftEdge(ghost.outline[0].d, 195));
   });
 
-  it('draws the female figure with its own outline and hair', () => {
+  it('draws the female figure with its own outline and lines', () => {
     const female = buildAnatomy({ primary: [], secondary: [], shape: { sex: 'female' } });
     const male = buildAnatomy({ primary: [], secondary: [] });
     expect(female.sex).toBe('female');
     expect(female.outline[0].d).not.toBe(male.outline[0].d);
-    expect(female.hair[0].d).not.toBe(male.hair[0].d);
-    expect(female.details.length).toBeGreaterThan(male.details.length);
+    expect(female.lines[0].d).not.toBe(male.lines[0].d);
+    expect(female.regions.find(r => r.group === 'chest')!.d).not.toBe(male.regions.find(r => r.group === 'chest')!.d);
   });
 
   it('stops every information animation under reduced motion', () => {

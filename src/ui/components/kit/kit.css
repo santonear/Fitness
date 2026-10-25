@@ -434,14 +434,9 @@
 }
 .v9-am-base {
   fill: var(--map-base);
-  stroke: var(--map-base);
-  stroke-width: 1.4;
 }
 .v9-am-muscle {
-  fill: var(--map-base);
-  stroke: var(--map-line);
-  stroke-width: 1;
-  stroke-linejoin: round;
+  fill: none;
 }
 .v9-am-muscle[data-role='primary'] {
   fill: var(--map-hot);
@@ -453,23 +448,9 @@
   fill: var(--map-hot);
   animation: v9-am-glow 1.6s ease-in-out infinite;
 }
-.v9-am-detail {
-  fill: none;
-  stroke: var(--map-line);
-  stroke-width: 1;
-  stroke-linecap: round;
-}
-.v9-am-hair {
+.v9-am-lines {
   fill: var(--map-line);
-  fill-opacity: 0.28;
-  stroke: var(--map-line);
-  stroke-width: 1;
-}
-.v9-am-outline {
-  fill: none;
-  stroke: var(--map-line);
-  stroke-width: 1.5;
-  stroke-linejoin: round;
+  fill-rule: evenodd;
 }
 .v9-am-ghost {
   fill: none;
