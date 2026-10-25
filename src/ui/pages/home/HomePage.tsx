@@ -282,7 +282,11 @@ export function HomePage() {
       {applied && version && (
         <Card variant="raised" padding="md" className="v9-home-applied" role="status">
           <Yaya pose="cheer" size={52} alt="" />
-          <p>{h.applied}</p>
+          <p>
+            {notStarted && startDate
+              ? fill(h.appliedLater, { date: startDateLabel(startDate, todayDate, locale) })
+              : h.applied}
+          </p>
         </Card>
       )}
       <PelvicFloorDailyNotice />
