@@ -53,12 +53,6 @@ export const yayaV5 = {
     testAge: '按这个成绩估算，你的身体年龄大概是 {age} 岁 📈',
     testWeak: '我看了下五边形，{item}是现在的短板，这周帮你加了 2 次拉伸 ⚡',
     testDown: '这次少了 {count} 个，可能最近没睡好，波动很正常。下周再测一次，看趋势就好 📊',
-    // §11 我的山路
-    campReached: '你到第{n}个营地了：{camp}。出发时你才 {start} 📈',
-    campNear: '离下个营地完成度 {percent}%，还差 {left} 🎯',
-    campHard: '按现在的进度，这个营地要很久才能到。要不先定个近一点的？',
-    campHardNear: '近一点',
-    campHardTry: '我想试试',
     // §12 给未来的自己
     letterAsk: '给半年后的自己留句话吧，等你到营地的时候，我再拿出来给你看 💌',
     letterOpen: '还记得出发那天你写的这句话吗？💌',
@@ -139,11 +133,6 @@ export const yayaV5 = {
     testWeak: 'Looking at the pentagon, {item} is your weak spot now, so I added 2 stretching sessions this week ⚡',
     testDown:
       '{count} fewer this time, maybe sleep was short lately. Ups and downs are normal; test again next week and watch the trend 📊',
-    campReached: 'You reached camp {n}: {camp}. When you set out it was {start} 📈',
-    campNear: 'Next camp is {percent}% done, {left} to go 🎯',
-    campHard: 'At this pace this camp is a long way off. Set a nearer one first?',
-    campHardNear: 'A nearer one',
-    campHardTry: "I'll try",
     letterAsk: 'Leave a note for yourself six months from now. When you reach the camp, I will show it to you 💌',
     letterOpen: 'Remember what you wrote on the day you set out? 💌',
     calmStart: 'Forget training for now. Breathe in slowly with me, then out slowly, just 3 minutes 😌',

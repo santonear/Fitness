@@ -228,15 +228,6 @@ export interface HomePanelProps {
   disabled?: boolean;
 }
 
-/** Component line: src/ui/components/kit/JourneyTrail.tsx */
-export interface JourneyStop {
-  label: string;
-  state: 'done' | 'now' | 'next';
-}
-export interface JourneyTrailProps {
-  stops: readonly JourneyStop[];
-}
-
 /** Rules line: src/application/rules/plan-upgrade.ts */
 export interface SetEntry {
   exerciseId: string;

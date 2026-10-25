@@ -3,9 +3,6 @@ import type {
   BodyChangeEvent,
   FigureShape,
   FitnessTestItem,
-  FutureLetter,
-  Journey,
-  JourneyStop,
   LiftEntry,
   MuscleLoad,
   NowMinutes,
@@ -135,45 +132,6 @@ export function shownFocus(
 /** 60 岁以上加 30 秒坐站。 */
 export const testItemsFor = (age: number | undefined): FitnessTestItem[] =>
   FITNESS_TEST_ITEMS.filter(item => item !== 'chairStand30s' || (age ?? 0) >= 60);
-
-/** 起点 → 已到营地 → 现在 → 下一站 → 终点. */
-export function journeyStops(
-  journey: Pick<Journey, 'camps' | 'destination'> | undefined,
-  locale: Locale,
-): JourneyStop[] {
-  const c = planPagesCopy[locale];
-  if (!journey)
-    return [
-      { label: c.stopStart, state: 'done' },
-      { label: c.stopNow, state: 'now' },
-    ];
-  const reached = journey.camps.filter(camp => camp.reachedAt),
-    open = journey.camps.filter(camp => !camp.reachedAt);
-  return [
-    { label: c.stopStart, state: 'done' },
-    ...reached.map(camp => ({ label: camp.title, state: 'done' as const })),
-    { label: c.stopNow, state: 'now' },
-    ...open.map(camp => ({ label: camp.title, state: 'next' as const })),
-    ...(journey.destination ? [{ label: journey.destination, state: 'next' as const }] : []),
-  ];
-}
-
-/** A letter opens once its camp is reached; a letter without a camp opens when any camp is reached after it was written. */
-export function openableLetters(
-  letters: readonly FutureLetter[],
-  journey: Pick<Journey, 'camps'> | undefined,
-): FutureLetter[] {
-  const camps = journey?.camps ?? [];
-  return letters.filter(
-    letter =>
-      !letter.openedAt &&
-      camps.some(
-        camp =>
-          camp.reachedAt &&
-          (letter.openAtCampId ? camp.id === letter.openAtCampId : camp.reachedAt >= letter.createdAt),
-      ),
-  );
-}
 
 /** v5 §15: the last three workout reminders all went unused. Only asked when reminders are on. */
 export function remindersUnused(

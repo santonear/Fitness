@@ -25,7 +25,6 @@ import {
   stepStyle,
   swipeStep,
 } from '../../src/ui/components/kit/HomePanel';
-import { JourneyTrail } from '../../src/ui/components/kit/JourneyTrail';
 import * as kit from '../../src/ui/components/kit';
 
 const html = (element: ReactElement) => renderToStaticMarkup(element);
@@ -198,15 +197,7 @@ describe('AnatomyMap', () => {
   it('stops every information animation under reduced motion', () => {
     const css = readFileSync(new URL('../../src/ui/components/kit/kit.css', import.meta.url), 'utf8');
     const reduced = css.slice(css.lastIndexOf('@media (prefers-reduced-motion: reduce)'));
-    for (const cls of [
-      '.v9-am-glow',
-      '.v9-am-leader',
-      '.v9-am-badge',
-      '.v9-badge',
-      '.v9-trail-dot',
-      '.v9-home-seg',
-      '.v9-anatomy-scan',
-    ])
+    for (const cls of ['.v9-am-glow', '.v9-am-leader', '.v9-am-badge', '.v9-badge', '.v9-home-seg', '.v9-anatomy-scan'])
       expect(reduced).toContain(cls);
     expect(reduced).toContain('animation: none !important');
     expect(css).not.toMatch(/#[\da-f]{3,8}\b|rgba?\(/i);
@@ -301,25 +292,9 @@ describe('HomePanel', () => {
   });
 });
 
-describe('JourneyTrail', () => {
-  it('marks done, now (pulsing) and next stops', () => {
-    const markup = html(
-      createElement(JourneyTrail, {
-        stops: [
-          { label: '起点', state: 'done' },
-          { label: '现在', state: 'now' },
-          { label: '下一站', state: 'next' },
-        ],
-      }),
-    );
-    expect(markup.match(/class="v9-trail-stop"/g)).toHaveLength(3);
-    expect(markup).toContain('data-state="now" aria-current="step"');
-    expect(markup).toContain('aria-label="下一站, 下一站"');
-  });
-
+describe('kit entry point', () => {
   it('is exported from the kit entry point', () => {
     expect(kit.AnatomyMap).toBe(AnatomyMap);
     expect(kit.HomePanel).toBe(HomePanel);
-    expect(kit.JourneyTrail).toBe(JourneyTrail);
   });
 });

@@ -6,5 +6,4 @@ export { Orb, orbContexts, type OrbAction, type OrbProps, type OrbContext } from
 export { ThemePicker, ThemePreview } from '../ThemePicker';
 export { AnatomyMap } from './AnatomyMap';
 export { HomePanel } from './HomePanel';
-export { JourneyTrail } from './JourneyTrail';
 export { LetterDialog } from './LetterDialog';

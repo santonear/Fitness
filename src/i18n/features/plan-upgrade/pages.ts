@@ -13,7 +13,6 @@ export const planPagesCopy = {
     moreWays: '换个练法',
     intentionAdd: '写下何时何地练',
     calm: '现在有点烦',
-    journey: '我的山路',
     // 今天's panel style knob (aria labels only); 训练设置 below
     panelStyle: '首页面板样式',
     panelStyles: { hero: '大数字', ring: '肌群环', twin: '双表盘' },
@@ -32,8 +31,6 @@ export const planPagesCopy = {
     female: '女',
     sexLabel: '体型',
     back: '返回',
-    // 我的山路
-    journeyTitle: '我的山路',
     now: '现在',
     before: '{month}',
     outlineNote: '轮廓按身高体重估算，仅作示意',
@@ -46,9 +43,6 @@ export const planPagesCopy = {
     weightSince: '比 {month}',
     heightCm: '{cm} cm',
     kg: 'kg',
-    stopStart: '起点',
-    stopNow: '现在',
-    destination: '终点',
     testTitle: '体能自测',
     testItems: {
       pushup: '俯卧撑（女性可跪姿）',
@@ -115,7 +109,6 @@ export const planPagesCopy = {
     moreWays: 'Other ways to train',
     intentionAdd: 'Set when and where',
     calm: 'Feeling a bit on edge',
-    journey: 'My trail',
     panelStyle: 'Home panel style',
     panelStyles: { hero: 'Big number', ring: 'Muscle ring', twin: 'Twin dials' },
     panelPrev: 'Previous style',
@@ -132,7 +125,6 @@ export const planPagesCopy = {
     female: 'Female',
     sexLabel: 'Figure',
     back: 'Back',
-    journeyTitle: 'My trail',
     now: 'Now',
     before: '{month}',
     outlineNote: 'The outline is estimated from height and weight, for illustration only',
@@ -145,9 +137,6 @@ export const planPagesCopy = {
     weightSince: 'vs {month}',
     heightCm: '{cm} cm',
     kg: 'kg',
-    stopStart: 'Start',
-    stopNow: 'Now',
-    destination: 'Destination',
     testTitle: 'Fitness self-test',
     testItems: {
       pushup: 'Push-ups (kneeling for women)',

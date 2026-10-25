@@ -10,10 +10,8 @@ import {
   figureSex,
   figureShape,
   ghostWeight,
-  journeyStops,
   localVoices,
   nowCoachLine,
-  openableLetters,
   remindersUnused,
   returnLine,
   shownFocus,
@@ -114,36 +112,6 @@ describe('V9.14 page logic', () => {
   it('chair stand only from 60', () => {
     expect(testItemsFor(45)).not.toContain('chairStand30s');
     expect(testItemsFor(62)).toContain('chairStand30s');
-  });
-  it('journey trail: start, reached camps, now, next camps, destination', () => {
-    const stops = journeyStops(
-      {
-        destination: '睡个好觉',
-        camps: [
-          { id: '1', title: 'A', metric: 'sessions', start: 0, target: 4, reachedAt: '2026-10-01' },
-          { id: '2', title: 'B', metric: 'sessions', start: 0, target: 8 },
-        ],
-      },
-      'zh',
-    );
-    expect(stops.map(s => `${s.label}:${s.state}`)).toEqual([
-      '起点:done',
-      'A:done',
-      '现在:now',
-      'B:next',
-      '睡个好觉:next',
-    ]);
-  });
-  it('letters open when their camp is reached', () => {
-    const letters = [
-      { id: 'l1', text: 'x', createdAt: '2026-09-01T00:00:00Z', openAtCampId: '1' },
-      { id: 'l2', text: 'y', createdAt: '2026-09-01T00:00:00Z', openAtCampId: '2' },
-    ];
-    expect(
-      openableLetters(letters, {
-        camps: [{ id: '1', title: 'A', metric: 'sessions', start: 0, target: 1, reachedAt: '2026-10-01T00:00:00Z' }],
-      }).map(l => l.id),
-    ).toEqual(['l1']);
   });
   it('reminders ask to move or stop only when on and three in a row went unused', () => {
     const records = [1, 2, 3].map(shownAt => ({ kind: 'workout', status: 'dismissed', shownAt }));
