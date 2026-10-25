@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createRepository } from '../../src/persistence/repository';
 import { createReviewService } from '../../src/application/v8-review';
-import { createV8Workflow } from '../../src/application/v8-workflow';
 import type { FitnessDatabase } from '../../src/persistence/db';
 import type { PlanVersion } from '../../src/domain/v8/contracts';
 import type { ReviewSuggestion } from '../../src/application/review/contracts';
@@ -86,7 +85,6 @@ function setup() {
     },
   };
   return {
-    workflow: createV8Workflow(createRepository(db)),
     service: createReviewService(createRepository(db)),
     suggestion,
     versions,
@@ -113,24 +111,6 @@ describe('review adoption guards', () => {
     expect(s.versions.size).toBe(2);
     await expect(s.service.adopt(s.suggestion, 5, 2, 'duplicate')).rejects.toMatchObject({ code: 'CONFLICT' });
     expect(s.versions.size).toBe(2);
-  });
-  it('a local tip saves a new version with its note and no review rule; the old one stays', async () => {
-    const s = setup(),
-      before = structuredClone(s.versions.get(currentPlan.id));
-    const next = await s.workflow.adoptLocalChange({
-      proposal: { ...s.suggestion.proposal, weeklyTarget: 1 },
-      basedOnVersionId: currentPlan.id,
-      expectedRevision: 4,
-      generation: 2,
-      summary: '每周目标从 2 次改为 1 次，每次 20 分钟',
-    });
-    expect([next.weeklyTarget, next.reviewRule, next.changeSummary, next.basedOnVersionId]).toEqual([
-      1,
-      undefined,
-      ['每周目标从 2 次改为 1 次，每次 20 分钟'],
-      currentPlan.id,
-    ]);
-    expect(s.versions.get(currentPlan.id)).toEqual(before);
   });
   it('removes only the temporary next-workout override after successful adoption', async () => {
     const s = setup(),

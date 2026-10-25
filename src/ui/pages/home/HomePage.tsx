@@ -115,7 +115,7 @@ export function HomePage() {
     restartPlanning,
     setHomeTemplateId,
     setReviewKind,
-    applyLocalChange,
+    applyPlanCandidate,
   } = useMainline();
   const [choice, setChoice] = useState<string>();
   const legacyDates = remindersEnabled && !!data?.hasFutureLegacyDates;
@@ -417,7 +417,7 @@ export function HomePage() {
           busy={busy}
           onAdjust={tip =>
             'proposal' in tip
-              ? applyLocalChange({ proposal: tip.proposal, summary: tipSummary(tip, locale) })
+              ? applyPlanCandidate({ ...tip, summary: tipSummary(tip, locale) }).then(Boolean)
               : Promise.resolve(false)
           }
           {...(painSwap

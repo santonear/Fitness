@@ -22,7 +22,7 @@ import './plan-upgrade.css';
  * clearly outweighs pull. “补上 / 加” changes today's session at once as a new plan version (undo in the toast).
  */
 function ScanTip({ tip, state }: { tip: MuscleTip; state: FocusState }) {
-  const { locale, busy, applyLocalChange } = useMainline();
+  const { locale, busy, applyPlanCandidate } = useMainline();
   const go = useNavigate();
   const [closed, setClosed] = useState(false);
   if (closed) return null;
@@ -31,19 +31,20 @@ function ScanTip({ tip, state }: { tip: MuscleTip; state: FocusState }) {
   const name = tip.kind === 'gap' ? MUSCLE_GROUP_NAMES[tip.group][locale === 'zh' ? 0 : 1] : '',
     group = locale === 'zh' ? name : name.toLowerCase();
   const apply = () =>
-    void applyLocalChange({
-      proposal: tip.proposal,
+    void applyPlanCandidate({
+      ...tip,
       summary: tip.kind === 'gap' ? fillLine(s.gap, { group, sets: tip.sets }) : s.pushPull,
     }).then(saved => {
       if (!saved) return;
       setClosed(true);
+      const template = saved.templates.find(row => row.id === tip.template.id) ?? tip.template;
       // The page follows the saved session: its exercises and minutes.
       go('/today-focus', {
         replace: true,
         state: {
           ...state,
-          exerciseIds: [...new Set(tip.template.items.map(item => item.exerciseId))],
-          minutes: tip.template.estimatedMinutes,
+          exerciseIds: [...new Set(template.items.map(item => item.exerciseId))],
+          minutes: template.estimatedMinutes,
         } satisfies FocusState,
       });
     });

@@ -116,6 +116,7 @@ describe('v5 §14 missed weekday on 今天', () => {
     expect([changed.estimatedMinutes, changed.targetMinutes]).toEqual([10, 10]);
     expect(tip.proposal.templates.find(t => t.id === 'A')).toEqual(version.templates[0]);
     expect(version.templates[1]!.items).toHaveLength(4);
+    expect(tip.changes).toEqual([{ op: 'shorten', templateId: 'B', minutes: 10 }]);
   });
   it('stays quiet when the misses are not the last 3 in a row, or an activity filled the day', () => {
     expect(skipDayTip({ ...input, workouts: week(['2026-10-14']) })).toBeUndefined();
@@ -218,6 +219,8 @@ describe('v5 §8 muscle-map tips', () => {
     expect(tip?.kind === 'gap' && [tip.group, tip.sets]).toEqual([group, 4]);
     expect(tip?.template.items.at(-1)).toMatchObject({ exerciseId: row.id, sets: 4 });
     expect(plan.templates[0]!.items).toHaveLength(1);
+    expect(tip?.changes).toContainEqual({ op: 'add', templateId: 'A', exerciseId: row.id });
+    expect(tip?.changes).toContainEqual({ op: 'set_volume', templateId: 'A', exerciseId: row.id, sets: 4 });
   });
   it('a well-rounded week only: fewer than 4 trained groups says nothing', () => {
     const few = loads({ [group]: 6 }).map((load, index) => (index < 3 ? { ...load, sets: 0 } : load));
@@ -232,6 +235,7 @@ describe('v5 §8 muscle-map tips', () => {
     });
     expect(tip?.kind).toBe('push-pull');
     expect(tip?.template.items[0]?.sets).toBe(4);
+    expect(tip?.changes).toEqual([{ op: 'set_volume', templateId: 'B', itemIndex: 0, sets: 4 }]);
     expect(muscleTip({ version: plan, templateId: 'B', weekLoads: loads({}), weekSets: [] })).toBeUndefined();
   });
 });

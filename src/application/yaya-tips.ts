@@ -1,10 +1,11 @@
 /**
  * 芽芽's plan tips decided by code only (wording v5 §8 / §14, 上周小结 G): which tip applies and the plan change
- * behind its button. Pure: no storage, no clock. A change is only a proposal; saving goes through the validated
- * plan-version path (`adoptLocalChange`), so the old version stays and the new one can be undone.
+ * behind its button. Pure: no storage, no clock. Each change is given twice: as engine operations (run by the training
+ * engine's own modify, so duration fits and safety rules hold) and as a local proposal for when the engine is off.
+ * Saving goes through the same apply path as a 芽芽 plan edit: a new version, the old one kept, undo for 10 seconds.
  */
 import type { PlanVersion, SessionTemplate, WorkoutRecord, PlannedItem } from '../domain/v8/contracts';
-import type { Caution } from '../engine/contracts';
+import type { Caution, EngineChange } from '../engine/contracts';
 import type { MuscleGroup, MuscleLoad } from '../domain/plan-upgrade';
 import type { PlanProposal } from './review/contracts';
 import { estimatePlannedMinutes } from '../domain/duration-estimate';
@@ -39,9 +40,8 @@ const clampMinutes = (minutes: number) => Math.min(90, Math.max(10, Math.round(m
 
 /**
  * The template cut down to about `minutes`: sets above 2 come off first, then the last items, keeping one.
- * Undefined when it would not get shorter.
- * shortcut: trims with the app's estimatePlannedMinutes, not the engine's fitDuration; an engine plan that no longer
- * passes its duration check is refused on save. Upgrade when the engine offers a per-day re-fit.
+ * Undefined when it would not get shorter. Used when the training engine is off; with the engine on, the same tip runs
+ * as the engine's own `shorten`, which fits the duration by its rules.
  */
 export function fitTemplate(template: SessionTemplate, minutes: number): SessionTemplate | undefined {
   if (template.durationScope === 'untargeted') return undefined;
@@ -116,15 +116,26 @@ function weekdayTemplate(version: PlanVersion, weekday: Weekday): SessionTemplat
   return version.templates.find(template => template.id === id);
 }
 
-export interface WeekdayChange {
+/** A tip's plan change: engine operations, and the same change as a local proposal for a plan without the engine. */
+export interface PlanChange {
+  proposal: PlanProposal;
+  changes: EngineChange[];
+}
+export interface WeekdayChange extends PlanChange {
   weekday: Weekday;
   minutes: number;
-  proposal: PlanProposal;
 }
 function weekdayChange(version: PlanVersion, weekday: Weekday, minutes: number): WeekdayChange | undefined {
   const template = weekdayTemplate(version, weekday);
   const short = template && fitTemplate(template, minutes);
-  return short && { weekday, minutes, proposal: withTemplates(version, [short]) };
+  return (
+    short && {
+      weekday,
+      minutes,
+      proposal: withTemplates(version, [short]),
+      changes: [{ op: 'shorten', templateId: short.id, minutes }],
+    }
+  );
 }
 
 /**
@@ -164,10 +175,10 @@ const discomfortIn = (workout: Workout): { areas: Caution[]; exerciseIds: string
 
 export type NextWeekTip =
   | { kind: 'pain'; areas: Caution[]; exerciseIds: string[] }
-  | { kind: 'zero'; target: number; proposal: PlanProposal }
+  | ({ kind: 'zero'; target: number } & PlanChange)
   | ({ kind: 'weekday' } & WeekdayChange)
-  | { kind: 'short'; actual: number; gap: number; minutes: number; proposal: PlanProposal }
-  | { kind: 'overdone'; extra: number; target: number; next: number; proposal: PlanProposal }
+  | ({ kind: 'short'; actual: number; gap: number; minutes: number } & PlanChange)
+  | ({ kind: 'overdone'; extra: number; target: number; next: number } & PlanChange)
   | { kind: 'on-track' };
 
 /** Highest weekly frequency the engine plans (daysPerWeek ≤ 6). */
@@ -209,7 +220,15 @@ export function nextWeekTip(input: {
   if (input.done === 0) {
     const short = version.templates.flatMap(template => fitTemplate(template, 20) ?? []);
     if (version.weeklyTarget > 1 || short.length)
-      return { kind: 'zero', target: version.weeklyTarget, proposal: withTemplates(version, short, 1) };
+      return {
+        kind: 'zero',
+        target: version.weeklyTarget,
+        proposal: withTemplates(version, short, 1),
+        changes: [
+          { op: 'frequency', daysPerWeek: 1 },
+          { op: 'shorten', minutes: 20 },
+        ],
+      };
   }
   // 3. Every miss last week fell on one weekday, and the week before too.
   if (!input.weekdayAskedThisWeek) {
@@ -239,7 +258,15 @@ export function nextWeekTip(input: {
       const short = version.templates.flatMap(t =>
         t.estimatedMinutes > minutes ? (fitTemplate(t, minutes) ?? []) : [],
       );
-      if (short.length) return { kind: 'short', actual, gap, minutes, proposal: withTemplates(version, short) };
+      if (short.length)
+        return {
+          kind: 'short',
+          actual,
+          gap,
+          minutes,
+          proposal: withTemplates(version, short),
+          changes: short.map(t => ({ op: 'shorten' as const, templateId: t.id, minutes })),
+        };
     }
   }
   // 5. More than planned, past the first two weeks, and no discomfort in the last two weeks.
@@ -258,6 +285,7 @@ export function nextWeekTip(input: {
       target: input.target,
       next: input.target + 1,
       proposal: withTemplates(version, [], input.target + 1),
+      changes: [{ op: 'frequency', daysPerWeek: input.target + 1 }],
     };
   // 6. Right on target.
   if (input.target > 0 && input.done === input.target) return { kind: 'on-track' };
@@ -282,8 +310,9 @@ function addSets(
   template: SessionTemplate,
   matches: (exerciseId: string) => boolean,
   sets: number,
-): SessionTemplate | undefined {
+): { template: SessionTemplate; changes: EngineChange[] } | undefined {
   const items = template.items.map(item => structuredClone(item));
+  const changes: EngineChange[] = [];
   let left = sets;
   const own = items.filter(item => isWork(item) && matches(item.exerciseId));
   while (left > 0 && own.some(item => item.sets < MAX_ITEM_SETS))
@@ -299,16 +328,27 @@ function addSets(
       .find(item => isWork(item) && matches(item.exerciseId) && !items.some(row => row.exerciseId === item.exerciseId));
     if (borrowed && left <= MAX_ITEM_SETS) {
       items.push({ ...structuredClone(borrowed), sets: left });
+      changes.push(
+        { op: 'add', templateId: template.id, exerciseId: borrowed.exerciseId },
+        { op: 'set_volume', templateId: template.id, exerciseId: borrowed.exerciseId, sets: left },
+      );
       left = 0;
     }
   }
   if (left > 0) return undefined;
-  return { ...template, items, estimatedMinutes: Math.min(120, estimatePlannedMinutes(items, 10)) };
+  items.forEach((item, itemIndex) => {
+    if (itemIndex < template.items.length && item.sets !== template.items[itemIndex]!.sets)
+      changes.unshift({ op: 'set_volume', templateId: template.id, itemIndex, sets: item.sets });
+  });
+  return {
+    template: { ...template, items, estimatedMinutes: Math.min(120, estimatePlannedMinutes(items, 10)) },
+    changes,
+  };
 }
 
-export type MuscleTip =
-  | { kind: 'gap'; group: MuscleGroup; sets: number; proposal: PlanProposal; template: SessionTemplate }
-  | { kind: 'push-pull'; proposal: PlanProposal; template: SessionTemplate };
+export type MuscleTip = ({ kind: 'gap'; group: MuscleGroup; sets: number } | { kind: 'push-pull' }) & {
+  template: SessionTemplate;
+} & PlanChange;
 
 /** Groups the plan works on purpose: primary groups of its main and accessory exercises. */
 const planGroups = (version: PlanVersion) =>
@@ -355,8 +395,9 @@ export function muscleTip(input: {
           kind: 'gap',
           group: load.group,
           sets,
-          template: changed,
-          proposal: withTemplates(input.version, [changed]),
+          template: changed.template,
+          proposal: withTemplates(input.version, [changed.template]),
+          changes: changed.changes,
         };
     }
   }
@@ -364,7 +405,13 @@ export function muscleTip(input: {
     input.weekSets.filter(row => match(row.exerciseId)).reduce((sum, row) => sum + row.completedSets, 0);
   if (total(isPush) - total(isPull) >= PUSH_PULL_GAP) {
     const changed = addSets(input.version, template, isRow, 1);
-    if (changed) return { kind: 'push-pull', template: changed, proposal: withTemplates(input.version, [changed]) };
+    if (changed)
+      return {
+        kind: 'push-pull',
+        template: changed.template,
+        proposal: withTemplates(input.version, [changed.template]),
+        changes: changed.changes,
+      };
   }
   return undefined;
 }

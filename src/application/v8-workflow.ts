@@ -19,8 +19,10 @@ export function createV8Workflow(repo: Repository) {
   const { nextTargetPreview, start, recordSet, finish, replacementCandidates, substitute } = createWorkoutSession(ctx, {
     snapshot,
   });
-  const { applyCoachCandidate, adoptReviewSuggestion, adoptLocalChange, undoAppliedCoachVersion, changeStartDate } =
-    createPlanVersions(ctx, { adopt });
+  const { applyCoachCandidate, adoptReviewSuggestion, undoAppliedCoachVersion, changeStartDate } = createPlanVersions(
+    ctx,
+    { adopt },
+  );
   const pain = createTrainingPain(repo);
   return {
     changeStartDate,
@@ -60,7 +62,6 @@ export function createV8Workflow(repo: Repository) {
     appendSetFeedback: createTrainingFeedback(repo).append,
     applyCoachCandidate,
     adoptReviewSuggestion,
-    adoptLocalChange,
     undoAppliedCoachVersion,
   };
 }

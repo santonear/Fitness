@@ -12,6 +12,7 @@ import { backfillOnboarding } from '../../application/v8-onboarding-backfill';
 import { buildCoachRequest } from '../../coach/request-builder';
 import type { CoachRequest, PickedSchedule } from '../../coach/contracts';
 import { pickedSchedule } from '../../application/picked-schedule';
+import { planTipCandidate } from '../../application/plan-tip-candidate';
 import { normalizeTrainingDates } from '../../application/training-dates';
 import { DEFAULT_TIME_ZONE, addDays, todayIn, weekStart } from '../../domain/local-date';
 import { monthOf, shiftMonth } from '../../application/plan-calendar';
@@ -249,27 +250,19 @@ function useController() {
     return next;
   }
   /**
-   * A local tip the user tapped (今天 / 上周 / 今天练这里 / 回顾): saved as a new plan version through the
-   * validated path, then offered for undo like a 芽芽 change. Resolves true when the version was saved.
+   * 芽芽's plan tip the user tapped (今天 / 上周 / 今天练这里): the same apply path as a 芽芽 plan edit (new version,
+   * old one kept), then the same 10-second undo. Resolves to the new version when one was saved.
    */
-  async function applyLocalChange(change: {
-    proposal: Parameters<typeof workflow.adoptLocalChange>[0]['proposal'];
-    summary: string;
-    rule?: Parameters<typeof workflow.adoptLocalChange>[0]['rule'];
-  }) {
-    let saved = false;
+  async function applyPlanCandidate(tip: Parameters<typeof planTipCandidate>[1]) {
+    let saved: NonNullable<typeof data>['version'];
     await run(async () => {
       const previous = data?.version;
-      if (!data || !previous) return;
-      await workflow.adoptLocalChange({
-        ...change,
-        basedOnVersionId: previous.id,
-        expectedRevision: data.metadata.dataRevision,
-        generation: data.metadata.restoreGeneration ?? 0,
-      });
+      const candidate = data && previous && planTipCandidate(data, tip);
+      if (!candidate) return;
+      await workflow.applyCoachCandidate(candidate);
       const updated = await reload();
       if (updated.version && updated.version.id !== previous.id && updated.plan) {
-        saved = true;
+        saved = updated.version;
         setVersionUndo({
           planId: updated.plan.id,
           appliedVersionId: updated.version.id,
@@ -473,7 +466,7 @@ function useController() {
     setDeletedNotice,
     versionUndo,
     setVersionUndo,
-    applyLocalChange,
+    applyPlanCandidate,
     deletePlan,
     undoPlan,
     coachInitialSend,

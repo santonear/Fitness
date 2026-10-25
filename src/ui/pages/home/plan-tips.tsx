@@ -71,8 +71,8 @@ export function SkipDayLine({ change, today }: { change: WeekdayChange; today: s
           disabled={c.busy}
           onClick={() =>
             void c
-              .applyLocalChange({
-                proposal: change.proposal,
+              .applyPlanCandidate({
+                ...change,
                 summary: fillLine(yayaTips[c.locale].summary.weekday, { weekday: day, minutes: change.minutes }),
               })
               .then(saved => {
