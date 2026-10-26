@@ -448,7 +448,8 @@ export function HomePanel({
     >
       <div className="v9-home-panel-head">
         {onStyle && <StyleKnob style={variant} onStyle={onStyle} locale={locale} />}
-        <span className="v9-home-week">{t.week(weekDone, weekTarget)}</span>
+        {/* No plan, no weekly target: the count is left out rather than shown as n/0. */}
+        {weekTarget > 0 && <span className="v9-home-week">{t.week(weekDone, weekTarget)}</span>}
       </div>
       {body}
       {coachLine && (
