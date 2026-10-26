@@ -14,7 +14,7 @@ import { fill } from '../../i18n/features/onboarding/entry';
 import { useMainline, workflow } from '../mainline/context';
 import { initialFilters } from '../pages/training/manual/selection';
 import { MorphPanel } from './common';
-import { ExerciseGuidePanel } from './ExerciseGuide';
+import { ExerciseGuidePanel } from './ExerciseGuideLazy';
 import { BigChoice, PrimaryButton } from './kit';
 import './exercise-tools.css';
 

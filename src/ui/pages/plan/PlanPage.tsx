@@ -28,6 +28,8 @@ interface PlanPageProps {
   exerciseName: (exerciseId: string) => string;
   onVersions: () => void;
   onExercises: () => void;
+  /** Shown under the plan header, before the week (e.g. the 新手 4 周 offer, Bo 2026-10-26). */
+  afterHeader?: ReactNode;
   /** Opens read-only details; any proposed edits require the host's separate confirmation flow. */
   onExercise: (version: PlanVersion, templateId: string, itemIndex: number, trigger?: HTMLElement) => void;
   onDiscuss?: (version: PlanVersion) => void;
@@ -87,6 +89,7 @@ export function PlanPage({
   exerciseName,
   onVersions,
   onExercises,
+  afterHeader,
   onExercise,
   onDiscuss,
   onReplan,
@@ -200,6 +203,7 @@ export function PlanPage({
           <CalendarExport plan={version} todayDate={todayDate} startDate={startDate} locale={language} />
         )}
       </header>
+      {afterHeader}
       {workouts && todayDate && timeZone && (
         <SegmentedTabs
           label={cal.view}

@@ -1,6 +1,6 @@
 import { repository, type Repository } from '../../../src/persistence/repository';
-import { createGuidedService } from '../../../src/application/guided';
-import { createDayPlanService } from '../../../src/application/day-plans';
+import { createGuidedService } from './guided';
+import { createDayPlanService } from './day-plans';
 import { type ProgramCandidate } from '../../../src/domain/guided-contracts';
 import { DomainError } from '../../../src/domain/errors';
 

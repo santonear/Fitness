@@ -38,11 +38,11 @@
 |src/application/body-weight.ts|保留|0：保持既有业务边界，按需由统筹转交|
 |src/application/coach-plans.ts|改造|D：接入新任务，保留写入授权边界|
 |src/application/coach-reminders.ts|改造|C：仅用户设置的前台提醒|
-|src/application/day-plans.ts|改造|B：旧资料与历史读取保留；新流程按冻结契约接入|
+|src/application/day-plans.ts|已移出|2026-10-26 无运行时调用方，移到 tests/support/legacy（旧数据样本仍由测试使用）|
 |src/application/guided-history.ts|已删除|2026-10-22 无运行时调用方|
-|src/application/guided.ts|改造|0：旧资料与历史读取保留；新流程按冻结契约接入|
+|src/application/guided.ts|已移出|2026-10-26 无运行时调用方，移到 tests/support/legacy（旧数据样本仍由测试使用）|
 |src/application/history-context.ts|保留|0：保持既有业务边界，按需由统筹转交|
-|src/application/legacy-collisions.ts|保留|0：保持既有业务边界，按需由统筹转交|
+|src/application/legacy-collisions.ts|已移出|2026-10-26 无运行时调用方，移到 tests/support/legacy（旧数据样本仍由测试使用）|
 |src/application/plans.ts|保留|0：保持既有业务边界，按需由统筹转交|
 |src/application/profile.ts|改造|B：仅负责新库 metadata 初始化与迁移版本一致；不混同 Dexie、metadata 和备份 envelope 版本|
 |src/application/progress-calculation.ts|保留|0：保持既有业务边界，按需由统筹转交|

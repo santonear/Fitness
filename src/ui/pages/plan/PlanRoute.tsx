@@ -125,7 +125,6 @@ export function PlanRoute({ versions = false }: { versions?: boolean }) {
       <PageSwitches />
       {prenatalPrompt}
       {engineEnabled && selected?.enginePlan && <PlanStops plan={selected.enginePlan} locale={c.locale} />}
-      {selected && selected.id === c.data?.version?.id && !query.has('version') && <StarterProgramCard />}
       {selected ? (
         <PlanPage
           version={selected}
@@ -134,6 +133,7 @@ export function PlanRoute({ versions = false }: { versions?: boolean }) {
           exerciseName={c.name}
           onVersions={() => c.navigate(`/plans/versions${selectedQuery}`)}
           onExercises={() => c.navigate('/exercises')}
+          afterHeader={selected.id === c.data?.version?.id && !query.has('version') && <StarterProgramCard />}
           onReplan={c.restartPlanning}
           today={weekdayIndex(new Date(), timeZone)}
           startDate={planStartDate(selected, timeZone)}

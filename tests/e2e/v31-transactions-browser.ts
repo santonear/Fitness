@@ -1,8 +1,8 @@
 import { createDatabase } from '../../src/persistence/db';
 import { createRepository } from '../../src/persistence/repository';
 import { createProfileService } from '../../src/application/profile';
-import { createDayPlanService } from '../../src/application/day-plans';
-import { createGuidedService } from '../../src/application/guided';
+import { createDayPlanService } from '../support/legacy/day-plans';
+import { createGuidedService } from '../support/legacy/guided';
 import { createBackupService } from '../../src/application/backup';
 import { exercises } from '../../src/catalog/exercises';
 import type { ProgramCandidate } from '../../src/domain/guided-contracts';

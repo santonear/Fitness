@@ -6,7 +6,7 @@ test('concurrent dates, transaction failure and restored stale actions preserve 
     const load = (path: string) => import(/* @vite-ignore */ path);
     const { profileService } = await load('/src/application/profile.ts');
     const profile = await profileService.initialize('en');
-    const { dayPlanService } = await load('/src/application/day-plans.ts');
+    const { dayPlanService } = await load('/tests/support/legacy/day-plans.ts');
     const { repository } = await load('/src/persistence/repository.ts');
     const { backupService } = await load('/src/application/backup.ts');
     const input = {
@@ -87,7 +87,7 @@ test('ambiguous legacy days require review only for overlapping dates', async ({
       await repository.db.profiles.put({ ...profile, timeZone: 'UTC' });
     });
     const { planService } = await load('/tests/support/legacy/plans.ts');
-    const { dayPlanService } = await load('/src/application/day-plans.ts');
+    const { dayPlanService } = await load('/tests/support/legacy/day-plans.ts');
     const item = {
       exerciseId: 'd16325d9-fc00-4c41-88a1-000000000003',
       order: 0,

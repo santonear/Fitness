@@ -1,11 +1,11 @@
 import { createDatabase } from '../../../src/persistence/db';
 import { createRepository } from '../../../src/persistence/repository';
 import { createProfileService } from '../../../src/application/profile';
-import { createGuidedService } from '../../../src/application/guided';
+import { createGuidedService } from '../../support/legacy/guided';
 import { createWorkoutService } from '../../support/legacy/workouts';
 import { createCoachReminderService } from '../../../src/application/coach-reminders';
 import { createBackupService } from '../../../src/application/backup';
-import { createDayPlanService } from '../../../src/application/day-plans';
+import { createDayPlanService } from '../../support/legacy/day-plans';
 import { zonedMinute } from '../../../src/domain/coach-reminders';
 import { exercises, EXERCISE_IDS } from '../../../src/catalog/exercises';
 

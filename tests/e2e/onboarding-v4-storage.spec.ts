@@ -9,7 +9,7 @@ test('V4 local transactions keep revision and restore-generation protection, exp
   await page.goto('/tests/e2e/helpers/capacity-entry.html');
   const result = await page.evaluate(async () => {
     const p = '/src/application/profile.ts',
-      g = '/src/application/guided.ts',
+      g = '/tests/support/legacy/guided.ts',
       b = '/src/application/backup.ts',
       r = '/src/persistence/repository.ts',
       d = '/src/domain/onboarding-v4.ts';
@@ -74,7 +74,7 @@ test('legacy completed onboarding is not forced through the upgrade', async ({ p
   await page.goto('/tests/e2e/helpers/capacity-entry.html');
   await page.evaluate(async () => {
     const p = '/src/application/profile.ts',
-      g = '/src/application/guided.ts';
+      g = '/tests/support/legacy/guided.ts';
     const { profileService } = await import(/* @vite-ignore */ p);
     const { guidedService } = await import(/* @vite-ignore */ g);
     await profileService.initialize('en');

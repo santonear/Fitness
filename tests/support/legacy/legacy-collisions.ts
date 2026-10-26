@@ -1,18 +1,18 @@
-import type { PlanInput } from '../domain/models';
-import { repository, type Repository } from '../persistence/repository';
+import type { PlanInput } from '../../../src/domain/models';
+import { repository, type Repository } from '../../../src/persistence/repository';
 import { slotTasks } from './day-plans';
-import { evaluateSlot } from '../domain/day-slot-policy';
-import { projectDay } from '../domain/day-date-projection';
-import { expandSchedule } from '../domain/calendar';
-import { legacyPlanVersionSchema } from '../domain/schemas';
-import { DomainError } from '../domain/errors';
+import { evaluateSlot } from '../../../src/domain/day-slot-policy';
+import { projectDay } from '../../../src/domain/day-date-projection';
+import { expandSchedule } from '../../../src/domain/calendar';
+import { legacyPlanVersionSchema } from '../../../src/domain/schemas';
+import { DomainError } from '../../../src/domain/errors';
 type LegacyOperation =
   | { type: 'reschedule'; id: string; date: string }
   | { type: 'activate'; id: string }
   | { type: 'start'; versionId: string; dayId: string }
   | { type: 'save'; input: PlanInput };
-import type { LegacyConfirmation } from '../domain/day-plan-contracts';
-export type { LegacyConfirmation } from '../domain/day-plan-contracts';
+import type { LegacyConfirmation } from '../../../src/domain/day-plan-contracts';
+export type { LegacyConfirmation } from '../../../src/domain/day-plan-contracts';
 export async function prepareLegacyOperation(operation: LegacyOperation, repo: Repository = repository) {
   return repo.db.transaction('r', repo.db.tables, async () => {
     const profile = await repo.db.profiles.toCollection().first();

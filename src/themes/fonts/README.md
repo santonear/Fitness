@@ -10,3 +10,7 @@ fonts.css declares local faces with swap. Browsers fetch only faces actually req
 
 
 The opt-in `fontSubset` path keeps the original assets for rollback. `compact.py` derives Sans 200¨C400 without removing its 3,500 common-character coverage, and Serif 400 with every app/source character supported by the original face (including the generated RepDB catalogue). It asserts complete app Chinese coverage and records hashes and missing-glyph counts in compact-sources.json. Generate the catalogue before rebuilding compact fonts. Characters outside the packaged subset retain the existing system font fallback. All compact theme totals must stay below 1,500,000 bytes; the legacy path is unchanged while the flag is off.
+
+Noto Sans SC is served from `@fontsource-variable/noto-sans-sc` in unicode-range slices (Bo 2026-10-26), so a page downloads only the slices its characters need. `noto-sans-sc.css` is that package's `wght.css` with the family renamed to `Noto Sans SC`; regenerate it after upgrading the package with
+`sed -e "s/'Noto Sans SC Variable'/'Noto Sans SC'/" -e "s#url(./files/#url('@fontsource-variable/noto-sans-sc/files/#; s#\.woff2) format#.woff2') format#" node_modules/@fontsource-variable/noto-sans-sc/wght.css > src/themes/fonts/noto-sans-sc.css`, then `npx prettier --write` it.
+`notosanssc.woff2` stays only as the listed manifest resource; no page requests it.

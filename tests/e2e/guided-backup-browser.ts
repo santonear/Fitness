@@ -5,7 +5,7 @@ import { createRepository } from '../../src/persistence/repository';
 import { createProfileService } from '../../src/application/profile';
 import { createBackupService } from '../../src/application/backup';
 import { emptyGuidedState, guidedStateSchema } from '../../src/domain/guided-contracts';
-import { createDayPlanService } from '../../src/application/day-plans';
+import { createDayPlanService } from '../support/legacy/day-plans';
 
 export async function verifyGuidedBackup(name: string) {
   const db = createDatabase(name);

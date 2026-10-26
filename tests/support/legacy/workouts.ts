@@ -11,7 +11,7 @@ import { workoutSessionSchema, exerciseSnapshotSchema, setRecordSchema } from '.
 import { DomainError } from '../../../src/domain/errors';
 import { exercises } from '../../../src/catalog/exercises';
 import { synchronizeTrainingMemo } from '../../../src/application/training-memory';
-import { authorizeLegacyOperation } from '../../../src/application/legacy-collisions';
+import { authorizeLegacyOperation } from './legacy-collisions';
 import { emptyGuidedState, guidedStateSchema } from '../../../src/domain/guided-contracts';
 import { assertLegacyPlanEditable } from '../../../src/persistence/v8-access';
 

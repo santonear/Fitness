@@ -142,7 +142,6 @@ export function SettingsPage() {
         <i className="v9-brand-dash" aria-hidden="true" />
       </header>
       <section className="v9-settings-group v9-settings-me" aria-label={me.me}>
-        <h2>{me.me}</h2>
         <Card variant="raised" padding="md" as="section" className="v9-settings-profile" aria-label={me.profile}>
           <Yaya pose="thanks" size={64} alt="" />
           <div className="v9-settings-profile-text">

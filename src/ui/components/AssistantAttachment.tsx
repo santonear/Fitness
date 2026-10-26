@@ -7,7 +7,7 @@ import type { SessionTemplate } from '../../domain/v8/contracts';
 import { exercises } from '../../catalog/exercises';
 import { targetText } from './ExerciseTargets';
 import { EXERCISE_IDS } from '../../catalog/exercise-ids';
-import { ExerciseGuideContent } from './ExerciseGuide';
+import { ExerciseGuideContent } from './ExerciseGuideLazy';
 import { pickedDaysReplaced } from '../../application/picked-schedule';
 const indoorWalk = (id: string, name: string) => id === EXERCISE_IDS.walking && /室内|indoor/i.test(name);
 function AssistantTemplate({

@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 test('day plans preserve distinct content, slot identities and backups', async ({ page }) => {
   await page.goto('/');
   const result = await page.evaluate(async () => {
-    const path = '/src/application/day-plans.ts';
+    const path = '/tests/support/legacy/day-plans.ts';
     const { dayPlanService } = await import(/* @vite-ignore */ path);
     const p = '/src/persistence/repository.ts';
     const { repository } = await import(/* @vite-ignore */ p);
@@ -75,13 +75,13 @@ test('legacy collision requires a current explicit confirmation and preserves bo
     const a = '/src/application/profile.ts';
     const { profileService } = await import(/* @vite-ignore */ a);
     const profile = await profileService.initialize('en');
-    const d = '/src/application/day-plans.ts';
+    const d = '/tests/support/legacy/day-plans.ts';
     const { dayPlanService } = await import(/* @vite-ignore */ d);
     const p = '/tests/support/legacy/plans.ts';
     const { planService } = await import(/* @vite-ignore */ p);
     const r = '/src/persistence/repository.ts';
     const { repository } = await import(/* @vite-ignore */ r);
-    const c = '/src/application/legacy-collisions.ts';
+    const c = '/tests/support/legacy/legacy-collisions.ts';
     const { prepareLegacyOperation } = await import(/* @vite-ignore */ c);
     const item = {
       exerciseId: 'd16325d9-fc00-4c41-88a1-000000000003',

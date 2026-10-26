@@ -1,7 +1,7 @@
 import { createDatabase } from '../../src/persistence/db';
 import { createRepository } from '../../src/persistence/repository';
 import { createProfileService } from '../../src/application/profile';
-import { createDayPlanService, type DayPlanInput } from '../../src/application/day-plans';
+import { createDayPlanService, type DayPlanInput } from '../support/legacy/day-plans';
 import { createBackupService, MAX_BACKUP_BYTES } from '../../src/application/backup';
 import { EXERCISE_IDS } from '../../src/catalog/exercise-ids';
 

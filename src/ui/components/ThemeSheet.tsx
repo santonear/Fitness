@@ -80,7 +80,8 @@ export function ThemeButton({
   const t = themeEntryCopy[locale],
     appearance = useOptionalTheme(),
     themes = useThemeChoices();
-  const [open, setOpen] = useState(false),
+  // undefined until first opened: the previews (one 芽芽 image per theme) download only then.
+  const [open, setOpen] = useState<boolean>(),
     trigger = useRef<HTMLElement | null>(null);
   if (!appearance) return null;
   return (
@@ -102,15 +103,17 @@ export function ThemeButton({
         </svg>
         <span>{label ?? t.button}</span>
       </button>
-      <MorphPanel open={open} onClose={() => setOpen(false)} triggerRef={trigger} title={t.title} closeLabel={t.done}>
+      <MorphPanel open={!!open} onClose={() => setOpen(false)} triggerRef={trigger} title={t.title} closeLabel={t.done}>
         <p className="v9-theme-sheet-hint">{t.hint}</p>
-        <ThemePicker
-          themes={themes}
-          value={appearance.theme}
-          onChange={appearance.change}
-          locale={locale}
-          label={t.title}
-        />
+        {open !== undefined && (
+          <ThemePicker
+            themes={themes}
+            value={appearance.theme}
+            onChange={appearance.change}
+            locale={locale}
+            label={t.title}
+          />
+        )}
         <PrimaryButton onClick={() => setOpen(false)}>{t.done}</PrimaryButton>
       </MorphPanel>
     </>
