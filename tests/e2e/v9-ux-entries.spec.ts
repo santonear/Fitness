@@ -56,11 +56,11 @@ test('onboarding: 芽芽 asks AI or local; AI without access guides activation, 
   await expect(page.getByRole('heading', { name: '想让我怎么帮你排计划？' })).toBeVisible();
   await expect(nextButton(page)).toBeDisabled();
   await page.getByRole('radio', { name: /用 AI 帮我排/ }).click();
-  await expect(page.getByText('这台设备还没开通 AI')).toBeVisible();
+  await expect(page.getByText('这台设备还没开通 AI 助手芽芽')).toBeVisible();
   await expect(nextButton(page)).toBeDisabled();
   await page.getByRole('button', { name: '现在开通', exact: true }).click();
-  const sheet = page.getByRole('dialog', { name: '开通 AI' });
-  await expect(sheet.getByRole('heading', { name: 'AI 试用资格' })).toBeVisible();
+  const sheet = page.getByRole('dialog', { name: '开通 AI 助手芽芽' });
+  await expect(sheet.getByRole('region', { name: '开通 AI 助手芽芽' })).toBeVisible();
   await page.screenshot({ path: test.info().outputPath('ai-activation-390.png') });
   await sheet.getByRole('button', { name: '关闭', exact: true }).click();
   await expect(sheet).toBeHidden();

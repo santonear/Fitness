@@ -287,7 +287,9 @@ for (const mode of ['success', 'denied', 'failure', 'reject', 'stale', 'stale-st
     await page.getByRole('dialog').getByRole('button', { name: '发送', exact: true }).click();
     if (mode === 'denied' || mode === 'failure') {
       if (mode === 'denied')
-        await expect(page.getByRole('dialog').getByRole('status')).toContainText('现在用的是本地建议 · 资格无效');
+        await expect(page.getByRole('dialog').getByRole('status')).toContainText(
+          '现在用的是本地建议 · 还没开通 AI 助手芽芽',
+        );
       await page.getByRole('dialog').getByRole('button', { name: '先排一份计划', exact: true }).click();
       expect(calls).toBe(mode === 'denied' ? 0 : 1);
     } else {

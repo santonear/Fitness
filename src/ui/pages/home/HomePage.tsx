@@ -4,7 +4,8 @@ import { CautionMorningControls } from '../training/CautionMorningControls';
 import { PregnancySafetyControls } from '../training/PregnancySafetyControls';
 import { CardiacClearancePanel } from '../training/CardiacClearancePanel';
 import { PostpartumSafetyPanel } from '../training/PostpartumSafetyPanel';
-import { PreTrainingCheckin } from '../training/PreTrainingCheckin';
+import { CheckinCard } from '../training/CheckinCard';
+import { recordSwap } from '../../mainline/ai-nudge';
 import { TargetChanges } from '../training/TargetChanges';
 import { PendingPainReview } from '../../components/PendingPainReview';
 import { PainProfessionalConfirmation } from '../../components/PainProfessionalConfirmation';
@@ -546,9 +547,10 @@ export function HomePage() {
               tone="quiet"
               size="sm"
               disabled={templates.length < 2}
-              onClick={() =>
-                setChoice(templates[(templates.findIndex(item => item.id === selected.id) + 1) % templates.length].id)
-              }
+              onClick={() => {
+                setChoice(templates[(templates.findIndex(item => item.id === selected.id) + 1) % templates.length].id);
+                recordSwap(todayDate);
+              }}
             >
               {t.switch}
             </PrimaryButton>
@@ -577,17 +579,7 @@ export function HomePage() {
           </div>
         </Card>
       )}
-      <Card
-        variant="raised"
-        padding="md"
-        as="section"
-        className="v9-home-checkin"
-        aria-labelledby="v9-home-checkin-title"
-      >
-        <h2 id="v9-home-checkin-title">{h.checkin}</h2>
-        <CautionMorningControls />
-        <PreTrainingCheckin />
-      </Card>
+      <CheckinCard />
       {version && (
         <Card variant="raised" padding="md" as="section" className="v9-home-week" aria-labelledby="v9-home-week-title">
           <div className="v9-home-week-head">

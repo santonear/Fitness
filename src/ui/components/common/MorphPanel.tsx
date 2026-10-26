@@ -89,6 +89,8 @@ export function MorphPanel({
     const containTab = (event: KeyboardEvent) => {
       const panel = dialog.current;
       if (event.key !== 'Tab' || !panel?.open) return;
+      // A panel stacked on top (e.g. turning on AI from inside the chat) keeps Tab to itself.
+      if ([...document.querySelectorAll('dialog[open]')].at(-1) !== panel) return;
       const controls = Array.from(
         panel.querySelectorAll<HTMLElement>(
           'button, a[href], input, select, textarea, [tabindex], [contenteditable="true"]',

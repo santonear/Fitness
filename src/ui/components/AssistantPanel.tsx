@@ -156,8 +156,9 @@ export function AssistantPanel(props: CoachPanelProps) {
           </div>
           {props.localOnly && props.unavailableReason && (
             <p className="assistant-banner" role="status">
+              {/* Without AI, 芽芽 says what turning it on gives and offers it right here (V9.22). */}
               <span>
-                {chatT.localOnly} · {props.unavailableReason}
+                {props.onActivate ? props.unavailableReason : `${chatT.localOnly} · ${props.unavailableReason}`}
               </span>
               {props.onActivate && <Button onClick={props.onActivate}>{chatT.activate}</Button>}
             </p>

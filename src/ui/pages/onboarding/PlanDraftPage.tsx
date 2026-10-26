@@ -50,6 +50,8 @@ interface PlanDraftPageProps {
   /** Parent must revalidate candidate identity, version and restore generation before writing. */
   onConfirm: (candidate: OnboardingProposal) => void;
   onDiscuss: () => void;
+  /** AI 助手芽芽 is off: one line that turns it on in place (V9.22). */
+  aiOffer?: { text: string; onClick: () => void };
   onDiscard?: () => void;
   onEditCautions?: () => void;
 }
@@ -63,6 +65,7 @@ export function PlanDraftPage({
   timeZone,
   onConfirm,
   onDiscuss,
+  aiOffer,
   onDiscard,
   onEditCautions,
   onStartDate,
@@ -210,6 +213,11 @@ export function PlanDraftPage({
           onEditEnvironment={() => window.location.assign('/settings/engine#environment')}
         />
         {error && <p role="alert">{error}</p>}
+        {aiOffer && (
+          <PrimaryButton tone="text" size="md" disabled={busy} onClick={aiOffer.onClick}>
+            {aiOffer.text}
+          </PrimaryButton>
+        )}
         <footer className="v9-plan-actions" data-orb-avoid="">
           <PrimaryButton
             disabled={busy || !plan.templates.length}

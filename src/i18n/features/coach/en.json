@@ -11,7 +11,7 @@
   "cancel": "Stop waiting",
   "offline": "Yaya is unavailable. Your records are unaffected.",
   "unavailable": "Create a plan before making adjustments.",
-  "qualification": "AI access is unavailable. Planning and training still work as usual.",
+  "qualification": "Here is a local suggestion first. With AI assistant Yaya on, I can change your plan from what you say.",
   "saved": "Saved",
   "thinking": "Yaya is thinking…",
   "fields": {

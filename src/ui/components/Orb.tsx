@@ -32,6 +32,10 @@ export interface OrbProps {
   autoTuck?: boolean;
   /** Elements the orb must never cover; it tucks or moves away from them. */
   avoidSelector?: string;
+  /** Separate once-a-day memory for a tip that is not the page default (e.g. 芽芽 offering the AI). */
+  tipKey?: string;
+  /** A one-line offer at the top of the quick panel with its own action and a 不用了. */
+  offer?: { text: string; dismiss: string; onGo: () => void; onDismiss: () => void };
 }
 
 export const orbContexts = orbContextCopy;
@@ -85,6 +89,8 @@ export function Orb({
   onOpenChat,
   autoTuck = false,
   avoidSelector = defaultAvoid,
+  tipKey,
+  offer,
 }: OrbProps) {
   const t = orbCopy[locale];
   const defaults = orbContextCopy[locale][context];
@@ -99,15 +105,16 @@ export function Orb({
   const [side, setSide] = useState(memory.side);
   const [open, setOpen] = useState(false);
   const [tucked, setTucked] = useState(autoTuck);
-  const [tipClosed, setTipClosed] = useState(() => tipSeen(context));
+  const seenKey = tipKey ?? context;
+  const [tipClosed, setTipClosed] = useState(() => tipSeen(seenKey));
   const [dragging, setDragging] = useState(false);
   const [avoid, setAvoid] = useState<{ tuck: boolean; y?: number; tipBlocked?: boolean }>({ tuck: false });
 
   useEffect(() => {
     setTucked(autoTuck);
     setOpen(false);
-    setTipClosed(tipSeen(context));
-  }, [autoTuck, context]);
+    setTipClosed(tipSeen(seenKey));
+  }, [autoTuck, seenKey]);
   useLayoutEffect(() => {
     if (y !== undefined) return;
     const b = bounds();
@@ -191,10 +198,10 @@ export function Orb({
   const tipShown = !open && !tipClosed && !isTucked && !avoid.tipBlocked && !!tipText;
   useEffect(() => {
     if (!tipShown) return;
-    markTipSeen(context);
+    markTipSeen(seenKey);
     const timer = window.setTimeout(() => setTipClosed(true), tipMs);
     return () => window.clearTimeout(timer);
-  }, [tipShown, context]);
+  }, [tipShown, seenKey]);
   useEffect(() => {
     document.documentElement.dataset.orb = isTucked ? 'tucked' : 'shown';
     return () => {
@@ -307,6 +314,23 @@ export function Orb({
             </button>
           </div>
           {tipText && <p>{tipText}</p>}
+          {offer && (
+            <div className="v9-orb-offer">
+              <button
+                type="button"
+                className="v9-orb-action"
+                onClick={() => {
+                  setOpen(false);
+                  offer.onGo();
+                }}
+              >
+                <span>{offer.text}</span>
+              </button>
+              <button type="button" className="v9-orb-tuck" onClick={offer.onDismiss}>
+                {offer.dismiss}
+              </button>
+            </div>
+          )}
           <div className="v9-orb-actions">
             {list.map(action => (
               <button

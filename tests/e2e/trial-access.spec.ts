@@ -331,9 +331,12 @@ for (const zh of [false, true]) {
     expect(submissions).toBe(1);
     application!.state = 'approved';
     application!.claimUntil = Date.now() + 86400000;
+    await page
+      .getByText(zh ? '换了手机或浏览器？找回开通' : 'New phone or browser? Get it back', { exact: true })
+      .click();
     await page.getByRole('button', { name: zh ? '刷新状态' : 'Refresh status', exact: true }).click();
     await page.getByRole('button', { name: zh ? '领取并启用' : 'Claim and activate', exact: true }).click();
-    await expect(page.getByText(zh ? 'AI 试用有效' : 'Your AI trial is active', { exact: true })).toBeVisible();
+    await expect(page.getByText(zh ? 'AI 助手芽芽已开通' : 'AI assistant Yaya is on', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: zh ? '返回训练' : 'Return to training', exact: true }).click();
     await expect(page).toHaveURL(/\/$/);
     await expect(page.getByRole('heading', { name: zh ? '今天' : 'Today', exact: true })).toBeVisible();
@@ -573,7 +576,7 @@ test('assistant V2 trial accepts server qualification without retired monthly co
   });
   await completedPlanningProfile(page);
   await page.goto('/trial');
-  await expect(page.getByText('AI 试用有效', { exact: true })).toBeVisible();
+  await expect(page.getByText('AI 助手芽芽已开通', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: '返回训练', exact: true })).toBeEnabled();
   await expect(page.getByRole('alert')).toHaveCount(0);
 });

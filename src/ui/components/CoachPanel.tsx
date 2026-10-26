@@ -2,6 +2,7 @@ import { AssistantPanel } from './AssistantPanel';
 import { useFeature } from '../useFeature';
 import { useAccessStatus } from '../useAccessStatus';
 import { accessCopy } from '../../application/ai-access';
+import { aiActivationCopy } from '../../i18n/features/coach/activation';
 import type { EnginePlan } from '../../engine/contracts';
 import type { RefObject } from 'react';
 import type { SessionTemplate } from '../../domain/v8/contracts';
@@ -47,17 +48,20 @@ export function CoachPanel(props: CoachPanelProps) {
     locale = props.locale ?? props.request?.locale ?? 'zh';
   const invalid = access.status && (access.status.qualification !== 'active' || !access.status.sessionValid),
     disabled = access.status?.aiEnabled === false;
+  const canActivate = enabled && invalid && !props.unavailableReason && !!props.onActivate;
   const reason =
     props.unavailableReason ??
     (invalid
-      ? accessCopy[locale].reasons.invalid
+      ? canActivate
+        ? aiActivationCopy[locale].chatNote
+        : accessCopy[locale].reasons.invalid
       : !enabled || disabled
         ? accessCopy[locale].reasons.disabled
         : undefined);
   return (
     <AssistantPanel
       {...props}
-      onActivate={enabled && invalid && !props.unavailableReason ? props.onActivate : undefined}
+      onActivate={canActivate ? props.onActivate : undefined}
       unavailableReason={reason}
       localOnly={props.localOnly || !enabled || !!invalid || disabled}
     />

@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { readAccessStatus, type AccessStatus } from '../application/ai-access';
+/** Fired after AI is turned on in the activation sheet, so every open status refreshes. */
+export const ACCESS_CHANGED = 'fitness-access-changed';
 export function useAccessStatus(enabled = true) {
   const [status, setStatus] = useState<AccessStatus>(),
     [loading, setLoading] = useState(false),
@@ -17,7 +19,11 @@ export function useAccessStatus(enabled = true) {
     }
   }, []);
   useEffect(() => {
-    if (enabled) void refresh();
+    if (!enabled) return;
+    void refresh();
+    const changed = () => void refresh();
+    window.addEventListener(ACCESS_CHANGED, changed);
+    return () => window.removeEventListener(ACCESS_CHANGED, changed);
   }, [enabled, refresh]);
   return { status, loading, failed, refresh };
 }

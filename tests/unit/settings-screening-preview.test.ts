@@ -32,7 +32,7 @@ vi.mock('../../src/ui/mainline/context', () => ({
   }),
 }));
 vi.mock('../../src/ui/components/AccessStatusCard', () => ({
-  AccessStatusCard: () => null,
+  useAiStatusText: () => '',
 }));
 vi.mock('../../src/ui/pages/settings/SystemNotifications', () => ({
   SystemNotifications: () => null,
@@ -165,15 +165,15 @@ it('asks only current safety and energy questions before a first real completed 
     [{ ...closed, status: 'not_started' as const, sets: [] }],
   ]) {
     const html = checkin(workouts);
+    expect(html).toContain('最近练后有没有哪里疼？');
     expect(html).toContain(engineCopy('deload.copy.checkin.0', 'zh'));
-    expect(html).toContain(engineCopy('deload.copy.checkin.3', 'zh'));
     for (const key of ['deload.copy.checkin.1', 'deload.copy.checkin.2'])
       expect(html).not.toContain(engineCopy(key, 'zh'));
-    expect(html).not.toContain('上次的疼痛');
-    expect(html).not.toContain('疼痛或僵硬是否比上周更重');
-    expect(html).not.toContain('value="false" selected');
+    expect(html).not.toContain('aria-pressed="true"');
   }
   const currentPain = checkin([], { newOrWorseJointPain: true });
+  expect(currentPain).toContain('新出现');
+  expect(currentPain).not.toContain('持续到第二天早上');
   expect(currentPain).toContain(engineCopy('pain.copy.stop_exercise', 'zh'));
   expect(currentPain).toContain('哪里不舒服？');
 });
@@ -181,9 +181,12 @@ it.each(['complete', 'partial'] as const)(
   'preserves unanswered previous-training questions with real %s history',
   status => {
     const html = checkin([{ ...closed, status }]);
-    expect(html).toContain('上次的疼痛');
-    expect(html).toContain(engineCopy('deload.copy.checkin.1', 'zh'));
+    expect(html).toContain('最近练后有没有哪里疼？');
     expect(html).toContain(engineCopy('deload.copy.checkin.2', 'zh'));
-    expect(html).not.toContain('value="false" selected');
+    expect(html).not.toContain(engineCopy('deload.copy.checkin.1', 'zh'));
+    expect(html).not.toContain('aria-pressed="true"');
+    const lasted = checkin([{ ...closed, status }], { painLastedToNextMorning: true });
+    expect(lasted).toContain('持续到第二天早上');
+    expect(lasted).toContain('比上周更重');
   },
 );

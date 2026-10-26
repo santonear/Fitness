@@ -180,15 +180,6 @@
   flex-wrap: wrap;
   gap: var(--s3);
 }
-.v8-review-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s3);
-}
-.v8-review-coach {
-  flex-shrink: 0;
-}
 .v8-topline .coach-visual {
   width: var(--touch-min);
 }

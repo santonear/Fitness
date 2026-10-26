@@ -1,3 +1,4 @@
+import { homeExitCopy } from '../../../i18n/features/plan/training-days';
 import { bodyProfileService } from '../../../application/body-profile';
 import { bodyCopy } from '../../../i18n/features/onboarding/body';
 import { trainingMinutes } from '../../../application/workout-duration';
@@ -254,7 +255,7 @@ export function ReviewPage() {
             <p className="rv-caption">{r.emptyHint}</p>
             {hasCurrentPlan ? (
               <PrimaryButton size="sm" onClick={() => c.navigate('/')}>
-                {t.next}
+                {homeExitCopy[c.locale].home}
               </PrimaryButton>
             ) : (
               noPlanActions
@@ -516,7 +517,8 @@ export function ReviewPage() {
           </Button>
         </aside>
       )}
-      {!(empty && hasCurrentPlan) && <Button onClick={() => c.navigate('/')}>{t.next}</Button>}
+      {/* Every page has 回到今天 (V9.11); it was labelled 下一次 from the old finish flow. */}
+      {!(empty && hasCurrentPlan) && <Button onClick={() => c.navigate('/')}>{homeExitCopy[c.locale].home}</Button>}
     </main>
   );
 }

@@ -99,46 +99,6 @@
 .v9-home-empty p {
   margin: 0;
 }
-.v9-home-checkin {
-  display: grid;
-  gap: var(--s3);
-}
-.v9-home-checkin:not(:has(fieldset, label, button, p)) {
-  display: none;
-}
-.v9-home .v9-home-checkin h2 {
-  margin: 0;
-  font-size: var(--t4);
-  font-weight: var(--w-strong);
-}
-.v9-home .v9-home-checkin fieldset {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  display: grid;
-  gap: var(--s3);
-  min-inline-size: 0;
-}
-.v9-home .v9-home-checkin fieldset label,
-.v9-home .v9-home-checkin label {
-  display: grid;
-  gap: var(--s2);
-  font-size: var(--t2);
-  color: var(--c-ink-muted);
-}
-.v9-home .v9-home-checkin select,
-.v9-home .v9-home-checkin input:not([type='checkbox']):not([type='radio']) {
-  box-sizing: border-box;
-  inline-size: 100%;
-  min-block-size: var(--touch-min);
-  padding: 0 var(--s3);
-  border: var(--bw) solid var(--card-border);
-  border-radius: var(--r-control);
-  background: var(--c-inset);
-  box-shadow: var(--el-inset);
-  color: var(--c-ink);
-  font: inherit;
-}
 .v9-home-week {
   display: grid;
   gap: var(--s4);
@@ -311,7 +271,7 @@
   }
   .v9-home > .v9-day,
   .v9-home > .v9-day + .v9-home-row,
-  .v9-home > .v9-home-checkin,
+  .v9-home > .v9-checkin,
   .v9-home > .v9-home-week {
     grid-column: 2;
   }
