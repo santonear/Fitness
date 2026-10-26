@@ -59,7 +59,7 @@
 .v8-shell textarea {
   border-radius: var(--r-panel);
 }
-.v8-shell fieldset {
+.v8-shell fieldset:not(.v9-pain-panel) {
   border: var(--bw) solid var(--c-line);
   border-radius: var(--r-panel);
   padding: var(--s4);

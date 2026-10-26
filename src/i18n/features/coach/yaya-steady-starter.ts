@@ -14,7 +14,7 @@ export const steadyStarterCopy = {
     steadyBalance: '扶椅单脚站，从 {a} 秒到现在 {b} 秒了 📈',
     steadyChairStand: '30 秒站起来 {n} 次，比上次多 {d} 次 📈',
     steadyWeek4: '练了 4 周了。腿的力气一般这时候开始变化，上下楼时可以留意一下 😌',
-    steadyWeek8: '8 周了，平衡练习升到第 {stage} 阶 📈',
+    steadyWeek8: '8 周了。单脚站和起身这些动作，可以留意一下是不是比刚开始稳了 📈',
     steadyWeek12: '12 周练完了。做一次小测，看看和刚开始比怎么样 🎯',
     steadyMissed: '这周没练上，没关系。下次从轻一点的开始 🌱',
     // J 新手 4 周
@@ -56,7 +56,8 @@ export const steadyStarterCopy = {
     steadyBalance: 'Single-leg stand at the chair: from {a} s to {b} s 📈',
     steadyChairStand: '{n} stands in 30 seconds, {d} more than last time 📈',
     steadyWeek4: 'Four weeks in. Leg strength often starts to change around now. Notice it on the stairs 😌',
-    steadyWeek8: 'Eight weeks. Your balance work is at stage {stage} now 📈',
+    steadyWeek8:
+      'Eight weeks in. Notice whether standing on one leg and getting up feel steadier than when you started 📈',
     steadyWeek12: 'Twelve weeks done. Take the quick test and compare with where you started 🎯',
     steadyMissed: "Missed this week, that's fine. Next time we'll start a little lighter 🌱",
     starterTitle: 'Starter 4 Weeks',

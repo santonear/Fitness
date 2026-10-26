@@ -79,14 +79,16 @@ test('60+ gets 稳健 preselected, its 芽芽 lines, and 新手 4 周 can start 
   await dialog.getByRole('button', { name: '退出', exact: true }).click();
   await expect(page.getByText(/好，已经退出了。想再试的时候，在计划页可以重新开始/)).toBeVisible();
   await expect(page.getByRole('button', { name: '用新手 4 周', exact: true })).toBeVisible();
-  // Start and leave each added a version; the first one is untouched. Poll: the leave save can land after its toast.
+  // Start and leave each added a version; the first one is untouched. Poll: the leave save can land after its toast; the store does not keep version order.
   await expect
     .poll(() =>
       page.evaluate(async () => {
         const path = '/src/ui/mainline/context.tsx',
           c = await import(/* @vite-ignore */ path),
           s = await c.workflow.snapshot();
-        return s.versions.map((v: { starterProgram?: unknown }) => !!v.starterProgram);
+        return [...s.versions]
+          .sort((a: { versionNumber: number }, b: { versionNumber: number }) => a.versionNumber - b.versionNumber)
+          .map((v: { starterProgram?: unknown }) => !!v.starterProgram);
       }),
     )
     .toEqual([false, true, false]);
