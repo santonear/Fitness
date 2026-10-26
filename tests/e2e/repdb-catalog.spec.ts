@@ -9,7 +9,7 @@ test('new manual movement survives backup round trip alongside an existing plan'
   const result = await page.evaluate(async () => {
     const load = (path: string) => import(/* @vite-ignore */ path);
     const { profileService } = await load('/src/application/profile.ts');
-    const { dayPlanService } = await load('/src/application/day-plans.ts');
+    const { dayPlanService } = await load('/tests/support/legacy/day-plans.ts');
     const { backupService } = await load('/src/application/backup.ts');
     const { repository } = await load('/src/persistence/repository.ts');
     const { exercises } = await load('/src/catalog/exercises.ts');

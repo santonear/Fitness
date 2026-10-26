@@ -4,7 +4,7 @@ import { EngineLocalActions } from './EngineLocalActions';
 import { assistantApplyErrorCopy } from '../../assistant/application-error';
 import { AssistantAttachment } from './AssistantAttachment';
 import { displayTimeZone } from '../../coach/disclosure-format';
-import { ExerciseGuidePanel } from './ExerciseGuide';
+import { ExerciseGuidePanel } from './ExerciseGuideLazy';
 import { fill } from '../../i18n/features/onboarding/entry';
 import { Fragment, useEffect } from 'react';
 import type { CoachPanelProps } from './CoachPanel';

@@ -2,7 +2,7 @@ import { catalogMetadata } from './registry';
 import { DomainError } from '../domain/errors';
 import type { CatalogFilters, Exercise, Locale } from '../domain/models';
 import { exercises } from './exercises';
-import { getExerciseTags, type ExerciseSearchFilters as GuideSearchFilters } from './exercise-guide';
+import { getExerciseTags, type ExerciseSearchFilters as GuideSearchFilters } from './exercise-tags';
 export interface ExerciseSearchFilters extends GuideSearchFilters {
   allowedIds?: readonly string[];
 }

@@ -16,9 +16,10 @@ import { planLifecycleCopy } from '../../../i18n/features/plan/lifecycle';
 import { planViewCopy } from '../../../i18n/features/plan/view';
 import { homeCopy } from '../../../i18n/features/home/copy';
 import { fill } from '../../../i18n/features/onboarding/entry';
+import { MUSCLE_GROUP_NAMES } from '../../../domain/plan-upgrade';
+import { sessionMuscleFocus } from '../../../application/rules/plan-upgrade';
 import {
   planStartDate,
-  regionLabels,
   sessionNames,
   startDateLabel,
   weekSchedule,
@@ -204,6 +205,15 @@ export function HomePage() {
   const scheduledToday =
     !notStarted && (picked ? picked.includes(todayDate) : schedule.sessions.some(session => session.day === today));
   const shown = (template?: { id: string }) => (template ? (names.get(template.id) ?? '') : '');
+  // 今天 names a session by its main muscles, the same ones the dial and the body card show (Bo 2026-10-26).
+  const muscles = (template?: { items: readonly { exerciseId: string }[] }) =>
+    template
+      ? sessionMuscleFocus([...new Set(template.items.map(item => item.exerciseId))]).primary.map(
+          group => MUSCLE_GROUP_NAMES[group][locale === 'zh' ? 0 : 1],
+        )
+      : [];
+  const named = (template?: { id: string; items: readonly { exerciseId: string }[] }) =>
+    muscles(template).slice(0, 2).join('·') || shown(template);
   const monday = new Date(Date.parse(localDay(timeZone, now) + 'T00:00:00Z') - todayIndex * DAY_MS);
   const weekDates = weekdays.map((_, index) => utcDay(monday.getTime() + index * DAY_MS));
   const doneDays: Partial<Record<Weekday, 'done' | 'partial'>> = {};
@@ -233,7 +243,7 @@ export function HomePage() {
     (templates.length && selected
       ? templates[(templates.findIndex(item => item.id === selected.id) + 1) % templates.length]
       : undefined);
-  const parts = selected ? regionLabels(selected, locale) : [];
+  const parts = muscles(selected).slice(0, 3);
   const dateText = new Intl.DateTimeFormat(locale === 'zh' ? 'zh-CN' : 'en', {
     timeZone,
     month: 'long',
@@ -467,7 +477,7 @@ export function HomePage() {
                     : fill(h.nextOn, {
                         day: `${schedule.chosen ? '' : h.suggested}${weekdayLabel(nextSession.day, locale)}`,
                       })}{' '}
-              · {shown(selected)}
+              · {named(selected)}
             </p>
             {/* What today trains comes before how long (V9.20). */}
             {parts.length > 0 && (
@@ -597,11 +607,11 @@ export function HomePage() {
               <strong>
                 {fill(h.afterLine, {
                   day: `${schedule.chosen ? '' : h.suggested}${weekdayLabel(followSession.day, locale)}`,
-                  name: shown(following),
+                  name: named(following),
                   minutes: following.estimatedMinutes,
                 })}
               </strong>
-              {regionLabels(following, locale).length > 0 && <span>{regionLabels(following, locale).join(' · ')}</span>}
+              {muscles(following).length > 0 && <span>{muscles(following).slice(0, 3).join(' · ')}</span>}
             </p>
           )}
         </Card>

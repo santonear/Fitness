@@ -46,3 +46,4 @@ export const v8Routes = [
   { id: 'admin', path: '/admin', page: 'ManagementPage', namespace: 'admin', owner: 'H' },
 ] as const;
 export type V8RouteId = (typeof v8Routes)[number]['id'];
+export const path = (id: V8RouteId) => v8Routes.find(r => r.id === id)!.path;

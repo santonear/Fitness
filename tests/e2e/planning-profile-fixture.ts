@@ -6,7 +6,7 @@ export async function completedPlanningProfile(page: Page) {
   await expect(page.locator('main h1')).toBeVisible();
   await page.evaluate(async () => {
     const profilePath = '/src/application/profile.ts',
-      guidedPath = '/src/application/guided.ts',
+      guidedPath = '/tests/support/legacy/guided.ts',
       repoPath = '/src/persistence/repository.ts';
     const { profileService } = await import(/* @vite-ignore */ profilePath);
     const { guidedService } = await import(/* @vite-ignore */ guidedPath);

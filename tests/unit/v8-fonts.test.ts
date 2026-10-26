@@ -23,7 +23,8 @@ describe('bundled V8 fonts', () => {
   });
   it('declares local faces and only each theme required resources', () => {
     const css = read('fonts.css').toString();
-    expect(css.match(/font-display: swap/g)).toHaveLength(7);
+    expect(css.match(/font-display: swap/g)).toHaveLength(6);
+    expect(read('noto-sans-sc.css').toString()).not.toMatch(/https?:/);
     expect(css).not.toMatch(/https?:/);
     expect(themes.map(theme => theme.fonts.length)).toEqual([2, 3, 2, 2, 2]);
     for (const theme of themes) for (const path of theme.fonts) expect(path).toContain('.woff2');

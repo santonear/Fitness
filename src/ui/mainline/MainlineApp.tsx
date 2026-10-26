@@ -1,11 +1,9 @@
 import { pendingPainReviews, historyDangerReview } from '../../application/pain-events';
 import { unresolvedReview } from '../../application/training-pain';
-import { EngineProfilePage } from '../pages/settings/EngineProfilePage';
-import { useState, useRef } from 'react';
+import { useEffect, useState, useRef, lazy, Suspense, type ComponentType } from 'react';
 import { assistantPlanIntentDuringWorkout, buildCoachRequest } from '../../coach/request-builder';
 import { bodyProfileService } from '../../application/body-profile';
 import { useFeature } from '../useFeature';
-import { BodyProfilePage } from '../pages/settings/BodyProfilePanel';
 import { bodyCopy } from '../../i18n/features/onboarding/body';
 import { MaintenanceBanner } from '../admin/finance/MaintenanceBanner';
 import { planLifecycleCopy } from '../../i18n/features/plan/lifecycle';
@@ -26,30 +24,43 @@ import { CoachPanel } from '../components/CoachPanel';
 import { Orb, type OrbContext } from '../components/Orb';
 import { V8Reminder } from '../components/V8Reminder';
 import { useAiOffer } from './AiOffer';
-import { path, OnboardingRoute, DraftRoute } from './OnboardingRoutes';
-import { ExercisesPage } from '../pages/plan/ExercisesPage';
-import { PlanRoute } from '../pages/plan/PlanRoute';
-import { FocusPage } from '../pages/plan-upgrade/FocusPage';
-import { LetterStep } from '../pages/onboarding/LetterStep';
 import { DueLetter } from './DueLetter';
-import { FitnessTestPage } from '../pages/settings/FitnessTestPage';
-import { CalmPage } from '../pages/plan-upgrade/CalmPage';
-import { ActivityPage } from '../pages/training/ActivityPage';
-import { HomePage } from '../pages/home/HomePage';
 import { navCopy } from '../../i18n/features/home/nav';
-import { WorkoutPage } from '../pages/training/WorkoutPage';
-import { FinishPage } from '../pages/training/FinishPage';
-import { ManualPage } from '../pages/training/ManualPage';
-import { ReviewPage } from '../pages/review/ReviewPage';
-import { SettingsPage } from '../pages/settings/SettingsPage';
-import { AppearancePage } from '../pages/settings/AppearancePage';
-import { NutritionAdvicePage } from '../pages/nutrition/NutritionAdvicePage';
-import { MyChangesPage } from '../pages/settings/MyChangesPage';
-import { CaloriePage, MacroPage } from '../pages/settings/EnergyPages';
+import { loadExerciseGuide } from '../components/ExerciseGuideLazy';
+import { path } from '../routes.contract';
 import { orbContextCopy, orbCopy } from '../../i18n/features/coach/orb';
-import { ActivityImportPage } from '../pages/settings/ActivityImportPage';
 import '../theme.css';
 import './mainline.css';
+
+// Each page downloads when first opened, so the first screen loads only what it shows.
+const pageLoaders: (() => Promise<unknown>)[] = [loadExerciseGuide];
+const page = <M extends Record<K, ComponentType<any>>, K extends keyof M & string>(load: () => Promise<M>, name: K) => {
+  pageLoaders.push(load);
+  return lazy(() => load().then(module => ({ default: module[name] })));
+};
+const EngineProfilePage = page(() => import('../pages/settings/EngineProfilePage'), 'EngineProfilePage');
+const BodyProfilePage = page(() => import('../pages/settings/BodyProfilePanel'), 'BodyProfilePage');
+const ExercisesPage = page(() => import('../pages/plan/ExercisesPage'), 'ExercisesPage');
+const PlanRoute = page(() => import('../pages/plan/PlanRoute'), 'PlanRoute');
+const FocusPage = page(() => import('../pages/plan-upgrade/FocusPage'), 'FocusPage');
+const LetterStep = page(() => import('../pages/onboarding/LetterStep'), 'LetterStep');
+const FitnessTestPage = page(() => import('../pages/settings/FitnessTestPage'), 'FitnessTestPage');
+const CalmPage = page(() => import('../pages/plan-upgrade/CalmPage'), 'CalmPage');
+const ActivityPage = page(() => import('../pages/training/ActivityPage'), 'ActivityPage');
+const HomePage = page(() => import('../pages/home/HomePage'), 'HomePage');
+const WorkoutPage = page(() => import('../pages/training/WorkoutPage'), 'WorkoutPage');
+const FinishPage = page(() => import('../pages/training/FinishPage'), 'FinishPage');
+const ManualPage = page(() => import('../pages/training/ManualPage'), 'ManualPage');
+const ReviewPage = page(() => import('../pages/review/ReviewPage'), 'ReviewPage');
+const SettingsPage = page(() => import('../pages/settings/SettingsPage'), 'SettingsPage');
+const AppearancePage = page(() => import('../pages/settings/AppearancePage'), 'AppearancePage');
+const NutritionAdvicePage = page(() => import('../pages/nutrition/NutritionAdvicePage'), 'NutritionAdvicePage');
+const MyChangesPage = page(() => import('../pages/settings/MyChangesPage'), 'MyChangesPage');
+const ActivityImportPage = page(() => import('../pages/settings/ActivityImportPage'), 'ActivityImportPage');
+const CaloriePage = page(() => import('../pages/settings/EnergyPages'), 'CaloriePage');
+const MacroPage = page(() => import('../pages/settings/EnergyPages'), 'MacroPage');
+const OnboardingRoute = page(() => import('./OnboardingRoutes'), 'OnboardingRoute');
+const DraftRoute = page(() => import('./OnboardingRoutes'), 'DraftRoute');
 const orbContext = (pathname: string): OrbContext =>
   pathname === '/'
     ? 'home'
@@ -101,6 +112,11 @@ function Shell() {
   // Each route change brings its page in with one short entrance instead of a hard cut (V9.20).
   const shell = useRef<HTMLDivElement>(null);
   useEnterMotion(() => shell.current?.querySelector(':scope > main'), location.pathname);
+  // After the first screen the other pages download in the background, so they still open when the signal drops.
+  const ready = !!data;
+  useEffect(() => {
+    if (ready) for (const load of pageLoaders) void load().catch(() => {});
+  }, [ready]);
   if (!data)
     return (
       <main className="v8-shell">
@@ -136,60 +152,64 @@ function Shell() {
         )}
       <MaintenanceBanner training={location.pathname.startsWith('/workout/')} language={c.locale} />
       {error && !['/onboarding', '/plan-draft'].includes(location.pathname) && <p role="alert">{error}</p>}
-      <Routes>
-        <Route
-          path="/settings/engine"
-          element={healthEntry ? <EngineProfilePage /> : <Navigate to="/settings" replace />}
-        />
-        <Route
-          path="/settings/body"
-          element={bodyEnabled || data.profile?.bodyDetails ? <BodyProfilePage /> : <Navigate to="/settings" replace />}
-        />
-        <Route path="/settings/nutrition" element={<NutritionAdvicePage />} />
-        <Route path="/nutrition" element={<NutritionAdvicePage />} />
-        <Route path="/settings/changes" element={<MyChangesPage />} />
-        <Route path="/settings/calories" element={<CaloriePage />} />
-        <Route path="/settings/macros" element={<MacroPage />} />
-        <Route path="/settings/import" element={<ActivityImportPage />} />
-        <Route
-          path="/trial"
-          element={
-            <main>
-              <TrialAccess onStartPlanning={c.restartPlanning} />
-              <Button onClick={() => navigate('/settings')}>{t.back}</Button>
-            </main>
-          }
-        />
-        <Route path="/ai" element={<Navigate to="/onboarding" replace />} />
-        <Route path={path('exercises')} element={<ExercisesPage />} />
-        <Route path={path('plan')} element={<PlanRoute />} />
-        <Route path={path('versions')} element={<PlanRoute versions />} />
-        <Route path={path('activity')} element={<ActivityPage />} />
-        <Route path={path('onboarding')} element={<OnboardingRoute />} />
-        <Route path={path('draft')} element={<DraftRoute />} />
-        <Route path={path('next')} element={<HomePage />} />
-        <Route path={path('focus')} element={<FocusPage />} />
-        <Route path={path('journey')} element={<Navigate to="/settings" replace />} />
-        <Route
-          path="/letter"
-          element={
-            <LetterStep
-              locale={c.locale}
-              timeZone={data.profile?.timeZone}
-              onDone={() => navigate('/', { state: { applied: true } })}
-            />
-          }
-        />
-        <Route path="/settings/fitness-test" element={<FitnessTestPage />} />
-        <Route path={path('calm')} element={<CalmPage />} />
-        <Route path={path('workout')} element={<WorkoutPage />} />
-        <Route path={path('finish')} element={<FinishPage />} />
-        <Route path="/manual" element={<ManualPage />} />
-        <Route path={path('review')} element={<ReviewPage />} />
-        <Route path={path('settings')} element={<SettingsPage />} />
-        <Route path={path('appearance')} element={<AppearancePage />} />
-        <Route path="*" element={<HomePage />} />
-      </Routes>
+      <Suspense fallback={null}>
+        <Routes>
+          <Route
+            path="/settings/engine"
+            element={healthEntry ? <EngineProfilePage /> : <Navigate to="/settings" replace />}
+          />
+          <Route
+            path="/settings/body"
+            element={
+              bodyEnabled || data.profile?.bodyDetails ? <BodyProfilePage /> : <Navigate to="/settings" replace />
+            }
+          />
+          <Route path="/settings/nutrition" element={<NutritionAdvicePage />} />
+          <Route path="/nutrition" element={<NutritionAdvicePage />} />
+          <Route path="/settings/changes" element={<MyChangesPage />} />
+          <Route path="/settings/calories" element={<CaloriePage />} />
+          <Route path="/settings/macros" element={<MacroPage />} />
+          <Route path="/settings/import" element={<ActivityImportPage />} />
+          <Route
+            path="/trial"
+            element={
+              <main>
+                <TrialAccess onStartPlanning={c.restartPlanning} />
+                <Button onClick={() => navigate('/settings')}>{t.back}</Button>
+              </main>
+            }
+          />
+          <Route path="/ai" element={<Navigate to="/onboarding" replace />} />
+          <Route path={path('exercises')} element={<ExercisesPage />} />
+          <Route path={path('plan')} element={<PlanRoute />} />
+          <Route path={path('versions')} element={<PlanRoute versions />} />
+          <Route path={path('activity')} element={<ActivityPage />} />
+          <Route path={path('onboarding')} element={<OnboardingRoute />} />
+          <Route path={path('draft')} element={<DraftRoute />} />
+          <Route path={path('next')} element={<HomePage />} />
+          <Route path={path('focus')} element={<FocusPage />} />
+          <Route path={path('journey')} element={<Navigate to="/settings" replace />} />
+          <Route
+            path="/letter"
+            element={
+              <LetterStep
+                locale={c.locale}
+                timeZone={data.profile?.timeZone}
+                onDone={() => navigate('/', { state: { applied: true } })}
+              />
+            }
+          />
+          <Route path="/settings/fitness-test" element={<FitnessTestPage />} />
+          <Route path={path('calm')} element={<CalmPage />} />
+          <Route path={path('workout')} element={<WorkoutPage />} />
+          <Route path={path('finish')} element={<FinishPage />} />
+          <Route path="/manual" element={<ManualPage />} />
+          <Route path={path('review')} element={<ReviewPage />} />
+          <Route path={path('settings')} element={<SettingsPage />} />
+          <Route path={path('appearance')} element={<AppearancePage />} />
+          <Route path="*" element={<HomePage />} />
+        </Routes>
+      </Suspense>
       <DueLetter />
       {!immersive && location.pathname !== '/activity' && location.pathname !== '/manual' && (
         <V8Reminder chatOpen={c.coachOpen} locale={c.locale} onStart={() => navigate('/')} />

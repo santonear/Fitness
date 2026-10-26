@@ -11,7 +11,7 @@ import type { V8Locale } from '../../../i18n/namespaces.contract';
 import type { ThemeSlots } from '../../../themes/contract';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { enter, grow, reducedMotion } from '../../motion';
-import { ExerciseGuidePanel } from '../../components/ExerciseGuide';
+import { ExerciseGuidePanel } from '../../components/ExerciseGuideLazy';
 import { PrimaryButton, SegmentedTabs, Yaya } from '../../components/kit';
 import { equipmentLabel } from '../../../catalog/taxonomy';
 import { HomeExit } from '../../components/HomeExit';

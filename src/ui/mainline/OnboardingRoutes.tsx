@@ -24,10 +24,9 @@ import { OnboardingPage } from '../pages/onboarding/OnboardingPage';
 import { PlanDraftPage } from '../pages/onboarding/PlanDraftPage';
 import { WelcomePage } from '../pages/onboarding/WelcomePage';
 import { planModeCopy } from '../../i18n/features/onboarding/plan-mode';
-import { v8Routes, type V8RouteId } from '../routes.contract';
+import { path } from '../routes.contract';
 import { DEFAULT_TIME_ZONE } from '../../domain/local-date';
 
-export const path = (id: V8RouteId) => v8Routes.find(r => r.id === id)!.path;
 export function OnboardingRoute() {
   const location = useLocation();
   const engineEnabled = useFeature('trainingEngine' as Parameters<typeof useFeature>[0]);

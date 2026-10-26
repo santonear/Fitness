@@ -1,5 +1,5 @@
-import { repository, type Repository } from '../persistence/repository';
-import { DomainError } from '../domain/errors';
+import { repository, type Repository } from '../../../src/persistence/repository';
+import { DomainError } from '../../../src/domain/errors';
 import {
   biologicalSexAnswerSchema,
   emptyGuidedState,
@@ -8,13 +8,13 @@ import {
   type GuidedAnswer,
   type GuidedState,
   type ProgramCandidate,
-} from '../domain/guided-contracts';
+} from '../../../src/domain/guided-contracts';
 import { createDayPlanService, slotTasks } from './day-plans';
-import { evaluateSlot } from '../domain/day-slot-policy';
-import { createBackupService } from './backup';
-import { dateInZone } from './progress';
-import { scheduledWorkoutSchema } from '../domain/schemas';
-import { onboardingKeys, validV4Answer, v4Complete, type Answer } from '../domain/onboarding-v4';
+import { evaluateSlot } from '../../../src/domain/day-slot-policy';
+import { createBackupService } from '../../../src/application/backup';
+import { dateInZone } from '../../../src/application/progress';
+import { scheduledWorkoutSchema } from '../../../src/domain/schemas';
+import { onboardingKeys, validV4Answer, v4Complete, type Answer } from '../../../src/domain/onboarding-v4';
 
 export function createGuidedService(repo: Repository) {
   async function read(): Promise<GuidedState> {

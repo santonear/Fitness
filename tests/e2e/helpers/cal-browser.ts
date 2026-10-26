@@ -3,7 +3,7 @@ import { repository, createRepository, type Repository } from '../../../src/pers
 import { createDatabase } from '../../../src/persistence/db';
 import { createProfileService } from '../../../src/application/profile';
 import { createPlanService } from '../../support/legacy/plans';
-import { createDayPlanService } from '../../../src/application/day-plans';
+import { createDayPlanService } from '../../support/legacy/day-plans';
 import { createWorkoutService } from '../../support/legacy/workouts';
 import { createBackupService } from '../../../src/application/backup';
 import { exercises } from '../../../src/catalog/exercises';

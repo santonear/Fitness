@@ -1,4 +1,4 @@
-import { authorizeLegacyOperation, type LegacyConfirmation } from '../../../src/application/legacy-collisions';
+import { authorizeLegacyOperation, type LegacyConfirmation } from './legacy-collisions';
 import type { Plan, PlanInput, LocalDate } from '../../../src/domain/models';
 import { repository, type Repository } from '../../../src/persistence/repository';
 import { DomainError } from '../../../src/domain/errors';

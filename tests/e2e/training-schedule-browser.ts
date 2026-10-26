@@ -2,7 +2,7 @@ import Dexie from 'dexie';
 import { createDatabase } from '../../src/persistence/db';
 import { createRepository } from '../../src/persistence/repository';
 import { createProfileService } from '../../src/application/profile';
-import { createGuidedService } from '../../src/application/guided';
+import { createGuidedService } from '../support/legacy/guided';
 import { createBackupService } from '../../src/application/backup';
 import { createWorkoutService } from '../support/legacy/workouts';
 import { EXERCISE_IDS } from '../../src/catalog/exercises';

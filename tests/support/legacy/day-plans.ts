@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { repository, type Repository } from '../persistence/repository';
-import { DomainError } from '../domain/errors';
+import { repository, type Repository } from '../../../src/persistence/repository';
+import { DomainError } from '../../../src/domain/errors';
 import {
   datePlanVersionSchema,
   planSchema,
@@ -8,13 +8,13 @@ import {
   localDateSchema,
   timeZoneSchema,
   plannedExerciseSchema,
-} from '../domain/schemas';
-import { exercises } from '../catalog/exercises';
-import { civilDayInterval, projectDay } from '../domain/day-date-projection';
-import { evaluateSlot } from '../domain/day-slot-policy';
-import type { SlotTask } from '../domain/day-plan-contracts';
-import { schedulingFields, validateScheduling } from '../domain/training-time';
-import { createBackupService } from './backup';
+} from '../../../src/domain/schemas';
+import { exercises } from '../../../src/catalog/exercises';
+import { civilDayInterval, projectDay } from '../../../src/domain/day-date-projection';
+import { evaluateSlot } from '../../../src/domain/day-slot-policy';
+import type { SlotTask } from '../../../src/domain/day-plan-contracts';
+import { schedulingFields, validateScheduling } from '../../../src/domain/training-time';
+import { createBackupService } from '../../../src/application/backup';
 
 const inputSchema = z
   .strictObject({
@@ -293,4 +293,4 @@ export function createDayPlanService(repo: Repository) {
   };
 }
 export const dayPlanService = createDayPlanService(repository);
-import { assertLegacyPlanEditable } from '../persistence/v8-access';
+import { assertLegacyPlanEditable } from '../../../src/persistence/v8-access';
