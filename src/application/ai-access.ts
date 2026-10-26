@@ -75,29 +75,18 @@ export function errorAccessReason(error: unknown): AccessReason {
 }
 export const accessCopy = {
   zh: {
-    title: 'AI 资格',
-    loading: '正在确认资格…',
-    active: 'AI 资格有效',
-    invalid: '此浏览器的资格已失效',
-    none: '此浏览器尚未领取 AI 资格',
-    restore: '恢复领取或申请补发',
-    refresh: '刷新资格',
-    local: '现在用的是本地建议',
-    reasons: { invalid: '资格无效', disabled: 'AI 已关闭', quota: '额度用完', connection: '连接失败' },
+    reasons: {
+      invalid: '还没开通 AI 助手芽芽',
+      disabled: 'AI 助手芽芽暂时关闭',
+      quota: '今天次数用完了',
+      connection: '连接失败',
+    },
   },
   en: {
-    title: 'AI access',
-    loading: 'Checking access…',
-    active: 'AI access is active',
-    invalid: 'Access on this browser is no longer valid',
-    none: 'AI access has not been claimed on this browser',
-    restore: 'Recover access or request a replacement',
-    refresh: 'Refresh access',
-    local: 'Using local suggestions',
     reasons: {
-      invalid: 'Access is invalid',
-      disabled: 'AI is turned off',
-      quota: 'Usage allowance is exhausted',
+      invalid: 'AI assistant Yaya is not on yet',
+      disabled: 'AI assistant Yaya is paused',
+      quota: 'Used up for today',
       connection: 'Connection failed',
     },
   },

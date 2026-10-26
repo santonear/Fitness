@@ -9,6 +9,7 @@ export const homeCopy = {
     applied: '计划已经用上了。第一节随时可以开始，按今天的状态来。',
     appliedLater: '计划已经用上了，{date}开始第一节。想先动一动，可以用“手动训练”。',
     checkin: '练之前，看看状态',
+    checkinSkip: '可跳过',
     week: '本周',
     after: '再下一次',
     afterLine: '{day} · {name} · {minutes} 分钟',
@@ -36,6 +37,7 @@ export const homeCopy = {
     appliedLater:
       'Your plan is ready. The first session is on {date}. To move a little before then, use Manual training.',
     checkin: 'Before you start, a quick check-in',
+    checkinSkip: 'Optional',
     week: 'This week',
     after: 'After that',
     afterLine: '{day} · {name} · {minutes} min',

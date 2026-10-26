@@ -297,7 +297,7 @@ test('reminder settings expose quiet-time conflicts and legacy zero caps', async
   ).not.toBeVisible();
   await page.getByLabel('每天最多提醒几次').selectOption('0');
   await expect(page.getByText('每日上限为0，不会显示提醒。')).toBeVisible();
-  await expect(page.getByRole('button', { name: '试用资格与邀请码' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /AI 助手芽芽/ })).toBeVisible();
 });
 test('body fields are individually opt-in and only the selected subset is sent', async ({ page }) => {
   let body: unknown;

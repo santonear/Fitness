@@ -11,7 +11,7 @@
   "cancel": "取消等待",
   "offline": "芽芽暂时连不上，你的记录不受影响",
   "unavailable": "还没有可调整的计划，可以先排一份计划。",
-  "qualification": "暂时没有 AI 资格，排计划和训练都能照常用。",
+  "qualification": "我先给你本地建议。开通 AI 助手芽芽后，我能按你的话直接改好计划。",
   "saved": "已保存",
   "thinking": "芽芽在想…",
   "fields": {

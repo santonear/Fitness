@@ -4,29 +4,36 @@ import { useMainline, workflow } from '../../mainline/context';
 import { Button } from '../../components/common';
 import { DAY_MS } from '../../../domain/local-date';
 const rules = new Rules();
+type Data = NonNullable<ReturnType<typeof useMainline>['data']>;
+/** Caution joints trained in yesterday's session: each gets the next-morning question today. */
+export function cautionMorningDue(data: Data) {
+  if (!data.state?.coachProfile?.healthStorageConsent) return [];
+  const zone = data.profile?.timeZone ?? 'Asia/Shanghai',
+    today = calendarDay(new Date().toISOString(), zone)!;
+  return cautionJoints.flatMap(joint => {
+    if (!data.state?.coachProfile?.cautions?.includes(joint)) return [];
+    const record = data.workouts
+      .filter(
+        row =>
+          ['complete', 'partial'].includes(row.status) &&
+          row.endedAt &&
+          row.sets.some(set => (rules.byExercise.get(set.exerciseId)?.joint_load[joint] ?? 0) > 0),
+      )
+      .sort((a, b) => Date.parse(b.endedAt!) - Date.parse(a.endedAt!))[0];
+    if (!record) return [];
+    const ended = calendarDay(record.endedAt!, zone)!;
+    return Date.parse(today + 'T00:00:00Z') - Date.parse(ended + 'T00:00:00Z') === DAY_MS ? [{ joint, record }] : [];
+  });
+}
 /** A next-morning answer links to a real performed joint, never an inferred symptom. */
 export function CautionMorningControls() {
   const { data, locale, busy, run } = useMainline();
   if (!data?.state?.coachProfile?.healthStorageConsent) return null;
-  const zone = data.profile?.timeZone ?? 'Asia/Shanghai',
-    today = calendarDay(new Date().toISOString(), zone)!,
-    labels = rules.get('caution.activation')[locale === 'zh' ? 'ui_label_zh' : 'ui_label_en'];
+  const labels = rules.get('caution.activation')[locale === 'zh' ? 'ui_label_zh' : 'ui_label_en'];
   return (
     <section>
-      {cautionJoints.flatMap(joint => {
-        if (!data.state?.coachProfile?.cautions?.includes(joint)) return [];
-        const record = data.workouts
-          .filter(
-            row =>
-              ['complete', 'partial'].includes(row.status) &&
-              row.endedAt &&
-              row.sets.some(set => (rules.byExercise.get(set.exerciseId)?.joint_load[joint] ?? 0) > 0),
-          )
-          .sort((a, b) => Date.parse(b.endedAt!) - Date.parse(a.endedAt!))[0];
-        if (!record) return [];
-        const ended = calendarDay(record.endedAt!, zone)!;
-        if (Date.parse(today + 'T00:00:00Z') - Date.parse(ended + 'T00:00:00Z') !== DAY_MS) return [];
-        return [
+      {cautionMorningDue(data).map(({ joint, record }) => {
+        return (
           <fieldset key={joint} disabled={busy}>
             <legend>{labels[joint]}</legend>
             <p>
@@ -49,8 +56,8 @@ export function CautionMorningControls() {
                 {locale === 'zh' ? (answer ? '是' : '否') : answer ? 'Yes' : 'No'}
               </Button>
             ))}
-          </fieldset>,
-        ];
+          </fieldset>
+        );
       })}
     </section>
   );

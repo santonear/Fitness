@@ -2,9 +2,8 @@ import { useRef, useState } from 'react';
 import { accessReason } from '../../../application/ai-access';
 import { planModeCopy } from '../../../i18n/features/onboarding/plan-mode';
 import { useAccessStatus } from '../../useAccessStatus';
-import { MorphPanel } from '../../components/common';
 import { BigChoice, PrimaryButton, Yaya } from '../../components/kit';
-import { TrialAccess } from '../../components/TrialAccess';
+import { AiActivationSheet } from '../../components/AiActivationSheet';
 
 type PlanMode = 'ai' | 'local';
 type AiReadiness = 'checking' | 'active' | 'needed' | 'disabled' | 'quota' | 'connection';
@@ -118,29 +117,19 @@ export function PlanModeChoice({
           )}
         </div>
       )}
-      <MorphPanel
+      <AiActivationSheet
         open={activating}
+        locale={locale}
+        triggerRef={trigger}
         onClose={() => {
           setActivating(false);
           void onRefresh();
         }}
-        triggerRef={trigger}
-        title={t.activateTitle}
-        closeLabel={locale === 'zh' ? '关闭' : 'Close'}
-      >
-        {activating && (
-          <TrialAccess
-            onContinue={() => {
-              setActivating(false);
-              void onRefresh();
-            }}
-            onSkip={() => {
-              setActivating(false);
-              onChange('local');
-            }}
-          />
-        )}
-      </MorphPanel>
+        onSkip={() => {
+          setActivating(false);
+          onChange('local');
+        }}
+      />
     </div>
   );
 }

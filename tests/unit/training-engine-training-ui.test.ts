@@ -158,11 +158,10 @@ describe('training engine feedback and prescription UI', () => {
         ],
       }),
     );
-    for (let index = 0; index < 4; index++)
+    for (const index of [0, 2])
       expect(html).toContain(engineCopy(`deload.copy.checkin.${index}`, 'zh').replaceAll('&', '&amp;'));
-    expect(html.match(/value="" selected=""/g)).toHaveLength(5);
-    expect(html).toContain('value=""');
-    expect(html).not.toContain('value="false" selected');
+    expect(html).not.toContain(engineCopy('deload.copy.checkin.1', 'zh'));
+    expect(html).not.toContain('aria-pressed="true"');
     const pain = renderToStaticMarkup(
       createElement(TrainingCheckinFields, {
         answers: { newOrWorseJointPain: true },

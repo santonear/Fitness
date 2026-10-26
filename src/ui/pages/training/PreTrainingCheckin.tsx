@@ -11,6 +11,7 @@ import { engineCopy } from '../../../coach/engine-copy';
 import { useMainline, workflow } from '../../mainline/context';
 import { useFeature } from '../../useFeature';
 import { Button } from '../../components/common';
+import { ChoiceChip } from '../../components/kit';
 
 const followupRules = new Rules();
 export function PainFollowupFields({
@@ -64,49 +65,54 @@ export function PainFollowupFields({
         : {}),
     });
   }
-  return (
+  // The two source questions are asked by the merged pain question (TrainingCheckinFields); here only which session and where.
+  return answers.painLastedToNextMorning === true || answers.painOrStiffnessWorseThanLastWeek === true ? (
     <>
-      {(['painLastedToNextMorning', 'painOrStiffnessWorseThanLastWeek'] as const).map((key, index) => (
-        <label key={key}>
-          {
-            (zh
-              ? ['上次的疼痛是否持续到第二天早上', '疼痛或僵硬是否比上周更重']
-              : [
-                  'Did the pain from your last session last until the next morning?',
-                  'Is the pain or stiffness worse than last week?',
-                ])[index]
-          }
-          <select
-            value={answers[key] === undefined ? '' : String(answers[key])}
-            onChange={event =>
-              onChange({ ...answers, [key]: event.target.value === '' ? undefined : event.target.value === 'true' })
-            }
-          >
-            <option value="">{zh ? '请选择' : 'Choose'}</option>
-            <option value="true">{zh ? '是' : 'Yes'}</option>
-            <option value="false">{zh ? '否' : 'No'}</option>
-          </select>
-        </label>
-      ))}
-      {(answers.painLastedToNextMorning === true || answers.painOrStiffnessWorseThanLastWeek === true) && (
-        <>
-          <select aria-label={t.choose} value={selection} onChange={event => link(event.target.value, area)}>
-            <option value="">{t.choose}</option>
-            {choices.map(choice => (
-              <option key={choice.value} value={choice.value}>
-                {choice.name}
-              </option>
-            ))}
-          </select>
-          <PainAreaPicker
-            locale={locale}
-            sex={sex}
-            value={{ painArea: area, ...(side ? { painSide: side } : {}) }}
-            onChange={next => link(selection, next.painArea, next.painSide)}
-          />
-        </>
-      )}
+      <select aria-label={t.choose} value={selection} onChange={event => link(event.target.value, area)}>
+        <option value="">{t.choose}</option>
+        {choices.map(choice => (
+          <option key={choice.value} value={choice.value}>
+            {choice.name}
+          </option>
+        ))}
+      </select>
+      <PainAreaPicker
+        locale={locale}
+        sex={sex}
+        value={{ painArea: area, ...(side ? { painSide: side } : {}) }}
+        onChange={next => link(selection, next.painArea, next.painSide)}
+      />
     </>
+  ) : null;
+}
+/** One tap per answer (Bo 2026-10-26); an untouched question stays unknown. */
+function Choices<T extends string | number | boolean>({
+  label,
+  options,
+  value,
+  onPick,
+}: {
+  label: string;
+  options: readonly (readonly [T, string])[];
+  value: T | undefined;
+  onPick: (value: T | undefined) => void;
+}) {
+  return (
+    <div className="v9-checkin-row" role="group" aria-label={label}>
+      <span>{label}</span>
+      <div className="v9-checkin-chips">
+        {options.map(([option, text]) => (
+          <ChoiceChip
+            key={String(option)}
+            size="sm"
+            selected={value === option}
+            onClick={() => onPick(value === option ? undefined : option)}
+          >
+            {text}
+          </ChoiceChip>
+        ))}
+      </div>
+    </div>
   );
 }
 export function TrainingCheckinFields({
@@ -129,8 +135,69 @@ export function TrainingCheckinFields({
     hasPreviousTraining = workouts.some(
       workout => ['complete', 'partial'].includes(workout.status) && !!workout.endedAt && workout.sets.length > 0,
     );
+  // One pain question instead of three (Bo 2026-10-26): 有 opens the kinds, each kind keeps its own answer field.
+  const kinds = [
+    ['newOrWorseJointPain', zh ? '新出现' : 'New'],
+    ...(hasPreviousTraining
+      ? ([
+          ['painLastedToNextMorning', zh ? '持续到第二天早上' : 'Lasted to the next morning'],
+          ['painOrStiffnessWorseThanLastWeek', zh ? '比上周更重' : 'Worse than last week'],
+        ] as const)
+      : []),
+  ] as const;
+  const anyKind = kinds.some(([key]) => answers[key] === true),
+    noKind = kinds.every(([key]) => answers[key] === false);
+  const [hurt, setHurt] = useState<boolean | undefined>(anyKind ? true : noKind ? false : undefined);
+  const yesNo = [
+    [true, zh ? '是' : 'Yes'],
+    [false, zh ? '否' : 'No'],
+  ] as const;
   return (
-    <fieldset disabled={disabled}>
+    <fieldset disabled={disabled} className="v9-checkin-fields">
+      <Choices
+        label={zh ? '最近练后有没有哪里疼？' : 'Any pain after recent training?'}
+        options={[
+          [false, zh ? '没有' : 'No'],
+          [true, zh ? '有' : 'Yes'],
+        ]}
+        value={hurt}
+        onPick={value => {
+          setHurt(value);
+          const all = (answer: boolean | undefined) => Object.fromEntries(kinds.map(([key]) => [key, answer]));
+          if (value !== true)
+            onChange({
+              ...answers,
+              ...all(value === false ? false : undefined),
+              painFollowup: undefined,
+              jointPain: undefined,
+            });
+        }}
+      />
+      {hurt && (
+        <div className="v9-checkin-row" role="group" aria-label={zh ? '是哪种？可多选' : 'Which kind? Pick any'}>
+          <span>{zh ? '是哪种？可多选' : 'Which kind? Pick any'}</span>
+          <div className="v9-checkin-chips">
+            {kinds.map(([key, text]) => (
+              <ChoiceChip
+                key={key}
+                size="sm"
+                selected={answers[key] === true}
+                onClick={() => {
+                  const answer = answers[key] !== true;
+                  onChange({
+                    ...answers,
+                    [key]: answer,
+                    ...(key === 'newOrWorseJointPain' && !answer ? { jointPain: undefined } : {}),
+                    ...(key !== 'newOrWorseJointPain' && !answer ? { painFollowup: undefined } : {}),
+                  });
+                }}
+              >
+                {text}
+              </ChoiceChip>
+            ))}
+          </div>
+        </div>
+      )}
       {hasPreviousTraining && (
         <PainFollowupFields
           answers={answers}
@@ -140,58 +207,20 @@ export function TrainingCheckinFields({
           sex={sex}
         />
       )}
-      <label>
-        {engineCopy('deload.copy.checkin.0', locale)}
-        <select
-          value={answers.energyMotivation ?? ''}
-          onChange={event =>
-            onChange({ ...answers, energyMotivation: event.target.value ? Number(event.target.value) : undefined })
-          }
-        >
-          <option value="">{zh ? '请选择' : 'Choose'}</option>
-          {[1, 2, 3, 4, 5].map(value => (
-            <option key={value}>{value}</option>
-          ))}
-        </select>
-      </label>
+      <Choices
+        label={engineCopy('deload.copy.checkin.0', locale)}
+        options={[1, 2, 3, 4, 5].map(value => [value, String(value)] as const)}
+        value={answers.energyMotivation}
+        onPick={value => onChange({ ...answers, energyMotivation: value })}
+      />
+      {/* 几晚没睡好 is no longer asked (Bo 2026-10-26): the energy question covers it; the optional field stays. */}
       {hasPreviousTraining && (
-        <label>
-          {engineCopy('deload.copy.checkin.1', locale)}
-          <input
-            type="number"
-            min="0"
-            max="30"
-            step="1"
-            value={answers.poorSleepNights ?? ''}
-            onChange={event => {
-              const value = event.target.value === '' ? undefined : Number(event.target.value);
-              if (value === undefined || (Number.isInteger(value) && value >= 0 && value <= 30))
-                onChange({ ...answers, poorSleepNights: value });
-            }}
-          />
-        </label>
-      )}
-      {(['sorenessResolved', 'newOrWorseJointPain'] as const).map((key, index) =>
-        hasPreviousTraining || key === 'newOrWorseJointPain' ? (
-          <label key={key}>
-            {engineCopy(`deload.copy.checkin.${index + 2}`, locale)}
-            <select
-              value={answers[key] === undefined ? '' : String(answers[key])}
-              onChange={event => {
-                const answer = event.target.value === '' ? undefined : event.target.value === 'true';
-                onChange({
-                  ...answers,
-                  [key]: answer,
-                  ...(key === 'newOrWorseJointPain' && answer !== true ? { jointPain: undefined } : {}),
-                });
-              }}
-            >
-              <option value="">{zh ? '请选择' : 'Choose'}</option>
-              <option value="true">{zh ? '是' : 'Yes'}</option>
-              <option value="false">{zh ? '否' : 'No'}</option>
-            </select>
-          </label>
-        ) : null,
+        <Choices
+          label={engineCopy('deload.copy.checkin.2', locale)}
+          options={yesNo}
+          value={answers.sorenessResolved}
+          onPick={value => onChange({ ...answers, sorenessResolved: value })}
+        />
       )}
       {(answers.newOrWorseJointPain === true ||
         (hasPreviousTraining &&

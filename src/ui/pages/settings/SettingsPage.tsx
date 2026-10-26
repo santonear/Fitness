@@ -1,6 +1,7 @@
 import { answerText } from '../../../application/preset-text';
 import { AssistantPreferencesPanel } from './AssistantPreferencesPanel';
-import { AccessStatusCard } from '../../components/AccessStatusCard';
+import { useAiStatusText } from '../../components/AccessStatusCard';
+import { aiActivationCopy } from '../../../i18n/features/coach/activation';
 import { DeletedPlans } from './DeletedPlans';
 import { planLifecycleCopy } from '../../../i18n/features/plan/lifecycle';
 import { anonymousUsageEnabled, setAnonymousUsage } from '../../../application/monitoring-client';
@@ -95,6 +96,7 @@ export function SettingsPage() {
   );
   const copy = locale === 'zh' ? settingsZh : settingsEn,
     me = meCopy[locale];
+  const aiStatus = useAiStatusText(locale);
   const [vibration, setVibration] = useState(() => {
     try {
       return localStorage.getItem(restVibrationKey) === 'on';
@@ -257,10 +259,7 @@ export function SettingsPage() {
         </li>
       </Group>
       <Group title={me.yaya}>
-        <li className="v9-row-block">
-          <AccessStatusCard locale={locale} />
-        </li>
-        <Row label={copy.trial} onClick={() => navigate('/trial')} />
+        <Row label={aiActivationCopy[locale].name} hint={aiStatus} onClick={() => navigate('/trial')} />
         <Row
           label={me.remembered}
           expanded={section === 'assistantPreferences'}

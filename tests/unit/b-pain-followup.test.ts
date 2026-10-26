@@ -70,13 +70,13 @@ it('every-set attention opens existing score and area controls without selecting
   expect(prompted).toContain('aria-label="右膝"');
   expect(prompted).not.toContain('aria-pressed="true"');
 });
-it('follow-up questions preserve unknown answers and use the source two questions', () => {
-  const html = renderToStaticMarkup(
-    createElement(PainFollowupFields, { answers: {}, onChange: () => {}, locale: 'zh', workouts: history }),
-  );
-  expect(html).toContain('上次的疼痛是否持续到第二天早上');
-  expect(html).toContain('疼痛或僵硬是否比上周更重');
-  expect(html.match(/value="" selected=""/g)).toHaveLength(2);
+it('follow-up asks which training only after a lasting or worse pain kind, with no default', () => {
+  const render = (answers: object) =>
+    renderToStaticMarkup(
+      createElement(PainFollowupFields, { answers, onChange: () => {}, locale: 'zh', workouts: history }),
+    );
+  expect(render({})).toBe('');
+  expect(render({ painLastedToNextMorning: true })).toContain('value="" selected=""');
 });
 
 it('each-set prompt requires a real attention area and source joint load, never just the exercise name', () => {

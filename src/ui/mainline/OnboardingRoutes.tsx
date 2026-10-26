@@ -3,6 +3,8 @@ import { EnginePlanUnavailableError } from '../../application/engine-error';
 import type { EnginePlan } from '../../engine/contracts';
 import { useState, useRef, useEffect } from 'react';
 import { useAccessStatus } from '../useAccessStatus';
+import { accessReason } from '../../application/ai-access';
+import { aiActivationCopy } from '../../i18n/features/coach/activation';
 import { sendAssistant } from '../../assistant/client';
 import { buildCoachRequest } from '../../coach/request-builder';
 import { approveCoachScope } from '../../coach/consent';
@@ -205,7 +207,10 @@ export function OnboardingRoute() {
 export function DraftRoute() {
   const c = useMainline(),
     bodyEnabled = useFeature('bodyProfile'),
+    assistant = useFeature('aiAssistantV2'),
     location = useLocation();
+  const access = useAccessStatus(assistant),
+    aiOff = assistant && !!access.status && accessReason(access.status) === 'invalid';
   if (!c.candidate) return <Navigate to={c.draftDiscarded ? '/' : path('onboarding')} replace />;
   return (
     <PlanDraftPage
@@ -244,6 +249,7 @@ export function DraftRoute() {
         c.setCandidate(undefined);
         c.navigate('/');
       }}
+      aiOffer={aiOff ? { text: aiActivationCopy[c.locale].draft, onClick: () => c.setActivationOpen(true) } : undefined}
       onDiscuss={() => c.openCoach('ONBOARD_PLAN', undefined, c.candidate!.profile, pickedSchedule(c.candidate!))}
       onConfirm={confirmed =>
         void c.run(async () => {

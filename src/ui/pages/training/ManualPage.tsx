@@ -1,5 +1,5 @@
 import { historyPainState } from '../../../application/engine-profile';
-import { PreTrainingCheckin } from './PreTrainingCheckin';
+import { CheckinCard } from './CheckinCard';
 import { isFeatureEnabled } from '../../../application/feature-flags';
 import { engineCopy } from '../../../coach/engine-copy';
 import { templateLabel } from '../../../i18n/features/plan/labels';
@@ -184,7 +184,7 @@ export function ManualPage() {
         <h1>{copy.title}</h1>
         <p>{copy.intro}</p>
       </header>
-      <PreTrainingCheckin />
+      <CheckinCard />
       {(historyPainState(data?.workouts ?? [], saved?.painState, data?.state?.painFollowupRestrictions) ?? []).some(
         row => row.remainingSessions > 0,
       ) && <p role="status">{engineCopy('pain.copy.drop_pattern', locale)}</p>}

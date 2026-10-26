@@ -1060,20 +1060,24 @@ test('pre-training joint danger persists as a minimal pause until fresh screenin
   }
   await completeScreen();
   await page.waitForURL('**/settings');
-  await expect(page.getByText('此浏览器尚未领取 AI 资格', { exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: '刷新资格', exact: true })).toBeEnabled();
+  await expect(page.getByRole('button', { name: /AI 助手芽芽.*还没开通/ })).toBeVisible();
   await page.goto('/manual');
   await page.clock.setFixedTime(new Date('2026-10-15T03:01:00.000Z'));
-  const jointSelect = page.getByRole('combobox', { name: '有没有新出现或变得更重的关节疼痛？', exact: true });
-  const checkin = page.locator('section').filter({ has: jointSelect });
-  await expect(jointSelect).toHaveCount(1);
-  await jointSelect.selectOption('true');
+  const checkin = page.getByRole('region', { name: '练之前，看看状态', exact: true });
+  if (!(await checkin.locator('details').evaluate(d => (d as HTMLDetailsElement).open)))
+    await checkin.locator('summary').click();
+  await checkin
+    .getByRole('group', { name: '最近练后有没有哪里疼？', exact: true })
+    .getByRole('button', { name: '有', exact: true })
+    .click();
+  await checkin.getByRole('button', { name: '新出现', exact: true }).click();
   await page.getByRole('button', { name: '右膝', exact: true }).click();
   await page.getByRole('button', { name: '下一步', exact: true }).click();
   await page.getByRole('radio', { name: '4', exact: true }).click();
   await page.getByRole('button', { name: '下一步', exact: true }).click();
-  const no = page.getByRole('button', { name: '否', exact: true }),
-    yes = page.getByRole('button', { name: '是', exact: true });
+  // The red-flag step comes after the soreness 是/否 chips.
+  const no = checkin.getByRole('button', { name: '否', exact: true }).last(),
+    yes = checkin.getByRole('button', { name: '是', exact: true }).last();
   await expect(page.getByText('再确认几件事 · 1 / 7', { exact: true })).toBeVisible();
   await yes.click();
   for (let i = 1; i < 7; i++) await no.click();
@@ -1122,8 +1126,7 @@ test('pre-training joint danger persists as a minimal pause until fresh screenin
   await page.getByRole('checkbox', { name: /同意将运动前自查/ }).uncheck();
   await page.getByRole('button', { name: '保存', exact: true }).click();
   await page.waitForURL('**/settings');
-  await expect(page.getByText('此浏览器尚未领取 AI 资格', { exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: '刷新资格', exact: true })).toBeEnabled();
+  await expect(page.getByRole('button', { name: /AI 助手芽芽.*还没开通/ })).toBeVisible();
   await page.goto('/settings/engine');
   expect(
     await page.evaluate(async () => {
@@ -1134,8 +1137,7 @@ test('pre-training joint danger persists as a minimal pause until fresh screenin
   await page.clock.setFixedTime(new Date('2026-10-15T03:02:00.000Z'));
   await completeScreen();
   await page.waitForURL('**/settings');
-  await expect(page.getByText('此浏览器尚未领取 AI 资格', { exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: '刷新资格', exact: true })).toBeEnabled();
+  await expect(page.getByRole('button', { name: /AI 助手芽芽.*还没开通/ })).toBeVisible();
   await page.goto('/settings/engine');
   const attestation = page.getByRole('checkbox', { name: '我已就医，并已确认可以恢复运动', exact: true }),
     confirm = page.getByRole('button', { name: '确定', exact: true });

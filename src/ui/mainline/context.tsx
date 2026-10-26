@@ -76,6 +76,8 @@ function useController() {
   const [candidate, setCandidate] = useState<LocalCandidate>(),
     [busy, setBusy] = useState(false),
     [error, setError] = useState('');
+  // AI 助手芽芽 activation sheet, opened in place from the chat, the orb, the draft or onboarding.
+  const [activationOpen, setActivationOpen] = useState(false);
   const [coachOpen, setCoachOpen] = useState(false),
     [coachRequest, setCoachRequest] = useState<CoachRequest>(),
     [coachRevision, setCoachRevision] = useState(0);
@@ -473,6 +475,8 @@ function useController() {
     sendHomeCoach,
     reviewKind,
     setReviewKind,
+    activationOpen,
+    setActivationOpen,
     coachOpen,
     setCoachOpen,
     coachRequest,

@@ -23,9 +23,9 @@ import { replanCopy } from '../../i18n/features/plan/training-days';
 import { scheduleAfterProposal } from '../../application/picked-schedule';
 import { TrialAccess } from '../components/TrialAccess';
 import { CoachPanel } from '../components/CoachPanel';
-import { CoachVisual } from '../components/CoachVisual';
 import { Orb, type OrbContext } from '../components/Orb';
 import { V8Reminder } from '../components/V8Reminder';
+import { useAiOffer } from './AiOffer';
 import { path, OnboardingRoute, DraftRoute } from './OnboardingRoutes';
 import { ExercisesPage } from '../pages/plan/ExercisesPage';
 import { PlanRoute } from '../pages/plan/PlanRoute';
@@ -67,11 +67,11 @@ function Shell() {
   const { data, t, slots, navigate, error } = c,
     location = useLocation();
   const { versionUndo, setVersionUndo } = c;
+  const ai = useAiOffer(location.pathname);
   const immersive =
     ['/onboarding', '/plan-draft', '/letter'].includes(location.pathname) || location.pathname.startsWith('/workout/');
   const engineEnabled = useFeature('trainingEngine' as Parameters<typeof useFeature>[0]);
-  const reviewing = location.pathname === path('review'),
-    bodyEnabled = useFeature('bodyProfile');
+  const bodyEnabled = useFeature('bodyProfile');
   const replanTrigger = useRef<HTMLElement | null>(null);
   const optionalOnboardingProfile = () => {
     try {
@@ -135,16 +135,6 @@ function Shell() {
           </aside>
         )}
       <MaintenanceBanner training={location.pathname.startsWith('/workout/')} language={c.locale} />
-      {reviewing && (
-        <header className={`v8-shell-header${reviewing ? ' v8-review-header' : ''}`}>
-          <slots.BrandMark label={entryCopy[c.locale].welcome.kicker} />
-          {reviewing && (
-            <Button className="v8-review-coach" aria-label={t.askCoach} onClick={() => c.openCoach('PERIOD_REVIEW')}>
-              <CoachVisual />
-            </Button>
-          )}
-        </header>
-      )}
       {error && !['/onboarding', '/plan-draft'].includes(location.pathname) && <p role="alert">{error}</p>}
       <Routes>
         <Route
@@ -219,6 +209,7 @@ function Shell() {
                 : undefined
             }
             autoTuck={immersive}
+            {...ai.orb}
             onOpenChat={() => openFromOrb()}
             onAction={prompt => openFromOrb(prompt)}
           />
@@ -302,10 +293,7 @@ function Shell() {
         initialSend={c.coachInitialSend}
         locale={c.locale}
         unavailableReason={data.active && data.active.planVersionId !== data.version?.id ? t.oldWorkout : undefined}
-        onActivate={() => {
-          c.setCoachOpen(false);
-          navigate('/trial');
-        }}
+        onActivate={ai.openActivation}
         onLocalPlan={() => {
           c.setCoachOpen(false);
           navigate('/onboarding');
@@ -360,6 +348,8 @@ function Shell() {
           if (candidate.request.task === 'ONBOARD_PLAN') navigate('/');
         }}
       />
+      {/* After the chat: the activation sheet opens on top of it and the composer keeps its text. */}
+      {ai.elements}
       {!immersive && (
         <nav aria-label={navCopy[c.locale].label} className="v9-tabbar">
           {(

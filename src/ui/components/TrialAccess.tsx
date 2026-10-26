@@ -20,6 +20,7 @@ import {
 } from './trial/trial-api';
 import { TrialApplicationForm } from './trial/TrialApplicationForm';
 import { ChoiceChip, PrimaryButton } from './kit';
+import { aiActivationCopy } from '../../i18n/features/coach/activation';
 
 export { trialApi } from './trial/trial-api';
 
@@ -27,10 +28,16 @@ export function TrialAccess({
   onContinue,
   onSkip,
   onStartPlanning,
+  onApplied,
+  embedded = false,
 }: {
   onContinue?: () => void;
   onSkip?: () => void;
   onStartPlanning?: () => void;
+  /** A new trial request was sent (the sheet closes and 芽芽 says it will tell when approved). */
+  onApplied?: () => void;
+  /** Inside a sheet that already carries the title. */
+  embedded?: boolean;
 }) {
   const navigate = useNavigate();
   const assistantV2 = useFeature('aiAssistantV2');
@@ -129,7 +136,8 @@ export function TrialAccess({
   }
   const nameIssue = textIssue(name, TEXT_LIMITS.name),
     noteIssue = textIssue(note, TEXT_LIMITS.note),
-    locale = zh ? 'zh' : 'en';
+    locale = zh ? 'zh' : 'en',
+    a = aiActivationCopy[locale];
   async function submit() {
     if (nameIssue || noteIssue) return;
     await run(async () => {
@@ -144,6 +152,7 @@ export function TrialAccess({
         setForm(false);
         requestId.current = crypto.randomUUID();
         await refresh(owner);
+        onApplied?.();
       } finally {
         setProof('');
         setChallenge(value => value + 1);
@@ -181,9 +190,17 @@ export function TrialAccess({
     claimed: zh ? '已领取' : 'Claimed',
   };
   return (
-    <section className="trial-access" aria-labelledby="trial-title">
-      <span className="trial-kicker">FITNESS · AI ACCESS</span>
-      <h1 id="trial-title">{zh ? 'AI 试用资格' : 'AI trial access'}</h1>
+    <section
+      className="trial-access"
+      aria-labelledby={embedded ? undefined : 'trial-title'}
+      aria-label={embedded ? a.title : undefined}
+    >
+      {!embedded && (
+        <>
+          <span className="trial-kicker">FITNESS · AI ACCESS</span>
+          <h1 id="trial-title">{a.title}</h1>
+        </>
+      )}
       <p>
         {zh
           ? '已有邀请码？填写用户名和邀请码，即可开始。还没有邀请码可以申请试用。'
@@ -192,7 +209,7 @@ export function TrialAccess({
       {!loaded && (
         <p role="status">
           <AppIcon name="info" />
-          {zh ? '正在查询资格…' : 'Checking your trial…'}
+          {a.status.checking}
         </p>
       )}
       {error && (
@@ -211,8 +228,8 @@ export function TrialAccess({
         <p role="status">
           <AppIcon name="info" />
           {zh
-            ? '此浏览器尚无可验证的试用资格。可兑换邀请码或查看申请。'
-            : 'No verified trial on this browser. Redeem an invitation or check your application.'}
+            ? '还没开通。有邀请码可以直接开通，没有可以申请试用。'
+            : 'Not on yet. Use an invitation, or apply for a trial.'}
         </p>
       )}
       {status && (
@@ -228,11 +245,11 @@ export function TrialAccess({
                   : 'Access revoked — contact the administrator'
                 : !sessionValid
                   ? zh
-                    ? '资格有效，但此浏览器未启用；可恢复领取或申请补发'
-                    : 'Trial active, but this browser is not activated. Recover the claim or request a replacement.'
+                    ? `已开通，但这个浏览器还没启用。可以在下面“${a.recover}”。`
+                    : `On, but not in this browser yet. Use “${a.recover}” below.`
                   : zh
-                    ? 'AI 试用有效'
-                    : 'Your AI trial is active'}
+                    ? 'AI 助手芽芽已开通'
+                    : 'AI assistant Yaya is on'}
           </strong>
           <p>
             {zh ? '有效期至：' : 'Valid until: '}
@@ -259,8 +276,8 @@ export function TrialAccess({
           )}
           <p>
             {zh
-              ? '试用资格只影响 AI 服务，手动训练和本地记录始终可用。'
-              : 'Trial access applies to AI services. Manual training and local records remain available.'}
+              ? 'AI 助手芽芽只影响 AI 对话，手动训练和本地记录始终可用。'
+              : 'AI assistant Yaya only affects AI chat. Manual training and local records always work.'}
           </p>
         </div>
       )}
@@ -335,19 +352,6 @@ export function TrialAccess({
         >
           {hasTrial ? (zh ? '申请延期 30 天' : 'Request 30-day extension') : zh ? '申请 AI 试用' : 'Apply for AI trial'}
         </PrimaryButton>
-        {hasTrial && qualificationState !== 'expired' && qualificationState !== 'revoked' && (
-          <PrimaryButton
-            tone="quiet"
-            size="md"
-            disabled={busy || pending || !config?.available}
-            onClick={() => {
-              setKind('replace');
-              setForm(true);
-            }}
-          >
-            {zh ? '申请补发／更换设备' : 'Request replacement / change device'}
-          </PrimaryButton>
-        )}
       </div>
       {!active && !form && (
         <form
@@ -423,27 +427,44 @@ export function TrialAccess({
         />
       )}
 
-      <PrimaryButton tone="quiet" size="md" disabled={busy} onClick={() => void run(() => refresh())}>
-        {zh ? '刷新状态' : 'Refresh status'}
-      </PrimaryButton>
-      {receipt && (
-        <>
+      {/* Recovery stays folded: most people only need the invitation or the trial request (V9.22). */}
+      <details className="trial-recover">
+        <summary>{a.recover}</summary>
+        {hasTrial && qualificationState !== 'expired' && qualificationState !== 'revoked' && (
           <PrimaryButton
             tone="quiet"
             size="md"
-            disabled={busy}
-            onClick={() => setLink(`${location.origin}/trial#trial=${receipt}`)}
+            disabled={busy || pending || !config?.available}
+            onClick={() => {
+              setKind('replace');
+              setForm(true);
+            }}
           >
-            {zh ? '查看私密领取链接' : 'Show private claim link'}
+            {zh ? '申请补发／更换设备' : 'Request replacement / change device'}
           </PrimaryButton>
-          {link && (
-            <label>
-              {zh ? '请自行保管，不要公开分享' : 'Keep this private; do not share publicly'}
-              <input readOnly value={link} onFocus={e => e.target.select()} />
-            </label>
-          )}
-        </>
-      )}
+        )}
+        <PrimaryButton tone="quiet" size="md" disabled={busy} onClick={() => void run(() => refresh())}>
+          {zh ? '刷新状态' : 'Refresh status'}
+        </PrimaryButton>
+        {receipt && (
+          <>
+            <PrimaryButton
+              tone="quiet"
+              size="md"
+              disabled={busy}
+              onClick={() => setLink(`${location.origin}/trial#trial=${receipt}`)}
+            >
+              {zh ? '查看私密领取链接' : 'Show private claim link'}
+            </PrimaryButton>
+            {link && (
+              <label>
+                {zh ? '请自行保管，不要公开分享' : 'Keep this private; do not share publicly'}
+                <input readOnly value={link} onFocus={e => e.target.select()} />
+              </label>
+            )}
+          </>
+        )}
+      </details>
       {onSkip && (
         <PrimaryButton tone="text" size="sm" onClick={onSkip}>
           {zh ? '先看看应用' : 'Explore the app first'}

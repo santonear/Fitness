@@ -481,7 +481,7 @@ test('review adjustment is previewed then saved as a new version without rewriti
     await page.getByRole('button', { name: '时间不够', exact: true }).click();
     await page.getByRole('button', { name: '记下来', exact: true }).click();
     await expect(page.getByRole('heading', { name: '本周回顾', exact: true })).toBeVisible();
-    if (i === 0) await page.getByRole('button', { name: '下一次', exact: true }).click();
+    if (i === 0) await page.getByRole('button', { name: '回到今天', exact: true }).click();
   }
   const before = await page.evaluate(async () => {
     const p = '/src/persistence/db.ts';
@@ -605,16 +605,16 @@ test('server-revoked access replaces local entitlement and blocks paid requests'
   await page.getByRole('button', { name: '就用这份计划' }).click();
   await page.getByRole('button', { name: '先不写', exact: true }).click();
   await page.goto('/settings');
-  await expect(page.getByText('AI 资格有效', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: /AI 助手芽芽.*已开通/ })).toBeVisible();
   qualification = 'revoked';
-  await page.getByRole('button', { name: '刷新资格', exact: true }).click();
-  await expect(page.getByText('此浏览器的资格已失效', { exact: true })).toBeVisible();
-  await expect(page.getByRole('link', { name: '恢复领取或申请补发' })).toHaveAttribute('href', '/trial');
+  await page.reload();
+  await page.getByRole('button', { name: /AI 助手芽芽.*还没开通/ }).click();
+  await expect(page).toHaveURL(/\/trial$/);
   await page.goto('/');
   await openHomeCoach(page);
   await page.getByRole('dialog').getByRole('textbox').fill('今天时间不够');
   await page.getByRole('dialog').getByRole('button', { name: '发送', exact: true }).click();
-  await expect(page.getByRole('dialog').getByRole('status')).toContainText('现在用的是本地建议 · 资格无效');
+  await expect(page.getByRole('dialog').getByRole('status')).toContainText('现在用的是本地建议 · 还没开通 AI 助手芽芽');
   expect(modelCalls).toBe(0);
 });
 
