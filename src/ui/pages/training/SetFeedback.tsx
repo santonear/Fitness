@@ -101,7 +101,7 @@ export function SetFeedback({
         )}
       </details>
       {(discomfort || promptPainAreas.length > 0) && (
-        <div className="v8-inline-panel">
+        <div className="wk-pain">
           {!painAllowed && onHealthSettings && (
             <Button onClick={onHealthSettings}>{locale === 'zh' ? '设置' : 'Settings'}</Button>
           )}

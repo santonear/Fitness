@@ -160,6 +160,11 @@
   display: grid;
   gap: var(--s2);
 }
+/* The pain panel takes the full feedback width so the body figure stays tappable on small phones. */
+.wk-pain {
+  display: grid;
+  gap: var(--s4);
+}
 .wk-capsules {
   justify-content: center;
 }

@@ -943,8 +943,9 @@
 }
 .v9-pain-hit {
   position: absolute;
-  inline-size: var(--touch-min);
-  block-size: var(--touch-min);
+  /* Paired joints sit about 11% of the figure apart; capping at 10% keeps left and right targets from overlapping on narrow screens. */
+  inline-size: min(var(--touch-min), 10%);
+  aspect-ratio: 1;
   padding: 0;
   border: 0;
   border-radius: 50%;
