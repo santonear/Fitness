@@ -219,10 +219,12 @@ export function HomePage() {
     schedule.sessions.find(
       session => weekdays.indexOf(session.day) > todayIndex && !beforeStart(weekdays.indexOf(session.day)),
     ) ?? schedule.sessions[0];
+  // Sessions bound to weekdays show that day's own session (it may have been edited); otherwise the rotation's next one.
   const following =
-    templates.length && selected
+    (templates.every(item => item.weekday) && templates.find(item => item.id === nextSession?.templateId)) ||
+    (templates.length && selected
       ? templates[(templates.findIndex(item => item.id === selected.id) + 1) % templates.length]
-      : undefined;
+      : undefined);
   const parts = selected ? regionLabels(selected, locale) : [];
   const dateText = new Intl.DateTimeFormat(locale === 'zh' ? 'zh-CN' : 'en', {
     timeZone,
