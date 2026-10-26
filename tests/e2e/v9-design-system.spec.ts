@@ -64,7 +64,18 @@ test('orb drags vertically, snaps to the nearer side, tucks and opens chat with 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`${gallery}?section=mascot`);
   const orb = page.getByRole('button', { name: '芽芽助手，按住可上下拖动' });
-  await expect(page.locator('.v9-orb-tip')).toContainText('热身');
+  // The tip only shows over empty space: never on top of a picture (Bo 2026-10-26).
+  await page.waitForTimeout(1500);
+  expect(
+    await page.evaluate(() => {
+      const tip = document.querySelector('.v9-orb-tip')?.getBoundingClientRect();
+      if (!tip) return false;
+      return [...document.querySelectorAll('svg, img, canvas, [role="img"]')]
+        .filter(element => !element.closest('.v9-orb'))
+        .map(element => element.getBoundingClientRect())
+        .some(r => r.width > 0 && tip.left < r.right && tip.right > r.left && tip.top < r.bottom && tip.bottom > r.top);
+    }),
+  ).toBe(false);
   const start = (await orb.boundingBox())!;
   await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2);
   await page.mouse.down();
