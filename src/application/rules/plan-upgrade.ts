@@ -70,17 +70,18 @@ export function weeklyMuscleLoad(entries: readonly SetEntry[]): MuscleLoad[] {
 }
 
 export function sessionMuscleFocus(exerciseIds: readonly string[]): SessionMuscleFocus {
-  const primary = new Set<MuscleGroup>(),
+  const primary = new Map<MuscleGroup, number>(),
     secondary = new Set<MuscleGroup>();
   const byExercise: Record<string, MuscleGroup[]> = {};
   for (const id of exerciseIds) {
     const groups = exerciseMuscleGroups(id);
-    groups.primary.forEach(group => primary.add(group));
+    groups.primary.forEach(group => primary.set(group, (primary.get(group) ?? 0) + 1));
     groups.secondary.forEach(group => secondary.add(group));
     byExercise[id] = [...groups.primary, ...groups.secondary];
   }
   return {
-    primary: groupOrder(primary),
+    // Most-trained first, then in exercise order, so the names lead with what the session is about (squat → legs).
+    primary: [...primary.keys()].sort((a, b) => primary.get(b)! - primary.get(a)!),
     secondary: groupOrder(secondary).filter(group => !primary.has(group)),
     byExercise,
   };

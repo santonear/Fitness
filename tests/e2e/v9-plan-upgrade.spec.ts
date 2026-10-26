@@ -58,7 +58,7 @@ test('今天: B plan, fragment scene with the honest line and its evidence fold;
   await expect(page.getByText('我给今天备了两套方案', { exact: false })).toBeVisible();
   await page.getByRole('button', { name: '办公室', exact: true }).click();
   await expect(page.getByText('说实话，零碎练对健康很有用', { exact: false })).toBeVisible();
-  await page.getByText('为什么', { exact: true }).click();
+  await page.getByText('查看依据 ›', { exact: true }).click();
   await expect(page.getByText('中等把握')).toBeVisible();
   await expect(page.getByText(/\d+\s*天没练/)).toHaveCount(0);
   await page.getByRole('button', { name: '写下何时何地练', exact: true }).click();

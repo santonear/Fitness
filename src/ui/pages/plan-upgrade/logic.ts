@@ -7,8 +7,8 @@ import type {
   FitnessTestItem,
   FitnessTestRecord,
   LiftEntry,
+  MuscleGroup,
   MuscleLoad,
-  NowMinutes,
   SessionMuscleFocus,
   SetEntry,
 } from '../../../domain/plan-upgrade';
@@ -104,15 +104,19 @@ export function returnLine(workouts: readonly WorkoutLike[], today: string): 're
 const WEEKLY_SETS_PER_GROUP = 10;
 /** v5 §4: one line for the home panel. */
 export function nowCoachLine(
-  minutes: NowMinutes,
+  minutes: number,
   exerciseCount: number,
   loads: readonly MuscleLoad[],
   locale: Locale,
+  /** The session's own groups: only these can be “filled” by it. */
+  groups?: readonly MuscleGroup[],
 ): string {
   const y = yayaV5[locale];
   if (minutes === 5 && exerciseCount > 0) return fillLine(y.nowFive, { count: exerciseCount });
+  // Nothing trained yet this week: there is no gap to fill, only a start.
+  if (!loads.some(load => load.sets > 0)) return y.nowAsk;
   const gap = [...loads]
-    .filter(load => load.level === 'low' || load.level === 'none')
+    .filter(load => (load.level === 'low' || load.level === 'none') && (!groups || groups.includes(load.group)))
     .sort((a, b) => a.sets - b.sets)[0];
   if (!gap) return y.nowAsk;
   const sets = Math.min(4, Math.max(1, Math.ceil(WEEKLY_SETS_PER_GROUP - gap.sets)));
