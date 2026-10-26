@@ -46,11 +46,12 @@ it('a complete explicit all-no set is complete; partial yes remains symptomatic'
   expect(cmrAnswerSummary(answers)).toEqual({ complete: true, symptoms: false });
   expect(cmrAnswerSummary({ [keys[0]]: true })).toEqual({ complete: false, symptoms: true });
 });
-it('renders nine separate source questions with unknown selected and source bilingual copy', () => {
+it('renders nine separate source questions with no answer chosen and source bilingual copy', () => {
   for (const locale of ['zh', 'en'] as const) {
     const html = renderToStaticMarkup(createElement(CmrSymptomsQuestions, { answers: {}, onChange: () => {}, locale }));
-    expect(html.match(/<select/g)).toHaveLength(9);
-    expect(html.match(/value="" selected=""/g)).toHaveLength(9);
+    // One tap row per question; nothing chosen until the person answers.
+    expect(html.match(/role="group"/g)).toHaveLength(9);
+    expect(html).not.toContain('aria-pressed="true"');
     for (const key of keys) expect(html).toContain(r.data.copy[`safety.copy.cmr_${key}`][locale]);
   }
 });
