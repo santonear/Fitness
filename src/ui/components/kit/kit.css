@@ -713,6 +713,8 @@
   max-inline-size: calc(var(--s8) * 5 + var(--s3));
   aspect-ratio: 330 / 200;
   margin-inline: auto;
+  /* The big number follows the arc's width, not the text size (Bo 2026-10-26: 30 was too big). */
+  container-type: inline-size;
 }
 .v9-home-arc svg {
   position: absolute;
@@ -730,7 +732,7 @@
   padding-block-end: var(--s1);
 }
 .v9-home-arc-center .v9-home-num {
-  font-size: calc(var(--t8) + var(--t7));
+  font-size: min(var(--t8), 20cqi);
 }
 .v9-home-track {
   fill: none;
@@ -1076,4 +1078,17 @@
   color: var(--c-ink);
   font-size: var(--t2);
   line-height: var(--lh-body);
+}
+
+/* ChoiceRow: a question with its tap answers underneath. */
+.v9-choice-row {
+  display: grid;
+  gap: var(--s2);
+  font-size: var(--t2);
+  color: var(--c-ink-muted);
+}
+.v9-choice-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
 }

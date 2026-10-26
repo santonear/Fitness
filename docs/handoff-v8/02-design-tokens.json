@@ -75,7 +75,7 @@
     "layout": {
       "mobileMax": "480px",
       "desktopRail": "88px",
-      "desktopMain": "560px",
+      "desktopMain": "640px",
       "desktopBreakpoint": "960px",
       "orbSize": "68px",
       "orbSafe": "92px",

@@ -342,9 +342,6 @@ export function HomePage() {
         </div>
         <div className="v9-home-head-side">
           <PageSwitches />
-          <span className="v9-num v9-home-day" aria-hidden="true">
-            {localDay(timeZone, now).slice(8)}
-          </span>
         </div>
       </header>
       {applied && version && (

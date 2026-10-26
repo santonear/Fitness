@@ -62,6 +62,37 @@ export function ChoiceChip({ selected, size = 'md', className, type = 'button', 
   );
 }
 
+/** One question, one tap per answer (Bo 2026-10-26); tapping the chosen answer again clears it to unknown. */
+export function ChoiceRow<T extends string | number | boolean>({
+  label,
+  options,
+  value,
+  onPick,
+}: {
+  label: string;
+  options: readonly (readonly [T, string])[];
+  value: T | undefined;
+  onPick: (value: T | undefined) => void;
+}) {
+  return (
+    <div className="v9-choice-row" role="group" aria-label={label}>
+      <span>{label}</span>
+      <div className="v9-choice-chips">
+        {options.map(([option, text]) => (
+          <ChoiceChip
+            key={String(option)}
+            size="sm"
+            selected={value === option}
+            onClick={() => onPick(value === option ? undefined : option)}
+          >
+            {text}
+          </ChoiceChip>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export interface BigChoiceProps extends Omit<ButtonProps, 'aria-pressed' | 'role'> {
   selected: boolean;
   label: ReactNode;

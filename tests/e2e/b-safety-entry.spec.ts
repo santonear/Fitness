@@ -182,7 +182,7 @@ test('age45 advisory acknowledgement is bound to screening and a missing CMR ans
   const s = await snapshot(page);
   expect(s.state.coachProfile.screening.age45AdvisoryAck.screenedAt).toBe(s.state.coachProfile.screening.completedAt);
   await page.goto('/settings/engine');
-  const questions = page.getByRole('group', { name: 'PAR-Q+', exact: true }).getByRole('combobox');
+  const questions = page.getByRole('group', { name: 'PAR-Q+', exact: true }).getByRole('group');
   await expect(questions).toHaveCount(20);
   await page.evaluate(async () => {
     const path = '/src/persistence/repository.ts',
@@ -195,7 +195,9 @@ test('age45 advisory acknowledgement is bound to screening and a missing CMR ans
     });
   });
   await page.reload();
-  await expect(page.getByRole('group', { name: 'PAR-Q+', exact: true }).getByRole('combobox').nth(8)).toHaveValue('');
+  await expect(
+    page.getByRole('group', { name: 'PAR-Q+', exact: true }).getByRole('group').nth(8).locator('[aria-pressed="true"]'),
+  ).toHaveCount(0);
 });
 test('unknown 1RM power uses relative source load text and no kilogram target in actual workout UI', async ({
   page,

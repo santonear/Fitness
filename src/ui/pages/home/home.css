@@ -4,10 +4,10 @@
   flex-direction: column;
   gap: var(--s4);
 }
+/* Switches get their own row above the title, so 大字号 on a narrow phone does not stack them three high. */
 .v9-home-head {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
+  flex-direction: column-reverse;
   gap: var(--s3);
   padding-block-start: var(--s4);
 }
@@ -24,11 +24,6 @@
   white-space: nowrap;
   font-size: var(--t2);
   color: var(--c-ink-muted);
-}
-.v9-home-day {
-  font-size: var(--t8);
-  line-height: 1;
-  color: var(--c-faint);
 }
 .v9-home-applied {
   display: flex;
@@ -251,8 +246,15 @@
 }
 /* Wide desktop: today's session and start on the left, the day's steps and the week on the right (V9.20). */
 @media (min-width: 1200px) {
+  /* Two columns, but always leaving the side gutter where 芽芽 sits (so it never covers a card). */
+  .v8-shell:has(> main.v9-home) {
+    --home-wide: min(
+      calc(var(--layout-desktop-main) * 2 + var(--s6)),
+      calc(100vw - var(--layout-desktop-rail) - (var(--orb-size) + var(--s4) + var(--s5)) * 2)
+    );
+  }
   .v8-shell main.v9-home {
-    max-width: calc(var(--layout-desktop-main) * 2 + var(--s6));
+    max-width: var(--home-wide);
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-auto-flow: row dense;
@@ -263,7 +265,7 @@
     grid-column: 1 / -1;
   }
   .v8-shell:has(> main.v9-home) .v9-orb {
-    --orb-column: calc(var(--layout-desktop-main) * 2 + var(--s6));
+    --orb-column: var(--home-wide);
   }
   .v9-home > .v9-home-now {
     grid-column: 1;
