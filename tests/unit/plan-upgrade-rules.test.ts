@@ -73,6 +73,13 @@ describe('session muscle focus', () => {
     expect(focus.primary).toContain('delts');
     expect(focus.secondary).not.toContain('delts');
   });
+  it('leads with the groups most exercises train', () => {
+    const squat =
+      bySlug('bodyweight-squat') ?? DATA.exercises.find(e => (e.primaryMuscles ?? []).includes('quadriceps'))!;
+    const lunge = DATA.exercises.find(e => e.id !== squat.id && (e.primaryMuscles ?? []).includes('quadriceps'))!;
+    const { primary } = sessionMuscleFocus([pushUp.id, squat.id, lunge.id]);
+    expect(primary.indexOf('quads')).toBeLessThan(primary.indexOf('chest'));
+  });
   it('is empty for no exercises', () => {
     expect(sessionMuscleFocus([])).toEqual({ primary: [], secondary: [], byExercise: {} });
   });

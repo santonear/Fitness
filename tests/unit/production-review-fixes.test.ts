@@ -89,6 +89,9 @@ test.each([
   const start = '2026-10-12T00:00:00Z';
   expect(workoutSeconds(start, new Date(Date.parse(start) + seconds * 1000).toISOString())).toBe(expected);
 });
+test('elapsed duration is whole seconds even with millisecond timestamps', () => {
+  expect(workoutSeconds('2026-10-26T10:00:00.120Z', '2026-10-26T10:00:04.870Z')).toBe(5);
+});
 test('duration names follow locale without changing stored user names', () => {
   expect(templateLabel({ id: 'same', name: '15 min' }, 'zh')).toBe('15 分钟');
   expect(templateLabel({ id: 'same', name: '15 分钟' }, 'en')).toBe('15 min');

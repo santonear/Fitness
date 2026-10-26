@@ -102,7 +102,7 @@ export function MinutesGroup({
   onMinutes,
   locale,
 }: {
-  minutes: NowMinutes;
+  minutes: number;
   onMinutes: (m: NowMinutes) => void;
   locale: KitLocale;
 }) {

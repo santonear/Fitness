@@ -96,7 +96,7 @@ export const planPagesCopy = {
     exhale: '呼气',
     calmDone: '结束',
     calmMinutes: '{minutes} 分钟',
-    whyLabel: '为什么',
+    whyLabel: '查看依据 ›',
     evidence: { strong: '证据扎实', moderate: '中等把握' },
   },
   en: {
@@ -190,7 +190,7 @@ export const planPagesCopy = {
     exhale: 'Breathe out',
     calmDone: 'End',
     calmMinutes: '{minutes} min',
-    whyLabel: 'Why',
+    whyLabel: 'See the basis ›',
     evidence: { strong: 'Strong evidence', moderate: 'Moderate confidence' },
   },
 } as const;

@@ -41,6 +41,8 @@ const gap = 8;
 /** Other controls are never covered by the full orb: it tucks to the edge while one is underneath, and the tip hides. */
 const controlSelector =
   'button, a[href], input, select, textarea, summary, [role="button"], [role="radio"], [role="switch"], [role="tab"]';
+/** Pictures (dial, body figure, charts) are content too: the tip only shows over empty space (Bo 2026-10-26). */
+const pictureSelector = 'svg, img, canvas, [role="img"], [role="meter"], [role="progressbar"]';
 /** Each page's tip shows at most once a day and folds away by itself, so it never sits on the content (V9.20). */
 const tipKey = 'fitness-orb-tips',
   tipMs = 6000;
@@ -145,7 +147,7 @@ export function Orb({
       area.right > rect.left - margin &&
       area.top < rect.bottom + margin &&
       area.bottom > rect.top - margin;
-    const tipBlocked = [...primaries, ...controls].some(rect => touches(tip, rect, 0));
+    const tipBlocked = [...primaries, ...controls, ...rects(pictureSelector)].some(rect => touches(tip, rect, 0));
     const hits = primaries.filter(rect => overlaps(home, rect));
     const covering = hits.length > 0 || controls.some(rect => touches(home, rect, 0));
     let next: { tuck: boolean; y?: number; tipBlocked: boolean } = { tuck: covering, tipBlocked };

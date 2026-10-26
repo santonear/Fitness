@@ -226,7 +226,8 @@ export interface AnatomyMapProps {
 /** Component line: src/ui/components/kit/HomePanel.tsx */
 export interface HomePanelProps {
   style: HomePanelStyle;
-  minutes: NowMinutes;
+  /** Shown minutes: the plan session's own length until a 5/15/30/45 stop is picked. */
+  minutes: number;
   onMinutes: (minutes: NowMinutes) => void;
   /** Absent before the plan's start date: no minutes choice and no start button (V9.20). */
   onStart?: () => void;

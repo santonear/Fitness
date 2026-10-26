@@ -187,7 +187,7 @@ export function NowPanel({
     ...(data?.plan?.id ? { planId: data.plan.id } : {}),
     ...(candidateIds.length ? { candidateIds } : {}),
     avoidJoints,
-    preferTemplate: minutes === planMinutes,
+    preferTemplate: pickedMinutes === undefined,
   });
   // 稳健 (Bo 2026-10-25): legs, balance and walking only; no body outline or weight wording on 今天.
   const steady = data?.state?.coachProfile?.route === 'steady';
@@ -195,6 +195,8 @@ export function NowPanel({
   const shape =
     !steady && outlineShown() ? figureShape(values, figureSex(values?.biologicalSex, lastFigureSex())) : undefined;
   const focus = session?.focus ?? { primary: [], secondary: [], byExercise: {} };
+  // Untouched, the dial shows the plan session's own minutes (Bo 2026-10-26), not the nearest 5/15/30/45 stop.
+  const shownMinutes = scene ? 5 : session?.templateId ? session.minutes : minutes;
   const welcome = returnClosed ? undefined : returnLine(data?.workouts ?? [], today);
   const start = () => {
     if (!blocked && session)
@@ -227,7 +229,7 @@ export function NowPanel({
             },
             locale,
           )
-        : nowCoachLine(minutes, session?.exerciseIds.length ?? 0, weekLoads, locale);
+        : nowCoachLine(shownMinutes, session?.exerciseIds.length ?? 0, weekLoads, locale, focus.primary);
   return (
     <>
       {welcome && (
@@ -270,7 +272,7 @@ export function NowPanel({
         style={style}
         onStyle={chooseStyle}
         locale={locale}
-        minutes={scene ? 5 : minutes}
+        minutes={shownMinutes}
         onMinutes={value => {
           setScene(undefined);
           setMinutes(value);

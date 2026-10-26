@@ -219,9 +219,16 @@ export function HomePage() {
     schedule.sessions.find(
       session => weekdays.indexOf(session.day) > todayIndex && !beforeStart(weekdays.indexOf(session.day)),
     ) ?? schedule.sessions[0];
-  // Sessions bound to weekdays show that day's own session (it may have been edited); otherwise the rotation's next one.
+  // Trained today: 今天 already moved on, so it heads the next session instead of calling it today's.
+  const mainToday = scheduledToday && !doneDays[today];
+  // 再下一次 follows the plan page's week (Bo 2026-10-26): the session after the one 今天 shows; picked dates keep the rotation.
+  const followSession =
+    nextSession &&
+    (mainToday
+      ? nextSession
+      : schedule.sessions[(schedule.sessions.indexOf(nextSession) + 1) % schedule.sessions.length]);
   const following =
-    (templates.every(item => item.weekday) && templates.find(item => item.id === nextSession?.templateId)) ||
+    (!picked && templates.find(item => item.id === followSession?.templateId)) ||
     (templates.length && selected
       ? templates[(templates.findIndex(item => item.id === selected.id) + 1) % templates.length]
       : undefined);
@@ -453,7 +460,7 @@ export function HomePage() {
             <p className="v9-home-reason">
               {notStarted && startDate
                 ? fill(sd.startsOn, { date: startDateLabel(startDate, todayDate, locale) })
-                : scheduledToday || !nextSession
+                : mainToday || !nextSession
                   ? h.today
                   : picked
                     ? pickedNext
@@ -595,12 +602,12 @@ export function HomePage() {
             )}
           </div>
           <WeekStrip label={h.week} days={strip} />
-          {following && nextSession && (
+          {following && followSession && (
             <p className="v9-home-next">
               <span>{h.after}</span>
               <strong>
                 {fill(h.afterLine, {
-                  day: `${schedule.chosen ? '' : h.suggested}${weekdayLabel(nextSession.day, locale)}`,
+                  day: `${schedule.chosen ? '' : h.suggested}${weekdayLabel(followSession.day, locale)}`,
                   name: shown(following),
                   minutes: following.estimatedMinutes,
                 })}

@@ -103,6 +103,15 @@ describe('V9.14 page logic', () => {
     );
     expect(nowCoachLine(30, 4, [], 'zh')).toBe(yayaV5.zh.nowAsk);
   });
+  it('home coach line only fills a gap this session trains, and never before any training', () => {
+    const none = [{ group: 'lats', sets: 0, level: 'none' }] as const;
+    expect(nowCoachLine(40, 4, none, 'zh', ['lats'])).toBe(yayaV5.zh.nowAsk);
+    const low = [
+      { group: 'traps', sets: 0, level: 'none' },
+      { group: 'quads', sets: 3, level: 'low' },
+    ] as const;
+    expect(nowCoachLine(40, 4, low, 'zh', ['quads'])).toContain('股四头');
+  });
   it('a tapped exercise card shows only its groups', () => {
     const focus = {
       primary: ['lats', 'calves'] as const,
