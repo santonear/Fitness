@@ -150,6 +150,11 @@ test('deleting a plan without workout records keeps the home empty after reload'
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole('button', { name: '重新制定计划', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: '手动训练', exact: true })).toBeVisible();
+  // The panel stays without a plan, with no start and no n/0 week count (Bo 2026-10-26).
+  const panel = page.locator('section.v9-home-panel[data-style]');
+  await expect(panel).toBeVisible();
+  await expect(panel.locator('.v9-home-start')).toHaveCount(0);
+  await expect(panel.locator('.v9-home-week')).toHaveCount(0);
   expect((await records(page)).workouts).toHaveLength(0);
 });
 

@@ -557,6 +557,8 @@ export function HomePage() {
         <Card variant="raised" padding="lg" as="section" className="v9-home-empty">
           <Yaya pose="side" size={120} alt="" />
           <p>{planLifecycleCopy[locale].empty}</p>
+          {/* The panel stays without a plan too, with no start button (Bo 2026-10-26). */}
+          <NowPanel template={undefined} weekDates={weekDates} today={todayDate} blocked />
           <PrimaryButton onClick={restartPlanning}>{planLifecycleCopy[locale].create}</PrimaryButton>
           <div className="v9-home-row">
             <PrimaryButton tone="quiet" size="sm" onClick={() => navigate('/manual')}>
