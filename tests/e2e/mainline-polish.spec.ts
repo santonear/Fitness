@@ -144,34 +144,20 @@ test('fresh mainline: duration, local coach, exercise guide, bottom pause, finis
   await shot(page, 'week-review');
   expect(modelCalls).toBe(0);
 });
-test('review coach remains separate from statistics at narrow widths and after scrolling', async ({ page }) => {
+test('review has no header coach; the floating 芽芽 opens the review chat (V9.22)', async ({ page }) => {
   await onboard(page);
   await page.getByRole('button', { name: '就用这份计划' }).click();
   await page.getByRole('button', { name: '先不写', exact: true }).click();
   await expect(page.getByRole('heading', { name: '今天', exact: true })).toBeVisible();
   await page.goto('/review');
-  const original = page.viewportSize()!;
-  for (const width of original.width === 375 ? [320, 375] : [original.width]) {
-    await page.setViewportSize({ width, height: original.height });
-    for (const scroll of [0, 200, 600]) {
-      await page.evaluate(y => window.scrollTo(0, y), scroll);
-      const coach = await page.getByRole('button', { name: '和芽芽聊聊', exact: true }).boundingBox(),
-        facts = await page.locator('.rv-hero').boundingBox();
-      expect(coach).not.toBeNull();
-      expect(facts).not.toBeNull();
-      expect(
-        coach!.y + coach!.height <= facts!.y ||
-          facts!.y + facts!.height <= coach!.y ||
-          coach!.x + coach!.width <= facts!.x ||
-          facts!.x + facts!.width <= coach!.x,
-      ).toBe(true);
-      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-    }
+  await expect(page.getByRole('button', { name: '和芽芽聊聊', exact: true })).toHaveCount(0);
+  for (const scroll of [0, 600]) {
+    await page.evaluate(y => window.scrollTo(0, y), scroll);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   }
   await page.evaluate(() => window.scrollTo(0, 0));
   await shot(page, 'review-coach-clearance');
-  await page.getByRole('button', { name: '和芽芽聊聊', exact: true }).click();
-  await expect(page.getByRole('dialog')).toHaveAttribute('aria-modal', 'true');
+  await expect(await openHomeCoach(page)).toHaveAttribute('aria-modal', 'true');
 });
 test('unknown load stays unknown until a chosen fractional weight, all theme numerals', async ({ page }) => {
   await page.goto('/manual');

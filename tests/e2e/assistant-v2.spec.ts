@@ -285,7 +285,7 @@ test('today suggestion changes only the next workout after apply; review remains
   expect(after.state.nextWorkoutOverride.template.items.every((i: any) => i.sets === 1)).toBe(true);
   await page.keyboard.press('Escape');
   await page.goto('/review');
-  await page.getByRole('button', { name: '和芽芽聊聊', exact: true }).click();
+  await openHomeCoach(page);
   await page.getByRole('dialog').getByRole('textbox').fill('看看本周记录');
   await page.getByRole('dialog').getByRole('button', { name: '发送', exact: true }).click();
   await expect(page.getByRole('log').getByText('这次回顾已读取完成。')).toBeVisible();
@@ -531,9 +531,9 @@ test('review assistant waits for its initial facts before becoming available', a
   });
   await page.goto('/review');
   await page.waitForFunction(() => (window as any).reviewReadStarted === true);
-  await expect(page.getByRole('button', { name: '和芽芽聊聊', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '芽芽助手，按住可上下拖动' })).toHaveCount(0);
   await page.evaluate(() => (window as any).releaseReview());
-  await page.getByRole('button', { name: '和芽芽聊聊', exact: true }).click();
+  await openHomeCoach(page);
   await page.getByRole('dialog').getByRole('textbox').fill('看看本周记录');
   await page.getByRole('dialog').getByRole('button', { name: '发送', exact: true }).click();
   await expect(page.getByRole('log').getByText('这次回顾已读取完成。')).toBeVisible();

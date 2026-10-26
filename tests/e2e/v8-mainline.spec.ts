@@ -121,7 +121,7 @@ test('monthly review sends the visible month instead of the current week', async
   await page.goto('/review');
   await page.getByRole('radio', { name: '本月', exact: true }).click();
   await enableAssistant(page);
-  await page.getByRole('button', { name: '和芽芽聊聊', exact: true }).click();
+  await openHomeCoach(page);
   await page.getByRole('dialog').getByRole('textbox').fill('看看这个月');
   await page.getByRole('dialog').getByRole('button', { name: '发送', exact: true }).click();
   await expect.poll(() => received?.kind).toBe('month');
