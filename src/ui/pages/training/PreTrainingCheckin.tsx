@@ -11,7 +11,7 @@ import { engineCopy } from '../../../coach/engine-copy';
 import { useMainline, workflow } from '../../mainline/context';
 import { useFeature } from '../../useFeature';
 import { Button } from '../../components/common';
-import { ChoiceChip } from '../../components/kit';
+import { ChoiceChip, ChoiceRow } from '../../components/kit';
 
 const followupRules = new Rules();
 export function PainFollowupFields({
@@ -85,36 +85,6 @@ export function PainFollowupFields({
     </>
   ) : null;
 }
-/** One tap per answer (Bo 2026-10-26); an untouched question stays unknown. */
-function Choices<T extends string | number | boolean>({
-  label,
-  options,
-  value,
-  onPick,
-}: {
-  label: string;
-  options: readonly (readonly [T, string])[];
-  value: T | undefined;
-  onPick: (value: T | undefined) => void;
-}) {
-  return (
-    <div className="v9-checkin-row" role="group" aria-label={label}>
-      <span>{label}</span>
-      <div className="v9-checkin-chips">
-        {options.map(([option, text]) => (
-          <ChoiceChip
-            key={String(option)}
-            size="sm"
-            selected={value === option}
-            onClick={() => onPick(value === option ? undefined : option)}
-          >
-            {text}
-          </ChoiceChip>
-        ))}
-      </div>
-    </div>
-  );
-}
 export function TrainingCheckinFields({
   answers,
   onChange,
@@ -154,7 +124,7 @@ export function TrainingCheckinFields({
   ] as const;
   return (
     <fieldset disabled={disabled} className="v9-checkin-fields">
-      <Choices
+      <ChoiceRow
         label={zh ? '最近练后有没有哪里疼？' : 'Any pain after recent training?'}
         options={[
           [false, zh ? '没有' : 'No'],
@@ -174,9 +144,9 @@ export function TrainingCheckinFields({
         }}
       />
       {hurt && (
-        <div className="v9-checkin-row" role="group" aria-label={zh ? '是哪种？可多选' : 'Which kind? Pick any'}>
+        <div className="v9-choice-row" role="group" aria-label={zh ? '是哪种？可多选' : 'Which kind? Pick any'}>
           <span>{zh ? '是哪种？可多选' : 'Which kind? Pick any'}</span>
-          <div className="v9-checkin-chips">
+          <div className="v9-choice-chips">
             {kinds.map(([key, text]) => (
               <ChoiceChip
                 key={key}
@@ -207,7 +177,7 @@ export function TrainingCheckinFields({
           sex={sex}
         />
       )}
-      <Choices
+      <ChoiceRow
         label={engineCopy('deload.copy.checkin.0', locale)}
         options={[1, 2, 3, 4, 5].map(value => [value, String(value)] as const)}
         value={answers.energyMotivation}
@@ -215,7 +185,7 @@ export function TrainingCheckinFields({
       />
       {/* 几晚没睡好 is no longer asked (Bo 2026-10-26): the energy question covers it; the optional field stays. */}
       {hasPreviousTraining && (
-        <Choices
+        <ChoiceRow
           label={engineCopy('deload.copy.checkin.2', locale)}
           options={yesNo}
           value={answers.sorenessResolved}

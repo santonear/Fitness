@@ -945,7 +945,8 @@ test('ended pain remains reviewable with the engine flag off and preserves compl
   );
   for (const path of ['/settings/engine', '/']) {
     await page.goto(path);
-    await expect(page.getByRole('button', { name: '否', exact: true })).toHaveCount(1);
+    // Only the pain review's own 是/否 (settings/engine also shows PAR-Q+ tap answers).
+    await expect(page.locator('.v9-pain-yesno').getByRole('button', { name: '否', exact: true })).toHaveCount(1);
     await expect(page.getByText('再确认几件事 · 1 / 7', { exact: true })).toBeVisible();
   }
   const rejected = await page.evaluate(async () => {
@@ -1050,11 +1051,12 @@ test('pre-training joint danger persists as a minimal pause until fresh screenin
   async function completeScreen() {
     await page.getByRole('checkbox', { name: /同意将运动前自查/ }).check();
     await fillBirthMonth(page, '1991-06');
-    const fields = page.getByRole('group', { name: 'PAR-Q+', exact: true }).getByRole('combobox');
+    // PAR-Q+ answers are tap choices, one row per question.
+    const fields = page.getByRole('group', { name: 'PAR-Q+', exact: true }).getByRole('group');
     await expect(fields).toHaveCount(20);
-    for (let i = 0; i < 18; i++) await fields.nth(i).selectOption('false');
-    await fields.nth(18).selectOption('active');
-    await fields.nth(19).selectOption('known_below_threshold');
+    for (let i = 0; i < 18; i++) await fields.nth(i).getByRole('button', { name: '否', exact: true }).click();
+    await fields.nth(18).getByRole('button', { name: '是', exact: true }).click();
+    await fields.nth(19).getByRole('button', { name: '已知低于 160/90 mmHg', exact: true }).click();
     await page.getByRole('combobox', { name: /孕期 \/ 产后状态/ }).selectOption('general');
     await page.getByRole('button', { name: '保存', exact: true }).click();
   }

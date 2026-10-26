@@ -50,7 +50,12 @@ button:disabled {
   cursor: not-allowed;
   opacity: 0.5;
 }
+/* Same size as 我的 switches rows: the native 13px box is hard to see and hit (Bo 2026-10-26). */
 input[type='checkbox'] {
+  flex: none;
+  inline-size: var(--s5);
+  block-size: var(--s5);
+  margin: 0;
   accent-color: var(--c-primary);
 }
 label:has(input[type='checkbox']) {

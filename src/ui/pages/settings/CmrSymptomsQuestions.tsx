@@ -1,5 +1,6 @@
 import { Rules } from '../../../engine/data';
 import { engineCopy } from '../../../coach/engine-copy';
+import { ChoiceRow } from '../../components/kit';
 export function cmrAnswerSummary(answers: Record<string, boolean>) {
   const keys = new Rules().get('safety.screen.cmr_symptoms').symptoms as string[];
   return {
@@ -21,19 +22,18 @@ export function CmrSymptomsQuestions({
   return (
     <>
       {keys.map(key => (
-        <label key={key}>
-          {engineCopy(`safety.copy.cmr_${key}`, locale)}
-          <select
-            value={typeof answers[key] === 'boolean' ? String(answers[key]) : ''}
-            onChange={event => {
-              if (event.target.value !== '') onChange({ ...answers, [key]: event.target.value === 'true' });
-            }}
-          >
-            <option value="">{locale === 'zh' ? '请选择' : 'Choose'}</option>
-            <option value="false">{locale === 'zh' ? '否' : 'No'}</option>
-            <option value="true">{locale === 'zh' ? '是' : 'Yes'}</option>
-          </select>
-        </label>
+        <ChoiceRow
+          key={key}
+          label={engineCopy(`safety.copy.cmr_${key}`, locale)}
+          options={[
+            [false, locale === 'zh' ? '否' : 'No'],
+            [true, locale === 'zh' ? '是' : 'Yes'],
+          ]}
+          value={answers[key]}
+          onPick={answer => {
+            if (answer !== undefined) onChange({ ...answers, [key]: answer });
+          }}
+        />
       ))}
     </>
   );

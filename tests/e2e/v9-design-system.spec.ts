@@ -77,7 +77,8 @@ test('orb drags vertically, snaps to the nearer side, tucks and opens chat with 
     }),
   ).toBe(false);
   const start = (await orb.boundingBox())!;
-  await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2);
+  // Over the gallery pictures the orb waits tucked at the edge (Bo 2026-10-26): grab its visible part.
+  await page.mouse.move(Math.min(start.x + start.width / 2, 390 - 8), start.y + start.height / 2);
   await page.mouse.down();
   await page.mouse.move(60, start.y - 150, { steps: 8 });
   await page.mouse.up();

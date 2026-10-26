@@ -40,17 +40,11 @@
   gap: var(--s3);
   min-inline-size: 0;
 }
-.v9-checkin label,
-.v9-checkin-row {
+.v9-checkin label {
   display: grid;
   gap: var(--s2);
   font-size: var(--t2);
   color: var(--c-ink-muted);
-}
-.v9-checkin-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--s2);
 }
 .v9-checkin select,
 .v9-checkin input:not([type='checkbox']):not([type='radio']) {

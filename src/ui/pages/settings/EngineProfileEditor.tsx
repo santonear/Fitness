@@ -11,6 +11,7 @@ import { Rules } from '../../../engine/data';
 import { engineCopy, engineCopyList, screeningExpired } from '../../../coach/engine-copy';
 import { useState } from 'react';
 import { BirthMonthField } from '../../components/BirthMonthField';
+import { ChoiceRow } from '../../components/kit';
 import type { EngineProfileFields } from '../../../application/engine-profile';
 import type { EngineProfile } from '../../../engine/contracts';
 
@@ -231,6 +232,20 @@ export function EngineProfileEditor(props: EngineProfileDraftProps) {
       </select>
     </label>
   );
+  // PAR-Q+: one tap per answer like the pre-workout check (Bo 2026-10-26); tapping the chosen answer keeps it.
+  const tapYesNo = (label: string, selected: boolean | undefined, change: (answer: boolean) => void) => (
+    <ChoiceRow
+      label={label}
+      options={[
+        [false, zh ? '否' : 'No'],
+        [true, zh ? '是' : 'Yes'],
+      ]}
+      value={selected}
+      onPick={answer => {
+        if (answer !== undefined) change(answer);
+      }}
+    />
+  );
   return (
     <section>
       <p>{engineCopy('safety.copy.disclaimer', locale)}</p>
@@ -268,7 +283,7 @@ export function EngineProfileEditor(props: EngineProfileDraftProps) {
             {Array.from({ length: 7 }, (_, index) => engineCopy(`safety.copy.parq_${index + 1}`, locale)).map(
               (label, index) => (
                 <div key={index}>
-                  {yesNo(label, answers[index], answer => {
+                  {tapYesNo(label, answers[index], answer => {
                     const next = [...answers];
                     next[index] = answer;
                     update(next);
@@ -276,7 +291,7 @@ export function EngineProfileEditor(props: EngineProfileDraftProps) {
                 </div>
               ),
             )}
-            {yesNo(
+            {tapYesNo(
               zh ? '已知心血管、代谢或肾脏疾病' : 'Known cardiovascular, metabolic or kidney disease',
               extra.knownCondition,
               answer => update(answers, { ...extra, knownCondition: answer }),
@@ -286,46 +301,38 @@ export function EngineProfileEditor(props: EngineProfileDraftProps) {
               answers={cmrAnswers}
               onChange={next => update(answers, extra, next)}
             />
-            {yesNo(zh ? '当前有感冒、发烧等急性不适' : 'Current acute illness or fever', extra.acuteIllness, answer =>
-              update(answers, { ...extra, acuteIllness: answer }),
+            {tapYesNo(
+              zh ? '当前有感冒、发烧等急性不适' : 'Current acute illness or fever',
+              extra.acuteIllness,
+              answer => update(answers, { ...extra, acuteIllness: answer }),
             )}
-            <label>
-              {zh
-                ? '过去至少 3 个月，每周至少 3 天、每次至少 30 分钟中等强度运动'
-                : 'At least 3 days a week, 30 minutes of moderate exercise each time, for at least 3 months'}
-              <select
-                value={extra.activityStatus ?? ''}
-                onChange={event => {
-                  if (event.target.value)
-                    update(answers, {
-                      ...extra,
-                      activityStatus: event.target.value as 'active' | 'inactive',
-                    });
-                }}
-              >
-                <option value="">{zh ? '请选择' : 'Choose'}</option>
-                <option value="active">{zh ? '是' : 'Yes'}</option>
-                <option value="inactive">{zh ? '否 / 不确定' : 'No / unsure'}</option>
-              </select>
-            </label>
-            <label>
-              {zh ? '静息血压' : 'Resting blood pressure'}
-              <select
-                value={extra.restingBp ?? ''}
-                onChange={event => {
-                  if (event.target.value)
-                    update(answers, {
-                      ...extra,
-                      restingBp: event.target.value as EngineProfile['screening']['restingBp'],
-                    });
-                }}
-              >
-                <option value="">{zh ? '请选择' : 'Choose'}</option>
-                <option value="known_below_threshold">{zh ? '已知低于 160/90 mmHg' : 'Known below 160/90 mmHg'}</option>
-                <option value="ge_160_90">≥160/90 mmHg</option>
-                <option value="unknown">{zh ? '不知道' : 'Unknown'}</option>
-              </select>
-            </label>
+            <ChoiceRow
+              label={
+                zh
+                  ? '过去至少 3 个月，每周至少 3 天、每次至少 30 分钟中等强度运动'
+                  : 'At least 3 days a week, 30 minutes of moderate exercise each time, for at least 3 months'
+              }
+              options={[
+                ['active', zh ? '是' : 'Yes'],
+                ['inactive', zh ? '否 / 不确定' : 'No / unsure'],
+              ]}
+              value={extra.activityStatus}
+              onPick={activityStatus => {
+                if (activityStatus) update(answers, { ...extra, activityStatus });
+              }}
+            />
+            <ChoiceRow
+              label={zh ? '静息血压' : 'Resting blood pressure'}
+              options={[
+                ['known_below_threshold', zh ? '已知低于 160/90 mmHg' : 'Known below 160/90 mmHg'],
+                ['ge_160_90', '≥160/90 mmHg'],
+                ['unknown', zh ? '不知道' : 'Unknown'],
+              ]}
+              value={extra.restingBp}
+              onPick={restingBp => {
+                if (restingBp) update(answers, { ...extra, restingBp });
+              }}
+            />
           </fieldset>
           <label>
             {zh ? '孕期 / 产后状态' : 'Pregnancy / postpartum status'}
