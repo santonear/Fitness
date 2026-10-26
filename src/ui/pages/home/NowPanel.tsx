@@ -223,7 +223,6 @@ export function NowPanel({
               trained: (data?.workouts ?? []).some(
                 w => (w.status === 'complete' || w.status === 'partial') && (!planStart || w.localDate >= planStart),
               ),
-              ...(data?.state?.olderSafety?.balanceStage ? { balanceStage: data.state.olderSafety.balanceStage } : {}),
               minutes: session?.minutes ?? minutes,
             },
             locale,

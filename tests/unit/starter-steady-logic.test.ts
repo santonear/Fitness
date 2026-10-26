@@ -149,8 +149,9 @@ describe('稳健 route', () => {
     expect(steadyLine({ ...base, today: '2026-10-29', trained: false }, 'en')).toBe(
       'Today: leg strength and balance, about 25 min 🌱',
     );
-    expect(steadyLine({ ...base, today: '2026-11-26' }, 'zh')).toContain('今天练腿力');
-    expect(steadyLine({ ...base, today: '2026-11-26', balanceStage: 2 }, 'zh')).toBe('8 周了，平衡练习升到第 2 阶 📈');
+    expect(steadyLine({ ...base, today: '2026-11-26' }, 'zh')).toBe(
+      '8 周了。单脚站和起身这些动作，可以留意一下是不是比刚开始稳了 📈',
+    );
     expect(steadyLine({ ...base, today: '2026-12-24' }, 'zh')).toBe(steadyStarterCopy.zh.steadyWeek12);
   });
 

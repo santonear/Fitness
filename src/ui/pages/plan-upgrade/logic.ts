@@ -166,16 +166,16 @@ export function steadyTestLines(tests: readonly Pick<FitnessTestRecord, 'localDa
   ];
 }
 
-/** 稳健 milestones (weeks 4 and 12, and 8 once balance work has moved past stage 1): only in that week and after a workout. */
+/** 稳健 milestones (weeks 4, 8 and 12): only in that week and after a workout. */
 export function steadyLine(
-  input: { planStart?: string; today: string; trained: boolean; balanceStage?: number; minutes: number },
+  input: { planStart?: string; today: string; trained: boolean; minutes: number },
   locale: Locale,
 ): string {
   const y = steadyStarterCopy[locale],
     days = input.planStart ? daysBetween(input.planStart, input.today) : -1;
   const week = input.trained ? [4, 8, 12].find(n => days >= n * 7 && days < n * 7 + 7) : undefined;
   if (week === 4) return y.steadyWeek4;
-  if (week === 8 && (input.balanceStage ?? 1) > 1) return fillLine(y.steadyWeek8, { stage: input.balanceStage! });
+  if (week === 8) return y.steadyWeek8;
   if (week === 12) return y.steadyWeek12;
   return fillLine(y.steadyToday, { minutes: input.minutes });
 }
