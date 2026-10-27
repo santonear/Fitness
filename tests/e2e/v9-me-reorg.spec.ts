@@ -97,7 +97,8 @@ test('我的: grouped sections with 我 first; 我的变化 shows measurements, 
   await page.getByRole('navigation', { name: '主导航' }).getByRole('button', { name: '我的' }).click();
   await expect(page.getByRole('heading', { name: '我的', exact: true })).toBeVisible();
   const groups = await page.locator('main.v9-settings > section.v9-settings-group > h2').allInnerTexts();
-  expect(groups).toEqual(['营养建议', '自测组件', '训练设置', '芽芽与 AI', '数据与隐私', '通用']);
+  // 营养建议 is a single row named like its group, so the group shows no second heading (Bo 2026-10-27).
+  expect(groups).toEqual(['自测组件', '训练设置', '芽芽与 AI', '数据与隐私', '通用']);
   await expect(page.getByRole('button', { name: '运动前自查与训练偏好' })).toHaveCount(1);
   await expect(page.getByRole('radiogroup', { name: '界面风格' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: /^给我们留言/ })).toHaveCount(1);

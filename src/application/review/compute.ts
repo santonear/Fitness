@@ -1,7 +1,6 @@
 import type { WorkoutRecord, LegacyWorkoutProjection } from '../../domain/v8/contracts';
 import type { ReviewInput, ReviewFacts, ComputeWeekFacts, ComputeMonthFacts } from './contracts';
-import { workoutSeconds } from '../workout-duration';
-import { workoutTimes } from '../day-timeline';
+import { activeWorkoutSeconds } from '../workout-duration';
 import { dayOf } from './charts';
 import { computeIncompleteTiming } from './evidence';
 import { addDays, isLocalDate, todayIn, weekStart, utcDay } from '../../domain/local-date';
@@ -96,10 +95,7 @@ function facts(input: ReviewInput, comparisonFrom: string, patternFrom = input.f
     activityMinutes: activities.reduce((sum, row) => sum + row.minutes, 0),
     activityCounts,
     reasonCounts,
-    trainingSeconds: current.filter(moved).reduce((sum, row) => {
-      const times = workoutTimes(row);
-      return sum + workoutSeconds(times.startedAt, times.endedAt);
-    }, 0),
+    trainingSeconds: current.filter(moved).reduce((sum, row) => sum + activeWorkoutSeconds(row), 0),
     hasBodyWeight: input.bodyWeights.some(row => within(row.localDate, input.from, input.to)),
     incompleteTiming: computeIncompleteTiming(patterns, input.timeZone),
     improvements,

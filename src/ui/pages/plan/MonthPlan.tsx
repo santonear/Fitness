@@ -21,7 +21,7 @@ interface MonthPlanProps {
   startDate?: string;
   timeZone: string;
   /** Exercise list of the selected day's planned session. */
-  details?: (template: SessionTemplate) => ReactNode;
+  details?: (template: SessionTemplate, trained?: boolean) => ReactNode;
 }
 
 /** Month calendar of the plan: each day marked done / partly done / planned / not trained; tap a day for its session. */
@@ -205,7 +205,7 @@ function MonthDayDetail({
           <p>
             <strong>{view.name(template)}</strong> · {fill(t.minutes, { count: template.estimatedMinutes })}
           </p>
-          {details?.(template)}
+          {details?.(template, day.state === 'done')}
         </div>
       ) : (
         !day.workouts.length && <p>{startDate && day.date < startDate ? t.beforeStart : t.restDay}</p>

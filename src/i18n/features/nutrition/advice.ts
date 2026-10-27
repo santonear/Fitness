@@ -2,7 +2,7 @@
 export const nutritionAdviceCopy = {
   zh: {
     title: '营养建议',
-    back: '返回',
+    back: '‹ 返回',
     intro: '练前练后吃什么、喝多少水、外食怎么选，都可以问芽芽。',
     chatTitle: '问问芽芽',
     scope: '只谈日常饮食，不做诊断，不给节食方案',
@@ -23,7 +23,7 @@ export const nutritionAdviceCopy = {
   },
   en: {
     title: 'Nutrition advice',
-    back: 'Back',
+    back: '‹ Back',
     intro: 'Ask Yaya what to eat before or after training, how much to drink, or how to choose when eating out.',
     chatTitle: 'Ask Yaya',
     scope: 'Everyday eating only. No diagnosis or diet plans',

@@ -16,8 +16,7 @@ import { MUSCLE_LOAD_THRESHOLDS, exerciseMuscleGroups, isoWeekday, skipPattern }
 import { latestSetFeedback } from './pain-events';
 import { planStartDate, weekSchedule, weekdays, type Weekday } from './plan-presentation';
 import { sessionForDate } from './training-dates';
-import { workoutTimes } from './day-timeline';
-import { trainingMinutes, workoutSeconds } from './workout-duration';
+import { activeWorkoutSeconds, trainingMinutes } from './workout-duration';
 import { planProposal } from './review/suggest';
 
 type Workout = Pick<
@@ -248,10 +247,9 @@ export function nextWeekTip(input: {
   const timed = lastWeek
     .filter(counted)
     .map(w => {
-      const times = workoutTimes(w);
       const planned =
         w.templateSnapshot?.estimatedMinutes ?? version.templates.find(t => t.id === w.templateId)?.estimatedMinutes;
-      return { actual: trainingMinutes(workoutSeconds(times.startedAt, times.endedAt)), planned };
+      return { actual: trainingMinutes(activeWorkoutSeconds(w)), planned };
     })
     .filter((row): row is { actual: number; planned: number } => row.actual > 0 && row.planned !== undefined);
   if (timed.length) {

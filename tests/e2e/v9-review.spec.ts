@@ -76,7 +76,8 @@ test('empty review shows 芽芽 and no zero grid; with records it shows ring, ba
   await expect(
     page.getByRole('progressbar', { name: '本周目标 3 次，已练 3 次，目标达成了。', exact: true }),
   ).toBeVisible();
-  await expect(page.locator('.rv-facts dd')).toHaveText(['2', '1', '3', '91', '0']);
+  // Training minutes leave out the long idle stretch after each seeded session's last set (Bo 2026-10-27).
+  await expect(page.locator('.rv-facts dd')).toHaveText(['2', '1', '3', '48', '0']);
   await expect(page.getByText('连续 3 周', { exact: true })).toBeVisible();
   await expect(page.getByRole('img', { name: /本周每天/ })).toBeVisible();
   await expect(page.getByRole('region', { name: '练到的部位' })).toBeVisible();

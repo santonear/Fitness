@@ -4,7 +4,6 @@ import {
   clockIn,
   clockMinutes,
   defaultStartClock,
-  durationMinutes,
   itemActualTimes,
   sessionTimeline,
   stepClock,
@@ -14,6 +13,7 @@ import {
   type TimelinePhase,
 } from '../../../application/day-timeline';
 import { dayViewCopy } from '../../../i18n/features/home/day-view';
+import { activeWorkoutSeconds, trainingMinutes } from '../../../application/workout-duration';
 import { planViewCopy } from '../../../i18n/features/plan/view';
 import { fill } from '../../../i18n/features/onboarding/entry';
 import { Card, PrimaryButton } from '../../components/kit';
@@ -228,7 +228,7 @@ export function DayActual({ workouts, templates, locale, name, sessionName, busy
       {workouts.map(workout => {
         const times = workoutTimes(workout),
           zone = workout.timeZone,
-          minutes = durationMinutes(times.startedAt, times.endedAt);
+          minutes = trainingMinutes(activeWorkoutSeconds(workout));
         const template = workout.templateSnapshot ?? templates.find(item => item.id === workout.templateId);
         const actual = itemActualTimes(workout);
         const planned = (index: number, item: PlannedItem) =>

@@ -75,7 +75,7 @@
  "loadError": "无法读取本地资料",
  "saveError": "操作未完成。请检查输入；已保存的记录不会被覆盖。",
  "draftError": "无法保存引导进度。",
- "back": "返回",
+ "back": "‹ 返回",
  "noTraining": "没有进行中的训练。",
  "metricHint": "点数字修改，不同才改。",
  "actions": "本次动作",

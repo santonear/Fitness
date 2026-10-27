@@ -1,4 +1,4 @@
-import { workoutSeconds } from '../workout-duration';
+import { activeWorkoutSeconds } from '../workout-duration';
 import { workoutTimes } from '../day-timeline';
 import type { WorkoutRecord } from '../../domain/v8/contracts';
 import { addDays, isLocalDate, todayIn, weekStart } from '../../domain/local-date';
@@ -11,7 +11,7 @@ export interface ChartWorkout {
   timeCorrections?: WorkoutRecord['timeCorrections'];
   localDate?: string;
   status: string;
-  sets: readonly { reps?: number; loadGrams?: number | null; durationSeconds?: number }[];
+  sets: readonly { reps?: number; loadGrams?: number | null; durationSeconds?: number; completedAt?: string }[];
 }
 interface ChartBucket {
   key: string;
@@ -46,10 +46,7 @@ export function volumeKg(row: ChartWorkout): number {
   return Math.round(grams / 100) / 10;
 }
 /** Uses the latest user time correction, like the calendar. */
-export const sessionMinutes = (row: ChartWorkout) => {
-  const times = workoutTimes(row);
-  return Math.round(workoutSeconds(times.startedAt, times.endedAt) / 60);
-};
+export const sessionMinutes = (row: ChartWorkout) => Math.floor(activeWorkoutSeconds(row) / 60);
 
 /** Seven days starting at `from`. */
 export const dayBuckets = (from: string): ChartBucket[] =>

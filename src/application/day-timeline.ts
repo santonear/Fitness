@@ -182,5 +182,3 @@ export function itemActualTimes(workout: Pick<WorkoutRecord, 'sets'>) {
   }
   return times;
 }
-export const durationMinutes = (from: string, to?: string) =>
-  to ? Math.max(0, Math.round((Date.parse(to) - Date.parse(from)) / 60000)) : undefined;

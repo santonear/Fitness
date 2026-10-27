@@ -10,6 +10,7 @@ import { recoverAssistantSchedule } from '../persistence/assistant-schedule-migr
 import Dexie from 'dexie';
 import { validateBackupEnvelope } from './backup/validate';
 import { invalid } from './backup/checks';
+import { repairYogaFlowTargets } from '../persistence/yoga-flow-repair';
 
 // UTF-8 file bytes, not characters. Candidate verified on synthetic desktop data;
 // physical-phone capacity support remains unverified.
@@ -137,10 +138,14 @@ export function createBackupService(repo: Repository) {
       envelope.data.assistantConversations ?? [],
       new Date().toISOString(),
     );
-    const recoveredVersions = new Map(recovered.map(version => [version.id, version]));
-    const restoredV8 = recovered.length
-      ? { ...v8, planVersions: v8.planVersions.map(version => recoveredVersions.get(version.id) ?? version) }
-      : v8;
+    const recoveredById = new Map(recovered.map(version => [version.id, version]));
+    const scheduled = v8.planVersions.map(version => recoveredById.get(version.id) ?? version);
+    // An older backup's yoga flows get the same idempotent repair as the database (yoga-flow-repair).
+    const repaired = new Map(repairYogaFlowTargets(scheduled).map(version => [version.id, version]));
+    const restoredV8 =
+      recovered.length || repaired.size
+        ? { ...v8, planVersions: scheduled.map(version => repaired.get(version.id) ?? version) }
+        : v8;
     let committedGeneration = 0;
     await repo.write(async () => {
       const before = await repo.readMetadata();

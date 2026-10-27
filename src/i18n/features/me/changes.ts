@@ -3,7 +3,7 @@ export const changesCopy = {
   zh: {
     title: '我的变化',
     pageTitle: '自记录',
-    back: '返回我的',
+    back: '‹ 返回',
     local: '只用这台设备上的记录，不会发送。',
     weight: '体重',
     bodyFat: '体脂',
@@ -45,7 +45,7 @@ export const changesCopy = {
   en: {
     title: 'My changes',
     pageTitle: 'My records',
-    back: 'Back to Me',
+    back: '‹ Back',
     local: 'Uses records on this device only. Nothing is sent.',
     weight: 'Weight',
     bodyFat: 'Body fat',

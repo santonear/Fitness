@@ -6,7 +6,7 @@ export default {
   history: '查看以前的版本',
   library: '动作库',
   chat: '和芽芽聊聊怎么调整',
-  back: '返回',
+  back: '‹ 返回',
   current: '当前',
   readOnly: '只读',
   view: '查看计划',
@@ -23,7 +23,7 @@ export default {
     onboard: '初始计划',
     coach_change: '芽芽调整',
     review_suggestion: '回顾调整',
-    manual: '手动调整',
+    manual: '你自己调整',
     migrated: '从以前的计划保留',
   },
 };

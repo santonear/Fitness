@@ -187,6 +187,7 @@ function ExerciseSwapSheet({
         response,
         expectedRevision: data.metadata.dataRevision,
         ...(enginePlan ? { enginePlan } : {}),
+        byUser: true,
       });
       onClose();
     });
@@ -253,7 +254,7 @@ export function useExerciseTools(scope: ExerciseToolScope, options: { canSwap?: 
   const [swap, setSwap] = useState<SwapTarget>();
   const guideTrigger = useRef<HTMLElement | null>(null),
     swapTrigger = useRef<HTMLElement | null>(null);
-  const buttons = (templateId: string, itemIndex: number, exerciseId: string): ReactNode => (
+  const buttons = (templateId: string, itemIndex: number, exerciseId: string, canSwap = true): ReactNode => (
     <>
       <PrimaryButton
         tone="quiet"
@@ -266,7 +267,7 @@ export function useExerciseTools(scope: ExerciseToolScope, options: { canSwap?: 
       >
         {t.howTo}
       </PrimaryButton>
-      {options.canSwap !== false && (
+      {options.canSwap !== false && canSwap && (
         <PrimaryButton
           tone="quiet"
           size="sm"

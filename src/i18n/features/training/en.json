@@ -75,7 +75,7 @@
  "loadError": "Cannot read local data",
  "saveError": "Could not finish. Check your input; saved records have not been replaced.",
  "draftError": "Could not save onboarding progress.",
- "back": "Back",
+ "back": "‹ Back",
  "noTraining": "No workout in progress.",
  "metricHint": "Tap a number only if it needs changing.",
  "actions": "Exercises in this workout",

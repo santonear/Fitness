@@ -655,3 +655,10 @@ Bo 已定版 V9 设计并授权推进；计时规则按 Bo 当日决定改写（
 - 理由：不改已存计划与完成记录，不新增依赖；芽芽话术未改。已生成的瑜伽课要等重新生成或下次改计划才换体式。
 - 涉及文件：src/engine/{progression.ts,progression/finalize.ts,yoga.ts,yoga-session.ts,notices.ts}、src/application/{engine-profile,rules/basic-items,workflow/plan-setup}.ts、src/catalog/corrections.ts、src/ui/pages/home/{HomePage,NowPanel}.tsx、tests/training-engine/{yoga,progression-bounds}.test.ts。
 
+## 2026-10-27 · 全面复查与 Bo 的 8 条决定（规范 V9.1.16）
+
+- 情况：Bo 要求全面复查“还有多少 BUG、逻辑不通、操作不流畅”，并要求所有下级页面都能返回上一页；看完清单后逐条决定，说“同步开发修复所有发现的问题”。
+- 决定：训练用时不计长时间没动作的部分（两次记录之间最多计 10 分钟加该组本身的时长；没有每组时间的旧记录、手动改过时间的记录照原样），结束页的计时与“用时 N 分钟”一致（都向下取整）；只练 1 组仍算本周一次（保持 V9.20）；自己在换动作里改计划，新版本写“你自己调整”；练完的那天计划里不显示“换动作”（仍可看“动作怎么做”）；返回按钮统一为“‹ 返回”，下级页面都有返回上一页（没有上一页时回到上级页面）；“我的”里营养建议不再重复标题；已有瑜伽计划里按秒记的两个连贯动作（下犬式接平板支撑、下犬式接上犬式）在打开数据库和恢复备份时幂等改为按次数（7 次），不需要重新生成计划。插图风格：Bo 写了“补画原有体式”和“暂时无需统一插图风格”，按“暂时不统一”处理，未补画。
+- 理由：完成记录只读未改；计划修复只改这两个动作的目标单位，其余不动，重复运行无变化；不新增依赖；芽芽话术未改。
+- 涉及文件：src/application/{workout-duration,backup,review/charts,review/compute,yaya-tips,workflow/plan-versions}.ts、src/persistence/{db,yoga-flow-repair}.ts、src/ui/components/{BackButton,ExerciseTools,Orb,trial/TrialApplicationForm}.tsx、src/ui/pages/{home/DayTimeline,training/FinishPage,training/SetFeedback,training/workout/workout-model,training/ActivityPage,training/ManualPage,settings/EngineProfilePage,settings/SettingsPage,onboarding/PlanDraftPage,plan/PlanPage,plan/WeekPlan,plan/MonthPlan}.tsx、src/engine/yoga.ts、src/coach/engine-template-validation.ts、src/catalog/exercise-tags.ts、src/i18n/features/*、tests/unit/yoga-flow-repair.test.ts。
+
