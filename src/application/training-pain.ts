@@ -3,7 +3,7 @@ import { DomainError } from '../domain/errors';
 import { v8StateSchema, v8WorkoutSchema } from '../domain/schemas';
 import type { PainAction, PlannedItem, SetFeedbackEvent, WorkoutRecord } from '../domain/v8/contracts';
 import { substitute } from '../engine';
-import { DATA, Rules, condition, type Exercise } from '../engine/data';
+import { DATA, Rules, condition, type Exercise, exerciseById } from '../engine/data';
 import type { Pattern } from '../engine/contracts';
 import { toEngineProfile } from './engine-profile';
 import { setMetricsSchema } from '../domain/schemas';
@@ -43,7 +43,7 @@ export function effectivePainItem(
     event?.exerciseId ?? replacement?.exerciseId ?? manual?.toExerciseId ?? original?.exerciseId ?? planned?.exerciseId;
   const base = replacement?.exerciseId === exerciseId ? replacement : original;
   if (base?.exerciseId === exerciseId) return base;
-  const exercise = DATA.exercises.find(row => row.id === exerciseId),
+  const exercise = exerciseId ? exerciseById.get(exerciseId) : undefined,
     fact = record.sets.filter(row => row.itemIndex === itemIndex && row.exerciseId === exerciseId).at(-1);
   if (!exercise || !fact || (!base && !planned)) return;
   const parsed = setMetricsSchema.safeParse({
@@ -262,8 +262,7 @@ export function createTrainingPain(repo: Repository) {
       if (result.redFlagsRequired) return invalid('RED_FLAG_ANSWERS_REQUIRED');
       if (!state.coachProfile?.screening) return invalid('ENGINE_SCREENING_REQUIRED');
       const item = effectivePainItem(record, event.itemIndex, event),
-        pattern =
-          DATA.exercises.find(row => row.id === event.exerciseId)?.primary_pattern ?? item?.prescription?.pattern;
+        pattern = exerciseById.get(event.exerciseId)?.primary_pattern ?? item?.prescription?.pattern;
       if (!pattern) return invalid('EXERCISE_PATTERN_UNKNOWN');
       if (!allowEnded && result.action === 'substitute' && !result.blocked && !result.replacement)
         return invalid('SAFE_SUBSTITUTE_UNAVAILABLE');
@@ -276,10 +275,8 @@ export function createTrainingPain(repo: Repository) {
             .filter(row => {
               const manual = record.substitutions?.filter(item => item.itemIndex === row.itemIndex).at(-1);
               return (
-                DATA.exercises.find(
-                  exercise =>
-                    exercise.id ===
-                    (effectivePainItem(record, row.itemIndex)?.exerciseId ?? manual?.toExerciseId ?? row.exerciseId),
+                exerciseById.get(
+                  effectivePainItem(record, row.itemIndex)?.exerciseId ?? manual?.toExerciseId ?? row.exerciseId,
                 )?.primary_pattern === pattern
               );
             })

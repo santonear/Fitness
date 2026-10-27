@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { adjustToday, generatePlan, getEligibleExercises, substitute } from '../../src/engine';
+import {
+  adjustToday,
+  generatePlan,
+  getEligibleExercises,
+  modifyPlan,
+  nextTargets,
+  substitute,
+  validatePlan,
+} from '../../src/engine';
 import { engineReplacementIds } from '../../src/application/engine-replacement-candidates';
 import { checkHard } from '../../src/engine/hard-checks';
 import { runGates } from '../../src/engine/gates';
@@ -9,7 +17,9 @@ import { baseProfile, sampledProfiles } from '../../tools/eval/training-engine-p
 import { externalIssues } from '../../tools/eval/training-engine-invariants';
 import yoga from '../../data/training-engine/yoga-poses.json';
 import { toEngineProfile, type EngineCoachProfile } from '../../src/application/engine-profile';
-import { sessionKind, sessionNames } from '../../src/application/plan-presentation';
+import { planReasons, sessionKind, sessionNames } from '../../src/application/plan-presentation';
+import { muscleTip } from '../../src/application/yaya-tips';
+import type { PlanVersion } from '../../src/domain/v8/contracts';
 import onboardingZh from '../../src/i18n/features/onboarding/zh.json';
 import onboardingEn from '../../src/i18n/features/onboarding/en.json';
 
@@ -133,9 +143,8 @@ describe('yoga goal', () => {
       plan = generatePlan(p),
       session = plan.templates.find(isYogaSession)!;
     expect(family(session.items.at(-1)!.exerciseId)).toBe('rest');
-    expect(
-      'durationSeconds' in session.items.at(-1)!.target && session.items.at(-1)!.target.durationSeconds,
-    ).toBeLessThanOrEqual(300);
+    const rest = session.items.at(-1)!.target;
+    expect('durationSeconds' in rest && rest.durationSeconds).toBeLessThanOrEqual(300);
     for (const item of session.items.slice(0, -1)) {
       const swapped = substitute(item, p, 'dislike').value;
       expect(swapped.exerciseId).not.toBe(item.exerciseId);
@@ -155,5 +164,65 @@ describe('yoga goal', () => {
     expect(ids.filter(id => !eligible.has(id) || !swaps.has(id))).toEqual([]);
     const other = new Set(getEligibleExercises(baseProfile({ goal: 'health' })).map(e => e.exerciseId));
     expect(yoga.yogaOnly.filter(slug => [...other].some(id => r.byExercise.get(id)?.slug === slug))).toEqual([]);
+  });
+
+  it('keeps sore areas, plan edits, next-week targets and tips inside the yoga sequence', () => {
+    const p = baseProfile({ goal: 'yoga', daysPerWeek: 3, sessionMinutes: 30, cautionLevels: { knee: 1, wrist: 1 } }),
+      plan = generatePlan(p),
+      session = plan.templates.find(isYogaSession)!;
+    for (const joint of ['knee', 'wrist'] as const) {
+      const sore = adjustToday(session, p, { painArea: joint }).value;
+      expect(isYogaSession(sore)).toBe(true);
+      expect(sore.items.filter(i => (r.byExercise.get(i.exerciseId)!.joint_load[joint] ?? 0) >= 2)).toEqual([]);
+    }
+    const strength = r.data.exercises.find(e => e.primary_pattern === 'squat' && !e.yoga_family)!.id,
+      pose = r.data.yogaExercises!.find(e => !session.items.some(i => i.exerciseId === e.id) && e.yoga_family)!,
+      added = modifyPlan(plan, p, [{ op: 'add', templateId: session.id, exerciseId: strength }]).value;
+    expect(added.templates.find(t => t.id === session.id)!.items.map(i => i.exerciseId)).not.toContain(strength);
+    const index = session.items.findIndex(i => family(i.exerciseId) === pose.yoga_family),
+      replaced = modifyPlan(plan, p, [
+        { op: 'replace', templateId: session.id, itemIndex: index, replacementId: pose.id },
+      ]).value.templates.find(t => t.id === session.id)!;
+    if (index >= 0) expect(replaced.items[index].exerciseId).toBe(pose.id);
+    expect(isYogaSession(replaced)).toBe(true);
+
+    let next = plan;
+    for (const day of ['2026-10-13', '2026-10-15', '2026-10-17', '2026-10-19', '2026-10-21']) {
+      const t = next.templates[0];
+      next = nextTargets(
+        [
+          {
+            id: day,
+            templateId: t.id,
+            localDate: day,
+            timeZone: 'UTC',
+            status: 'complete',
+            startedAt: `${day}T08:00:00Z`,
+            endedAt: `${day}T08:30:00Z`,
+            plannedSetCount: t.items.reduce((n, i) => n + i.sets, 0),
+            sets: t.items.flatMap((i, itemIndex) =>
+              Array.from({ length: i.sets }, (_, setIndex) => ({
+                exerciseId: i.exerciseId,
+                itemIndex,
+                setIndex,
+                ...i.target,
+                completedAt: `${day}T08:20:00Z`,
+              })),
+            ),
+          } as never,
+        ],
+        next,
+        { ...p, asOfDate: day },
+      ).value;
+    }
+    expect(validatePlan(next, p).filter(i => i.severity === 'error')).toEqual([]);
+    for (const item of next.templates.filter(isYogaSession).flatMap(t => t.items)) {
+      const max = r.byExercise.get(item.exerciseId)!.default_dose[p.level]?.seconds?.[1];
+      if (max && 'durationSeconds' in item.target) expect(item.target.durationSeconds).toBeLessThanOrEqual(max);
+    }
+
+    const version = { templates: plan.templates } as unknown as PlanVersion;
+    expect(muscleTip({ version, templateId: session.id, weekLoads: [], weekSets: [] })).toBeUndefined();
+    expect(planReasons({ ...version, weeklyTarget: 2, preferredDays: [] }, 'zh').join('')).not.toContain('肌肉');
   });
 });

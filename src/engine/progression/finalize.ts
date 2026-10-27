@@ -6,9 +6,14 @@ import { Rules } from '../data';
 import { readLegacySourceTarget } from './legacy-target';
 import { estimateSeconds } from '../fit';
 import { refreshWarmupRamps } from '../source-warmup';
+import { isYogaSession } from '../yoga-session';
+import { settleYogaSession } from '../yoga';
+import { createContext } from '../pipeline';
 
 export function finishProgression(value: EnginePlan, output: ProgressionResult, p: EngineProfile, r: Rules) {
+  let ctx: ReturnType<typeof createContext> | undefined;
   for (const template of value.templates) {
+    if (isYogaSession(template)) settleYogaSession(template, p, (ctx ??= createContext(p, 0, r)));
     if (output.diff.some(change => change.templateId === template.id))
       Object.assign(template, refreshWarmupRamps(template, p, r));
     if (p.goal === 'start_moving' && template.targetMinutes !== undefined) {

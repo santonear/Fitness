@@ -141,6 +141,10 @@ function adjustYoga(
       },
       ctx,
       new Set(original.map(item => item.exerciseId)),
+      // Today's sore area leaves out poses that load it heavily (joint load 2+); avoided patterns leave too.
+      e =>
+        (req.avoidPatterns ?? []).includes(e.primary_pattern) ||
+        (!!req.painArea && req.painArea !== 'other' && (e.joint_load[req.painArea] ?? 0) >= 2),
     ),
     value: SessionTemplate = { ...structuredClone(template), ...draft, name: template.name };
   if (

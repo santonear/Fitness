@@ -1,4 +1,5 @@
-import type { DayPlan, PipelineContext, SessionDraft } from './contracts';
+import type { SessionTemplate } from '../domain/v8/contracts';
+import type { DayPlan, EngineProfile, PipelineContext, SessionDraft } from './contracts';
 import { condition, restrictedAdjacentIds, stretchHoldRange, type Exercise, type RuleValue } from './data';
 import { isHardEligible } from './candidates';
 import { prescribe, type Item } from './dose';
@@ -12,12 +13,17 @@ const HOLD_STEP_S = 5;
  * One yoga session in the fixed sequence of week.day.yoga: one hard-eligible pose per position, then
  * hold time and sets are raised (never past the pose's own dose range) to approach the session length.
  */
-export function buildYogaSession(day: DayPlan, ctx: PipelineContext, keep = new Set<string>()): SessionDraft {
+export function buildYogaSession(
+  day: DayPlan,
+  ctx: PipelineContext,
+  keep = new Set<string>(),
+  skip: (e: Exercise) => boolean = () => false,
+): SessionDraft {
   const r = ctx.rules,
     p = ctx.profile,
     source = r.get('week.day.yoga'),
     target = day.minutes * 60;
-  const pool = yogaPool(ctx, day.weekday);
+  const pool = yogaPool(ctx, day.weekday).filter(e => !skip(e));
   const allowed: RuleValue[] = source.slots.filter((slot: RuleValue) => !slot.level || slot.level.includes(p.level));
   let slots = allowed.filter(slot => day.minutes >= slot.session_minutes_min);
   if ((day.balanceRequired || older(ctx)) && !slots.some(slot => slot.family === 'balance'))
@@ -128,6 +134,50 @@ export function substituteYogaPose(item: Item, excluded: Set<string>, ctx: Pipel
   const next = prescribePose(pick, item.prescription!.block, pos, ctx);
   next.sets = Math.min(item.sets, pick.default_dose[ctx.profile.level]?.sets?.[1] ?? item.sets);
   return next;
+}
+
+/** A pose the person chose for a yoga position, prescribed like the sequence; undefined when not an eligible pose. */
+export function chosenYogaItem(item: Item, exerciseId: string, ctx: PipelineContext): Item | undefined {
+  const pick = yogaPool(ctx, ctx.currentWeekday).find(e => e.id === exerciseId);
+  if (!pick || !item.prescription?.sourcePosition) return undefined;
+  const next = prescribePose(pick, item.prescription.block, item.prescription.sourcePosition, ctx);
+  next.sets = Math.max(1, Math.min(item.sets, pick.default_dose[ctx.profile.level]?.sets?.[1] ?? 1));
+  return next;
+}
+
+/**
+ * After next-week targets or a plan edit: a pose never holds past its own range, and the session stays near its
+ * length (grown holds come back first, then extra sets). Mutates the template.
+ */
+export function settleYogaSession(template: SessionTemplate, p: EngineProfile, ctx: PipelineContext) {
+  const r = ctx.rules,
+    items = template.items as Item[],
+    target = (template.targetMinutes ?? p.sessionMinutes) * 60,
+    band = r.get('duration.fit.tolerance').band[1],
+    total = () => estimateSeconds({ items }, r),
+    range = (item: Item) => {
+      const e = r.byExercise.get(item.exerciseId);
+      return e && holdRange(e, ctx);
+    },
+    hold = (item: Item) => ('durationSeconds' in item.target ? item.target.durationSeconds : 0);
+  for (const item of items) {
+    const max = range(item)?.[1];
+    if (max && 'durationSeconds' in item.target && item.target.durationSeconds > max)
+      item.target = { ...item.target, durationSeconds: max };
+  }
+  const work = items.filter(item => item.prescription?.sourcePosition !== 'yoga_rest');
+  while (total() > target * band) {
+    const grown = work.filter(item => hold(item) > (range(item)?.[0] ?? Infinity)).sort((a, b) => hold(b) - hold(a))[0];
+    if (grown && 'durationSeconds' in grown.target) {
+      grown.target = { ...grown.target, durationSeconds: Math.max(range(grown)![0], hold(grown) - HOLD_STEP_S) };
+      continue;
+    }
+    const extra = work.filter(item => item.sets > 1).sort((a, b) => b.sets - a.sets)[0];
+    if (!extra) break;
+    extra.sets--;
+  }
+  template.estimatedSeconds = total();
+  template.estimatedMinutes = Math.max(1, Math.ceil(template.estimatedSeconds / 60));
 }
 
 const older = (ctx: PipelineContext) => ctx.gate.restrictions.population === 'older_adult';

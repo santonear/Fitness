@@ -113,6 +113,10 @@ export const DATA: EngineData = {
   yogaExercises: compiledExercises.yogaExercises as unknown as Exercise[],
   byPattern: compiledExercises.byPattern,
 };
+/** Every compiled exercise by id, yoga-only poses included (use it for lookups of planned or recorded items). */
+export const exerciseById: ReadonlyMap<string, Exercise> = new Map(
+  [...DATA.exercises, ...(DATA.yogaExercises ?? [])].map(e => [e.id, e]),
+);
 export class Rules {
   readonly byId: Map<string, Rule>;
   readonly byExercise: Map<string, Exercise>;

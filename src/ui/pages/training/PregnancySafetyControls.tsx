@@ -1,5 +1,5 @@
 import { BirthReportControls } from './BirthReportControls';
-import { DATA } from '../../../engine/data';
+import { exerciseById } from '../../../engine/data';
 import { useMainline, workflow } from '../../mainline/context';
 import { PregnancySafetyPanel } from './PregnancySafetyPanel';
 
@@ -16,7 +16,8 @@ export function PregnancySafetyControls({ exerciseId, itemIndex }: { exerciseId?
   const currentSupine =
     !!data.active &&
     itemIndex !== undefined &&
-    !!DATA.exercises.find(row => row.id === exerciseId)?.position.includes('supine');
+    !!exerciseId &&
+    !!exerciseById.get(exerciseId)?.position.includes('supine');
   return (
     <>
       <BirthReportControls />

@@ -4,7 +4,7 @@ import { v8StateSchema, v8WorkoutSchema } from '../domain/schemas';
 import type { PostpartumSafetyState, PlannedItem, CoachProfile } from '../domain/v8/contracts';
 import type { Repository } from '../persistence/repository';
 import { endActiveWorkouts } from './training-stop';
-import { DATA, calendarDay, condition } from '../engine/data';
+import { DATA, calendarDay, condition, exerciseById } from '../engine/data';
 import { DEFAULT_TIME_ZONE, addDays } from '../domain/local-date';
 const urgentKeys = DATA.rules.find(r => r.id === 'postpartum.urgent')!.value!.items as string[];
 const symptomKeys = DATA.rules.find(r => r.id === 'postpartum.symptom_regression')!.value!.when
@@ -36,7 +36,7 @@ export function assertPostpartumItems(items: Pick<PlannedItem, 'exerciseId'>[], 
   if (state?.urgentAt) invalid('POSTPARTUM_PROFESSIONAL_REQUIRED');
   if (!state?.regression) return;
   for (const item of items) {
-    const e = DATA.exercises.find(e => e.id === item.exerciseId);
+    const e = exerciseById.get(item.exerciseId);
     if (
       !e ||
       (state.regression.phase === 1 &&

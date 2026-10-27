@@ -14,7 +14,7 @@ export {
   type TrainingCheckinRow,
 } from '../domain/training-checkin';
 import { engineCheckinSchema, type EngineCheckin } from '../engine/contracts';
-import { DATA } from '../engine/data';
+import { DATA, exerciseById } from '../engine/data';
 import { z } from 'zod';
 import { painQuestionKeys } from './pain-events';
 import type { PlannedItem } from '../domain/v8/contracts';
@@ -141,7 +141,7 @@ export function createTrainingCheckin(repo: Repository) {
     if (
       pain.painScore >= threshold &&
       items.some(item => {
-        const e = DATA.exercises.find(e => e.id === item.exerciseId);
+        const e = exerciseById.get(item.exerciseId);
         return (
           !e ||
           (pain.painArea === 'other'

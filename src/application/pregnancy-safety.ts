@@ -2,7 +2,7 @@ import { DomainError } from '../domain/errors';
 import { v8StateSchema } from '../domain/schemas';
 import type { PlannedItem, CoachProfile } from '../domain/v8/contracts';
 import type { Repository } from '../persistence/repository';
-import { DATA, calendarDay } from '../engine/data';
+import { DATA, calendarDay, exerciseById } from '../engine/data';
 import { runGates } from '../engine/gates';
 import { toEngineProfile } from './engine-profile';
 import { effectivePainItem } from './training-pain';
@@ -222,7 +222,7 @@ export function assertPregnancyItems(
     return invalid('PREGNANCY_NEW_SCREENING_REQUIRED');
   if (state?.supineAvoidSince)
     for (const item of items) {
-      const exercise = DATA.exercises.find(row => row.id === item.exerciseId);
+      const exercise = exerciseById.get(item.exerciseId);
       if (!exercise || exercise.position.includes('supine')) return invalid('PREGNANCY_SUPINE_AVOID_REQUIRED');
     }
 }
@@ -297,7 +297,7 @@ export function createPregnancySafety(repo: Repository) {
         record.substitutions?.filter(row => row.itemIndex === itemIndex).at(-1)?.toExerciseId ??
         record.templateSnapshot?.items[itemIndex]?.exerciseId ??
         record.plannedExercises?.find(row => row.itemIndex === itemIndex)?.exerciseId;
-      const exercise = DATA.exercises.find(row => row.id === exerciseId);
+      const exercise = exerciseId ? exerciseById.get(exerciseId) : undefined;
       if (!exercise?.position.includes('supine')) return invalid('PREGNANCY_SUPINE_ITEM_REQUIRED');
       const at = new Date().toISOString();
       if (!Number.isFinite(Date.parse(record.startedAt)) || Date.parse(record.startedAt) > Date.parse(at))
