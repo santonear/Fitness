@@ -391,9 +391,9 @@ function useController() {
   }
   const slots = getThemeSlots(appearance.theme);
   const name = (id: string) => exercises.find(e => e.id === id)?.name[locale] ?? id;
-  const start = (templateId?: string, manualId?: string) =>
+  const start = (templateId?: string, manualId?: string, minutes?: number) =>
     run(async () => {
-      const record = await workflow.start(templateId, manualId);
+      const record = await workflow.start(templateId, manualId, undefined, undefined, minutes);
       setWorkoutValues({});
       setFocusIndex(0);
       navigate(`/workout/${record.id}`);

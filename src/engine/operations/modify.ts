@@ -50,8 +50,10 @@ export function modify(
       }
       if (req.op === 'remove' && item) t.items.splice(index, 1);
       else if (req.op === 'replace' && item) {
-        if (!req.replacementId) t.items[index] = substituteItem(item, profile, 'dislike', r, ctx).value as typeof item;
-        else if (yoga) {
+        if (!req.replacementId) {
+          ctx.usedIds = new Set(t.items.map(i => i.exerciseId));
+          t.items[index] = substituteItem(item, profile, 'dislike', r, ctx).value as typeof item;
+        } else if (yoga) {
           ctx.usedIds = new Set(t.items.map(i => i.exerciseId));
           const chosen = chosenYogaItem(item, req.replacementId, ctx);
           if (chosen) t.items[index] = chosen;

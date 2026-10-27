@@ -662,3 +662,10 @@ Bo 已定版 V9 设计并授权推进；计时规则按 Bo 当日决定改写（
 - 理由：完成记录只读未改；计划修复只改这两个动作的目标单位，其余不动，重复运行无变化；不新增依赖；芽芽话术未改。
 - 涉及文件：src/application/{workout-duration,backup,review/charts,review/compute,yaya-tips,workflow/plan-versions}.ts、src/persistence/{db,yoga-flow-repair}.ts、src/ui/components/{BackButton,ExerciseTools,Orb,trial/TrialApplicationForm}.tsx、src/ui/pages/{home/DayTimeline,training/FinishPage,training/SetFeedback,training/workout/workout-model,training/ActivityPage,training/ManualPage,settings/EngineProfilePage,settings/SettingsPage,onboarding/PlanDraftPage,plan/PlanPage,plan/WeekPlan,plan/MonthPlan}.tsx、src/engine/yoga.ts、src/coach/engine-template-validation.ts、src/catalog/exercise-tags.ts、src/i18n/features/*、tests/unit/yoga-flow-repair.test.ts。
 
+
+## 2026-10-27 · 减量后能开始、瑜伽选时间、今天页布局（规范 V9.1.16）
+
+- 情况：复查发现标“太难”、报不舒服或疲劳减量后，下一次常被判“时长不足/重复动作”而点不了开始；今天页给瑜伽选时间无效；时间很少时调整原样返回；改每周天数仍按旧天数检查；今天页“开始”压住肌群卡。
+- 决定：开始前检查时，减量只缩短的那一节不算时长不足（引擎检查本身不变）；换进来的动作避开本节已有动作，超出单次肌群上限先减组再移出；开始只检查今天这一节；瑜伽按选的时间缩短；时间不够时给最接近的短一节；改天数按新天数检查；时间与“开始”移到仪表下方；芽芽只说仪表上的两个部位；“本周肌群”改为“本周达标肌群”；分段选项至少 44px 宽。
+- 理由：不改完成记录，不改计划旧版本；只在用户已给出的反馈范围内减量；芽芽话术未改。
+- 涉及文件：src/engine/{index,progression,progression/finalize,operations/adjust,operations/modify}.ts、src/application/{engine-plan,workflow/workout-session}.ts、src/ui/mainline/context.tsx、src/ui/pages/{home/NowPanel,plan-upgrade/FocusPage}.tsx、src/ui/components/kit/{HomePanel.tsx,kit.css}、tests/training-engine/{progression-start,regressions}.test.ts。

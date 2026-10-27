@@ -200,7 +200,8 @@
 }
 .v9-segment {
   flex: 1;
-  min-inline-size: 0;
+  /* One-character options (男 / 女) still give a full finger-sized target. */
+  min-inline-size: var(--touch-min);
   min-block-size: var(--touch-min);
   padding: 0 var(--s2);
   border: 0;

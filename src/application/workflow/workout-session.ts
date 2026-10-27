@@ -13,7 +13,8 @@ import { exercises } from '../../catalog/exercises';
 import { manualTrainingItems } from '../rules/manual-items';
 import { toEngineProfile } from '../engine-profile';
 import type { EnginePlan } from '../../engine/contracts';
-import { nextTargets, validatePlan } from '../../engine';
+import { adjustToday, nextTargets, validatePlan } from '../../engine';
+import { isYogaSession } from '../../engine/yoga-session';
 import { isFeatureEnabled } from '../feature-flags';
 import { activePainReplacement, latestSetFeedback, unresolvedReview } from '../training-pain';
 import { type ManualSelection, invalid, localDate } from './shared';
@@ -22,13 +23,23 @@ import type { createPlanSetup } from './plan-setup';
 import { DEFAULT_TIME_ZONE } from '../../domain/local-date';
 import { starterProgress, starterTemplate } from '../starter-program';
 
+type Issue = ReturnType<typeof validatePlan>[number];
+/** Next targets that only made a session shorter (fatigue, "too hard", pain) never block its start on time fit. */
+export function forStart(issue: Issue, plan: EnginePlan, baseline: EnginePlan): Issue {
+  const now = plan.templates.find(t => t.id === issue.templateId)?.estimatedSeconds,
+    was = baseline.templates.find(t => t.id === issue.templateId)?.estimatedSeconds;
+  return issue.code === 'duration_tolerance' && issue.severity === 'error' && (now ?? Infinity) < (was ?? 0)
+    ? { ...issue, severity: 'warning' }
+    : issue;
+}
 export function createWorkoutSession(
   ctx: WorkflowContext,
   depsIn: { snapshot: ReturnType<typeof createPlanSetup>['snapshot'] },
 ) {
   const { repo, db, assertHealthItems, checkins, mappedEngineProfile } = ctx;
   const { snapshot } = depsIn;
-  async function nextTargetPreview(templateId?: string) {
+  /** `minutes`: a time picked on 今天 for a yoga session, which keeps its own poses and is shortened to fit. */
+  async function nextTargetPreview(templateId?: string, minutes?: number) {
     const data = await snapshot(),
       version = data.version,
       profile = data.state?.coachProfile;
@@ -103,11 +114,23 @@ export function createWorkoutSession(
       return { ...unchanged, notices: gate.notices };
     }
     const checkinContext = await checkins.context(data.workouts);
-    const result = nextTargets(checkinContext.history, version.enginePlan, mapped, {
+    const baseline = version.enginePlan;
+    const progressed = nextTargets(checkinContext.history, baseline, mapped, {
       checkin: checkinContext.checkin,
       templateId,
     });
-    const baseline = version.enginePlan;
+    // Only today's session starts now; the other days get their own next targets on their day, so they stay as planned
+    // here and a change to them never blocks today's start.
+    const result = {
+      ...progressed,
+      value: {
+        ...progressed.value,
+        quality: baseline.quality,
+        templates: baseline.templates.map(
+          row => (row.id === templateId && progressed.value.templates.find(item => item.id === templateId)) || row,
+        ),
+      },
+    };
     const issuesOf = (plan: EnginePlan) =>
       validatePlan(plan, mapped, {
         progression: {
@@ -116,7 +139,7 @@ export function createWorkoutSession(
           checkin: checkinContext.checkin,
           templateId,
         },
-      });
+      }).map(issue => forStart(issue, plan, baseline));
     const previewIssues = issuesOf(result.value),
       environmentCodes = new Set(
         result.value.quality?.basis === 'environment_constraint'
@@ -169,6 +192,14 @@ export function createWorkoutSession(
       }
       chosen = candidate;
     }
+    if (minutes && isYogaSession(chosen) && minutes !== chosen.estimatedMinutes) {
+      const fitted = adjustToday(chosen, mapped, { minutes }).value,
+        plan = {
+          ...result.value,
+          templates: result.value.templates.map(row => (row.id === templateId ? fitted : row)),
+        };
+      if (fitted.items.length && !unsafe(issuesOf(plan))) chosen = fitted;
+    }
     await checkins.assertSafeItems(chosen.items);
     return {
       template: chosen,
@@ -182,6 +213,7 @@ export function createWorkoutSession(
     manualExerciseId?: string,
     manualExerciseIds?: string[],
     manualSelection?: ManualSelection,
+    minutes?: number,
   ) {
     return repo.write(async () => {
       const metadata = await repo.readMetadata();
@@ -212,7 +244,7 @@ export function createWorkoutSession(
       const plan = state?.currentPlanId ? await db.v8Plans.get(state.currentPlanId) : undefined;
       const version = plan ? await db.v8PlanVersions.get(plan.currentVersionId) : undefined;
       const override = state?.nextWorkoutOverride;
-      const preview = templateId ? await nextTargetPreview(templateId) : undefined;
+      const preview = templateId ? await nextTargetPreview(templateId, minutes) : undefined;
       if (preview?.blocked) return invalid('ENGINE_SCREENING_REQUIRED');
       const template = preview?.template;
       if (templateId && (!template || plan?.readOnly || plan?.deletedAt)) return invalid('TEMPLATE_UNAVAILABLE');
