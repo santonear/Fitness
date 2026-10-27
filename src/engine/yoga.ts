@@ -3,6 +3,7 @@ import { condition, restrictedAdjacentIds, stretchHoldRange, type Exercise, type
 import { isHardEligible } from './candidates';
 import { prescribe, type Item } from './dose';
 import { estimateSeconds } from './fit';
+import { engineExercises } from './yoga-session';
 
 const REST_BETWEEN_POSES_S = 15;
 const HOLD_STEP_S = 5;
@@ -11,25 +12,17 @@ const HOLD_STEP_S = 5;
  * One yoga session in the fixed sequence of week.day.yoga: one hard-eligible pose per position, then
  * hold time and sets are raised (never past the pose's own dose range) to approach the session length.
  */
-export function buildYogaSession(day: DayPlan, ctx: PipelineContext): SessionDraft {
+export function buildYogaSession(day: DayPlan, ctx: PipelineContext, keep = new Set<string>()): SessionDraft {
   const r = ctx.rules,
     p = ctx.profile,
     source = r.get('week.day.yoga'),
     target = day.minutes * 60;
-  const adjacent = restrictedAdjacentIds(ctx.plan?.templates ?? [], day.weekday, r);
-  // Balance falls back to any eligible balance drill (e.g. supported stands for older users).
-  const pool = [...r.data.exercises, ...(r.data.yogaExercises ?? [])].filter(
-    e =>
-      (e.yoga_family || e.primary_pattern === 'balance') &&
-      e.default_dose[p.level] &&
-      !adjacent.has(e.id) &&
-      isHardEligible(e, p, ctx.gate, ctx),
-  );
+  const pool = yogaPool(ctx, day.weekday);
   const allowed: RuleValue[] = source.slots.filter((slot: RuleValue) => !slot.level || slot.level.includes(p.level));
   let slots = allowed.filter(slot => day.minutes >= slot.session_minutes_min);
   if ((day.balanceRequired || older(ctx)) && !slots.some(slot => slot.family === 'balance'))
     slots = allowed.filter(slot => slots.includes(slot) || slot === allowed.find(s => s.family === 'balance'));
-  let items = compose(slots, pool, day, ctx);
+  let items = compose(slots, pool, day, ctx, keep);
   // Positions meant for a slightly longer session join, in sequence order, while the session is still short.
   const later = allowed
     .filter(slot => !slots.includes(slot))
@@ -37,7 +30,7 @@ export function buildYogaSession(day: DayPlan, ctx: PipelineContext): SessionDra
   for (const slot of later) {
     if (estimateSeconds({ items }, r) >= target * r.get('duration.fit.tolerance').band[0]) break;
     slots = allowed.filter(value => value === slot || slots.includes(value));
-    items = compose(slots, pool, day, ctx);
+    items = compose(slots, pool, day, ctx, keep);
   }
   ctx.rules.trace(ctx.trace, 'week.day.yoga', 'fixed_yoga_sequence', { positions: items.length });
   const seconds = estimateSeconds({ items }, r);
@@ -53,7 +46,7 @@ export function buildYogaSession(day: DayPlan, ctx: PipelineContext): SessionDra
 }
 
 /** One pose per position in sequence order, then fitted to the session length. */
-function compose(slots: RuleValue[], pool: Exercise[], day: DayPlan, ctx: PipelineContext): Item[] {
+function compose(slots: RuleValue[], pool: Exercise[], day: DayPlan, ctx: PipelineContext, keep: Set<string>): Item[] {
   const r = ctx.rules,
     p = ctx.profile,
     used = new Set<string>(),
@@ -73,14 +66,13 @@ function compose(slots: RuleValue[], pool: Exercise[], day: DayPlan, ctx: Pipeli
     // Easier poses first for beginners; the week rotates through them so days differ.
     const easy = choices.filter(e => e.difficulty <= (p.level === 'beginner' ? 2 : 3)),
       list = easy.length ? easy : choices,
-      pick = list.find(e => e.slug === slot.prefer) ?? list[(day.index + index) % list.length];
+      // A rebuilt session (today's adjustment) keeps the poses it already had.
+      pick =
+        choices.find(e => keep.has(e.id)) ??
+        list.find(e => e.slug === slot.prefer) ??
+        list[(day.index + index) % list.length];
     used.add(pick.id);
-    const item = prescribe(pick, p, r, ctx.gate.restrictions, slot.block, 1),
-      hold = holdRange(pick, ctx);
-    if (hold && 'durationSeconds' in item.target)
-      item.target = { ...item.target, durationSeconds: Math.min(item.target.durationSeconds, hold[0]) };
-    item.prescription = { ...item.prescription!, sourcePosition: slot.pos, restSeconds: REST_BETWEEN_POSES_S };
-    items.push(item);
+    items.push(prescribePose(pick, slot.block, slot.pos, ctx));
   }
   // Floor poses form one consecutive block for older users (older.floor.transitions); the sequence is kept otherwise.
   if (older(ctx)) {
@@ -89,6 +81,53 @@ function compose(slots: RuleValue[], pool: Exercise[], day: DayPlan, ctx: Pipeli
   }
   fitYoga(items, day.minutes * 60, r.get('week.day.yoga'), ctx);
   return items;
+}
+
+/** Every eligible yoga pose; balance falls back to any eligible balance drill (e.g. supported stands for older users). */
+function yogaPool(ctx: PipelineContext, weekday: DayPlan['weekday']): Exercise[] {
+  const p = ctx.profile,
+    adjacent = restrictedAdjacentIds(ctx.plan?.templates ?? [], weekday, ctx.rules);
+  return engineExercises(ctx.rules, 'yoga').filter(
+    e =>
+      (e.yoga_family || e.primary_pattern === 'balance') &&
+      e.default_dose[p.level] &&
+      !adjacent.has(e.id) &&
+      isHardEligible(e, p, ctx.gate, ctx),
+  );
+}
+
+/** One pose at its starting hold in a yoga position. */
+function prescribePose(
+  pick: Exercise,
+  block: NonNullable<Item['prescription']>['block'],
+  pos: string,
+  ctx: PipelineContext,
+): Item {
+  const item = prescribe(pick, ctx.profile, ctx.rules, ctx.gate.restrictions, block, 1),
+    hold = holdRange(pick, ctx);
+  if (hold && 'durationSeconds' in item.target)
+    item.target = { ...item.target, durationSeconds: Math.min(item.target.durationSeconds, hold[0]) };
+  item.prescription = { ...item.prescription!, sourcePosition: pos, restSeconds: REST_BETWEEN_POSES_S };
+  return item;
+}
+
+/** A swap inside a yoga session stays in the same pose family, position and set count. */
+export function substituteYogaPose(item: Item, excluded: Set<string>, ctx: PipelineContext): Item | undefined {
+  const r = ctx.rules,
+    pos = item.prescription!.sourcePosition!,
+    family = r.get('week.day.yoga').slots.find((slot: RuleValue) => slot.pos === pos)?.family,
+    level = r.byExercise.get(item.exerciseId)?.difficulty ?? 1;
+  const pick = yogaPool(ctx, ctx.currentWeekday)
+    .filter(
+      e => !excluded.has(e.id) && (family === 'balance' ? e.primary_pattern === 'balance' : e.yoga_family === family),
+    )
+    .sort(
+      (a, b) => Math.abs(a.difficulty - level) - Math.abs(b.difficulty - level) || a.slug.localeCompare(b.slug, 'en'),
+    )[0];
+  if (!pick) return undefined;
+  const next = prescribePose(pick, item.prescription!.block, pos, ctx);
+  next.sets = Math.min(item.sets, pick.default_dose[ctx.profile.level]?.sets?.[1] ?? item.sets);
+  return next;
 }
 
 const older = (ctx: PipelineContext) => ctx.gate.restrictions.population === 'older_adult';

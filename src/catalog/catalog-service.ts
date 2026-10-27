@@ -2,6 +2,7 @@ import { catalogMetadata } from './registry';
 import { DomainError } from '../domain/errors';
 import type { CatalogFilters, Exercise, Locale } from '../domain/models';
 import { exercises } from './exercises';
+import yogaPoses from '../../data/training-engine/yoga-poses.json' with { type: 'json' };
 import { getExerciseTags, type ExerciseSearchFilters as GuideSearchFilters } from './exercise-tags';
 export interface ExerciseSearchFilters extends GuideSearchFilters {
   allowedIds?: readonly string[];
@@ -105,5 +106,17 @@ export function replacementScore(
   const warning = candidate.cautionAreas.some(
     value => cautionAreas.includes(value) || cautionAreas.some(area => (cautionAliases[area] ?? area) === value),
   );
-  return (samePart && compatible ? 100 : 0) + (samePart ? 20 : 0) + (compatible ? 10 : 0) - (warning ? 1000 : 0);
+  const family = yogaFamily.get(catalogMetadata.get(currentId)?.slug ?? ''),
+    sameFamily = !!family && family === yogaFamily.get(catalogMetadata.get(id)?.slug ?? '');
+  return (
+    (sameFamily ? 200 : 0) +
+    (samePart && compatible ? 100 : 0) +
+    (samePart ? 20 : 0) +
+    (compatible ? 10 : 0) -
+    (warning ? 1000 : 0)
+  );
 }
+// A yoga pose is best replaced by another pose of its family (standing, twist, …).
+const yogaFamily = new Map(
+  Object.entries(yogaPoses.families).flatMap(([family, slugs]) => slugs.map(slug => [slug, family] as const)),
+);

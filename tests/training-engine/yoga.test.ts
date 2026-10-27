@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { generatePlan } from '../../src/engine';
+import { adjustToday, generatePlan, getEligibleExercises, substitute } from '../../src/engine';
+import { engineReplacementIds } from '../../src/application/engine-replacement-candidates';
 import { checkHard } from '../../src/engine/hard-checks';
 import { runGates } from '../../src/engine/gates';
 import { Rules } from '../../src/engine/data';
@@ -124,5 +125,35 @@ describe('yoga goal', () => {
     expect(templates.map(t => sessionKind(t))).toEqual(['yoga', 'yoga']);
     expect([...sessionNames(templates, 'en').values()]).toEqual(['Yoga', 'Yoga']);
     expect(generatePlan(p).notices.map(n => n.ruleId)).not.toContain('engine.copy.target_volume');
+    expect(toEngineProfile(coach('减脂，偶尔做瑜伽'), { asOfDate: '2026-10-16', ageYears: 30 })?.goal).toBe('fat_loss');
+  });
+
+  it('keeps swaps, today adjustments and the eligible lists inside the yoga sequence', () => {
+    const p = baseProfile({ goal: 'yoga', daysPerWeek: 3, sessionMinutes: 45 }),
+      plan = generatePlan(p),
+      session = plan.templates.find(isYogaSession)!;
+    expect(family(session.items.at(-1)!.exerciseId)).toBe('rest');
+    expect(
+      'durationSeconds' in session.items.at(-1)!.target && session.items.at(-1)!.target.durationSeconds,
+    ).toBeLessThanOrEqual(300);
+    for (const item of session.items.slice(0, -1)) {
+      const swapped = substitute(item, p, 'dislike').value;
+      expect(swapped.exerciseId).not.toBe(item.exerciseId);
+      expect(swapped.prescription?.sourcePosition).toBe(item.prescription?.sourcePosition);
+      if (item.prescription?.sourcePosition?.startsWith('yoga_balance'))
+        expect(r.byExercise.get(swapped.exerciseId)?.primary_pattern).toBe('balance');
+      else expect(family(swapped.exerciseId)).toBe(family(item.exerciseId));
+    }
+    const shorter = adjustToday(session, p, { minutes: 20 }).value;
+    expect(isYogaSession(shorter)).toBe(true);
+    expect(shorter.name).toBe(session.name);
+    expect(shorter.items.length).toBeLessThan(session.items.length);
+    expect(shorter.items.every(i => session.items.some(s => s.exerciseId === i.exerciseId))).toBe(true);
+    const ids = session.items.map(i => i.exerciseId),
+      eligible = new Set(getEligibleExercises(p).map(e => e.exerciseId)),
+      swaps = new Set(engineReplacementIds(p, r));
+    expect(ids.filter(id => !eligible.has(id) || !swaps.has(id))).toEqual([]);
+    const other = new Set(getEligibleExercises(baseProfile({ goal: 'health' })).map(e => e.exerciseId));
+    expect(yoga.yogaOnly.filter(slug => [...other].some(id => r.byExercise.get(id)?.slug === slug))).toEqual([]);
   });
 });

@@ -1,6 +1,6 @@
 {
   "reviewedOn": "2026-10-25",
-  "rulesVersion": "9a542b93584a987c23467df1637370604f44922e81939412cf120abfe7052d92",
+  "rulesVersion": "e72dd7a19877b0d5050cd34ae70c3d69f04b6097456a788d83b547d235cc5333",
   "activeRuleIds": [
     "safety.scope.age_min",
     "safety.screen.parq",
