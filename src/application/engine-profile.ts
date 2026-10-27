@@ -238,16 +238,17 @@ export function toEngineProfile(
       : ageWeeks;
   const goal =
     source.goal ??
-    (/瑜伽|yoga/i.test(profile.goalText)
-      ? 'yoga'
-      : /增肌|肌肉|muscle|hypertroph/i.test(profile.goalText)
-        ? 'muscle'
-        : /减脂|减重|fat|weight loss/i.test(profile.goalText)
-          ? 'fat_loss'
-          : /力量|strength/i.test(profile.goalText)
-            ? 'strength'
-            : /灵活|mobility/i.test(profile.goalText)
-              ? 'mobility'
+    // Yoga comes last (goal.select.single_primary tie_break_order): "减脂，偶尔做瑜伽" stays a fat-loss goal.
+    (/增肌|肌肉|muscle|hypertroph/i.test(profile.goalText)
+      ? 'muscle'
+      : /减脂|减重|fat|weight loss/i.test(profile.goalText)
+        ? 'fat_loss'
+        : /力量|strength/i.test(profile.goalText)
+          ? 'strength'
+          : /灵活|mobility/i.test(profile.goalText)
+            ? 'mobility'
+            : /瑜伽|yoga/i.test(profile.goalText)
+              ? 'yoga'
               : 'health');
   const levels = effectiveCautionLevels(
     options.cautionLevels,

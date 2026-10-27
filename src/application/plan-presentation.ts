@@ -248,12 +248,19 @@ export function planReasons(
 ): string[] {
   const zh = locale === 'zh',
     schedule = weekSchedule(plan),
-    reasons: string[] = [];
+    reasons: string[] = [],
+    yoga = plan.templates.length > 0 && plan.templates.every(template => isYogaSession(template));
   const days = schedule.sessions.map(session => weekdays.indexOf(session.day));
   const spaced = days.length > 1 && days.every((day, index) => index === 0 || day - days[index - 1] >= 2);
   if (spaced)
     reasons.push(
-      zh ? '练一天歇一天，肌肉有时间恢复。' : 'Rest days between sessions give your muscles time to recover.',
+      yoga
+        ? zh
+          ? '练一天歇一天，身体有时间恢复。'
+          : 'Rest days between sessions give your body time to recover.'
+        : zh
+          ? '练一天歇一天，肌肉有时间恢复。'
+          : 'Rest days between sessions give your muscles time to recover.',
     );
   else if (schedule.chosen) reasons.push(zh ? '按你选的日子安排。' : 'Sessions follow the days you chose.');
   const kinds = new Set(plan.templates.map(template => sessionKind(template)));
@@ -275,8 +282,8 @@ export function planReasons(
     );
     reasons.push(
       zh
-        ? `每次约 ${range} 分钟${framed ? '，含热身和拉伸' : ''}。`
-        : `About ${range} minutes each time${framed ? ', including warm-up and stretching' : ''}.`,
+        ? `每次约 ${range} 分钟${framed ? (yoga ? '，含热身和放松' : '，含热身和拉伸') : ''}。`
+        : `About ${range} minutes each time${framed ? (yoga ? ', including warm-up and relaxation' : ', including warm-up and stretching') : ''}.`,
     );
   }
   return reasons;

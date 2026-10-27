@@ -7,12 +7,12 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
 ```json
 {
   "version": 3,
-  "sourceHash": "0cdfdc2aeadc5c969cddf0e383abf7174690410080488ce540abdedd5ab4c25f",
+  "sourceHash": "f8a909ca07497269a1cac7eb6b889cc57068e991c54e8ddb5f83a7a408ab6e62",
   "inputHash": "58eec36583cead086e435eeb3ceb10bcbf82c9ecf911bd4dcfb509a0bff10332",
   "seed": 20261015,
-  "nodeVersion": "v22.22.0",
-  "runtimeFingerprint": "d6918a9c24a895d3713931ea2deee725f13d443cf2fb4c760e26aa25d626de03",
-  "wallMs": 238094.18090820312,
+  "nodeVersion": "v24.14.0",
+  "runtimeFingerprint": "670a0b0516d2baa29f38405873b784232e6c52e72a83907905cd2e2906ca7dc5",
+  "wallMs": 77703.9609375,
   "report": {
     "stage": "V2 diagnostic",
     "pregnancyRamp": {
@@ -759,7 +759,7 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
           "courses": [
             {
               "templateId": "day-e04205c9",
-              "actualSeconds": 1193,
+              "actualSeconds": 1199,
               "targetMinutes": 20
             },
             {
@@ -1164,7 +1164,7 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "index": 705,
-        "score": 0.503989865095979
+        "score": 0.5719229229229229
       },
       {
         "index": 714,
@@ -1256,7 +1256,7 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "index": 970,
-        "score": 0.5803906327415806
+        "score": 0.5803702602904499
       },
       {
         "index": 993,
@@ -1575,7 +1575,7 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
         "score": 0.5936787598908743
       }
     ],
-    "qualityMedian": 0.7685290697674418,
+    "qualityMedian": 0.7686043581650672,
     "qualityP10": 0.6000036845239897,
     "within10Rate": 0.9676616915422885,
     "timingBreakdown": {
@@ -1754,19 +1754,19 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
     "notices": {
       "engine.copy.target_volume": 1725,
       "engine.copy.target_aerobic": 1876,
-      "session.copy.short_stretch_target": 725,
+      "session.copy.short_stretch_target": 724,
       "safety.copy.clearance_needed": 610,
       "safety.copy.age45_advisory": 350,
       "pregnancy.stop.copy.stop": 210,
-      "session.copy.intentional_short": 64,
-      "pregnancy.pelvic_floor.copy": 87,
+      "session.copy.intentional_short": 62,
+      "pregnancy.copy.long_session.copy": 17,
+      "pregnancy.pelvic_floor.copy": 90,
       "postpartum.copy.urgent.urgent": 150,
       "engine.copy.target_balance": 24,
       "postpartum.gate.pre_check.copy": 70,
       "safety.copy.illness_pause": 89,
       "postpartum.pelvic_floor.copy": 53,
-      "postpartum.physio_offer.offer": 22,
-      "pregnancy.copy.long_session.copy": 17
+      "postpartum.physio_offer.offer": 22
     },
     "noticeCounts": {
       "0": 0,
@@ -1788,11 +1788,11 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "id": "dose.sets_week.intermediate",
-        "weightedLoss": 205.83273809523808
+        "weightedLoss": 205.8202380952381
       },
       {
         "id": "balance.week.hinge_knee",
-        "weightedLoss": 162.3680129394415
+        "weightedLoss": 160.3680129394415
       },
       {
         "id": "goal.aerobic.baseline",
@@ -1812,7 +1812,7 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "id": "dose.sets_week.goal_matrix",
-        "weightedLoss": 121.37986111111111
+        "weightedLoss": 121.37569444444445
       },
       {
         "id": "session.warmup.dynamic",
@@ -1836,7 +1836,7 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "id": "goal.params.muscle",
-        "weightedLoss": 66.88739735111929
+        "weightedLoss": 66.86672420141382
       },
       {
         "id": "goal.params.fat_loss",
@@ -1922,31 +1922,31 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
     "topLoss": [
       {
         "id": "dose.sets_week.intermediate",
-        "weightedLoss": 1171.5896380994188,
-        "count": 748,
+        "weightedLoss": 1172.1021380994189,
+        "count": 749,
         "applicableCount": 816,
-        "averageWeightedLoss": 1.4357716153179152
+        "averageWeightedLoss": 1.4363996790434055
       },
       {
         "id": "goal.params.fat_loss",
-        "weightedLoss": 382.037386846514,
+        "weightedLoss": 382.0381103526411,
         "count": 284,
         "applicableCount": 284,
-        "averageWeightedLoss": 1.3452020663609647
+        "averageWeightedLoss": 1.3452046139177505
       },
       {
         "id": "goal.params.muscle",
-        "weightedLoss": 368.4572364970676,
+        "weightedLoss": 368.44105601625,
         "count": 283,
         "applicableCount": 283,
-        "averageWeightedLoss": 1.3019690335585428
+        "averageWeightedLoss": 1.3019118587146643
       },
       {
         "id": "goal.params.health",
-        "weightedLoss": 336.3995180567428,
+        "weightedLoss": 336.30585666983137,
         "count": 265,
         "applicableCount": 265,
-        "averageWeightedLoss": 1.2694321436103502
+        "averageWeightedLoss": 1.269078704414458
       },
       {
         "id": "dose.sets_week.beginner",
@@ -1957,10 +1957,10 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "id": "goal.params.mobility",
-        "weightedLoss": 267.63708894862873,
+        "weightedLoss": 267.59808799450985,
         "count": 249,
         "applicableCount": 249,
-        "averageWeightedLoss": 1.0748477467816415
+        "averageWeightedLoss": 1.0746911164438147
       },
       {
         "id": "session.warmup.balance_older",
@@ -1978,26 +1978,26 @@ Functional correctness evidence. Timing is informational only; engine:perf repor
       },
       {
         "id": "goal.aerobic.baseline",
-        "weightedLoss": 1557.3927777777794,
+        "weightedLoss": 1557.292111111113,
         "count": 1608,
         "applicableCount": 1608,
-        "averageWeightedLoss": 0.9685278468767285
+        "averageWeightedLoss": 0.9684652432283041
       },
       {
         "id": "aerobic.target.weekly",
-        "weightedLoss": 1557.3927777777794,
+        "weightedLoss": 1557.292111111113,
         "count": 1608,
         "applicableCount": 1608,
-        "averageWeightedLoss": 0.9685278468767285
+        "averageWeightedLoss": 0.9684652432283041
       }
     ],
     "performance": {
-      "totalMs": 238094.18090820312,
-      "p95Ms": 642.0915870000026,
-      "generationP95Ms": 642.0915870000026,
-      "classificationP95Ms": 645.342009999993,
-      "parallelAuditWallMs": 236668.63237099999,
-      "workerContentionP95Ms": 642.0915870000026
+      "totalMs": 77703.9609375,
+      "p95Ms": 389.0136999999995,
+      "generationP95Ms": 389.0136999999995,
+      "classificationP95Ms": 391.3012000000017,
+      "parallelAuditWallMs": 76588.1244,
+      "workerContentionP95Ms": 389.0136999999995
     }
   }
 }

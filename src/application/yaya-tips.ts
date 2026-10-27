@@ -10,7 +10,8 @@ import type { MuscleGroup, MuscleLoad } from '../domain/plan-upgrade';
 import type { PlanProposal } from './review/contracts';
 import { estimatePlannedMinutes } from '../domain/duration-estimate';
 import { addDays, daysBetween, todayIn } from '../domain/local-date';
-import { DATA } from '../engine/data';
+import { exerciseById } from '../engine/data';
+import { isYogaSession } from '../engine/yoga-session';
 import { MUSCLE_LOAD_THRESHOLDS, exerciseMuscleGroups, isoWeekday, skipPattern } from './rules/plan-upgrade';
 import { latestSetFeedback } from './pain-events';
 import { planStartDate, weekSchedule, weekdays, type Weekday } from './plan-presentation';
@@ -48,9 +49,12 @@ export function fitTemplate(template: SessionTemplate, minutes: number): Session
   const target = clampMinutes(minutes);
   const items = template.items.map(item => structuredClone(item));
   const estimate = () => estimatePlannedMinutes(items, 10);
+  // A yoga session keeps its closing rest: the pose before it comes off instead.
+  const yoga = isYogaSession(template);
   while (estimate() > target) {
     const most = items.reduce((best, item, index) => (item.sets > items[best]!.sets ? index : best), 0);
     if (items[most]!.sets > 2) items[most]!.sets -= 1;
+    else if (yoga && items.length > 2) items.splice(-2, 1);
     else if (items.length > 1) items.pop();
     else break;
   }
@@ -298,7 +302,7 @@ const WORK_BLOCKS = new Set(['main', 'accessory']);
 const isWork = (item: PlannedItem) => !item.prescription || WORK_BLOCKS.has(item.prescription.block);
 /** Sets one exercise may reach after a tip; keeps within the engine's per-exercise range. */
 const MAX_ITEM_SETS = 4;
-const engineById = new Map(DATA.exercises.map(exercise => [exercise.id, exercise]));
+const engineById = exerciseById;
 const patternOf = (exerciseId: string) => engineById.get(exerciseId)?.primary_pattern;
 const isPush = (id: string) => /^push_/.test(patternOf(id) ?? '');
 const isPull = (id: string) => /^pull_/.test(patternOf(id) ?? '');
@@ -375,7 +379,8 @@ export function muscleTip(input: {
   weekSets: readonly { exerciseId: string; completedSets: number }[];
 }): MuscleTip | undefined {
   const template = input.version.templates.find(t => t.id === input.templateId);
-  if (!template) return undefined;
+  // A yoga session follows its own pose sequence; muscle-set tips never add to it.
+  if (!template || isYogaSession(template)) return undefined;
   const trained = input.weekLoads.filter(load => load.sets > 0).length;
   if (trained >= ROUNDED_GROUPS) {
     const groups = planGroups(input.version);

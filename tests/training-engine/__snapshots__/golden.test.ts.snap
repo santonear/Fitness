@@ -33,7 +33,7 @@ exports[`20 explicit synthetic golden profiles > all-cautions-no-floor 1`] = `
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "9a542b93584a987c23467df1637370604f44922e81939412cf120abfe7052d92",
+      "rulesVersion": "e72dd7a19877b0d5050cd34ae70c3d69f04b6097456a788d83b547d235cc5333",
       "seed": "d66993f3",
     },
     "notices": [
@@ -1806,7 +1806,7 @@ exports[`20 explicit synthetic golden profiles > bands-fat-loss3x45 1`] = `
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "9a542b93584a987c23467df1637370604f44922e81939412cf120abfe7052d92",
+      "rulesVersion": "e72dd7a19877b0d5050cd34ae70c3d69f04b6097456a788d83b547d235cc5333",
       "seed": "c2eb5ac8",
     },
     "notices": [
@@ -4124,7 +4124,7 @@ exports[`20 explicit synthetic golden profiles > bodyweight-health3x30 1`] = `
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "9a542b93584a987c23467df1637370604f44922e81939412cf120abfe7052d92",
+      "rulesVersion": "e72dd7a19877b0d5050cd34ae70c3d69f04b6097456a788d83b547d235cc5333",
       "seed": "1d5c9a9a",
     },
     "notices": [
@@ -6003,7 +6003,7 @@ exports[`20 explicit synthetic golden profiles > cesarean-week8-confirmed 1`] = 
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "9a542b93584a987c23467df1637370604f44922e81939412cf120abfe7052d92",
+      "rulesVersion": "e72dd7a19877b0d5050cd34ae70c3d69f04b6097456a788d83b547d235cc5333",
       "seed": "86198efb",
     },
     "notices": [
@@ -6392,7 +6392,7 @@ exports[`20 explicit synthetic golden profiles > cesarean6-not-cleared 1`] = `
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "9a542b93584a987c23467df1637370604f44922e81939412cf120abfe7052d92",
+      "rulesVersion": "e72dd7a19877b0d5050cd34ae70c3d69f04b6097456a788d83b547d235cc5333",
       "seed": "8db73fef",
     },
     "notices": [
@@ -6741,7 +6741,7 @@ exports[`20 explicit synthetic golden profiles > first-week-health2x20 1`] = `
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "9a542b93584a987c23467df1637370604f44922e81939412cf120abfe7052d92",
+      "rulesVersion": "e72dd7a19877b0d5050cd34ae70c3d69f04b6097456a788d83b547d235cc5333",
       "seed": "3ecc1f8d",
     },
     "notices": [
@@ -7735,7 +7735,7 @@ exports[`20 explicit synthetic golden profiles > gym-intermediate-muscle4x45 1`]
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "9a542b93584a987c23467df1637370604f44922e81939412cf120abfe7052d92",
+      "rulesVersion": "e72dd7a19877b0d5050cd34ae70c3d69f04b6097456a788d83b547d235cc5333",
       "seed": "52daa0b5",
     },
     "notices": [
@@ -10707,7 +10707,7 @@ exports[`20 explicit synthetic golden profiles > home-dumbbell-knee-3x40 1`] = `
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "9a542b93584a987c23467df1637370604f44922e81939412cf120abfe7052d92",
+      "rulesVersion": "e72dd7a19877b0d5050cd34ae70c3d69f04b6097456a788d83b547d235cc5333",
       "seed": "9ef69708",
     },
     "notices": [
@@ -12983,7 +12983,7 @@ exports[`20 explicit synthetic golden profiles > inactive-known-condition-blocke
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "9a542b93584a987c23467df1637370604f44922e81939412cf120abfe7052d92",
+      "rulesVersion": "e72dd7a19877b0d5050cd34ae70c3d69f04b6097456a788d83b547d235cc5333",
       "seed": "2611cd8a",
     },
     "notices": [
@@ -13162,7 +13162,7 @@ exports[`20 explicit synthetic golden profiles > mobility6x90 1`] = `
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "9a542b93584a987c23467df1637370604f44922e81939412cf120abfe7052d92",
+      "rulesVersion": "e72dd7a19877b0d5050cd34ae70c3d69f04b6097456a788d83b547d235cc5333",
       "seed": "bc0e9f4f",
     },
     "notices": [
@@ -18408,7 +18408,7 @@ exports[`20 explicit synthetic golden profiles > older70-cautious-balance 1`] = 
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "9a542b93584a987c23467df1637370604f44922e81939412cf120abfe7052d92",
+      "rulesVersion": "e72dd7a19877b0d5050cd34ae70c3d69f04b6097456a788d83b547d235cc5333",
       "seed": "a703923c",
     },
     "notices": [
@@ -20401,7 +20401,7 @@ exports[`20 explicit synthetic golden profiles > older70-unrestricted 1`] = `
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "9a542b93584a987c23467df1637370604f44922e81939412cf120abfe7052d92",
+      "rulesVersion": "e72dd7a19877b0d5050cd34ae70c3d69f04b6097456a788d83b547d235cc5333",
       "seed": "5fd97864",
     },
     "notices": [
@@ -22219,7 +22219,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy-provider-missing 1`] 
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "9a542b93584a987c23467df1637370604f44922e81939412cf120abfe7052d92",
+      "rulesVersion": "e72dd7a19877b0d5050cd34ae70c3d69f04b6097456a788d83b547d235cc5333",
       "seed": "e96c3354",
     },
     "notices": [
@@ -22399,7 +22399,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy-week20-confirmed 1`] 
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "9a542b93584a987c23467df1637370604f44922e81939412cf120abfe7052d92",
+      "rulesVersion": "e72dd7a19877b0d5050cd34ae70c3d69f04b6097456a788d83b547d235cc5333",
       "seed": "1dafe98b",
     },
     "notices": [
@@ -24185,7 +24185,7 @@ exports[`20 explicit synthetic golden profiles > pregnancy28-confirmed 1`] = `
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "9a542b93584a987c23467df1637370604f44922e81939412cf120abfe7052d92",
+      "rulesVersion": "e72dd7a19877b0d5050cd34ae70c3d69f04b6097456a788d83b547d235cc5333",
       "seed": "912756bb",
     },
     "notices": [
@@ -26039,7 +26039,7 @@ exports[`20 explicit synthetic golden profiles > quiet-bodyweight-2x20 1`] = `
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "9a542b93584a987c23467df1637370604f44922e81939412cf120abfe7052d92",
+      "rulesVersion": "e72dd7a19877b0d5050cd34ae70c3d69f04b6097456a788d83b547d235cc5333",
       "seed": "0cd49fa0",
     },
     "notices": [
@@ -26950,7 +26950,7 @@ exports[`20 explicit synthetic golden profiles > start-moving2x10 1`] = `
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "9a542b93584a987c23467df1637370604f44922e81939412cf120abfe7052d92",
+      "rulesVersion": "e72dd7a19877b0d5050cd34ae70c3d69f04b6097456a788d83b547d235cc5333",
       "seed": "7770169f",
     },
     "notices": [
@@ -27802,7 +27802,7 @@ exports[`20 explicit synthetic golden profiles > strength1x10 1`] = `
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "9a542b93584a987c23467df1637370604f44922e81939412cf120abfe7052d92",
+      "rulesVersion": "e72dd7a19877b0d5050cd34ae70c3d69f04b6097456a788d83b547d235cc5333",
       "seed": "4d1b3163",
     },
     "notices": [
@@ -28246,7 +28246,7 @@ exports[`20 explicit synthetic golden profiles > symptoms-blocked 1`] = `
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "9a542b93584a987c23467df1637370604f44922e81939412cf120abfe7052d92",
+      "rulesVersion": "e72dd7a19877b0d5050cd34ae70c3d69f04b6097456a788d83b547d235cc5333",
       "seed": "882a65ac",
     },
     "notices": [
@@ -28422,7 +28422,7 @@ exports[`20 explicit synthetic golden profiles > under18-blocked 1`] = `
     ],
     "meta": {
       "engineVersion": "2.0.0-p0",
-      "rulesVersion": "9a542b93584a987c23467df1637370604f44922e81939412cf120abfe7052d92",
+      "rulesVersion": "e72dd7a19877b0d5050cd34ae70c3d69f04b6097456a788d83b547d235cc5333",
       "seed": "f7ea674b",
     },
     "notices": [

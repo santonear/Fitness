@@ -23,7 +23,7 @@ import {
 } from '../../domain/plan-upgrade';
 import { addDays, daysBetween } from '../../domain/local-date';
 import { catalogMetadata } from '../../catalog/registry';
-import { DATA, type Exercise as EngineExercise } from '../../engine/data';
+import { DATA, type Exercise as EngineExercise, exerciseById } from '../../engine/data';
 import type { CautionJoint } from '../../engine/contracts';
 import { FITNESS_NORMS_2023, bandMiddleAge, type NormBand } from './fitness-norms-2023';
 
@@ -37,7 +37,7 @@ const groupOrder = (groups: Iterable<MuscleGroup>): MuscleGroup[] => {
   return MUSCLE_GROUPS.filter(group => set.has(group));
 };
 
-const engineById = new Map(DATA.exercises.map(exercise => [exercise.id, exercise]));
+const engineById = exerciseById;
 
 /** Primary and secondary groups of one exercise; a group is listed once, at its strongest role. */
 export function exerciseMuscleGroups(exerciseId: string): { primary: MuscleGroup[]; secondary: MuscleGroup[] } {

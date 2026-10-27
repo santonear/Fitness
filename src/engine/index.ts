@@ -7,6 +7,7 @@ import { progress } from './progression';
 import { checkHard } from './hard-checks';
 import { scorePlan } from './score';
 import { isHardEligible } from './candidates';
+import { engineExercises } from './yoga-session';
 const rules = new Rules();
 /** P0 facade; the staged M1–M3 gates, not this facade, certify full behavior. */
 function assess(plan: EnginePlan, profile: EngineProfile): EnginePlan {
@@ -42,7 +43,7 @@ export function getEligibleExercises(profile: EngineProfile): {
 }[] {
   const ctx = createContext(profile, 0, rules);
   if (ctx.gate.status === 'blocked') return [];
-  return rules.data.exercises
+  return engineExercises(rules, profile.goal)
     .filter(e => isHardEligible(e, profile, ctx.gate, ctx))
     .map(e => ({
       exerciseId: e.id,

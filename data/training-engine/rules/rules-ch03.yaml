@@ -380,7 +380,7 @@
       - { pos: yoga_supine_2, family: supine, block: cooldown, session_minutes_min: 60 }
       - { pos: yoga_rest, family: rest, block: cooldown, session_minutes_min: 10, prefer: savasana }
     sets_max: 4                           # 与 dose.stretch.reps_per_muscle 上限一致
-    rest_share_max: 0.2                   # 休息体式（摊尸式）最多占课时 20%
+    rest_share_max: 0.12                  # 休息体式（摊尸式）最多占课时 12%（45 分钟课约 5 分钟）
     counts_toward_rt_volume: false
   evidence: C
   sources: [E03:Garber-2011, E03:Thomas-2018]

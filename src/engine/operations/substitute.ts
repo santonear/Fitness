@@ -15,6 +15,8 @@ import { candidatesFor, isHardEligible } from '../candidates';
 import { prioritizeCautionSubstitutions } from '../candidates/caution-substitutions';
 
 import { checkHard } from '../hard-checks';
+import { isYogaSession } from '../yoga-session';
+import { substituteYogaPose } from '../yoga';
 
 import { result } from './result';
 import { FOCUS, slotFor, retainSource } from './shared';
@@ -33,6 +35,12 @@ export function substituteItem(
     patterns = original.primary_pattern === 'carry' ? FOCUS.core : [original.primary_pattern],
     slot = slotFor(i, patterns);
   ctx.usedIds = new Set([...ctx.usedIds, item.exerciseId, ...prior]);
+  if (isYogaSession({ items: [i] })) {
+    const pose = substituteYogaPose(i, ctx.usedIds, ctx);
+    if (!pose) return result(structuredClone(item), [], r, p);
+    pose.prescription!.excludedPreviousIds = [...prior, item.exerciseId];
+    return result<PlannedItem>(pose, [{ kind: 'replace', itemIndex: 0, before: item, after: pose }], r, p);
+  }
   const pool = candidatesFor(slot, p, ctx.gate, ctx).filter(
       e =>
         e.id !== item.exerciseId &&

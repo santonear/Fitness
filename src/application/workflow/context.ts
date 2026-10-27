@@ -21,7 +21,7 @@ import type { CoachProfile } from '../../domain/v8/contracts';
 import { createTrainingCheckin } from '../training-checkin';
 import { enginePlanSchema, type EnginePlan } from '../../engine/contracts';
 import { isFeatureEnabled } from '../feature-flags';
-import { stableString, DATA } from '../../engine/data';
+import { stableString, exerciseById } from '../../engine/data';
 import { type LocalCandidate, invalid, localDate } from './shared';
 import { DEFAULT_TIME_ZONE } from '../../domain/local-date';
 
@@ -51,7 +51,7 @@ export function createWorkflowContext(repo: Repository) {
       );
       if (
         items.some(item => {
-          const pattern = DATA.exercises.find(e => e.id === item.exerciseId)?.primary_pattern;
+          const pattern = exerciseById.get(item.exerciseId)?.primary_pattern;
           return pattern && patterns.has(pattern);
         })
       )

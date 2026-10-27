@@ -4,6 +4,7 @@ import { Rules } from '../engine/data';
 import { runGates } from '../engine/gates';
 import { exclusions } from '../engine/checkHard/eligibility';
 import { powerLoadIssue } from '../engine/power';
+import { engineExercises } from '../engine/yoga-session';
 
 const rules = new Rules();
 
@@ -14,7 +15,7 @@ export function engineTemplateIds(request: CoachRequest): Set<string> {
   const gates = runGates(profile, rules);
   if (gates.status === 'blocked') return new Set();
   return new Set(
-    rules.data.exercises
+    engineExercises(rules, profile.goal)
       .filter(exercise => exclusions(exercise, profile, gates, rules).length === 0)
       .map(exercise => exercise.id),
   );

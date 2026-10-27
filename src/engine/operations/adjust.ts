@@ -18,6 +18,8 @@ import { fitDuration, estimateSeconds } from '../fit';
 import { scorePlan, marginal } from '../score';
 import { changes, result } from './result';
 import { FOCUS, slotFor, legal, insertWork } from './shared';
+import { isYogaSession } from '../yoga-session';
+import { buildYogaSession } from '../yoga';
 export function adjust(
   template: SessionTemplate,
   p: EngineProfile,
@@ -36,6 +38,7 @@ export function adjust(
       currentWeekday: template.weekday,
     };
   if (ctx.gate.status === 'blocked') return result(structuredClone(template), [], r, profile);
+  if (isYogaSession(template)) return adjustYoga(template, profile, req, ctx);
   const locked = new Set(req.lockedItemIndexes ?? []),
     focus = req.focus && req.focus !== 'full' ? FOCUS[req.focus] : undefined,
     avoid = new Set(req.avoidPatterns ?? []),
@@ -110,6 +113,45 @@ export function adjust(
   if (
     [...locked].some(n => original[n] && stableString(value.items[n]) !== stableString(original[n])) ||
     !items.length ||
+    !legal(value, profile, ctx)
+  )
+    return result(structuredClone(template), [], r, profile);
+  const out = result<SessionTemplate>(value, changes(template, value), r, profile, value.estimatedMinutes);
+  out.trace.push(...ctx.trace);
+  return out;
+}
+
+/** A yoga session is rebuilt in its own sequence at the new length; it keeps its poses where they still fit. */
+function adjustYoga(
+  template: SessionTemplate,
+  profile: EngineProfile,
+  req: AdjustTodayRequest,
+  ctx: PipelineContext,
+): EngineResult<SessionTemplate> {
+  const r = ctx.rules,
+    original = template.items as SessionDraft['items'],
+    { slots: _, ...draft } = buildYogaSession(
+      {
+        id: template.id,
+        index: 0,
+        kind: 'yoga',
+        minutes: profile.sessionMinutes,
+        weekday: template.weekday,
+        balanceRequired: original.some(item => r.byExercise.get(item.exerciseId)?.primary_pattern === 'balance'),
+      },
+      ctx,
+      new Set(original.map(item => item.exerciseId)),
+      // Today's sore area leaves out poses that load it heavily (joint load 2+); avoided patterns leave too.
+      e =>
+        (req.avoidPatterns ?? []).includes(e.primary_pattern) ||
+        (!!req.painArea && req.painArea !== 'other' && (e.joint_load[req.painArea] ?? 0) >= 2),
+    ),
+    value: SessionTemplate = { ...structuredClone(template), ...draft, name: template.name };
+  if (
+    (req.lockedItemIndexes ?? []).some(
+      n => original[n] && !value.items.some(i => stableString(i) === stableString(original[n])),
+    ) ||
+    !value.items.length ||
     !legal(value, profile, ctx)
   )
     return result(structuredClone(template), [], r, profile);

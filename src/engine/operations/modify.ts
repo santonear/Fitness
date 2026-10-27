@@ -11,6 +11,8 @@ import { changes, result } from './result';
 import { slotFor, legal, insertWork, retainSource } from './shared';
 import { adjust } from './adjust';
 import { substituteItem } from './substitute';
+import { isYogaSession, YOGA_POSITION_PREFIX } from '../yoga-session';
+import { chosenYogaItem, settleYogaSession } from '../yoga';
 export function modify(
   plan: EnginePlan,
   p: EngineProfile,
@@ -40,6 +42,7 @@ export function modify(
         ctx = createContext(profile, 0, r);
       ctx.plan = value;
       ctx.currentWeekday = t.weekday;
+      const yoga = isYogaSession(t);
       if (req.op === 'shorten' && req.minutes) {
         Object.assign(t, adjust(t, profile, { minutes: req.minutes }, r, ctx).value);
         diff.push(...changes(before, t));
@@ -48,7 +51,11 @@ export function modify(
       if (req.op === 'remove' && item) t.items.splice(index, 1);
       else if (req.op === 'replace' && item) {
         if (!req.replacementId) t.items[index] = substituteItem(item, profile, 'dislike', r, ctx).value as typeof item;
-        else {
+        else if (yoga) {
+          ctx.usedIds = new Set(t.items.map(i => i.exerciseId));
+          const chosen = chosenYogaItem(item, req.replacementId, ctx);
+          if (chosen) t.items[index] = chosen;
+        } else {
           ctx.usedIds = new Set(t.items.map(i => i.exerciseId));
           const e = candidatesFor(slotFor(item, []), profile, ctx.gate, ctx).find(e => e.id === req.replacementId);
           if (e)
@@ -66,6 +73,22 @@ export function modify(
               item,
             );
         }
+      } else if (req.op === 'add' && req.exerciseId && yoga) {
+        // Only another safe pose joins a yoga session, just before the closing rest.
+        ctx.usedIds = new Set(t.items.map(i => i.exerciseId));
+        const last = t.items.at(-1)!,
+          extra = {
+            ...structuredClone(last),
+            prescription: {
+              ...last.prescription!,
+              block: 'mobility' as const,
+              sourcePosition: `${YOGA_POSITION_PREFIX}extra`,
+            },
+          },
+          chosen = t.items.some(i => i.exerciseId === req.exerciseId)
+            ? undefined
+            : chosenYogaItem(extra, req.exerciseId, ctx);
+        if (chosen) t.items.splice(Math.max(0, t.items.length - 1), 0, chosen);
       } else if (req.op === 'add' && req.exerciseId) {
         ctx.usedIds = new Set(t.items.map(i => i.exerciseId));
         const e = candidatesFor(
@@ -88,7 +111,11 @@ export function modify(
         if (req.durationSeconds && 'durationSeconds' in item.target) item.target.durationSeconds = req.durationSeconds;
         if (req.loadGrams && item.target.metricType === 'reps_load') item.target.loadGrams = req.loadGrams;
       }
-      const { slots: _, ...fitted } = fitDuration({ ...t, slots: [] }, profile.sessionMinutes, ctx);
+      // A yoga session keeps its own sequence; holds and extra sets settle back into its length.
+      if (yoga) settleYogaSession(t, profile, ctx);
+      const { slots: _, ...fitted } = yoga
+        ? { ...t, slots: [] }
+        : fitDuration({ ...t, slots: [] }, profile.sessionMinutes, ctx);
       if (legal(fitted, profile, ctx)) {
         Object.assign(t, fitted);
         diff.push(...changes(before, t));
