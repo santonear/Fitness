@@ -27,6 +27,27 @@ export function adjust(
   r: Rules,
   context?: PipelineContext,
 ): EngineResult<SessionTemplate> {
+  let out = adjustOnce(template, p, req, r, context);
+  if (!out.noop || req.minutes === undefined) return out;
+  // When no safe session (warm-up, main work, cool-down) fits the time exactly, the nearest shorter one, else the nearest
+  // longer one that is still shorter than planned; never the whole session back.
+  const shorter = [10, 5].map(step => req.minutes! - step).filter(minutes => minutes >= 10),
+    longer = Array.from({ length: 12 }, (_, n) => req.minutes! + 5 * (n + 1)).filter(
+      minutes => minutes < template.estimatedMinutes,
+    );
+  for (const minutes of [...shorter.reverse(), ...longer]) {
+    if (!out.noop) break;
+    out = adjustOnce(template, p, { ...req, minutes }, r, context);
+  }
+  return out;
+}
+function adjustOnce(
+  template: SessionTemplate,
+  p: EngineProfile,
+  req: AdjustTodayRequest,
+  r: Rules,
+  context?: PipelineContext,
+): EngineResult<SessionTemplate> {
   const profile = {
       ...p,
       sessionMinutes: req.minutes ?? p.sessionMinutes,

@@ -100,7 +100,10 @@ export function workoutModel(w: WorkoutReady) {
   const value =
     values[key] ??
     (timed
-      ? (previous?.durationSeconds ?? (matching && 'durationSeconds' in matching ? matching.durationSeconds : 30))
+      ? // A hold keeps its planned time: stopping one set early must not shorten the next one.
+        ((matching && 'durationSeconds' in matching ? matching.durationSeconds : undefined) ??
+        previous?.durationSeconds ??
+        30)
       : (previous?.reps ?? (matching && 'reps' in matching ? matching.reps : 8)));
   const suggestedLoad = previous?.loadGrams ?? (matching && 'loadGrams' in matching ? matching.loadGrams : undefined);
   const load =

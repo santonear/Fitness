@@ -38,10 +38,13 @@ export function createPlanVersions(
     response: raw,
     expectedRevision,
     enginePlan,
+    byUser = false,
   }: {
     request: CoachRequest;
     response: CoachResponse;
     expectedRevision: number;
+    /** The person picked this change themselves (换动作), so the version is theirs, not 芽芽's. */
+    byUser?: boolean;
     enginePlan?: EnginePlan;
   }) {
     if (
@@ -169,8 +172,8 @@ export function createPlanVersions(
         // Picked calendar days stay unless the user explicitly asked to change days in this conversation.
         schedule: scheduleAfterProposal(carriedSchedule(version), request, version, proposal),
         fields: {
-          source: 'ai',
-          origin: response.type === 'review_summary' ? 'review_suggestion' : 'coach_change',
+          source: byUser ? 'local' : 'ai',
+          origin: byUser ? 'manual' : response.type === 'review_summary' ? 'review_suggestion' : 'coach_change',
           changeSummary:
             response.type === 'change_proposal'
               ? response.changes

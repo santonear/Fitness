@@ -4,6 +4,7 @@ import type { AssistantConversation } from '../domain/assistant-conversation';
 import { recoverAssistantSchedule, recoverLegacyPlanSchedules } from './assistant-schedule-migration';
 import { migrateBodyProfile } from './body-profile-migration';
 import { renumberDuplicateVersions } from './plan-version-numbers';
+import { repairYogaFlowTargets } from './yoga-flow-repair';
 import type { CoachLedger } from '../domain/coach-reminders';
 import { legacyExerciseFavorites } from './exercise-favorites';
 import Dexie, { type Table } from 'dexie';
@@ -87,6 +88,11 @@ export class FitnessDatabase extends Dexie {
       // Idempotent: duplicated version numbers from undo + edit get the plan's next free numbers, all or nothing.
       await vipDb.transaction('rw', versions, async () => {
         const repaired = renumberDuplicateVersions(await versions.toArray());
+        if (repaired.length) await versions.bulkPut(repaired);
+      });
+      // Idempotent: yoga flows saved as timed holds get their rep target (yoga-flow-repair), all or nothing.
+      await vipDb.transaction('rw', versions, async () => {
+        const repaired = repairYogaFlowTargets(await versions.toArray());
         if (repaired.length) await versions.bulkPut(repaired);
       });
     });

@@ -69,8 +69,17 @@ function keepWithinHardRules(
     const restored = new Set<number>();
     template.items.forEach((item, index) => {
       const old = original.items[index];
+      if (!old) return;
+      // A swapped-in exercise (pain) keeps no more sets than the one it replaced.
+      if (old.exerciseId !== item.exerciseId) {
+        if (item.sets > old.sets) {
+          item.sets = old.sets;
+          restored.add(index);
+        }
+        return;
+      }
       // Only growth goes back; a reduction (deload, fatigue) is never undone.
-      if (old?.exerciseId !== item.exerciseId || !grew(item, old)) return;
+      if (!grew(item, old)) return;
       item.sets = old.sets;
       item.target = structuredClone(old.target);
       restored.add(index);
@@ -81,6 +90,19 @@ function keepWithinHardRules(
         !['volume', 'duration'].includes(change.kind) ||
         !restored.has(change.itemIndex ?? -1),
     );
+    // A swap that still puts one muscle past the session cap gives up sets; at one set it leaves the session.
+    const overCap = () =>
+      errors(value).some(issue => issue.templateId === template.id && issue.code === 'session_volume_cap');
+    if (!known.has(`${template.id} session_volume_cap`))
+      for (const item of template.items.filter(
+        (item, index) => original.items[index]?.exerciseId !== item.exerciseId,
+      )) {
+        while (item.sets > 1 && overCap()) item.sets--;
+        if (!overCap()) continue;
+        const itemIndex = template.items.indexOf(item);
+        output.diff.push({ kind: 'remove', templateId: template.id, itemIndex, before: structuredClone(item) });
+        template.items.splice(itemIndex, 1);
+      }
     template.estimatedSeconds = estimateSeconds(template, r);
     template.estimatedMinutes = Math.ceil(template.estimatedSeconds / 60);
   }

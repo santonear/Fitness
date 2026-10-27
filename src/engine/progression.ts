@@ -20,6 +20,7 @@ import { elapsedDays, detrainingGapDays, Rules, stableString } from './data';
 import { effectiveGoalRole, newWeek, type Item } from './dose';
 import { result, substituteItem } from './operations';
 import { runGates } from './gates';
+import { createContext } from './pipeline';
 
 export function progress(
   history: WorkoutRecord[],
@@ -114,13 +115,20 @@ export function progress(
           });
           continue;
         }
-        const replacement = substituteItem(item, p, 'pain', r);
+        // The swap avoids this session's other exercises and the neighbouring days', like a swap made on the plan.
+        const swap = createContext(p, 0, r);
+        swap.plan = value;
+        swap.currentWeekday = t.weekday;
+        swap.usedIds = new Set(t.items.filter(other => other !== raw).map(other => other.exerciseId));
+        const replacement = substituteItem(item, p, 'pain', r, swap);
         if (!replacement.noop) Object.assign(item, replacement.value);
         else continue;
       } else if (lastFeedback?.effort === 'too_hard') {
         ruleId = 'progression.feedback.too_hard';
+        const setsBefore = item.sets;
         if (!setLoad(r.get(ruleId).loadable.next_session_load_pct) && !ladder(-1)) {
-          item.sets = Math.max(1, item.sets - 1);
+          // One set fewer, once: a ladder with no easier step already took it.
+          if (item.sets === setsBefore) item.sets = Math.max(1, item.sets - 1);
           if ('reps' in item.target) item.target.reps = repMin;
         }
       } else if (returning) {

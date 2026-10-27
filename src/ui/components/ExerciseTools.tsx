@@ -102,12 +102,16 @@ function ExerciseSwapSheet({
   const ranked = useMemo(() => {
     if (!target || !allowed) return [];
     const equipment = initialFilters([profile?.place, ...(profile?.equipment ?? [])].join(' ')).equipment;
+    // An exercise already in this session is not offered again.
+    const inSession = new Set(
+      data?.version?.templates.find(row => row.id === target.templateId)?.items.map(item => item.exerciseId) ?? [],
+    );
     return allowed
-      .filter(id => id !== target.exerciseId && exercises.some(row => row.id === id))
+      .filter(id => id !== target.exerciseId && !inSession.has(id) && exercises.some(row => row.id === id))
       .map(id => ({ id, score: replacementScore(id, target.exerciseId, equipment, profile?.cautions) }))
       .sort((a, b) => b.score - a.score)
       .map(row => row.id);
-  }, [allowed, target?.exerciseId, profile]);
+  }, [allowed, target?.exerciseId, target?.templateId, data?.version, profile]);
   const shown = all ? ranked.slice(0, 40) : ranked.slice(0, 6);
 
   function candidate(
@@ -183,6 +187,7 @@ function ExerciseSwapSheet({
         response,
         expectedRevision: data.metadata.dataRevision,
         ...(enginePlan ? { enginePlan } : {}),
+        byUser: true,
       });
       onClose();
     });
@@ -249,7 +254,7 @@ export function useExerciseTools(scope: ExerciseToolScope, options: { canSwap?: 
   const [swap, setSwap] = useState<SwapTarget>();
   const guideTrigger = useRef<HTMLElement | null>(null),
     swapTrigger = useRef<HTMLElement | null>(null);
-  const buttons = (templateId: string, itemIndex: number, exerciseId: string): ReactNode => (
+  const buttons = (templateId: string, itemIndex: number, exerciseId: string, canSwap = true): ReactNode => (
     <>
       <PrimaryButton
         tone="quiet"
@@ -262,7 +267,7 @@ export function useExerciseTools(scope: ExerciseToolScope, options: { canSwap?: 
       >
         {t.howTo}
       </PrimaryButton>
-      {options.canSwap !== false && (
+      {options.canSwap !== false && canSwap && (
         <PrimaryButton
           tone="quiet"
           size="sm"

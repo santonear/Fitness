@@ -1,6 +1,6 @@
 import { applicableEnginePlan } from '../engine/environment';
 import { engineDisplayNotices } from './engine-presentation';
-import { generatePlan, adjustToday, modifyPlan, substitute } from '../engine';
+import { generatePlan, adjustToday, modifyPlan, profileAfter, substitute } from '../engine';
 import type {
   EnginePlan,
   EngineProfile,
@@ -170,7 +170,11 @@ export function engineAction(
   if (request.task === 'MODIFY_PLAN' && action.kind === 'modify') {
     const result = modifyPlan(existingEnginePlan(request.plan), profile, action.changes),
       notices = engineDisplayNotices(result).map(notice => notice.message[locale]);
-    if (result.noop || result.gates.some(gate => gate.status === 'blocked') || !usableEnginePlan(result.value, profile))
+    if (
+      result.noop ||
+      result.gates.some(gate => gate.status === 'blocked') ||
+      !usableEnginePlan(result.value, profileAfter(profile, action.changes))
+    )
       return { noop: true, notices };
     const summary = result.summary[locale];
     const proposal = planProposalSchema.parse({

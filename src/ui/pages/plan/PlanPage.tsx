@@ -116,7 +116,7 @@ export function PlanPage({
   onChangeStart?: (trigger: HTMLElement) => void;
   changeStartBlocked?: string;
   /** Per-exercise tools (动作怎么做 / 换动作) rendered under each session's exercise list. */
-  exerciseActions?: (templateId: string, itemIndex: number, exerciseId: string) => ReactNode;
+  exerciseActions?: (templateId: string, itemIndex: number, exerciseId: string, canSwap?: boolean) => ReactNode;
 }) {
   const sd = startDateCopy[language];
   const t = planMessages[language],
@@ -130,14 +130,17 @@ export function PlanPage({
     d = trainingDaysCopy[language],
     days = version.trainingDates ?? [],
     [view, setView] = useState<'week' | 'month'>(days.length ? 'month' : 'week');
-  const details = (template: PlanVersion['templates'][number]) => (
+  // A day already trained shows its session without 换动作 (Bo 2026-10-27).
+  const details = (template: PlanVersion['templates'][number], trained = false) => (
     <SessionItems
       template={template}
       locale={language}
       name={exerciseName}
       hideDistance={id => id === EXERCISE_IDS.walking && /室内|indoor/i.test(template.name)}
       actions={
-        current && exerciseActions ? (item, index) => exerciseActions(template.id, index, item.exerciseId) : undefined
+        current && exerciseActions
+          ? (item, index) => exerciseActions(template.id, index, item.exerciseId, !trained)
+          : undefined
       }
       onExercise={(_id, index, element) => onExercise(version, template.id, index, element)}
     />

@@ -7,6 +7,7 @@ import { repository } from '../../../persistence/repository';
 import { Button, Chip } from '../../components/common';
 import { useMainline } from '../../mainline/context';
 import { HomeExit } from '../../components/HomeExit';
+import { BackButton } from '../../components/BackButton';
 import '../plan/week-plan.css';
 import zh from '../../../i18n/features/training/activity.zh.json';
 import en from '../../../i18n/features/training/activity.en.json';
@@ -35,6 +36,7 @@ export function ActivityPage() {
   return (
     <main>
       <nav className="v9-plan-nav" aria-label={t.title}>
+        <BackButton locale={c.locale} onFallback={() => c.navigate('/')} />
         <HomeExit
           locale={c.locale}
           dirty={!!type || !!note.trim() || !!customName.trim()}

@@ -6,7 +6,7 @@ export default {
   history: 'View previous versions',
   library: 'Exercise library',
   chat: 'Talk with Yaya about changes',
-  back: 'Back',
+  back: '‹ Back',
   current: 'Current',
   readOnly: 'Read only',
   view: 'View plan',
@@ -23,7 +23,7 @@ export default {
     onboard: 'Initial plan',
     coach_change: 'Adjusted with Yaya',
     review_suggestion: 'Review adjustment',
-    manual: 'Manually adjusted',
+    manual: 'Your own change',
     migrated: 'Kept from a previous plan',
   },
 };

@@ -25,6 +25,8 @@ import onboardingEn from '../../src/i18n/features/onboarding/en.json';
 import { goalFromText } from '../../src/application/engine-profile';
 import { basicProposal } from '../../src/application/workflow/plan-setup';
 import { exercises } from '../../src/catalog/exercises';
+import { engineMetricMatches } from '../../src/coach/engine-template-validation';
+import { getExerciseTags } from '../../src/catalog/exercise-tags';
 
 const r = new Rules();
 const slotOrder: string[] = r.get('week.day.yoga').slots.map((slot: { family: string }) => slot.family);
@@ -294,5 +296,34 @@ describe('yoga goal', () => {
       expect(last.position).not.toContain('supine');
       expect(['rest', 'centering']).toContain(last.yoga_family);
     }
+  });
+
+  it('plans reps-counted flows in reps and passes the plan-edit metric check', () => {
+    for (const level of ['beginner', 'intermediate'] as const)
+      for (const days of [2, 3, 6]) {
+        const p = baseProfile({ goal: 'yoga', daysPerWeek: days, sessionMinutes: 45, level });
+        for (const t of generatePlan(p).templates)
+          for (const item of t.items) {
+            const e = r.byExercise.get(item.exerciseId)!;
+            if (e.yoga_family)
+              expect(item.target.metricType, e.slug).toBe(e.metricType === 'reps' ? 'reps' : 'duration');
+            expect(engineMetricMatches({ engineProfile: p } as never, item as never), e.slug).toBe(true);
+          }
+      }
+    // Plans saved before this fix hold the same flows in seconds; edits to them still pass.
+    const p = baseProfile({ goal: 'yoga' }),
+      flow = [...r.byExercise.values()].find(e => e.slug === 'downward-dog-to-plank')!;
+    expect(
+      engineMetricMatches(
+        { engineProfile: p } as never,
+        {
+          exerciseId: flow.id,
+          sets: 2,
+          target: { metricType: 'duration', durationSeconds: 60 },
+          prescription: { pattern: flow.primary_pattern, block: 'warmup', rir: [0, 0], restSeconds: 15 },
+        } as never,
+      ),
+    ).toBe(true);
+    expect(getExerciseTags(flow.id).goals).toContain('yoga');
   });
 });

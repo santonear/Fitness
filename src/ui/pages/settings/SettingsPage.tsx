@@ -63,10 +63,11 @@ function Row({
     </li>
   );
 }
-function Group({ title, children }: { title: string; children: ReactNode }) {
+/** `untitled`: a group of one row named like the row shows no heading of its own. */
+function Group({ title, untitled = false, children }: { title: string; untitled?: boolean; children: ReactNode }) {
   return (
     <section className="v9-settings-group" aria-label={title}>
-      <h2>{title}</h2>
+      {!untitled && <h2>{title}</h2>}
       <Card variant="raised" padding="none" as="div">
         <ul className="v9-rows">{children}</ul>
       </Card>
@@ -181,7 +182,7 @@ export function SettingsPage() {
         </Card>
       </section>
       {nutritionEntry && (
-        <Group title={me.nutrition}>
+        <Group title={me.nutrition} untitled>
           <Row
             label={me.nutrition}
             hint={nutritionEnabled || hasNutrition ? `${me.nutritionRow} · ${me.nutritionRecords}` : me.nutritionRow}

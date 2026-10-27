@@ -1,4 +1,4 @@
-import { workoutSeconds, trainingMinutes } from '../../../application/workout-duration';
+import { activeWorkoutSeconds, trainingMinutes } from '../../../application/workout-duration';
 import { TEXT_LIMITS, cleanText, textIssue } from '../../../domain/input-guard';
 import { FieldIssue } from '../../components/common/FieldIssue';
 import { fillLine, yayaThemeTone, yayaV5 } from '../../../i18n/features/coach/yaya-v5';
@@ -94,7 +94,7 @@ export function FinishPage() {
     complete = done === active.plannedSetCount;
   const copy = locale === 'en' ? en : zh;
   const noteIssue = textIssue(feedback.note, TEXT_LIMITS.long);
-  const seconds = workoutSeconds(active.startedAt, endedAt),
+  const seconds = activeWorkoutSeconds(active, endedAt),
     elapsed = trainingMinutes(seconds);
   const ordinal = facts
     ? facts.movementCount - Object.values(facts.activityCounts).reduce((sum, count) => sum + count, 0) + 1

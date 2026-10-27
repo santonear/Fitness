@@ -212,7 +212,8 @@ describe('V8 wave 0 contracts', () => {
       activities: [],
       bodyWeights: [],
     });
-    expect(result).toMatchObject({ complete: 0, partial: 1, notStarted: 1, movementCount: 1, trainingSeconds: 1800 });
+    // 1 minute to the set, then 29 idle minutes count as 10 (idle gaps are capped, Bo 2026-10-27).
+    expect(result).toMatchObject({ complete: 0, partial: 1, notStarted: 1, movementCount: 1, trainingSeconds: 660 });
     expect(result.improvements).toEqual([{ exerciseId: 'squat', metric: 'reps', previous: 8, current: 10 }]);
     const easy: WorkoutRecord = {
       ...record('easy-zero', 'not_started', '2026-10-07', 100),

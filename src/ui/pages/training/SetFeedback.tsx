@@ -83,23 +83,29 @@ export function SetFeedback({
           </Chip>
         ))}
       </div>
-      <details>
-        <summary>{t.rir}</summary>
-        <input
-          aria-label={t.rir}
-          type="number"
-          min="0"
-          max="10"
-          step="1"
-          value={Number.isFinite(rir) ? rir : ''}
-          onChange={event => setRir(event.target.value === '' ? undefined : event.target.valueAsNumber)}
-        />
-        {latest && latest.effort !== 'discomfort' && (
-          <Button disabled={!validRir || rir === undefined || latest.rir === rir} onClick={() => append(latest.effort)}>
-            {t.record}
-          </Button>
-        )}
-      </details>
+      {/* Reps in reserve only means something for counted reps, not for a timed hold. */}
+      {fact.reps !== undefined && (
+        <details>
+          <summary>{t.rir}</summary>
+          <input
+            aria-label={t.rir}
+            type="number"
+            min="0"
+            max="10"
+            step="1"
+            value={Number.isFinite(rir) ? rir : ''}
+            onChange={event => setRir(event.target.value === '' ? undefined : event.target.valueAsNumber)}
+          />
+          {latest && latest.effort !== 'discomfort' && (
+            <Button
+              disabled={!validRir || rir === undefined || latest.rir === rir}
+              onClick={() => append(latest.effort)}
+            >
+              {t.record}
+            </Button>
+          )}
+        </details>
+      )}
       {(discomfort || promptPainAreas.length > 0) && (
         <div className="wk-pain">
           {!painAllowed && onHealthSettings && (

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { AnatomyMap, PrimaryButton, SegmentedTabs } from '../../components/kit';
 import { sessionMuscleFocus, weeklyMuscleLoad } from '../../../application/rules/plan-upgrade';
@@ -10,7 +10,7 @@ import { planPagesCopy } from '../../../i18n/features/plan-upgrade/pages';
 import { fillLine, yayaV5 } from '../../../i18n/features/coach/yaya-v5';
 import { steadyStarterCopy } from '../../../i18n/features/coach/yaya-steady-starter';
 import { yayaTips } from '../../../i18n/features/coach/yaya-tips';
-import { useMainline } from '../../mainline/context';
+import { useMainline, workflow } from '../../mainline/context';
 import type { FocusState } from '../home/NowPanel';
 import { figureSex, figureShape, shownFocus, weekSetEntries } from './logic';
 import { lastFigureSex, setLastFigureSex } from './prefs';
@@ -86,12 +86,33 @@ export function FocusPage() {
   const [sex, setSex] = useState(() => figureSex(values?.biologicalSex, lastFigureSex()));
   const [picked, setPicked] = useState<string>();
   const [mapRef, width] = useWidth<HTMLDivElement>();
+  // A yoga session for a picked time shows the poses it will start with.
+  const [fitted, setFitted] = useState<FocusState>();
+  useEffect(() => {
+    if (!state?.templateId || !state.yogaMinutes) return;
+    let alive = true;
+    void workflow
+      .nextTargetPreview(state.templateId, state.yogaMinutes)
+      .then(preview => {
+        if (alive && preview.template)
+          setFitted({
+            ...state,
+            exerciseIds: [...new Set(preview.template.items.map(item => item.exerciseId))],
+            minutes: preview.template.estimatedMinutes,
+          });
+      })
+      .catch(() => undefined);
+    return () => {
+      alive = false;
+    };
+  }, [state?.templateId, state?.yogaMinutes]);
   if (!state?.exerciseIds?.length) return <Navigate to="/" replace />;
-  const focus = sessionMuscleFocus(state.exerciseIds);
+  const shownState = fitted ?? state;
+  const focus = sessionMuscleFocus(shownState.exerciseIds);
   const shown = shownFocus(focus, picked);
   const name = (id: string) => exercises.find(exercise => exercise.id === id)?.name[locale] ?? id;
   const go = () => {
-    if (state.templateId) void start(state.templateId);
+    if (state.templateId) void start(state.templateId, undefined, state.yogaMinutes);
     else void startManual(state.exerciseIds);
   };
   return (
@@ -134,7 +155,7 @@ export function FocusPage() {
       </div>
       {tip && state && <ScanTip key={`${data?.version?.id}:${tip.kind}`} tip={tip} state={state} />}
       <ol className="pu-cards">
-        {state.exerciseIds.map((id, index) => (
+        {shownState.exerciseIds.map((id, index) => (
           <li key={id}>
             <button
               type="button"
@@ -154,7 +175,7 @@ export function FocusPage() {
         <p className="pu-line">{steadyStarterCopy[locale].steadyChair}</p>
       )}
       <PrimaryButton block disabled={busy || !!data?.active} onClick={go}>
-        {fillLine(c.start, { minutes: state.minutes })}
+        {fillLine(c.start, { minutes: shownState.minutes })}
       </PrimaryButton>
       <PrimaryButton tone="text" size="sm" onClick={() => navigate('/')}>
         {c.back}

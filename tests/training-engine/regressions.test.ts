@@ -3,6 +3,7 @@ import {
   adjustToday,
   generatePlan,
   getEligibleExercises,
+  modifyPlan,
   nextTargets,
   substitute,
   validatePlan,
@@ -10,7 +11,7 @@ import {
 import type { PlannedItem, WorkoutRecord } from '../../src/domain/v8/contracts';
 import type { EngineProfile, Pattern } from '../../src/engine/contracts';
 import index from '../../src/engine/generated/exercise-index.json';
-import { baseProfile, equipmentScenarios } from '../../tools/eval/training-engine-profiles';
+import { baseProfile, equipmentScenarios, sampledProfiles } from '../../tools/eval/training-engine-profiles';
 
 const facts = new Map(index.exercises.map(row => [row.id, row]));
 const profile = () =>
@@ -150,5 +151,23 @@ describe('training engine required regressions', () => {
       broken = structuredClone(plan);
     broken.templates[0].items[0].sets = 100;
     expect(validatePlan(broken, p).some(issue => issue.severity === 'error')).toBe(true);
+  });
+
+  it('shortens a long session for little time today instead of giving the whole session back', () => {
+    for (const goal of ['health', 'muscle'] as const) {
+      const p = baseProfile({ goal, daysPerWeek: 3, sessionMinutes: 45 }),
+        plan = generatePlan(p),
+        template = plan.templates[0],
+        result = adjustToday(template, p, { minutes: 15 });
+      expect(result.noop, goal).toBe(false);
+      expect(result.value.estimatedMinutes).toBeLessThan(template.estimatedMinutes - 10);
+    }
+  });
+
+  it('judges a plan moved to more days per week by the new number of days', () => {
+    // An older adult who trains once a week, from the pinned sample (frailty ramps depend on the days per week).
+    const p = { ...sampledProfiles(40)[13], asOfDate: '2026-10-15' },
+      result = modifyPlan(generatePlan(p), p, [{ op: 'frequency', daysPerWeek: 5 }]);
+    expect(result.value.quality?.status).not.toBe('unavailable');
   });
 });

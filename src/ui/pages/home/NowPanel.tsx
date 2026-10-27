@@ -51,6 +51,8 @@ export interface FocusState {
   exerciseIds: string[];
   minutes: number;
   templateId?: string;
+  /** A time picked for a yoga session: its own poses, shortened to fit when it starts. */
+  yogaMinutes?: number;
 }
 
 /** Rules-built session for the chosen minutes, drawn from the plan's (already safety-filtered) exercises; falls back to the suggested plan session. */
@@ -91,7 +93,7 @@ export function useNowSession(
     ],
   );
   const yoga = !!template && isYogaSession(template);
-  const session: (NowSession & { templateId?: string }) | undefined = useMemo(() => {
+  const session: (NowSession & { templateId?: string; yogaMinutes?: number }) | undefined = useMemo(() => {
     const planned = () => {
       const ids = [...new Set(template!.items.map(item => item.exerciseId))];
       return {
@@ -103,7 +105,10 @@ export function useNowSession(
     };
     // The panel opens on the plan's own session; another time, B plan or scene asks the rules for a rebuilt one.
     // A yoga session keeps its own pose sequence at any time choice; scenes and B plans still rebuild.
-    if ((options.preferTemplate || yoga) && template && !request.scene && !request.variant) return planned();
+    if ((options.preferTemplate || yoga) && template && !request.scene && !request.variant)
+      return yoga && !options.preferTemplate
+        ? { ...planned(), minutes: request.minutes, yogaMinutes: request.minutes }
+        : planned();
     if (built?.exerciseIds.length) return built;
     if (!template || request.scene) return undefined;
     return planned();
@@ -207,6 +212,7 @@ export function NowPanel({
         exerciseIds: session.exerciseIds,
         minutes: session.templateId ? session.minutes : request.minutes,
         ...(session.templateId ? { templateId: session.templateId } : {}),
+        ...(session.yogaMinutes ? { yogaMinutes: session.yogaMinutes } : {}),
       });
   };
   const planStart = (data?.versions ?? [])
@@ -232,7 +238,8 @@ export function NowPanel({
             },
             locale,
           )
-        : nowCoachLine(shownMinutes, session?.exerciseIds.length ?? 0, weekLoads, locale, focus.primary);
+        : // Only the groups the dial names (its first two), so 芽芽 and the dial talk about the same muscles.
+          nowCoachLine(shownMinutes, session?.exerciseIds.length ?? 0, weekLoads, locale, focus.primary.slice(0, 2));
   return (
     <>
       {welcome && (

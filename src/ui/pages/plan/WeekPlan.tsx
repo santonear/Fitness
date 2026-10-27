@@ -46,7 +46,8 @@ export interface WeekPlanProps {
   /** Highlighted session (next to train). */
   focusId?: string;
   /** Per-session expandable content (exercise list). */
-  details?: (template: SessionTemplate) => ReactNode;
+  /** `trained`: that day is already done, so the session is shown without edit tools. */
+  details?: (template: SessionTemplate, trained?: boolean) => ReactNode;
   /** Plan start date and today's local date (YYYY-MM-DD): the calendar then shows real dates from the start. */
   startDate?: string;
   todayDate?: string;
@@ -170,7 +171,7 @@ export function WeekPlan({ plan, locale, today, done = {}, focusId, details, sta
                   >
                     {head}
                   </summary>
-                  <div className="v9-session-details">{details(template)}</div>
+                  <div className="v9-session-details">{details(template, done[session.day] === 'done')}</div>
                 </details>
               ) : (
                 <div className="v9-session-row">{head}</div>

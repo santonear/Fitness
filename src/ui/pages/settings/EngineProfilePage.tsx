@@ -19,6 +19,7 @@ import { repository } from '../../../persistence/repository';
 import { v8CoachProfileSchema } from '../../../domain/schemas';
 import { useMainline, workflow } from '../../mainline/context';
 import { Button } from '../../components/common';
+import { BackButton } from '../../components/BackButton';
 
 function screeningDraft(profile: EngineProfileFields, requiredAt?: string): EngineProfileFields {
   if (
@@ -52,6 +53,7 @@ export function EngineProfilePage() {
     newPhase = requestedPostpartumPhase(fields.population ?? { kind: 'general' });
   return (
     <main>
+      <BackButton locale={c.locale} onFallback={() => c.navigate('/settings')} />
       <CardiacClearancePanel />
       <PostpartumSafetyPanel />
       <PregnancySafetyControls />

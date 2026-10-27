@@ -15,6 +15,7 @@ import { ExerciseGuidePanel } from '../../components/ExerciseGuideLazy';
 import { PrimaryButton, SegmentedTabs, Yaya } from '../../components/kit';
 import { equipmentLabel } from '../../../catalog/taxonomy';
 import { HomeExit } from '../../components/HomeExit';
+import { BackButton } from '../../components/BackButton';
 import { MonthPlan } from '../plan/MonthPlan';
 import { planCalendarCopy } from '../../../i18n/features/plan/calendar';
 import { trainingDaysCopy } from '../../../i18n/features/plan/training-days';
@@ -125,6 +126,7 @@ export function PlanDraftPage({
       <main className="v9-plan-screen" lang={locale} aria-busy={busy}>
         {onHome && (
           <nav className="v9-plan-nav" aria-label={d.draftCalendar}>
+            <BackButton locale={locale} onFallback={onHome} />
             <HomeExit locale={locale} dirty disabled={busy} onLeave={onHome} />
           </nav>
         )}

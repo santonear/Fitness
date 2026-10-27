@@ -3,7 +3,7 @@ import { EQUIPMENT, equipmentLabel } from '../../../../catalog/taxonomy';
 import type { WorkoutRecord } from '../../../../domain/v8/contracts';
 
 export const places = ['home', 'gym', 'outdoor'] as const;
-export const goals = ['muscle', 'fat_loss', 'fitness', 'mobility', 'rehab'] as const;
+export const goals = ['muscle', 'fat_loss', 'fitness', 'mobility', 'yoga', 'rehab'] as const;
 export const primaryEquipment = [
   'none',
   'yoga-mat',

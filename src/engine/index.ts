@@ -1,5 +1,5 @@
 import { checkHistoryChanges } from './history-checks';
-import type { EngineApi, EnginePlan, EngineProfile } from './contracts';
+import type { EngineApi, EngineChange, EnginePlan, EngineProfile } from './contracts';
 import { Rules } from './data';
 import { generatePlan as pipeline, createContext, planQuality, retainEnvironmentDraft } from './pipeline';
 import { adjust, modify, substituteItem } from './operations';
@@ -20,9 +20,14 @@ function assess(plan: EnginePlan, profile: EngineProfile): EnginePlan {
 export const generatePlan: EngineApi['generatePlan'] = (profile, opts) => pipeline(profile, { ...opts, rules });
 export const adjustToday: EngineApi['adjustToday'] = (template, profile, request) =>
   adjust(template, profile, request, rules);
+/** The profile a changed plan is judged by: a new number of days per week replaces the old one. */
+export function profileAfter(profile: EngineProfile, changes: EngineChange[]): EngineProfile {
+  const days = changes.filter(change => change.op === 'frequency' && change.daysPerWeek).at(-1)?.daysPerWeek;
+  return days ? { ...profile, daysPerWeek: days } : profile;
+}
 export const modifyPlan: EngineApi['modifyPlan'] = (plan, profile, changes) => {
   const out = modify(plan, profile, changes, rules);
-  assess(out.value, profile);
+  assess(out.value, profileAfter(profile, changes));
   return out;
 };
 export const substitute: EngineApi['substitute'] = (item, profile, reason) =>

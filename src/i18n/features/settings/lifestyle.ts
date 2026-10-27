@@ -21,7 +21,7 @@ export const lifestyleCopy = {
     confirm: '确认导入',
     result: '已导入 {added} 项，跳过 {skipped} 项重复记录。',
     invalid: '无法读取此文件。请选择包含完整时间的 GPX 1.1 文件（最多 5MB）。',
-    back: '返回',
+    back: '‹ 返回',
     dietConsent: '本次发送饮食记录（可选）',
     dietBoundary:
       '你记录了{days}天饮食。这些只是你主动记录的部分，不能代表完整摄入。我们先结合训练记录看看；是否调整，由你决定。',
@@ -57,7 +57,7 @@ export const lifestyleCopy = {
     confirm: 'Confirm import',
     result: 'Imported {added}; skipped {skipped} duplicates.',
     invalid: 'Unable to read this file. Choose a GPX 1.1 file with complete timestamps (up to 5MB).',
-    back: 'Back',
+    back: '‹ Back',
     dietConsent: 'Send food records this time (optional)',
     dietBoundary:
       'You recorded food on {days} days. These are only the parts you chose to record, not your complete intake. We can look at them alongside your training records; you decide whether to make a change.',

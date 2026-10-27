@@ -27,7 +27,7 @@ export const homePanelCopy = {
     minute: (m: number) => `${m} 分钟`,
     start: '开始',
     unit: '分钟',
-    groupsWeek: '本周肌群',
+    groupsWeek: '本周达标肌群',
     fillHere: '今天补这里',
     todayTime: '今天的时间',
     reached: (n: number, total: number) => `本周 ${n} / ${total} 达标`,
@@ -42,7 +42,7 @@ export const homePanelCopy = {
     minute: (m: number) => `${m} minutes`,
     start: 'Start',
     unit: 'min',
-    groupsWeek: 'Muscle groups this week',
+    groupsWeek: 'Muscle groups on target this week',
     fillHere: 'Fill in today',
     todayTime: "Today's time",
     reached: (n: number, total: number) => `${n} / ${total} on target this week`,
@@ -344,6 +344,8 @@ export function HomePanel({
             <span className="v9-home-small">{t.unit}</span>
           </div>
         </div>
+        {/* Time and 开始 sit right under the dial, so the sticky 开始 never covers the muscle summary below. */}
+        {actions}
         <div className="v9-home-body">
           {map(150)}
           <div className="v9-home-body-text">
@@ -352,7 +354,6 @@ export function HomePanel({
             {weekLoads.length > 0 && <span className="v9-home-small">{t.reached(reached, weekLoads.length)}</span>}
           </div>
         </div>
-        {actions}
       </Card>
     );
   } else if (variant === 'twin') {
@@ -416,6 +417,7 @@ export function HomePanel({
             </span>
           </div>
         </div>
+        {actions}
         <Card padding="sm" className="v9-home-body">
           {map(150)}
           <div className="v9-home-body-text">
@@ -429,7 +431,6 @@ export function HomePanel({
             <FocusList groups={primary} locale={locale} />
           </div>
         </Card>
-        {actions}
       </>
     );
   }

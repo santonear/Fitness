@@ -128,7 +128,7 @@ export function TrialApplicationForm({
           {zh ? '提交申请' : 'Submit application'}
         </PrimaryButton>
         <PrimaryButton tone="quiet" size="md" type="button" onClick={() => setForm(false)}>
-          {zh ? '返回' : 'Back'}
+          {zh ? '‹ 返回' : '‹ Back'}
         </PrimaryButton>
       </fieldset>
     </form>
