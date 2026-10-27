@@ -18,6 +18,7 @@ import { planStartDate, weekSchedule, weekdays, type Weekday } from './plan-pres
 import { sessionForDate } from './training-dates';
 import { activeWorkoutSeconds, trainingMinutes } from './workout-duration';
 import { planProposal } from './review/suggest';
+import { fillLine, yayaV5, yogaStageNames } from '../i18n/features/coach/yaya-v5';
 
 type Workout = Pick<
   WorkoutRecord,
@@ -430,4 +431,43 @@ export function goalCheckDue(planFirstStart: string | undefined, asked: string |
     .sort()
     .at(-1);
   return !!anchor && daysBetween(anchor, today) >= GOAL_CHECK_DAYS;
+}
+
+// ---------------------------------------------------------------- 回顾: the week's yoga
+
+/** 芽芽 on the week's yoga sessions (count, minutes, where a half-done one could end); undefined without yoga. */
+export function yogaWeekLine(
+  workouts: readonly Workout[],
+  from: string,
+  to: string,
+  locale: 'zh' | 'en',
+): string | undefined {
+  const yoga = workouts
+    .filter(
+      w =>
+        counted(w) &&
+        w.localDate >= from &&
+        w.localDate <= to &&
+        !!w.templateSnapshot &&
+        isYogaSession(w.templateSnapshot),
+    )
+    .sort((a, b) => a.startedAt.localeCompare(b.startedAt));
+  if (!yoga.length) return undefined;
+  const y = yayaV5[locale],
+    minutes = yoga.reduce((sum, w) => sum + trainingMinutes(activeWorkoutSeconds(w)), 0);
+  const lines = [fillLine(y.yogaWeek, { count: yoga.length, minutes })];
+  if (yoga.length >= 2) lines.push(y.yogaWeekSteady);
+  const index = yoga.findIndex(w => w.status === 'partial'),
+    stage = index >= 0 ? stoppedStage(yoga[index]!) : undefined;
+  if (stage) lines.push(fillLine(y.yogaWeekPartial, { number: index + 1, stage: yogaStageNames[locale][stage] }));
+  return lines.join(locale === 'zh' ? '' : ' ');
+}
+
+/** The stage of the last pose done in a yoga session that got past its first half but not to the end. */
+function stoppedStage(w: Workout): keyof (typeof yogaStageNames)['zh'] | undefined {
+  const items = w.templateSnapshot!.items,
+    last = Math.max(-1, ...w.sets.map(set => set.itemIndex));
+  if (last + 1 < Math.ceil(items.length / 2) || last >= items.length - 1) return undefined;
+  const stage = /^yoga_([a-z]+)/.exec(items[last]?.prescription?.sourcePosition ?? '')?.[1];
+  return stage && stage in yogaStageNames.zh ? (stage as keyof (typeof yogaStageNames)['zh']) : undefined;
 }

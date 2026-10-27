@@ -669,3 +669,10 @@ Bo 已定版 V9 设计并授权推进；计时规则按 Bo 当日决定改写（
 - 决定：开始前检查时，减量只缩短的那一节不算时长不足（引擎检查本身不变）；换进来的动作避开本节已有动作，超出单次肌群上限先减组再移出；开始只检查今天这一节；瑜伽按选的时间缩短；时间不够时给最接近的短一节；改天数按新天数检查；时间与“开始”移到仪表下方；芽芽只说仪表上的两个部位；“本周肌群”改为“本周达标肌群”；分段选项至少 44px 宽。
 - 理由：不改完成记录，不改计划旧版本；只在用户已给出的反馈范围内减量；芽芽话术未改。
 - 涉及文件：src/engine/{index,progression,progression/finalize,operations/adjust,operations/modify}.ts、src/application/{engine-plan,workflow/workout-session}.ts、src/ui/mainline/context.tsx、src/ui/pages/{home/NowPanel,plan-upgrade/FocusPage}.tsx、src/ui/components/kit/{HomePanel.tsx,kit.css}、tests/training-engine/{progression-start,regressions}.test.ts。
+
+## 2026-10-27 · 芽芽瑜伽话术（规范 V9.1.16 / V9.23）
+
+- 情况：瑜伽目标上线后芽芽一直用通用话术；Bo 14:19Z 回复“话术可以”，确认 5 句新话术和 4 处现有说法的修改。
+- 决定：逐字实现（见规范 V9.23“芽芽瑜伽话术”）。未定细节按保守处理：“加了 N 天全身力量”按计划里非瑜伽课的数量填（5–6 天为 2）；体式不适那句只在婴儿式对该用户可用时出现，并只是预选，仍由用户点确认；周回顾“后半段没练上”只在一节练过一半、没练到最后时说，阶段名取最后完成体式所在的阶段（静心、热身、拜日式、站立体式、平衡、核心、手臂支撑、倒置、后弯、扭转、开髋、前屈、仰卧），基础瑜伽课不说阶段。
+- 理由：不编造数据；芽芽不替用户换动作；完成记录不改。
+- 涉及文件：src/i18n/features/coach/yaya-v5.ts、src/i18n/features/training/player.{zh,en}.json、src/application/{yaya-tips,workflow/plan-setup}.ts、src/engine/notices.ts、src/ui/pages/{onboarding/PlanDraftPage,home/NowPanel,training/FinishPage,training/workout/workout-screen,training/workout/workout-body,review/ReviewPage}.tsx、tests/unit/yaya-tips.test.ts、tests/training-engine/yoga.test.ts、tests/e2e/yoga-goal.spec.ts。

@@ -60,8 +60,8 @@ export function basicProposal(profile: CoachProfile, locale = 'zh') {
     templates: selectedTemplates,
     reasons: [
       locale === 'en'
-        ? `Start with ${profile.weeklyTarget} sessions a week, up to 4 sets per exercise; use the estimated duration shown for each session.`
-        : `每周安排 ${profile.weeklyTarget} 次，每个动作最多 4 组，以训练单显示的估算时长为准。`,
+        ? `Start with ${profile.weeklyTarget} sessions a week, ${yoga ? 'holding each pose for about 30 seconds and resting at the end' : 'up to 4 sets per exercise; use the estimated duration shown for each session'}.`
+        : `每周安排 ${profile.weeklyTarget} 次，${yoga ? '每个体式保持 30 秒左右，最后放松休息' : '每个动作最多 4 组，以训练单显示的估算时长为准'}。`,
       [
         profile.cautions.length ? copy.adapted : copy.basicReason,
         shorter ? copy.shorter.replace('{minutes}', String(shorter.estimatedMinutes)) : '',

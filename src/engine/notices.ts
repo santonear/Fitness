@@ -94,7 +94,11 @@ export function buildNotices(score: ScoreResult, gate: GateOutcome, ctx: Pipelin
       key = 'engine.copy.target_aerobic';
     if (item.id === 'week.coverage.patterns' && equipmentLimited) key = 'engine.copy.target_coverage';
     if (item.id === 'week.recovery.spacing') key = 'engine.copy.target_spacing';
-    if (item.id === 'session.cooldown.stretch') key = 'session.copy.short_stretch_target';
+    if (item.id === 'session.cooldown.stretch') {
+      // A yoga session stretches all through, so "time is short, stretch the main parts" does not apply.
+      if (ctx.profile?.goal === 'yoga') continue;
+      key = 'session.copy.short_stretch_target';
+    }
     if (key) add(key, impact);
     else {
       const registered = Object.entries(ctx.rules.data.copy).find(([, copy]) => copy.sourceRuleId === item.id);

@@ -16,7 +16,7 @@ import { coachReminderService } from '../../../application/coach-reminders';
 import type { SessionTemplate, WorkoutRecord } from '../../../domain/v8/contracts';
 import type { CautionJoint } from '../../../engine/contracts';
 import { isYogaSession } from '../../../engine/yoga-session';
-import { yayaV5 } from '../../../i18n/features/coach/yaya-v5';
+import { fillLine, yayaV5 } from '../../../i18n/features/coach/yaya-v5';
 import { planPagesCopy } from '../../../i18n/features/plan-upgrade/pages';
 import {
   figureSex,
@@ -29,7 +29,7 @@ import {
   weekSetEntries,
 } from '../plan-upgrade/logic';
 import { steadyStarterCopy } from '../../../i18n/features/coach/yaya-steady-starter';
-import { planStartDate } from '../../../application/plan-presentation';
+import { planStartDate, yogaEndsLying } from '../../../application/plan-presentation';
 import { DEFAULT_TIME_ZONE } from '../../../domain/local-date';
 import { intention, lastFigureSex, outlineShown, setIntention } from '../plan-upgrade/prefs';
 import { useMainline } from '../../mainline/context';
@@ -226,20 +226,24 @@ export function NowPanel({
       : y.fragmentHonest
     : variant !== 'standard'
       ? y.bPlan
-      : steady
-        ? steadyLine(
-            {
-              ...(planStart ? { planStart } : {}),
-              today,
-              trained: (data?.workouts ?? []).some(
-                w => (w.status === 'complete' || w.status === 'partial') && (!planStart || w.localDate >= planStart),
-              ),
-              minutes: session?.minutes ?? minutes,
-            },
-            locale,
-          )
-        : // Only the groups the dial names (its first two), so 芽芽 and the dial talk about the same muscles.
-          nowCoachLine(shownMinutes, session?.exerciseIds.length ?? 0, weekLoads, locale, focus.primary.slice(0, 2));
+      : template && isYogaSession(template)
+        ? fillLine(yogaEndsLying(template) ? y.yogaToday : y.yogaTodaySeated, {
+            minutes: session?.minutes ?? shownMinutes,
+          })
+        : steady
+          ? steadyLine(
+              {
+                ...(planStart ? { planStart } : {}),
+                today,
+                trained: (data?.workouts ?? []).some(
+                  w => (w.status === 'complete' || w.status === 'partial') && (!planStart || w.localDate >= planStart),
+                ),
+                minutes: session?.minutes ?? minutes,
+              },
+              locale,
+            )
+          : // Only the groups the dial names (its first two), so 芽芽 and the dial talk about the same muscles.
+            nowCoachLine(shownMinutes, session?.exerciseIds.length ?? 0, weekLoads, locale, focus.primary.slice(0, 2));
   return (
     <>
       {welcome && (

@@ -1,6 +1,12 @@
 import { answerText } from '../../../application/preset-text';
 import { engineDisplayNotices } from '../../../application/engine-presentation';
-import { localDateIn, planReasons, startDateLabel, weekdayIndex } from '../../../application/plan-presentation';
+import {
+  localDateIn,
+  planReasons,
+  startDateLabel,
+  weekdayIndex,
+  yogaEndsLying,
+} from '../../../application/plan-presentation';
 import { StartDatePicker } from '../../components/StartDatePicker';
 import type { EnginePlan } from '../../../engine/contracts';
 import { planLifecycleCopy } from '../../../i18n/features/plan/lifecycle';
@@ -20,6 +26,8 @@ import { MonthPlan } from '../plan/MonthPlan';
 import { planCalendarCopy } from '../../../i18n/features/plan/calendar';
 import { trainingDaysCopy } from '../../../i18n/features/plan/training-days';
 import { fill } from '../../../i18n/features/onboarding/entry';
+import { fillLine, yayaV5 } from '../../../i18n/features/coach/yaya-v5';
+import { isYogaSession } from '../../../engine/yoga-session';
 import { WeekPlan, PlanReasons, PlanStops, PlanTip, SessionItems } from '../plan/WeekPlan';
 import './onboarding.css';
 
@@ -76,6 +84,9 @@ export function PlanDraftPage({
 }: PlanDraftPageProps) {
   const t = planViewCopy[locale],
     plan = candidate.proposal;
+  // 芽芽 on a yoga plan: how a session runs, and the strength days added at 3+ days a week.
+  const yogaDays = plan.templates.filter(template => isYogaSession(template)).length,
+    strengthDays = plan.templates.length - yogaDays;
   const [detail, setDetail] = useState<string>(),
     trigger = useRef<HTMLElement | null>(null),
     heading = useRef<HTMLHeadingElement>(null);
@@ -140,6 +151,18 @@ export function PlanDraftPage({
           <Yaya pose="head" size={30} mode="disc" alt="" float={false} />
           <span>{t.building.ready}</span>
         </p>
+        {yogaDays > 0 && (
+          <p className="v9-plan-line" data-testid="draft-yoga">
+            {
+              yayaV5[locale][
+                plan.templates.filter(template => isYogaSession(template)).every(yogaEndsLying)
+                  ? 'yogaDraft'
+                  : 'yogaDraftSeated'
+              ]
+            }
+            {strengthDays > 0 && ` ${fillLine(yayaV5[locale].yogaStrength, { count: strengthDays })}`}
+          </p>
+        )}
         <PlanStops plan={candidate.enginePlan} locale={locale} />
         {days.length > 0 ? (
           <p className="v9-plan-line" data-testid="draft-days">

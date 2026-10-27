@@ -8,6 +8,7 @@ import { format } from '../../../mainline/context';
 import { holdStart, holdPause, holdRemaining, restRemaining, restDone, restExtend, restTotal } from '../timer-logic';
 import { ExerciseMediaHero, focusIfLost } from './workout-parts';
 import type { WorkoutModel } from './workout-model';
+import { isYogaSession } from '../../../../engine/yoga-session';
 
 /** The rest countdown or the current exercise, below the player header. */
 export function workoutBody(m: WorkoutModel) {
@@ -77,7 +78,7 @@ export function workoutBody(m: WorkoutModel) {
             <h1 id="wk-rest-title" className="v9-display" tabIndex={-1} ref={focusIfLost}>
               {p.restTitle}
             </h1>
-            <p className="wk-muted">{p.restHint}</p>
+            <p className="wk-muted">{template && isYogaSession(template) ? p.restHintYoga : p.restHint}</p>
           </div>
         </div>
         <div className="wk-rest-ring">
