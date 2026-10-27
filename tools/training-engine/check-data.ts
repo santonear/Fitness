@@ -11,10 +11,13 @@ const previewApprovedIds = new Set([
   'session.copy.intentional_short',
   'pregnancy.inactive.ramp',
   'pregnancy.copy.long_session',
+  // Bo 2026-10-26: yoga as its own goal.
+  'goal.params.yoga',
+  'week.day.yoga',
 ]);
 const externalRules = rules.rules.filter(rule => !rule.sources.includes('INTERNAL:codex-prompt-training-engine'));
 assert.equal(externalRules.filter(rule => !previewApprovedIds.has(rule.id)).length, 327);
-assert.equal(externalRules.length, 331);
+assert.equal(externalRules.length, 333);
 for (const id of previewApprovedIds) assert.equal(externalRules.filter(rule => rule.id === id).length, 1);
 assert.equal(rules.rules.find(rule => rule.id === 'duration.cardio.cap')?.severity, 'mechanic');
 assert.equal(rules.rules.find(rule => rule.id === 'session.copy.intentional_short')?.severity, 'copy');

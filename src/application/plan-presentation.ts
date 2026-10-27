@@ -3,6 +3,7 @@ import type { Pattern } from '../engine/contracts';
 import { Rules } from '../engine/data';
 import { exerciseBodyPart } from '../catalog/registry';
 import { addDays, todayIn } from '../domain/local-date';
+import { isYogaSession } from '../engine/yoga-session';
 
 /**
  * Read-only presentation of a plan (V9 plan/home screens): session names derived from
@@ -12,7 +13,7 @@ export type Weekday = NonNullable<SessionTemplate['weekday']>;
 export const weekdays: readonly Weekday[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 export type BodyRegion =
   'legs' | 'glutes' | 'chest' | 'back' | 'shoulders' | 'arms' | 'core' | 'cardio' | 'mobility' | 'balance' | 'full';
-type SessionKind = 'full' | 'lower' | 'upper' | 'core' | 'cardio' | 'mobility' | 'balance';
+type SessionKind = 'full' | 'lower' | 'upper' | 'core' | 'cardio' | 'mobility' | 'balance' | 'yoga';
 
 let rules: Rules | undefined;
 const engineRules = () => (rules ??= new Rules());
@@ -79,6 +80,7 @@ function sessionRegions(template: Pick<SessionTemplate, 'items'>): BodyRegion[] 
 }
 
 export function sessionKind(template: Pick<SessionTemplate, 'items'>): SessionKind {
+  if (isYogaSession(template)) return 'yoga';
   const working = template.items.filter(item => !warmupOrCooldown(item));
   const items = working.length ? working : template.items;
   const counts = { lower: 0, upper: 0, core: 0, cardio: 0, mobility: 0, balance: 0, full: 0 };
@@ -111,6 +113,7 @@ const kindNames: Record<SessionKind, [string, string]> = {
   cardio: ['有氧', 'Cardio'],
   mobility: ['拉伸与灵活', 'Mobility'],
   balance: ['平衡与稳定', 'Balance'],
+  yoga: ['瑜伽', 'Yoga'],
 };
 export const regionNames: Record<BodyRegion, [string, string]> = {
   legs: ['腿部', 'Legs'],

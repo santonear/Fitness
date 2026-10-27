@@ -1,9 +1,11 @@
 import type { SessionDraft } from '../contracts';
 import type { Rules } from '../data';
 import { estimateSeconds } from './estimate';
+import { isYogaSession } from '../yoga-session';
 
 /** A content budget, never a replacement for a safety minimum or legal dose. */
 export function withinMobilityBudget(template: Pick<SessionDraft, 'items'>, rules: Rules): boolean {
+  if (isYogaSession(template)) return true;
   const budget = rules.get('duration.cardio.cap').refill.mobility_budget;
   const items = template.items.filter(item => {
     const exercise = rules.byExercise.get(item.exerciseId);

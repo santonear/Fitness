@@ -7,6 +7,7 @@ import { prescribe } from './dose';
 import { checkHard } from './hard-checks';
 import { estimateSeconds, retainsRequirements } from './fit';
 import { sourceCorePatternGroups } from './skeleton';
+import { isYogaSession } from './yoga-session';
 /** This target applies at one RT day too; its own secondary-pattern policy is authoritative. */
 export function missingCorePatterns(plan: Plan, p: EngineProfile, r: Rules): Set<Pattern> {
   const work = plan.templates.filter(t =>
@@ -124,7 +125,7 @@ export function improve(plan: Plan, ctx: PipelineContext, scorer: Scorer, maxRou
         }
       };
       for (const [day, t] of current.templates.entries())
-        for (const [index, item] of t.items.entries()) {
+        for (const [index, item] of (isYogaSession(t) ? [] : t.items).entries()) {
           if (ctx.lockedItemIndexes?.includes(index)) continue;
           const e = r.byExercise.get(item.exerciseId);
           if (!e) continue;

@@ -22,6 +22,12 @@
    "start": "/exercise-media/fitness/custom-chair-sit-to-stand-start.webp",
    "peak": "/exercise-media/fitness/custom-chair-sit-to-stand-peak.webp"
   },
+  "custom-extended-hand-to-big-toe": {
+   "main": "/exercise-media/fitness/custom-extended-hand-to-big-toe-main.webp"
+  },
+  "custom-fire-log-pose": {
+   "main": "/exercise-media/fitness/custom-fire-log-pose-main.webp"
+  },
   "custom-forearm-ground-step": {
    "start": "/exercise-media/fitness/custom-forearm-ground-step-start.webp",
    "peak": "/exercise-media/fitness/custom-forearm-ground-step-peak.webp"
@@ -29,6 +35,21 @@
   "custom-forearm-wall-push": {
    "start": "/exercise-media/fitness/custom-forearm-wall-push-start.webp",
    "peak": "/exercise-media/fitness/custom-forearm-wall-push-peak.webp"
+  },
+  "custom-four-limbed-staff": {
+   "main": "/exercise-media/fitness/custom-four-limbed-staff-main.webp"
+  },
+  "custom-frog-pose": {
+   "main": "/exercise-media/fitness/custom-frog-pose-main.webp"
+  },
+  "custom-gate-pose": {
+   "main": "/exercise-media/fitness/custom-gate-pose-main.webp"
+  },
+  "custom-goddess-pose": {
+   "main": "/exercise-media/fitness/custom-goddess-pose-main.webp"
+  },
+  "custom-half-lord-of-the-fishes": {
+   "main": "/exercise-media/fitness/custom-half-lord-of-the-fishes-main.webp"
   },
   "custom-high-wall-sit": {
    "start": "/exercise-media/fitness/custom-high-wall-sit-start.webp",
@@ -46,6 +67,9 @@
    "start": "/exercise-media/fitness/custom-kneeling-side-bridge-start.webp",
    "peak": "/exercise-media/fitness/custom-kneeling-side-bridge-peak.webp"
   },
+  "custom-knees-chest-chin": {
+   "main": "/exercise-media/fitness/custom-knees-chest-chin-main.webp"
+  },
   "custom-quiet-march": {
    "start": "/exercise-media/fitness/custom-quiet-march-start.webp",
    "peak": "/exercise-media/fitness/custom-quiet-march-peak.webp"
@@ -53,6 +77,24 @@
   "custom-quiet-shadow-boxing": {
    "start": "/exercise-media/fitness/custom-quiet-shadow-boxing-start.webp",
    "peak": "/exercise-media/fitness/custom-quiet-shadow-boxing-peak.webp"
+  },
+  "custom-reclined-bound-angle": {
+   "main": "/exercise-media/fitness/custom-reclined-bound-angle-main.webp"
+  },
+  "custom-reclined-hand-to-big-toe": {
+   "main": "/exercise-media/fitness/custom-reclined-hand-to-big-toe-main.webp"
+  },
+  "custom-reclined-hero": {
+   "main": "/exercise-media/fitness/custom-reclined-hero-main.webp"
+  },
+  "custom-reverse-warrior": {
+   "main": "/exercise-media/fitness/custom-reverse-warrior-main.webp"
+  },
+  "custom-revolved-side-angle": {
+   "main": "/exercise-media/fitness/custom-revolved-side-angle-main.webp"
+  },
+  "custom-revolved-triangle": {
+   "main": "/exercise-media/fitness/custom-revolved-triangle-main.webp"
   },
   "custom-seated-march": {
    "start": "/exercise-media/fitness/custom-seated-march-start.webp",
@@ -84,6 +126,9 @@
    "start": "/exercise-media/fitness/custom-shallow-split-squat-start.webp",
    "peak": "/exercise-media/fitness/custom-shallow-split-squat-peak.webp"
   },
+  "custom-side-crow": {
+   "main": "/exercise-media/fitness/custom-side-crow-main.webp"
+  },
   "custom-slow-bear-step": {
    "start": "/exercise-media/fitness/custom-slow-bear-step-start.webp",
    "peak": "/exercise-media/fitness/custom-slow-bear-step-peak.webp"
@@ -91,6 +136,9 @@
   "custom-slow-walking-in-place": {
    "start": "/exercise-media/fitness/custom-slow-walking-in-place-start.webp",
    "peak": "/exercise-media/fitness/custom-slow-walking-in-place-peak.webp"
+  },
+  "custom-staff-pose": {
+   "main": "/exercise-media/fitness/custom-staff-pose-main.webp"
   },
   "custom-standing-cross-press-brace": {
    "main": "/exercise-media/fitness/custom-standing-cross-press-brace-main.webp"
@@ -121,6 +169,14 @@
    "start": "/exercise-media/fitness/custom-step-jack-start.webp",
    "peak": "/exercise-media/fitness/custom-step-jack-peak.webp"
   },
+  "custom-sun-salutation-a": {
+   "start": "/exercise-media/fitness/custom-sun-salutation-a-start.webp",
+   "peak": "/exercise-media/fitness/custom-sun-salutation-a-peak.webp"
+  },
+  "custom-sun-salutation-b": {
+   "start": "/exercise-media/fitness/custom-sun-salutation-b-start.webp",
+   "peak": "/exercise-media/fitness/custom-sun-salutation-b-peak.webp"
+  },
   "custom-supported-heel-raise": {
    "start": "/exercise-media/fitness/custom-supported-heel-raise-start.webp",
    "peak": "/exercise-media/fitness/custom-supported-heel-raise-peak.webp"
@@ -134,6 +190,9 @@
   },
   "custom-supported-wide-static-stand": {
    "main": "/exercise-media/fitness/custom-supported-wide-static-stand-main.webp"
+  },
+  "custom-upward-salute": {
+   "main": "/exercise-media/fitness/custom-upward-salute-main.webp"
   },
   "custom-wall-antirotation-press": {
    "main": "/exercise-media/fitness/custom-wall-antirotation-press-main.webp"

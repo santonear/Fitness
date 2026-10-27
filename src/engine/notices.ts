@@ -68,6 +68,8 @@ export function buildNotices(score: ScoreResult, gate: GateOutcome, ctx: Pipelin
       ].includes(item.id) &&
       plan
     ) {
+      // A yoga plan does not aim at muscle volume, so it is not told that parts are trained too little.
+      if (ctx.profile?.goal === 'yoga') continue;
       const sets = volume(
           items.filter(i => ['main', 'accessory'].includes(i.prescription?.block ?? '')),
           ctx.rules,

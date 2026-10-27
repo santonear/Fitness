@@ -34,6 +34,7 @@ export function buildSlots(day: DayPlan, profile: EngineProfile, minutes: number
         lower: 'l1',
         aerobic: 'aerobic',
         mobility: 'mobility',
+        yoga: 'yoga',
         early_postpartum: 'aerobic',
       }[day.kind];
   const positions: RuleValue[] = sourceId === 'postpartum.phase1' ? [] : rules.get(sourceId).slots;

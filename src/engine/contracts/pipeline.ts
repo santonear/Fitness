@@ -42,7 +42,7 @@ export interface GateOutcome {
 export interface DayPlan {
   id: string;
   index: number;
-  kind: 'full' | 'upper' | 'lower' | 'aerobic' | 'mobility' | 'early_postpartum';
+  kind: 'full' | 'upper' | 'lower' | 'aerobic' | 'mobility' | 'yoga' | 'early_postpartum';
   minutes: number;
   weekday?: Weekday;
   balanceRequired: boolean;

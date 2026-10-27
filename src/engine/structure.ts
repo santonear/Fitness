@@ -25,8 +25,10 @@ export function buildWeek(
   if (g.population === 'pregnant' && !allocation.distribute_strength_across_available_days)
     cap = Math.min(cap, rules.get('pregnancy.week.target').strength_days_per_week_default);
   if (g.population === 'postpartum' && g.phase === 2) cap = rules.get('postpartum.phase2').strength_days_per_week;
-  const rtDays = Math.min(p.daysPerWeek, cap),
-    ruleId = 'week.template.rt' + rtDays;
+  // Yoga sets its strength days by weekly days; every other chosen day is a yoga session.
+  const byDays: number[] | undefined = rules.get('goal.params.' + p.goal).rt_sessions_by_days;
+  const rtDays = Math.min(p.daysPerWeek, cap, byDays?.[p.daysPerWeek - 1] ?? cap),
+    ruleId = 'week.template.rt' + Math.max(1, rtDays);
   const template = rules.get(ruleId);
   let variant: RuleValue = template;
   if (template.variants)
@@ -84,7 +86,7 @@ export function buildWeek(
           ? 'upper'
           : source.startsWith('l')
             ? 'lower'
-            : source === 'aerobic' || source === 'mobility'
+            : source === 'aerobic' || source === 'mobility' || source === 'yoga'
               ? source
               : 'full';
     return {

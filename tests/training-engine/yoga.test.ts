@@ -1,0 +1,128 @@
+import { describe, expect, it } from 'vitest';
+import { generatePlan } from '../../src/engine';
+import { checkHard } from '../../src/engine/hard-checks';
+import { runGates } from '../../src/engine/gates';
+import { Rules } from '../../src/engine/data';
+import { isYogaSession } from '../../src/engine/yoga-session';
+import { baseProfile, sampledProfiles } from '../../tools/eval/training-engine-profiles';
+import { externalIssues } from '../../tools/eval/training-engine-invariants';
+import yoga from '../../data/training-engine/yoga-poses.json';
+import { toEngineProfile, type EngineCoachProfile } from '../../src/application/engine-profile';
+import { sessionKind, sessionNames } from '../../src/application/plan-presentation';
+import onboardingZh from '../../src/i18n/features/onboarding/zh.json';
+import onboardingEn from '../../src/i18n/features/onboarding/en.json';
+
+const r = new Rules();
+const slotOrder: string[] = r.get('week.day.yoga').slots.map((slot: { family: string }) => slot.family);
+const family = (id: string) => r.byExercise.get(id)?.yoga_family ?? '';
+
+describe('yoga goal', () => {
+  it('schedules yoga sessions on every non-strength day, strength days by weekly days', () => {
+    for (const [days, strength] of [
+      [1, 0],
+      [2, 0],
+      [3, 1],
+      [4, 1],
+      [5, 2],
+      [6, 2],
+    ] as const) {
+      const plan = generatePlan(baseProfile({ goal: 'yoga', daysPerWeek: days, sessionMinutes: 30 }));
+      expect(plan.templates).toHaveLength(days);
+      expect(plan.templates.filter(t => !isYogaSession(t))).toHaveLength(strength);
+    }
+  });
+
+  it('follows the fixed pose sequence and ends with a resting pose', () => {
+    for (const minutes of [10, 20, 30, 45, 60, 90])
+      for (const level of ['beginner', 'intermediate'] as const) {
+        const plan = generatePlan(baseProfile({ goal: 'yoga', daysPerWeek: 2, sessionMinutes: minutes, level }));
+        for (const t of plan.templates.filter(isYogaSession)) {
+          const order = t.items.map(i => slotOrder.indexOf(family(i.exerciseId)));
+          expect(order, `${minutes} ${level}`).toEqual([...order].sort((a, b) => a - b));
+          expect(family(t.items.at(-1)!.exerciseId)).toBe('rest');
+          expect(new Set(t.items.map(i => i.exerciseId)).size).toBe(t.items.length);
+          expect(t.name).toBe('瑜伽');
+        }
+      }
+  });
+
+  it('keeps yoga-only poses out of every other goal', () => {
+    const only = new Set(yoga.yogaOnly);
+    for (const goal of ['health', 'mobility', 'muscle'] as const) {
+      const plan = generatePlan(baseProfile({ goal, daysPerWeek: 5, sessionMinutes: 45 }));
+      const slugs = plan.templates.flatMap(t => t.items.map(i => r.byExercise.get(i.exerciseId)!.slug));
+      expect(slugs.filter(slug => only.has(slug))).toEqual([]);
+    }
+  });
+
+  it('never breaks a hard rule or an independent safety check across sampled users', { timeout: 120_000 }, () => {
+    for (const source of sampledProfiles(150)) {
+      const profile = { ...source, goal: 'yoga' as const },
+        plan = generatePlan(profile),
+        gate = runGates(profile, r);
+      expect(checkHard(plan, profile, gate, r).filter(issue => issue.severity === 'error')).toEqual([]);
+      expect(externalIssues(plan, profile).filter(issue => issue.severity === 'error')).toEqual([]);
+    }
+  });
+
+  it('gives pregnant users no supine or inverted poses and older users a balance pose', () => {
+    const pregnant = generatePlan(
+      baseProfile({
+        goal: 'yoga',
+        daysPerWeek: 3,
+        sessionMinutes: 45,
+        population: {
+          kind: 'pregnant',
+          week: 24,
+          providerCleared: true,
+          prenatalCareConfirmed: true,
+          contraindicationsConfirmedNone: true,
+          lastScreenedWeek: 24,
+        },
+      }),
+    );
+    const positions = pregnant.templates
+      .filter(isYogaSession)
+      .flatMap(t => t.items.flatMap(i => r.byExercise.get(i.exerciseId)!.position));
+    expect(positions.length).toBeGreaterThan(0);
+    expect(positions).not.toContain('inverted');
+    const older = generatePlan(
+      baseProfile({
+        goal: 'yoga',
+        daysPerWeek: 2,
+        sessionMinutes: 10,
+        birthYearMonth: '1956-06',
+        population: { kind: 'older_adult', fallsAnswers: [false, false, false, false] },
+      }),
+    );
+    for (const t of older.templates.filter(isYogaSession))
+      expect(t.items.some(i => r.byExercise.get(i.exerciseId)!.primary_pattern === 'balance')).toBe(true);
+  });
+  it('reads the yoga onboarding answer as the yoga goal and names its sessions 瑜伽', () => {
+    const p = baseProfile({ goal: 'yoga', daysPerWeek: 2 }),
+      coach = (goalText: string): EngineCoachProfile => ({
+        goalText,
+        weeklyTarget: 2,
+        sessionMinutes: 30,
+        scheduleOriginalText: '每周两次',
+        place: 'home',
+        equipment: ['none'],
+        adultConfirmed: true,
+        cautions: [],
+        confirmedAt: '2026-10-16T00:00:00.000Z',
+        population: p.population,
+        screening: p.screening,
+        healthStorageConsent: { acceptedAt: '2026-10-16T00:00:00.000Z' },
+        constraints: { noJump: false, quiet: false, space: 'mat' },
+      });
+    for (const answer of [onboardingZh.answers[0][3], onboardingEn.answers[0][3]])
+      expect(toEngineProfile(coach(answer), { asOfDate: '2026-10-16', ageYears: 30 })?.goal).toBe('yoga');
+    expect(toEngineProfile(coach(onboardingZh.answers[0][2]), { asOfDate: '2026-10-16', ageYears: 30 })?.goal).toBe(
+      'health',
+    );
+    const templates = generatePlan(p).templates;
+    expect(templates.map(t => sessionKind(t))).toEqual(['yoga', 'yoga']);
+    expect([...sessionNames(templates, 'en').values()]).toEqual(['Yoga', 'Yoga']);
+    expect(generatePlan(p).notices.map(n => n.ruleId)).not.toContain('engine.copy.target_volume');
+  });
+});

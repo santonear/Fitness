@@ -1,5 +1,5 @@
 # 第 2 章 目标与训练变量映射 —— 机器规则
-# 与 ch02-goals.md 一一对应。枚举：goal ∈ {health, fat_loss, strength, muscle, mobility, start_moving}
+# 与 ch02-goals.md 一一对应。枚举：goal ∈ {health, fat_loss, strength, muscle, mobility, start_moving, yoga}
 # 时间份额（share）= 该类训练分钟数 / 本周计划训练总分钟数；aerobic_min 为"中等强度当量分钟"（剧烈 1 分钟 = 中等 2 分钟）。
 # sets_per_muscle_week 为"分数组"（直接 1.0、协同 0.5），换算见第 5 章 dose.volume.fractional。
 
@@ -14,6 +14,7 @@
       - session_minutes_max: 10            # 10 分钟课可每动作 1–3 轮（第 4 章）
       - new_user_week: 1                   # 新手第 1 周每动作 1–2 组（第 7 章）
       - goal: start_moving
+      - goal: yoga                         # 瑜伽课以体式练习为主，力量日按周天数安排（见 goal.params.yoga）
     applies_when: { days_available_min: 2 }
     target_only_when: {"any":[{"user":"days_available","lte":1},{"user":"session_minutes","lte":20}]}
   evidence: A
@@ -163,6 +164,23 @@
   sources: [E03:Garber-2011, E03:Thomas-2018, E03:Afonso-2021]
   note: "每周总拉伸时间决定柔韧收益；全幅度力量训练效果相近；v2 调整：每个已定义时间类别的目标区间为30%–70%，按权重计分，不作为失败或空计划原因。"
 
+- id: goal.params.yoga
+  chapter: 2
+  type: default
+  applies:
+    goal: [yoga]
+  value:
+    rt_sessions_week: { min: 0, default: 1, max: 2 }
+    rt_sessions_by_days: [0, 0, 1, 1, 2, 2]   # 每周 1–6 天时的力量日数，其余为瑜伽日
+    time_share: {"resistance":[0.3,0.7],"mobility":[0.3,0.7]}
+    sets_per_muscle_week: { min: 2, max: 6 }
+    reps: { min: 8, max: 15 }
+    rir: { min: 2, max: 3 }
+    yoga_days_week: { min: 1, max: 6 }
+  evidence: C
+  sources: [E03:Garber-2011, E03:Thomas-2018, E03:ACSM-2026]
+  note: "工程选择（Bo 2026-10-26 定瑜伽为独立目标）：每周 1–2 天全是瑜伽课，3–4 天加 1 个全身力量日，5–6 天加 2 个；瑜伽课按固定体式顺序编排，见 week.day.yoga；本规则只用于排课，不单独计分。"
+
 - id: goal.rir.level_override
   chapter: 2
   type: limit
@@ -211,7 +229,7 @@
     primary_goal_count: 1
     secondary_goal_count_max: 1
     secondary_effect: { aerobic_share_shift_max: 0.10, mobility_cooldown_extra_min: 5 }
-    tie_break_order: [start_moving, health, fat_loss, muscle, strength, mobility]
+    tie_break_order: [start_moving, health, fat_loss, muscle, strength, mobility, yoga]
   evidence: C
   sources: [E03:ACSM-2026, E04:S8]
   note: 工程选择，待教练审核；只用主目标定参数，次目标微调

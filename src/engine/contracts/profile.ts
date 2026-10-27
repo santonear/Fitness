@@ -224,7 +224,7 @@ export const engineProfileSchema = z.strictObject({
     )
     .optional(),
   householdSupport: z.boolean().optional(),
-  goal: z.enum(['health', 'fat_loss', 'strength', 'muscle', 'mobility', 'start_moving']),
+  goal: z.enum(['health', 'fat_loss', 'strength', 'muscle', 'mobility', 'start_moving', 'yoga']),
   level: z.enum(['beginner', 'intermediate']),
   trainingAgeWeeks: nonnegative,
   daysPerWeek: z.number().int().min(1).max(6),

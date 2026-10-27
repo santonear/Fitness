@@ -126,5 +126,20 @@
       1
     ],
     "stepsSha256": "7767d7e30e56c4d69d87f039f3b29131074674739e499b89780bb2a4beebfe6f"
+  },
+  {
+    "slug": "custom-extended-hand-to-big-toe",
+    "balance": {
+      "base": "single_leg",
+      "mode": "static",
+      "hand_support": false
+    },
+    "sourcePath": "src/catalog/custom-exercises.json",
+    "stepIndexes": [
+      0,
+      1,
+      2
+    ],
+    "stepsSha256": "ae4c920e3a0b99e85e76d6f9126944950dcb65793d264b5b73022c35dcb489da"
   }
 ]

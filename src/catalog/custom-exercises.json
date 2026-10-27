@@ -1711,6 +1711,855 @@
     "contentSource": "older.balance.progression stage 1; user approved supported wide static stand"
   },
   {
+    "id": "4112d689-0bc2-545a-8d24-28361c68d626",
+    "slug": "custom-reverse-warrior",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "反战士式",
+      "en": "Reverse Warrior"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "从战士二式开始：双脚前后分开，前膝弯曲在脚踝正上方，双臂向两侧平举。",
+        "前手掌心向上，向上、向后伸过头顶；后手轻轻滑到后腿上。",
+        "前膝保持弯曲，侧腰拉长，平稳呼吸保持规定时间，再换侧。"
+      ],
+      "en": [
+        "Start in Warrior II: feet wide, front knee bent over the ankle and arms out to the sides.",
+        "Turn the front palm up and reach it up and back overhead; let the back hand slide lightly down the back leg.",
+        "Keep the front knee bent and the side waist long; breathe steadily for the set time, then switch sides."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "后手只是轻放在腿上，不要压着腿支撑身体。"
+      ],
+      "en": [
+        "Rest the back hand lightly on the leg; do not lean your weight on it."
+      ]
+    },
+    "primaryMuscles": [
+      "obliques",
+      "quadriceps"
+    ],
+    "secondaryMuscles": [
+      "latissimus-dorsi",
+      "adductors"
+    ],
+    "bodyPart": "upper-legs",
+    "pattern": "mobility"
+  },
+  {
+    "id": "eb0d2ce3-1f54-5e2f-8e63-4e519f085e71",
+    "slug": "custom-goddess-pose",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "女神式",
+      "en": "Goddess Pose"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "双脚分开约一条腿长，脚尖向外转约 45 度。",
+        "屈膝下蹲，膝盖朝向脚尖方向打开，髋部下沉到舒适高度；双手合十在胸前，或屈肘举起。",
+        "尾骨自然向下，胸口上提，平稳呼吸保持规定时间，再伸直双腿起身。"
+      ],
+      "en": [
+        "Step your feet about a leg-length apart and turn the toes out about 45 degrees.",
+        "Bend the knees in line with the toes and lower the hips to a comfortable height; bring the palms together at the chest or raise bent arms.",
+        "Let the tailbone point down and lift the chest; breathe steadily for the set time, then straighten the legs to rise."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "膝盖始终对准脚尖方向，不要向内扣。"
+      ],
+      "en": [
+        "Keep the knees tracking over the toes; do not let them cave inwards."
+      ]
+    },
+    "primaryMuscles": [
+      "quadriceps",
+      "adductors"
+    ],
+    "secondaryMuscles": [
+      "gluteus-medius",
+      "gluteus-maximus"
+    ],
+    "bodyPart": "upper-legs",
+    "pattern": "squat"
+  },
+  {
+    "id": "7cc7c225-666e-50e9-8dd7-3269edf8c37d",
+    "slug": "custom-gate-pose",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "门闩式",
+      "en": "Gate Pose"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "双膝跪地，身体直立；一条腿向侧面伸直，脚掌踩地，脚尖朝前。",
+        "同侧手轻放在伸直的腿上，另一侧手臂向上伸，越过头顶向伸直腿方向侧弯。",
+        "胸口保持朝前，平稳呼吸保持规定时间，回正后换侧。"
+      ],
+      "en": [
+        "Kneel upright, then extend one leg straight out to the side with the foot flat and toes forwards.",
+        "Rest the same-side hand on the straight leg and reach the other arm up and over towards it into a side bend.",
+        "Keep the chest facing forwards; breathe steadily for the set time, come back upright and switch sides."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "膝下可以垫毛巾或叠起的垫子。"
+      ],
+      "en": [
+        "Pad the kneeling knee with a towel or folded mat if needed."
+      ]
+    },
+    "primaryMuscles": [
+      "obliques",
+      "latissimus-dorsi"
+    ],
+    "secondaryMuscles": [
+      "adductors",
+      "hamstrings"
+    ],
+    "bodyPart": "core",
+    "pattern": "mobility"
+  },
+  {
+    "id": "3228abb1-cf2c-5ce3-8ae1-329868a1bd4a",
+    "slug": "custom-revolved-triangle",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "反转三角式",
+      "en": "Revolved Triangle Pose"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "双脚前后分开约一条腿长，前脚尖朝前，后脚略向内转，两侧髋部都朝前。",
+        "背部拉长，从髋部向前俯身；后侧手放到前脚旁的地面、瑜伽砖或小腿上，另一手向上伸，胸口转向前腿一侧。",
+        "平稳呼吸保持规定时间，松开扭转再起身，换侧。"
+      ],
+      "en": [
+        "Step the feet about a leg-length apart, front toes forwards and back foot turned slightly in, both hips facing forwards.",
+        "Lengthen the back and hinge forwards; place the opposite hand by the front foot, on a block or on the shin, reach the other arm up and turn the chest towards the front leg.",
+        "Breathe steadily for the set time, release the twist before rising, then switch sides."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "够不到地面就用瑜伽砖或扶小腿，转动幅度以背部舒服为准。"
+      ],
+      "en": [
+        "Use a block or the shin if the floor is far; twist only as far as the back feels comfortable."
+      ]
+    },
+    "primaryMuscles": [
+      "hamstrings",
+      "obliques"
+    ],
+    "secondaryMuscles": [
+      "erector-spinae",
+      "gluteus-medius"
+    ],
+    "bodyPart": "upper-legs",
+    "pattern": "mobility"
+  },
+  {
+    "id": "88234e63-0482-5ffc-8a20-8e46109160d1",
+    "slug": "custom-revolved-side-angle",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "扭转侧角式",
+      "en": "Revolved Side Angle Pose"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "从高位新月式开始：前膝弯曲在脚踝正上方，后脚跟抬起。",
+        "双手胸前合十，身体转向前腿一侧，把对侧手肘放到前膝外侧。",
+        "脊柱拉长，平稳呼吸保持规定时间，回正后换侧。"
+      ],
+      "en": [
+        "Start in a high crescent lunge: front knee bent over the ankle, back heel lifted.",
+        "Bring the palms together at the chest and turn towards the front leg, hooking the opposite elbow outside the front knee.",
+        "Keep the spine long and breathe steadily for the set time, come back to centre and switch sides."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "后膝可以落地降低难度。"
+      ],
+      "en": [
+        "Lower the back knee to the floor to make it easier."
+      ]
+    },
+    "primaryMuscles": [
+      "obliques",
+      "quadriceps"
+    ],
+    "secondaryMuscles": [
+      "gluteus-maximus",
+      "erector-spinae"
+    ],
+    "bodyPart": "core",
+    "pattern": "mobility"
+  },
+  {
+    "id": "f711bbce-1c2f-51ae-8efe-73447b2e8637",
+    "slug": "custom-extended-hand-to-big-toe",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "站立手抓大脚趾式",
+      "en": "Extended Hand-to-Big-Toe Pose"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "站稳，一侧膝盖抬向胸前，同侧手握住大脚趾、脚掌外侧或绕在脚上的毛巾。",
+        "在舒适范围内把腿向前伸直，支撑腿保持伸直，骨盆摆正。",
+        "平稳呼吸保持规定时间，屈膝放下，再换侧。"
+      ],
+      "en": [
+        "Stand tall, draw one knee towards the chest and hold the big toe, the outer foot or a towel looped around the foot.",
+        "Extend the leg forwards as far as is comfortable, keeping the standing leg straight and the pelvis level.",
+        "Breathe steadily for the set time, bend the knee to release, then switch sides."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "抬起的腿可以保持弯曲；需要时一手扶墙或椅背。"
+      ],
+      "en": [
+        "Keep the lifted knee bent if needed; hold a wall or chair back for support."
+      ]
+    },
+    "primaryMuscles": [
+      "gluteus-medius",
+      "hamstrings"
+    ],
+    "secondaryMuscles": [
+      "hip-flexors",
+      "gastrocnemius"
+    ],
+    "bodyPart": "upper-legs",
+    "pattern": "balance"
+  },
+  {
+    "id": "15fb2afa-d12f-547a-8865-62ce4eb7137c",
+    "slug": "custom-upward-salute",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "上举式",
+      "en": "Upward Salute"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "山式站立，双脚踩稳，手臂放在身体两侧。",
+        "吸气时双臂从两侧向上举过头顶，掌心相对，肩膀远离耳朵。",
+        "肋骨下收、身体向上拉长，平稳呼吸保持规定时间，呼气放下手臂。"
+      ],
+      "en": [
+        "Stand in Mountain Pose with the feet grounded and the arms by your sides.",
+        "Inhale and sweep the arms out and up overhead, palms facing, shoulders away from the ears.",
+        "Draw the ribs in and lengthen upwards; breathe steadily for the set time, then exhale and lower the arms."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "肩膀不舒服时把手臂分开得宽一些，或只举到肩高。"
+      ],
+      "en": [
+        "If the shoulders complain, take the arms wider or lift them only to shoulder height."
+      ]
+    },
+    "primaryMuscles": [
+      "latissimus-dorsi",
+      "anterior-deltoid"
+    ],
+    "secondaryMuscles": [
+      "obliques",
+      "serratus-anterior"
+    ],
+    "bodyPart": "shoulders",
+    "pattern": "mobility"
+  },
+  {
+    "id": "9b7b82dc-d1b7-5781-8e0d-02bd6e1dcec9",
+    "slug": "custom-staff-pose",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "手杖式",
+      "en": "Staff Pose"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "坐在垫子上，双腿并拢向前伸直，脚尖回勾。",
+        "双手放在髋部两侧的地面上，坐骨踩稳，从骨盆向上坐高。",
+        "肩膀放松下沉，平稳呼吸保持规定时间。"
+      ],
+      "en": [
+        "Sit on the mat with the legs together and straight in front, toes drawn back.",
+        "Place the hands on the floor beside the hips, root through the sit bones and sit up tall from the pelvis.",
+        "Relax the shoulders down and breathe steadily for the set time."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "背部容易弓起时，坐在叠起的毯子上或微屈膝。"
+      ],
+      "en": [
+        "If the back rounds, sit on a folded blanket or bend the knees slightly."
+      ]
+    },
+    "primaryMuscles": [
+      "hamstrings",
+      "erector-spinae"
+    ],
+    "secondaryMuscles": [
+      "quadriceps",
+      "hip-flexors"
+    ],
+    "bodyPart": "upper-legs",
+    "pattern": "mobility"
+  },
+  {
+    "id": "a7dc743c-2471-588c-858f-fd431153cfb1",
+    "slug": "custom-fire-log-pose",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "火木式",
+      "en": "Fire Log Pose"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "坐姿，一侧小腿横放在身前，与垫子前缘平行。",
+        "另一侧小腿叠放在上面，脚踝在下方膝盖外侧，两只脚都回勾。",
+        "从髋部坐高，可以略向前倾；平稳呼吸保持规定时间，再换上下腿。"
+      ],
+      "en": [
+        "Sit and place one shin across the front of the mat, parallel to the front edge.",
+        "Stack the other shin on top so the ankle rests just outside the lower knee, both feet flexed.",
+        "Sit tall from the hips and lean forwards slightly if you like; breathe steadily for the set time, then switch legs."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "膝盖有任何不适就松开，在上方膝盖下面垫瑜伽砖或毯子。"
+      ],
+      "en": [
+        "Release at any knee discomfort; support the top knee with a block or blanket."
+      ]
+    },
+    "primaryMuscles": [
+      "gluteus-maximus",
+      "gluteus-medius"
+    ],
+    "secondaryMuscles": [
+      "adductors"
+    ],
+    "bodyPart": "glutes",
+    "pattern": "mobility"
+  },
+  {
+    "id": "29ec1f64-3d9e-5bdb-868c-5e35a93bb784",
+    "slug": "custom-half-lord-of-the-fishes",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "半鱼王式",
+      "en": "Half Lord of the Fishes Pose"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "坐姿，双膝弯曲；一侧脚放到对侧臀部外侧地面，另一只脚跨过这条腿，脚掌踩在膝盖外侧。",
+        "吸气坐高，呼气时转向立起的膝盖，对侧手臂抱住或用手肘抵住膝盖，另一手放在身后地面。",
+        "每次吸气拉长脊柱，平稳呼吸保持规定时间，回正后换侧。"
+      ],
+      "en": [
+        "Sit with both knees bent; tuck one foot beside the opposite hip and step the other foot across, flat on the floor outside that knee.",
+        "Inhale to sit tall; exhale and turn towards the raised knee, hugging it or hooking the opposite elbow outside it, other hand on the floor behind you.",
+        "Lengthen the spine on each inhale and breathe steadily for the set time; come back to centre and switch sides."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "下方的腿可以伸直；转动从胸背开始，不要用手臂硬拉。"
+      ],
+      "en": [
+        "The lower leg may stay straight; turn from the upper back rather than levering with the arm."
+      ]
+    },
+    "primaryMuscles": [
+      "obliques",
+      "erector-spinae"
+    ],
+    "secondaryMuscles": [
+      "gluteus-medius",
+      "gluteus-maximus"
+    ],
+    "bodyPart": "core",
+    "pattern": "mobility"
+  },
+  {
+    "id": "67a5e953-a035-515b-87ae-eef62467f833",
+    "slug": "custom-four-limbed-staff",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "四柱支撑式",
+      "en": "Four-Limbed Staff Pose"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "从高位平板支撑开始，双手在肩膀正下方，身体成一条直线。",
+        "身体略向前移，屈肘贴近身体，缓慢下降到上臂与地面大致平行。",
+        "保持规定时间，再放低到地面或推回平板。"
+      ],
+      "en": [
+        "Start in a high plank with the hands under the shoulders and the body in one line.",
+        "Shift slightly forwards and bend the elbows close to your sides, lowering until the upper arms are about parallel to the floor.",
+        "Hold for the set time, then lower to the floor or press back to plank."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "双膝落地可以降低难度；肩膀不要低于手肘。"
+      ],
+      "en": [
+        "Drop the knees to make it easier; do not let the shoulders sink below the elbows."
+      ]
+    },
+    "primaryMuscles": [
+      "triceps-brachii",
+      "pectoralis-major"
+    ],
+    "secondaryMuscles": [
+      "anterior-deltoid",
+      "rectus-abdominis"
+    ],
+    "bodyPart": "upper-arms",
+    "pattern": "push_horizontal"
+  },
+  {
+    "id": "cd80b290-99cb-5777-8836-4cefbc728af6",
+    "slug": "custom-knees-chest-chin",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "八体投地式",
+      "en": "Knees-Chest-Chin Pose"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "从平板支撑把双膝落到地面。",
+        "屈肘贴近身体，胸口和下巴放到双手之间的地面上，臀部保持抬起。",
+        "平稳呼吸保持规定时间，再向前滑入眼镜蛇式或推回四点跪姿。"
+      ],
+      "en": [
+        "From plank, lower both knees to the floor.",
+        "Bend the elbows close to your sides and lower the chest and chin to the floor between the hands, hips still lifted.",
+        "Breathe steadily for the set time, then slide forwards into Cobra or press back to hands and knees."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "下巴只是轻触地面，颈部不要承重。"
+      ],
+      "en": [
+        "Let the chin touch lightly; do not put weight through the neck."
+      ]
+    },
+    "primaryMuscles": [
+      "pectoralis-major",
+      "triceps-brachii"
+    ],
+    "secondaryMuscles": [
+      "erector-spinae",
+      "serratus-anterior"
+    ],
+    "bodyPart": "chest",
+    "pattern": "mobility"
+  },
+  {
+    "id": "699fbee8-606e-5ba5-8d33-0421a0718e75",
+    "slug": "custom-frog-pose",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "青蛙式",
+      "en": "Frog Pose"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "四点跪姿，在双膝下垫毛巾或叠起的垫子。",
+        "双膝慢慢向两侧分开，小腿与大腿约成直角，脚踝与膝盖对齐。",
+        "降到前臂支撑，髋部轻轻向后移；平稳呼吸保持规定时间，再把双膝收回。"
+      ],
+      "en": [
+        "Come to hands and knees with towels or a folded mat under the knees.",
+        "Slowly widen the knees out to the sides, shins at right angles to the thighs and ankles in line with the knees.",
+        "Lower onto the forearms and ease the hips back; breathe steadily for the set time, then draw the knees back together."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "大腿内侧只要有轻微拉长感就够了，膝盖有不适就收小分开的距离。"
+      ],
+      "en": [
+        "A gentle inner-thigh stretch is enough; narrow the knees if they feel any discomfort."
+      ]
+    },
+    "primaryMuscles": [
+      "adductors"
+    ],
+    "secondaryMuscles": [
+      "gluteus-medius",
+      "hip-flexors"
+    ],
+    "bodyPart": "upper-legs",
+    "pattern": "mobility"
+  },
+  {
+    "id": "3bcfc636-ee4f-5b32-8804-48c05e6516d7",
+    "slug": "custom-reclined-bound-angle",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "仰卧束角式",
+      "en": "Reclined Bound Angle Pose"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "仰卧，屈膝，双脚踩地。",
+        "脚底相对，让双膝慢慢向两侧落下；可以在大腿外侧垫枕头或瑜伽砖。",
+        "双手放在腹部或身体两侧，平稳呼吸保持规定时间，用手帮助把双膝收回。"
+      ],
+      "en": [
+        "Lie on your back with the knees bent and feet on the floor.",
+        "Bring the soles together and let the knees fall open to the sides; support the outer thighs with cushions or blocks if you like.",
+        "Rest the hands on the belly or by your sides and breathe steadily for the set time; use your hands to bring the knees back together."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "腹股沟有拉扯感时，在膝下多垫一些支撑。"
+      ],
+      "en": [
+        "Add more support under the knees if the groin feels strained."
+      ]
+    },
+    "primaryMuscles": [
+      "adductors"
+    ],
+    "secondaryMuscles": [
+      "hip-flexors"
+    ],
+    "bodyPart": "upper-legs",
+    "pattern": "mobility"
+  },
+  {
+    "id": "835b2d1f-fbde-570a-8ca3-72f25eaa8787",
+    "slug": "custom-reclined-hand-to-big-toe",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "仰卧手抓大脚趾式",
+      "en": "Reclined Hand-to-Big-Toe Pose"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "仰卧，双腿伸直；把毛巾或伸展带绕在一只脚的脚掌上。",
+        "双手握住两端，把这条腿向上抬到大腿后侧有轻微拉长感，另一条腿贴地。",
+        "肩膀放松，平稳呼吸保持规定时间，屈膝放下后换侧。"
+      ],
+      "en": [
+        "Lie on your back with the legs straight and loop a towel or strap around one foot.",
+        "Hold both ends and raise that leg until you feel a gentle stretch along the back of the thigh, the other leg resting on the floor.",
+        "Relax the shoulders and breathe steadily for the set time; bend the knee to lower, then switch sides."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "地面上的腿可以弯曲，脚踩地。"
+      ],
+      "en": [
+        "The leg on the floor may bend with the foot flat."
+      ]
+    },
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "secondaryMuscles": [
+      "gastrocnemius",
+      "gluteus-maximus"
+    ],
+    "bodyPart": "upper-legs",
+    "pattern": "mobility"
+  },
+  {
+    "id": "9debf31b-050f-5c55-89ef-52c71a8c2f35",
+    "slug": "custom-reclined-hero",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "仰卧英雄式",
+      "en": "Reclined Hero Pose"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "从英雄坐开始：跪坐在双脚之间，可以坐在瑜伽砖或叠起的毯子上。",
+        "双手撑在身后，慢慢把身体向后放低到前臂，或靠在身后竖放的枕头上。",
+        "平稳呼吸保持规定时间，用手臂撑回坐姿，再伸直双腿。"
+      ],
+      "en": [
+        "Begin in Hero Pose, sitting between the feet; sit on a block or folded blanket if you like.",
+        "Place the hands behind you and slowly lean back onto the forearms or onto a bolster set behind you.",
+        "Breathe steadily for the set time, press up on the arms to sit, then straighten the legs."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "膝盖或下背有任何不适就停在前臂撑地，或换成仰卧束角式。"
+      ],
+      "en": [
+        "Stop on the forearms, or choose Reclined Bound Angle instead, at any knee or low-back discomfort."
+      ]
+    },
+    "primaryMuscles": [
+      "quadriceps",
+      "hip-flexors"
+    ],
+    "secondaryMuscles": [
+      "tibialis-anterior"
+    ],
+    "bodyPart": "upper-legs",
+    "pattern": "mobility"
+  },
+  {
+    "id": "ed8fc1ce-32f5-570e-826e-dc026c268cb7",
+    "slug": "custom-side-crow",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "侧乌鸦式",
+      "en": "Side Crow Pose"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "深蹲到脚尖着地，双膝并拢，上身转向一侧，双手在身体侧面撑地，与肩同宽。",
+        "屈肘形成小平台，把外侧大腿放到上臂上，身体向前倾。",
+        "重心慢慢移到双手，让双脚离地；保持规定时间，双脚落地后换侧。"
+      ],
+      "en": [
+        "Squat on the balls of the feet with the knees together, twist to one side and plant the hands shoulder-width apart beside you.",
+        "Bend the elbows to make a shelf, rest the outer thigh on the upper arm and lean forwards.",
+        "Shift weight into the hands until the feet lift; hold for the set time, lower the feet and switch sides."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "在脸前方放一个枕头；先只抬起一只脚练习。"
+      ],
+      "en": [
+        "Place a cushion in front of your face and practise lifting one foot at a time first."
+      ]
+    },
+    "primaryMuscles": [
+      "triceps-brachii",
+      "obliques"
+    ],
+    "secondaryMuscles": [
+      "anterior-deltoid",
+      "pectoralis-major"
+    ],
+    "bodyPart": "upper-arms",
+    "pattern": "push_vertical"
+  },
+  {
+    "id": "6c03c878-e4bb-5630-8c12-0711832de0c4",
+    "slug": "custom-sun-salutation-a",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "拜日式 A",
+      "en": "Sun Salutation A"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "山式站立，吸气上举式，呼气站立前屈。",
+        "吸气半前屈，呼气后退到平板并降到四柱支撑或八体投地，吸气上犬式或眼镜蛇式。",
+        "呼气下犬式停留 3–5 次呼吸，再走回站立前屈，吸气上举式，呼气回到山式。一轮结束。"
+      ],
+      "en": [
+        "Stand in Mountain Pose; inhale to Upward Salute, exhale to Standing Forward Bend.",
+        "Inhale to a half lift; exhale, step back to plank and lower through Four-Limbed Staff or Knees-Chest-Chin; inhale to Upward Dog or Cobra.",
+        "Exhale to Downward Dog for 3–5 breaths, walk forwards to the forward bend, inhale to Upward Salute and exhale back to Mountain. That is one round."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "按自己的呼吸节奏做，动作之间不着急；下降时可以先双膝落地。"
+      ],
+      "en": [
+        "Move at the pace of your breath without rushing; lower with the knees down if needed."
+      ]
+    },
+    "primaryMuscles": [
+      "hamstrings",
+      "pectoralis-major"
+    ],
+    "secondaryMuscles": [
+      "triceps-brachii",
+      "erector-spinae"
+    ],
+    "bodyPart": "full-body",
+    "pattern": "mobility"
+  },
+  {
+    "id": "ef17d656-0478-526c-820d-6a50a7ab6a0b",
+    "slug": "custom-sun-salutation-b",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "拜日式 B",
+      "en": "Sun Salutation B"
+    },
+    "category": "bodyweight",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "吸气屈膝进入幻椅式，呼气站立前屈，吸气半前屈。",
+        "呼气降到四柱支撑，吸气上犬式，呼气下犬式；右脚向前迈，吸气战士一式，再回到下犬式；左侧重复一次。",
+        "在下犬式停留 3–5 次呼吸，走回前屈，吸气幻椅式，呼气站立。一轮结束。"
+      ],
+      "en": [
+        "Inhale, bend the knees into Chair Pose; exhale to Standing Forward Bend; inhale to a half lift.",
+        "Exhale through Four-Limbed Staff, inhale to Upward Dog, exhale to Downward Dog; step the right foot forwards into Warrior I, flow back to Downward Dog, then repeat on the left.",
+        "Stay in Downward Dog for 3–5 breaths, walk forwards to the fold, inhale to Chair and exhale to stand. That is one round."
+      ]
+    },
+    "cautions": {
+      "zh": [
+        "先熟悉拜日式 A；下降时可以先双膝落地，幻椅式不必蹲太低。"
+      ],
+      "en": [
+        "Get comfortable with Sun Salutation A first; lower with the knees down if needed and keep Chair Pose shallow."
+      ]
+    },
+    "primaryMuscles": [
+      "quadriceps",
+      "hamstrings"
+    ],
+    "secondaryMuscles": [
+      "triceps-brachii",
+      "gluteus-maximus"
+    ],
+    "bodyPart": "full-body",
+    "pattern": "mobility"
+  },
+  {
     "id": "83cb6674-515a-52cc-8ff4-b74c33f5da5a",
     "slug": "custom-slow-walking-in-place",
     "catalogVersion": 1,

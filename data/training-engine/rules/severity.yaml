@@ -143,6 +143,9 @@ rules:
   type: default
   severity: target
   weight: 3
+- id: goal.params.yoga
+  type: default
+  severity: mechanic
 - id: goal.rir.level_override
   type: limit
   severity: mechanic
@@ -220,6 +223,9 @@ rules:
   type: template
   severity: mechanic
 - id: week.day.mobility
+  type: template
+  severity: mechanic
+- id: week.day.yoga
   type: template
   severity: mechanic
 - id: week.coverage.patterns

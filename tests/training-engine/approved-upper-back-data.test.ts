@@ -17,8 +17,8 @@ it('appends one original source-backed action while preserving every old stable 
   expect(index.counts).toEqual({
     repdb: 637,
     native: 3,
-    custom: 41,
-    total: 681,
+    custom: 60,
+    total: 700,
   });
   expect(
     createHash('sha256')
