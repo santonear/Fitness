@@ -647,3 +647,11 @@ Bo 已定版 V9 设计并授权推进；计时规则按 Bo 当日决定改写（
 - 决定：换动作、缩短、今天调整（时长、疼痛部位、避开动作）、改计划（换成指定体式、加动作）、每周进阶与芽芽“补几组”都保持瑜伽课的顺序和体式；今天疼的部位只去掉对该部位负担 2 及以上的体式；进阶后保持时间超出体式范围的收回，超出课时时先收回加长的保持时间、再减多出的组；目标文字同时写了别的目标时以别的为准（与 `goal.select.single_primary` 的先后一致）；摊尸式最多占课时 12%；芽芽 AI 校验、可选动作与训练中备选在瑜伽目标下包含 19 个瑜伽专用体式，孕期仰卧等安全检查也能查到它们。
 - 理由：不改已存计划和完成记录，不新增依赖，安全规则全部沿用；芽芽话术未改。
 - 涉及文件：src/engine/{yoga.ts,yoga-session.ts,index.ts,data.ts,operations/{adjust,modify,substitute}.ts,progression/finalize.ts}、src/application/{engine-profile,plan-presentation,yaya-tips,engine-replacement-candidates,pregnancy-safety,postpartum-safety,pain-restrictions,training-pain,training-checkin,workflow/context,rules/plan-upgrade}.ts、src/coach/engine-template-validation.ts、src/catalog/catalog-service.ts、src/ui/pages/training/PregnancySafetyControls.tsx、data/training-engine/rules/rules-ch03.yaml、tests/training-engine/yoga.test.ts。
+
+## 2026-10-27 · 上线后复查修正（规范 V9.1.16）
+
+- 情况：Bo 要求复查上线后的应用，看完 8 条问题后说“修改1-8”。
+- 决定：静止保持动作的进阶以该水平的保持上限为止（`dose.isometric` 的 `hold_s`）；下一次目标如果让某节课新增硬规则错误，这节课加上去的组数和目标退回原值，换动作与去掉动作保留（原来会让今天页的开始按钮变灰）。今天页瑜伽课写“瑜伽”；“再下一次”按点选日期；瑜伽第二个平衡位置只放瑜伽体式；前屈用坐姿前屈；摊尸式不可用时用静坐或山式收尾；瑜伽目标不提示有氧不足；开关配置缺失时选瑜伽生成基础瑜伽课；导入的“徒手深蹲”显示名改为“自重深蹲（Air Squat）”（只改显示名，动作 ID 不变）。
+- 理由：不改已存计划与完成记录，不新增依赖；芽芽话术未改。已生成的瑜伽课要等重新生成或下次改计划才换体式。
+- 涉及文件：src/engine/{progression.ts,progression/finalize.ts,yoga.ts,yoga-session.ts,notices.ts}、src/application/{engine-profile,rules/basic-items,workflow/plan-setup}.ts、src/catalog/corrections.ts、src/ui/pages/home/{HomePage,NowPanel}.tsx、tests/training-engine/{yoga,progression-bounds}.test.ts。
+
