@@ -2,9 +2,10 @@ import { EXERCISE_IDS } from './exercise-ids';
 import { exercises } from './exercises';
 import { DomainError } from '../domain/errors';
 import { catalogMetadata, exerciseBodyPart } from './registry';
+import yogaPoses from '../../data/training-engine/yoga-poses.json' with { type: 'json' };
 // Tags and caution areas stay apart from the guide text so search and filters do not download the guides.
 export type ExercisePlace = 'home' | 'gym' | 'outdoor';
-export type ExerciseGoal = 'muscle' | 'fat_loss' | 'fitness' | 'mobility' | 'rehab';
+export type ExerciseGoal = 'muscle' | 'fat_loss' | 'fitness' | 'mobility' | 'rehab' | 'yoga';
 export interface ExerciseSearchFilters {
   place?: ExercisePlace;
   places?: ExercisePlace[];
@@ -50,6 +51,7 @@ export function exercise(id: string) {
   if (!e) throw new DomainError('INVALID', 'Unknown exercise ID');
   return e;
 }
+const yogaSlugs = new Set(Object.values(yogaPoses.families).flat());
 export function getExerciseTags(id: string): ExerciseTags {
   const e = exercise(id),
     meta = catalogMetadata.get(id),
@@ -83,6 +85,7 @@ export function getExerciseTags(id: string): ExerciseTags {
   else if (e.category === 'cardio') goals.push('fat_loss');
   else goals.push('muscle', 'fat_loss');
   if (lowIntensity.has(slug)) goals.push('rehab');
+  if (yogaSlugs.has(slug)) goals.push('yoga');
   const cautionAreas: string[] = [];
   // Movement/contact cues only: never infer a joint warning from the primary muscle.
   const movement =

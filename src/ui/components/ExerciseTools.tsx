@@ -102,12 +102,16 @@ function ExerciseSwapSheet({
   const ranked = useMemo(() => {
     if (!target || !allowed) return [];
     const equipment = initialFilters([profile?.place, ...(profile?.equipment ?? [])].join(' ')).equipment;
+    // An exercise already in this session is not offered again.
+    const inSession = new Set(
+      data?.version?.templates.find(row => row.id === target.templateId)?.items.map(item => item.exerciseId) ?? [],
+    );
     return allowed
-      .filter(id => id !== target.exerciseId && exercises.some(row => row.id === id))
+      .filter(id => id !== target.exerciseId && !inSession.has(id) && exercises.some(row => row.id === id))
       .map(id => ({ id, score: replacementScore(id, target.exerciseId, equipment, profile?.cautions) }))
       .sort((a, b) => b.score - a.score)
       .map(row => row.id);
-  }, [allowed, target?.exerciseId, profile]);
+  }, [allowed, target?.exerciseId, target?.templateId, data?.version, profile]);
   const shown = all ? ranked.slice(0, 40) : ranked.slice(0, 6);
 
   function candidate(

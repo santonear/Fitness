@@ -160,13 +160,15 @@ export function Orb({
     // Pictures too (the 今天 dial, body figure, charts): 芽芽 tucks rather than sit on them (Bo 2026-10-26).
     const covering = hits.length > 0 || [...controls, ...pictures].some(rect => touches(home, rect, 0));
     let next: { tuck: boolean; y?: number; tipBlocked: boolean } = { tuck: covering, tipBlocked };
-    if (hits.length) {
+    if (covering) {
+      // Tucked at the edge it can still sit on an edge control (a calendar arrow, a header switch): then it slides clear.
       const tuckedRect = { left: home.left + shift, right: home.right + shift, top: home.top, bottom: home.bottom };
-      if (primaries.some(rect => overlaps(tuckedRect, rect))) {
-        const above = Math.min(...hits.map(rect => rect.top)) - gap - b.size;
+      const still = [...primaries, ...controls].filter(rect => overlaps(tuckedRect, rect));
+      if (still.length) {
+        const above = Math.min(...still.map(rect => rect.top)) - gap - b.size;
         next = {
           ...next,
-          y: above >= b.min ? above : Math.min(b.max, Math.max(...hits.map(rect => rect.bottom)) + gap),
+          y: above >= b.min ? above : Math.min(b.max, Math.max(...still.map(rect => rect.bottom)) + gap),
         };
       }
     }

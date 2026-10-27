@@ -29,6 +29,8 @@ export function engineMetricMatches(request: CoachRequest, item: PlannedItem): b
   const power = rules.get('dose.power');
   if (exercise.modality === 'power' || power.patterns.includes(exercise.primary_pattern))
     return powerLoadIssue(exercise, item, profile, rules) === undefined;
+  // The engine plans mobility work as a hold even when the catalog counts it in reps (dose/prescribe).
+  if (exercise.modality === 'mobility' && item.target.metricType === 'duration') return true;
   if (exercise.modality === 'cardio' || exercise.modality === 'isometric')
     return item.target.metricType === (exercise.metricType === 'duration_distance' ? 'duration_distance' : 'duration');
   if (item.target.metricType === exercise.metricType)

@@ -3,6 +3,7 @@ import type { DayPlan, EngineProfile, PipelineContext, SessionDraft } from './co
 import { condition, restrictedAdjacentIds, stretchHoldRange, type Exercise, type RuleValue } from './data';
 import { isHardEligible } from './candidates';
 import { prescribe, type Item } from './dose';
+import { minimumReps } from './dose/rep-ranges';
 import { estimateSeconds } from './fit';
 import { pregnancyStandingCap } from './pregnancy-limits';
 import { engineExercises } from './yoga-session';
@@ -135,7 +136,9 @@ function prescribePose(
 ): Item {
   const item = prescribe(pick, ctx.profile, ctx.rules, ctx.gate.restrictions, block, 1),
     hold = holdRange(pick, ctx);
-  if (hold && 'durationSeconds' in item.target)
+  // A flow counted in reps (e.g. dog to plank) is recorded in reps, so it is planned in reps too.
+  if (pick.metricType === 'reps') item.target = { metricType: 'reps', reps: minimumReps(ctx.profile, ctx.rules) };
+  else if (hold && 'durationSeconds' in item.target)
     item.target = { ...item.target, durationSeconds: Math.min(item.target.durationSeconds, hold[0]) };
   item.prescription = { ...item.prescription!, sourcePosition: pos, restSeconds: REST_BETWEEN_POSES_S };
   return item;

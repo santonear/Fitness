@@ -28,6 +28,7 @@ import en from '../../../i18n/features/manual/en.json';
 import './manual/manual.css';
 import '../plan/week-plan.css';
 import { HomeExit } from '../../components/HomeExit';
+import { BackButton } from '../../components/BackButton';
 
 export function ManualPage() {
   const { locale, data, answers, startManual, start, busy, navigate } = useMainline();
@@ -178,6 +179,7 @@ export function ManualPage() {
   return (
     <main className="manual-page">
       <nav className="v9-plan-nav" aria-label={copy.title}>
+        <BackButton locale={locale} onFallback={() => navigate('/')} />
         <HomeExit locale={locale} dirty={selected.length > 0} onLeave={() => navigate('/')} />
       </nav>
       <header>
