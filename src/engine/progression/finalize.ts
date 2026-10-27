@@ -66,22 +66,33 @@ function keepWithinHardRules(
   for (const template of value.templates.filter(t => broken.has(t.id))) {
     const original = before.templates.find(t => t.id === template.id);
     if (!original) continue;
+    const restored = new Set<number>();
     template.items.forEach((item, index) => {
       const old = original.items[index];
-      if (old?.exerciseId !== item.exerciseId) return;
+      // Only growth goes back; a reduction (deload, fatigue) is never undone.
+      if (old?.exerciseId !== item.exerciseId || !grew(item, old)) return;
       item.sets = old.sets;
       item.target = structuredClone(old.target);
+      restored.add(index);
     });
     output.diff = output.diff.filter(
       change =>
         change.templateId !== template.id ||
         !['volume', 'duration'].includes(change.kind) ||
-        original.items[change.itemIndex ?? -1]?.exerciseId !== template.items[change.itemIndex ?? -1]?.exerciseId,
+        !restored.has(change.itemIndex ?? -1),
     );
     template.estimatedSeconds = estimateSeconds(template, r);
     template.estimatedMinutes = Math.ceil(template.estimatedSeconds / 60);
   }
 }
+
+const grew = (item: EnginePlan['templates'][number]['items'][number], old: typeof item) =>
+  item.sets > old.sets ||
+  (['reps', 'durationSeconds', 'loadGrams', 'distanceMeters'] as const).some(
+    key =>
+      ((item.target as Record<string, unknown>)[key] as number) >
+      ((old.target as Record<string, unknown>)[key] as number),
+  );
 
 export function removeDroppedPatterns(
   value: EnginePlan,
