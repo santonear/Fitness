@@ -3401,5 +3401,1511 @@
     "source": "custom",
     "requires_floor_transition": false,
     "note": "User-approved locomotion / low-intensity walking maps to existing cardio_cyclic; coach review pending. Optional wall/chair support is not required equipment. Only slow, low foot lift, natural unweighted arm swing: no high knees, fast or loaded variants. No intensity ladder; progression direction is walking only. default_dose, time and confidence copied unchanged from walking; existing aerobic intensity rules remain authoritative. ACOG references provide general postpartum background only, not specific endorsement for walking in place or uncleared cesarean exercise."
+  },
+  {
+    "id": "4112d689-0bc2-545a-8d24-28361c68d626",
+    "slug": "custom-reverse-warrior",
+    "primary_pattern": "mobility",
+    "secondary_patterns": [],
+    "modality": "mobility",
+    "laterality": "unilateral",
+    "nsca_class": "none",
+    "plane": "frontal",
+    "difficulty": 2,
+    "joint_load": {
+      "knee": 1,
+      "back": 0,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 1,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [],
+    "use": [
+      "warmup",
+      "cooldown"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": null,
+        "seconds": [
+          20,
+          30
+        ],
+        "rir": null
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": null,
+        "seconds": [
+          30,
+          45
+        ],
+        "rir": null
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": true
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original yoga pose (Bo 2026-10-26); conservative content annotation, coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false
+  },
+  {
+    "id": "eb0d2ce3-1f54-5e2f-8e63-4e519f085e71",
+    "slug": "custom-goddess-pose",
+    "primary_pattern": "squat",
+    "secondary_patterns": [],
+    "modality": "isometric",
+    "laterality": "bilateral",
+    "nsca_class": "compound",
+    "plane": "frontal",
+    "difficulty": 2,
+    "joint_load": {
+      "knee": 1,
+      "back": 0,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 1,
+      "ankle": 1
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [
+      "static_standing_hold"
+    ],
+    "use": [
+      "warmup",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": null
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": null,
+        "seconds": [
+          30,
+          45
+        ],
+        "rir": null
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": false
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original yoga pose (Bo 2026-10-26); conservative content annotation, coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false
+  },
+  {
+    "id": "7cc7c225-666e-50e9-8dd7-3269edf8c37d",
+    "slug": "custom-gate-pose",
+    "primary_pattern": "mobility",
+    "secondary_patterns": [],
+    "modality": "mobility",
+    "laterality": "unilateral",
+    "nsca_class": "none",
+    "plane": "frontal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 1,
+      "back": 0,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "kneeling"
+    ],
+    "flags": [
+      "kneeling_on_knee"
+    ],
+    "use": [
+      "warmup",
+      "cooldown"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          2
+        ],
+        "reps": null,
+        "seconds": [
+          20,
+          30
+        ],
+        "rir": null
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          2
+        ],
+        "reps": null,
+        "seconds": [
+          30,
+          45
+        ],
+        "rir": null
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": true
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original yoga pose (Bo 2026-10-26); conservative content annotation, coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": true
+  },
+  {
+    "id": "3228abb1-cf2c-5ce3-8ae1-329868a1bd4a",
+    "slug": "custom-revolved-triangle",
+    "primary_pattern": "mobility",
+    "secondary_patterns": [],
+    "modality": "mobility",
+    "laterality": "unilateral",
+    "nsca_class": "none",
+    "plane": "transverse",
+    "difficulty": 3,
+    "joint_load": {
+      "knee": 0,
+      "back": 1,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 1,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [
+      "balance_demand"
+    ],
+    "use": [
+      "cooldown"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          2
+        ],
+        "reps": null,
+        "seconds": [
+          20,
+          30
+        ],
+        "rir": null
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          2
+        ],
+        "reps": null,
+        "seconds": [
+          30,
+          45
+        ],
+        "rir": null
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": true
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original yoga pose (Bo 2026-10-26); conservative content annotation, coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false
+  },
+  {
+    "id": "88234e63-0482-5ffc-8a20-8e46109160d1",
+    "slug": "custom-revolved-side-angle",
+    "primary_pattern": "mobility",
+    "secondary_patterns": [],
+    "modality": "mobility",
+    "laterality": "unilateral",
+    "nsca_class": "none",
+    "plane": "transverse",
+    "difficulty": 3,
+    "joint_load": {
+      "knee": 1,
+      "back": 1,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 1,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [
+      "balance_demand"
+    ],
+    "use": [
+      "cooldown"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          2
+        ],
+        "reps": null,
+        "seconds": [
+          20,
+          30
+        ],
+        "rir": null
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          2
+        ],
+        "reps": null,
+        "seconds": [
+          30,
+          45
+        ],
+        "rir": null
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": true
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original yoga pose (Bo 2026-10-26); conservative content annotation, coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false
+  },
+  {
+    "id": "4399bf8a-210f-5e5d-814e-d07dde9d86ca",
+    "slug": "custom-revolved-half-moon",
+    "primary_pattern": "balance",
+    "secondary_patterns": [],
+    "modality": "isometric",
+    "laterality": "unilateral",
+    "nsca_class": "none",
+    "plane": "transverse",
+    "difficulty": 4,
+    "joint_load": {
+      "knee": 1,
+      "back": 1,
+      "shoulder": 0,
+      "wrist": 1,
+      "hip": 1,
+      "ankle": 1
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [
+      "balance_demand",
+      "static_standing_hold"
+    ],
+    "use": [
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": null,
+      "intermediate": {
+        "sets": [
+          2,
+          2
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": null
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": true
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original yoga pose (Bo 2026-10-26); conservative content annotation, coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false,
+    "supported_variant_available": true
+  },
+  {
+    "id": "f711bbce-1c2f-51ae-8efe-73447b2e8637",
+    "slug": "custom-extended-hand-to-big-toe",
+    "primary_pattern": "balance",
+    "secondary_patterns": [],
+    "modality": "isometric",
+    "laterality": "unilateral",
+    "nsca_class": "none",
+    "plane": "sagittal",
+    "difficulty": 3,
+    "joint_load": {
+      "knee": 1,
+      "back": 0,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 1,
+      "ankle": 1
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [
+      "balance_demand",
+      "static_standing_hold"
+    ],
+    "use": [
+      "accessory",
+      "warmup"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          2
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          20
+        ],
+        "rir": null
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": null,
+        "seconds": [
+          20,
+          30
+        ],
+        "rir": null
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": true
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original yoga pose (Bo 2026-10-26); conservative content annotation, coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false,
+    "supported_variant_available": true
+  },
+  {
+    "id": "15fb2afa-d12f-547a-8865-62ce4eb7137c",
+    "slug": "custom-upward-salute",
+    "primary_pattern": "mobility",
+    "secondary_patterns": [],
+    "modality": "mobility",
+    "laterality": "bilateral",
+    "nsca_class": "none",
+    "plane": "sagittal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 0,
+      "back": 0,
+      "shoulder": 1,
+      "wrist": 0,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [],
+    "use": [
+      "warmup",
+      "cooldown"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          1,
+          2
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": null
+      },
+      "intermediate": {
+        "sets": [
+          1,
+          2
+        ],
+        "reps": null,
+        "seconds": [
+          20,
+          30
+        ],
+        "rir": null
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": false
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original yoga pose (Bo 2026-10-26); conservative content annotation, coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false
+  },
+  {
+    "id": "9b7b82dc-d1b7-5781-8e0d-02bd6e1dcec9",
+    "slug": "custom-staff-pose",
+    "primary_pattern": "mobility",
+    "secondary_patterns": [],
+    "modality": "mobility",
+    "laterality": "bilateral",
+    "nsca_class": "none",
+    "plane": "sagittal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 0,
+      "back": 1,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "seated"
+    ],
+    "flags": [],
+    "use": [
+      "warmup",
+      "cooldown"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          1,
+          2
+        ],
+        "reps": null,
+        "seconds": [
+          20,
+          30
+        ],
+        "rir": null
+      },
+      "intermediate": {
+        "sets": [
+          1,
+          2
+        ],
+        "reps": null,
+        "seconds": [
+          30,
+          45
+        ],
+        "rir": null
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": false
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original yoga pose (Bo 2026-10-26); conservative content annotation, coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": true
+  },
+  {
+    "id": "a7dc743c-2471-588c-858f-fd431153cfb1",
+    "slug": "custom-fire-log-pose",
+    "primary_pattern": "mobility",
+    "secondary_patterns": [],
+    "modality": "mobility",
+    "laterality": "unilateral",
+    "nsca_class": "none",
+    "plane": "transverse",
+    "difficulty": 3,
+    "joint_load": {
+      "knee": 2,
+      "back": 0,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 2,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "seated"
+    ],
+    "flags": [],
+    "use": [
+      "cooldown"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          2
+        ],
+        "reps": null,
+        "seconds": [
+          20,
+          30
+        ],
+        "rir": null
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          2
+        ],
+        "reps": null,
+        "seconds": [
+          30,
+          45
+        ],
+        "rir": null
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": true
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original yoga pose (Bo 2026-10-26); conservative content annotation, coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": true
+  },
+  {
+    "id": "29ec1f64-3d9e-5bdb-868c-5e35a93bb784",
+    "slug": "custom-half-lord-of-the-fishes",
+    "primary_pattern": "mobility",
+    "secondary_patterns": [],
+    "modality": "mobility",
+    "laterality": "unilateral",
+    "nsca_class": "none",
+    "plane": "transverse",
+    "difficulty": 2,
+    "joint_load": {
+      "knee": 1,
+      "back": 1,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 1,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "seated"
+    ],
+    "flags": [],
+    "use": [
+      "cooldown"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          2
+        ],
+        "reps": null,
+        "seconds": [
+          20,
+          30
+        ],
+        "rir": null
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          2
+        ],
+        "reps": null,
+        "seconds": [
+          30,
+          45
+        ],
+        "rir": null
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": true
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original yoga pose (Bo 2026-10-26); conservative content annotation, coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": true
+  },
+  {
+    "id": "67a5e953-a035-515b-87ae-eef62467f833",
+    "slug": "custom-four-limbed-staff",
+    "primary_pattern": "push_horizontal",
+    "secondary_patterns": [],
+    "modality": "isometric",
+    "laterality": "bilateral",
+    "nsca_class": "compound",
+    "plane": "sagittal",
+    "difficulty": 3,
+    "joint_load": {
+      "knee": 0,
+      "back": 1,
+      "shoulder": 2,
+      "wrist": 2,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "plank"
+    ],
+    "flags": [
+      "wrist_extension_loaded"
+    ],
+    "use": [
+      "accessory",
+      "skill"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": null,
+        "seconds": [
+          5,
+          10
+        ],
+        "rir": null
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": null,
+        "seconds": [
+          10,
+          20
+        ],
+        "rir": null
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": false
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original yoga pose (Bo 2026-10-26); conservative content annotation, coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": true
+  },
+  {
+    "id": "cd80b290-99cb-5777-8836-4cefbc728af6",
+    "slug": "custom-knees-chest-chin",
+    "primary_pattern": "mobility",
+    "secondary_patterns": [],
+    "modality": "mobility",
+    "laterality": "bilateral",
+    "nsca_class": "none",
+    "plane": "sagittal",
+    "difficulty": 2,
+    "joint_load": {
+      "knee": 0,
+      "back": 1,
+      "shoulder": 1,
+      "wrist": 1,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "prone",
+      "kneeling"
+    ],
+    "flags": [
+      "kneeling_on_knee"
+    ],
+    "use": [
+      "warmup"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          1,
+          2
+        ],
+        "reps": null,
+        "seconds": [
+          10,
+          20
+        ],
+        "rir": null
+      },
+      "intermediate": {
+        "sets": [
+          1,
+          2
+        ],
+        "reps": null,
+        "seconds": [
+          15,
+          30
+        ],
+        "rir": null
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": false
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original yoga pose (Bo 2026-10-26); conservative content annotation, coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": true
+  },
+  {
+    "id": "699fbee8-606e-5ba5-8d33-0421a0718e75",
+    "slug": "custom-frog-pose",
+    "primary_pattern": "mobility",
+    "secondary_patterns": [],
+    "modality": "mobility",
+    "laterality": "bilateral",
+    "nsca_class": "none",
+    "plane": "frontal",
+    "difficulty": 3,
+    "joint_load": {
+      "knee": 2,
+      "back": 0,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 2,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "quadruped",
+      "kneeling"
+    ],
+    "flags": [
+      "kneeling_on_knee"
+    ],
+    "use": [
+      "cooldown"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          1,
+          2
+        ],
+        "reps": null,
+        "seconds": [
+          20,
+          30
+        ],
+        "rir": null
+      },
+      "intermediate": {
+        "sets": [
+          1,
+          2
+        ],
+        "reps": null,
+        "seconds": [
+          30,
+          60
+        ],
+        "rir": null
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": false
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original yoga pose (Bo 2026-10-26); conservative content annotation, coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": true
+  },
+  {
+    "id": "3bcfc636-ee4f-5b32-8804-48c05e6516d7",
+    "slug": "custom-reclined-bound-angle",
+    "primary_pattern": "mobility",
+    "secondary_patterns": [],
+    "modality": "mobility",
+    "laterality": "bilateral",
+    "nsca_class": "none",
+    "plane": "frontal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 0,
+      "back": 0,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 1,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "supine"
+    ],
+    "flags": [],
+    "use": [
+      "cooldown"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          1,
+          1
+        ],
+        "reps": null,
+        "seconds": [
+          30,
+          60
+        ],
+        "rir": null
+      },
+      "intermediate": {
+        "sets": [
+          1,
+          1
+        ],
+        "reps": null,
+        "seconds": [
+          60,
+          120
+        ],
+        "rir": null
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": false
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original yoga pose (Bo 2026-10-26); conservative content annotation, coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": true
+  },
+  {
+    "id": "835b2d1f-fbde-570a-8ca3-72f25eaa8787",
+    "slug": "custom-reclined-hand-to-big-toe",
+    "primary_pattern": "mobility",
+    "secondary_patterns": [],
+    "modality": "mobility",
+    "laterality": "unilateral",
+    "nsca_class": "none",
+    "plane": "sagittal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 0,
+      "back": 0,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 1,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "supine"
+    ],
+    "flags": [],
+    "use": [
+      "cooldown"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          2
+        ],
+        "reps": null,
+        "seconds": [
+          20,
+          30
+        ],
+        "rir": null
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          2
+        ],
+        "reps": null,
+        "seconds": [
+          30,
+          45
+        ],
+        "rir": null
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": true
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original yoga pose (Bo 2026-10-26); conservative content annotation, coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": true
+  },
+  {
+    "id": "9debf31b-050f-5c55-89ef-52c71a8c2f35",
+    "slug": "custom-reclined-hero",
+    "primary_pattern": "mobility",
+    "secondary_patterns": [],
+    "modality": "mobility",
+    "laterality": "bilateral",
+    "nsca_class": "none",
+    "plane": "sagittal",
+    "difficulty": 3,
+    "joint_load": {
+      "knee": 2,
+      "back": 1,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 0,
+      "ankle": 1
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "kneeling",
+      "supine"
+    ],
+    "flags": [
+      "kneeling_on_knee",
+      "deep_knee_flexion"
+    ],
+    "use": [
+      "cooldown"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          1,
+          2
+        ],
+        "reps": null,
+        "seconds": [
+          20,
+          30
+        ],
+        "rir": null
+      },
+      "intermediate": {
+        "sets": [
+          1,
+          2
+        ],
+        "reps": null,
+        "seconds": [
+          30,
+          60
+        ],
+        "rir": null
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": false
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original yoga pose (Bo 2026-10-26); conservative content annotation, coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": true
+  },
+  {
+    "id": "ed8fc1ce-32f5-570e-826e-dc026c268cb7",
+    "slug": "custom-side-crow",
+    "primary_pattern": "push_vertical",
+    "secondary_patterns": [],
+    "modality": "isometric",
+    "laterality": "unilateral",
+    "nsca_class": "compound",
+    "plane": "transverse",
+    "difficulty": 4,
+    "joint_load": {
+      "knee": 0,
+      "back": 1,
+      "shoulder": 2,
+      "wrist": 3,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "quadruped"
+    ],
+    "flags": [
+      "wrist_extension_loaded",
+      "balance_demand",
+      "high_fall_risk"
+    ],
+    "use": [
+      "skill",
+      "accessory"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": null,
+      "intermediate": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": null,
+        "seconds": [
+          10,
+          20
+        ],
+        "rir": null
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": true
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original yoga pose (Bo 2026-10-26); conservative content annotation, coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false
+  },
+  {
+    "id": "6c03c878-e4bb-5630-8c12-0711832de0c4",
+    "slug": "custom-sun-salutation-a",
+    "primary_pattern": "mobility",
+    "secondary_patterns": [],
+    "modality": "mobility",
+    "laterality": "bilateral",
+    "nsca_class": "none",
+    "plane": "sagittal",
+    "difficulty": 2,
+    "joint_load": {
+      "knee": 0,
+      "back": 1,
+      "shoulder": 1,
+      "wrist": 1,
+      "hip": 0,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing",
+      "plank",
+      "prone"
+    ],
+    "flags": [
+      "wrist_extension_loaded"
+    ],
+    "use": [
+      "warmup"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          2,
+          3
+        ],
+        "reps": null,
+        "seconds": [
+          45,
+          60
+        ],
+        "rir": null
+      },
+      "intermediate": {
+        "sets": [
+          3,
+          5
+        ],
+        "reps": null,
+        "seconds": [
+          45,
+          60
+        ],
+        "rir": null
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": false
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original yoga pose (Bo 2026-10-26); conservative content annotation, coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": true
+  },
+  {
+    "id": "ef17d656-0478-526c-820d-6a50a7ab6a0b",
+    "slug": "custom-sun-salutation-b",
+    "primary_pattern": "mobility",
+    "secondary_patterns": [],
+    "modality": "mobility",
+    "laterality": "bilateral",
+    "nsca_class": "none",
+    "plane": "sagittal",
+    "difficulty": 3,
+    "joint_load": {
+      "knee": 1,
+      "back": 1,
+      "shoulder": 1,
+      "wrist": 1,
+      "hip": 1,
+      "ankle": 0
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing",
+      "plank",
+      "prone"
+    ],
+    "flags": [
+      "wrist_extension_loaded"
+    ],
+    "use": [
+      "warmup"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          1,
+          2
+        ],
+        "reps": null,
+        "seconds": [
+          75,
+          90
+        ],
+        "rir": null
+      },
+      "intermediate": {
+        "sets": [
+          2,
+          4
+        ],
+        "reps": null,
+        "seconds": [
+          75,
+          90
+        ],
+        "rir": null
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": false
+    },
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "confidence": "medium",
+    "review": false,
+    "note": "Fitness original yoga pose (Bo 2026-10-26); conservative content annotation, coach review pending.",
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": true
   }
 ]

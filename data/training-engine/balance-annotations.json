@@ -126,5 +126,35 @@
       1
     ],
     "stepsSha256": "7767d7e30e56c4d69d87f039f3b29131074674739e499b89780bb2a4beebfe6f"
+  },
+  {
+    "slug": "custom-revolved-half-moon",
+    "balance": {
+      "base": "single_leg",
+      "mode": "static",
+      "hand_support": true
+    },
+    "sourcePath": "src/catalog/custom-exercises.json",
+    "stepIndexes": [
+      0,
+      1,
+      2
+    ],
+    "stepsSha256": "a02c96c2d72a259d116772990f7ebde01c8ea513620f3883dc8215e4801f114e"
+  },
+  {
+    "slug": "custom-extended-hand-to-big-toe",
+    "balance": {
+      "base": "single_leg",
+      "mode": "static",
+      "hand_support": false
+    },
+    "sourcePath": "src/catalog/custom-exercises.json",
+    "stepIndexes": [
+      0,
+      1,
+      2
+    ],
+    "stepsSha256": "ae4c920e3a0b99e85e76d6f9126944950dcb65793d264b5b73022c35dcb489da"
   }
 ]
