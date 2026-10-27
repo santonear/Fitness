@@ -27,6 +27,7 @@ import {
   type InstallRoute,
 } from '../../../application/pwa';
 import { dayOf, shiftDate, volumeKg, weekStart, weekStreak, weeklyRemaining } from '../../../application/review/charts';
+import { isYogaSession } from '../../../engine/yoga-session';
 import { templateLabel } from '../../../i18n/features/plan/labels';
 import zh from '../../../i18n/features/training/finish.zh.json';
 import en from '../../../i18n/features/training/finish.en.json';
@@ -124,14 +125,21 @@ export function FinishPage() {
   const tones = yayaThemeTone[locale].done,
     tone = tones[appearance.theme as keyof typeof tones],
     weekDone = thisWeek.filter(row => row.status === 'complete').length;
+  // A finished yoga session counts this week's yoga sessions (Bo 2026-10-27).
+  const yogaSnapshot = active.templateSnapshot && isYogaSession(active.templateSnapshot),
+    yogaDone = thisWeek.filter(
+      row => row.status === 'complete' && row.templateSnapshot && isYogaSession(row.templateSnapshot),
+    ).length;
   const message =
     done === 0
       ? t.zeroMessage
-      : complete
-        ? tone
-          ? fillLine(tone, { count: weekDone, target: target ?? weekDone })
-          : format(t.completeMessage, { count: ordinal })
-        : fillLine(yayaV5[locale].partialDone, { sets: done });
+      : complete && yogaSnapshot
+        ? fillLine(yayaV5[locale].yogaDone, { count: yogaDone })
+        : complete
+          ? tone
+            ? fillLine(tone, { count: weekDone, target: target ?? weekDone })
+            : format(t.completeMessage, { count: ordinal })
+          : fillLine(yayaV5[locale].partialDone, { sets: done });
   const days: WeekStripDay[] = copy.weekdays.map((label, i) => {
     const day = shiftDate(monday, i),
       on = thisWeek.filter(row => dayOf(row, timeZone) === day),

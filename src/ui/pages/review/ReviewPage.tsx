@@ -29,6 +29,7 @@ import { sessionNames } from '../../../application/plan-presentation';
 import { answerText } from '../../../application/preset-text';
 import { recurringDiscomfort, suggestChange } from '../../../application/review/suggest';
 import { activityDate } from '../../../application/v8-activity';
+import { yogaWeekLine } from '../../../application/yaya-tips';
 import { createReviewService } from '../../../application/v8-review';
 import { createV8DataService } from '../../../persistence/v8-access';
 import { reviewHistory, historyInPeriod, type ReviewHistoryRow } from '../../../application/review/history';
@@ -196,8 +197,10 @@ export function ReviewPage() {
   const met = !monthly && hasCurrentPlan && target > 0 && week.left === 0;
   // Goal salience: echo the person's own first answer once something was done this period (V9.18).
   const goal = data?.version?.goalText.trim() ? answerText(data.version.goalText.trim(), c.locale) : '',
-    yayaLine =
-      goal && week.done > 0
+    yogaLine = monthly ? undefined : yogaWeekLine(data?.workouts ?? [], facts.from, facts.to, c.locale),
+    yayaLine = yogaLine
+      ? yogaLine
+      : goal && week.done > 0
         ? format(monthly ? r.goalMonth : r.goalWeek, {
             goal: goal.length > 40 ? `${goal.slice(0, 39)}…` : goal,
             done: week.done,

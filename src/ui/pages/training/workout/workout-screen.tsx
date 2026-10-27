@@ -14,6 +14,11 @@ import { ExerciseGuidePanel } from '../../../components/ExerciseGuide';
 import { restTotal, pauseOtherHolds } from '../timer-logic';
 import { SET_LIMITS, CueAt } from './workout-parts';
 import type { WorkoutModel } from './workout-model';
+import { isYogaSession } from '../../../../engine/yoga-session';
+import { catalogMetadata } from '../../../../catalog/registry';
+import { yayaV5 } from '../../../../i18n/features/coach/yaya-v5';
+
+const CHILDS_POSE = [...catalogMetadata].find(([, meta]) => meta.slug === 'childs-pose')?.[0];
 
 /** The whole player screen around `body`: safety signals, pain prompts, exercise capsules and panels. */
 export function workoutScreen(m: WorkoutModel, body: ReactNode) {
@@ -86,6 +91,14 @@ export function workoutScreen(m: WorkoutModel, body: ReactNode) {
     progressLabel,
     top,
   } = m;
+  const yogaRest =
+    template &&
+    isYogaSession(template) &&
+    CHILDS_POSE &&
+    CHILDS_POSE !== effectiveId &&
+    allowedSwapIds.includes(CHILDS_POSE)
+      ? CHILDS_POSE
+      : undefined;
   const editInvalid =
     !(value > 0) ||
     !Number.isInteger(value) ||
@@ -246,7 +259,8 @@ export function workoutScreen(m: WorkoutModel, body: ReactNode) {
                   data-padding="sm"
                   disabled={thisDone || painBlocked}
                   onClick={event => {
-                    setReplacement('');
+                    // In a yoga session 芽芽 suggests resting in Child's Pose when it is allowed here.
+                    setReplacement(yogaRest ?? '');
                     setSwapQuery('');
                     setSwapFilters({});
                     setReason('discomfort');
@@ -336,6 +350,7 @@ export function workoutScreen(m: WorkoutModel, body: ReactNode) {
             </>
           ) : panel === 'swap' ? (
             <>
+              {yogaRest && reason === 'discomfort' && <p>{yayaV5[locale].yogaPose}</p>}
               <ExerciseBrowser
                 locale={locale}
                 query={swapQuery}

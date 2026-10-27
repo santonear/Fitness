@@ -88,6 +88,15 @@ export const yayaV5 = {
     feelSleep: '你说最近睡得更好了，这比体重上的任何数字都重要 🌱',
     careFast: '最近体重掉得有点快，吃饱睡好了吗？慢一点更稳，也更不容易反弹。',
     careLowBmi: '现在的体重已经在健康范围的下边了，接下来我们把重点放在力量上。',
+    // 瑜伽 (Bo 2026-10-27 approved).
+    yogaDraft: '这份按瑜伽来排：每次从静心开始，到摊尸式放松结束。每个体式点一下开始，跟着呼吸来就好。🌱',
+    yogaStrength: '每周练 3 天以上，我加了 {count} 天全身力量，让瑜伽里的支撑更稳。',
+    yogaToday: '今天的瑜伽课约 {minutes} 分钟，跟着顺序慢慢来，最后躺下放松。',
+    yogaDone: '完成了。这是你本周第 {count} 次瑜伽。😌',
+    yogaPose: '这个体式今天先跳过，换成婴儿式歇一下。如果疼痛明显或持续，先休息，并请专业人士看看。',
+    yogaWeek: '这周练了 {count} 次瑜伽，共 {minutes} 分钟。',
+    yogaWeekSteady: '节奏在慢慢稳下来。',
+    yogaWeekPartial: '第 {number} 次后半段没练上，下次可以练到{stage}就收尾。',
   },
   en: {
     returnHello: "Hey, you're back. Move for 10 minutes today, just to say hi to your body 🌱",
@@ -165,6 +174,18 @@ export const yayaV5 = {
     careFast:
       'Your weight has been dropping a bit fast. Are you eating and sleeping enough? Slower is steadier and less likely to bounce back.',
     careLowBmi: "Your weight is now at the lower edge of the healthy range, so next we'll focus on strength.",
+    yogaDraft:
+      'This plan is built as yoga: each session starts by settling in and ends resting in Corpse Pose. Tap to start each pose and follow your breath 🌱',
+    yogaStrength:
+      'You train 3 or more days a week, so I added {count} full-body strength day(s) to steady your yoga poses.',
+    yogaToday:
+      "Today's yoga session is about {minutes} minutes. Take it in order, slowly, and lie down to rest at the end.",
+    yogaDone: 'Done. That is yoga session {count} this week 😌',
+    yogaPose:
+      'Skip this pose today and rest in Child’s Pose instead. If the pain is clear or keeps up, rest first and have a professional take a look.',
+    yogaWeek: 'This week: {count} yoga sessions, {minutes} minutes in all.',
+    yogaWeekSteady: 'Your rhythm is settling in.',
+    yogaWeekPartial: 'Session {number} stopped before its second half; next time you can end after {stage}.',
   },
 } as const;
 
@@ -177,6 +198,7 @@ export const yayaSafetyKeys = [
   'painLine',
   'careFast',
   'careLowBmi',
+  'yogaPose',
 ] as const satisfies readonly YayaV5Key[];
 
 /** v5 §18 / §19: the same moment in each theme's voice. */
@@ -203,3 +225,37 @@ export const yayaThemeTone = {
 
 export const fillLine = (line: string, values: Record<string, string | number>) =>
   line.replace(/\{(\w+)\}/g, (match, key: string) => (key in values ? String(values[key]) : match));
+
+/** Yoga sequence stages by source position (week.day.yoga `yoga_<stage>_<n>`), for 芽芽's weekly line. */
+export const yogaStageNames = {
+  zh: {
+    center: '静心',
+    warm: '热身',
+    sun: '拜日式',
+    stand: '站立体式',
+    balance: '平衡',
+    core: '核心',
+    arm: '手臂支撑',
+    invert: '倒置',
+    back: '后弯',
+    twist: '扭转',
+    hip: '开髋',
+    fold: '前屈',
+    supine: '仰卧',
+  },
+  en: {
+    center: 'settling in',
+    warm: 'the warm-up',
+    sun: 'the sun salutation',
+    stand: 'the standing poses',
+    balance: 'the balances',
+    core: 'the core work',
+    arm: 'the arm balances',
+    invert: 'the inversion',
+    back: 'the backbends',
+    twist: 'the twists',
+    hip: 'the hip openers',
+    fold: 'the forward folds',
+    supine: 'the supine poses',
+  },
+} as const;

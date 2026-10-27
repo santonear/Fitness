@@ -11,6 +11,7 @@ import {
   nextWeekTip,
   plannedDates,
   skipDayTip,
+  yogaWeekLine,
 } from '../../src/application/yaya-tips';
 import { checkCoachLanguage, checkSafetyLanguage } from '../../src/application/rules/coach-language';
 import { goalPhrase, yayaTipSafetyKeys, yayaTips } from '../../src/i18n/features/coach/yaya-tips';
@@ -263,5 +264,36 @@ describe('approved wording and the monthly goal check', () => {
     expect(goalPhrase('想瘦下来，身体轻一点', 'zh')).toBe('瘦下来，身体轻一点');
     expect(goalPhrase('I’d like more strength and energy', 'en')).toBe('more strength and energy');
     expect(goalPhrase('x'.repeat(45), 'zh', false)).toHaveLength(41);
+  });
+});
+
+describe("回顾: the week's yoga", () => {
+  const stages = ['center', 'warm', 'sun', 'stand', 'balance', 'twist', 'hip', 'rest'];
+  const yoga: SessionTemplate = {
+    id: 'Y',
+    name: 'Y',
+    estimatedMinutes: 45,
+    items: stages.map(stage => ({
+      ...item(`pose-${stage}`, 1),
+      prescription: { sourcePosition: `yoga_${stage}_1` } as SessionTemplate['items'][number]['prescription'],
+    })),
+  };
+  const sets = (count: number) =>
+    Array.from({ length: count }, (_, itemIndex) => ({ itemIndex })) as unknown as WorkoutRecord['sets'];
+  it('counts yoga sessions and minutes, and says where a half-done one could end', () => {
+    const rows = [
+      done('2026-10-19', { templateSnapshot: yoga, sets: sets(8) }),
+      done('2026-10-21', { templateSnapshot: yoga, status: 'partial', sets: sets(6) }),
+      done('2026-10-23', { templateSnapshot: yoga, sets: sets(8) }),
+      done('2026-10-24'),
+    ];
+    expect(yogaWeekLine(rows, '2026-10-19', '2026-10-25', 'zh')).toBe(
+      '这周练了 3 次瑜伽，共 90 分钟。节奏在慢慢稳下来。第 2 次后半段没练上，下次可以练到扭转就收尾。',
+    );
+  });
+  it('says nothing about stopping when a session ended early in its first half, and nothing without yoga', () => {
+    const rows = [done('2026-10-21', { templateSnapshot: yoga, status: 'partial', sets: sets(2) })];
+    expect(yogaWeekLine(rows, '2026-10-19', '2026-10-25', 'zh')).toBe('这周练了 1 次瑜伽，共 30 分钟。');
+    expect(yogaWeekLine([done('2026-10-21')], '2026-10-19', '2026-10-25', 'zh')).toBeUndefined();
   });
 });

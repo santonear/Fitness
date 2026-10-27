@@ -246,6 +246,8 @@ describe('yoga goal', () => {
             ).toBe(true);
         }
         expect(plan.notices.map(n => n.ruleId)).not.toContain('engine.copy.target_aerobic');
+        // A yoga session stretches throughout: no "time is short, stretch the main parts" tip.
+        expect(plan.notices.map(n => n.ruleId)).not.toContain('session.copy.short_stretch_target');
       }
   });
 
@@ -270,6 +272,7 @@ describe('yoga goal', () => {
       expect(r.byExercise.get(t.items.at(-1)!.exerciseId)?.slug).toBe('savasana');
     }
     expect(proposal.reasons.join('')).not.toContain('力量');
+    expect(proposal.reasons[0]).toBe('每周安排 3 次，每个体式保持 30 秒左右，最后放松休息。');
     expect(exercises.filter(e => e.name.zh === '徒手深蹲')).toHaveLength(1);
   });
 
