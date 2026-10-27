@@ -29,7 +29,7 @@ import {
   weekSetEntries,
 } from '../plan-upgrade/logic';
 import { steadyStarterCopy } from '../../../i18n/features/coach/yaya-steady-starter';
-import { planStartDate } from '../../../application/plan-presentation';
+import { planStartDate, yogaEndsLying } from '../../../application/plan-presentation';
 import { DEFAULT_TIME_ZONE } from '../../../domain/local-date';
 import { intention, lastFigureSex, outlineShown, setIntention } from '../plan-upgrade/prefs';
 import { useMainline } from '../../mainline/context';
@@ -227,7 +227,9 @@ export function NowPanel({
     : variant !== 'standard'
       ? y.bPlan
       : template && isYogaSession(template)
-        ? fillLine(y.yogaToday, { minutes: session?.minutes ?? shownMinutes })
+        ? fillLine(yogaEndsLying(template) ? y.yogaToday : y.yogaTodaySeated, {
+            minutes: session?.minutes ?? shownMinutes,
+          })
         : steady
           ? steadyLine(
               {

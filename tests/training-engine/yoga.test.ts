@@ -17,7 +17,7 @@ import { baseProfile, sampledProfiles } from '../../tools/eval/training-engine-p
 import { externalIssues } from '../../tools/eval/training-engine-invariants';
 import yoga from '../../data/training-engine/yoga-poses.json';
 import { toEngineProfile, type EngineCoachProfile } from '../../src/application/engine-profile';
-import { planReasons, sessionKind, sessionNames } from '../../src/application/plan-presentation';
+import { planReasons, sessionKind, sessionNames, yogaEndsLying } from '../../src/application/plan-presentation';
 import { muscleTip } from '../../src/application/yaya-tips';
 import type { PlanVersion } from '../../src/domain/v8/contracts';
 import onboardingZh from '../../src/i18n/features/onboarding/zh.json';
@@ -298,7 +298,12 @@ describe('yoga goal', () => {
       expect(t.items.at(-1)!.prescription?.sourcePosition).toBe('yoga_rest');
       expect(last.position).not.toContain('supine');
       expect(['rest', 'centering']).toContain(last.yoga_family);
+      // 芽芽 then speaks of a seated rest, not lying down.
+      expect(yogaEndsLying(t)).toBe(false);
     }
+    expect(
+      generatePlan(baseProfile({ goal: 'yoga', daysPerWeek: 2, sessionMinutes: 30 })).templates.every(yogaEndsLying),
+    ).toBe(true);
   });
 
   it('plans reps-counted flows in reps and passes the plan-edit metric check', () => {

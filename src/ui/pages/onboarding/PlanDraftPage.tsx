@@ -1,6 +1,12 @@
 import { answerText } from '../../../application/preset-text';
 import { engineDisplayNotices } from '../../../application/engine-presentation';
-import { localDateIn, planReasons, startDateLabel, weekdayIndex } from '../../../application/plan-presentation';
+import {
+  localDateIn,
+  planReasons,
+  startDateLabel,
+  weekdayIndex,
+  yogaEndsLying,
+} from '../../../application/plan-presentation';
 import { StartDatePicker } from '../../components/StartDatePicker';
 import type { EnginePlan } from '../../../engine/contracts';
 import { planLifecycleCopy } from '../../../i18n/features/plan/lifecycle';
@@ -147,7 +153,13 @@ export function PlanDraftPage({
         </p>
         {yogaDays > 0 && (
           <p className="v9-plan-line" data-testid="draft-yoga">
-            {yayaV5[locale].yogaDraft}
+            {
+              yayaV5[locale][
+                plan.templates.filter(template => isYogaSession(template)).every(yogaEndsLying)
+                  ? 'yogaDraft'
+                  : 'yogaDraftSeated'
+              ]
+            }
             {strengthDays > 0 && ` ${fillLine(yayaV5[locale].yogaStrength, { count: strengthDays })}`}
           </p>
         )}

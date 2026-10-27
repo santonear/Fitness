@@ -90,8 +90,10 @@ export const yayaV5 = {
     careLowBmi: '现在的体重已经在健康范围的下边了，接下来我们把重点放在力量上。',
     // 瑜伽 (Bo 2026-10-27 approved).
     yogaDraft: '这份按瑜伽来排：每次从静心开始，到摊尸式放松结束。每个体式点一下开始，跟着呼吸来就好。🌱',
+    yogaDraftSeated: '这份按瑜伽来排：每次从静心开始，最后静下来放松结束。每个体式点一下开始，跟着呼吸来就好。🌱',
     yogaStrength: '每周练 3 天以上，我加了 {count} 天全身力量，让瑜伽里的支撑更稳。',
     yogaToday: '今天的瑜伽课约 {minutes} 分钟，跟着顺序慢慢来，最后躺下放松。',
+    yogaTodaySeated: '今天的瑜伽课约 {minutes} 分钟，跟着顺序慢慢来，最后静坐放松。',
     yogaDone: '完成了。这是你本周第 {count} 次瑜伽。😌',
     yogaPose: '这个体式今天先跳过，换成婴儿式歇一下。如果疼痛明显或持续，先休息，并请专业人士看看。',
     yogaWeek: '这周练了 {count} 次瑜伽，共 {minutes} 分钟。',
@@ -176,10 +178,14 @@ export const yayaV5 = {
     careLowBmi: "Your weight is now at the lower edge of the healthy range, so next we'll focus on strength.",
     yogaDraft:
       'This plan is built as yoga: each session starts by settling in and ends resting in Corpse Pose. Tap to start each pose and follow your breath 🌱',
+    yogaDraftSeated:
+      'This plan is built as yoga: each session starts by settling in and ends with a quiet rest. Tap to start each pose and follow your breath 🌱',
     yogaStrength:
       'You train 3 or more days a week, so I added {count} full-body strength day(s) to steady your yoga poses.',
     yogaToday:
       "Today's yoga session is about {minutes} minutes. Take it in order, slowly, and lie down to rest at the end.",
+    yogaTodaySeated:
+      "Today's yoga session is about {minutes} minutes. Take it in order, slowly, and rest seated at the end.",
     yogaDone: 'Done. That is yoga session {count} this week 😌',
     yogaPose:
       'Skip this pose today and rest in Child’s Pose instead. If the pain is clear or keeps up, rest first and have a professional take a look.',

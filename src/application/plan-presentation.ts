@@ -1,6 +1,6 @@
 import type { PlannedItem, PlanVersion, SessionTemplate } from '../domain/v8/contracts';
 import type { Pattern } from '../engine/contracts';
-import { Rules } from '../engine/data';
+import { Rules, exerciseById } from '../engine/data';
 import { exerciseBodyPart } from '../catalog/registry';
 import { addDays, todayIn } from '../domain/local-date';
 import { isYogaSession } from '../engine/yoga-session';
@@ -351,3 +351,7 @@ export function planWeekDays(
     return { date, day: weekdayOf(date), beforeStart: false };
   });
 }
+
+/** A yoga session ends lying down in Corpse Pose, or seated / standing when that pose is left out (pregnancy, no mat). */
+export const yogaEndsLying = (template: { items: readonly { exerciseId: string }[] }) =>
+  exerciseById.get(template.items.at(-1)?.exerciseId ?? '')?.slug === 'savasana';
