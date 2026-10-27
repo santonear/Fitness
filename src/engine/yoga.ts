@@ -4,6 +4,7 @@ import { condition, restrictedAdjacentIds, stretchHoldRange, type Exercise, type
 import { isHardEligible } from './candidates';
 import { prescribe, type Item } from './dose';
 import { estimateSeconds } from './fit';
+import { pregnancyStandingCap } from './pregnancy-limits';
 import { engineExercises } from './yoga-session';
 
 const REST_BETWEEN_POSES_S = 15;
@@ -76,8 +77,16 @@ function compose(slots: RuleValue[], pool: Exercise[], day: DayPlan, ctx: Pipeli
             : drills,
       // Folds close the floor part of the class: seated folds first, so nobody stands up again.
       folds = own.filter(e => e.position.some(position => position !== 'standing')),
+      // No resting pose allowed (supine in pregnancy, floor work, no mat): a calm centering pose closes the class.
+      centering = pool.filter(e => e.yoga_family === 'centering' && !used.has(e.id)),
       choices = (
-        slot.family === 'balance' ? balanceChoices : slot.family === 'forward_fold' && folds.length ? folds : own
+        slot.family === 'balance'
+          ? balanceChoices
+          : slot.family === 'forward_fold' && folds.length
+            ? folds
+            : slot.family === 'rest' && !own.length
+              ? centering
+              : own
       )
         // Older users get down to the floor once: the opening stays standing or seated.
         .filter(e => !older(ctx) || !opening.has(slot.family) || !floorBased(e, ctx))
@@ -170,9 +179,15 @@ export function settleYogaSession(template: SessionTemplate, p: EngineProfile, c
     target = (template.targetMinutes ?? p.sessionMinutes) * 60,
     band = r.get('duration.fit.tolerance').band[1],
     total = () => estimateSeconds({ items }, r),
-    range = (item: Item) => {
-      const e = r.byExercise.get(item.exerciseId);
-      return e && holdRange(e, ctx);
+    range = (item: Item): [number, number] | undefined => {
+      const e = r.byExercise.get(item.exerciseId),
+        hold = e && holdRange(e, ctx),
+        // Pregnancy caps a static standing hold per set (per side counts twice).
+        cap = e && pregnancyStandingCap(e, p, r),
+        side = item.prescription?.perSide || e?.time.per_side ? r.get('session.time.model').per_side_multiplier : 1;
+      return hold && cap !== undefined
+        ? [Math.min(hold[0], Math.floor(cap / side)), Math.min(hold[1], Math.floor(cap / side))]
+        : hold;
     },
     hold = (item: Item) => ('durationSeconds' in item.target ? item.target.durationSeconds : 0);
   for (const item of items) {

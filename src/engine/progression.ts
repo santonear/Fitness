@@ -37,7 +37,7 @@ export function progress(
     s = gate.restrictions;
   if (s.blocked || !p.asOfDate) return output;
   const confirmed = confirmedPainReplacements(history, value, p, r, s, output);
-  const finish = () => finishProgression(value, output, p, r);
+  const finish = () => finishProgression(value, output, p, r, plan);
   const completed = [...new Map(history.map(h => [h.id, h])).values()]
     .filter(
       h =>
@@ -238,7 +238,9 @@ export function progress(
           if (sets.every(f => (f.durationSeconds ?? 0) >= duration)) {
             ruleId = 'dose.isometric';
             const v = r.get(ruleId);
-            item.target.durationSeconds = Math.min(v.hold_s_max, duration + v.progression.add_s_per_session);
+            // Never past this level's hold range (beginner 30 s), the same bound the hard check uses.
+            const cap = Math.min(v.hold_s_max, v[p.level]?.hold_s?.[1] ?? v.hold_s_max);
+            item.target.durationSeconds = Math.min(cap, duration + v.progression.add_s_per_session);
           }
         }
       }

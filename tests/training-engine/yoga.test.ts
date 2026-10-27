@@ -270,4 +270,29 @@ describe('yoga goal', () => {
     expect(proposal.reasons.join('')).not.toContain('力量');
     expect(exercises.filter(e => e.name.zh === '徒手深蹲')).toHaveLength(1);
   });
+
+  it('closes with a calm pose when the resting pose is not allowed', () => {
+    const plan = generatePlan(
+      baseProfile({
+        goal: 'yoga',
+        daysPerWeek: 2,
+        sessionMinutes: 30,
+        pregnancySafety: { avoidSupine: true },
+        population: {
+          kind: 'pregnant',
+          week: 24,
+          providerCleared: true,
+          prenatalCareConfirmed: true,
+          contraindicationsConfirmedNone: true,
+          lastScreenedWeek: 24,
+        },
+      }),
+    );
+    for (const t of plan.templates.filter(isYogaSession)) {
+      const last = r.byExercise.get(t.items.at(-1)!.exerciseId)!;
+      expect(t.items.at(-1)!.prescription?.sourcePosition).toBe('yoga_rest');
+      expect(last.position).not.toContain('supine');
+      expect(['rest', 'centering']).toContain(last.yoga_family);
+    }
+  });
 });
