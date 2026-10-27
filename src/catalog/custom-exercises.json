@@ -1711,38 +1711,6 @@
     "contentSource": "older.balance.progression stage 1; user approved supported wide static stand"
   },
   {
-    "id": "83cb6674-515a-52cc-8ff4-b74c33f5da5a",
-    "slug": "custom-slow-walking-in-place",
-    "catalogVersion": 1,
-    "name": {
-      "zh": "原地慢走",
-      "en": "Slow walking in place"
-    },
-    "category": "cardio",
-    "equipment": "none",
-    "metricType": "duration",
-    "allowedMetrics": [
-      "durationSeconds"
-    ],
-    "steps": {
-      "zh": [
-        "慢慢原地踏步，脚轻轻离地，膝盖不用抬高，手臂自然摆动。需要的话可以扶着墙或椅背。"
-      ],
-      "en": [
-        "Step slowly in place, lifting your feet just off the floor. No need to raise your knees high; let your arms swing naturally. Hold a wall or chair back if you like."
-      ]
-    },
-    "cautions": {
-      "zh": [],
-      "en": []
-    },
-    "primaryMuscles": [],
-    "secondaryMuscles": [],
-    "bodyPart": "cardio",
-    "pattern": "cardio_cyclic",
-    "contentSource": "User-approved product decision: slow walking in place, low-intensity walking locomotion; coach review pending. ACOG Exercise After Pregnancy and Committee Opinion 804 are general postpartum background only, not specific endorsement of this action or uncleared cesarean exercise. https://www.acog.org/womens-health/faqs/exercise-after-pregnancy https://www.acog.org/clinical/clinical-guidance/committee-opinion/articles/2020/04/physical-activity-and-exercise-during-pregnancy-and-the-postpartum-period"
-  },
-  {
     "id": "4112d689-0bc2-545a-8d24-28361c68d626",
     "slug": "custom-reverse-warrior",
     "catalogVersion": 1,
@@ -1966,51 +1934,6 @@
     ],
     "bodyPart": "core",
     "pattern": "mobility"
-  },
-  {
-    "id": "4399bf8a-210f-5e5d-814e-d07dde9d86ca",
-    "slug": "custom-revolved-half-moon",
-    "catalogVersion": 1,
-    "name": {
-      "zh": "扭转半月式",
-      "en": "Revolved Half Moon Pose"
-    },
-    "category": "bodyweight",
-    "equipment": "none",
-    "metricType": "duration",
-    "allowedMetrics": [
-      "durationSeconds"
-    ],
-    "steps": {
-      "zh": [
-        "从站立前屈开始，对侧手放在支撑脚前方的地面或瑜伽砖上。",
-        "重心移到支撑腿上，另一条腿向后抬到与地面大致平行，胸口转向支撑腿一侧，另一手向上伸。",
-        "平稳呼吸保持规定时间，先放下手臂和抬起的腿，再换侧。"
-      ],
-      "en": [
-        "From a standing forward bend, place the opposite hand on the floor or a block in front of the standing foot.",
-        "Shift onto the standing leg, lift the other leg back to about hip height, turn the chest towards the standing-leg side and reach the other arm up.",
-        "Breathe steadily for the set time, lower the arm and lifted leg first, then switch sides."
-      ]
-    },
-    "cautions": {
-      "zh": [
-        "在墙边练习，下方的手一直有支撑；失去平衡就先放下抬起的腿。"
-      ],
-      "en": [
-        "Practise near a wall with the lower hand always supported; lower the lifted leg first if you lose balance."
-      ]
-    },
-    "primaryMuscles": [
-      "gluteus-medius",
-      "obliques"
-    ],
-    "secondaryMuscles": [
-      "hamstrings",
-      "gastrocnemius"
-    ],
-    "bodyPart": "upper-legs",
-    "pattern": "balance"
   },
   {
     "id": "f711bbce-1c2f-51ae-8efe-73447b2e8637",
@@ -2635,5 +2558,37 @@
     ],
     "bodyPart": "full-body",
     "pattern": "mobility"
+  },
+  {
+    "id": "83cb6674-515a-52cc-8ff4-b74c33f5da5a",
+    "slug": "custom-slow-walking-in-place",
+    "catalogVersion": 1,
+    "name": {
+      "zh": "原地慢走",
+      "en": "Slow walking in place"
+    },
+    "category": "cardio",
+    "equipment": "none",
+    "metricType": "duration",
+    "allowedMetrics": [
+      "durationSeconds"
+    ],
+    "steps": {
+      "zh": [
+        "慢慢原地踏步，脚轻轻离地，膝盖不用抬高，手臂自然摆动。需要的话可以扶着墙或椅背。"
+      ],
+      "en": [
+        "Step slowly in place, lifting your feet just off the floor. No need to raise your knees high; let your arms swing naturally. Hold a wall or chair back if you like."
+      ]
+    },
+    "cautions": {
+      "zh": [],
+      "en": []
+    },
+    "primaryMuscles": [],
+    "secondaryMuscles": [],
+    "bodyPart": "cardio",
+    "pattern": "cardio_cyclic",
+    "contentSource": "User-approved product decision: slow walking in place, low-intensity walking locomotion; coach review pending. ACOG Exercise After Pregnancy and Committee Opinion 804 are general postpartum background only, not specific endorsement of this action or uncleared cesarean exercise. https://www.acog.org/womens-health/faqs/exercise-after-pregnancy https://www.acog.org/clinical/clinical-guidance/committee-opinion/articles/2020/04/physical-activity-and-exercise-during-pregnancy-and-the-postpartum-period"
   }
 ]

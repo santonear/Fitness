@@ -22,6 +22,7 @@
       muscle: [aerobic, mobility]
       strength: [aerobic, mobility]
       mobility: mobility
+      yoga: yoga
     rest_days_min_per_week: 1
   evidence: C
   sources: [E03:ACSM-2026, E03:NSCA-Hoffman, E04:S8]
@@ -343,6 +344,47 @@
   evidence: B
   sources: [E03:Thomas-2018, E03:Garber-2011]
   note: 柔韧日：每部位 ≥60 秒，不计力量组数
+
+- id: week.day.yoga
+  chapter: 3
+  type: template
+  value:
+    focus: yoga
+    # 固定体式顺序：静心 → 热身 → 拜日式 → 站立 → 平衡 → 核心 → 手臂平衡 → 后弯 → 扭转 → 开髋 → 前屈 → 倒立 → 仰卧 → 休息。
+    # session_minutes_min：课时达到该分钟数才排这个位置；level：只给该水平；rest 永远最后。
+    slots:
+      - { pos: yoga_center, family: centering, block: warmup, session_minutes_min: 20 }
+      - { pos: yoga_warm, family: warmup, block: warmup, session_minutes_min: 10 }
+      - { pos: yoga_sun, family: sun_salutation, block: warmup, session_minutes_min: 10 }
+      - { pos: yoga_stand_1, family: standing, block: mobility, session_minutes_min: 10 }
+      - { pos: yoga_stand_2, family: standing, block: mobility, session_minutes_min: 20 }
+      - { pos: yoga_stand_3, family: standing, block: mobility, session_minutes_min: 30 }
+      - { pos: yoga_stand_4, family: standing, block: mobility, session_minutes_min: 45 }
+      - { pos: yoga_stand_5, family: standing, block: mobility, session_minutes_min: 75 }
+      - { pos: yoga_balance_1, family: balance, block: mobility, session_minutes_min: 20 }
+      - { pos: yoga_balance_2, family: balance, block: mobility, session_minutes_min: 45 }
+      - { pos: yoga_core_1, family: core, block: mobility, session_minutes_min: 30 }
+      - { pos: yoga_core_2, family: core, block: mobility, session_minutes_min: 75 }
+      - { pos: yoga_arm, family: arm_balance, block: mobility, session_minutes_min: 60, level: [intermediate] }
+      - { pos: yoga_back_1, family: backbend, block: mobility, session_minutes_min: 20 }
+      - { pos: yoga_back_2, family: backbend, block: mobility, session_minutes_min: 45 }
+      - { pos: yoga_back_3, family: backbend, block: mobility, session_minutes_min: 90 }
+      - { pos: yoga_twist_1, family: twist, block: mobility, session_minutes_min: 20 }
+      - { pos: yoga_twist_2, family: twist, block: mobility, session_minutes_min: 60 }
+      - { pos: yoga_hip_1, family: hip_opener, block: mobility, session_minutes_min: 30 }
+      - { pos: yoga_hip_2, family: hip_opener, block: mobility, session_minutes_min: 60 }
+      - { pos: yoga_fold_1, family: forward_fold, block: cooldown, session_minutes_min: 10 }
+      - { pos: yoga_fold_2, family: forward_fold, block: cooldown, session_minutes_min: 45 }
+      - { pos: yoga_invert, family: inversion, block: cooldown, session_minutes_min: 45, level: [intermediate] }
+      - { pos: yoga_supine_1, family: supine, block: cooldown, session_minutes_min: 30 }
+      - { pos: yoga_supine_2, family: supine, block: cooldown, session_minutes_min: 60 }
+      - { pos: yoga_rest, family: rest, block: cooldown, session_minutes_min: 10, prefer: savasana }
+    sets_max: 4                           # 与 dose.stretch.reps_per_muscle 上限一致
+    rest_share_max: 0.2                   # 休息体式（摊尸式）最多占课时 20%
+    counts_toward_rt_volume: false
+  evidence: C
+  sources: [E03:Garber-2011, E03:Thomas-2018]
+  note: 瑜伽日：按固定顺序从对应体式里各选一个，再调整保持时间和组数贴近课时；安全排除与其他动作相同
 
 - id: week.coverage.patterns
   chapter: 3

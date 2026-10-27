@@ -96,8 +96,9 @@ it('pins all original351 grading rows and only the explicitly approved deferred 
   });
   const additions = doc.rules.filter((rule: { id: string }) => !ids.has(rule.id));
   // 2026-10-25 Bo approved hip, ankle and neck: 6 caution rules, 3 red-flag gates and 6 question copies.
-  expect(additions).toHaveLength(41);
-  expect(new Set(doc.rules.map((rule: { id: string }) => rule.id)).size).toBe(392);
+  // 2026-10-26 Bo approved yoga as its own goal: goal.params.yoga and week.day.yoga.
+  expect(additions).toHaveLength(43);
+  expect(new Set(doc.rules.map((rule: { id: string }) => rule.id)).size).toBe(394);
   expect(
     additions.filter((rule: { id: string }) =>
       ['duration.cardio.cap', 'session.copy.intentional_short'].includes(rule.id),
@@ -124,7 +125,7 @@ it('pins all original351 grading rows and only the explicitly approved deferred 
 it('retains grading in both compiled artifacts and stores hard/target duration separately', async () => {
   const full = JSON.parse(await readFile('src/engine/generated/rules.json', 'utf8')),
     runtime = JSON.parse(await readFile('src/engine/generated/rules-runtime.json', 'utf8'));
-  expect(full.rules).toHaveLength(392);
+  expect(full.rules).toHaveLength(394);
   expect(runtime.rulesVersion).toBe(full.rulesVersion);
   for (const rule of full.rules) {
     expect(rule.severity).toBeTruthy();

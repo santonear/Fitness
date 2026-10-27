@@ -1,3 +1,4 @@
+import { isYogaSession } from './yoga-session';
 import { checkCardioCaps, exhaustedSafeCapacity } from './checkHard/cardio-duration';
 import { checkItemStructure } from './checkHard/item-structure';
 import { checkItemDose } from './checkHard/item-dose';
@@ -182,18 +183,20 @@ export function checkHard(
       const short = Number.isFinite(seconds) && seconds < low;
       const belowReportingBand =
         Number.isFinite(seconds) && seconds < target * 60 * r.get('duration.fit.tolerance').band[0];
+      // A yoga session already holds every pose at its safe maximum; generic refill content does not belong in it.
       const exhausted =
         belowReportingBand &&
         !checkHard(plan, p, g, r, true).some(issue => issue.severity === 'error') &&
-        exhaustedSafeCapacity(t, p, g, r, proposal => {
-          const candidate = structuredClone(plan),
-            template = candidate.templates.find(row => row.id === t.id)!;
-          template.items = proposal.items;
-          const proposedSeconds = estimatedSeconds(template, r);
-          if (proposedSeconds > high || Math.abs(proposedSeconds - target * 60) >= Math.abs(seconds - target * 60))
-            return false;
-          return !checkHard(candidate, p, g, r, true).some(issue => issue.severity === 'error');
-        });
+        (isYogaSession(t) ||
+          exhaustedSafeCapacity(t, p, g, r, proposal => {
+            const candidate = structuredClone(plan),
+              template = candidate.templates.find(row => row.id === t.id)!;
+            template.items = proposal.items;
+            const proposedSeconds = estimatedSeconds(template, r);
+            if (proposedSeconds > high || Math.abs(proposedSeconds - target * 60) >= Math.abs(seconds - target * 60))
+              return false;
+            return !checkHard(candidate, p, g, r, true).some(issue => issue.severity === 'error');
+          }));
       if (!Number.isFinite(seconds) || seconds > high || (short && !exhausted))
         add('duration_tolerance', 'duration.fit.bounds', 'duration outside source hard bounds', t.id);
       else if (belowReportingBand && exhausted)

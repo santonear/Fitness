@@ -626,3 +626,17 @@ Bo 已定版 V9 设计并授权推进；计时规则按 Bo 当日决定改写（
 - 理由：不改数据、不改已存名称（只改显示），不新增依赖；减少动态效果时全部关闭。
 - 涉及文件：src/ui/motion.ts（新，复用原 EnergyPages 的数字滚动）、src/ui/components/{Orb.tsx,orb.css,kit/HomePanel.tsx,kit/kit.css}、src/ui/pages/{home,onboarding,training,settings}/…、src/application/{plan-presentation.ts,workflow/plan-setup.ts}、docs/handoff-v8/02-design-tokens.json（`pressInDuration`）、src/themes/{token-css.ts,contract.ts,base/tokens.css,base/common.css,pop/slots/slots.css}。
 - 更正（Bo 2026-10-25）：10-23 只要求开始日之前不显示开始按钮，PR #104 却把整个首页面板（仪表）藏掉。现在面板照常显示，只去掉开始按钮、时长选择与“更多方式”；开始日之前不显示“顺序和时间”；训练日的“顺序和时间”默认收起成一行，训练中展开。
+
+## 2026-10-27 · 瑜伽目标（规范 V9.23）
+
+- 情况：Bo 2026-10-26 原话“1. 瑜伽做独立目标 2.保持现在每式点一下开始 3.新体式的图示用现有的插画工具生成 4. 将动作库中属于瑜伽动作的姿势更换其瑜伽动作名称……同步开发，所有你列出需要更改的内容。注意不要破坏应用逻辑”。
+- 决定（按评估稿实施）：
+  - 每周结构：1–2 天全是瑜伽课，3–4 天含 1 个全身力量日，5–6 天含 2 个（`goal.params.yoga.rt_sessions_by_days`）；瑜伽课按 `week.day.yoga` 固定顺序编排，不参与力量课的补位、裁剪和换动作；课时短时作“有意缩短”提示（沿用已批准文案）。
+  - 19 个新体式只进瑜伽课（`data/training-engine/yoga-poses.json` 的 `yogaOnly`），其他目标的动作池不变；20 个金样本计划除规则版本号外完全相同。
+  - 扭转半月式插画按加强提示词重画 3 次仍画成普通半月式，暂不收录（原定 20 个，现 19 个）。
+  - 动作库 24 个已有体式改用标准瑜伽名（`src/catalog/corrections.ts`，只改显示名，动作 ID 与步骤不变）；“摊尸式 / Corpse Pose”已是标准名，不改。
+  - 规则与动作数据的打包体积从 15.1 万字节（gzip）略超原 15 万上限，测试上限调到 16 万；只多出瑜伽体式数据。
+  - 打分：`goal.params.yoga` 只用于排课（mechanic），不单独计分；瑜伽计划不再提示“有几个部位本周练得偏少”。
+- 待 Bo 确认：芽芽的瑜伽专属话术（草稿已发），确认前沿用通用话术。
+- 理由：不丢数据、不改已存计划与名称、不新增依赖；安全规则全部沿用。
+- 涉及文件：data/training-engine/{rules/*.yaml,yoga-poses.json,custom-annotations.json,balance-annotations.json,hard-coverage-audit.json}、src/engine/{yoga,yoga-session,structure,pipeline,improve,hard-checks,skeleton,data}.ts、src/engine/score/{registry,targets-03}.ts、src/application/{engine-profile,plan-presentation}.ts、src/catalog/{corrections.ts,custom-exercises.json,custom-exercise-media.json}、src/i18n/features/onboarding/{zh,en}.json、tools/training-engine/{compile-annotations,check-data}.ts、public/exercise-media/fitness/custom-*.webp、docs/training-engine/rulebook/ch02、ch03。

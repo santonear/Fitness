@@ -122,6 +122,7 @@
     muscle:       { beginner: { start: 10, max: 12 }, intermediate: { start: 12, max: 20 } }
     strength:     { beginner: { start: 6, max: 10 }, intermediate: { start: 8, max: 12 } }
     mobility:     { beginner: { start: 4, max: 8 }, intermediate: { start: 6, max: 8 } }
+    yoga:         { beginner: { start: 2, max: 6 }, intermediate: { start: 4, max: 6 } }
     resolve: "start/max = goal range clipped by level floor/ceiling; start_moving may go below level floor"
     overridden_by: [progression.new.week_caps, progression.new.weekly_sets]
     lower_bound_priority: "target"

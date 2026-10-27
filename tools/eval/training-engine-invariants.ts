@@ -24,7 +24,7 @@ interface Facts {
   requires_floor_transition?: boolean;
 }
 const sourceRules = new Rules();
-const facts = new Map((data.exercises as unknown as Facts[]).map(row => [row.id, row]));
+const facts = new Map(([...data.exercises, ...data.yogaExercises] as unknown as Facts[]).map(row => [row.id, row]));
 /** Independent external checks: these do not call the engine's eligibility or validator helpers. */
 export function externalIssues(
   plan: EnginePlan,

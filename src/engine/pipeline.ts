@@ -15,6 +15,7 @@ import { buildNotices } from './notices';
 import { candidatesFor } from './candidates';
 import { missingEnvironmentTypes } from './environment';
 import { foldGeneratedBodyweightWarmup } from './source-warmup';
+import { buildYogaSession } from './yoga';
 export function retainEnvironmentDraft(plan: EnginePlan, ctx: PipelineContext): EnginePlan {
   const claims = missingEnvironmentTypes(plan, ctx.profile, ctx.gate, ctx.rules, plan.quality?.issues ?? []);
   if (!plan.quality || !claims.length) return plan;
@@ -141,6 +142,11 @@ export function generatePlan(profile: EngineProfile, opts: { variant?: number; r
     ctx.currentWeekday = day.weekday;
     ctx.usedIds = new Set();
     ctx.usedLadders = new Set();
+    if (day.kind === 'yoga') {
+      const { slots: _, ...template } = buildYogaSession(day, ctx);
+      plan.templates.push({ ...template, weekday: day.weekday, id: day.id });
+      continue;
+    }
     const slots = buildSlots(day, profile, day.minutes, ctx.rules),
       draft = fillSlots(slots, ctx, scorer);
     draft.id = day.id;

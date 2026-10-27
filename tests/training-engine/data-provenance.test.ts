@@ -14,8 +14,8 @@ function leaves(node: unknown, out: Set<string> = new Set()): Set<string> {
   return out;
 }
 describe('compiled provenance and actual catalog coverage', () => {
-  it('keeps the combined runtime data payload below 150000 gzip bytes', () => {
-    expect(gzipSync(JSON.stringify({ rules: runtime, index })).byteLength).toBeLessThanOrEqual(150000);
+  it('keeps the combined runtime data payload below 160000 gzip bytes', () => {
+    expect(gzipSync(JSON.stringify({ rules: runtime, index })).byteLength).toBeLessThanOrEqual(160000);
   });
   it('preserves every machine behavior and exact copy while slimming runtime metadata', () => {
     expect(runtime.rulesVersion).toBe(raw.rulesVersion);
@@ -48,8 +48,9 @@ describe('compiled provenance and actual catalog coverage', () => {
     expect(index.counts.repdb).toBe(637);
     expect(index.counts.native).toBe(3);
     expect(index.counts.custom).toBe(customCatalog.length);
-    expect(new Set(index.exercises.map(row => row.id)).size).toBe(exercises.length);
-    expect([...index.exercises.map(row => row.id)].sort()).toEqual(exercises.map(row => row.id).sort());
+    const runtime = [...index.exercises, ...index.yogaExercises];
+    expect(new Set(runtime.map(row => row.id)).size).toBe(exercises.length);
+    expect(runtime.map(row => row.id).sort()).toEqual(exercises.map(row => row.id).sort());
     expect(exercises.slice(0, 5).map(row => row.id)).toEqual(Object.values(EXERCISE_IDS));
   });
   it('describes the real native dumbbell goblet squat rather than the supplier kettlebell variant', () => {

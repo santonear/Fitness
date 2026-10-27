@@ -64,6 +64,8 @@ export interface Exercise {
   mobility_type?: 'dynamic' | 'static';
   stretch_targets?: string[];
   stretch_hold_s?: [number, number];
+  /** Yoga session family (data/training-engine/yoga-poses.json); absent for non-yoga exercises. */
+  yoga_family?: string;
 }
 export interface Copy {
   zh: string;
@@ -76,6 +78,8 @@ export interface EngineData {
   rules: Rule[];
   copy: Record<string, Copy>;
   exercises: Exercise[];
+  /** Poses used only by yoga sessions; every other goal keeps its pool unchanged. */
+  yogaExercises?: Exercise[];
   byPattern?: Record<string, string[]>;
 }
 export function stretchHoldRange(e: Exercise, r: Rules, population: string): [number, number] | undefined {
@@ -106,6 +110,7 @@ export const DATA: EngineData = {
   rules: compiledRules.rules as Rule[],
   copy: compiledRules.copy,
   exercises: compiledExercises.exercises as unknown as Exercise[],
+  yogaExercises: compiledExercises.yogaExercises as unknown as Exercise[],
   byPattern: compiledExercises.byPattern,
 };
 export class Rules {
@@ -113,7 +118,7 @@ export class Rules {
   readonly byExercise: Map<string, Exercise>;
   constructor(readonly data: EngineData = DATA) {
     this.byId = new Map(data.rules.map(r => [r.id, r]));
-    this.byExercise = new Map(data.exercises.map(e => [e.id, e]));
+    this.byExercise = new Map([...data.exercises, ...(data.yogaExercises ?? [])].map(e => [e.id, e]));
   }
   get(id: string): RuleValue {
     const r = this.byId.get(id);

@@ -188,9 +188,7 @@
     "position": [
       "standing"
     ],
-    "flags": [
-      "static_standing_hold"
-    ],
+    "flags": [],
     "use": [
       "main",
       "accessory"
@@ -514,9 +512,7 @@
     "position": [
       "standing"
     ],
-    "flags": [
-      "static_standing_hold"
-    ],
+    "flags": [],
     "use": [
       "main",
       "accessory"
@@ -1180,9 +1176,7 @@
     "position": [
       "standing"
     ],
-    "flags": [
-      "static_standing_hold"
-    ],
+    "flags": [],
     "use": [
       "main",
       "accessory"
@@ -1263,9 +1257,7 @@
     "position": [
       "standing"
     ],
-    "flags": [
-      "static_standing_hold"
-    ],
+    "flags": [],
     "use": [
       "main",
       "accessory"
@@ -1346,9 +1338,7 @@
     "position": [
       "standing"
     ],
-    "flags": [
-      "static_standing_hold"
-    ],
+    "flags": [],
     "use": [
       "main",
       "accessory"
@@ -1513,9 +1503,7 @@
     "position": [
       "standing"
     ],
-    "flags": [
-      "static_standing_hold"
-    ],
+    "flags": [],
     "use": [
       "main",
       "accessory"
@@ -2245,9 +2233,7 @@
     "position": [
       "standing"
     ],
-    "flags": [
-      "static_standing_hold"
-    ],
+    "flags": [],
     "use": [
       "warmup",
       "accessory"
@@ -2334,9 +2320,7 @@
     "position": [
       "standing"
     ],
-    "flags": [
-      "static_standing_hold"
-    ],
+    "flags": [],
     "use": [
       "warmup",
       "accessory"
@@ -2511,9 +2495,7 @@
       "standing",
       "plank"
     ],
-    "flags": [
-      "static_standing_hold"
-    ],
+    "flags": [],
     "use": [
       "main",
       "accessory"
@@ -2594,9 +2576,7 @@
     "position": [
       "standing"
     ],
-    "flags": [
-      "static_standing_hold"
-    ],
+    "flags": [],
     "use": [
       "main",
       "accessory"
@@ -2925,9 +2905,7 @@
     "position": [
       "standing"
     ],
-    "flags": [
-      "static_standing_hold"
-    ],
+    "flags": [],
     "use": [
       "main",
       "accessory"
@@ -3089,9 +3067,7 @@
     "position": [
       "standing"
     ],
-    "flags": [
-      "static_standing_hold"
-    ],
+    "flags": [],
     "use": [
       "main",
       "accessory"
@@ -3172,9 +3148,7 @@
     "position": [
       "standing"
     ],
-    "flags": [
-      "static_standing_hold"
-    ],
+    "flags": [],
     "use": [
       "cooldown"
     ],
@@ -3322,85 +3296,6 @@
     "source": "custom",
     "requires_floor_transition": false,
     "supported_variant_available": true
-  },
-  {
-    "id": "83cb6674-515a-52cc-8ff4-b74c33f5da5a",
-    "slug": "custom-slow-walking-in-place",
-    "primary_pattern": "cardio_cyclic",
-    "secondary_patterns": [],
-    "modality": "cardio",
-    "laterality": "alternating",
-    "nsca_class": "none",
-    "plane": "sagittal",
-    "difficulty": 1,
-    "joint_load": {
-      "knee": 1,
-      "back": 0,
-      "shoulder": 0,
-      "wrist": 0,
-      "hip": 0,
-      "ankle": 1
-    },
-    "impact": 0,
-    "noise": 0,
-    "space": "mat",
-    "position": [
-      "standing"
-    ],
-    "flags": [
-      "low_intensity",
-      "postpartum_safe"
-    ],
-    "use": [
-      "conditioning",
-      "warmup",
-      "cooldown"
-    ],
-    "ladder": {
-      "id": null,
-      "step": 0
-    },
-    "default_dose": {
-      "beginner": {
-        "sets": [
-          1,
-          1
-        ],
-        "reps": null,
-        "seconds": [
-          300,
-          1200
-        ],
-        "rir": null
-      },
-      "intermediate": {
-        "sets": [
-          1,
-          1
-        ],
-        "reps": null,
-        "seconds": [
-          600,
-          1800
-        ],
-        "rir": null
-      }
-    },
-    "time": {
-      "setup_s": 5,
-      "s_per_rep": null,
-      "per_side": false
-    },
-    "confidence": "high",
-    "review": true,
-    "equipment_required": [
-      "none"
-    ],
-    "equipment_alternatives": {},
-    "schema": "v0.2",
-    "source": "custom",
-    "requires_floor_transition": false,
-    "note": "User-approved locomotion / low-intensity walking maps to existing cardio_cyclic; coach review pending. Optional wall/chair support is not required equipment. Only slow, low foot lift, natural unweighted arm swing: no high knees, fast or loaded variants. No intensity ladder; progression direction is walking only. default_dose, time and confidence copied unchanged from walking; existing aerobic intensity rules remain authoritative. ACOG references provide general postpartum background only, not specific endorsement for walking in place or uncleared cesarean exercise."
   },
   {
     "id": "4112d689-0bc2-545a-8d24-28361c68d626",
@@ -3782,73 +3677,6 @@
     "schema": "v0.2",
     "source": "custom",
     "requires_floor_transition": false
-  },
-  {
-    "id": "4399bf8a-210f-5e5d-814e-d07dde9d86ca",
-    "slug": "custom-revolved-half-moon",
-    "primary_pattern": "balance",
-    "secondary_patterns": [],
-    "modality": "isometric",
-    "laterality": "unilateral",
-    "nsca_class": "none",
-    "plane": "transverse",
-    "difficulty": 4,
-    "joint_load": {
-      "knee": 1,
-      "back": 1,
-      "shoulder": 0,
-      "wrist": 1,
-      "hip": 1,
-      "ankle": 1
-    },
-    "impact": 0,
-    "noise": 0,
-    "space": "mat",
-    "position": [
-      "standing"
-    ],
-    "flags": [
-      "balance_demand",
-      "static_standing_hold"
-    ],
-    "use": [
-      "accessory"
-    ],
-    "ladder": {
-      "id": null,
-      "step": 0
-    },
-    "default_dose": {
-      "beginner": null,
-      "intermediate": {
-        "sets": [
-          2,
-          2
-        ],
-        "reps": null,
-        "seconds": [
-          15,
-          30
-        ],
-        "rir": null
-      }
-    },
-    "time": {
-      "setup_s": 5,
-      "s_per_rep": null,
-      "per_side": true
-    },
-    "equipment_required": [
-      "none"
-    ],
-    "equipment_alternatives": {},
-    "confidence": "medium",
-    "review": false,
-    "note": "Fitness original yoga pose (Bo 2026-10-26); conservative content annotation, coach review pending.",
-    "schema": "v0.2",
-    "source": "custom",
-    "requires_floor_transition": false,
-    "supported_variant_available": true
   },
   {
     "id": "f711bbce-1c2f-51ae-8efe-73447b2e8637",
@@ -4907,5 +4735,84 @@
     "schema": "v0.2",
     "source": "custom",
     "requires_floor_transition": true
+  },
+  {
+    "id": "83cb6674-515a-52cc-8ff4-b74c33f5da5a",
+    "slug": "custom-slow-walking-in-place",
+    "primary_pattern": "cardio_cyclic",
+    "secondary_patterns": [],
+    "modality": "cardio",
+    "laterality": "alternating",
+    "nsca_class": "none",
+    "plane": "sagittal",
+    "difficulty": 1,
+    "joint_load": {
+      "knee": 1,
+      "back": 0,
+      "shoulder": 0,
+      "wrist": 0,
+      "hip": 0,
+      "ankle": 1
+    },
+    "impact": 0,
+    "noise": 0,
+    "space": "mat",
+    "position": [
+      "standing"
+    ],
+    "flags": [
+      "low_intensity",
+      "postpartum_safe"
+    ],
+    "use": [
+      "conditioning",
+      "warmup",
+      "cooldown"
+    ],
+    "ladder": {
+      "id": null,
+      "step": 0
+    },
+    "default_dose": {
+      "beginner": {
+        "sets": [
+          1,
+          1
+        ],
+        "reps": null,
+        "seconds": [
+          300,
+          1200
+        ],
+        "rir": null
+      },
+      "intermediate": {
+        "sets": [
+          1,
+          1
+        ],
+        "reps": null,
+        "seconds": [
+          600,
+          1800
+        ],
+        "rir": null
+      }
+    },
+    "time": {
+      "setup_s": 5,
+      "s_per_rep": null,
+      "per_side": false
+    },
+    "confidence": "high",
+    "review": true,
+    "equipment_required": [
+      "none"
+    ],
+    "equipment_alternatives": {},
+    "schema": "v0.2",
+    "source": "custom",
+    "requires_floor_transition": false,
+    "note": "User-approved locomotion / low-intensity walking maps to existing cardio_cyclic; coach review pending. Optional wall/chair support is not required equipment. Only slow, low foot lift, natural unweighted arm swing: no high knees, fast or loaded variants. No intensity ladder; progression direction is walking only. default_dose, time and confidence copied unchanged from walking; existing aerobic intensity rules remain authoritative. ACOG references provide general postpartum background only, not specific endorsement for walking in place or uncleared cesarean exercise."
   }
 ]

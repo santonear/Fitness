@@ -1,0 +1,108 @@
+{
+  "note": "Yoga pose families for the yoga session builder (Bo 2026-10-26). yogaOnly poses are used only in yoga sessions, so existing goals keep their exercise pools unchanged.",
+  "families": {
+    "centering": ["easy-pose", "mountain-pose", "custom-staff-pose", "hero-pose"],
+    "warmup": ["cat-cow", "cat-stretch", "thread-the-needle", "puppy-pose", "downward-dog", "downward-dog-pedal"],
+    "sun_salutation": [
+      "custom-sun-salutation-a",
+      "custom-sun-salutation-b",
+      "downward-dog-to-upward-dog",
+      "downward-dog-to-plank",
+      "standing-forward-fold-to-half-lift"
+    ],
+    "standing": [
+      "warrior-one",
+      "warrior-two",
+      "custom-reverse-warrior",
+      "triangle-pose",
+      "pyramid-pose",
+      "crescent-lunge",
+      "low-lunge",
+      "chair-pose",
+      "custom-goddess-pose",
+      "custom-upward-salute",
+      "three-legged-dog",
+      "downward-dog-to-low-lunge"
+    ],
+    "balance": [
+      "tree-pose",
+      "eagle-pose",
+      "dancer-pose",
+      "half-moon-pose",
+      "warrior-three",
+      "standing-split",
+      "custom-extended-hand-to-big-toe"
+    ],
+    "core": ["boat-pose", "plank", "side-plank", "custom-four-limbed-staff", "dolphin-pose", "reverse-tabletop-hold"],
+    "arm_balance": ["crow-pose", "custom-side-crow"],
+    "backbend": [
+      "cobra-stretch",
+      "sphinx-pose",
+      "locust-pose",
+      "custom-knees-chest-chin",
+      "upward-dog",
+      "bow-pose",
+      "camel-pose",
+      "fish-pose",
+      "glute-bridge-hold"
+    ],
+    "twist": [
+      "seated-spinal-twist",
+      "custom-half-lord-of-the-fishes",
+      "revolved-chair-pose",
+      "revolved-crescent-lunge",
+      "custom-revolved-triangle",
+      "custom-revolved-side-angle",
+      "custom-gate-pose"
+    ],
+    "hip_opener": [
+      "garland-pose",
+      "lizard-stretch",
+      "pigeon-stretch",
+      "butterfly-stretch",
+      "cow-face-pose",
+      "low-lunge-to-half-split",
+      "custom-fire-log-pose",
+      "custom-frog-pose"
+    ],
+    "forward_fold": [
+      "standing-forward-fold",
+      "wide-legged-forward-fold",
+      "seated-forward-fold",
+      "head-to-knee-pose",
+      "seated-straddle-stretch"
+    ],
+    "inversion": ["supported-shoulderstand", "plow-pose"],
+    "supine": [
+      "supine-spinal-twist",
+      "happy-baby",
+      "knee-to-chest-stretch",
+      "legs-up-the-wall",
+      "custom-reclined-bound-angle",
+      "custom-reclined-hand-to-big-toe",
+      "custom-reclined-hero"
+    ],
+    "rest": ["savasana", "childs-pose"]
+  },
+  "yogaOnly": [
+    "custom-reverse-warrior",
+    "custom-goddess-pose",
+    "custom-gate-pose",
+    "custom-revolved-triangle",
+    "custom-revolved-side-angle",
+    "custom-extended-hand-to-big-toe",
+    "custom-upward-salute",
+    "custom-staff-pose",
+    "custom-fire-log-pose",
+    "custom-half-lord-of-the-fishes",
+    "custom-four-limbed-staff",
+    "custom-knees-chest-chin",
+    "custom-frog-pose",
+    "custom-reclined-bound-angle",
+    "custom-reclined-hand-to-big-toe",
+    "custom-reclined-hero",
+    "custom-side-crow",
+    "custom-sun-salutation-a",
+    "custom-sun-salutation-b"
+  ]
+}

@@ -196,6 +196,11 @@ export const annotationSchema = z.object({
     .optional(),
 });
 export type Annotation = z.infer<typeof annotationSchema>;
+const yogaPosesSchema = z.strictObject({
+  note: z.string(),
+  families: z.record(z.string(), z.array(z.string().min(1)).min(1)),
+  yogaOnly: z.array(z.string().min(1)),
+});
 const mobilityOverlaySchema = z.array(
   z.strictObject({
     slug: z.string().min(1),
@@ -396,14 +401,25 @@ export async function compileAnnotations(root = process.cwd()) {
       source: row.source ?? 'repdb',
     };
   });
+  // Yoga families tag known poses; yoga-only poses stay out of every other goal's exercise pool.
+  const yoga = yogaPosesSchema.parse(await read('data/training-engine/yoga-poses.json')),
+    family = new Map(Object.entries(yoga.families).flatMap(([name, slugs]) => slugs.map(slug => [slug, name]))),
+    known = new Set(exercises.map(row => row.slug));
+  for (const slug of [...family.keys(), ...yoga.yogaOnly])
+    if (!known.has(slug)) throw Error('Unknown yoga pose: ' + slug);
+  if (family.size !== Object.values(yoga.families).flat().length) throw Error('Duplicate yoga pose');
+  const tagged = exercises.map(row => (family.has(row.slug) ? { ...row, yoga_family: family.get(row.slug)! } : row)),
+    general = tagged.filter(row => !yoga.yogaOnly.includes(row.slug)),
+    yogaExercises = tagged.filter(row => yoga.yogaOnly.includes(row.slug));
   const index = (keys: (row: (typeof exercises)[number]) => string[]) => {
     const result: Record<string, string[]> = {};
-    for (const row of exercises) for (const key of keys(row)) (result[key] ??= []).push(row.id);
+    for (const row of general) for (const key of keys(row)) (result[key] ??= []).push(row.id);
     return result;
   };
   const output = {
     rulesVersion,
-    exercises,
+    exercises: general,
+    yogaExercises,
     byPattern: index(row => [row.primary_pattern, ...row.secondary_patterns]),
     byEquipment: index(row => row.equipment_required),
     byFlag: index(row => row.flags),
