@@ -58,13 +58,27 @@ function compose(slots: RuleValue[], pool: Exercise[], day: DayPlan, ctx: Pipeli
     used = new Set<string>(),
     items: Item[] = [],
     opening = new Set(['centering', 'warmup', 'sun_salutation']);
+  let balancePlaced = false;
   for (const [index, slot] of slots.entries()) {
-    // The balance position needs a true balance pattern (it counts toward balance days); other yoga
-    // balance poses and then any eligible balance drill are the fallbacks.
+    // A balance position prefers a yoga pose with a true balance pattern (it counts toward balance days).
+    // Only when a balance day or an older user needs one does a non-yoga balance drill fill it; a later
+    // balance position stays yoga or is left out.
     const own = pool.filter(e => e.yoga_family === slot.family && !used.has(e.id)),
       balance = own.filter(e => e.primary_pattern === 'balance'),
       drills = pool.filter(e => !e.yoga_family && e.primary_pattern === 'balance' && !used.has(e.id)),
-      choices = (slot.family !== 'balance' ? own : balance.length ? balance : drills.length ? drills : own)
+      needsBalance = !balancePlaced && (day.balanceRequired || older(ctx)),
+      balanceChoices = balance.length
+        ? balance
+        : needsBalance && drills.length
+          ? drills
+          : own.length || balancePlaced
+            ? own
+            : drills,
+      // Folds close the floor part of the class: seated folds first, so nobody stands up again.
+      folds = own.filter(e => e.position.some(position => position !== 'standing')),
+      choices = (
+        slot.family === 'balance' ? balanceChoices : slot.family === 'forward_fold' && folds.length ? folds : own
+      )
         // Older users get down to the floor once: the opening stays standing or seated.
         .filter(e => !older(ctx) || !opening.has(slot.family) || !floorBased(e, ctx))
         .sort((a, b) => a.difficulty - b.difficulty || a.slug.localeCompare(b.slug, 'en'));
@@ -78,6 +92,7 @@ function compose(slots: RuleValue[], pool: Exercise[], day: DayPlan, ctx: Pipeli
         list.find(e => e.slug === slot.prefer) ??
         list[(day.index + index) % list.length];
     used.add(pick.id);
+    if (slot.family === 'balance') balancePlaced = true;
     items.push(prescribePose(pick, slot.block, slot.pos, ctx));
   }
   // Floor poses form one consecutive block for older users (older.floor.transitions); the sequence is kept otherwise.

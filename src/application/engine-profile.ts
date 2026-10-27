@@ -132,6 +132,21 @@ export function enginePreferences(
     ...(profile.preferences?.liked ? { liked: profile.preferences.liked } : {}),
   };
 }
+
+/** The goal a free-text goal names. Yoga comes last (goal.select.single_primary tie_break_order): "减脂，偶尔做瑜伽" stays fat loss. */
+export function goalFromText(text: string): EngineProfile['goal'] {
+  return /增肌|肌肉|muscle|hypertroph/i.test(text)
+    ? 'muscle'
+    : /减脂|减重|fat|weight loss/i.test(text)
+      ? 'fat_loss'
+      : /力量|strength/i.test(text)
+        ? 'strength'
+        : /灵活|mobility/i.test(text)
+          ? 'mobility'
+          : /瑜伽|yoga/i.test(text)
+            ? 'yoga'
+            : 'health';
+}
 /** Missing/legacy screening stays unknown; a checkbox never implies seven negative answers. */
 export function toEngineProfile(
   profile: EngineCoachProfile,
@@ -236,20 +251,7 @@ export function toEngineProfile(
           )
         : 0
       : ageWeeks;
-  const goal =
-    source.goal ??
-    // Yoga comes last (goal.select.single_primary tie_break_order): "减脂，偶尔做瑜伽" stays a fat-loss goal.
-    (/增肌|肌肉|muscle|hypertroph/i.test(profile.goalText)
-      ? 'muscle'
-      : /减脂|减重|fat|weight loss/i.test(profile.goalText)
-        ? 'fat_loss'
-        : /力量|strength/i.test(profile.goalText)
-          ? 'strength'
-          : /灵活|mobility/i.test(profile.goalText)
-            ? 'mobility'
-            : /瑜伽|yoga/i.test(profile.goalText)
-              ? 'yoga'
-              : 'health');
+  const goal = source.goal ?? goalFromText(profile.goalText);
   const levels = effectiveCautionLevels(
     options.cautionLevels,
     options.history ?? [],
