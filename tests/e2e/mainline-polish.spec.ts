@@ -22,7 +22,7 @@ test('legacy exercise cards use provider or original person images, never stick 
   for (const [name, src] of [
     ['高脚杯深蹲', '/media/dumbbell-goblet-squat.png'],
     ['自阻力划船', '/media/self-resisted-row.png'],
-    ['徒手深蹲', 'bodyweight-squat'],
+    ['自重深蹲', 'bodyweight-squat'],
     ['平板支撑', 'plank'],
   ]) {
     await page.getByRole('searchbox').fill(name);

@@ -9,8 +9,16 @@ import { refreshWarmupRamps } from '../source-warmup';
 import { isYogaSession } from '../yoga-session';
 import { settleYogaSession } from '../yoga';
 import { createContext } from '../pipeline';
+import { checkHard } from '../hard-checks';
+import { runGates } from '../gates';
 
-export function finishProgression(value: EnginePlan, output: ProgressionResult, p: EngineProfile, r: Rules) {
+export function finishProgression(
+  value: EnginePlan,
+  output: ProgressionResult,
+  p: EngineProfile,
+  r: Rules,
+  before?: EnginePlan,
+) {
   let ctx: ReturnType<typeof createContext> | undefined;
   for (const template of value.templates) {
     if (isYogaSession(template)) settleYogaSession(template, p, (ctx ??= createContext(p, 0, r)));
@@ -27,12 +35,64 @@ export function finishProgression(value: EnginePlan, output: ProgressionResult, 
     template.estimatedSeconds = estimateSeconds(template, r);
     template.estimatedMinutes = Math.ceil(template.estimatedSeconds / 60);
   }
+  if (before) keepWithinHardRules(value, before, output, p, r);
   output.noop = output.diff.length === 0;
   output.summary = output.noop
     ? { zh: '', en: '' }
     : r.text('meta.copy.operation_volume', { count: output.diff.length });
   return output;
 }
+
+/**
+ * Next targets never add a hard-rule error (a longer session than allowed, a hold past its range): the grown sets
+ * and targets of a session that would break one go back to where they were. Swaps and removals stay.
+ */
+function keepWithinHardRules(
+  value: EnginePlan,
+  before: EnginePlan,
+  output: ProgressionResult,
+  p: EngineProfile,
+  r: Rules,
+) {
+  const gate = runGates(p, r),
+    errors = (plan: EnginePlan) =>
+      checkHard(plan, p, gate, r).filter(issue => issue.severity === 'error' && issue.templateId),
+    known = new Set(errors(before).map(issue => `${issue.templateId} ${issue.code}`));
+  const broken = new Set(
+    errors(value)
+      .filter(issue => !known.has(`${issue.templateId} ${issue.code}`))
+      .map(issue => issue.templateId!),
+  );
+  for (const template of value.templates.filter(t => broken.has(t.id))) {
+    const original = before.templates.find(t => t.id === template.id);
+    if (!original) continue;
+    const restored = new Set<number>();
+    template.items.forEach((item, index) => {
+      const old = original.items[index];
+      // Only growth goes back; a reduction (deload, fatigue) is never undone.
+      if (old?.exerciseId !== item.exerciseId || !grew(item, old)) return;
+      item.sets = old.sets;
+      item.target = structuredClone(old.target);
+      restored.add(index);
+    });
+    output.diff = output.diff.filter(
+      change =>
+        change.templateId !== template.id ||
+        !['volume', 'duration'].includes(change.kind) ||
+        !restored.has(change.itemIndex ?? -1),
+    );
+    template.estimatedSeconds = estimateSeconds(template, r);
+    template.estimatedMinutes = Math.ceil(template.estimatedSeconds / 60);
+  }
+}
+
+const grew = (item: EnginePlan['templates'][number]['items'][number], old: typeof item) =>
+  item.sets > old.sets ||
+  (['reps', 'durationSeconds', 'loadGrams', 'distanceMeters'] as const).some(
+    key =>
+      ((item.target as Record<string, unknown>)[key] as number) >
+      ((old.target as Record<string, unknown>)[key] as number),
+  );
 
 export function removeDroppedPatterns(
   value: EnginePlan,

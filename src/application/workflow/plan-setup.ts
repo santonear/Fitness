@@ -2,7 +2,7 @@
 import { requestedPostpartumPhase, needsPostpartumReferralCheck } from '../postpartum-referral';
 import { hasHouseholdSupport } from '../../engine/equipment';
 import { applicableEnginePlan } from '../../engine/environment';
-import { type EngineCoachProfile, toEngineProfile } from '../engine-profile';
+import { type EngineCoachProfile, goalFromText, toEngineProfile } from '../engine-profile';
 import { PLAN_RETENTION_MS } from '../plan-lifecycle';
 import { DomainError } from '../../domain/errors';
 import { v8CoachProfileSchema, v8PlanVersionSchema } from '../../domain/schemas';
@@ -30,6 +30,7 @@ export function basicProposal(profile: CoachProfile, locale = 'zh') {
   if (!profile.adultConfirmed) return undefined;
   const copy = locale === 'en' ? basicEn : basicZh;
   const selection = [basicItems(profile, 0), basicItems(profile, 1)];
+  const yoga = goalFromText(profile.goalText) === 'yoga';
   const selectedTemplates = selection
     .filter((s, index, all) => {
       if (!s.items.length) return false;
@@ -72,8 +73,8 @@ export function basicProposal(profile: CoachProfile, locale = 'zh') {
         : missing
           ? copy.missing.replace('{types}', missing)
           : locale === 'en'
-            ? `Uses your stated equipment: ${profile.equipment.map(key => equipmentLabel(key, 'en')).join(' / ')}. ${/瘦|减脂|减重|lose weight|fat loss|weight loss/i.test(profile.goalText) ? 'Combines strength work with walking where your selected cautions allow.' : 'Alternates basic strength movements across sessions.'}`
-            : `使用你说明的器械：${profile.equipment.map(key => equipmentLabel(key, 'zh')).join(' / ')}。${/瘦|减脂|减重|lose weight|fat loss|weight loss/i.test(profile.goalText) ? '在已选注意部位允许的范围内，结合力量动作和步行。' : '两份训练单交替安排基础力量动作。'}`,
+            ? `Uses your stated equipment: ${profile.equipment.map(key => equipmentLabel(key, 'en')).join(' / ')}. ${yoga ? 'Gentle yoga poses in a fixed order, ending with a resting pose.' : /瘦|减脂|减重|lose weight|fat loss|weight loss/i.test(profile.goalText) ? 'Combines strength work with walking where your selected cautions allow.' : 'Alternates basic strength movements across sessions.'}`
+            : `使用你说明的器械：${profile.equipment.map(key => equipmentLabel(key, 'zh')).join(' / ')}。${yoga ? '按固定顺序安排基础瑜伽体式，最后放松休息。' : /瘦|减脂|减重|lose weight|fat loss|weight loss/i.test(profile.goalText) ? '在已选注意部位允许的范围内，结合力量动作和步行。' : '两份训练单交替安排基础力量动作。'}`,
     ] as [string, string, string],
   };
 }

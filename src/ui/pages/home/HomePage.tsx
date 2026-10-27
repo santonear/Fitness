@@ -31,6 +31,7 @@ import {
 import { startDateCopy } from '../../../i18n/features/plan/start-date';
 import { nextTrainingDate, sessionForDate } from '../../../application/training-dates';
 import { addDays } from '../../../application/plan-presentation';
+import { isYogaSession } from '../../../engine/yoga-session';
 import { PageSwitches } from '../../components/PageSwitches';
 import { useExerciseTools } from '../../components/ExerciseTools';
 import { exerciseToolsCopy } from '../../../i18n/features/plan/exercise-tools';
@@ -206,8 +207,11 @@ export function HomePage() {
     !notStarted && (picked ? picked.includes(todayDate) : schedule.sessions.some(session => session.day === today));
   const shown = (template?: { id: string }) => (template ? (names.get(template.id) ?? '') : '');
   // 今天 names a session by its main muscles, the same ones the dial and the body card show (Bo 2026-10-26).
-  const muscles = (template?: { items: readonly { exerciseId: string }[] }) =>
-    template
+  // A yoga session is named 瑜伽, never by muscles.
+  const muscles = (template?: {
+    items: readonly { exerciseId: string; prescription?: { sourcePosition?: string } }[];
+  }) =>
+    template && !isYogaSession(template)
       ? sessionMuscleFocus([...new Set(template.items.map(item => item.exerciseId))]).primary.map(
           group => MUSCLE_GROUP_NAMES[group][locale === 'zh' ? 0 : 1],
         )
@@ -238,8 +242,16 @@ export function HomePage() {
     (mainToday
       ? nextSession
       : schedule.sessions[(schedule.sessions.indexOf(nextSession) + 1) % schedule.sessions.length]);
+  // Picked dates: 再下一次 is the picked date after the one 今天 shows, with that date's own session.
+  const followDate = picked
+      ? mainToday
+        ? pickedNext
+        : pickedNext && nextTrainingDate(picked, addDays(pickedNext, 1))
+      : undefined,
+    followDateId = followDate && version ? sessionForDate(version, followDate) : undefined;
   const following =
     (!picked && templates.find(item => item.id === followSession?.templateId)) ||
+    (followDateId && templates.find(item => item.id === followDateId)) ||
     (templates.length && selected
       ? templates[(templates.findIndex(item => item.id === selected.id) + 1) % templates.length]
       : undefined);
@@ -601,12 +613,14 @@ export function HomePage() {
             )}
           </div>
           <WeekStrip label={h.week} days={strip} />
-          {following && followSession && (
+          {following && (picked ? followDate : followSession) && (
             <p className="v9-home-next">
               <span>{h.after}</span>
               <strong>
                 {fill(h.afterLine, {
-                  day: `${schedule.chosen ? '' : h.suggested}${weekdayLabel(followSession.day, locale)}`,
+                  day: followDate
+                    ? startDateLabel(followDate, todayDate, locale)
+                    : `${schedule.chosen ? '' : h.suggested}${weekdayLabel(followSession!.day, locale)}`,
                   name: named(following),
                   minutes: following.estimatedMinutes,
                 })}

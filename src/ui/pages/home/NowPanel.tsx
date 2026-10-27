@@ -15,6 +15,7 @@ import { homePanelStyle, setHomePanelStyle } from '../../../persistence/plan-upg
 import { coachReminderService } from '../../../application/coach-reminders';
 import type { SessionTemplate, WorkoutRecord } from '../../../domain/v8/contracts';
 import type { CautionJoint } from '../../../engine/contracts';
+import { isYogaSession } from '../../../engine/yoga-session';
 import { yayaV5 } from '../../../i18n/features/coach/yaya-v5';
 import { planPagesCopy } from '../../../i18n/features/plan-upgrade/pages';
 import {
@@ -89,18 +90,20 @@ export function useNowSession(
       joints,
     ],
   );
+  const yoga = !!template && isYogaSession(template);
   const session: (NowSession & { templateId?: string }) | undefined = useMemo(() => {
     const planned = () => {
       const ids = [...new Set(template!.items.map(item => item.exerciseId))];
       return {
         exerciseIds: ids,
         minutes: template!.estimatedMinutes,
-        focus: sessionMuscleFocus(ids),
+        focus: yoga ? { primary: [], secondary: [], byExercise: {} } : sessionMuscleFocus(ids),
         templateId: template!.id,
       };
     };
     // The panel opens on the plan's own session; another time, B plan or scene asks the rules for a rebuilt one.
-    if (options.preferTemplate && template && !request.scene && !request.variant) return planned();
+    // A yoga session keeps its own pose sequence at any time choice; scenes and B plans still rebuild.
+    if ((options.preferTemplate || yoga) && template && !request.scene && !request.variant) return planned();
     if (built?.exerciseIds.length) return built;
     if (!template || request.scene) return undefined;
     return planned();

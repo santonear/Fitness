@@ -87,7 +87,9 @@ export function buildNotices(score: ScoreResult, gate: GateOutcome, ctx: Pipelin
         'postpartum.weekly_target',
       ].includes(item.id) &&
       plan &&
-      score.perRule.some(r => r.id === 'aerobic.target.weekly' && r.satisfaction < 1)
+      score.perRule.some(r => r.id === 'aerobic.target.weekly' && r.satisfaction < 1) &&
+      // A yoga plan is not told its general aerobic time is short; the older, pregnancy and postpartum targets stay.
+      !(ctx.profile?.goal === 'yoga' && ['goal.aerobic.baseline', 'aerobic.target.weekly'].includes(item.id))
     )
       key = 'engine.copy.target_aerobic';
     if (item.id === 'week.coverage.patterns' && equipmentLimited) key = 'engine.copy.target_coverage';

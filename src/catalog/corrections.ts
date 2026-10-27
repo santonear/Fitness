@@ -82,6 +82,8 @@ export const catalogCorrections: Record<
     },
   },
   'band-assisted-pull-ups': { equipment: 'resistance-band' },
+  // The app's own 徒手深蹲 (Bodyweight squat) already has this name; the RepDB row gets its other common name.
+  'bodyweight-squat': { name: { zh: '自重深蹲', en: 'Air Squat' } },
   // Standard yoga pose names (Bo 2026-10-26); identities and steps are unchanged.
   'chair-pose': { name: { zh: '幻椅式', en: 'Chair Pose' } },
   'revolved-chair-pose': { name: { zh: '扭转幻椅式', en: 'Revolved Chair Pose' } },

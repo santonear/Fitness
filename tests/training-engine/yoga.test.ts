@@ -22,6 +22,9 @@ import { muscleTip } from '../../src/application/yaya-tips';
 import type { PlanVersion } from '../../src/domain/v8/contracts';
 import onboardingZh from '../../src/i18n/features/onboarding/zh.json';
 import onboardingEn from '../../src/i18n/features/onboarding/en.json';
+import { goalFromText } from '../../src/application/engine-profile';
+import { basicProposal } from '../../src/application/workflow/plan-setup';
+import { exercises } from '../../src/catalog/exercises';
 
 const r = new Rules();
 const slotOrder: string[] = r.get('week.day.yoga').slots.map((slot: { family: string }) => slot.family);
@@ -224,5 +227,72 @@ describe('yoga goal', () => {
     const version = { templates: plan.templates } as unknown as PlanVersion;
     expect(muscleTip({ version, templateId: session.id, weekLoads: [], weekSets: [] })).toBeUndefined();
     expect(planReasons({ ...version, weeklyTarget: 2, preferredDays: [] }, 'zh').join('')).not.toContain('肌肉');
+  });
+
+  it('keeps every position a yoga pose for a healthy user and closes the floor part with seated folds', () => {
+    for (const level of ['beginner', 'intermediate'] as const)
+      for (const minutes of [30, 45, 60, 90]) {
+        const p = baseProfile({ goal: 'yoga', daysPerWeek: 2, sessionMinutes: minutes, level }),
+          plan = generatePlan(p);
+        for (const t of plan.templates.filter(isYogaSession)) {
+          expect(t.items.filter(i => !family(i.exerciseId)).map(i => r.byExercise.get(i.exerciseId)?.slug)).toEqual([]);
+          const folds = t.items.filter(i => family(i.exerciseId) === 'forward_fold');
+          for (const fold of folds)
+            expect(
+              r.byExercise.get(fold.exerciseId)?.position.some(x => x !== 'standing'),
+              fold.exerciseId,
+            ).toBe(true);
+        }
+        expect(plan.notices.map(n => n.ruleId)).not.toContain('engine.copy.target_aerobic');
+      }
+  });
+
+  it('reads the goal text with yoga last and gives a basic yoga session when the engine is off', () => {
+    expect(goalFromText('想练瑜伽，身心都舒展')).toBe('yoga');
+    expect(goalFromText('增肌，也想练瑜伽')).toBe('muscle');
+    const proposal = basicProposal({
+      goalText: '想练瑜伽，身心都舒展',
+      weeklyTarget: 3,
+      preferredDays: [],
+      sessionMinutes: 30,
+      scheduleOriginalText: '每周三次',
+      place: 'home',
+      equipment: ['none'],
+      adultConfirmed: true,
+      cautions: [],
+      confirmedAt: '2026-10-16T00:00:00.000Z',
+    } as never)!;
+    for (const t of proposal.templates) {
+      expect(isYogaSession(t)).toBe(true);
+      expect(sessionKind(t)).toBe('yoga');
+      expect(r.byExercise.get(t.items.at(-1)!.exerciseId)?.slug).toBe('savasana');
+    }
+    expect(proposal.reasons.join('')).not.toContain('力量');
+    expect(exercises.filter(e => e.name.zh === '徒手深蹲')).toHaveLength(1);
+  });
+
+  it('closes with a calm pose when the resting pose is not allowed', () => {
+    const plan = generatePlan(
+      baseProfile({
+        goal: 'yoga',
+        daysPerWeek: 2,
+        sessionMinutes: 30,
+        pregnancySafety: { avoidSupine: true },
+        population: {
+          kind: 'pregnant',
+          week: 24,
+          providerCleared: true,
+          prenatalCareConfirmed: true,
+          contraindicationsConfirmedNone: true,
+          lastScreenedWeek: 24,
+        },
+      }),
+    );
+    for (const t of plan.templates.filter(isYogaSession)) {
+      const last = r.byExercise.get(t.items.at(-1)!.exerciseId)!;
+      expect(t.items.at(-1)!.prescription?.sourcePosition).toBe('yoga_rest');
+      expect(last.position).not.toContain('supine');
+      expect(['rest', 'centering']).toContain(last.yoga_family);
+    }
   });
 });

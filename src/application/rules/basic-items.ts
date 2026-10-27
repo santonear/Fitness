@@ -1,6 +1,9 @@
 import type { CoachProfile, PlannedItem } from '../../domain/v8/contracts';
 import { exercises } from '../../catalog/exercises';
 import { estimatePlannedMinutes } from '../../domain/duration-estimate';
+import { catalogMetadata } from '../../catalog/registry';
+import { exerciseById } from '../../engine/data';
+import { goalFromText } from '../engine-profile';
 
 const walking = exercises.find(exercise => exercise.name.en === 'Walking')!;
 // ch13 duration.cardio.cap: one low-intensity walking item is at most 600 s; refill and trim in 1-minute steps.
@@ -23,7 +26,58 @@ const choices = [
   { name: 'Plank', family: 'core', avoid: ['back', 'shoulder', 'wrist'] },
   { name: 'Bodyweight Calf Raise', family: 'lower', avoid: ['knee', 'back'] },
 ] as const;
+// A gentle fixed yoga sequence for the yoga goal; the same conservative exclusions as above.
+const yogaChoices = [
+  { slug: 'mountain-pose', avoid: [] },
+  { slug: 'cat-cow', avoid: ['wrist', 'back'] },
+  { slug: 'warrior-two', avoid: ['knee'] },
+  { slug: 'tree-pose', avoid: ['knee'] },
+  { slug: 'low-lunge', avoid: ['knee'] },
+  { slug: 'butterfly-stretch', avoid: ['knee'] },
+  { slug: 'seated-forward-fold', avoid: ['back'] },
+  { slug: 'supine-spinal-twist', avoid: ['back'] },
+  { slug: 'savasana', avoid: [] },
+] as const;
+const engineIdBySlug = new Map([...catalogMetadata].map(([id, meta]) => [meta.slug, id]));
+
+/** Yoga poses held 30 s (savasana a few minutes), trimmed from the middle to fit the session. */
+function basicYogaItems(profile: CoachProfile): PlannedItem[] {
+  const items = yogaChoices.flatMap(({ slug, avoid }, index): PlannedItem[] => {
+    const id = engineIdBySlug.get(slug),
+      exercise = id ? exercises.find(e => e.id === id) : undefined,
+      pattern = id ? exerciseById.get(id)?.primary_pattern : undefined;
+    if (
+      !exercise ||
+      !pattern ||
+      profile.cautions.includes('other') ||
+      avoid.some(area => profile.cautions.includes(area))
+    )
+      return [];
+    const rest = slug === 'savasana';
+    return [
+      {
+        exerciseId: exercise.id,
+        equipment: exercise.equipment,
+        sets: rest ? 1 : 2,
+        target: { metricType: 'duration', durationSeconds: rest ? 180 : 30 },
+        // The yoga_ position keeps it a yoga session for naming, swaps and today's adjustments.
+        prescription: {
+          pattern,
+          block: rest ? 'cooldown' : 'mobility',
+          rir: [0, 0],
+          restSeconds: 15,
+          sourcePosition: `yoga_basic_${index}`,
+        },
+      },
+    ];
+  });
+  while (items.length > 3 && estimatePlannedMinutes(items) > profile.sessionMinutes)
+    items.splice(Math.floor(items.length / 2), 1);
+  return items;
+}
+
 export function basicItems(profile: CoachProfile, variant: number): { items: PlannedItem[]; missing: string[] } {
+  if (goalFromText(profile.goalText) === 'yoga') return { items: basicYogaItems(profile), missing: [] };
   const text = profile.equipment.join(' ');
   const gear = new Set(['none']);
   if (
