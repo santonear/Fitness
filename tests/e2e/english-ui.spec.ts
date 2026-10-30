@@ -94,6 +94,8 @@ test('English UI shows no Chinese across the main flow', async ({ page }) => {
     route.fulfill({ json: { qualification: 'none', sessionValid: false, aiEnabled: false } }),
   );
   await page.route('**/api/v1/assistant/**', route => route.abort());
+  // Mid-month, so the schedule calendar always has five open days to pick from.
+  await page.clock.setFixedTime(new Date('2026-10-14T03:00:00Z'));
   await page.addInitScript(() => {
     if (!localStorage.getItem('fitness.language')) localStorage.setItem('fitness.language', 'en');
   });
@@ -283,6 +285,8 @@ test('plan made in Chinese with preset choices reads fully in English after swit
     route.fulfill({ json: { qualification: 'none', sessionValid: false, aiEnabled: false } }),
   );
   await page.route('**/api/v1/assistant/**', route => route.abort());
+  // Mid-month, so the schedule calendar always has five open days to pick from.
+  await page.clock.setFixedTime(new Date('2026-10-14T03:00:00Z'));
   await page.addInitScript(() => {
     if (!localStorage.getItem('fitness.language')) localStorage.setItem('fitness.language', 'zh');
   });

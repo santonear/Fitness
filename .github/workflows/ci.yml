@@ -106,7 +106,7 @@ jobs:
     # Playwright's own image already holds every browser and system library: no download or apt step to stall.
     # Keep the tag equal to @playwright/test in package.json.
     container:
-      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
       options: --ipc=host
     timeout-minutes: 35
     strategy:
@@ -141,7 +141,7 @@ jobs:
     # Playwright's own image already holds every browser and system library: no download or apt step to stall.
     # Keep the tag equal to @playwright/test in package.json.
     container:
-      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
       options: --ipc=host
     timeout-minutes: 20
     steps:
@@ -165,7 +165,7 @@ jobs:
     # Playwright's own image already holds every browser and system library: no download or apt step to stall.
     # Keep the tag equal to @playwright/test in package.json.
     container:
-      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
       options: --ipc=host
     timeout-minutes: 30
     # Each suite gets its own runner so the five run side by side instead of one after another.
@@ -198,7 +198,7 @@ jobs:
     # Playwright's own image already holds every browser and system library: no download or apt step to stall.
     # Keep the tag equal to @playwright/test in package.json.
     container:
-      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
       options: --ipc=host
     timeout-minutes: 25
     steps:
@@ -221,7 +221,7 @@ jobs:
     # Playwright's own image already holds every browser and system library: no download or apt step to stall.
     # Keep the tag equal to @playwright/test in package.json.
     container:
-      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
       options: --ipc=host
     timeout-minutes: 20
     steps:
