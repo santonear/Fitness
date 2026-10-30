@@ -55,7 +55,7 @@
     "fake-indexeddb": "6.2.7",
     "fast-check": "4.10.2",
     "prettier": "3.9.10",
-    "typescript": "7.0.2",
+    "typescript": "6.0.3",
     "vite": "8.3.5",
     "vitest": "5.0.5",
     "wrangler": "4.156.0",
