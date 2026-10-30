@@ -2,6 +2,14 @@
 
 > 放在仓库根目录。所有 AI 编码助手（Codex 等）在本仓库工作时必须遵守。与本文件冲突的旧规则以本文件为准；已有的安全与数据规则继续有效。
 
+## 0. 分支与生效文件（Claude 与 Codex 共用，2026-10-30）
+
+- 唯一主线是 `origin/main`。新工作从最新的 `origin/main` 开分支（Claude 用 `claude/…`，Codex 用 `codex/…`），在 `.worktrees/<名字>` 里开发，经 PR 合回 main。
+- 旧分支不作基线，其中的规则和设计文件不生效：`v8/integration`、`codex/fitness-local-mvp`；其他分支也不得作为新工作的主线基线。
+- 根目录 `D:\Project\xxgospel\Fitness` 目前停在旧分支 `codex/fitness-local-mvp`，只供 3D 动作与解剖模型开发（`agents/`）使用。不要在根目录读取规则或设计文件；以 `origin/main` 为基线，并遵守当前任务明确批准的规则变更。
+- 生效文件（以 `origin/main` 为准）：本文件 `AGENTS.md`（两边共用的唯一协作规则）；`CLAUDE.md`（只引用本文件，不另写规则）；唯一设计规范 `docs/uiux/UIUX20261008.md`；设计变量 `docs/handoff-v8/02-design-tokens.json`；参照设计稿 `docs/design/v9/`；待审决定 `docs/handoff-v8/pending-decisions.md`；文件所有权 `docs/handoff-v8/implementation-map.md`（其中旧集成分支、波次合并门槛及旧主题说明不再生效；文件所有权继续有效）。
+- 个人或全局规则（`~/.codex/AGENTS.md`、Claude 记忆）只管各自的工作习惯；与本文件冲突时以本文件为准。修改本节要 Bo 同意，并在 PR 里请另一个 AI 复核。
+
 ## 1. 现行规范
 
 ### 2026-10-19 V9 定版设计（覆盖下文 V8 视觉与四套主题）
