@@ -44,6 +44,12 @@
   "observability": {
     "enabled": false
   },
+  "r2_buckets": [
+    {
+      "binding": "MODELS",
+      "bucket_name": "fitness-models"
+    }
+  ],
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
@@ -52,7 +58,8 @@
       "/api/*",
       "/api",
       "/admin",
-      "/admin/*"
+      "/admin/*",
+      "/models/*"
     ]
   },
   "kv_namespaces": [
