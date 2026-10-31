@@ -22,6 +22,8 @@ export interface FitnessWorkerEnv
   PUSH?: { fetch(request: Request): Promise<Response> };
   /** R2 bucket fitness-models: baked exercise motions, file names carry a content hash. */
   MODELS?: { get(key: string): Promise<{ body: ReadableStream; httpEtag: string } | null> };
+  /** Workers rate limiting binding: caps 3D model downloads per client address. */
+  MODEL_LIMIT?: { limit(options: { key: string }): Promise<{ success: boolean }> };
 }
 /** API routing is explicit: missing API configuration must never become the SPA HTML. */
 export function createFitnessWorker(control = createDeepSeekWorker(), authenticate = verifyAdministrator) {
@@ -211,13 +213,22 @@ export function createFitnessWorker(control = createDeepSeekWorker(), authentica
       }
       const model = /^\/models\/([a-z0-9-]+_(?:male|female)\.[0-9a-f]{8}\.glb)$/.exec(path);
       if (model && request.method === 'GET') {
+        // Only this site's own pages load models; a bare scripted download (no browser fetch metadata) is refused.
+        // shortcut: headers can be forged, this only stops bulk scraping by naive tools; signed URLs if that is not enough.
+        const site = request.headers.get('sec-fetch-site');
+        const own = `${new URL(request.url).origin}/`;
+        if (site ? site !== 'same-origin' : !request.headers.get('referer')?.startsWith(own))
+          return new Response(null, { status: 403 });
+        const address = request.headers.get('cf-connecting-ip') ?? '';
+        if (env.MODEL_LIMIT && !(await env.MODEL_LIMIT.limit({ key: address })).success)
+          return new Response(null, { status: 429, headers: { 'retry-after': '60' } });
         const object = await env.MODELS?.get(model[1]!);
         if (!object) return new Response('Not found', { status: 404 });
         return new Response(object.body, {
           headers: {
             'content-type': 'model/gltf-binary',
             etag: object.httpEtag,
-            'cache-control': 'public, max-age=31536000, immutable',
+            'cache-control': 'private, max-age=31536000, immutable',
           },
         });
       }
