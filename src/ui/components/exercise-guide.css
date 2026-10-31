@@ -52,3 +52,23 @@
 .v8-focus > ul {
   margin-block: var(--s2);
 }
+.exercise-3d {
+  margin: 0;
+}
+/* Large on phones: full panel width, about half the screen high */
+.exercise-3d canvas {
+  display: block;
+  inline-size: 100%;
+  block-size: min(55dvh, 560px);
+  touch-action: none;
+  background: var(--c-surface);
+  border-radius: var(--r-panel);
+}
+.exercise-3d figcaption {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s2) var(--s3);
+  margin-block-start: var(--s2);
+  color: var(--c-ink-muted);
+}

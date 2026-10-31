@@ -518,6 +518,8 @@ export const useMainline = () => {
   if (!value) throw new Error('Missing mainline provider');
   return value;
 };
+/** For components also shown outside the provider (assistant attachments). */
+export const useOptionalMainline = () => useContext(Context);
 export function MainlineProvider({ children }: { children: ReactNode }) {
   const value = useController();
   return <Context.Provider value={value}>{children}</Context.Provider>;

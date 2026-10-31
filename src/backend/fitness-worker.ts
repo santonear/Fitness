@@ -20,6 +20,8 @@ export interface FitnessWorkerEnv
   ASSETS?: { fetch(request: Request): Promise<Response> };
   FITNESS_TELEMETRY?: { send(event: unknown): Promise<void> };
   PUSH?: { fetch(request: Request): Promise<Response> };
+  /** R2 bucket fitness-models: baked exercise motions, file names carry a content hash. */
+  MODELS?: { get(key: string): Promise<{ body: ReadableStream; httpEtag: string } | null> };
 }
 /** API routing is explicit: missing API configuration must never become the SPA HTML. */
 export function createFitnessWorker(control = createDeepSeekWorker(), authenticate = verifyAdministrator) {
@@ -206,6 +208,18 @@ export function createFitnessWorker(control = createDeepSeekWorker(), authentica
           forwarded.headers.set('authorization', `Bearer ${env.CONTROL_ADMIN_SECRET}`);
           return control.fetch(forwarded, env);
         }
+      }
+      const model = /^\/api\/v1\/models\/([a-z0-9-]+_(?:male|female)\.[0-9a-f]{8}\.glb)$/.exec(path);
+      if (model && request.method === 'GET') {
+        const object = await env.MODELS?.get(model[1]!);
+        if (!object) return new Response('Not found', { status: 404 });
+        return new Response(object.body, {
+          headers: {
+            'content-type': 'model/gltf-binary',
+            etag: object.httpEtag,
+            'cache-control': 'public, max-age=31536000, immutable',
+          },
+        });
       }
       if (path === '/api' || path.startsWith('/api/')) {
         try {

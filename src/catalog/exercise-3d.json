@@ -1,0 +1,524 @@
+{
+  "d16325d9-fc00-4c41-88a1-000000000001": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "goblet-squat_male.7ef76f8e.glb",
+    "female": "goblet-squat_female.e27fa26d.glb"
+  },
+  "fe06a323-6426-5771-893c-b99a2ca1978d": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "air-squat_male.b1d30240.glb",
+    "female": "air-squat_female.20b429a8.glb"
+  },
+  "6c60b2cc-75e8-5f84-879c-dd112c5d10ec": {
+    "target": [
+      0,
+      0.3,
+      0
+    ],
+    "male": "push-up_male.e8414e8a.glb",
+    "female": "push-up_female.0314249d.glb"
+  },
+  "d4ab48c8-9b53-5139-87d2-30ffdca648ee": {
+    "target": [
+      0,
+      0.7,
+      0
+    ],
+    "male": "bent-over-db-row_male.41711a09.glb",
+    "female": "bent-over-db-row_female.4f59d8f5.glb"
+  },
+  "f708e261-2058-5bd9-8613-b134ec5e2bcc": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "db-squat_male.1791c296.glb",
+    "female": "db-squat_female.6a974639.glb"
+  },
+  "30e6f1b8-db71-5e2e-8dea-b01afa2cd02e": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "squat-hold_male.6481f041.glb",
+    "female": "squat-hold_female.5ba539e5.glb"
+  },
+  "a5d0d11b-6017-56ea-86e1-ffd418c4dd8f": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "squat-pulse_male.ece4ed4d.glb",
+    "female": "squat-pulse_female.462edc6f.glb"
+  },
+  "50a243de-bf72-5d3c-8a93-2aad6688dea5": {
+    "target": [
+      0,
+      1.05,
+      0
+    ],
+    "male": "jump-squat_male.44a76e4c.glb",
+    "female": "jump-squat_female.efa4b2d7.glb"
+  },
+  "c6ad7bab-0ccf-5d29-8dff-973e1195ecc5": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "db-sumo-squat_male.6207d0ce.glb",
+    "female": "db-sumo-squat_female.daf2c0d2.glb"
+  },
+  "810254f2-6efe-5203-81c1-23855f790907": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "dumbbell-front-squat_male.96cd75ce.glb",
+    "female": "dumbbell-front-squat_female.1655ee3a.glb"
+  },
+  "06fa5069-5cd9-5c6b-861c-d798e12f1eb4": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "split-squat_male.de7e3a96.glb",
+    "female": "split-squat_female.17592e01.glb"
+  },
+  "dc4bab89-e5e8-58dc-8315-f845cc62d5ac": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "shallow-split-squat_male.8f20e52f.glb",
+    "female": "shallow-split-squat_female.290cdbb3.glb"
+  },
+  "cd68271a-63d6-5d3e-85e1-28b312aaf535": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "dumbbell-split-squat_male.5069d887.glb",
+    "female": "dumbbell-split-squat_female.4814e7aa.glb"
+  },
+  "884278bd-4d05-5191-8807-f3109e26f718": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "dumbbell-romanian-deadlift_male.0fbdba4d.glb",
+    "female": "dumbbell-romanian-deadlift_female.0732f93a.glb"
+  },
+  "37d40ea9-75bd-5ea1-8b65-c7f20a20d45e": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "dumbbell-deadlift_male.2c578d6c.glb",
+    "female": "dumbbell-deadlift_female.b833e135.glb"
+  },
+  "2860ff30-9b3e-5302-8c50-75950bb1e172": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "db-lunge_male.622344d0.glb",
+    "female": "db-lunge_female.d145b780.glb"
+  },
+  "2bc539d7-0817-5f22-8309-7cb1406ef2fa": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "bodyweight-reverse-lunge_male.16f4cced.glb",
+    "female": "bodyweight-reverse-lunge_female.df3b6510.glb"
+  },
+  "9b20d147-bf9c-5713-8c30-f92a90e36083": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "dumbbell-calf-raise_male.cae0842a.glb",
+    "female": "dumbbell-calf-raise_female.05eb5e1b.glb"
+  },
+  "fc73200b-8dc1-5fe1-85a3-64067bd318de": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "bodyweight-calf-raise_male.202139cd.glb",
+    "female": "bodyweight-calf-raise_female.1b3f45ba.glb"
+  },
+  "87247362-0cd9-5122-8ab5-f876180163de": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "glute-bridge_male.b1b6b82b.glb",
+    "female": "glute-bridge_female.cc9917b2.glb"
+  },
+  "80910204-15ee-5125-8dca-6af97eba9341": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "bodyweight-good-morning_male.6ee696e2.glb",
+    "female": "bodyweight-good-morning_female.0c42b89d.glb"
+  },
+  "9f348b43-dd4f-5531-8d22-b1eeefcf4ae1": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "cossack-squat_male.a6a150ab.glb",
+    "female": "cossack-squat_female.6b849cb7.glb"
+  },
+  "7dd49428-fa85-5d60-886c-7c8f13ad0c47": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "dumbbell-shoulder-press_male.fd209c91.glb",
+    "female": "dumbbell-shoulder-press_female.f9ecf525.glb"
+  },
+  "003f6d1a-00f5-5ee7-8728-73c4da98696d": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "dumbbell-front-raise_male.418e07c4.glb",
+    "female": "dumbbell-front-raise_female.a5f9018b.glb"
+  },
+  "ff94eb36-5646-5b60-8ed8-37f3d7d3c52e": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "db-shrug_male.f1fe8f26.glb",
+    "female": "db-shrug_female.a320e15f.glb"
+  },
+  "63682a23-abe9-5fc0-8d1e-648e681d7df6": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "dumbbell-upright-row_male.03ede76f.glb",
+    "female": "dumbbell-upright-row_female.32b1f9ed.glb"
+  },
+  "ec1d7b25-8803-542d-8e41-82680f2c2cac": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "dumbbell-reverse-fly_male.ca805419.glb",
+    "female": "dumbbell-reverse-fly_female.61af876a.glb"
+  },
+  "e68ab263-e719-5c1a-8bb8-4a32f51331fc": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "bodyweight-lateral-raise_male.c0d79f27.glb",
+    "female": "bodyweight-lateral-raise_female.b867aef8.glb"
+  },
+  "9c3e0c3c-dfd2-5ad3-80a9-49084c364c12": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "bicep-curl_male.8c5c9141.glb",
+    "female": "bicep-curl_female.7eec849f.glb"
+  },
+  "b776482b-8e64-5d4a-89b6-3665a9c67880": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "hammer-curl_male.b3fa260a.glb",
+    "female": "hammer-curl_female.85f84928.glb"
+  },
+  "d224cd16-e59e-59b0-8787-4eeac062470d": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "arnold-press_male.f5b91c84.glb",
+    "female": "arnold-press_female.4da1c26d.glb"
+  },
+  "b9ade6dd-258f-5f06-8e10-f41ec33da854": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "lateral-raise_male.15519a5f.glb",
+    "female": "lateral-raise_female.6ca653c2.glb"
+  },
+  "4f261ee2-e40a-57ef-8209-3fe9b0b13854": {
+    "target": [
+      0,
+      0.3,
+      0
+    ],
+    "male": "high-plank_male.e7e91ca1.glb",
+    "female": "high-plank_female.ac2e871e.glb"
+  },
+  "852104a4-fc7a-5295-846c-e3613d382254": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "lunge_male.07deb9d1.glb",
+    "female": "lunge_female.ca2d1d54.glb"
+  },
+  "b1d137e4-a798-53ae-8ed7-8a9aa817047d": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "reverse-lunge_male.ff58c552.glb",
+    "female": "reverse-lunge_female.14bdb9d1.glb"
+  },
+  "6f562e47-d812-5b79-8157-b6edb5e153c6": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "tricep-kickback_male.2a1cdfcd.glb",
+    "female": "tricep-kickback_female.baaa431f.glb"
+  },
+  "5eadd2d4-f042-568a-8a1d-4747a1ad1c42": {
+    "target": [
+      0,
+      0.3,
+      0
+    ],
+    "male": "wide-grip-push-ups_male.175fc2ae.glb",
+    "female": "wide-grip-push-ups_female.02d7e34c.glb"
+  },
+  "af443655-c6cb-5a11-8b45-f2fb15d3de0b": {
+    "target": [
+      0,
+      0.3,
+      0
+    ],
+    "male": "close-grip-push-ups_male.e7830391.glb",
+    "female": "close-grip-push-ups_female.88363f7e.glb"
+  },
+  "82c3e769-5522-5785-8b0d-7da4704982fd": {
+    "target": [
+      0,
+      0.9,
+      0
+    ],
+    "male": "mountain-pose_male.7fb0c517.glb",
+    "female": "mountain-pose_female.2a02463f.glb"
+  },
+  "59530014-84b1-52bc-86b6-3e39f1d74dc0": {
+    "target": [
+      0,
+      1,
+      0
+    ],
+    "male": "chair-pose_male.a4058962.glb",
+    "female": "chair-pose_female.939f3e4c.glb"
+  },
+  "eb0d2ce3-1f54-5e2f-8e63-4e519f085e71": {
+    "target": [
+      0,
+      0.9,
+      0
+    ],
+    "male": "custom-goddess-pose_male.314c827a.glb",
+    "female": "custom-goddess-pose_female.81fc2ddb.glb"
+  },
+  "15fb2afa-d12f-547a-8865-62ce4eb7137c": {
+    "target": [
+      0,
+      1,
+      0
+    ],
+    "male": "custom-upward-salute_male.acb873a6.glb",
+    "female": "custom-upward-salute_female.39e3e2f2.glb"
+  },
+  "96d9de68-b264-5976-8d2c-0fd8557c2174": {
+    "target": [
+      0,
+      0.9,
+      0
+    ],
+    "male": "standing-forward-fold_male.80b911b5.glb",
+    "female": "standing-forward-fold_female.db42558c.glb"
+  },
+  "499ea905-bdd0-5822-82ed-cac4d52437e9": {
+    "target": [
+      0,
+      0.9,
+      0
+    ],
+    "male": "standing-forward-fold-to-half-lift_male.61a5a07c.glb",
+    "female": "standing-forward-fold-to-half-lift_female.cc037464.glb"
+  },
+  "d16325d9-fc00-4c41-88a1-000000000004": {
+    "target": [
+      0,
+      0.3,
+      0
+    ],
+    "male": "plank_male.f000d859.glb",
+    "female": "plank_female.c239dc4e.glb"
+  },
+  "584a0ecd-a077-5e37-8b9f-77d3abb88ad8": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "garland-pose_male.b694e10f.glb",
+    "female": "garland-pose_female.1a3272d2.glb"
+  },
+  "511e7fba-4b52-5efe-811f-47708356ae64": {
+    "target": [
+      0,
+      1,
+      0
+    ],
+    "male": "crescent-lunge_male.f8e057fe.glb",
+    "female": "crescent-lunge_female.eb086540.glb"
+  },
+  "8e3831a9-7cb8-5cca-88d1-29652cc5bdcf": {
+    "target": [
+      0,
+      1,
+      0
+    ],
+    "male": "low-lunge_male.82a7e37d.glb",
+    "female": "low-lunge_female.1bf1a742.glb"
+  },
+  "d6e05d99-27ee-5075-8811-a2c5caae8a07": {
+    "target": [
+      0,
+      1,
+      0
+    ],
+    "male": "warrior-one_male.bdccb9cc.glb",
+    "female": "warrior-one_female.912c6eb5.glb"
+  },
+  "5254d5a5-05a5-500c-8a2d-fa8647333d59": {
+    "target": [
+      0,
+      0.9,
+      0
+    ],
+    "male": "warrior-two_male.5187b589.glb",
+    "female": "warrior-two_female.bb625e6c.glb"
+  },
+  "4112d689-0bc2-545a-8d24-28361c68d626": {
+    "target": [
+      0,
+      0.9,
+      0
+    ],
+    "male": "custom-reverse-warrior_male.cdd62f30.glb",
+    "female": "custom-reverse-warrior_female.63838271.glb"
+  },
+  "a66d576e-9690-587d-817a-c57047504ef7": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "pyramid-pose_male.10cebd94.glb",
+    "female": "pyramid-pose_female.3b58d443.glb"
+  },
+  "bb6a726e-fef1-5c40-8bc0-847e608005d8": {
+    "target": [
+      0,
+      1,
+      0
+    ],
+    "male": "triangle-pose_male.c445296e.glb",
+    "female": "triangle-pose_female.6b1699cb.glb"
+  },
+  "ad39549b-108d-5810-85d3-a2ea5ca3e4e1": {
+    "target": [
+      0,
+      1,
+      0
+    ],
+    "male": "tree-pose_male.c22a9133.glb",
+    "female": "tree-pose_female.c2a94032.glb"
+  },
+  "a7cca67b-384d-55a8-856f-d7a72a25f50b": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "warrior-three_male.7abfc55a.glb",
+    "female": "warrior-three_female.1f321f92.glb"
+  },
+  "c587f444-e7d6-5e0d-88f9-f451d05da067": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "revolved-chair-pose_male.48124f83.glb",
+    "female": "revolved-chair-pose_female.f72bb9bc.glb"
+  },
+  "b8965179-f8f4-57b4-8b9a-7d0c2599220e": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "wide-legged-forward-fold_male.5542cd7c.glb",
+    "female": "wide-legged-forward-fold_female.dfd2b983.glb"
+  },
+  "603ee70b-9fc9-54c1-89fc-ea3987b7333c": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "standing-split_male.3fb5831e.glb",
+    "female": "standing-split_female.aef2d26d.glb"
+  }
+}

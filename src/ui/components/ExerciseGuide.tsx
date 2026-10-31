@@ -1,4 +1,4 @@
-import { useState, type RefObject } from 'react';
+import { Suspense, lazy, useState, type RefObject } from 'react';
 import { getExerciseGuide } from '../../catalog/exercise-guide';
 import type { Locale } from '../../domain/models';
 import { MorphPanel } from './common';
@@ -7,9 +7,12 @@ import { OriginalMedia, RepDBMedia } from './RepDBMedia';
 import { exerciseOriginalMedia, exerciseVisualMetadata } from '../../catalog/exercise-visual';
 import zh from '../../i18n/features/training/guide.zh.json';
 import en from '../../i18n/features/training/guide.en.json';
+import models3d from '../../catalog/exercise-3d.json';
 import './exercise-guide.css';
 import '../pages/plan/exercise-detail.css';
 
+// The 3D view reads the profile (mainline context) and loads three.js: only when an exercise has a model.
+const Exercise3D = lazy(() => import('./Exercise3D').then(module => ({ default: module.Exercise3D })));
 function ExerciseGuideImage({ id, locale }: { id: string; locale: Locale }) {
   const guide = getExerciseGuide(id, locale),
     copy = locale === 'zh' ? zh : en;
@@ -67,24 +70,37 @@ export function ExerciseGuidePanel({
     </MorphPanel>
   );
 }
+function ExerciseGuideMedia({ id, locale, name }: { id: string; locale: Locale; name: string }) {
+  return exerciseVisualMetadata(id) ? (
+    <div className="v8-exercise-media">
+      <RepDBMedia exerciseId={id} exerciseName={name} locale={locale} />
+    </div>
+  ) : exerciseOriginalMedia(id) ? (
+    <div className="v8-exercise-media">
+      <OriginalMedia exerciseId={id} exerciseName={name} locale={locale} />
+    </div>
+  ) : (
+    <>
+      <ExerciseGuideImage key={id} id={id} locale={locale} />
+      <ExerciseGuideAttribution id={id} locale={locale} />
+    </>
+  );
+}
 export function ExerciseGuideContent({ id, locale }: { id: string; locale: Locale }) {
   const guide = getExerciseGuide(id, locale),
     copy = locale === 'zh' ? zh : en;
   return (
     <div className="exercise-guide-detail">
-      {exerciseVisualMetadata(id) ? (
-        <div className="v8-exercise-media">
-          <RepDBMedia exerciseId={id} exerciseName={guide.name} locale={locale} />
-        </div>
-      ) : exerciseOriginalMedia(id) ? (
-        <div className="v8-exercise-media">
-          <OriginalMedia exerciseId={id} exerciseName={guide.name} locale={locale} />
-        </div>
+      {Object.hasOwn(models3d, id) ? (
+        <Suspense fallback={<ExerciseGuideMedia id={id} locale={locale} name={guide.name} />}>
+          <Exercise3D
+            id={id}
+            locale={locale}
+            fallback={<ExerciseGuideMedia id={id} locale={locale} name={guide.name} />}
+          />
+        </Suspense>
       ) : (
-        <>
-          <ExerciseGuideImage key={id} id={id} locale={locale} />
-          <ExerciseGuideAttribution id={id} locale={locale} />
-        </>
+        <ExerciseGuideMedia id={id} locale={locale} name={guide.name} />
       )}
       <h3>{copy.points}</h3>
       <ul>
