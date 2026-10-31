@@ -150,7 +150,14 @@ export async function mountMotion(canvas: HTMLCanvasElement, url: string, target
   observer.observe(canvas);
   let disposed = false;
   try {
-    const gltf = await new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync(url);
+    const gltf = await new GLTFLoader()
+      .setMeshoptDecoder(MeshoptDecoder)
+      // embedded textures become blob: URLs; the CSP allows them as images (img-src) but not as fetches (connect-src),
+      // so decode through <img> instead of the default fetch + createImageBitmap
+      .register(
+        parser => ((parser.textureLoader = new THREE.TextureLoader(parser.options.manager)), { name: 'img-textures' }),
+      )
+      .loadAsync(url);
     if (disposed) throw Error('disposed');
     gltf.scene.traverse(restore);
     scene.add(gltf.scene);
