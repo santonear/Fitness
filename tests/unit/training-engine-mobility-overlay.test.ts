@@ -37,7 +37,7 @@ it('pins every mobility type to its exact local instruction evidence and retains
       expect(Number.isInteger(n) && n >= 0).toBe(true);
       expect(source!.steps[n]).toBeTruthy();
     }
-    const exercise = runtime.exercises.find(item => item.slug === row.slug);
+    const exercise = [...runtime.exercises, ...runtime.hiddenExercises].find(item => item.slug === row.slug);
     expect(exercise?.modality).toBe('mobility');
     expect((exercise as { mobility_type?: string })?.mobility_type).toBe(row.mobility_type);
   }

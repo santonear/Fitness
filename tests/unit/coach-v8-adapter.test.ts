@@ -4,6 +4,7 @@ import { adaptCoachResponse, coachV8Exercises, CoachLanguageError } from '../../
 import type { CoachRequest } from '../../src/coach/contracts';
 import { coachV8PromptHeader } from '../../src/backend/coach-v8-prompt-registry';
 import { basicProposal } from '../../src/application/v8-workflow';
+import { keptExerciseId } from '../../src/catalog/merged-exercises';
 
 const id = '11111111-1111-4111-8111-111111111111';
 const other = '22222222-2222-4222-8222-222222222222';
@@ -26,7 +27,7 @@ const template = {
   estimatedMinutes: 20,
   items: [
     {
-      exerciseId: EXERCISE_IDS.bodyweightSquat,
+      exerciseId: keptExerciseId(EXERCISE_IDS.bodyweightSquat),
       equipment: 'none',
       sets: 2,
       target: { metricType: 'reps' as const, reps: 8 },

@@ -409,8 +409,16 @@ export async function compileAnnotations(root = process.cwd()) {
     if (!known.has(slug)) throw Error('Unknown yoga pose: ' + slug);
   if (family.size !== Object.values(yoga.families).flat().length) throw Error('Duplicate yoga pose');
   const tagged = exercises.map(row => (family.has(row.slug) ? { ...row, yoga_family: family.get(row.slug)! } : row)),
-    general = tagged.filter(row => !yoga.yogaOnly.includes(row.slug)),
-    yogaExercises = tagged.filter(row => yoga.yogaOnly.includes(row.slug));
+    // Merged duplicates (src/catalog/merged-exercises.json) stay resolvable but are never offered.
+    hidden = new Set(
+      ((await read('src/catalog/merged-exercises.json')) as { merged: { hidden: string }[] }).merged.map(
+        row => row.hidden,
+      ),
+    ),
+    general = tagged.filter(row => !yoga.yogaOnly.includes(row.slug) && !hidden.has(row.id)),
+    yogaExercises = tagged.filter(row => yoga.yogaOnly.includes(row.slug) && !hidden.has(row.id)),
+    hiddenExercises = tagged.filter(row => hidden.has(row.id));
+  if (hiddenExercises.length !== hidden.size) throw Error('Unknown merged exercise');
   const index = (keys: (row: (typeof exercises)[number]) => string[]) => {
     const result: Record<string, string[]> = {};
     for (const row of general) for (const key of keys(row)) (result[key] ??= []).push(row.id);
@@ -420,6 +428,7 @@ export async function compileAnnotations(root = process.cwd()) {
     rulesVersion,
     exercises: general,
     yogaExercises,
+    hiddenExercises,
     byPattern: index(row => [row.primary_pattern, ...row.secondary_patterns]),
     byEquipment: index(row => row.equipment_required),
     byFlag: index(row => row.flags),

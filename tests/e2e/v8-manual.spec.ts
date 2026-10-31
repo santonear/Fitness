@@ -8,7 +8,7 @@ test('manual search, multi-select, filters and shared estimate lead to a multi-a
   await expect(start).toBeDisabled();
   const search = page.getByRole('searchbox', { name: '搜索动作' });
   await search.fill('squat');
-  await page.getByRole('button', { name: '徒手深蹲', exact: true }).first().click();
+  await page.getByRole('button', { name: '自重深蹲', exact: true }).first().click();
   await search.fill('plank');
   await page.getByRole('button', { name: '平板支撑', exact: true }).first().click();
   await expect(page.locator('.manual-start')).toContainText('已选 2 个动作');
@@ -379,17 +379,17 @@ test('home equipment defaults remain editable and empty-state clear count matche
     await expect(page.getByRole('button', { name, exact: true })).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: '无器械', exact: true }).click();
   await page.getByRole('button', { name: '哑铃', exact: true }).click();
-  await page.getByRole('searchbox').fill('徒手深蹲');
+  await page.getByRole('searchbox').fill('自重深蹲');
   await expect(page.getByRole('button', { name: '无器械', exact: true })).toHaveAttribute('aria-pressed', 'false');
   await expect(page.getByRole('button', { name: '哑铃', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await page.getByRole('button', { name: '徒手深蹲', exact: true }).first().click();
+  await page.getByRole('button', { name: '自重深蹲', exact: true }).first().click();
   const count = await page.evaluate(async () => {
     const path = '/src/catalog/catalog-service.ts';
     return (await import(/* @vite-ignore */ path)).searchExercises('', {}).length;
   });
   await page.getByRole('button', { name: '胸', exact: true }).click();
   await expect(page.locator('.manual-empty')).toContainText(`清空筛选后有 ${count} 个动作`);
-  await expect(page.getByRole('searchbox')).toHaveValue('徒手深蹲');
+  await expect(page.getByRole('searchbox')).toHaveValue('自重深蹲');
   await page.getByRole('searchbox').fill('zzzzzzzz');
   await expect(page.locator('.manual-empty')).toContainText(`清空筛选后有 ${count} 个动作`);
   await expect(page.locator('.manual-empty')).toContainText('同时清空搜索词');

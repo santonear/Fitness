@@ -382,11 +382,11 @@ test('one focused exercise, edited defaults, replacement and pause retain facts'
   await expect(page.getByText('第 2 组，共 2 组', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: '跳过休息', exact: true }).click();
   await page.getByRole('button', { name: '换动作', exact: true }).click();
-  await page.getByRole('dialog').getByRole('searchbox').fill('自阻力划船');
-  await page.getByRole('dialog').getByRole('button', { name: '自阻力划船', exact: true }).click();
+  await page.getByRole('dialog').getByRole('searchbox').fill('站姿自阻力划船');
+  await page.getByRole('dialog').getByRole('button', { name: '站姿自阻力划船', exact: true }).click();
   await page.getByLabel('换动作的原因').selectOption('discomfort');
   await page.getByRole('button', { name: '确定', exact: true }).click();
-  await expect(page.getByRole('heading', { name: '自阻力划船', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '站姿自阻力划船', exact: true })).toBeVisible();
   await page.getByRole('button', { name: '完成这一组' }).click();
   await expect(page.getByRole('heading', { name: '休息一下', exact: true })).toBeVisible();
   await expect(page.getByText('下一个动作', { exact: true })).toBeVisible();
@@ -640,8 +640,8 @@ test('favorite exercises roundtrip through a downloaded backup without changing 
   await page.getByRole('button', { name: '就用这份计划' }).click();
   await page.getByRole('button', { name: '先不写', exact: true }).click();
   await page.goto('/exercises');
-  await page.getByRole('searchbox').fill('自阻力划船');
-  await page.getByRole('button', { name: '收藏 自阻力划船', exact: true }).click();
+  await page.getByRole('searchbox').fill('站姿自阻力划船');
+  await page.getByRole('button', { name: '收藏 站姿自阻力划船', exact: true }).click();
   await page.goto('/settings');
   await page.getByRole('button', { name: '备份恢复', exact: true }).click();
   const downloaded = page.waitForEvent('download');
@@ -673,5 +673,5 @@ test('favorite exercises roundtrip through a downloaded backup without changing 
   expect(result.workouts).toEqual(envelope.data.v8.workouts);
   await page.goto('/exercises');
   await page.getByLabel('只看已收藏').check();
-  await expect(page.getByRole('button', { name: '自阻力划船', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '站姿自阻力划船', exact: true })).toBeVisible();
 });

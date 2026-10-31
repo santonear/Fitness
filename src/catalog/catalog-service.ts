@@ -2,6 +2,7 @@ import { catalogMetadata } from './registry';
 import { DomainError } from '../domain/errors';
 import type { CatalogFilters, Exercise, Locale } from '../domain/models';
 import { exercises } from './exercises';
+import { isHiddenExercise } from './merged-exercises';
 import yogaPoses from '../../data/training-engine/yoga-poses.json' with { type: 'json' };
 import { getExerciseTags, type ExerciseSearchFilters as GuideSearchFilters } from './exercise-tags';
 export interface ExerciseSearchFilters extends GuideSearchFilters {
@@ -52,7 +53,7 @@ export function searchExercises(
   const filters = typeof localeOrFilters === 'string' ? {} : localeOrFilters;
   const allowed = filters.allowedIds === undefined ? undefined : new Set(filters.allowedIds);
   return exercises
-    .filter(e => !allowed || allowed.has(e.id))
+    .filter(e => !isHiddenExercise(e.id) && (!allowed || allowed.has(e.id)))
     .map(e => ({ e, t: getExerciseTags(e.id), score: score(e, normalize(query)) }))
     .filter(
       ({ e, t, score }) =>

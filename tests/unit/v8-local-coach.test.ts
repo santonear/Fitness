@@ -8,6 +8,7 @@ import { manualTrainingItems } from '../../src/application/rules/manual-items';
 import { exercises, EXERCISE_IDS } from '../../src/catalog/exercises';
 import type { CoachProfile } from '../../src/domain/v8/contracts';
 import type { CoachRequest } from '../../src/coach/contracts';
+import { keptExerciseId } from '../../src/catalog/merged-exercises';
 const profile: CoachProfile = {
   goalText: '活动',
   weeklyTarget: 3,
@@ -86,7 +87,7 @@ describe('local coach fallback', () => {
   });
   it('offers only an existing conservative replacement for one named movement and known area', () => {
     const input = request();
-    const squat = input.template.items.find(i => i.exerciseId === EXERCISE_IDS.bodyweightSquat)!;
+    const squat = input.template.items.find(i => i.exerciseId === keptExerciseId(EXERCISE_IDS.bodyweightSquat))!;
     const reply = localCoachReply(
       `${exercises.find(e => e.id === squat.exerciseId)!.name.zh}膝盖不舒服`,
       input,

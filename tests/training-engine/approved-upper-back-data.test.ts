@@ -24,9 +24,11 @@ it('appends one original source-backed action while preserving every old stable 
     createHash('sha256')
       .update(JSON.stringify(index.exercises.slice(0, -3).map(e => e.id)))
       .digest('hex'),
-  ).toBe('d13e8f463c9408d9632a3518856c4e559dc870cf21f3d3b29601ff5461be281d');
+    // The previous order minus the 11 merged duplicates (Bo 2026-10-31), which moved to hiddenExercises.
+  ).toBe('d81e8678e4fbacd53fe26bac4578e4e8a1d07e5fcd16af6ebb6a7a806a56cb1c');
   expect(index.exercises.at(-3)?.slug).toBe(slug);
-  expect(new Set(index.exercises.map(e => e.id)).size).toBe(681);
+  expect(new Set(index.exercises.map(e => e.id)).size).toBe(670);
+  expect(index.hiddenExercises).toHaveLength(11);
 });
 it('retains the approved standing no-gear static back variant and honest nonzero loads', () => {
   const e = index.exercises.find(e => e.slug === slug)!;

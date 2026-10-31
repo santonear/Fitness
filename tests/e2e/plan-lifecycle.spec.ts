@@ -185,19 +185,19 @@ test('discarding an unaccepted draft does not write plan or workout data', async
 
 test('unfavoriting removes the exercise from favorites and remains removed after reload', async ({ page }) => {
   await page.goto('/exercises');
-  await page.getByRole('searchbox').fill('自阻力划船');
-  const favorite = page.getByRole('button', { name: '收藏 自阻力划船', exact: true });
+  await page.getByRole('searchbox').fill('站姿自阻力划船');
+  const favorite = page.getByRole('button', { name: '收藏 站姿自阻力划船', exact: true });
   await favorite.click();
   await expect(favorite).toHaveAttribute('aria-pressed', 'true');
   await page.getByLabel('只看已收藏').check();
   await favorite.click();
-  await expect(page.getByRole('button', { name: '自阻力划船', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '站姿自阻力划船', exact: true })).toHaveCount(0);
   await page.reload();
   await page.getByLabel('只看已收藏').check();
-  await expect(page.getByRole('button', { name: '自阻力划船', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '站姿自阻力划船', exact: true })).toHaveCount(0);
   await page.getByLabel('只看已收藏').uncheck();
-  await page.getByRole('searchbox').fill('自阻力划船');
-  await expect(page.getByRole('button', { name: '收藏 自阻力划船', exact: true })).toHaveAttribute(
+  await page.getByRole('searchbox').fill('站姿自阻力划船');
+  await expect(page.getByRole('button', { name: '收藏 站姿自阻力划船', exact: true })).toHaveAttribute(
     'aria-pressed',
     'false',
   );

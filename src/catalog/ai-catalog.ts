@@ -1,5 +1,6 @@
 import { exercises } from './exercises';
 import { catalogMetadata } from './registry';
+import { isHiddenExercise, keptExerciseId } from './merged-exercises';
 import { equipmentLabel } from './taxonomy';
 import type { AssistantRequest } from '../assistant/contracts';
 import type { GuidedDialogueRequest } from '../domain/guided-ai-contracts';
@@ -10,6 +11,7 @@ export function selectAiExercises(goal: string, conditions: unknown = {}, refine
   const text = `${goal} ${JSON.stringify(conditions)} ${refinement}`.toLowerCase();
   const terms = text.match(/[a-z0-9]+|[\u4e00-\u9fff]+/g) ?? [];
   const ranked = exercises
+    .filter(exercise => !isHiddenExercise(exercise.id))
     .map((exercise, index) => {
       const metadata = catalogMetadata.get(exercise.id);
       const aliases = [exercise.name.zh, exercise.name.en, ...(metadata?.aliases ?? [])].map(value =>
@@ -29,7 +31,9 @@ export function selectAiExercises(goal: string, conditions: unknown = {}, refine
     })
     .sort((a, b) => b.score - a.score || a.index - b.index);
   // Original four remain available for existing plans and deterministic adapters.
-  const selected = new Map(exercises.slice(0, 4).map(row => [row.id, row]));
+  // A merged original is represented by the exercise it was merged into.
+  const kept = exercises.slice(0, 4).map(row => exercises.find(e => e.id === keptExerciseId(row.id))!);
+  const selected = new Map(kept.map(row => [row.id, row]));
   for (const { exercise, score } of ranked) {
     if (score < 100 || selected.size >= 64) break;
     selected.set(exercise.id, exercise);
@@ -129,6 +133,7 @@ export function selectAssistantCandidates(request: AssistantRequest) {
       pref => pref.kind === 'cannot_do' && /walking_carry|负重行走/i.test(String(pref.value)),
     ) || /以后.*(?:别|不要|不再).*农夫行走|avoid.*farmer.*carry/i.test(words);
   const pool = exercises.filter(exercise => {
+    if (isHiddenExercise(exercise.id)) return false;
     if (context && !allowed.has(exercise.equipment)) return false;
     const name = `${exercise.name.en} ${catalogMetadata.get(exercise.id)?.slug ?? ''}`;
     if (

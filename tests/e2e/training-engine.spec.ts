@@ -1032,8 +1032,8 @@ test('pre-training joint danger persists as a minimal pause until fresh screenin
   await page.getByRole('button', { name: '先不写', exact: true }).click();
   await expect(page.getByRole('heading', { name: '今天', exact: true })).toBeVisible();
   await page.goto('/manual');
-  await page.getByRole('searchbox').fill('自阻力划船');
-  await page.getByRole('button', { name: '自阻力划船', exact: true }).click();
+  await page.getByRole('searchbox').fill('站姿自阻力划船');
+  await page.getByRole('button', { name: '站姿自阻力划船', exact: true }).click();
   await page.getByRole('button', { name: '开始', exact: true }).click();
   await page.getByRole('button', { name: '完成这一组', exact: true }).click();
   await page.getByRole('button', { name: '暂停或结束', exact: true }).click();
@@ -1097,8 +1097,8 @@ test('pre-training joint danger persists as a minimal pause until fresh screenin
   await page.reload();
   await expect(homeStart(page)).toBeDisabled();
   await page.goto('/manual');
-  await page.getByRole('searchbox').fill('自阻力划船');
-  await page.getByRole('button', { name: '自阻力划船', exact: true }).click();
+  await page.getByRole('searchbox').fill('站姿自阻力划船');
+  await page.getByRole('button', { name: '站姿自阻力划船', exact: true }).click();
   await page.getByRole('button', { name: '开始', exact: true }).click();
   await expect(page).toHaveURL(/manual/);
   const paused = await page.evaluate(async () => {

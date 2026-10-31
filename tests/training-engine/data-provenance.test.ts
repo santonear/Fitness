@@ -48,7 +48,7 @@ describe('compiled provenance and actual catalog coverage', () => {
     expect(index.counts.repdb).toBe(637);
     expect(index.counts.native).toBe(3);
     expect(index.counts.custom).toBe(customCatalog.length);
-    const runtime = [...index.exercises, ...index.yogaExercises];
+    const runtime = [...index.exercises, ...index.yogaExercises, ...index.hiddenExercises];
     expect(new Set(runtime.map(row => row.id)).size).toBe(exercises.length);
     expect(runtime.map(row => row.id).sort()).toEqual(exercises.map(row => row.id).sort());
     expect(exercises.slice(0, 5).map(row => row.id)).toEqual(Object.values(EXERCISE_IDS));

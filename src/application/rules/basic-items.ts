@@ -1,5 +1,6 @@
 import type { CoachProfile, PlannedItem } from '../../domain/v8/contracts';
 import { exercises } from '../../catalog/exercises';
+import { keptExerciseId } from '../../catalog/merged-exercises';
 import { estimatePlannedMinutes } from '../../domain/duration-estimate';
 import { catalogMetadata } from '../../catalog/registry';
 import { exerciseById } from '../../engine/data';
@@ -14,14 +15,14 @@ const WALK_MAX_SECONDS = 600,
 type Area = CoachProfile['cautions'][number];
 // Conservative exclusions, not a medical suitability assessment.
 const choices = [
-  { name: 'Bodyweight squat', family: 'lower', avoid: ['knee', 'back'] },
+  { name: 'Air Squat', family: 'lower', avoid: ['knee', 'back'] },
   { name: 'Glute Bridge', family: 'lower', avoid: ['knee', 'back'] },
   { name: 'Clamshells', family: 'lower', avoid: ['back'] },
   { name: 'Wall Push Ups', family: 'push', avoid: ['shoulder', 'wrist', 'back'] },
   { name: 'Dumbbell Floor Press', family: 'push', avoid: ['shoulder', 'wrist'] },
   { name: 'Band Pull Apart', family: 'pull', avoid: ['shoulder', 'wrist'] },
   { name: 'Bent-Over Dumbbell Row', family: 'pull', avoid: ['back', 'shoulder', 'wrist'] },
-  { name: 'Self-resisted Row', family: 'pull', avoid: ['back', 'shoulder', 'wrist'] },
+  { name: 'Standing self-resisted row', family: 'pull', avoid: ['back', 'shoulder', 'wrist'] },
   { name: 'Dead Bug', family: 'core', avoid: ['back', 'shoulder'] },
   { name: 'Plank', family: 'core', avoid: ['back', 'shoulder', 'wrist'] },
   { name: 'Bodyweight Calf Raise', family: 'lower', avoid: ['knee', 'back'] },
@@ -184,7 +185,8 @@ export function basicItems(profile: CoachProfile, variant: number): { items: Pla
 
 /** Explicit conservative subset; unknown movements or unspecified cautions have no inferred replacement. */
 export function discomfortReplacement(exerciseId: string, profile: CoachProfile): PlannedItem | undefined {
-  const source = exercises.find(e => e.id === exerciseId);
+  // A merged duplicate in an existing plan belongs to the family of the exercise it was merged into.
+  const source = exercises.find(e => e.id === keptExerciseId(exerciseId));
   const family = choices.find(c => c.name.toLowerCase() === source?.name.en.toLowerCase())?.family;
   if (!family || profile.cautions.includes('other')) return undefined;
   const lowerImpact = ['Clamshells', 'Wall Push Ups', 'Band Pull Apart', 'Dead Bug'];

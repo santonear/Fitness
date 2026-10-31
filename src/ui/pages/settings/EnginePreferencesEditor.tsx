@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { exercises } from '../../../catalog/exercises';
+import { isHiddenExercise } from '../../../catalog/merged-exercises';
 import { engineCopy } from '../../../coach/engine-copy';
 import type { EngineProfileFields } from '../../../application/engine-profile';
 import zh from '../../../i18n/features/manual/zh.json';
@@ -27,7 +28,11 @@ export function EnginePreferencesEditor({
   const query = search.trim().toLocaleLowerCase();
   const matches = query
     ? exercises
-        .filter(item => Object.values(item.name).some(name => name.toLocaleLowerCase().includes(query)))
+        .filter(
+          item =>
+            !isHiddenExercise(item.id) &&
+            Object.values(item.name).some(name => name.toLocaleLowerCase().includes(query)),
+        )
         .slice(0, 60)
     : [];
   const rows = exercises.filter(item => preferences.excludedExerciseIds.includes(item.id) || matches.includes(item));

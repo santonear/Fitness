@@ -84,6 +84,8 @@ export const catalogCorrections: Record<
   'band-assisted-pull-ups': { equipment: 'resistance-band' },
   // The app's own 徒手深蹲 (Bodyweight squat) already has this name; the RepDB row gets its other common name.
   'bodyweight-squat': { name: { zh: '自重深蹲', en: 'Air Squat' } },
+  // Bo 2026-10-31: kept over the merged db-skull-crusher; the barbell skull-crusher keeps 仰卧臂屈伸.
+  'lying-tricep-extension': { name: { zh: '哑铃仰卧臂屈伸', en: 'Lying Tricep Extension' } },
   // Standard yoga pose names (Bo 2026-10-26); identities and steps are unchanged.
   'chair-pose': { name: { zh: '幻椅式', en: 'Chair Pose' } },
   'revolved-chair-pose': { name: { zh: '扭转幻椅式', en: 'Revolved Chair Pose' } },

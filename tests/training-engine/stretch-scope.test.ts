@@ -143,7 +143,7 @@ it.each(['empty', 'unmapped'] as const)(
   'reports unknown primary metadata without inventing primary stretch obligations from volume credit: %s',
   mode => {
     const data = structuredClone(DATA),
-      e = data.exercises.find(e => e.slug === 'native-bodyweight-squat')!;
+      e = [...data.exercises, ...(data.hiddenExercises ?? [])].find(e => e.slug === 'native-bodyweight-squat')!;
     e.primaryMuscles = mode === 'empty' ? [] : ['__unmapped__'];
     const rules = new Rules(data),
       { t, plan, s } = fixture(rules);

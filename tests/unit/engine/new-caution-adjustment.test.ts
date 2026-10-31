@@ -10,10 +10,10 @@ const rules = new Rules();
 it('rechecks existing exercises after a newly screened caution before filling an adjustment', () => {
   const plan = generatePlan(profile);
   const template = plan.templates[0];
-  expect(template.items.some(item => rules.byExercise.get(item.exerciseId)?.slug === 'knee-push-ups')).toBe(true);
+  expect(template.items.some(item => rules.byExercise.get(item.exerciseId)?.slug === 'db-sumo-squat')).toBe(true);
   const result = adjustToday(template, profile, { painArea: 'knee', lockedItemIndexes: [] });
   expect(result.noop).toBe(false);
-  expect(result.value.items.some(item => rules.byExercise.get(item.exerciseId)?.slug === 'knee-push-ups')).toBe(false);
+  expect(result.value.items.some(item => rules.byExercise.get(item.exerciseId)?.slug === 'db-sumo-squat')).toBe(false);
   expect(
     validatePlan({ ...plan, templates: [result.value] }, { ...profile, cautions: ['knee'] }).filter(
       issue => issue.severity === 'error',
@@ -23,7 +23,7 @@ it('rechecks existing exercises after a newly screened caution before filling an
 
 it('does not remove a completed locked exercise to make a new caution adjustment pass', () => {
   const template = generatePlan(profile).templates[0];
-  const locked = template.items.findIndex(item => rules.byExercise.get(item.exerciseId)?.slug === 'knee-push-ups');
+  const locked = template.items.findIndex(item => rules.byExercise.get(item.exerciseId)?.slug === 'db-sumo-squat');
   expect(locked).toBeGreaterThanOrEqual(0);
   const result = adjustToday(template, profile, { painArea: 'knee', lockedItemIndexes: [locked] });
   expect(result.noop).toBe(true);

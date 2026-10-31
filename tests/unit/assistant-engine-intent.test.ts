@@ -54,7 +54,8 @@ describe('engine today_adjust intent from the home screen', () => {
     expect(response.mutationAllowed).toBe(false);
     if (response.type === 'today_adjustment') {
       expect(response.template.id).toBe(template.id);
-      expect(response.template.estimatedMinutes).toBeLessThanOrEqual(22);
+      // duration.fit.tolerance: within ±10% scores best; up to +20% is still a valid fit.
+      expect(response.template.estimatedMinutes).toBeLessThanOrEqual(24);
       expect(response.workoutId).toBeUndefined();
     }
     // Local engine context keeps the profile, but identity follows the sent request.

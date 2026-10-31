@@ -80,6 +80,8 @@ export interface EngineData {
   exercises: Exercise[];
   /** Poses used only by yoga sessions; every other goal keeps its pool unchanged. */
   yogaExercises?: Exercise[];
+  /** Merged duplicates: resolvable for existing plans and history, never offered. */
+  hiddenExercises?: Exercise[];
   byPattern?: Record<string, string[]>;
 }
 export function stretchHoldRange(e: Exercise, r: Rules, population: string): [number, number] | undefined {
@@ -111,18 +113,21 @@ export const DATA: EngineData = {
   copy: compiledRules.copy,
   exercises: compiledExercises.exercises as unknown as Exercise[],
   yogaExercises: compiledExercises.yogaExercises as unknown as Exercise[],
+  hiddenExercises: compiledExercises.hiddenExercises as unknown as Exercise[],
   byPattern: compiledExercises.byPattern,
 };
 /** Every compiled exercise by id, yoga-only poses included (use it for lookups of planned or recorded items). */
 export const exerciseById: ReadonlyMap<string, Exercise> = new Map(
-  [...DATA.exercises, ...(DATA.yogaExercises ?? [])].map(e => [e.id, e]),
+  [...DATA.exercises, ...(DATA.yogaExercises ?? []), ...(DATA.hiddenExercises ?? [])].map(e => [e.id, e]),
 );
 export class Rules {
   readonly byId: Map<string, Rule>;
   readonly byExercise: Map<string, Exercise>;
   constructor(readonly data: EngineData = DATA) {
     this.byId = new Map(data.rules.map(r => [r.id, r]));
-    this.byExercise = new Map([...data.exercises, ...(data.yogaExercises ?? [])].map(e => [e.id, e]));
+    this.byExercise = new Map(
+      [...data.exercises, ...(data.yogaExercises ?? []), ...(data.hiddenExercises ?? [])].map(e => [e.id, e]),
+    );
   }
   get(id: string): RuleValue {
     const r = this.byId.get(id);

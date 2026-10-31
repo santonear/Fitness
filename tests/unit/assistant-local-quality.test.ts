@@ -122,12 +122,12 @@ describe('V2 local plan quality', () => {
     expect(short.response?.type).toBe('today_adjustment');
     if (short.response?.type === 'today_adjustment')
       expect(short.response.template.estimatedMinutes).toBeLessThanOrEqual(15);
-    const swap = localCoachReply('替换徒手深蹲', request, profile);
+    const swap = localCoachReply('替换自重深蹲', request, profile);
     expect(swap.response?.type).toBe('today_adjustment');
     if (swap.response?.type === 'today_adjustment')
       expect(swap.response.template.items.every(item => item.equipment === 'none')).toBe(true);
-    expect(localCoachReply('替换徒手深蹲', request, { ...profile, cautions: ['other'] }).response).toBeUndefined();
-    expect(localCoachReply('替换徒手深蹲', { ...request, workoutId: id }, profile, 'zh', [0]).response).toBeUndefined();
+    expect(localCoachReply('替换自重深蹲', request, { ...profile, cautions: ['other'] }).response).toBeUndefined();
+    expect(localCoachReply('替换自重深蹲', { ...request, workoutId: id }, profile, 'zh', [0]).response).toBeUndefined();
     expect(request).toEqual(before);
   });
   it('keeps an English local capability entry instead of claiming a service failure', () => {

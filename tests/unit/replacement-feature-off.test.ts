@@ -18,7 +18,7 @@ const legacy: EngineCoachProfile = {
 it('retains only the existing conservative basic subset when the new engine is off and no health facts exist', () => {
   const before = structuredClone(legacy),
     ids = replacementCandidateIds(undefined, legacy, false, rules);
-  expect(ids).toContain(rules.data.exercises.find(e => e.slug === 'native-self-resisted-row')!.id);
+  expect(ids).toContain(rules.data.exercises.find(e => e.slug === 'custom-standing-self-row')!.id);
   for (const id of ids) {
     const e = rules.byExercise.get(id)!;
     expect(e.noise).toBe(0);
@@ -41,16 +41,16 @@ it('does not use the compatibility subset when engine screening is required or p
   expect(replacementCandidateIds(undefined, { ...legacy, birthYearMonth: '1956-01' }, false, rules)).toEqual([]);
 });
 it('keeps known caution and explicit space exclusions in the compatibility subset', () => {
-  const self = rules.data.exercises.find(e => e.slug === 'native-self-resisted-row')!.id;
+  const self = rules.data.exercises.find(e => e.slug === 'custom-standing-self-row')!.id;
   expect(replacementCandidateIds(undefined, { ...legacy, cautions: ['shoulder'] }, false, rules)).not.toContain(self);
-  expect(
-    replacementCandidateIds(
-      undefined,
-      { ...legacy, constraints: { quiet: true, noJump: true, space: 'mat' } },
-      false,
-      rules,
-    ),
-  ).not.toContain(self);
+  const matOnly = replacementCandidateIds(
+    undefined,
+    { ...legacy, constraints: { quiet: true, noJump: true, space: 'mat' } },
+    false,
+    rules,
+  );
+  expect(matOnly.length).toBeGreaterThan(0);
+  expect(matOnly.every(id => rules.byExercise.get(id)!.space === 'mat')).toBe(true);
   expect(replacementCandidateIds(undefined, { ...legacy, cautions: ['other'] }, false, rules)).toEqual([]);
 });
 it('continues full current-profile filtering even when the rollout flag is off', () => {
