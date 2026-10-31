@@ -19,6 +19,7 @@ import type { Repository } from '../../src/persistence/repository';
 import { toEngineProfile, historyPainState } from '../../src/application/engine-profile';
 import { painQuestionKeys } from '../../src/application/training-pain';
 import * as flags from '../../src/application/feature-flags';
+import { keptExerciseId } from '../../src/catalog/merged-exercises';
 const rules = new Rules(),
   now = '2026-10-15T03:00:00.000Z',
   root = new URL('../fixtures/legacy-backups/', import.meta.url);
@@ -538,7 +539,7 @@ it('permits a confirmed all-negative report only for a real zero-load joint acti
   expect(before.painActions).toBeUndefined();
   expect(before.setFeedbackEvents).toBeUndefined();
   expect(f.rows().v8State[0].coachProfile.painState).toBeUndefined();
-  await f.workflow.substitute(workout.id, 0, EXERCISE_IDS.bodyweightSquat, 'other');
+  await f.workflow.substitute(workout.id, 0, keptExerciseId(EXERCISE_IDS.bodyweightSquat), 'other');
   await expect(f.workflow.recordSet(workout.id, 0, 1, { reps: 8 })).rejects.toThrow('PAIN_REVIEW_REQUIRED');
   expect(f.rows().v8Workouts[0].sets).toEqual(before.sets);
 });

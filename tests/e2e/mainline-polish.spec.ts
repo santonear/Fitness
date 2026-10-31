@@ -21,7 +21,7 @@ test('legacy exercise cards use provider or original person images, never stick 
   await page.goto('/manual');
   for (const [name, src] of [
     ['高脚杯深蹲', '/media/dumbbell-goblet-squat.png'],
-    ['自阻力划船', '/media/self-resisted-row.png'],
+    ['站姿自阻力划船', 'custom-standing-self-row'],
     ['自重深蹲', 'bodyweight-squat'],
     ['平板支撑', 'plank'],
   ]) {
@@ -198,7 +198,7 @@ test('manual selection to completed record, appearance previews and reminders', 
   await page.goto('/manual');
   const search = page.getByRole('searchbox', { name: '搜索动作' });
   await search.fill('squat');
-  await page.getByRole('button', { name: '徒手深蹲', exact: true }).first().click();
+  await page.getByRole('button', { name: '自重深蹲', exact: true }).first().click();
   await shot(page, 'manual-search');
   await search.fill('plank');
   await page.getByRole('button', { name: '平板支撑', exact: true }).first().click();

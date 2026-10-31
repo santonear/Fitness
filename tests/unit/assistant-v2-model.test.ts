@@ -11,6 +11,7 @@ import { repairAssistantAttachment, assistantExercises } from '../../src/backend
 import { EXERCISE_IDS, exercises } from '../../src/catalog/exercises';
 import { coachV8Exercises, adaptCoachResponse } from '../../src/coach/response-adapter';
 import { basicProposal } from '../../src/application/v8-workflow';
+import { keptExerciseId } from '../../src/catalog/merged-exercises';
 
 const id = '11111111-1111-4111-8111-111111111111';
 const request: AssistantRequest = {
@@ -42,7 +43,7 @@ const context = {
     estimatedMinutes: 20,
     items: [
       {
-        exerciseId: EXERCISE_IDS.bodyweightSquat,
+        exerciseId: keptExerciseId(EXERCISE_IDS.bodyweightSquat),
         equipment: 'none',
         sets: 2,
         target: { metricType: 'reps' as const, reps: 8 },
@@ -226,7 +227,7 @@ describe('assistant v2 model', () => {
     };
     const events = await gather(
       runAssistantModel(
-        { ...request, messages: [{ role: 'user', content: '介绍一下徒手深蹲的动作' }] },
+        { ...request, messages: [{ role: 'user', content: '介绍一下自重深蹲的动作' }] },
         { provider: model, promptVersion: 'assistant-v3.0.0' },
       ),
     );
@@ -236,7 +237,7 @@ describe('assistant v2 model', () => {
         event =>
           event.type === 'attachment' &&
           event.attachment.type === 'exercise_info' &&
-          event.attachment.exerciseId === EXERCISE_IDS.bodyweightSquat,
+          event.attachment.exerciseId === keptExerciseId(EXERCISE_IDS.bodyweightSquat),
       ),
     ).toBe(true);
   });
@@ -509,7 +510,7 @@ describe('assistant v2 model', () => {
   });
   it('sends only bounded current-workout facts independently of optional history consent', () => {
     const currentWorkout = {
-      completedSets: [{ itemIndex: 0, setIndex: 0, exerciseId: EXERCISE_IDS.bodyweightSquat, reps: 8 }],
+      completedSets: [{ itemIndex: 0, setIndex: 0, exerciseId: keptExerciseId(EXERCISE_IDS.bodyweightSquat), reps: 8 }],
       remainingSets: 1,
     };
     const input = {

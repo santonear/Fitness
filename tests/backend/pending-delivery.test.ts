@@ -3,6 +3,7 @@ import { ControlService, testConfig } from '../../src/backend/control';
 import { SqliteControlStore } from '../support/backend/sqlite-store';
 import { confirmationFor, goalConfirmationFor } from '../../src/backend/contracts';
 import { exercises } from '../../src/catalog/exercises';
+import { isHiddenExercise } from '../../src/catalog/merged-exercises';
 
 async function setup(call: () => Promise<{ result: unknown; actualCost?: number }>) {
   const store = new SqliteControlStore(':memory:');
@@ -89,7 +90,7 @@ it('invalid candidate without a cost keeps pending and never delivers raw output
 });
 
 it('valid day candidate can be delivered pending without persisting plan contents', async () => {
-  const exercise = exercises.find(item => item.metricType === 'reps')!;
+  const exercise = exercises.find(item => item.metricType === 'reps' && !isHiddenExercise(item.id))!;
   const candidate = {
     days: [
       {

@@ -9,6 +9,7 @@ import { searchExercises } from '../../src/catalog/catalog-service';
 import { equipmentLabel, EQUIPMENT } from '../../src/catalog/taxonomy';
 import { RepDBAttribution } from '../../src/ui/components/RepDBAttribution';
 import { CatalogImage } from '../../src/ui/components/RepDBMedia';
+import { isHiddenExercise } from '../../src/catalog/merged-exercises';
 
 it('loads all 637 source exercises and retains the two distinct legacy squat variants', () => {
   expect([...catalogMetadata.values()].filter(row => !row.slug.startsWith('custom-'))).toHaveLength(637);
@@ -50,6 +51,8 @@ it('bounds the AI catalog and makes every exercise selectable by exact name', ()
   for (const exercise of exercises) {
     const choices = selectAiExercises(exercise.name.en, { equipment: exercise.equipment });
     expect(choices.length).toBeLessThanOrEqual(64);
+    expect(choices.some(x => isHiddenExercise(x.id))).toBe(false);
+    if (isHiddenExercise(exercise.id)) continue;
     expect(
       choices.some(x => x.id === exercise.id),
       exercise.name.en,

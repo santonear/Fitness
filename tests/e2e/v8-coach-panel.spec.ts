@@ -1,6 +1,9 @@
 import { test, expect, type Page, type Route } from '@playwright/test';
 import { showShared } from './helpers/home-coach';
 import { EXERCISE_IDS } from '../../src/catalog/exercise-ids';
+
+// 徒手深蹲 was merged into 自重深蹲 (Bo 2026-10-31); AI candidates offer only the kept ID.
+const AIR_SQUAT = 'fe06a323-6426-5771-893c-b99a2ca1978d';
 async function enableAssistant(page: Page) {
   await page.evaluate(async () => {
     const path = '/src/application/feature-flags.ts';
@@ -119,7 +122,7 @@ test('candidate preview shows repetitions load duration and distance before conf
         target: { metricType: 'duration_distance', durationSeconds: 600, distanceMeters: 750 },
       },
       {
-        exerciseId: EXERCISE_IDS.bodyweightSquat,
+        exerciseId: AIR_SQUAT,
         equipment: 'none',
         sets: 3,
         target: { metricType: 'reps', reps: 10 },
@@ -163,7 +166,7 @@ test('candidate preview shows repetitions load duration and distance before conf
   await page.getByRole('button', { name: '发送', exact: true }).click();
   await expect(page.getByText('高脚杯深蹲 · 2 组 · 8 次 · 12.5 公斤').first()).toBeVisible();
   await expect(page.getByText('步行 · 1 组 · 约 10 分钟 · 750 米').first()).toBeVisible();
-  await expect(page.getByText('徒手深蹲 · 3 组 · 10 次').first()).toBeVisible();
+  await expect(page.getByText('自重深蹲 · 3 组 · 10 次').first()).toBeVisible();
   await expect(page.getByText('平板支撑 · 2 组 · 25 秒').first()).toBeVisible();
 });
 test('duplicate apply is locked and a failed save retains the candidate without regenerating', async ({ page }) => {
@@ -175,7 +178,7 @@ test('duplicate apply is locked and a failed save retains the candidate without 
     const sent = route.request().postDataJSON(),
       p = sent.context.profile;
     const item = {
-      exerciseId: EXERCISE_IDS.bodyweightSquat,
+      exerciseId: AIR_SQUAT,
       equipment: 'none',
       sets: 2,
       target: { metricType: 'reps', reps: 8 },
@@ -230,7 +233,7 @@ test('duplicate apply is locked and a failed save retains the candidate without 
   finishApply!();
   await expect(page.getByRole('alert')).toHaveText('这次应用尚未确认，请重试。');
   await expect(apply).toBeEnabled();
-  await expect(page.getByText('徒手深蹲 · 2 组 · 8 次').first()).toBeVisible();
+  await expect(page.getByText('自重深蹲 · 2 组 · 8 次').first()).toBeVisible();
   expect(modelCalls).toBe(1);
   await apply.click();
   await expect(page.getByText('已应用', { exact: true })).toBeVisible();

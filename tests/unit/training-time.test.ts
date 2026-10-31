@@ -6,6 +6,7 @@ import { EXERCISE_IDS } from '../../src/catalog/exercises';
 import { guidedInputSnapshot } from '../../src/ai/guided-dialogue';
 import { guidedDialogueRequestSchema, type GuidedDialogueRequest } from '../../src/domain/guided-ai-contracts';
 import { validateGuidedProviderInput, validateGuidedProviderOutput } from '../../src/backend/legacy-guided-reader';
+import { keptExerciseId } from '../../src/catalog/merged-exercises';
 
 const id = 'd16325d9-fc00-4c41-88a1-000000000001';
 function request(days = 14): GuidedDialogueRequest {
@@ -27,7 +28,7 @@ function request(days = 14): GuidedDialogueRequest {
   return { ...input, requestId: id, inputSnapshot: guidedInputSnapshot(input) };
 }
 const exercise = {
-  exerciseId: EXERCISE_IDS.bodyweightSquat,
+  exerciseId: keptExerciseId(EXERCISE_IDS.bodyweightSquat),
   order: 0,
   targetSets: [{ metricType: 'reps' as const, reps: 8 }],
   setTimings: [{ durationSeconds: 40, restSeconds: 60 }],

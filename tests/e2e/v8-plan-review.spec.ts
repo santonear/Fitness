@@ -59,8 +59,8 @@ test('library near matches preserve equipment filters and open complete guidance
 test('library details share modal behavior and favorites survive reload', async ({ page }) => {
   await plan(page);
   await page.goto('/exercises');
-  await page.getByLabel('搜索动作').fill('自阻力划船');
-  const movement = page.getByRole('button', { name: '自阻力划船', exact: true });
+  await page.getByLabel('搜索动作').fill('站姿自阻力划船');
+  const movement = page.getByRole('button', { name: '站姿自阻力划船', exact: true });
   await movement.click();
   await expect(page.getByRole('dialog')).toBeVisible();
   for (const name of ['动作要点', '完整步骤', '常见错误', '注意事项'])
@@ -68,14 +68,14 @@ test('library details share modal behavior and favorites survive reload', async 
   await page.getByRole('dialog').getByRole('button', { name: '关闭', exact: true }).click();
   await expect(page.getByRole('dialog')).not.toBeVisible();
   await expect(movement).toBeFocused();
-  await page.getByRole('button', { name: '收藏 自阻力划船', exact: true }).click();
-  await expect(page.getByRole('button', { name: '收藏 自阻力划船', exact: true })).toHaveAttribute(
+  await page.getByRole('button', { name: '收藏 站姿自阻力划船', exact: true }).click();
+  await expect(page.getByRole('button', { name: '收藏 站姿自阻力划船', exact: true })).toHaveAttribute(
     'aria-pressed',
     'true',
   );
   await page.reload();
   await page.getByLabel('只看已收藏').check();
-  await expect(page.getByRole('button', { name: '自阻力划船', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '站姿自阻力划船', exact: true })).toBeVisible();
 });
 
 test('library favorites are filtered before exact matches and suggestion limits', async ({ page }) => {
@@ -251,10 +251,10 @@ test('all retained plan versions remain readable and library filters retain attr
   await expect(page.getByText(/Read only/)).toBeVisible();
   await page.goto('/exercises');
   await expect(page.getByRole('link', { name: 'RepDB', exact: true })).toBeVisible();
-  await page.getByRole('searchbox').fill('Self-resisted Row');
+  await page.getByRole('searchbox').fill('Standing self-resisted row');
   await page.getByRole('button', { name: 'No equipment', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Self-resisted Row', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Standing self-resisted row', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'No equipment', exact: true }).click();
   await page.getByRole('button', { name: 'Dumbbells', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Self-resisted Row', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Standing self-resisted row', exact: true })).toHaveCount(0);
 });

@@ -119,7 +119,10 @@ export function progress(
         const swap = createContext(p, 0, r);
         swap.plan = value;
         swap.currentWeekday = t.weekday;
-        swap.usedIds = new Set(t.items.filter(other => other !== raw).map(other => other.exerciseId));
+        const others = t.items.filter(other => other !== raw);
+        swap.usedIds = new Set(others.map(other => other.exerciseId));
+        // …and their ladders: a ladder sibling is the same movement for variety.no_repeat.
+        swap.usedLadders = new Set(others.flatMap(other => r.byExercise.get(other.exerciseId)?.ladder.id || []));
         const replacement = substituteItem(item, p, 'pain', r, swap);
         if (!replacement.noop) Object.assign(item, replacement.value);
         else continue;

@@ -1,0 +1,60 @@
+{
+  "note": "Bo 2026-10-31: duplicate catalogue entries. The hidden ID stays readable for plans, history and backups, but is no longer offered (library, plan generation, AI candidates); new choices use the kept ID, which also owns the single 3D model.",
+  "merged": [
+    {
+      "hidden": "d16325d9-fc00-4c41-88a1-000000000003",
+      "kept": "fe06a323-6426-5771-893c-b99a2ca1978d",
+      "names": "徒手深蹲 → 自重深蹲 bodyweight-squat"
+    },
+    {
+      "hidden": "d16325d9-fc00-4c41-88a1-000000000005",
+      "kept": "e309250b-5101-53ca-8b66-6a72adacff34",
+      "names": "自阻力划船 → 站姿自阻力划船 custom-standing-self-row"
+    },
+    {
+      "hidden": "a993d856-72c2-5401-8a49-893cb835ef4b",
+      "kept": "0ec3a857-ec3f-5163-8bf8-c99042553977",
+      "names": "派克俯卧撑 bodyweight-overhead-press → 屈体俯卧撑 pike-push-ups"
+    },
+    {
+      "hidden": "eaa08e09-c777-5cf3-8127-239726038966",
+      "kept": "c7c4e25d-c787-5455-83e5-053da38dedda",
+      "names": "下斜卧推杠铃 decline-bench-press-barbell → 下斜卧推 decline-bench-press"
+    },
+    {
+      "hidden": "8c953782-7a5c-5773-89b8-afb59184e46b",
+      "kept": "ec1d7b25-8803-542d-8e41-82680f2c2cac",
+      "names": "三角肌后束飞鸟 rear-delt-fly → 哑铃反向飞鸟 dumbbell-reverse-fly"
+    },
+    {
+      "hidden": "e1cab0d3-4d5c-57d2-8b23-0da22d5a4c25",
+      "kept": "3392b492-3844-5a87-8357-1a58f6d75174",
+      "names": "史密斯机肩部推举 smith-machine-shoulder-press → 坐姿史密斯机肩部推举 seated-smith-machine-shoulder-press"
+    },
+    {
+      "hidden": "47a251e2-bb2f-5a50-8f39-832e38ead78f",
+      "kept": "98ea95e1-c8e6-5f97-8ccc-76605c6a2ca5",
+      "names": "哑铃仰卧臂屈伸 db-skull-crusher → lying-tricep-extension"
+    },
+    {
+      "hidden": "47f1cdd6-d481-5e15-84aa-2fcecdad7cec",
+      "kept": "06e282e2-f652-5008-84ed-8d0ac2cc7474",
+      "names": "哑铃臂屈伸 dumbbell-tricep-extension → 单臂哑铃过顶臂屈伸 single-arm-dumbbell-overhead-tricep-extension"
+    },
+    {
+      "hidden": "74b10aa0-922b-510f-8eab-4900f607e262",
+      "kept": "a39cbfb8-5390-5eda-8440-803604a9e318",
+      "names": "窄握高位下拉 close-grip-lat-pulldown → V把手高位下拉 v-bar-lat-pulldown"
+    },
+    {
+      "hidden": "9e2616b2-6631-5a82-83f6-532c5f1bfefa",
+      "kept": "a46a6b13-4190-5c4e-87f1-bb7d2a79441d",
+      "names": "站姿提踵 standing-calf-raise → 器械提踵 machine-calf-raise"
+    },
+    {
+      "hidden": "86fd6811-5781-5138-825d-f0fca3cd7bcd",
+      "kept": "584a0ecd-a077-5e37-8b9f-77d3abb88ad8",
+      "names": "深位深蹲静态保持 deep-squat-hold → 花环式 garland-pose (yoga kept)"
+    }
+  ]
+}

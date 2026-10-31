@@ -3,6 +3,7 @@ import { engineAction, enginePlanProposal } from '../../application/engine-plan'
 import type { AssistantIntent, AssistantRequest, AssistantAttachment } from '../../assistant/contracts';
 import type { EngineChange, EnginePlan } from '../../engine/contracts';
 import { exercises } from '../../catalog/exercises';
+import { keptExerciseId } from '../../catalog/merged-exercises';
 import { explicitScheduleChange } from '../../application/picked-schedule';
 
 function exerciseId(value: string | undefined, candidateIds: string[] = []) {
@@ -12,7 +13,7 @@ function exerciseId(value: string | undefined, candidateIds: string[] = []) {
   const matches = exercises.filter(row =>
     [row.id, row.name.zh, row.name.en].some(name => name.toLowerCase() === value.toLowerCase()),
   );
-  return matches.length === 1 ? matches[0].id : undefined;
+  return matches.length === 1 ? keptExerciseId(matches[0].id) : undefined;
 }
 /** No legacy fallback is allowed once a request selects the deterministic engine. */
 export function assembleEngineIntent(

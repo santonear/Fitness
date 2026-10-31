@@ -20,8 +20,10 @@ describe('exercise catalogue', () => {
     ).toBe(true);
   });
   it('searches both languages and respects equipment filters', () => {
-    expect(searchExercises('深蹲', 'en', {}).map(item => item.name.en)).toContain('Bodyweight squat');
-    expect(searchExercises('SQUAT', 'zh', { equipment: 'none' }).map(item => item.name.zh)).toContain('徒手深蹲');
+    expect(searchExercises('深蹲', 'en', {}).map(item => item.name.en)).toContain('Air Squat');
+    expect(searchExercises('SQUAT', 'zh', { equipment: 'none' }).map(item => item.name.zh)).toContain('自重深蹲');
+    // Merged duplicates (Bo 2026-10-31) are no longer offered.
+    expect(searchExercises('深蹲', 'zh', {}).map(item => item.name.zh)).not.toContain('徒手深蹲');
     expect(searchExercises('squat', 'en', { equipment: 'dumbbell' }).map(item => item.name.en)).toContain(
       'Goblet squat',
     );

@@ -1,5 +1,6 @@
 import { confirmationFor, goalConfirmationFor, type AiRequest } from '../../src/backend/contracts';
 import { EXERCISE_IDS } from '../../src/catalog/exercise-ids';
+import { keptExerciseId } from '../../src/catalog/merged-exercises';
 
 export async function promptRequest(locale: 'zh' | 'en', operation: 'understand' | 'generate' = 'generate'): Promise<AiRequest> {
   const base = { contractVersion: 1 as const, requestId: '00000000-0000-4000-8000-000000000001',
@@ -17,7 +18,7 @@ export function fourMetricCandidate() {
   return { days: [{ date: '2026-10-06', exercises: [
     { exerciseId: EXERCISE_IDS.gobletSquat, order: 0, targetSets: [{ metricType: 'reps_load', reps: 8, loadGrams: 4000 }] },
     { exerciseId: EXERCISE_IDS.walking, order: 1, targetSets: [{ metricType: 'duration_distance', durationSeconds: 600, distanceMeters: 700 }] },
-    { exerciseId: EXERCISE_IDS.bodyweightSquat, order: 2, targetSets: [{ metricType: 'reps', reps: 8 }] },
+    { exerciseId: keptExerciseId(EXERCISE_IDS.bodyweightSquat), order: 2, targetSets: [{ metricType: 'reps', reps: 8 }] },
     { exerciseId: EXERCISE_IDS.plank, order: 3, targetSets: [{ metricType: 'duration', durationSeconds: 20 }] },
   ] }] };
 }

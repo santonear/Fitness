@@ -20,7 +20,8 @@ import { baseProfile } from '../../tools/eval/training-engine-profiles';
 const r = new Rules();
 function template(slug: string, p: EngineProfile): Template {
   const item = prescribe(
-    r.data.exercises.find(e => e.slug === slug)!,
+    // byExercise also resolves merged duplicates, such as the native squat without primary data.
+    [...r.byExercise.values()].find(e => e.slug === slug)!,
     p,
     r,
     safety(p, r),
