@@ -22,7 +22,7 @@ export function Exercise3D({ id, locale, fallback }: { id: string; locale: Local
     let alive = true;
     setState('loading');
     import('./motion-view')
-      .then(m => m.mountMotion(canvas.current!, `/api/v1/models/${file}`, byId[id]!.target))
+      .then(m => m.mountMotion(canvas.current!, `/models/${file}`, byId[id]!.target))
       .then(
         v => (alive ? ((view.current = v), setState('ready')) : v.dispose()),
         () => alive && setState('failed'),

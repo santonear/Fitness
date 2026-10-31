@@ -58,7 +58,8 @@
       "/api/*",
       "/api",
       "/admin",
-      "/admin/*"
+      "/admin/*",
+      "/models/*"
     ]
   },
   "kv_namespaces": [

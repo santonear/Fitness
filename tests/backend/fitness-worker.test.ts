@@ -94,13 +94,13 @@ it('serves baked 3D models from R2 by exact hashed name only', async () => {
     key === 'goblet-squat_male.0123abcd.glb' ? { body: new Response('glb').body!, httpEtag: '"e"' } : null,
   );
   const worker = createFitnessWorker(),
-    at = (path: string) => worker.fetch(new Request(`https://preview.test/api/v1/models/${path}`), { MODELS: { get } });
+    at = (path: string) => worker.fetch(new Request(`https://preview.test/models/${path}`), { MODELS: { get } });
   const hit = await at('goblet-squat_male.0123abcd.glb');
   expect(hit.status).toBe(200);
   expect(hit.headers.get('cache-control')).toContain('immutable');
   expect(await hit.text()).toBe('glb');
   expect((await at('goblet-squat_female.0123abcd.glb')).status).toBe(404);
-  // anything else falls through to the API router, never to R2
+  // anything else is left to the static assets, never to R2
   await at('..%2Fsecret.glb');
   expect(get).toHaveBeenCalledTimes(2);
 });

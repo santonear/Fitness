@@ -209,7 +209,7 @@ export function createFitnessWorker(control = createDeepSeekWorker(), authentica
           return control.fetch(forwarded, env);
         }
       }
-      const model = /^\/api\/v1\/models\/([a-z0-9-]+_(?:male|female)\.[0-9a-f]{8}\.glb)$/.exec(path);
+      const model = /^\/models\/([a-z0-9-]+_(?:male|female)\.[0-9a-f]{8}\.glb)$/.exec(path);
       if (model && request.method === 'GET') {
         const object = await env.MODELS?.get(model[1]!);
         if (!object) return new Response('Not found', { status: 404 });
