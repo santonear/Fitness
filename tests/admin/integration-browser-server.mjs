@@ -154,7 +154,8 @@ async function reset() {
     requestId: '50000000-0000-4000-8000-000000000005',
     inputDigest: 'b'.repeat(64),
     operation: 'generate',
-    createdAt: Date.now() - 1800000,
+    // Never before the month start, or the request falls out of this month's ledger in the first half hour.
+    createdAt: Math.max(Date.parse(`${period}-01T00:00:00Z`), Date.now() - 1800000),
     period,
     bound: 300,
     status: 'settled',
@@ -302,6 +303,11 @@ const server = await createServer({
                 const config = JSON.parse(
                   await readFile(new URL('../../wrangler.admin-preview.jsonc', import.meta.url), 'utf8'),
                 );
+                // Seed in this server's time zone (UTC), not the preview's, so both agree on the month near its edges.
+                config.vars.CONTROL_POLICY = JSON.stringify({
+                  ...JSON.parse(config.vars.CONTROL_POLICY),
+                  timeZone: 'UTC',
+                });
                 const revision = control.prepare('SELECT revision FROM control_ledger WHERE id=1').get().revision;
                 const seed = buildPreviewFinanceSeed(config, { control: { revision, state }, runtimeBudgetFen: 3500 });
                 control.exec(seed.controlSql);

@@ -26,7 +26,7 @@ import {
 import { TaskCostChart } from './TaskCostChart';
 import { configReview, canDismissBudget } from './config-review';
 import { financeOutcome, mutationCopy } from './outcome';
-import { DAY_MS } from '../../../domain/local-date';
+import { DAY_MS, todayIn } from '../../../domain/local-date';
 type Ledger = ReturnType<typeof ledgerProjection>;
 function useData<T>(path: string) {
   const [value, setValue] = useState<T>();
@@ -266,7 +266,8 @@ export function FinanceCosts({ language = 'zh' }: { language?: FinanceLanguage }
 function LegacyFinanceCosts({ language = 'zh' }: { language?: FinanceLanguage }) {
   const [task, setTask] = useState('');
   const t = financeCopy[language],
-    [month, setMonth] = useState(new Date().toISOString().slice(0, 7));
+    // The month in the viewer's own time zone, the same one the costs request is sent with.
+    [month, setMonth] = useState(() => todayIn(Intl.DateTimeFormat().resolvedOptions().timeZone).slice(0, 7));
   const data = useData<{
     rows: {
       day: string;

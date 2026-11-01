@@ -1,9 +1,10 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { pwaBuild } from './tools/pwa-build';
+import { blaDecoy } from './tools/bla-decoy';
 export default defineConfig({
   cacheDir: '.cache/vite',
-  plugins: [react(), pwaBuild()],
+  plugins: [react(), blaDecoy(), pwaBuild()],
   server: { watch: { ignored: ['**/outputs/**', '**/test-results*/**', '**/.superpowers/**'] } },
   build: {
     rolldownOptions: {
