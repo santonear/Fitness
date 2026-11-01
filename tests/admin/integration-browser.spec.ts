@@ -299,10 +299,13 @@ test('preview synthetic costs filter by task and the 50 percent reminder can be 
   const filter = page.getByRole('combobox', { name: '任务', exact: true });
   await filter.selectOption('adjust');
   const costs = page.locator('section').filter({ has: page.getByRole('heading', { name: '芽芽费用', exact: true }) });
-  await expect(costs.locator('tbody tr')).toHaveCount(3);
+  // 3 calls per task over the last 3 days; early in the month they share fewer days (rows), so count calls.
+  const calls = async () =>
+    (await costs.locator('tbody tr td:nth-child(3)').allInnerTexts()).reduce((sum, n) => sum + Number(n), 0);
+  await expect.poll(calls).toBe(3);
   await expect(costs.locator('tbody')).toContainText('今日调整');
   await filter.selectOption('review');
-  await expect(costs.locator('tbody tr')).toHaveCount(3);
+  await expect.poll(calls).toBe(3);
   await expect(costs.locator('tbody')).toContainText('回顾');
   await page.goto('/admin/todo');
   await expect(page.getByRole('heading', { name: '本月预算已用 60%（¥21.00 / ¥35.00）', exact: true })).toBeVisible();
