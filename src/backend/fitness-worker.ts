@@ -220,7 +220,8 @@ export function createFitnessWorker(control = createDeepSeekWorker(), authentica
         if (site ? site !== 'same-origin' : !request.headers.get('referer')?.startsWith(own))
           return new Response(null, { status: 403 });
         const address = request.headers.get('cf-connecting-ip') ?? '';
-        if (env.MODEL_LIMIT && !(await env.MODEL_LIMIT.limit({ key: address })).success)
+        // the cap is for the models; posters are small stills a list page shows dozens of at once
+        if (model[2] === 'glb' && env.MODEL_LIMIT && !(await env.MODEL_LIMIT.limit({ key: address })).success)
           return new Response(null, { status: 429, headers: { 'retry-after': '60' } });
         const object = await env.MODELS?.get(model[1]!);
         if (!object) return new Response('Not found', { status: 404 });

@@ -131,4 +131,13 @@ it('refuses 3D model downloads that do not come from this site, and rate limits 
     await status({ 'sec-fetch-site': 'same-origin', 'cf-connecting-ip': '1.2.3.4' }, { MODEL_LIMIT: { limit } }),
   ).toBe(429);
   expect(limit).toHaveBeenCalledWith({ key: '1.2.3.4' });
+  // posters are not capped: a list page loads dozens at once
+  const poster = await worker.fetch(
+    new Request('https://preview.test/models/goblet-squat_male.0123abcd.webp', {
+      headers: { 'sec-fetch-site': 'same-origin', 'cf-connecting-ip': '1.2.3.4' },
+    }),
+    { MODELS: { get }, MODEL_LIMIT: { limit } },
+  );
+  expect(poster.status).toBe(200);
+  expect(limit).toHaveBeenCalledTimes(1);
 });
