@@ -370,7 +370,9 @@ test('manual typo suggestions retain filters and open the complete shared guide'
   const dialog = page.getByRole('dialog');
   await expect(dialog).toContainText('动作要点');
   await expect(dialog).toContainText('常见错误');
-  await expect(dialog.getByRole('link', { name: 'RepDB' })).toHaveAttribute('href', 'https://repdb.co/');
+  // 徒手深蹲 has an accepted 3D motion: its guide shows that (or its poster), never the RepDB pictures
+  await expect(dialog.locator('.exercise-3d')).toBeVisible();
+  await expect(dialog.getByRole('link', { name: 'RepDB' })).toHaveCount(0);
 });
 
 test('home equipment defaults remain editable and empty-state clear count matches its effect', async ({ page }) => {
