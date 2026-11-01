@@ -135,12 +135,12 @@
       0.8,
       0
     ],
-    "male": "split-squat_male.de7e3a96.glb",
+    "male": "split-squat_male.038b022c.glb",
     "poster": {
-      "male": "split-squat_male.f6e670c1.webp",
-      "female": "split-squat_female.d3643cee.webp"
+      "male": "split-squat_male.e3848364.webp",
+      "female": "split-squat_female.385e09d9.webp"
     },
-    "female": "split-squat_female.17592e01.glb"
+    "female": "split-squat_female.e50704fb.glb"
   },
   "dc4bab89-e5e8-58dc-8315-f845cc62d5ac": {
     "target": [
@@ -161,12 +161,12 @@
       0.8,
       0
     ],
-    "male": "dumbbell-split-squat_male.5069d887.glb",
+    "male": "dumbbell-split-squat_male.e371515b.glb",
     "poster": {
-      "male": "dumbbell-split-squat_male.47eb7df5.webp",
-      "female": "dumbbell-split-squat_female.6c09dce7.webp"
+      "male": "dumbbell-split-squat_male.ed1f9d54.webp",
+      "female": "dumbbell-split-squat_female.d26c61ec.webp"
     },
-    "female": "dumbbell-split-squat_female.4814e7aa.glb"
+    "female": "dumbbell-split-squat_female.d0bdcbb4.glb"
   },
   "884278bd-4d05-5191-8807-f3109e26f718": {
     "target": [
@@ -200,12 +200,12 @@
       0.8,
       0
     ],
-    "male": "db-lunge_male.622344d0.glb",
+    "male": "db-lunge_male.4b3032bb.glb",
     "poster": {
-      "male": "db-lunge_male.92db2018.webp",
-      "female": "db-lunge_female.729d99b3.webp"
+      "male": "db-lunge_male.4a6a9eec.webp",
+      "female": "db-lunge_female.76004eda.webp"
     },
-    "female": "db-lunge_female.d145b780.glb"
+    "female": "db-lunge_female.50058f11.glb"
   },
   "2bc539d7-0817-5f22-8309-7cb1406ef2fa": {
     "target": [
@@ -213,12 +213,12 @@
       0.8,
       0
     ],
-    "male": "bodyweight-reverse-lunge_male.16f4cced.glb",
+    "male": "bodyweight-reverse-lunge_male.409436f6.glb",
     "poster": {
-      "male": "bodyweight-reverse-lunge_male.e2b9c536.webp",
-      "female": "bodyweight-reverse-lunge_female.e38816d2.webp"
+      "male": "bodyweight-reverse-lunge_male.451ea02d.webp",
+      "female": "bodyweight-reverse-lunge_female.bf3b7c01.webp"
     },
-    "female": "bodyweight-reverse-lunge_female.df3b6510.glb"
+    "female": "bodyweight-reverse-lunge_female.8e33b8c6.glb"
   },
   "9b20d147-bf9c-5713-8c30-f92a90e36083": {
     "target": [
@@ -434,12 +434,12 @@
       0.8,
       0
     ],
-    "male": "lunge_male.07deb9d1.glb",
+    "male": "lunge_male.9e4719af.glb",
     "poster": {
-      "male": "lunge_male.ad31050f.webp",
-      "female": "lunge_female.e2ac720b.webp"
+      "male": "lunge_male.711fb8dd.webp",
+      "female": "lunge_female.d265c1d8.webp"
     },
-    "female": "lunge_female.ca2d1d54.glb"
+    "female": "lunge_female.6451ce54.glb"
   },
   "b1d137e4-a798-53ae-8ed7-8a9aa817047d": {
     "target": [
@@ -447,12 +447,12 @@
       0.8,
       0
     ],
-    "male": "reverse-lunge_male.ff58c552.glb",
+    "male": "reverse-lunge_male.4348fe52.glb",
     "poster": {
       "male": "reverse-lunge_male.4a6a9eec.webp",
-      "female": "reverse-lunge_female.729d99b3.webp"
+      "female": "reverse-lunge_female.1907b09b.webp"
     },
-    "female": "reverse-lunge_female.14bdb9d1.glb"
+    "female": "reverse-lunge_female.a209c114.glb"
   },
   "6f562e47-d812-5b79-8157-b6edb5e153c6": {
     "target": [
@@ -551,12 +551,12 @@
       0.9,
       0
     ],
-    "male": "standing-forward-fold_male.80b911b5.glb",
+    "male": "standing-forward-fold_male.8d477d2e.glb",
     "poster": {
-      "male": "standing-forward-fold_male.ff403120.webp",
-      "female": "standing-forward-fold_female.57bdcbe7.webp"
+      "male": "standing-forward-fold_male.c3afdb1a.webp",
+      "female": "standing-forward-fold_female.0dc694b2.webp"
     },
-    "female": "standing-forward-fold_female.db42558c.glb"
+    "female": "standing-forward-fold_female.a7466496.glb"
   },
   "499ea905-bdd0-5822-82ed-cac4d52437e9": {
     "target": [
@@ -564,12 +564,12 @@
       0.9,
       0
     ],
-    "male": "standing-forward-fold-to-half-lift_male.61a5a07c.glb",
+    "male": "standing-forward-fold-to-half-lift_male.0433547a.glb",
     "poster": {
       "male": "standing-forward-fold-to-half-lift_male.e5b3c02a.webp",
-      "female": "standing-forward-fold-to-half-lift_female.2bb60540.webp"
+      "female": "standing-forward-fold-to-half-lift_female.83c35344.webp"
     },
-    "female": "standing-forward-fold-to-half-lift_female.cc037464.glb"
+    "female": "standing-forward-fold-to-half-lift_female.bbc6b4a4.glb"
   },
   "d16325d9-fc00-4c41-88a1-000000000004": {
     "target": [
@@ -720,12 +720,12 @@
       0.8,
       0
     ],
-    "male": "revolved-chair-pose_male.48124f83.glb",
+    "male": "revolved-chair-pose_male.0ac00898.glb",
     "poster": {
-      "male": "revolved-chair-pose_male.e6939ae3.webp",
-      "female": "revolved-chair-pose_female.2f9768f9.webp"
+      "male": "revolved-chair-pose_male.2785d299.webp",
+      "female": "revolved-chair-pose_female.dde28923.webp"
     },
-    "female": "revolved-chair-pose_female.f72bb9bc.glb"
+    "female": "revolved-chair-pose_female.73f70fa6.glb"
   },
   "b8965179-f8f4-57b4-8b9a-7d0c2599220e": {
     "target": [
@@ -733,12 +733,12 @@
       0.8,
       0
     ],
-    "male": "wide-legged-forward-fold_male.5542cd7c.glb",
+    "male": "wide-legged-forward-fold_male.95f43fc3.glb",
     "poster": {
-      "male": "wide-legged-forward-fold_male.929c0dd2.webp",
-      "female": "wide-legged-forward-fold_female.00aeb471.webp"
+      "male": "wide-legged-forward-fold_male.9c744f1a.webp",
+      "female": "wide-legged-forward-fold_female.3dbba3a3.webp"
     },
-    "female": "wide-legged-forward-fold_female.dfd2b983.glb"
+    "female": "wide-legged-forward-fold_female.4252d5c2.glb"
   },
   "603ee70b-9fc9-54c1-89fc-ea3987b7333c": {
     "target": [
@@ -746,11 +746,11 @@
       0.8,
       0
     ],
-    "male": "standing-split_male.3fb5831e.glb",
+    "male": "standing-split_male.faad18e0.glb",
     "poster": {
-      "male": "standing-split_male.17a22eff.webp",
-      "female": "standing-split_female.8dd5ea93.webp"
+      "male": "standing-split_male.abaa1381.webp",
+      "female": "standing-split_female.1fa4a8ea.webp"
     },
-    "female": "standing-split_female.aef2d26d.glb"
+    "female": "standing-split_female.08c987e6.glb"
   }
 }
