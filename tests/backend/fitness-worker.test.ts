@@ -91,7 +91,9 @@ it('push config is a feature-off answer, never an HTTP error, when the push serv
 });
 it('serves baked 3D models from R2 by exact hashed name only', async () => {
   const get = vi.fn(async (key: string) =>
-    key === 'goblet-squat_male.0123abcd.glb' ? { body: new Response('glb').body!, httpEtag: '"e"' } : null,
+    ['goblet-squat_male.0123abcd.glb', 'goblet-squat_male.0123abcd.webp'].includes(key)
+      ? { body: new Response('glb').body!, httpEtag: '"e"' }
+      : null,
   );
   const worker = createFitnessWorker(),
     at = (path: string) => worker.fetch(new Request(`https://preview.test/models/${path}`), { MODELS: { get } });
@@ -100,7 +102,8 @@ it('serves baked 3D models from R2 by exact hashed name only', async () => {
   expect(hit.headers.get('cache-control')).toContain('immutable');
   expect(await hit.text()).toBe('glb');
   expect((await at('goblet-squat_female.0123abcd.glb')).status).toBe(404);
+  expect((await at('goblet-squat_male.0123abcd.webp')).headers.get('content-type')).toBe('image/webp');
   // anything else is left to the static assets, never to R2
   await at('..%2Fsecret.glb');
-  expect(get).toHaveBeenCalledTimes(2);
+  expect(get).toHaveBeenCalledTimes(3);
 });

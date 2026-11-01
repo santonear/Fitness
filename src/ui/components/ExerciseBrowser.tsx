@@ -13,7 +13,8 @@ import {
   primaryEquipment,
   toggleSelection,
 } from '../pages/training/manual/selection';
-import { format } from '../mainline/context';
+import { format, useOptionalMainline } from '../mainline/context';
+import { model3D, modelSex, modelUrl } from './exercise-3d-model';
 import zh from '../../i18n/features/manual/zh.json';
 import en from '../../i18n/features/manual/en.json';
 import '../pages/training/manual/manual.css';
@@ -46,6 +47,7 @@ export function ExerciseBrowser({
 }) {
   const copy = locale === 'zh' ? zh : en;
   const [limit, setLimit] = useState(36);
+  const sex = modelSex(useOptionalMainline()?.data?.profile?.bodyDetails?.values?.biologicalSex);
   const equipment = filters.equipment?.some(key => (machineEquipment as readonly string[]).includes(key))
     ? filters.equipment.filter(key => key !== 'gym-machine')
     : filters.equipment;
@@ -123,7 +125,9 @@ export function ExerciseBrowser({
       {!!suggestions.length && <h2>{copy.similar}</h2>}
       <div className="manual-grid">
         {shown.slice(0, limit).map(exercise => {
-          const guide = getExerciseGuide(exercise.id, locale);
+          const guide = getExerciseGuide(exercise.id, locale),
+            model = model3D(exercise.id),
+            picture = model ? modelUrl(model.poster[sex]) : guide.media?.src;
           const body = exerciseBodyPart(exercise.id);
           const caution = exerciseCautionAreas(exercise.id).some(area => cautionAreas.includes(area));
           return (
@@ -135,8 +139,8 @@ export function ExerciseBrowser({
                 aria-label={exercise.name[locale]}
                 onClick={() => onSelect(exercise.id)}
               >
-                {guide.media ? (
-                  <img src={guide.media.src} alt="" loading="lazy" />
+                {picture ? (
+                  <img src={picture} alt="" loading="lazy" />
                 ) : (
                   <span className="manual-no-image" aria-hidden="true">
                     {copy.noImage}

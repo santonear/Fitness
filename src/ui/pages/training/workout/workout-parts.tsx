@@ -1,6 +1,8 @@
 import { useTimerCue } from '../useRestVibration';
 import { useState, useEffect } from 'react';
 import { getExerciseGuide } from '../../../../catalog/exercise-guide';
+import { useOptionalMainline } from '../../../mainline/context';
+import { model3D, modelSex, modelUrl } from '../../../components/exercise-3d-model';
 
 /** Upper bounds for one logged set; larger values are typing mistakes. */
 export const SET_LIMITS = { reps: 500, seconds: 7200, meters: 100000, kg: 500 } as const;
@@ -67,11 +69,16 @@ export function ExerciseMediaHero({
   onOpen: (trigger: HTMLElement) => void;
 }) {
   const guide = getExerciseGuide(id, locale),
-    [failed, setFailed] = useState<string>();
-  const media =
-    guide.media && guide.media.attribution !== 'Fitness original movement-pattern symbol' && failed !== guide.media.src
+    [failed, setFailed] = useState<string>(),
+    model = model3D(id),
+    sex = modelSex(useOptionalMainline()?.data?.profile?.bodyDetails?.values?.biologicalSex);
+  // a 3D exercise shows its poster (a still of the motion; the training screen runs no animation)
+  const picture = model
+    ? { src: modelUrl(model.poster[sex]), alt: guide.name }
+    : guide.media && guide.media.attribution !== 'Fitness original movement-pattern symbol'
       ? guide.media
       : undefined;
+  const media = picture && failed !== picture.src ? picture : undefined;
   return (
     <button
       type="button"
