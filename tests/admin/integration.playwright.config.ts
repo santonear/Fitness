@@ -7,7 +7,13 @@ export default defineConfig({
   outputDir: '../../test-results/admin-integration',
   workers: 1,
   fullyParallel: false,
-  use: { baseURL: `http://127.0.0.1:${port}`, viewport: { width: 390, height: 844 }, trace: 'retain-on-failure' },
+  // The browser shares the test server's UTC policy, so month edges agree wherever the tests run.
+  use: {
+    baseURL: `http://127.0.0.1:${port}`,
+    viewport: { width: 390, height: 844 },
+    timezoneId: 'UTC',
+    trace: 'retain-on-failure',
+  },
   projects: [{ name: 'chromium', use: { browserName: 'chromium' } }],
   webServer: {
     cwd: fileURLToPath(new URL('../../', import.meta.url)),

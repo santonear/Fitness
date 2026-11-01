@@ -44,6 +44,13 @@
       "bucket_name": "fitness-models"
     }
   ],
+  "ratelimits": [
+    {
+      "name": "MODEL_LIMIT",
+      "namespace_id": "1001",
+      "simple": { "limit": 60, "period": 60 }
+    }
+  ],
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",

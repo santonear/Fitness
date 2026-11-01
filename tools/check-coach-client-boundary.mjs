@@ -12,5 +12,11 @@ for (const file of files) {
   ]) {
     if (source.includes(marker)) throw new Error(`Backend prompt found in client asset ${file}`);
   }
+  // Anything a reverse-engineering agent could lift from the bundle: keys, the AI supplier, server-only secrets.
+  const leak =
+    /sk-[A-Za-z0-9]{20,}|BEGIN [A-Z ]*PRIVATE KEY|deepseek|[A-Z_]*(?:SECRET|API_KEY)|x-admin-operation-id/i.exec(
+      source,
+    );
+  if (leak) throw new Error(`Server-only value "${leak[0]}" found in client asset ${file}`);
 }
-console.log(`PASS: ${files.length} production JavaScript assets exclude backend coach prompts`);
+console.log(`PASS: ${files.length} production JavaScript assets exclude backend prompts, keys and secrets`);

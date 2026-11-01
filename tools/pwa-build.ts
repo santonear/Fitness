@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import type { Plugin } from 'vite';
+import { DECOY_PREFIX } from './bla-decoy';
 
 /** One complete, versioned shell; never discovers URLs from user/API traffic. */
 export function pwaBuild(): Plugin {
@@ -13,6 +14,8 @@ export function pwaBuild(): Plugin {
         .filter(name => /\.(?:js|css|woff2?)$/.test(name))
         // Letter handwriting faces ship as hundreds of unicode-range chunks; the browser fetches only those it needs.
         .filter(name => !/(?:^|\/)(?:lxgwwenkai|dancing-script)-/.test(name))
+        // The reverse-engineering decoy is never loaded, so phones never download it.
+        .filter(name => !name.startsWith(DECOY_PREFIX))
         .map(name => `/${name}`)
         .sort();
       const revision = createHash('sha256');

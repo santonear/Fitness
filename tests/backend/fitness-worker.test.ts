@@ -96,14 +96,39 @@ it('serves baked 3D models from R2 by exact hashed name only', async () => {
       : null,
   );
   const worker = createFitnessWorker(),
-    at = (path: string) => worker.fetch(new Request(`https://preview.test/models/${path}`), { MODELS: { get } });
+    at = (path: string, headers: HeadersInit = { 'sec-fetch-site': 'same-origin' }) =>
+      worker.fetch(new Request(`https://preview.test/models/${path}`, { headers }), { MODELS: { get } });
   const hit = await at('goblet-squat_male.0123abcd.glb');
   expect(hit.status).toBe(200);
-  expect(hit.headers.get('cache-control')).toContain('immutable');
+  expect(hit.headers.get('cache-control')).toBe('private, max-age=31536000, immutable');
   expect(await hit.text()).toBe('glb');
   expect((await at('goblet-squat_female.0123abcd.glb')).status).toBe(404);
   expect((await at('goblet-squat_male.0123abcd.webp')).headers.get('content-type')).toBe('image/webp');
   // anything else is left to the static assets, never to R2
   await at('..%2Fsecret.glb');
   expect(get).toHaveBeenCalledTimes(3);
+});
+it('refuses 3D model downloads that do not come from this site, and rate limits them', async () => {
+  const get = vi.fn(async () => ({ body: new Response('glb').body!, httpEtag: '"e"' }));
+  const limit = vi.fn(async () => ({ success: false }));
+  const worker = createFitnessWorker(),
+    status = async (headers: HeadersInit, env: object = {}) =>
+      (
+        await worker.fetch(new Request('https://preview.test/models/goblet-squat_male.0123abcd.glb', { headers }), {
+          MODELS: { get },
+          ...env,
+        })
+      ).status;
+  expect(await status({})).toBe(403); // curl-style, no browser metadata
+  expect(await status({ 'sec-fetch-site': 'cross-site' })).toBe(403);
+  expect(await status({ 'sec-fetch-site': 'none' })).toBe(403); // typed into the address bar
+  expect(await status({ referer: 'https://evil.test/' })).toBe(403);
+  expect(await status({ referer: 'https://preview.test.evil.test/' })).toBe(403);
+  // older browsers without fetch metadata still send the page as referrer
+  expect(await status({ referer: 'https://preview.test/exercise/1' })).toBe(200);
+  expect(get).toHaveBeenCalledTimes(1);
+  expect(
+    await status({ 'sec-fetch-site': 'same-origin', 'cf-connecting-ip': '1.2.3.4' }, { MODEL_LIMIT: { limit } }),
+  ).toBe(429);
+  expect(limit).toHaveBeenCalledWith({ key: '1.2.3.4' });
 });
