@@ -2,6 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { openHomeCoach } from './helpers/home-coach';
 import { answerTexts, basicSafety, generate, startOnboarding } from './helpers/onboarding-v9';
 import { startToday } from './helpers/home-start';
+import { servePosters } from './helpers/models';
 async function shot(page: Page, name: string) {
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({
@@ -10,6 +11,7 @@ async function shot(page: Page, name: string) {
     animations: 'disabled',
   });
 }
+test.beforeEach(({ page }) => servePosters(page));
 async function onboard(page: Page) {
   await startOnboarding(page);
   await answerTexts(page, ['保持力量', '每周3次，每次30–45分钟', '在家，只有瑜伽垫']);
@@ -17,13 +19,14 @@ async function onboard(page: Page) {
   await generate(page);
 }
 
-test('legacy exercise cards use provider or original person images, never stick SVGs', async ({ page }) => {
+test('exercise cards use the 3D poster, provider or original person images, never stick SVGs', async ({ page }) => {
   await page.goto('/manual');
   for (const [name, src] of [
-    ['高脚杯深蹲', '/media/dumbbell-goblet-squat.png'],
+    // exercises with an accepted 3D motion show its poster only (Bo 2026-11-01)
+    ['高脚杯深蹲', '^/models/goblet-squat_male\.[0-9a-f]{8}\.webp$'],
+    ['自重深蹲', '^/models/air-squat_male\.[0-9a-f]{8}\.webp$'],
     ['站姿自阻力划船', 'custom-standing-self-row'],
-    ['自重深蹲', 'bodyweight-squat'],
-    ['平板支撑', 'plank'],
+    ['杠铃反向弓步', 'barbell-reverse-lunge'],
   ]) {
     await page.getByRole('searchbox').fill(name);
     const card = page
@@ -41,8 +44,8 @@ test('legacy exercise cards use provider or original person images, never stick 
 });
 test('RepDB guide retains both poses and visible source link', async ({ page }) => {
   await page.goto('/manual');
-  await page.getByRole('searchbox').fill('reverse lunge');
-  await page.getByRole('button', { name: '反向弓步', exact: true }).click();
+  await page.getByRole('searchbox').fill('barbell reverse lunge');
+  await page.getByRole('button', { name: '杠铃反向弓步', exact: true }).click();
   await page.getByRole('button', { name: '开始', exact: true }).click();
   await page.getByRole('button', { name: '查看动作指导', exact: true }).click();
   const dialog = page.getByRole('dialog');

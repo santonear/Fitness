@@ -7,7 +7,7 @@ import { OriginalMedia, RepDBMedia } from './RepDBMedia';
 import { exerciseOriginalMedia, exerciseVisualMetadata } from '../../catalog/exercise-visual';
 import zh from '../../i18n/features/training/guide.zh.json';
 import en from '../../i18n/features/training/guide.en.json';
-import models3d from '../../catalog/exercise-3d.json';
+import { model3D } from './exercise-3d-model';
 import './exercise-guide.css';
 import '../pages/plan/exercise-detail.css';
 
@@ -91,13 +91,10 @@ export function ExerciseGuideContent({ id, locale }: { id: string; locale: Local
     copy = locale === 'zh' ? zh : en;
   return (
     <div className="exercise-guide-detail">
-      {Object.hasOwn(models3d, id) ? (
-        <Suspense fallback={<ExerciseGuideMedia id={id} locale={locale} name={guide.name} />}>
-          <Exercise3D
-            id={id}
-            locale={locale}
-            fallback={<ExerciseGuideMedia id={id} locale={locale} name={guide.name} />}
-          />
+      {model3D(id) ? (
+        // an empty stage while the 3D chunk loads: no RepDB or original picture for a 3D exercise, not even briefly
+        <Suspense fallback={<div className="exercise-3d-wait" aria-busy="true" />}>
+          <Exercise3D id={id} locale={locale} />
         </Suspense>
       ) : (
         <ExerciseGuideMedia id={id} locale={locale} name={guide.name} />

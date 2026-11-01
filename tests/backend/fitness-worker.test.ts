@@ -91,7 +91,9 @@ it('push config is a feature-off answer, never an HTTP error, when the push serv
 });
 it('serves baked 3D models from R2 by exact hashed name only', async () => {
   const get = vi.fn(async (key: string) =>
-    key === 'goblet-squat_male.0123abcd.glb' ? { body: new Response('glb').body!, httpEtag: '"e"' } : null,
+    ['goblet-squat_male.0123abcd.glb', 'goblet-squat_male.0123abcd.webp'].includes(key)
+      ? { body: new Response('glb').body!, httpEtag: '"e"' }
+      : null,
   );
   const worker = createFitnessWorker(),
     at = (path: string, headers: HeadersInit = { 'sec-fetch-site': 'same-origin' }) =>
@@ -101,9 +103,10 @@ it('serves baked 3D models from R2 by exact hashed name only', async () => {
   expect(hit.headers.get('cache-control')).toBe('private, max-age=31536000, immutable');
   expect(await hit.text()).toBe('glb');
   expect((await at('goblet-squat_female.0123abcd.glb')).status).toBe(404);
+  expect((await at('goblet-squat_male.0123abcd.webp')).headers.get('content-type')).toBe('image/webp');
   // anything else is left to the static assets, never to R2
   await at('..%2Fsecret.glb');
-  expect(get).toHaveBeenCalledTimes(2);
+  expect(get).toHaveBeenCalledTimes(3);
 });
 it('refuses 3D model downloads that do not come from this site, and rate limits them', async () => {
   const get = vi.fn(async () => ({ body: new Response('glb').body!, httpEtag: '"e"' }));
@@ -128,4 +131,13 @@ it('refuses 3D model downloads that do not come from this site, and rate limits 
     await status({ 'sec-fetch-site': 'same-origin', 'cf-connecting-ip': '1.2.3.4' }, { MODEL_LIMIT: { limit } }),
   ).toBe(429);
   expect(limit).toHaveBeenCalledWith({ key: '1.2.3.4' });
+  // posters are not capped: a list page loads dozens at once
+  const poster = await worker.fetch(
+    new Request('https://preview.test/models/goblet-squat_male.0123abcd.webp', {
+      headers: { 'sec-fetch-site': 'same-origin', 'cf-connecting-ip': '1.2.3.4' },
+    }),
+    { MODELS: { get }, MODEL_LIMIT: { limit } },
+  );
+  expect(poster.status).toBe(200);
+  expect(limit).toHaveBeenCalledTimes(1);
 });

@@ -1,28 +1,25 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
-import models from '../../catalog/exercise-3d.json';
+import { useEffect, useRef, useState } from 'react';
 import type { Locale } from '../../domain/models';
 import { ChoiceChip } from './kit';
-import { figureSex } from '../pages/plan-upgrade/logic';
-import { lastFigureSex } from '../pages/plan-upgrade/prefs';
+import { model3D, modelSex, modelUrl } from './exercise-3d-model';
 import { useOptionalMainline } from '../mainline/context';
 import type { MotionView } from './motion-view';
 
-type Model = { target: number[]; male: string; female: string };
-const byId: Record<string, Model> = models;
-
-/** The accepted 3D motion of an exercise; the static picture stays until it is ready, and if it fails. */
-export function Exercise3D({ id, locale, fallback }: { id: string; locale: Locale; fallback: ReactNode }) {
+/** The accepted 3D motion of an exercise; its poster (the motion's first frame) shows until it is ready, and if it fails. */
+export function Exercise3D({ id, locale }: { id: string; locale: Locale }) {
   const canvas = useRef<HTMLCanvasElement>(null),
     view = useRef<MotionView>(undefined);
   const biologicalSex = useOptionalMainline()?.data?.profile?.bodyDetails?.values?.biologicalSex;
-  const file = byId[id]![figureSex(biologicalSex, lastFigureSex())];
+  const model = model3D(id)!,
+    sex = modelSex(biologicalSex),
+    file = model[sex];
   const [state, setState] = useState<'loading' | 'ready' | 'failed'>('loading');
   const [playing, setPlaying] = useState(true);
   useEffect(() => {
     let alive = true;
     setState('loading');
     import('./motion-view')
-      .then(m => m.mountMotion(canvas.current!, `/models/${file}`, byId[id]!.target))
+      .then(m => m.mountMotion(canvas.current!, modelUrl(file), model.target))
       .then(
         v => (alive ? ((view.current = v), setState('ready')) : v.dispose()),
         () => alive && setState('failed'),
@@ -41,7 +38,12 @@ export function Exercise3D({ id, locale, fallback }: { id: string; locale: Local
         hidden={state !== 'ready'}
         aria-label={zh ? '动作 3D 演示，可拖动旋转、双指缩放' : '3D exercise demo: drag to rotate, pinch to zoom'}
       />
-      {state !== 'ready' && fallback}
+      {state !== 'ready' && <img src={modelUrl(model.poster[sex])} alt={zh ? '动作示范' : 'Exercise demo'} />}
+      {state === 'failed' && (
+        <figcaption>
+          {zh ? '3D 示范暂时打不开，请稍后再试。' : 'The 3D demo could not load. Try again later.'}
+        </figcaption>
+      )}
       {state === 'ready' && (
         <figcaption>
           <ChoiceChip

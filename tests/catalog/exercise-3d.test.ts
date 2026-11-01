@@ -7,7 +7,10 @@ it('wires 3D motions only to visible catalogue exercises, by names the model rou
   for (const [id, model] of Object.entries(models)) {
     expect(isHiddenExercise(id)).toBe(false);
     expect(getExerciseGuide(id, 'zh').name).not.toBe(id);
-    for (const sex of ['male', 'female'] as const)
+    for (const sex of ['male', 'female'] as const) {
       expect(model[sex]).toMatch(new RegExp(`^[a-z0-9-]+_${sex}\.[0-9a-f]{8}\.glb$`));
+      // every 3D exercise has a poster, so no screen falls back to a RepDB or original picture
+      expect(model.poster[sex]).toMatch(new RegExp(`^[a-z0-9-]+_${sex}\.[0-9a-f]{8}\.webp$`));
+    }
   }
 });
