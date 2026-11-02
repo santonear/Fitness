@@ -10,13 +10,35 @@ export const noStoreJson = (value: unknown, status = 200, headers: Record<string
   Response.json(value, { status, headers: { 'Cache-Control': 'no-store', ...headers } });
 
 /** Sent by this site's own pages: same Origin, not cross-site, and (unless `https` is false) over HTTPS. */
-export function sameOrigin(request: Request, https = true): boolean {
+export function sameOrigin(request: Request, https = true, configuredOrigins?: string): boolean {
   const url = new URL(request.url);
   return (
     (!https || url.protocol === 'https:') &&
-    request.headers.get('origin') === url.origin &&
+    requestOriginAllowed(request, request.headers.get('origin'), configuredOrigins) &&
     request.headers.get('sec-fetch-site') !== 'cross-site'
   );
+}
+
+/** A proxy changes the request host, not Origin. Trust only explicitly configured HTTPS origins. */
+export function requestOriginAllowed(request: Request, origin: string | null, configuredOrigins?: string): boolean {
+  const url = new URL(request.url);
+  if (origin === url.origin) return true;
+  if (!origin || url.protocol !== 'https:' || !configuredOrigins) return false;
+  try {
+    const origins: unknown = JSON.parse(configuredOrigins);
+    return (
+      Array.isArray(origins) &&
+      origins.length > 0 &&
+      origins.length <= 8 &&
+      origins.every(
+        value => typeof value === 'string' && new URL(value).protocol === 'https:' && new URL(value).origin === value,
+      ) &&
+      origins.includes(url.origin) &&
+      origins.includes(origin)
+    );
+  } catch {
+    return false;
+  }
 }
 
 export type BodyProblem = 'missing' | 'too-large' | 'invalid';
