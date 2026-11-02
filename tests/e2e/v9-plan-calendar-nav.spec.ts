@@ -153,11 +153,13 @@ test('dragging across 30 days keeps a rest day in every 7, says so, and plans th
       return first;
     })();
   await drag(page, first, monthEnd);
+  // The notice describes the latest selection; a later valid single-day pick clears it.
+  if (monthEnd >= shanghaiDate(6)) await expect(page.getByText(/每连续 7 天至少留 1 天休息/)).toBeVisible();
   if (monthEnd !== last) {
     await calendar.getByRole('button', { name: '下个月' }).click();
     await drag(page, `${last.slice(0, 7)}-01`, last);
+    if (Number(last.slice(-2)) >= 7) await expect(page.getByText(/每连续 7 天至少留 1 天休息/)).toBeVisible();
   }
-  await expect(page.getByText(/每连续 7 天至少留 1 天休息/)).toBeVisible();
   await expect(page.getByText(/已选 26 天/)).toBeVisible();
   await page.getByRole('button', { name: '45 分钟', exact: true }).click();
   await fromScheduleToDraft(page);
