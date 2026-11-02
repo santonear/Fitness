@@ -30,4 +30,8 @@ User then approved a code patch and tests, with separate approval required befor
 
 Fresh-worktree tests initially lacked generated catalog data; standard preparation generated it after network permission was available. Windows lint initially resolved D:\\D:\\...; corrected URL-to-path handling and separator handling.
 
-Tests used synthetic local sessions and a stubbed model: no paid model request. Remote CI and live patched endpoint verification have not run. Production still needs the code patch before the observed 403 can be considered resolved. No production code deployment is authorized yet.
+Tests used synthetic local sessions and a stubbed model: no paid model request.
+
+User subsequently approved PR and publication. PR #134 first CI run passed the engine audit and all other browser groups, but the calendar group failed on a date-dependent notice assertion: on November 2 the 30-day range ends December 1, and that final valid single-day selection clears the earlier rest-day notice. The assertion now checks the notice immediately after each selection spanning at least seven days. The 26-day selection, saved dates, weekly target and excluded rest-day assertions remain unchanged; no application behavior changed.
+
+Remote CI after that correction and live patched endpoint verification remain required before completion.
