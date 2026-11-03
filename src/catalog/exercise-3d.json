@@ -752,5 +752,161 @@
       "female": "standing-split_female.1fa4a8ea.webp"
     },
     "female": "standing-split_female.08c987e6.glb"
+  },
+  "e92ea037-0ebe-563b-8fca-6f12df802cfe": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "six-inch-hold_male.2b8f4656.glb",
+    "poster": {
+      "male": "six-inch-hold_male.7e2935de.webp",
+      "female": "six-inch-hold_female.62b0250a.webp"
+    },
+    "female": "six-inch-hold_female.2e53eeb7.glb"
+  },
+  "8145fb33-b5dd-502e-835d-2124d5d1ceaa": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "reverse-crunches_male.78ed91c7.glb",
+    "poster": {
+      "male": "reverse-crunches_male.89f20ff7.webp",
+      "female": "reverse-crunches_female.1f554600.webp"
+    },
+    "female": "reverse-crunches_female.005a4795.glb"
+  },
+  "77052c7d-6992-56cd-8bb7-1203075f5c12": {
+    "target": [
+      0,
+      1.05,
+      0
+    ],
+    "male": "jumping-jacks_male.0356a43d.glb",
+    "poster": {
+      "male": "jumping-jacks_male.bb1649e2.webp",
+      "female": "jumping-jacks_female.692bffb7.webp"
+    },
+    "female": "jumping-jacks_female.382c50e7.glb"
+  },
+  "3b6b0c4c-c0d9-5e66-8db9-d8365d8e51c0": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "single-leg-glute-bridge_male.a8f90ef6.glb",
+    "poster": {
+      "male": "single-leg-glute-bridge_male.d7b94dd9.webp",
+      "female": "single-leg-glute-bridge_female.bfae69bd.webp"
+    },
+    "female": "single-leg-glute-bridge_female.40e5648d.glb"
+  },
+  "1a33dc4f-2152-5612-8a5f-d7c6b3f0f990": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "single-leg-glute-bridge-hold_male.1b82ffc2.glb",
+    "poster": {
+      "male": "single-leg-glute-bridge-hold_male.d7b94dd9.webp",
+      "female": "single-leg-glute-bridge-hold_female.559c3b72.webp"
+    },
+    "female": "single-leg-glute-bridge-hold_female.fa8fbb80.glb"
+  },
+  "993237ed-c505-5d19-8b0d-711134bdc670": {
+    "target": [
+      0,
+      0.3,
+      0
+    ],
+    "male": "glute-kickback_male.800c15d7.glb",
+    "poster": {
+      "male": "glute-kickback_male.b47cd1a1.webp",
+      "female": "glute-kickback_female.a91fa251.webp"
+    },
+    "female": "glute-kickback_female.3668024c.glb"
+  },
+  "9a060207-2e85-55d1-86d9-ccd2fb71493e": {
+    "target": [
+      0,
+      0.3,
+      0
+    ],
+    "male": "glute-kickback-hold_male.a1348e98.glb",
+    "poster": {
+      "male": "glute-kickback-hold_male.df6bd405.webp",
+      "female": "glute-kickback-hold_female.ee63bc36.webp"
+    },
+    "female": "glute-kickback-hold_female.3bd98b73.glb"
+  },
+  "b9bb5b78-59d5-5605-8969-91334db716c7": {
+    "target": [
+      0,
+      1.05,
+      0
+    ],
+    "male": "high-knees_male.a43859e4.glb",
+    "poster": {
+      "male": "high-knees_male.ef1177b5.webp",
+      "female": "high-knees_female.617f6d6f.webp"
+    },
+    "female": "high-knees_female.0b2244f1.glb"
+  },
+  "cdacc2f4-5453-5214-8085-f08b69fc4b8b": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "side-lunge_male.8941eef6.glb",
+    "poster": {
+      "male": "side-lunge_male.9314ace7.webp",
+      "female": "side-lunge_female.62c95e13.webp"
+    },
+    "female": "side-lunge_female.75c44d92.glb"
+  },
+  "71f8b0dd-0392-5840-8a2c-8a35bc47b146": {
+    "target": [
+      0,
+      0.3,
+      0
+    ],
+    "male": "bird-dog_male.723619bd.glb",
+    "poster": {
+      "male": "bird-dog_male.b9033ed8.webp",
+      "female": "bird-dog_female.a5a8d5af.webp"
+    },
+    "female": "bird-dog_female.3a27cbb1.glb"
+  },
+  "8254d9a1-9f47-5c1f-8c5c-8aebb90e47bc": {
+    "target": [
+      0,
+      0.3,
+      0
+    ],
+    "male": "bird-dog-hold_male.42607392.glb",
+    "poster": {
+      "male": "bird-dog-hold_male.d333f56f.webp",
+      "female": "bird-dog-hold_female.9148aeea.webp"
+    },
+    "female": "bird-dog-hold_female.25c68c7e.glb"
+  },
+  "b6152ecf-c545-5840-86be-c97bc50a26e5": {
+    "target": [
+      0,
+      0.3,
+      0
+    ],
+    "male": "fire-hydrant_male.e25f9262.glb",
+    "poster": {
+      "male": "fire-hydrant_male.feb0ccd1.webp",
+      "female": "fire-hydrant_female.3b770bf9.webp"
+    },
+    "female": "fire-hydrant_female.6e4e87fd.glb"
   }
 }
