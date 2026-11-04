@@ -2,9 +2,10 @@
 // the database or the training engine. Usage: node tools/check-layers.mjs
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 
-const root = resolve(dirname(new URL(import.meta.url).pathname), '..');
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const src = join(root, 'src');
 // layer -> layers it must never import
 const forbidden = {
@@ -23,7 +24,7 @@ const files = [];
   }
 })(src);
 
-const layerOf = path => relative(src, path).split('/')[0];
+const layerOf = path => relative(src, path).split(/[\\/]/)[0];
 const violations = [];
 for (const file of files) {
   const from = layerOf(file);

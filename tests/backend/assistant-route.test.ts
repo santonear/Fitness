@@ -300,6 +300,39 @@ it('V2 access status ignores legacy pending and omits retired monthly counters',
   expect(data).not.toHaveProperty('used');
   expect(data).not.toHaveProperty('reconciliationRequired');
 });
+it('supports the configured proxy origin for status and chat without bypassing sessions', async () => {
+  const { env, request } = await setup();
+  env.CONTROL_ORIGINS = JSON.stringify(['https://preview.test', 'https://test.yafit.asia']);
+  const headers = {
+    Origin: 'https://test.yafit.asia',
+    'Sec-Fetch-Site': 'same-origin',
+    Cookie: `__Host-fitness_trial=${token}`,
+    'Content-Type': 'application/json',
+  };
+  const url = 'https://preview.test/api/v1/trial/access-status';
+  for (const method of ['GET', 'POST']) {
+    const response = await assistantAccessStatus(
+      new Request(url, { method, headers, ...(method === 'POST' ? { body: '{}' } : {}) }),
+      env,
+    );
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ qualification: 'active', sessionValid: true });
+  }
+  const chat = await handleAssistant(request(headers), env, success);
+  expect(chat.status).toBe(200);
+  expect(events(await chat.text()).at(-1)).toMatchObject({ type: 'done', success: true });
+  const noSession = await handleAssistant(request({ ...headers, Cookie: '' }), env, success);
+  expect(noSession.status).toBe(401);
+  for (const invalid of [
+    { ...headers, Origin: 'https://evil.test' },
+    { ...headers, 'Sec-Fetch-Site': 'cross-site' },
+  ]) {
+    const status = await assistantAccessStatus(new Request(url, { method: 'POST', headers: invalid, body: '{}' }), env);
+    expect(status.status).toBe(403);
+    const denied = await handleAssistant(request(invalid), env, success);
+    expect(denied.status).toBe(403);
+  }
+});
 it('accepts same-origin GET status without an Origin header, but rejects cross-site reads', async () => {
   const { env } = await setup();
   const url = 'https://preview.test/api/v1/trial/access-status';

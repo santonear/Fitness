@@ -6,6 +6,37 @@ const post = (body?: string, headers: Record<string, string> = {}) =>
 const reason = (problem: string) => new Error(problem);
 
 describe('backend request helpers', () => {
+  it('accepts proxy origins only when both exact HTTPS origins are configured', () => {
+    const origins = JSON.stringify(['https://fit.example', 'https://test.yafit.asia']);
+    expect(sameOrigin(post('', { origin: 'https://test.yafit.asia' }), true, origins)).toBe(true);
+    for (const origin of [
+      'https://evil.example',
+      'https://test.yafit.asia.evil.example',
+      'null',
+      'http://test.yafit.asia',
+    ]) {
+      expect(sameOrigin(post('', { origin }), true, origins)).toBe(false);
+    }
+    for (const invalid of [
+      undefined,
+      'bad-json',
+      '{}',
+      '[]',
+      '["https://test.yafit.asia"]',
+      '["https://fit.example","http://test.yafit.asia"]',
+    ]) {
+      expect(sameOrigin(post('', { origin: 'https://test.yafit.asia' }), true, invalid)).toBe(false);
+    }
+    expect(
+      sameOrigin(post('', { origin: 'https://test.yafit.asia', 'sec-fetch-site': 'cross-site' }), true, origins),
+    ).toBe(false);
+    expect(
+      sameOrigin(post('', { 'x-forwarded-host': 'test.yafit.asia', forwarded: 'host=test.yafit.asia' }), true, origins),
+    ).toBe(false);
+    expect(
+      sameOrigin(post('', { origin: 'https://evil.example', 'x-forwarded-host': 'test.yafit.asia' }), true, origins),
+    ).toBe(false);
+  });
   it('reads JSON within the limit and reports each problem', async () => {
     expect(await readJsonBody(post('{"a":1}'), 7, reason)).toEqual({ a: 1 });
     await expect(readJsonBody(post('{"a":12}'), 7, reason)).rejects.toThrow('too-large');

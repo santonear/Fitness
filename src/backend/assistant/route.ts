@@ -8,7 +8,14 @@ import { FinanceStore } from '../admin/finance/runtime';
 import type { DeepSeekWorkerEnv } from '../deepseek-worker';
 import { readFeatureFlags } from '../feature-config';
 import type { FeatureConfigEnv } from '../feature-config';
-import { activeTrialSubject, noStoreJson, readJsonBody, sameOrigin, trialToken } from '../request';
+import {
+  activeTrialSubject,
+  noStoreJson,
+  readJsonBody,
+  requestOriginAllowed,
+  sameOrigin,
+  trialToken,
+} from '../request';
 export type AssistantEnv = DeepSeekWorkerEnv &
   FeatureConfigEnv & { ASSISTANT_MAX_OUTPUT_TOKENS?: string; ASSISTANT_MAX_ATTACHMENT_TOKENS?: string };
 // Official pricing verified 2026-10-12: uncached peak CNY 2 / 8 per million. Display estimate, never admission.
@@ -41,7 +48,7 @@ export async function handleAssistant(
   let releaseSetup: undefined | (() => Promise<void>), cancelSetup: undefined | (() => void);
   try {
     if (request.method !== 'POST') return json({ error: 'METHOD_NOT_ALLOWED' }, 405);
-    if (!sameOrigin(request)) return json({ error: 'ORIGIN_DENIED' }, 403);
+    if (!sameOrigin(request, true, env.CONTROL_ORIGINS)) return json({ error: 'ORIGIN_DENIED' }, 403);
     let input;
     try {
       input = sanitizeAssistantRequest(await readInput(request));
@@ -194,23 +201,23 @@ export async function assistantAccessStatus(request: Request, env: AssistantEnv)
       origin = request.headers.get('origin'),
       site = request.headers.get('sec-fetch-site'),
       referer = request.headers.get('referer');
+    const allowed = (value: string | null) => requestOriginAllowed(request, value, env.CONTROL_ORIGINS);
     const sameOriginGet =
       request.method === 'GET' &&
-      (origin === null || origin === url.origin) &&
+      (origin === null || allowed(origin)) &&
       (site === 'same-origin' ||
-        origin === url.origin ||
+        allowed(origin) ||
         (referer !== null &&
           (() => {
             try {
-              return new URL(referer).origin === url.origin;
+              return allowed(new URL(referer).origin);
             } catch {
               return false;
             }
           })()));
     if (url.protocol !== 'https:' || site === 'cross-site' || !['GET', 'POST'].includes(request.method))
       return json({ error: 'ORIGIN_DENIED' }, 403);
-    if (request.method === 'POST' ? origin !== url.origin : !sameOriginGet)
-      return json({ error: 'ORIGIN_DENIED' }, 403);
+    if (request.method === 'POST' ? !allowed(origin) : !sameOriginGet) return json({ error: 'ORIGIN_DENIED' }, 403);
     if (!env.CONTROL_DB || !env.CONTROL_DIGEST_SECRET) return json({ error: 'SERVICE_UNAVAILABLE' }, 503);
     const raw = request.method === 'GET' ? {} : ((await readInput(request)) as { receipt?: unknown });
     if (
