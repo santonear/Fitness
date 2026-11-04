@@ -908,5 +908,369 @@
       "female": "fire-hydrant_female.3b770bf9.webp"
     },
     "female": "fire-hydrant_female.6e4e87fd.glb"
+  },
+  "0617f41b-512d-5201-817c-7b4181cf3ca0": {
+    "target": [
+      0,
+      0.3,
+      0
+    ],
+    "male": "diamond-push-ups_male.7d24c152.glb",
+    "poster": {
+      "male": "diamond-push-ups_male.d02a7ec6.webp",
+      "female": "diamond-push-ups_female.a27c6072.webp"
+    },
+    "female": "diamond-push-ups_female.e06ed0f8.glb"
+  },
+  "5df4fe85-77ed-5ab7-8404-77b6df157813": {
+    "target": [
+      0,
+      0.3,
+      0
+    ],
+    "male": "knee-push-ups_male.c2db9e5f.glb",
+    "poster": {
+      "male": "knee-push-ups_male.471c4381.webp",
+      "female": "knee-push-ups_female.b66d1ed7.webp"
+    },
+    "female": "knee-push-ups_female.ccf7486b.glb"
+  },
+  "775b7331-0fb6-5037-8fa8-8e9fd13f450a": {
+    "target": [
+      0,
+      0.3,
+      0
+    ],
+    "male": "archer-push-ups_male.911d1527.glb",
+    "poster": {
+      "male": "archer-push-ups_male.f62cfe82.webp",
+      "female": "archer-push-ups_female.e20e8e88.webp"
+    },
+    "female": "archer-push-ups_female.94999669.glb"
+  },
+  "d0a56262-6ce2-589a-8e51-821b46854f14": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "db-reverse-curl_male.cb376e1b.glb",
+    "poster": {
+      "male": "db-reverse-curl_male.aaf56aaf.webp",
+      "female": "db-reverse-curl_female.5d475b0d.webp"
+    },
+    "female": "db-reverse-curl_female.fa193fcb.glb"
+  },
+  "d3fa96d8-0ba5-5d48-8f12-cb25df78bed7": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "dumbbell-push-press_male.81582b40.glb",
+    "poster": {
+      "male": "dumbbell-push-press_male.c13ae1d5.webp",
+      "female": "dumbbell-push-press_female.a1b381f3.webp"
+    },
+    "female": "dumbbell-push-press_female.64895b58.glb"
+  },
+  "a65c5355-207f-5620-83aa-7e0d8f598f79": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "dumbbell-curl-and-press_male.d3b7b1b9.glb",
+    "poster": {
+      "male": "dumbbell-curl-and-press_male.2250b980.webp",
+      "female": "dumbbell-curl-and-press_female.8935c16a.webp"
+    },
+    "female": "dumbbell-curl-and-press_female.eaf25839.glb"
+  },
+  "d9d16f1a-3573-53a9-8328-609c852a8b18": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "dumbbell-side-bend_male.6cf9b6f5.glb",
+    "poster": {
+      "male": "dumbbell-side-bend_male.04b79376.webp",
+      "female": "dumbbell-side-bend_female.3b02ff41.webp"
+    },
+    "female": "dumbbell-side-bend_female.e94b1a9b.glb"
+  },
+  "fd78c441-35aa-543a-8115-8515121b00df": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "crunches_male.13c283f0.glb",
+    "poster": {
+      "male": "crunches_male.9eef15cf.webp",
+      "female": "crunches_female.36ddd50e.webp"
+    },
+    "female": "crunches_female.156ce843.glb"
+  },
+  "4dc6867d-d2be-5b52-8259-0e60d2b09c5f": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "heel-touches_male.3a9a983b.glb",
+    "poster": {
+      "male": "heel-touches_male.7824444d.webp",
+      "female": "heel-touches_female.1ca6ed8b.webp"
+    },
+    "female": "heel-touches_female.26ca6b6a.glb"
+  },
+  "2fdb6686-cb53-52a1-8929-f67a69458b3d": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "bicycle-crunch_male.5150d009.glb",
+    "poster": {
+      "male": "bicycle-crunch_male.eb454f8a.webp",
+      "female": "bicycle-crunch_female.a3e9f626.webp"
+    },
+    "female": "bicycle-crunch_female.a700b197.glb"
+  },
+  "7ec1bb03-13e1-561e-8127-0a5c5a0aa7cb": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "cross-body-crunch_male.16218610.glb",
+    "poster": {
+      "male": "cross-body-crunch_male.2b8c8a0c.webp",
+      "female": "cross-body-crunch_female.65cc4f91.webp"
+    },
+    "female": "cross-body-crunch_female.733df6ff.glb"
+  },
+  "4e4e237a-3bb3-5fca-8710-30e9c549faf7": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "cocoons_male.be556aac.glb",
+    "poster": {
+      "male": "cocoons_male.3f7a4d73.webp",
+      "female": "cocoons_female.d2121b28.webp"
+    },
+    "female": "cocoons_female.375f3e33.glb"
+  },
+  "d655f4a4-f5f4-5cd4-8388-b1baed03a68a": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "dead-bug_male.33ae0e8a.glb",
+    "poster": {
+      "male": "dead-bug_male.1d66731d.webp",
+      "female": "dead-bug_female.6a393ff1.webp"
+    },
+    "female": "dead-bug_female.9d3293c4.glb"
+  },
+  "57c08160-7e96-5191-8c87-6597a1475215": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "lying-leg-raise_male.c37fdf81.glb",
+    "poster": {
+      "male": "lying-leg-raise_male.64e8f99f.webp",
+      "female": "lying-leg-raise_female.dbcb7af0.webp"
+    },
+    "female": "lying-leg-raise_female.207174ca.glb"
+  },
+  "b15e6289-c68a-566e-8abc-096b4d7f8bc4": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "flutter-kicks_male.1b042a62.glb",
+    "poster": {
+      "male": "flutter-kicks_male.49f43bd0.webp",
+      "female": "flutter-kicks_female.968f59b3.webp"
+    },
+    "female": "flutter-kicks_female.cef405a3.glb"
+  },
+  "5552d253-5693-5588-8336-46e70ee4c35b": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "scissor-kicks_male.e0014b9e.glb",
+    "poster": {
+      "male": "scissor-kicks_male.d6d1c28d.webp",
+      "female": "scissor-kicks_female.15803cd4.webp"
+    },
+    "female": "scissor-kicks_female.bff7af37.glb"
+  },
+  "a3c3c3d8-872a-582f-8a3d-78e01942d3a7": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "hollow-body-hold_male.a8ef4bd4.glb",
+    "poster": {
+      "male": "hollow-body-hold_male.5dfd1e21.webp",
+      "female": "hollow-body-hold_female.b522bd24.webp"
+    },
+    "female": "hollow-body-hold_female.bfb9b14e.glb"
+  },
+  "214ca6b6-1eba-5e52-8e18-a4d0a34fae5f": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "sit-ups_male.c720e7a2.glb",
+    "poster": {
+      "male": "sit-ups_male.9a74fe5a.webp",
+      "female": "sit-ups_female.83c34b67.webp"
+    },
+    "female": "sit-ups_female.d3f33a8b.glb"
+  },
+  "c25ab669-fde4-5976-8935-84859bba7a38": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "russian-twist_male.9f6ad240.glb",
+    "poster": {
+      "male": "russian-twist_male.17403ff4.webp",
+      "female": "russian-twist_female.4a9d1e2e.webp"
+    },
+    "female": "russian-twist_female.023a8415.glb"
+  },
+  "9c871699-71ef-548d-8574-43d6c4858fe0": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "dead-bug-hold_male.f1b08414.glb",
+    "poster": {
+      "male": "dead-bug-hold_male.7bec1263.webp",
+      "female": "dead-bug-hold_female.19d19512.webp"
+    },
+    "female": "dead-bug-hold_female.f9a0b17a.glb"
+  },
+  "0e1da082-9ee0-57ae-808e-de1bec5c1e1d": {
+    "target": [
+      0,
+      0.3,
+      0
+    ],
+    "male": "bear-plank-hold_male.0e806c16.glb",
+    "poster": {
+      "male": "bear-plank-hold_male.2f927c41.webp",
+      "female": "bear-plank-hold_female.8bf4d84f.webp"
+    },
+    "female": "bear-plank-hold_female.d657c734.glb"
+  },
+  "c95d05eb-d0e8-5557-84cf-0b1fc11e3e48": {
+    "target": [
+      0,
+      0.3,
+      0
+    ],
+    "male": "mountain-climbers_male.dbfacb08.glb",
+    "poster": {
+      "male": "mountain-climbers_male.efa8ab2c.webp",
+      "female": "mountain-climbers_female.c215e700.webp"
+    },
+    "female": "mountain-climbers_female.c6dd4790.glb"
+  },
+  "0fd0172d-6578-58aa-8d3c-628a9eca1caa": {
+    "target": [
+      0,
+      0.3,
+      0
+    ],
+    "male": "plank-knee-tuck_male.9f0c2d4d.glb",
+    "poster": {
+      "male": "plank-knee-tuck_male.b29f5f33.webp",
+      "female": "plank-knee-tuck_female.1b07873e.webp"
+    },
+    "female": "plank-knee-tuck_female.c2267e44.glb"
+  },
+  "d322ac00-0b25-5676-8915-d160b7d2850c": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "reverse-plank_male.2e113300.glb",
+    "poster": {
+      "male": "reverse-plank_male.64482fb8.webp",
+      "female": "reverse-plank_female.bc7d9fc1.webp"
+    },
+    "female": "reverse-plank_female.0549cb01.glb"
+  },
+  "2e3a07e9-cb03-57c6-8e8b-ff22d03a3f55": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "reverse-plank-dips_male.92090fbe.glb",
+    "poster": {
+      "male": "reverse-plank-dips_male.c25a1be7.webp",
+      "female": "reverse-plank-dips_female.5d7b6201.webp"
+    },
+    "female": "reverse-plank-dips_female.61d362dc.glb"
+  },
+  "1cd71630-6380-58a4-8820-d827970cc41e": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "superman_male.4525bb17.glb",
+    "poster": {
+      "male": "superman_male.9f294af0.webp",
+      "female": "superman_female.f3445d95.webp"
+    },
+    "female": "superman_female.22697ef1.glb"
+  },
+  "95e3165d-f9ab-5121-8bb1-08f2b9e840bf": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "v-ups_male.120247c2.glb",
+    "poster": {
+      "male": "v-ups_male.77902586.webp",
+      "female": "v-ups_female.15531a7a.webp"
+    },
+    "female": "v-ups_female.38d76a14.glb"
+  },
+  "301ae23b-f8e8-56ea-856a-2f1a52402011": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "one-arm-dumbbell-shoulder-press_male.e2ba0b9e.glb",
+    "poster": {
+      "male": "one-arm-dumbbell-shoulder-press_male.31ec54e1.webp",
+      "female": "one-arm-dumbbell-shoulder-press_female.4e3f37ce.webp"
+    },
+    "female": "one-arm-dumbbell-shoulder-press_female.96b9dde0.glb"
   }
 }
