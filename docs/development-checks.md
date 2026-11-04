@@ -14,7 +14,7 @@ npm ci
 
 ## 先准备生成文件
 
-首次开发或直接运行 E2E、引擎检查前，依次执行：
+首次开发或直接运行 `test:unit`、`test:diagnostic`、E2E、引擎检查前，依次执行：
 
 ```sh
 npm run catalog:prepare
@@ -28,7 +28,7 @@ npm run engine:prepare
 - 下载缓存和两步生成的输出均被 Git 忽略，不应提交。
 - npm 的 `predev`、`pretypecheck`、`prebuild`、`pretest` 会自动依次运行这两步。因此 `npm run dev`、
   `npm run typecheck`、`npm run build` 和 `npm test` 会自动准备生成文件。
-- 没有 `pretest:e2e` 钩子。直接运行 E2E（以及引擎检查）前必须手动准备一次；CI 也是先显式执行这两个命令。
+- 没有 `pretest:unit`、`pretest:diagnostic` 或 `pretest:e2e` 钩子。直接运行这些测试或引擎检查前，先完成上述准备；通过 `npm test` 运行则会自动准备。
 
 ## 类型检查
 
@@ -118,4 +118,4 @@ npm run check
 它依次运行类型检查、`npm test`（单元测试和完整诊断）以及生产构建。构建输出写入被 Git 忽略的 `dist/`。
 
 `npm run check` **不包含** `lint`、`format:check`、`test:e2e`、`engine:check`、`engine:full` 或 coach 客户端边界
-检查；需要时必须分别执行，CI 也会按任务范围补充这些检查。
+检查命令。但完整诊断在缓存证据缺失或失效时，会自动执行 `tools/training-engine/fast.mjs --full`，与 `engine:full` 使用同一脚本，因此 `check` 仍可能运行完整的 2,200 画像评测，并非轻量检查。其余未包含的检查需要分别执行，CI 也会按任务范围补充。
