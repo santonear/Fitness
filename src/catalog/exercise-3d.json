@@ -31,12 +31,12 @@
       0.3,
       0
     ],
-    "male": "push-up_male.e8414e8a.glb",
+    "male": "push-up_male.ba906335.glb",
     "poster": {
-      "male": "push-up_male.9f2eb5a9.webp",
-      "female": "push-up_female.bd9de0eb.webp"
+      "male": "push-up_male.1760d686.webp",
+      "female": "push-up_female.c30adacc.webp"
     },
-    "female": "push-up_female.0314249d.glb"
+    "female": "push-up_female.3fc221c9.glb"
   },
   "d4ab48c8-9b53-5139-87d2-30ffdca648ee": {
     "target": [
@@ -473,12 +473,12 @@
       0.3,
       0
     ],
-    "male": "wide-grip-push-ups_male.175fc2ae.glb",
+    "male": "wide-grip-push-ups_male.b8e4aacc.glb",
     "poster": {
-      "male": "wide-grip-push-ups_male.29ecedda.webp",
-      "female": "wide-grip-push-ups_female.28dfa598.webp"
+      "male": "wide-grip-push-ups_male.b5c4b787.webp",
+      "female": "wide-grip-push-ups_female.2c45d1ac.webp"
     },
-    "female": "wide-grip-push-ups_female.02d7e34c.glb"
+    "female": "wide-grip-push-ups_female.084a1277.glb"
   },
   "af443655-c6cb-5a11-8b45-f2fb15d3de0b": {
     "target": [
@@ -486,12 +486,12 @@
       0.3,
       0
     ],
-    "male": "close-grip-push-ups_male.e7830391.glb",
+    "male": "close-grip-push-ups_male.634b98de.glb",
     "poster": {
-      "male": "close-grip-push-ups_male.ca3af9f4.webp",
-      "female": "close-grip-push-ups_female.8a03b91c.webp"
+      "male": "close-grip-push-ups_male.cc14cf6d.webp",
+      "female": "close-grip-push-ups_female.cb999bcd.webp"
     },
-    "female": "close-grip-push-ups_female.88363f7e.glb"
+    "female": "close-grip-push-ups_female.6eb22ee8.glb"
   },
   "82c3e769-5522-5785-8b0d-7da4704982fd": {
     "target": [
@@ -824,12 +824,12 @@
       0.3,
       0
     ],
-    "male": "glute-kickback_male.800c15d7.glb",
+    "male": "glute-kickback_male.46a1ad2f.glb",
     "poster": {
-      "male": "glute-kickback_male.b47cd1a1.webp",
-      "female": "glute-kickback_female.a91fa251.webp"
+      "male": "glute-kickback_male.dc3c727e.webp",
+      "female": "glute-kickback_female.3f3c6211.webp"
     },
-    "female": "glute-kickback_female.3668024c.glb"
+    "female": "glute-kickback_female.78570b04.glb"
   },
   "9a060207-2e85-55d1-86d9-ccd2fb71493e": {
     "target": [
@@ -837,12 +837,12 @@
       0.3,
       0
     ],
-    "male": "glute-kickback-hold_male.a1348e98.glb",
+    "male": "glute-kickback-hold_male.b2fcf30d.glb",
     "poster": {
-      "male": "glute-kickback-hold_male.df6bd405.webp",
-      "female": "glute-kickback-hold_female.ee63bc36.webp"
+      "male": "glute-kickback-hold_male.98e2b5ff.webp",
+      "female": "glute-kickback-hold_female.4024beda.webp"
     },
-    "female": "glute-kickback-hold_female.3bd98b73.glb"
+    "female": "glute-kickback-hold_female.5882fd11.glb"
   },
   "b9bb5b78-59d5-5605-8969-91334db716c7": {
     "target": [
@@ -876,12 +876,12 @@
       0.3,
       0
     ],
-    "male": "bird-dog_male.723619bd.glb",
+    "male": "bird-dog_male.3c39b9f8.glb",
     "poster": {
-      "male": "bird-dog_male.b9033ed8.webp",
-      "female": "bird-dog_female.a5a8d5af.webp"
+      "male": "bird-dog_male.d52c19d0.webp",
+      "female": "bird-dog_female.1bec6f19.webp"
     },
-    "female": "bird-dog_female.3a27cbb1.glb"
+    "female": "bird-dog_female.8b7880a2.glb"
   },
   "8254d9a1-9f47-5c1f-8c5c-8aebb90e47bc": {
     "target": [
@@ -889,12 +889,12 @@
       0.3,
       0
     ],
-    "male": "bird-dog-hold_male.42607392.glb",
+    "male": "bird-dog-hold_male.e89168b1.glb",
     "poster": {
-      "male": "bird-dog-hold_male.d333f56f.webp",
-      "female": "bird-dog-hold_female.9148aeea.webp"
+      "male": "bird-dog-hold_male.e6da2c4b.webp",
+      "female": "bird-dog-hold_female.aa1696db.webp"
     },
-    "female": "bird-dog-hold_female.25c68c7e.glb"
+    "female": "bird-dog-hold_female.a6b3a7cf.glb"
   },
   "b6152ecf-c545-5840-86be-c97bc50a26e5": {
     "target": [
@@ -902,12 +902,12 @@
       0.3,
       0
     ],
-    "male": "fire-hydrant_male.e25f9262.glb",
+    "male": "fire-hydrant_male.5aeafda0.glb",
     "poster": {
-      "male": "fire-hydrant_male.feb0ccd1.webp",
-      "female": "fire-hydrant_female.3b770bf9.webp"
+      "male": "fire-hydrant_male.78615bb9.webp",
+      "female": "fire-hydrant_female.41a6127d.webp"
     },
-    "female": "fire-hydrant_female.6e4e87fd.glb"
+    "female": "fire-hydrant_female.1381277a.glb"
   },
   "0617f41b-512d-5201-817c-7b4181cf3ca0": {
     "target": [
@@ -915,12 +915,12 @@
       0.3,
       0
     ],
-    "male": "diamond-push-ups_male.7d24c152.glb",
+    "male": "diamond-push-ups_male.7e0f923d.glb",
     "poster": {
-      "male": "diamond-push-ups_male.d02a7ec6.webp",
-      "female": "diamond-push-ups_female.a27c6072.webp"
+      "male": "diamond-push-ups_male.f2190969.webp",
+      "female": "diamond-push-ups_female.6faf5285.webp"
     },
-    "female": "diamond-push-ups_female.e06ed0f8.glb"
+    "female": "diamond-push-ups_female.d1950357.glb"
   },
   "5df4fe85-77ed-5ab7-8404-77b6df157813": {
     "target": [
@@ -928,12 +928,12 @@
       0.3,
       0
     ],
-    "male": "knee-push-ups_male.c2db9e5f.glb",
+    "male": "knee-push-ups_male.a991c4b9.glb",
     "poster": {
-      "male": "knee-push-ups_male.471c4381.webp",
-      "female": "knee-push-ups_female.b66d1ed7.webp"
+      "male": "knee-push-ups_male.543ba031.webp",
+      "female": "knee-push-ups_female.154be68a.webp"
     },
-    "female": "knee-push-ups_female.ccf7486b.glb"
+    "female": "knee-push-ups_female.9f8446af.glb"
   },
   "775b7331-0fb6-5037-8fa8-8e9fd13f450a": {
     "target": [
@@ -941,12 +941,12 @@
       0.3,
       0
     ],
-    "male": "archer-push-ups_male.911d1527.glb",
+    "male": "archer-push-ups_male.9f8447e2.glb",
     "poster": {
-      "male": "archer-push-ups_male.f62cfe82.webp",
-      "female": "archer-push-ups_female.e20e8e88.webp"
+      "male": "archer-push-ups_male.d8c402f9.webp",
+      "female": "archer-push-ups_female.2e46b9ad.webp"
     },
-    "female": "archer-push-ups_female.94999669.glb"
+    "female": "archer-push-ups_female.626a6ebd.glb"
   },
   "d0a56262-6ce2-589a-8e51-821b46854f14": {
     "target": [
@@ -1175,12 +1175,12 @@
       0.3,
       0
     ],
-    "male": "bear-plank-hold_male.0e806c16.glb",
+    "male": "bear-plank-hold_male.82e53268.glb",
     "poster": {
-      "male": "bear-plank-hold_male.2f927c41.webp",
-      "female": "bear-plank-hold_female.8bf4d84f.webp"
+      "male": "bear-plank-hold_male.54983a18.webp",
+      "female": "bear-plank-hold_female.676d8b74.webp"
     },
-    "female": "bear-plank-hold_female.d657c734.glb"
+    "female": "bear-plank-hold_female.14a8fc83.glb"
   },
   "c95d05eb-d0e8-5557-84cf-0b1fc11e3e48": {
     "target": [
@@ -1188,12 +1188,12 @@
       0.3,
       0
     ],
-    "male": "mountain-climbers_male.dbfacb08.glb",
+    "male": "mountain-climbers_male.d8cf668c.glb",
     "poster": {
-      "male": "mountain-climbers_male.efa8ab2c.webp",
-      "female": "mountain-climbers_female.c215e700.webp"
+      "male": "mountain-climbers_male.a2f46006.webp",
+      "female": "mountain-climbers_female.60472fbb.webp"
     },
-    "female": "mountain-climbers_female.c6dd4790.glb"
+    "female": "mountain-climbers_female.faef6e3e.glb"
   },
   "0fd0172d-6578-58aa-8d3c-628a9eca1caa": {
     "target": [
@@ -1201,12 +1201,12 @@
       0.3,
       0
     ],
-    "male": "plank-knee-tuck_male.9f0c2d4d.glb",
+    "male": "plank-knee-tuck_male.3b148888.glb",
     "poster": {
-      "male": "plank-knee-tuck_male.b29f5f33.webp",
-      "female": "plank-knee-tuck_female.1b07873e.webp"
+      "male": "plank-knee-tuck_male.0a8eade0.webp",
+      "female": "plank-knee-tuck_female.53dbe956.webp"
     },
-    "female": "plank-knee-tuck_female.c2267e44.glb"
+    "female": "plank-knee-tuck_female.18947500.glb"
   },
   "d322ac00-0b25-5676-8915-d160b7d2850c": {
     "target": [
@@ -1214,12 +1214,12 @@
       0.8,
       0
     ],
-    "male": "reverse-plank_male.2e113300.glb",
+    "male": "reverse-plank_male.65819410.glb",
     "poster": {
-      "male": "reverse-plank_male.64482fb8.webp",
-      "female": "reverse-plank_female.bc7d9fc1.webp"
+      "male": "reverse-plank_male.d8a8df4b.webp",
+      "female": "reverse-plank_female.f2d60e26.webp"
     },
-    "female": "reverse-plank_female.0549cb01.glb"
+    "female": "reverse-plank_female.190bb3c9.glb"
   },
   "2e3a07e9-cb03-57c6-8e8b-ff22d03a3f55": {
     "target": [
@@ -1227,12 +1227,12 @@
       0.8,
       0
     ],
-    "male": "reverse-plank-dips_male.92090fbe.glb",
+    "male": "reverse-plank-dips_male.6b6d7fdc.glb",
     "poster": {
-      "male": "reverse-plank-dips_male.c25a1be7.webp",
-      "female": "reverse-plank-dips_female.5d7b6201.webp"
+      "male": "reverse-plank-dips_male.50219fce.webp",
+      "female": "reverse-plank-dips_female.070e6783.webp"
     },
-    "female": "reverse-plank-dips_female.61d362dc.glb"
+    "female": "reverse-plank-dips_female.74274682.glb"
   },
   "1cd71630-6380-58a4-8820-d827970cc41e": {
     "target": [
