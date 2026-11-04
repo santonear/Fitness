@@ -27,7 +27,7 @@ npx playwright install chromium webkit
 npm run test:e2e
 ```
 
-`check` 顺序执行 TypeScript 检查、全部单元测试及生产构建。浏览器测试启动独占的 `127.0.0.1:5173` 开发服务器；运行前确保该端口空闲。Linux CI 使用 `npx playwright install --with-deps chromium webkit` 安装浏览器及系统依赖。`npm run build` 的输出位于 `dist/`。
+`check` 顺序执行 TypeScript 检查、全部单元测试及生产构建。浏览器测试启动独占的 `127.0.0.1:5291` 开发服务器；运行前确保该端口空闲。Linux CI 使用 `npx playwright install --with-deps chromium webkit` 安装浏览器及系统依赖。`npm run build` 的输出位于 `dist/`。
 
 ## 数据与使用
 

@@ -36,7 +36,7 @@
 
 | 任务 | 配置 | 内容 |
 |---|---|---|
-| browser-main（2 片） | `playwright.config.ts` | `tests/e2e/` 下其余全部 spec |
+| browser-main（3 片） | `playwright.config.ts` | `tests/e2e/` 下其余全部 spec |
 | browser-flows | `playwright.trial.config.ts`、`tests/e2e/v8-mainline.config.ts`、`tests/e2e/mainline-polish.config.ts`、`tests/e2e/v8-plan-review.config.ts`、`playwright.v8-coach.config.ts` | 试用、主线、主线细节、计划回顾、教练面板 |
 | browser-followup | `tests/e2e/followup-finish.config.ts`、`followup-pwa.config.ts`（打包后的应用） | 完成页、离线 PWA |
 | browser-engine | `tests/e2e/training-engine.config.ts` | 训练引擎 |
