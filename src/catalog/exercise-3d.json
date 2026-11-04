@@ -252,12 +252,12 @@
       0.8,
       0
     ],
-    "male": "glute-bridge_male.b1b6b82b.glb",
+    "male": "glute-bridge_male.7ed6f926.glb",
     "poster": {
       "male": "glute-bridge_male.faabf1a6.webp",
       "female": "glute-bridge_female.b95d443f.webp"
     },
-    "female": "glute-bridge_female.cc9917b2.glb"
+    "female": "glute-bridge_female.5da1c874.glb"
   },
   "80910204-15ee-5125-8dca-6af97eba9341": {
     "target": [
@@ -421,12 +421,12 @@
       0.3,
       0
     ],
-    "male": "high-plank_male.e7e91ca1.glb",
+    "male": "high-plank_male.93f959e6.glb",
     "poster": {
       "male": "high-plank_male.e0a52ca9.webp",
       "female": "high-plank_female.154c8d39.webp"
     },
-    "female": "high-plank_female.ac2e871e.glb"
+    "female": "high-plank_female.8f7adf7c.glb"
   },
   "852104a4-fc7a-5295-846c-e3613d382254": {
     "target": [
