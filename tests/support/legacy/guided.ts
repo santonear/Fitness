@@ -10,7 +10,7 @@ import {
   type ProgramCandidate,
 } from '../../../src/domain/guided-contracts';
 import { createDayPlanService, slotTasks } from './day-plans';
-import { evaluateSlot } from '../../../src/domain/day-slot-policy';
+import { evaluateSlot } from './day-slot-policy';
 import { createBackupService } from '../../../src/application/backup';
 import { dateInZone } from '../../../src/application/progress';
 import { scheduledWorkoutSchema } from '../../../src/domain/schemas';

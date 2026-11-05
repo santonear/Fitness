@@ -11,7 +11,7 @@ import {
 } from '../../../src/domain/schemas';
 import { exercises } from '../../../src/catalog/exercises';
 import { civilDayInterval, projectDay } from '../../../src/domain/day-date-projection';
-import { evaluateSlot } from '../../../src/domain/day-slot-policy';
+import { evaluateSlot } from './day-slot-policy';
 import type { SlotTask } from '../../../src/domain/day-plan-contracts';
 import { schedulingFields, validateScheduling } from '../../../src/domain/training-time';
 import { createBackupService } from '../../../src/application/backup';

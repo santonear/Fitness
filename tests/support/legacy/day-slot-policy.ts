@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { LegacyConfirmationDependencies, SlotEvaluation, SlotTask } from './day-plan-contracts';
+import type { LegacyConfirmationDependencies, SlotEvaluation, SlotTask } from '../../../src/domain/day-plan-contracts';
 
 const counter = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 const date = z.iso.date();
