@@ -43,4 +43,4 @@
 | browser-admin | `tests/admin/*.config.ts` | 后台 |
 
 - 标了 `@screens` 的测试只是截主题和宽度截图，PR 和推送时跳过，每晚和手动运行时才跑。
-- 所有截图都写到 `test-results-review/`，这个目录被 git 忽略。`outputs/` 里的是历史评审图，测试不会再改它们。
+- 所有截图都写到 `test-results-review/`，这个目录被 git 忽略。`outputs/` 也被 git 忽略；2026-11-05 前的历史评审图（文档里链接的那些）在提交 15a69482 里，用 `git show 15a69482:outputs/<路径>` 取出。

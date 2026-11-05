@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { evaluateSlot, validateLegacyConfirmation } from '../../src/domain/day-slot-policy';
+import { evaluateSlot, validateLegacyConfirmation } from '../support/legacy/day-slot-policy';
 import { task, slot } from './fixtures/day-slot-fixtures';
 
 describe('day slot contract (no persistence or timezone inference)', () => {

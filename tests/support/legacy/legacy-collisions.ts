@@ -1,7 +1,7 @@
 import type { PlanInput } from '../../../src/domain/models';
 import { repository, type Repository } from '../../../src/persistence/repository';
 import { slotTasks } from './day-plans';
-import { evaluateSlot } from '../../../src/domain/day-slot-policy';
+import { evaluateSlot } from './day-slot-policy';
 import { projectDay } from '../../../src/domain/day-date-projection';
 import { expandSchedule } from '../../../src/domain/calendar';
 import { legacyPlanVersionSchema } from '../../../src/domain/schemas';

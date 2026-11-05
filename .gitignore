@@ -31,3 +31,6 @@ public/exercise-media/repdb/
 claudelogs/
 .dev.vars
 .dev.vars.*
+
+# Review screenshots and reports stay local; history up to 15a69482 still has the old ones
+outputs/
