@@ -1272,5 +1272,31 @@
       "female": "one-arm-dumbbell-shoulder-press_female.4e3f37ce.webp"
     },
     "female": "one-arm-dumbbell-shoulder-press_female.96b9dde0.glb"
+  },
+  "f711bbce-1c2f-51ae-8efe-73447b2e8637": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "custom-extended-hand-to-big-toe_male.72884a95.glb",
+    "poster": {
+      "male": "custom-extended-hand-to-big-toe_male.a97e4dbc.webp",
+      "female": "custom-extended-hand-to-big-toe_female.6da27ada.webp"
+    },
+    "female": "custom-extended-hand-to-big-toe_female.02c5f475.glb"
+  },
+  "eb7b20ab-fb3c-507f-8d96-89f52cb5ca3d": {
+    "target": [
+      0,
+      0.8,
+      0
+    ],
+    "male": "dancer-pose_male.f9c408f5.glb",
+    "poster": {
+      "male": "dancer-pose_male.e6d52ec1.webp",
+      "female": "dancer-pose_female.e02aa6fb.webp"
+    },
+    "female": "dancer-pose_female.dad716cf.glb"
   }
 }
