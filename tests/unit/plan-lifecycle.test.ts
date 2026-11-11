@@ -1,6 +1,6 @@
 import { DATABASE_VERSION, BACKUP_VERSION } from '../../src/domain/storage-version';
 import { readFileSync } from 'node:fs';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { createPlanLifecycle, PLAN_RETENTION_MS, PLAN_UNDO_MS } from '../../src/application/plan-lifecycle';
 import { createV8Workflow } from '../../src/application/v8-workflow';
 import { createRepository } from '../../src/persistence/repository';
@@ -278,7 +278,12 @@ describe('plan soft deletion transaction boundary', () => {
   it('returns only visible plans/versions and lists recoverable deleted plans in snapshots', async () => {
     const s = setup();
     await s.lifecycle.deletePlan(s.planId, s.revision());
-    const result = await createV8Workflow(s.repo).snapshot();
+    // snapshot 用真实 Date.now 判断 30 天保留期；固定到夹具时钟，免得过了 30 天后测试失败
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(Date.parse('2026-10-12T00:00:00Z'));
+    const result = await createV8Workflow(s.repo)
+      .snapshot()
+      .finally(() => vi.useRealTimers());
     expect(result.plans).toHaveLength(0);
     expect(result.versions).toHaveLength(0);
     expect(result.deletedPlans).toHaveLength(1);
