@@ -24,7 +24,7 @@
 
 ## 标准资料（Bo 2026-11-05）
 - 关节活动范围以 AAOS（美国骨科医师学会）正常关节活动度为准（参照 Norkin & White《Measurement of Joint Motion》）。build_cc.py 的限位与文献值不同时，注释要写明文献值、所用值和实测依据。
-- 动作形态：健身动作以 ACE 动作库（acefitness.org/resources/everyone/exercise-library）为准，瑜伽体式以 Yoga Journal 体式库（yogajournal.com/poses）为准；两处都没有的，用同等权威的公开资料并写明出处。
+- 动作形态：健身动作以 ACE 动作库（acefitness.org/resources/everyone/exercise-library）为准，瑜伽体式以 Yoga Journal 体式库（yogajournal.com/poses）为准；两处都没有的，用同等权威的公开资料并写明出处。例外（只对跪姿握拳俯卧撑 custom-kneeling-knuckle-push-up）：ACE、NASM、ACSM、NHS、Mayo Clinic、Cleveland Clinic 都查不到握拳版，出处写“ACE 跪姿俯卧撑 + 目录步骤里的握拳要求”即算合格，复核不再因握拳没有权威出处判 FAIL；其余形态要点仍按 ACE 跪姿俯卧撑逐条对照（Bo 2026-11-12“出处A”）。
 - 每个新做或重做的动作，开工前先读资料，在 MOTIONS 条目旁注明出处链接和 3–5 个形态要点（起始姿势、关键关节角度、手脚位置、进出顺序）。复核逐条对照这些要点；没写出处或要点直接 FAIL。
 
 ## 发现问题后怎么办
@@ -130,3 +130,4 @@
 - 2026-11-11 撤回上一行的靠墙俯卧撑例外：登记的是裤口外侧小尖角，而复核 2 指出的是裤口内侧向内卷的钩形长尖片；已验收的 db-shrug、standing-calf-stretch 同一镜头只有很短的小尖，不属于共用短裤原样，按 Bo 的决定不登记例外，报协调者转优化串。
 - 2026-11-11 第 12 条登记靠墙俯卧撑（wall-push-ups）男款短裤裤口内侧钩形长尖片为只对该动作男款的例外：优化串查明是裤腿内侧壁在视线接近沿大腿方向时压成的钩，已验收 db-shrug 在同类机位同样存在，属共用短裤原样（按 Bo 的决定登记）。
 - 2026-11-12 第 6 条：靠墙坐姿（wall-sit）加一面墙（`Scene_wall`），不算器械，equipment 检查对它放行。依据：Bo 退回靠墙坐姿，原话“坐姿靠墙需要安排一个墙用来靠”，协调串转达。墙的外观（浅灰、不透明度 0.35，以便背面看得见人）随交付请 Bo 确认。
+- 2026-11-12 “标准资料”动作形态一条登记跪姿握拳俯卧撑（custom-kneeling-knuckle-push-up）的出处例外：出处写 ACE 跪姿俯卧撑加目录步骤里的握拳要求。依据：复核以“握拳没有权威出处”判 FAIL，开发串查 ACE、NASM、ACSM、NHS、Mayo Clinic、Cleveland Clinic 均无握拳版；Bo 经协调串选“出处A”，只对这个动作。
