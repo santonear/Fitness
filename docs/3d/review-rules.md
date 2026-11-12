@@ -64,7 +64,7 @@
 3. 握持：拇指和手指不能穿过手柄或交叉；握脚时手要从外侧来，位置自然。
 4. 裆部：在最深或最宽的一帧从下方看，裆部不能露出肌肉或肌腱，不能表现隐私部位。透过半透明短裤看到的标红肌肉是正常的。
 5. 肌肉：只高亮 primary/secondary 里循证的主动肌，不标稳定肌（深蹲不标竖脊肌），高亮肌肉画在皮肤上，其余是皮肤。
-6. 道具：与 catalog 的 equipment 字段一致（none/bodyweight 不拿哑铃）。qa_all 的 equipment 检查读交付 glb 的网格：equipment 为 dumbbell 必须有哑铃，none 不能有任何道具；其他器械目前没有道具网格约定，记 N/A 由人看（qa/equipment.js）。
+6. 道具：与 catalog 的 equipment 字段一致（none/bodyweight 不拿哑铃）。qa_all 的 equipment 检查读交付 glb 的网格：equipment 为 dumbbell 必须有哑铃，none 不能有任何道具；其他器械目前没有道具网格约定，记 N/A 由人看（qa/equipment.js）。例外：靠墙坐姿（wall-sit）画一面靠背用的墙（网格名 `Scene_wall`，浅灰半透明，立在地面、紧贴背和臀），它是场景不是器械，equipment 检查对这一个动作的这块网格放行（Bo 2026-11-12：“坐姿靠墙需要安排一个墙用来靠”）。
 7. 外观：表情中性，不笑；不能出现 Bo 没批准过的新外观。衣服是 #4a4a4a、alpha 0.62 的半透明（Bo 2026-10-30）。
 8. 破面：皮肤、衣服边缘和高亮肌肉不能有破洞、撕裂或露出背景。
 9. 交替动作（cross-body crunch、bird dog 等）手脚要轮流抬起，不能同时贴地。单侧动作（拉伸、单侧瑜伽体式等）要左右两侧轮换展示，不能只做一侧（Bo 2026-11-05）。qa_all 的 one-side-only 检查：exercises.json 写了 side 的动作，从交付 glb 逐帧看左右成对关节，整段里必须出现过与最偏一侧姿势镜像相反的一帧，否则报 FAIL（qa/sidecover.py）。范围与出处检查同口径（Bo 2026-11-10“只对新做和返工的动作强制；已验收的……以后逐批补”）：freeze 锁着、且不在 redo.json 里的已验收动作豁免，记为“待补”，以后随返工或逐批补做另一侧，预览页不因此标“需修复”。这不是例外登记。2026-11-10 待补清单（18 个）：crescent-lunge、custom-reverse-warrior、custom-revolved-side-angle、custom-revolved-triangle、glute-kickback-hold、half-moon-pose、one-arm-dumbbell-shoulder-press、pyramid-pose、revolved-crescent-lunge、side-lunge、side-plank、single-leg-glute-bridge、single-leg-glute-bridge-hold、tree-pose、triangle-pose、warrior-one、warrior-three、warrior-two。换侧要像真人：先平缓回到中间位或起始位，稍停一下（约 0.3–0.5 秒），再平缓做另一侧；不能一帧内或极短时间内从一侧甩到另一侧（Bo 2026-11-06：“换侧的时候要平缓过渡，中间稍停顿，现在的换侧太快，不符合人类标准”）。
@@ -129,3 +129,4 @@
 - 2026-11-11 第 12 条登记靠墙俯卧撑（wall-push-ups）男款短裤后侧裤口小尖角为只对该动作的例外（对照已验收 db-shrug 同镜头相同，属共用短裤原样）。
 - 2026-11-11 撤回上一行的靠墙俯卧撑例外：登记的是裤口外侧小尖角，而复核 2 指出的是裤口内侧向内卷的钩形长尖片；已验收的 db-shrug、standing-calf-stretch 同一镜头只有很短的小尖，不属于共用短裤原样，按 Bo 的决定不登记例外，报协调者转优化串。
 - 2026-11-11 第 12 条登记靠墙俯卧撑（wall-push-ups）男款短裤裤口内侧钩形长尖片为只对该动作男款的例外：优化串查明是裤腿内侧壁在视线接近沿大腿方向时压成的钩，已验收 db-shrug 在同类机位同样存在，属共用短裤原样（按 Bo 的决定登记）。
+- 2026-11-12 第 6 条：靠墙坐姿（wall-sit）加一面墙（`Scene_wall`），不算器械，equipment 检查对它放行。依据：Bo 退回靠墙坐姿，原话“坐姿靠墙需要安排一个墙用来靠”，协调串转达。墙的外观（浅灰、不透明度 0.35，以便背面看得见人）随交付请 Bo 确认。
