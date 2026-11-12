@@ -64,7 +64,7 @@
 3. 握持：拇指和手指不能穿过手柄或交叉；握脚时手要从外侧来，位置自然。
 4. 裆部：在最深或最宽的一帧从下方看，裆部不能露出肌肉或肌腱，不能表现隐私部位。透过半透明短裤看到的标红肌肉是正常的。
 5. 肌肉：只高亮 primary/secondary 里循证的主动肌，不标稳定肌（深蹲不标竖脊肌），高亮肌肉画在皮肤上，其余是皮肤。
-6. 道具：与 catalog 的 equipment 字段一致（none/bodyweight 不拿哑铃）。qa_all 的 equipment 检查读交付 glb 的网格：equipment 为 dumbbell 必须有哑铃，none 不能有任何道具；其他器械目前没有道具网格约定，记 N/A 由人看（qa/equipment.js）。例外：靠墙坐姿（wall-sit）画一面靠背用的墙（网格名 `Scene_wall`，浅灰半透明，立在地面、紧贴背和臀），它是场景不是器械，equipment 检查对这一个动作的这块网格放行（Bo 2026-11-12：“坐姿靠墙需要安排一个墙用来靠”）。
+6. 道具：与 catalog 的 equipment 字段一致（none/bodyweight 不拿哑铃）。qa_all 的 equipment 检查读交付 glb 的网格：equipment 为 dumbbell 必须有哑铃，none 不能有任何道具；其他器械目前没有道具网格约定，记 N/A 由人看（qa/equipment.js）。靠墙类动作必须画墙（Bo 2026-11-12）：靠墙坐姿、靠墙俯卧撑等靠着墙做的动作，一律画一面墙（网格名 `Scene_wall`，浅灰半透明，不透明度 0.35，立在地面），做法统一复用靠墙坐姿那面墙，不另造一套。墙的位置要与身体靠墙的接触部位对上：靠墙坐姿是背和臀，靠墙俯卧撑是双手掌心。接触部位要平贴墙面，不穿墙、不悬空；交付时写出接触部位到墙面的实测距离。墙是场景，不是器械：equipment 检查对靠墙类动作（slug 含 wall）的这块网格放行；没有这块网格时直接判 FAIL。
 7. 外观：表情中性，不笑；不能出现 Bo 没批准过的新外观。衣服是 #4a4a4a、alpha 0.62 的半透明（Bo 2026-10-30）。
 8. 破面：皮肤、衣服边缘和高亮肌肉不能有破洞、撕裂或露出背景。
 9. 交替动作（cross-body crunch、bird dog 等）手脚要轮流抬起，不能同时贴地。单侧动作（拉伸、单侧瑜伽体式等）要左右两侧轮换展示，不能只做一侧（Bo 2026-11-05）。qa_all 的 one-side-only 检查：exercises.json 写了 side 的动作，从交付 glb 逐帧看左右成对关节，整段里必须出现过与最偏一侧姿势镜像相反的一帧，否则报 FAIL（qa/sidecover.py）。范围与出处检查同口径（Bo 2026-11-10“只对新做和返工的动作强制；已验收的……以后逐批补”）：freeze 锁着、且不在 redo.json 里的已验收动作豁免，记为“待补”，以后随返工或逐批补做另一侧，预览页不因此标“需修复”。这不是例外登记。2026-11-10 待补清单（18 个）：crescent-lunge、custom-reverse-warrior、custom-revolved-side-angle、custom-revolved-triangle、glute-kickback-hold、half-moon-pose、one-arm-dumbbell-shoulder-press、pyramid-pose、revolved-crescent-lunge、side-lunge、side-plank、single-leg-glute-bridge、single-leg-glute-bridge-hold、tree-pose、triangle-pose、warrior-one、warrior-three、warrior-two。换侧要像真人：先平缓回到中间位或起始位，稍停一下（约 0.3–0.5 秒），再平缓做另一侧；不能一帧内或极短时间内从一侧甩到另一侧（Bo 2026-11-06：“换侧的时候要平缓过渡，中间稍停顿，现在的换侧太快，不符合人类标准”）。
@@ -132,3 +132,4 @@
 - 2026-11-11 第 12 条登记靠墙俯卧撑（wall-push-ups）最深时两肘约 22° 外张、未完全贴身为只对该动作的例外：原因是前臂旋前限位 80°，限位不放宽（协调串按 Bo 方案 A 决定）。同时登记该动作女版三处衣服例外：最深帧紧身裤裤口内侧几毫米卷边（未量），起始帧即有的内衣腋下淡青小点和白色碎片（属共用女款内衣）。
 - 2026-11-12 第 6 条：靠墙坐姿（wall-sit）加一面墙（`Scene_wall`），不算器械，equipment 检查对它放行。依据：Bo 退回靠墙坐姿，原话“坐姿靠墙需要安排一个墙用来靠”，协调串转达。墙的外观（浅灰、不透明度 0.35，以便背面看得见人）随交付请 Bo 确认。
 - 2026-11-12 “标准资料”动作形态一条登记跪姿握拳俯卧撑（custom-kneeling-knuckle-push-up）的出处例外：出处写 ACE 跪姿俯卧撑加目录步骤里的握拳要求。依据：复核以“握拳没有权威出处”判 FAIL，开发串查 ACE、NASM、ACSM、NHS、Mayo Clinic、Cleveland Clinic 均无握拳版；Bo 经协调串选“出处A”，只对这个动作。
+- 2026-11-12 第 6 条：靠墙类动作必须画墙，复用靠墙坐姿的 `Scene_wall`，墙的位置与接触部位（靠墙俯卧撑为掌心）对上，不穿墙、不悬空；equipment 检查对 slug 含 wall 的动作要求有这块墙，缺了判 FAIL。依据：Bo 退回靠墙俯卧撑，要求加一面墙，“以后所有靠墙类动作都必须有墙”，协调串转达。
